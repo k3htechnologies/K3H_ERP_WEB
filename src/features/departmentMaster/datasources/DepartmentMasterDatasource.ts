@@ -84,7 +84,7 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
 
         } catch (error) {
 
-            console.error('❌ Error: DeleteDepartmentMaster:', error)
+            console.error('❌ Error: Delete Department Master:', error)
             throw error
         }
     }

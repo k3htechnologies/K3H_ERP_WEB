@@ -49,14 +49,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // Function to find the active menu item based on current path
   const findActiveMenuItem = (currentPath: string) => {
+    if (!modules || modules.length === 0) return null
+    
     for (const module of modules) {
+      if (!module.SubModuleData || module.SubModuleData.length === 0) continue
+      
       for (const subModule of module.SubModuleData) {
-        for (const subSubModule of subModule.SubSubModuleData) {
-          if (mapApiPathToRoute(subSubModule.Path) === currentPath) {
-            return {
-              module,
-              subModule,
-              subSubModule
+        if (subModule.SubSubModuleData && subModule.SubSubModuleData.length > 0) {
+          for (const subSubModule of subModule.SubSubModuleData) {
+            if (mapApiPathToRoute(subSubModule.Path) === currentPath) {
+              return {
+                module,
+                subModule,
+                subSubModule
+              }
             }
           }
         }
@@ -132,18 +138,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: <Home className="h-5 w-5" />,
       path: '/dashboard'
     },
-    // Modules from API
-    ...modules.map(module => ({
+    // Modules from API - with null/undefined safety checks
+    ...(modules || []).map(module => ({
       id: `module-${module.ModulesMasterId}`,
       label: module.ModuleName,
       icon: renderIcon(module.Icon, <Home className="h-5 w-5" />),
-      children: module.SubModuleData.map(subModule => ({
+      children: (module.SubModuleData || []).map(subModule => ({
         id: `submodule-${subModule.SubModulesMasterId}`,
         label: subModule.SubModuleName,
         icon: renderIcon(subModule.Icon, <Home className="h-4 w-4" />, "h-4 w-4"),
         path: mapApiPathToRoute(subModule.Path),
-        children: subModule.SubSubModuleData
-          .filter(subSubModule => subSubModule.IsDisplay)
+        children: (subModule.SubSubModuleData || [])
+          .filter(subSubModule => subSubModule?.IsDisplay)
           .map(subSubModule => ({
             id: `subsubmodule-${subSubModule.SubSubModulesMasterId}`,
             label: subSubModule.SubSubModuleName,

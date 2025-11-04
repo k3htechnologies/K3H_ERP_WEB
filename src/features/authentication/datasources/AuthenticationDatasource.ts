@@ -27,7 +27,6 @@ export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
 
         } catch (error) {
 
-            console.error('Error: Is Valid Mobile Number:', error)
             throw error
         }
     }
@@ -46,7 +45,6 @@ export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
             return response as ApiResponse<EmployeeData>;
         } catch (error) {
 
-            console.error('Error: Is Valid OTP :', error)
             throw error
         }
     }

@@ -36,6 +36,7 @@ export const Layout: React.FC = () => {
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
                 };
 
+
                 const response = await menuService.apiCallPullMenu(request)
 
                 if (E.isRight(response)) {

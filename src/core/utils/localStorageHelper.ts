@@ -3,10 +3,14 @@ import { LOCAL_STORAGE_KEYS } from "../constants/localStorageKeys"
 
 export const LocalStorageHelper = {
     //  ==========================EMPLOYEE DATA STORE IN LOCAL STORAGE =========================================== 
-    storeEmployeeData: (employeeData: EmployeeData): void => {
+    storeEmployeeData: (employeeData: EmployeeData[] | EmployeeData): void => {
         try {
-            localStorage.setItem(LOCAL_STORAGE_KEYS.EMPLOYEE, JSON.stringify(employeeData))
-            localStorage.setItem(LOCAL_STORAGE_KEYS.TOKEN, employeeData.Token)
+            const dataToStore = Array.isArray(employeeData) ? employeeData[0] : employeeData;
+
+            localStorage.setItem(LOCAL_STORAGE_KEYS.EMPLOYEE, JSON.stringify(dataToStore));
+
+            localStorage.setItem(LOCAL_STORAGE_KEYS.TOKEN, dataToStore.Token);
+            
         } catch (error) {
             console.error('Error storing employee data:', error)
         }
@@ -17,7 +21,9 @@ export const LocalStorageHelper = {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.EMPLOYEE)
         if (stored) {
             try {
-                return JSON.parse(stored) as EmployeeData
+
+                return JSON.parse(stored) as EmployeeData;
+
             } catch (error) {
                 console.error('Error parsing stored employee data:', error)
                 return null

@@ -33,24 +33,25 @@ export function SignIn() {
                     const response = await authenticationService.apicallIsValidMobileNumber(mobileNumber)
 
                     if (E.isRight(response)) {
-                        showSuccess(
-                            'OTP Sent',
-                            response.right.SuccessMessage?.[0] || 'OTP has been sent to your mobile number'
-                        )
-                        setStep('otp')
+
+                        showSuccess('OTP Sent', response.right.SuccessMessage?.[0]);
+
+                        setStep('otp');
+
                     } else {
-                        showError('Failed', response.left.message?.[0] || 'Unable to send OTP')
+
+                        showError('Failed', response.left.message);
+
                     }
                 } catch (err: any) {
-                    showError('Connection Error', err.message || 'Please try again later')
+
+                    showError('Connection Error', err.message);
+
                 }
             },
             undefined,
             (error: any) => {
-                addToast({
-                    type: 'error',
-                    title: error.message || 'Failed to load data'
-                })
+                addToast({ type: 'error', title: error.message })
             }
         ) // ✅ Properly closed
     }
@@ -87,14 +88,14 @@ export function SignIn() {
                         window.location.href = '/dashboard'
                     }, 1500)
                 } else {
-                    showError('Invalid OTP', response.left.message?.[0] || 'Invalid code')
+                    showError('Invalid OTP', response.left.message)
                 }
 
             },
             undefined,
             (error: any) => {
 
-                addToast({ type: 'error', title: error.message || 'Failed to load data' });
+                addToast({ type: 'error', title: error.message });
             }
         ) // ✅ Properly closed
     }
@@ -118,7 +119,7 @@ export function SignIn() {
 
                 } else {
 
-                    showError('Failed', response.left.message?.[0]);
+                    showError('Failed', response.left.message);
                 }
 
             },
@@ -179,8 +180,8 @@ export function SignIn() {
                                 variant="filled"
                                 fullWidth
                                 leftIcon={
-                                    <span style={{ 
-                                        color: '#6b7280', 
+                                    <span style={{
+                                        color: '#6b7280',
                                         fontWeight: 500,
                                         fontSize: '16px',
                                         userSelect: 'none'
@@ -225,7 +226,7 @@ export function SignIn() {
                                 maxLength={4}
                                 size="lg"
                                 variant="filled"
-                               
+
                             />
 
                             <Button

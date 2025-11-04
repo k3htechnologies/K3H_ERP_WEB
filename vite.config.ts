@@ -7,5 +7,6 @@ export default defineConfig({
     port: 3000,         
     host: 'localhost',  
     open: true,
+    strictPort: true,
   },
 })

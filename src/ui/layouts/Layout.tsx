@@ -16,22 +16,13 @@ export const Layout: React.FC = () => {
     const [selectedModule, setSelectedModule] = useState<ModuleData | null>(null)
     const [selectedSubModule, setSelectedSubModule] = useState<SubModuleData | null>(null)
     const [selectedSubSubModule, setSelectedSubSubModule] = useState<SubSubModuleData | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null);
 
     const pageInfo = getPageInfo(location.pathname);
 
-
-    // Load menu data and employee data on component mount
     useEffect(() => {
 
         const loadMenuData = async () => {
             try {
-                setLoading(true);
-
-                setError(null);
-
-                // ✅ Create request object (PullMenuRequest)
                 const request: PullMenuRequest = {
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
                 };
@@ -44,13 +35,11 @@ export const Layout: React.FC = () => {
                     } else {
                         setMenuData([]);
                     }
-                } else {
-                    setError(response.left.message);
                 }
             } catch (err: any) {
-                setError(err.message)
+                throw err;
             } finally {
-                setLoading(false)
+
             }
         }
 
@@ -86,35 +75,6 @@ export const Layout: React.FC = () => {
     const handleLogout = () => {
         LocalStorageHelper.clearLocalStorageData();
         window.location.href = '/login'
-    }
-
-    if (loading) {
-        return (
-            <div className="h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Loading menu data...</p>
-                </div>
-            </div>
-        )
-    }
-
-    if (error) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="text-red-500 text-6xl mb-4">⚠️</div>
-                    <h2 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Data</h2>
-                    <p className="text-gray-600 mb-4">{error}</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                    >
-                        Retry
-                    </button>
-                </div>
-            </div>
-        )
     }
 
     return (

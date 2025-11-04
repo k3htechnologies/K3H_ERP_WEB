@@ -40,7 +40,7 @@ export class BaseClient {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'apikey': this.apiKey,
+                    'ApiKey': this.apiKey,
                 },
             })
 
@@ -63,7 +63,7 @@ export class BaseClient {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'apiKey': this.apiKey,
+                    'ApiKey': this.apiKey,
                 },
                 body: JSON.stringify(payload),
             })
@@ -109,7 +109,7 @@ export class BaseClient {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'apiKey': this.apiKey,
+                    'ApiKey': this.apiKey,
                     'Authorization': `Bearer ${this.token}`,
                 },
                 body: JSON.stringify(payload),
@@ -133,7 +133,7 @@ export class BaseClient {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'apiKey': this.apiKey,
+                    'ApiKey': this.apiKey,
                     'Authorization': `Bearer ${this.token}`,
                 },
             })
@@ -161,7 +161,7 @@ export class BaseClient {
             for (const item of fileList) {
                 // Note: In a real implementation, you'd need to handle file selection differently
                 // This is a simplified version for the structure
-                console.log('File item:', item.key, item.value)
+                // File item processed (removed console.log for production)
             }
 
             // Add payload fields
@@ -307,13 +307,21 @@ export class BaseClient {
 
         try {
             const response = await this.getRequestWithoutAuthentication(url)
-            this.token = response.data
+            if (response?.data) {
+                this.token = response.data
+                // Update localStorage with new token
+                if (typeof window !== 'undefined' && this.token) {
+                    localStorage.setItem('auth_token', this.token)
+                }
+                // Token refreshed successfully, retry original request
+                return
+            }
             throw new TokenExpiredException('TOKEN EXPIRED')
         } catch (error) {
             if (error instanceof TokenExpiredException) {
-                throw new TokenExpiredException('TOKEN EXPIRED')
+                throw error
             }
-            throw error
+            throw new TokenExpiredException('TOKEN EXPIRED')
         }
     }
 

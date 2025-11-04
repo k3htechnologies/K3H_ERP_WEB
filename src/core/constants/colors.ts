@@ -12,6 +12,7 @@ export const COLORS = {
     text: '#111827',
     textSecondary: '#6b7280',
     border: '#e5e7eb',
+    backgroundSecondary: '#f9fafb',
     textLight: '#9ca3af',         // Light text
     placeholder: '#9ca3af',       // Placeholder text
 } as const

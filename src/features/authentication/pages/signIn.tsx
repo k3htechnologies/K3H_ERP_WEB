@@ -167,22 +167,28 @@ export function SignIn() {
                                 <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#1a1a1a' }}>Sign In</h1>
                             </div>
 
-                            <label style={{ fontSize: '14px', fontWeight: 500, marginBottom: '6px', display: 'block' }}>
-                                Mobile Number <span style={{ color: '#ef4444' }}>*</span>
-                            </label>
-
-                            <div className="flex items-center border border-gray-300 rounded-lg bg-gray-50 focus-within:border-blue-500 focus-within:bg-white transition-colors">
-                                <span className="px-3 py-3 text-gray-500 font-medium border-r border-gray-300">+91</span>
-                                <input
-                                    type="tel"
-                                    placeholder="Enter mobile number"
-                                    value={mobileNumber}
-                                    onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                                    maxLength={10}
-                                    required
-                                    className="flex-1 px-3 py-3 bg-transparent border-0 outline-none text-gray-900 placeholder-gray-400"
-                                />
-                            </div>
+                            <Input
+                                type="tel"
+                                label="Mobile Number"
+                                placeholder="Enter mobile number"
+                                value={mobileNumber}
+                                onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                maxLength={10}
+                                required
+                                size="lg"
+                                variant="filled"
+                                fullWidth
+                                leftIcon={
+                                    <span style={{ 
+                                        color: '#6b7280', 
+                                        fontWeight: 500,
+                                        fontSize: '16px',
+                                        userSelect: 'none'
+                                    }}>
+                                        +91
+                                    </span>
+                                }
+                            />
 
                             <Button
                                 onClick={handleSendOTP}
@@ -219,12 +225,7 @@ export function SignIn() {
                                 maxLength={4}
                                 size="lg"
                                 variant="filled"
-                                style={{
-                                    textAlign: 'center',
-                                    fontSize: '24px',
-                                    fontWeight: '700',
-                                    letterSpacing: '8px',
-                                }}
+                               
                             />
 
                             <Button

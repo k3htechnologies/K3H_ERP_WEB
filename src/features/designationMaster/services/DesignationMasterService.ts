@@ -10,14 +10,14 @@ import type {
 
 import * as E from 'fp-ts/Either';
 
-const DesignationMasterDatasource = new DesignationMasterDatasourceImpl();
+const designationMasterDatasource = new DesignationMasterDatasourceImpl();
 
 export const DesignationMasterService = {
 
     apiCallPullDesignationMaster: async (params: FilterWithPaginationDesignationMasterRequest): Promise<E.Either<Failure, ApiResponse<DesignationMasterData>>> => {
         try {
 
-            return E.right(await DesignationMasterDatasource.pullDesignationMaster(params));
+            return E.right(await designationMasterDatasource.pullDesignationMaster(params));
 
         } catch (error: any) {
 
@@ -29,7 +29,7 @@ export const DesignationMasterService = {
     apiCallAddUpdateDesignationMaster: async (data: AddUpdateDesignationMasterRequest): Promise<E.Either<Failure, ApiResponse<DesignationMasterData>>> => {
         try {
 
-            return E.right(await DesignationMasterDatasource.addUpdateDesignationMaster(data));
+            return E.right(await designationMasterDatasource.addUpdateDesignationMaster(data));
 
         } catch (error: any) {
 
@@ -41,7 +41,7 @@ export const DesignationMasterService = {
     apiCallDeleteDesignationMaster: async (params: DeleteDesignationMasterRequest): Promise<E.Either<Failure, ApiResponse<number>>> => {
         try {
 
-            return E.right(await DesignationMasterDatasource.deleteDesignationMaster(params));
+            return E.right(await designationMasterDatasource.deleteDesignationMaster(params));
 
         } catch (error: any) {
 

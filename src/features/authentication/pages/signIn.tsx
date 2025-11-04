@@ -7,6 +7,7 @@ import appLogo from '../../../assets/images/appLogo.png'
 import { authenticationService } from '../services/AuthenticationService';
 import * as E from 'fp-ts/Either';
 import { runApiWithLoader } from '../../../core/utils';
+import { LocalStorageHelper } from '../../../core/utils/localStorageHelper'
 
 export function SignIn() {
 
@@ -70,11 +71,15 @@ export function SignIn() {
 
                 if (E.isRight(response)) {
 
-                    const employee = response.right.Data;
+                    const employeeData = response.right.Data;
 
-                    localStorage.setItem('EmployeeData', JSON.stringify(employee));
+                    // ============================================================================
+                    // ✅ STORE EMPLOYEE DATA INTO LOCAL STORAGE
+                    // ============================================================================
 
-                    showSuccess('Login Successful', `Welcome, ${employee.FullName}`);
+                    LocalStorageHelper.storeEmployeeData(employeeData);
+
+                    showSuccess('Login Successful', `Welcome, ${employeeData.FullName}`);
 
                     setVerified(true)
 
@@ -88,10 +93,8 @@ export function SignIn() {
             },
             undefined,
             (error: any) => {
-                addToast({
-                    type: 'error',
-                    title: error.message || 'Failed to load data'
-                })
+
+                addToast({ type: 'error', title: error.message || 'Failed to load data' });
             }
         ) // ✅ Properly closed
     }
@@ -105,24 +108,27 @@ export function SignIn() {
             async () => {
 
 
-                setOtp('')
+                setOtp('');
+
                 const response = await authenticationService.apicallIsValidMobileNumber(mobileNumber);
 
                 if (E.isRight(response)) {
-                    showSuccess('OTP Resent', response.right.SuccessMessage?.[0] || 'OTP resent successfully')
+
+                    showSuccess('OTP Resent', response.right.SuccessMessage?.[0]);
+
                 } else {
-                    showError('Failed', response.left.message?.[0])
+
+                    showError('Failed', response.left.message?.[0]);
                 }
 
             },
             undefined,
+
             (error: any) => {
-                addToast({
-                    type: 'error',
-                    title: error.message || 'Failed to load data'
-                })
+
+                addToast({ type: 'error', title: error.message });
             }
-        ) // ✅ Properly closed
+        )
     }
 
     return (

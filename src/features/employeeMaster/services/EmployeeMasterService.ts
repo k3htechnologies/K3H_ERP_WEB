@@ -9,14 +9,14 @@ import type {
 
 import * as E from 'fp-ts/Either';
 
-const EmployeeMasterDatasource = new EmployeeMasterDatasourceImpl();
+const employeeMasterDatasource = new EmployeeMasterDatasourceImpl();
 
 export const EmployeeMasterService = {
 
     apiCallPullEmployeeMaster: async (params: FilterWithPaginationEmployeeMasterRequest): Promise<E.Either<Failure, ApiResponse<EmployeeMasterData>>> => {
         try {
 
-            return E.right(await EmployeeMasterDatasource.pullEmployeeMaster(params));
+            return E.right(await employeeMasterDatasource.pullEmployeeMaster(params));
 
         } catch (error: any) {
 
@@ -28,7 +28,7 @@ export const EmployeeMasterService = {
     apiCallAddUpdateEmployeeMaster: async (data: AddUpdateEmployeeMasterRequest): Promise<E.Either<Failure, ApiResponse<EmployeeMasterData>>> => {
         try {
 
-            return E.right(await EmployeeMasterDatasource.addUpdateEmployeeMaster(data));
+            return E.right(await employeeMasterDatasource.addUpdateEmployeeMaster(data));
 
         } catch (error: any) {
 

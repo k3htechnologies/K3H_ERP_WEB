@@ -16,10 +16,10 @@ export function SignIn() {
     const [step, setStep] = useState<'mobile' | 'otp'>('mobile')
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
-    const [verified, setVerified] = useState(false)
+    const [isVerified, setIsVerified] = useState(false)
     const { toasts, removeToast, showSuccess, showError, addToast } = useToast()
 
-    // ✅ Send OTP
+    //#region  SEND OTP
     const handleSendOTP = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -55,13 +55,13 @@ export function SignIn() {
             (error: any) => {
                 addToast({ type: 'error', title: error.message })
             },
-             undefined,
+            undefined,
             'Send OTP...'
         ) // ✅ Properly closed
     }
+    //#endregion
 
-
-    // ✅ Verify OTP
+    //#region VERIFY OTP
     const handleVerifyOTP = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -87,7 +87,7 @@ export function SignIn() {
 
                     showSuccess('Login Successful', `Welcome, ${employeeData.FullName}`);
 
-                    setVerified(true)
+                    setIsVerified(true)
 
                     setTimeout(() => {
                         window.location.href = '/dashboard'
@@ -102,12 +102,13 @@ export function SignIn() {
 
                 addToast({ type: 'error', title: error.message });
             },
-             undefined,
+            undefined,
             'Verify OTP...'
         ) // ✅ Properly closed
     }
+    //#endregion
 
-    // ✅ Resend OTP
+    //#region RESEND OTP
     const handleResendOTP = async () => {
 
         await runApiWithLoader(
@@ -141,6 +142,7 @@ export function SignIn() {
             'Resend OTP...'
         )
     }
+    //#endregion
 
     return (
         <>
@@ -242,7 +244,7 @@ export function SignIn() {
                             <Button
                                 onClick={handleVerifyOTP}
                                 type="submit"
-                                disabled={isLoading || verified || otp.length !== 4}
+                                disabled={isLoading || isVerified || otp.length !== 4}
                                 loading={isLoading}
                                 loadingText="Verifying..."
                                 size="lg"

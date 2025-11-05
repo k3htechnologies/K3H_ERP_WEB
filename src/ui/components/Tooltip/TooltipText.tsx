@@ -1,5 +1,5 @@
 interface TooltipTextProps {
-    text: string | null | undefined
+    text: string | null | undefined | number
     maxWidth?: string
     tooltipThreshold?: number
     onClick?: () => void
@@ -13,7 +13,7 @@ const TooltipText: React.FC<TooltipTextProps> = ({
     onClick,
     tooltipClassName = ""
 }) => {
-    const displayText = text?.trim() || "-";
+    const displayText = text === null || text === undefined || text === "" ? "-" : String(text).trim();
     const isLong = displayText.length > tooltipThreshold;
     return (
         <div className="group relative w-full">

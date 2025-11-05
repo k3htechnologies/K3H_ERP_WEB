@@ -54,11 +54,15 @@ export const DepartmentMaster: React.FC = () => {
   // EDIT DEPARTMENT MASTER
   const [editingDepartmentMasterData, setEditingDepartmentMasterData] = useState<DepartmentMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+
   //DELETE DEPARTMENT MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
   const [deleteDepartmentMasterDetailsData, setDeleteDepartmentMasterDetailsData] = useState<DepartmentMasterData | null>(null)
+
+  //CUSTOMIZE COLUMN MODAL
+  const [isShowCustomizeDepartmentMasterColumnsModal, setIsShowCustomizeDepartmentMasterColumnsModal] = useState(false);
 
   //#endregion
 
@@ -243,17 +247,14 @@ export const DepartmentMaster: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <div className="flex items-center justify-between">
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              handleViewDepartmentDetails(row)
-            }}
-            className="flex-1 text-left text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors duration-200"
-            title="Click to view department details"
-          >
-            {value || 'N/A'}
-          </button>
+
+          <TooltipText
+            text={value || 'N/A'}
+            maxWidth="250px"
+            tooltipThreshold={20}
+            onClick={() => handleViewDepartmentDetails(row)} // just pass a function, no need for e.preventDefault here
+          />
+
           <div className="flex items-center justify-end ml-2 w-20">
             {(row.NumberOfEmployee || 0) === 0 ? (
               <>
@@ -358,6 +359,120 @@ export const DepartmentMaster: React.FC = () => {
 
   //#endregion
 
+  //#region CUSTOMIZE TABLE COLUMNS
+
+  const requiredDepartmentMasterColumnKeys: string[] = ['DepartmentName'];
+
+  const allDepartmentMasterColumnKeys: string[] = departmentMasterColumns.map(c => c.key)
+
+  const [selectedDepartmentMasterColumnKeys, setSelectedDepartmentMasterColumnKeys] = useState<string[]>(() => {
+
+    try {
+
+      const saved = localStorage.getItem('departmentMaster.selectedColumns');
+
+      if (saved) {
+
+        const parsed = JSON.parse(saved) as string[]
+        // Ensure required columns are always present
+
+        const withRequired = Array.from(new Set([...parsed, ...requiredDepartmentMasterColumnKeys]));
+
+        // Filter out any keys that no longer exist
+        return withRequired.filter(k => allDepartmentMasterColumnKeys.includes(k));
+
+      }
+    } catch { }
+    return allDepartmentMasterColumnKeys
+  })
+
+  useEffect(() => {
+    // Guarantee required columns remain selected if state changes elsewhere
+
+    setSelectedDepartmentMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredDepartmentMasterColumnKeys])).filter(k => allDepartmentMasterColumnKeys.includes(k)));
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [departmentMasterColumns.length])
+
+  const visibleDepartmentMasterColumns = departmentMasterColumns.filter(col => selectedDepartmentMasterColumnKeys.includes(col.key));
+
+  interface CustomizeDepartmentMasterColumnsModalProps {
+    isOpen: boolean
+    onClose: () => void
+    onApply: (keys: string[]) => void
+    columns: TableColumn[]
+    selectedKeys: string[]
+    requiredKeys: string[]
+  }
+
+  const CustomizeDepartmentMasterColumnsModal: React.FC<CustomizeDepartmentMasterColumnsModalProps> = ({
+    isOpen,
+    onClose,
+    onApply,
+    columns,
+    selectedKeys,
+    requiredKeys
+  }) => {
+    const [localKeys, setLocalKeys] = useState<string[]>(selectedKeys)
+
+    useEffect(() => {
+      if (isOpen) setLocalKeys(Array.from(new Set([...selectedKeys, ...requiredKeys])))
+    }, [isOpen, selectedKeys, requiredKeys])
+
+    const toggleKey = (key: string) => {
+      if (requiredKeys.includes(key)) return
+      setLocalKeys(prev => (prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]))
+    }
+
+    const selectAll = () => setLocalKeys(Array.from(new Set([...columns.map(c => c.key), ...requiredKeys])))
+    const clearAll = () => setLocalKeys([...requiredKeys])
+
+    const handleApplyCustomizeDepartmentMasterColumns = (e: React.FormEvent) => {
+      e.preventDefault()
+      onApply(localKeys)
+      onClose()
+    }
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Customize Employee Master Table Columns"
+        onSubmit={handleApplyCustomizeDepartmentMasterColumns}
+        saveText="Apply Changes"
+        cancelText="Cancel"
+      >
+        <form onSubmit={handleApplyCustomizeDepartmentMasterColumns} className="space-y-4">
+          <div className="flex items-center justify-end space-x-2">
+            <button type="button" onClick={selectAll} className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md">Select All</button>
+            <button type="button" onClick={clearAll} className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md">Clear All</button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
+            {columns.map(col => {
+              const checked = localKeys.includes(col.key)
+              const required = requiredKeys.includes(col.key)
+              return (
+                <label key={col.key} className="flex items-center justify-between px-3 py-2 border rounded-md bg-gray-50">
+                  <span className="text-sm text-gray-800 flex-1">
+                    {col.label} {required && <span className="ml-1 text-xs text-blue-600">(Required)</span>}
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    disabled={required}
+                    onChange={() => toggleKey(col.key)}
+                    className="h-4 w-4"
+                  />
+                </label>
+              )
+            })}
+          </div>
+        </form>
+      </Modal>
+    )
+  }
+  //#endregion
+
   //#region VIEW DEPARTMENT DETAILS MODAL COMPONENT
 
   interface ViewDepartmentDetailsModalProps {
@@ -411,7 +526,12 @@ export const DepartmentMaster: React.FC = () => {
                 Department Name
               </span>
               <span className="text-sm text-blue-600 font-medium">
-                {data.DepartmentName || 'N/A'}
+
+                <TooltipText
+                  text={data.DepartmentName || 'N/A'}
+                  maxWidth="250px"
+                  tooltipThreshold={20}
+                />
               </span>
             </div>
 
@@ -421,7 +541,7 @@ export const DepartmentMaster: React.FC = () => {
               <span className="text-sm font-medium text-gray-700">Number of Employees</span>
               <span className="text-sm text-blue-600 font-medium">
                 <TooltipText
-                  text={data.NumberOfEmployee.toString()}
+                  text={data.NumberOfEmployee}
                   maxWidth="170px"
                   tooltipThreshold={15}
                   tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 overflow-hidden text-ellipsis whitespace-nowrap'
@@ -841,6 +961,21 @@ export const DepartmentMaster: React.FC = () => {
             {/* ACTION BUTTON */}
 
             <div className="flex items-center space-x-1">
+
+              {/* CUSTOMIZE TABLE BUTTON */}
+
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setIsShowCustomizeDepartmentMasterColumnsModal(true)
+                }}
+                className="px-3 py-2 mr-2 border border-gray-300 text-blue-600 bg-white hover:bg-gray-50 rounded-md"
+                title="Customize Table"
+              >
+                Customize Table
+              </button>
+
               {/* Add Button */}
               <button
                 onClick={(e) => {
@@ -948,7 +1083,7 @@ export const DepartmentMaster: React.FC = () => {
         {/* DATA TABLE DEPARTMENT */}
         <DataTable
           data={departmentMasterList}
-          columns={departmentMasterColumns}
+          columns={visibleDepartmentMasterColumns}
           pagination={departmentMasterPaginationInfo}
           emptyMessage="No departments found"
           fixedHeight={true}
@@ -978,6 +1113,31 @@ export const DepartmentMaster: React.FC = () => {
           onSubmit={handleAddUpdateDepartmentMaster}
           data={editingDepartmentMasterData}
           loading={isLoading}
+        />
+
+        {/* CUSTOMIZE COLUMNS MODAL */}
+        <CustomizeDepartmentMasterColumnsModal
+          isOpen={isShowCustomizeDepartmentMasterColumnsModal}
+          onClose={() => setIsShowCustomizeDepartmentMasterColumnsModal(false)}
+          onApply={(keys) => {
+
+            const withRequired = Array.from(new Set([...keys, ...requiredDepartmentMasterColumnKeys]));
+
+            setSelectedDepartmentMasterColumnKeys(withRequired);
+
+            try {
+              localStorage.setItem('departmentMaster.selectedColumns', JSON.stringify(withRequired))
+            }
+            catch {
+
+            }
+          }}
+
+          columns={departmentMasterColumns}
+
+          selectedKeys={selectedDepartmentMasterColumnKeys}
+
+          requiredKeys={requiredDepartmentMasterColumnKeys}
         />
 
         {/* FILTER DEPARTMENT MODAL */}

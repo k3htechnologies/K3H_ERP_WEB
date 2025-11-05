@@ -1,18 +1,19 @@
-import type { ApiResponse } from '../../../core/api/ApiResponse'
 import baseClient from '../../../core/config/baseClient'
 import { DepartmentMasterApi } from '../api/DepartmentMasterApi'
 import type {
     FilterWithPaginationDepartmentMasterRequest,
     AddUpdateDepartmentMasterRequest,
     DeleteDepartmentMasterRequest,
-    DepartmentMasterData
-} from '../models/DepartmentMasterModel'
+    DepartmentMasterListResponse,
+    DepartmentMasterSaveResponse,
+    DepartmentMasterDeleteResponse
+} from '@/features/departmentMaster/models/DepartmentMasterModel'
 
 export abstract class DepartmentMasterDatasource {
 
-    abstract pullDepartmentMaster(params: FilterWithPaginationDepartmentMasterRequest): Promise<ApiResponse<DepartmentMasterData>>;
-    abstract addUpdateDepartmentMaster(data: AddUpdateDepartmentMasterRequest): Promise<ApiResponse<DepartmentMasterData>>;
-    abstract deleteDepartmentMaster(params: DeleteDepartmentMasterRequest): Promise<ApiResponse<number>>;
+    abstract pullDepartmentMaster(params: FilterWithPaginationDepartmentMasterRequest): Promise<DepartmentMasterListResponse>;
+    abstract addUpdateDepartmentMaster(data: AddUpdateDepartmentMasterRequest): Promise<DepartmentMasterSaveResponse>;
+    abstract deleteDepartmentMaster(params: DeleteDepartmentMasterRequest): Promise<DepartmentMasterDeleteResponse>;
 }
 
 export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasource {
@@ -21,7 +22,7 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
     }
 
 
-    async pullDepartmentMaster(params: FilterWithPaginationDepartmentMasterRequest): Promise<ApiResponse<DepartmentMasterData>> {
+    async pullDepartmentMaster(params: FilterWithPaginationDepartmentMasterRequest): Promise<DepartmentMasterListResponse> {
         try {
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
@@ -29,8 +30,8 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
                 IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
             })
 
+            if (params.DepartmentMasterId) queryParams.append('DepartmentMasterId', params.DepartmentMasterId.toString());
             if (params.DepartmentName?.trim()) queryParams.append('DepartmentName', params.DepartmentName.trim());
-            if (params.DepartmentCode?.trim()) queryParams.append('DepartmentCode', params.DepartmentCode.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
@@ -38,7 +39,7 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
                 `${DepartmentMasterApi.PULL}?${queryParams.toString()}`
             )
 
-            return response as ApiResponse<DepartmentMasterData>
+            return response ;
         } catch (error) {
 
             console.error('Error: Pull Department Master:', error);
@@ -46,7 +47,7 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
         }
     }
 
-    async addUpdateDepartmentMaster(data: AddUpdateDepartmentMasterRequest): Promise<ApiResponse<DepartmentMasterData>> {
+    async addUpdateDepartmentMaster(data: AddUpdateDepartmentMasterRequest): Promise<DepartmentMasterSaveResponse> {
 
         try {
 
@@ -62,14 +63,14 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
                 payLoad
             )
 
-            return response as ApiResponse<DepartmentMasterData>
+            return response
         } catch (error) {
             console.error('Error: Add Update Department Master:', error)
             throw error
         }
     }
 
-    async deleteDepartmentMaster(params: DeleteDepartmentMasterRequest): Promise<ApiResponse<number>> {
+    async deleteDepartmentMaster(params: DeleteDepartmentMasterRequest): Promise<DepartmentMasterDeleteResponse> {
         try {
             const queryParams = new URLSearchParams({
                 DepartmentMasterId: (params.DepartmentMasterId ?? 0).toString(),
@@ -80,7 +81,7 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
                 `${DepartmentMasterApi.DELETE}?${queryParams.toString()}`
             )
 
-            return response as ApiResponse<number>;
+            return response
 
         } catch (error) {
 

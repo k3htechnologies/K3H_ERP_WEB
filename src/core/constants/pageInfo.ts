@@ -10,6 +10,16 @@ export const getPageInfo = (path: string) => {
                 title: 'Settings - Company setup (Department)',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
+        case '/designationMaster':
+            return {
+                title: 'Settings - Company setup (Designation)',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+        case '/employeeMaster':
+            return {
+                title: 'Settings - Company setup (Employee)',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
         // ✅ Add other cases here...
         default:
             return {

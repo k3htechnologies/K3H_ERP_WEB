@@ -104,7 +104,7 @@ export const Layout: React.FC = () => {
                 />
 
                 {/* Main content */}
-                <main className="flex-1 overflow-y-auto p-4 lg:p-6 bg-gray-50">
+                <main className="flex-1 overflow-y-auto p-4 lg:p-3 bg-gray-50">
                     {/* Selected module info */}
                     {selectedModule && (
                         <div className="mb-4 lg:mb-6 p-3 lg:p-4 bg-white rounded-lg shadow-sm border border-gray-200">

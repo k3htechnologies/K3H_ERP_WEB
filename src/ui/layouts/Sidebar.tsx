@@ -1,13 +1,14 @@
 import React, { useState, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { 
-  Home, 
+import {
+  Home,
   ChevronRight,
   ChevronDown,
   X,
   LogOut
 } from 'lucide-react'
-import type {  ModuleData, SubModuleData, SubSubModuleData } from '../../features/menu/models/MenuModel'
+import type { ModuleData, SubModuleData, SubSubModuleData } from '../../features/menu/models/MenuModel'
+import { mapPathToRoute } from '../../core/utils/pathMapper';
 
 interface SidebarProps {
   isOpen: boolean
@@ -50,14 +51,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // Function to find the active menu item based on current path
   const findActiveMenuItem = (currentPath: string) => {
     if (!modules || modules.length === 0) return null
-    
+
     for (const module of modules) {
       if (!module.SubModuleData || module.SubModuleData.length === 0) continue
-      
+
       for (const subModule of module.SubModuleData) {
         if (subModule.SubSubModuleData && subModule.SubSubModuleData.length > 0) {
           for (const subSubModule of subModule.SubSubModuleData) {
-            if (mapApiPathToRoute(subSubModule.Path) === currentPath) {
+            if (mapPathToRoute(subSubModule.Path) === currentPath) {
               return {
                 module,
                 subModule,
@@ -66,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }
           }
         }
-        if (mapApiPathToRoute(subModule.Path) === currentPath) {
+        if (mapPathToRoute(subModule.Path) === currentPath) {
           return {
             module,
             subModule,
@@ -83,17 +84,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const activeMenuItem = findActiveMenuItem(location.pathname)
     if (activeMenuItem) {
       const newExpanded = new Set<string>()
-      
+
       // Always expand the module
       if (activeMenuItem.module) {
         newExpanded.add(`module-${activeMenuItem.module.ModulesMasterId}`)
       }
-      
+
       // Expand submodule if it exists
       if (activeMenuItem.subModule) {
         newExpanded.add(`submodule-${activeMenuItem.subModule.SubModulesMasterId}`)
       }
-      
+
       setExpandedItems(newExpanded)
     }
   }, [location.pathname, modules])
@@ -103,24 +104,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setImageErrors(prev => new Set(prev).add(iconPath))
   }, [])
 
-  // Function to map API paths to actual routes (case-insensitive)
-  const mapApiPathToRoute = (apiPath: string): string => {
-    const normalized = (apiPath || '')
-    const pathMappings: Record<string, string> = {
-      '/departmentmaster': '/departmentMaster',
-      '/designationmaster': '/designationMaster',
-      '/employeemaster': '/employeeMaster'
-    }
-    return pathMappings[normalized] || normalized
-  }
+
 
   // Function to render icon from API response
   const renderIcon = (iconPath: string, fallbackIcon: React.ReactNode, size: string = "h-5 w-5") => {
     if (iconPath && iconPath.startsWith('assets/') && !imageErrors.has(iconPath)) {
       return (
-        <img 
-          src={`/${iconPath}`} 
-          alt="icon" 
+        <img
+          src={`/${iconPath}`}
+          alt="icon"
           className={`${size} object-contain`}
           onError={() => handleImageError(iconPath)}
         />
@@ -147,18 +139,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         id: `submodule-${subModule.SubModulesMasterId}`,
         label: subModule.SubModuleName,
         icon: renderIcon(subModule.Icon, <Home className="h-4 w-4" />, "h-4 w-4"),
-        path: mapApiPathToRoute(subModule.Path),
+        path: mapPathToRoute(subModule.Path),
         children: (subModule.SubSubModuleData || [])
           .filter(subSubModule => subSubModule?.IsDisplay)
           .map(subSubModule => ({
             id: `subsubmodule-${subSubModule.SubSubModulesMasterId}`,
             label: subSubModule.SubSubModuleName,
             icon: renderIcon(subSubModule.Icon, <Home className="h-4 w-4" />, "h-4 w-4"),
-            path: mapApiPathToRoute(subSubModule.Path)
+            path: mapPathToRoute(subSubModule.Path)
           }))
       }))
     })),
-    
+
   ]
 
   const toggleExpanded = (itemId: string) => {
@@ -178,7 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       // Handle navigation for items with paths
       if (item.path) {
         // Map API paths to actual routes
-        const route = mapApiPathToRoute(item.path)
+        const route = mapPathToRoute(item.path)
         navigate(route)
         // Close sidebar on mobile after navigation
         if (window.innerWidth < 1024) {
@@ -192,7 +184,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }
       } else if (item.id.startsWith('submodule-')) {
         const subModuleId = parseInt(item.id.replace('submodule-', ''))
-        const module = modules.find(m => 
+        const module = modules.find(m =>
           m.SubModuleData.some(sm => sm.SubModulesMasterId === subModuleId)
         )
         if (module) {
@@ -203,13 +195,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }
       } else if (item.id.startsWith('subsubmodule-')) {
         const subSubModuleId = parseInt(item.id.replace('subsubmodule-', ''))
-        const module = modules.find(m => 
-          m.SubModuleData.some(sm => 
+        const module = modules.find(m =>
+          m.SubModuleData.some(sm =>
             sm.SubSubModuleData.some(ssm => ssm.SubSubModulesMasterId === subSubModuleId)
           )
         )
         if (module) {
-          const subModule = module.SubModuleData.find(sm => 
+          const subModule = module.SubModuleData.find(sm =>
             sm.SubSubModuleData.some(ssm => ssm.SubSubModulesMasterId === subSubModuleId)
           )
           if (subModule) {
@@ -229,33 +221,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const isModule = item.id.startsWith('module-')
     const isSubModule = item.id.startsWith('submodule-')
     const isSubSubModule = item.id.startsWith('subsubmodule-')
-    
+
     // Check if current page is active based on location
     const isCurrentPage = item.path && location.pathname === item.path
-    
+
     // Find the active menu item based on current path
     const activeMenuItem = findActiveMenuItem(location.pathname)
-    
+
     // Check if this item is part of the active path dynamically
     const isInActivePath = activeMenuItem && (
       (isModule && activeMenuItem.module && item.id === `module-${activeMenuItem.module.ModulesMasterId}`) ||
       (isSubModule && activeMenuItem.subModule && item.id === `submodule-${activeMenuItem.subModule.SubModulesMasterId}`) ||
       (isSubSubModule && activeMenuItem.subSubModule && item.id === `subsubmodule-${activeMenuItem.subSubModule.SubSubModulesMasterId}`)
     )
-    
+
     // Check if any parent is selected to color all levels
     const isParentSelected = selectedModule && (
       (isModule && item.id === `module-${selectedModule.ModulesMasterId}`) ||
       (isSubModule && selectedModule.ModulesMasterId) ||
       (isSubSubModule && selectedModule.ModulesMasterId)
     )
-    
+
     const isSelected = isCurrentPage || isInActivePath || (
-      (isModule && selectedModule && 
+      (isModule && selectedModule &&
         item.id === `module-${selectedModule.ModulesMasterId}`) ||
-      (isSubModule && selectedSubModule && 
+      (isSubModule && selectedSubModule &&
         item.id === `submodule-${selectedSubModule.SubModulesMasterId}`) ||
-      (isSubSubModule && selectedSubSubModule && 
+      (isSubSubModule && selectedSubSubModule &&
         item.id === `subsubmodule-${selectedSubSubModule.SubSubModulesMasterId}`)
     )
 
@@ -266,8 +258,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           container: 'relative',
           button: `
             w-full flex items-center space-x-3 px-4 py-2 rounded-md transition-all duration-200
-            ${isSelected 
-              ? 'text-blue-800 font-semibold' 
+            ${isSelected
+              ? 'text-blue-800 font-semibold'
               : 'text-gray-800 hover:bg-gray-100 active:bg-gray-200 font-medium'
             }
             ${!isOpen ? 'justify-center' : ''}
@@ -282,14 +274,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           container: 'relative ml-6 border-l-2 border-gray-300 pl-4',
           button: `
             w-full flex items-center space-x-3 px-3 py-2.5 rounded-md transition-all duration-200
-            ${isCurrentPage 
-              ? 'text-blue-800 font-semibold' 
-              : isInActivePath 
-                ? 'text-blue-700 font-medium' 
-                : isParentSelected 
-                  ? 'text-blue-700' 
-                  : isSelected 
-                    ? 'text-blue-700' 
+            ${isCurrentPage
+              ? 'text-blue-800 font-semibold'
+              : isInActivePath
+                ? 'text-blue-700 font-medium'
+                : isParentSelected
+                  ? 'text-blue-700'
+                  : isSelected
+                    ? 'text-blue-700'
                     : 'text-gray-600 hover:bg-gray-100 active:bg-gray-200'
             }
             touch-manipulation
@@ -300,17 +292,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }
       } else {
         return {
-          container: 'relative ml-8 border-l-2 border-gray-200 pl-4',
+          container: `${item.path?.toUpperCase() === '/DASHBOARD'
+              ? 'relative border-gray-200'
+              : 'relative ml-8 border-l-2 border-gray-200 pl-4'
+            }`,
           button: `
             w-full flex items-center space-x-3 px-3 py-2 rounded-md transition-all duration-200
-            ${isCurrentPage 
-              ? 'text-blue-800 font-semibold' 
-              : isInActivePath 
-                ? 'text-blue-600 font-medium' 
-                : isParentSelected 
-                  ? 'text-blue-600' 
-                  : isSelected 
-                    ? 'text-blue-600' 
+            ${isCurrentPage
+              ? 'text-blue-800 font-semibold'
+              : isInActivePath
+                ? 'text-blue-600 font-medium'
+                : isParentSelected
+                  ? 'text-blue-600'
+                  : isSelected
+                    ? 'text-blue-600'
                     : 'text-gray-500 hover:bg-gray-100 active:bg-gray-200'
             }
             touch-manipulation
@@ -336,7 +331,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {item.icon}
             </div>
           </div>
-          
+
           {isOpen && (
             <>
               <span className={`flex-1 text-left ${styles.text}`}>
@@ -377,12 +372,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <>
       {/* Mobile Overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={onClose}
         />
       )}
-      
+
       {/* Sidebar */}
       <aside className={`
         bg-white shadow-lg border-r border-gray-200 transition-all duration-300 ease-in-out
@@ -391,128 +386,128 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ${isOpen ? 'w-[18rem]' : 'w-16'}
         h-screen lg:h-full overflow-hidden flex flex-col z-50
       `}>
-      {/* Fixed Header with Logo and User Details */}
-      <div className="flex-shrink-0 border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between h-16 px-4">
-          {isOpen ? (
-            <div className="flex items-center space-x-3 flex-1">
-              <img 
-                src="/src/assets/images/appLogo.png" 
-                alt="K3H ERP" 
-                className="h-8 w-8 flex-shrink-0"
-                onError={(e) => {
-                  e.currentTarget.src = '/src/assets/images/appLogo.png'
-                }}
-              />
-              <div className="flex-1 min-w-0">
-                {(() => {
-                  // Get user details from localStorage
-                  const userData = localStorage.getItem('employee_data')
-                  let userDetails = {
-                    name: '',
-                    designation: '',
-                    department: '',
-                    mobileNumber: ''
-                  }
-                  
-                  if (userData) {
-                    try {
-                      const parsedData = JSON.parse(userData)
-                      userDetails = {
-                        name: parsedData.FullName || 'User',
-                        designation: parsedData.Designation || 'Employee',
-                        department: parsedData.Department || 'General',
-                        mobileNumber: parsedData.PersonalMobileNumber || '0000000000'
-                      }
-                    } catch (error) {
-                      console.error('Error parsing user details:', error)
+        {/* Fixed Header with Logo and User Details */}
+        <div className="flex-shrink-0 border-b border-gray-200 bg-white">
+          <div className="flex items-center justify-between h-16 px-4">
+            {isOpen ? (
+              <div className="flex items-center space-x-3 flex-1">
+                <img
+                  src="/src/assets/images/appLogo.png"
+                  alt="K3H ERP"
+                  className="h-8 w-8 flex-shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.src = '/src/assets/images/appLogo.png'
+                  }}
+                />
+                <div className="flex-1 min-w-0">
+                  {(() => {
+                    // Get user details from localStorage
+                    const userData = localStorage.getItem('employee_data')
+                    let userDetails = {
+                      name: '',
+                      designation: '',
+                      department: '',
+                      mobileNumber: ''
                     }
-                  }
-                  
-                  return (
-                    <>
-                      <div className="text-sm font-medium text-gray-800 truncate">{userDetails.name}</div>
-                      <div className="text-xs text-gray-600 truncate">{userDetails.designation} • {userDetails.department}</div>
-                      <div className="text-xs text-gray-500 truncate">{userDetails.mobileNumber}</div>
-                    </>
-                  )
-                })()}
+
+                    if (userData) {
+                      try {
+                        const parsedData = JSON.parse(userData)
+                        userDetails = {
+                          name: parsedData.FullName || 'User',
+                          designation: parsedData.Designation || 'Employee',
+                          department: parsedData.Department || 'General',
+                          mobileNumber: parsedData.PersonalMobileNumber || '0000000000'
+                        }
+                      } catch (error) {
+                        console.error('Error parsing user details:', error)
+                      }
+                    }
+
+                    return (
+                      <>
+                        <div className="text-sm font-medium text-gray-800 truncate">{userDetails.name}</div>
+                        <div className="text-xs text-gray-600 truncate">{userDetails.designation} • {userDetails.department}</div>
+                        <div className="text-xs text-gray-500 truncate">{userDetails.mobileNumber}</div>
+                      </>
+                    )
+                  })()}
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center w-full">
-              <img 
-                src="/src/assets/images/appLogo.png" 
-                alt="K3H" 
-                className="h-8 w-8"
-                onError={(e) => {
-                  e.currentTarget.src = '/src/assets/images/appLogo.png'
-                }}
-              />
-            </div>
-          )}
-          
-          {/* Mobile Close Button */}
-          {isOpen && (
-            <button
-              onClick={onClose}
-              className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors duration-200 flex-shrink-0"
-              aria-label="Close sidebar"
-            >
-              <X className="h-5 w-5 text-gray-600" />
-            </button>
-          )}
-        </div>
-      </div>
+            ) : (
+              <div className="flex items-center justify-center w-full">
+                <img
+                  src="/src/assets/images/appLogo.png"
+                  alt="K3H"
+                  className="h-8 w-8"
+                  onError={(e) => {
+                    e.currentTarget.src = '/src/assets/images/appLogo.png'
+                  }}
+                />
+              </div>
+            )}
 
-
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto min-h-0 flex flex-col">
-        <nav className="space-y-1 px-4 py-4 flex-1 flex flex-col">
-          <div className="space-y-0">
-            {menuItems.map(item => renderMenuItem(item))}
-          </div>
-          
-          {/* Flexible spacer to push footer down when content is minimal */}
-          <div className="flex-1"></div>
-        </nav>
-      </div>
-
-      {/* Fixed Footer */}
-      <div className="flex-shrink-0 border-t border-gray-200 bg-white">
-        <div className="p-4">
-          {isOpen ? (
-            <div className="space-y-3">
+            {/* Mobile Close Button */}
+            {isOpen && (
               <button
-                onClick={onLogout}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-md transition-colors duration-200 touch-manipulation"
-                aria-label="Logout"
+                onClick={onClose}
+                className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors duration-200 flex-shrink-0"
+                aria-label="Close sidebar"
               >
-                <LogOut className="h-4 w-4" />
-                <span className="text-sm font-medium">Logout</span>
+                <X className="h-5 w-5 text-gray-600" />
               </button>
-              <div className="text-center">
+            )}
+          </div>
+        </div>
+
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto min-h-0 flex flex-col">
+          <nav className="space-y-1 px-4 py-4 flex-1 flex flex-col">
+            <div className="space-y-0">
+              {menuItems.map(item => renderMenuItem(item))}
+            </div>
+
+            {/* Flexible spacer to push footer down when content is minimal */}
+            <div className="flex-1"></div>
+          </nav>
+        </div>
+
+        {/* Fixed Footer */}
+        <div className="flex-shrink-0 border-t border-gray-200 bg-white">
+          <div className="p-4">
+            {isOpen ? (
+              <div className="space-y-3">
+                <button
+                  onClick={onLogout}
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-md transition-colors duration-200 touch-manipulation"
+                  aria-label="Logout"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="text-sm font-medium">Logout</span>
+                </button>
+                <div className="text-center">
+                  <p className="text-xs text-gray-400">
+                    Version 1.0.0
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center space-y-2">
+                <button
+                  onClick={onLogout}
+                  className="h-8 w-8 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded flex items-center justify-center transition-colors duration-200 touch-manipulation"
+                  aria-label="Logout"
+                >
+                  <LogOut className="h-4 w-4 text-white" />
+                </button>
                 <p className="text-xs text-gray-400">
-                  Version 1.0.0
+                  v1.0.0
                 </p>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center space-y-2">
-              <button
-                onClick={onLogout}
-                className="h-8 w-8 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded flex items-center justify-center transition-colors duration-200 touch-manipulation"
-                aria-label="Logout"
-              >
-                <LogOut className="h-4 w-4 text-white" />
-              </button>
-              <p className="text-xs text-gray-400">
-                v1.0.0
-              </p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
       </aside>
     </>
   )

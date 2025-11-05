@@ -20,8 +20,10 @@ export const runApiWithLoader = async <T>(
         const result = await apiCall();
 
         if ((result as any)?.status === 'warning' && onWarning) {
+
             onWarning(result);
-            return result
+
+            return result;
         }
 
         onSuccess?.(result);

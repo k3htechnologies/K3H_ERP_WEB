@@ -1,12 +1,12 @@
 import type { ApiResponse } from '../../../core/api/ApiResponse'
 import baseClient from '../../../core/config/baseClient'
 import { AuthenticationApi } from '../api/AuthenticationApi'
-import type { EmployeeData } from '../models/AuthenticationModel'
+import type { AuthenticationResponse } from '../models/AuthenticationModel'
 
 export abstract class AuthenticationDatasource {
 
     abstract isValidMobileNumber(mobileNumber: string): Promise<ApiResponse<string>>;
-    abstract isValidOTP(mobileNumber: string, otp: string): Promise<ApiResponse<EmployeeData>>;
+    abstract isValidOTP(mobileNumber: string, otp: string): Promise<AuthenticationResponse>;
 }
 
 export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
@@ -31,7 +31,7 @@ export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
         }
     }
 
-    async isValidOTP(mobileNumber: string, otp: string): Promise<ApiResponse<EmployeeData>> {
+    async isValidOTP(mobileNumber: string, otp: string): Promise<AuthenticationResponse> {
         try {
             const queryParams = new URLSearchParams({
                 MobileNumber: mobileNumber.trim() ?? '',
@@ -42,7 +42,7 @@ export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
                 `${AuthenticationApi.ValidateOTP}?${queryParams.toString()}`
             );
 
-            return response as ApiResponse<EmployeeData>;
+            return response;
         } catch (error) {
 
             throw error

@@ -14,14 +14,16 @@ export function SignIn() {
     const [mobileNumber, setMobileNumber] = useState('')
     const [otp, setOtp] = useState('')
     const [step, setStep] = useState<'mobile' | 'otp'>('mobile')
-    const [loading, setLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setIsLoadingMessage] = useState('');
     const [verified, setVerified] = useState(false)
     const { toasts, removeToast, showSuccess, showError, addToast } = useToast()
 
     // ✅ Send OTP
     const handleSendOTP = async () => {
         await runApiWithLoader(
-            setLoading,
+            setIsLoading,
+            setIsLoadingMessage,
             async () => {
 
                 if (mobileNumber.length !== 10) {
@@ -52,7 +54,9 @@ export function SignIn() {
             undefined,
             (error: any) => {
                 addToast({ type: 'error', title: error.message })
-            }
+            },
+             undefined,
+            'Send OTP...'
         ) // ✅ Properly closed
     }
 
@@ -60,7 +64,8 @@ export function SignIn() {
     // ✅ Verify OTP
     const handleVerifyOTP = async () => {
         await runApiWithLoader(
-            setLoading,
+            setIsLoading,
+            setIsLoadingMessage,
             async () => {
 
                 if (otp.length !== 4) {
@@ -96,7 +101,9 @@ export function SignIn() {
             (error: any) => {
 
                 addToast({ type: 'error', title: error.message });
-            }
+            },
+             undefined,
+            'Verify OTP...'
         ) // ✅ Properly closed
     }
 
@@ -104,8 +111,8 @@ export function SignIn() {
     const handleResendOTP = async () => {
 
         await runApiWithLoader(
-            setLoading,
-
+            setIsLoading,
+            setIsLoadingMessage,
             async () => {
 
 
@@ -128,7 +135,10 @@ export function SignIn() {
             (error: any) => {
 
                 addToast({ type: 'error', title: error.message });
-            }
+            },
+
+            undefined,
+            'Resend OTP...'
         )
     }
 
@@ -194,8 +204,8 @@ export function SignIn() {
                             <Button
                                 onClick={handleSendOTP}
                                 type="submit"
-                                disabled={loading || mobileNumber.length !== 10}
-                                loading={loading}
+                                disabled={isLoading || mobileNumber.length !== 10}
+                                loading={isLoading}
                                 loadingText="Sending..."
                                 size="lg"
                                 variant="solid"
@@ -232,8 +242,8 @@ export function SignIn() {
                             <Button
                                 onClick={handleVerifyOTP}
                                 type="submit"
-                                disabled={loading || verified || otp.length !== 4}
-                                loading={loading}
+                                disabled={isLoading || verified || otp.length !== 4}
+                                loading={isLoading}
                                 loadingText="Verifying..."
                                 size="lg"
                                 variant="solid"
@@ -250,7 +260,7 @@ export function SignIn() {
                                 </p>
                                 <Button
                                     onClick={handleResendOTP}
-                                    disabled={loading}
+                                    disabled={isLoading}
                                     variant="link"
                                     color="primary"
                                     size="sm"

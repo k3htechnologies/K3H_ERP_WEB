@@ -3,7 +3,7 @@ import type { ApiResponse } from '../../../core/api/ApiResponse';
 import type { Failure } from '../../../core/api/FailureResponse';
 import { AuthenticationDatasourceImpl } from '../datasources/AuthenticationDatasource';
 import * as E from 'fp-ts/Either';
-import type { EmployeeData } from '../models/AuthenticationModel';
+import type { AuthenticationResponse } from '../models/AuthenticationModel';
 
 const authenticationDatasource = new AuthenticationDatasourceImpl();
 
@@ -21,7 +21,7 @@ export const authenticationService = {
         }
     },
 
-    apicallIsValidOTP: async (mobileNumber: string, otp: string): Promise<E.Either<Failure, ApiResponse<EmployeeData>>> => {
+    apicallIsValidOTP: async (mobileNumber: string, otp: string): Promise<E.Either<Failure, AuthenticationResponse>> => {
         try {
 
             return E.right(await authenticationDatasource.isValidOTP(mobileNumber, otp));

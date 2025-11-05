@@ -15,11 +15,12 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { Download, Edit, FileSpreadsheet, FileText, Filter, Plus, Search, Trash2, Upload, X } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
+import { Modal } from '@/ui/components/Modal/Modal';
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 
 export const DepartmentMaster: React.FC = () => {
-  // ============================================================================
-  // STATE MANAGEMENT
+  //#region STATE MANAGEMENT
   const [departmentMasterList, setDepartmentMasterList] = useState<DepartmentMasterData[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -27,9 +28,9 @@ export const DepartmentMaster: React.FC = () => {
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
-  // Filter and Sort States
+  //TABLE SORT INFO
+
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-  const [filters, setFilters] = useState<FilterInfo>({});
 
   // TOAST
   const { toasts, removeToast, addToast } = useToast()
@@ -38,24 +39,25 @@ export const DepartmentMaster: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<DepartmentMasterData[]>([]);
 
-  //END STATE MANAGEMENT
-  // ============================================================================
+  //MODAL STATES
+  const [ViewDepartmentDetailsData, setViewDepartmentDetailsData] = useState<DepartmentMasterData | null>(null)
+  const [modalOpen, setModalOpen] = useState(false);
 
-  // ============================================================================
-  // INITIALIZATION
-  // ============================================================================
+  //FILTER STATES
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [filters, setFilters] = useState<FilterInfo>({});
+  const [tempFilters, setTempFilters] = useState<FilterInfo>({})
+
+  //#endregion
+
+  //#region INITIALIZATION
 
   useEffect(() => {
     fetchDepartmentList()
   }, [])
-  // ============================================================================
-  // END INITIALIZATION
-  // ============================================================================
+  //#endregion
 
-
-  // ============================================================================
-  // DATA LOADING
-  // ============================================================================
+  //#region DATA LOADING
 
   const fetchDepartmentList = async (page: number = pagination.currentPage) => {
     return loadDepartments(page, filters)
@@ -196,14 +198,9 @@ export const DepartmentMaster: React.FC = () => {
 
   //END API | SERVICES CALL TO GET DEPARTMENT
 
+  //#endregion
 
-  // ============================================================================
-  // END DATA LOADING
-  // ============================================================================
-
-  // ============================================================================
-  // TABLE CONFIGURATION
-  // ============================================================================
+  //#region TABLE CONFIGURATION
 
   const handlePageChange = (page: number) => {
 
@@ -240,7 +237,7 @@ export const DepartmentMaster: React.FC = () => {
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              // handleViewDetails(row)
+              handleViewepartmentDetails(row)
             }}
             className="flex-1 text-left text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors duration-200"
             title="Click to view department details"
@@ -339,21 +336,201 @@ export const DepartmentMaster: React.FC = () => {
       align: 'center',
       render: (value) => value || 'N/A'
     },
-    // {
-    //   key: 'CreatedDate',
-    //   label: 'Last Modified Date',
-    //   width: '33',
-    //   sortable: true,
-    //   align: 'center',
-    //   render: (value) => value ? formatDateToReadable(value) : '-'
-    // }
+    {
+      key: 'CreatedDate',
+      label: 'Last Modified Date',
+      width: '33',
+      sortable: true,
+      align: 'center',
+      render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+    }
   ]
 
-  // ============================================================================
-  // END TABLE CONFIGURATION
-  // ============================================================================
+  //#endregion
+
+  //#region VIEW DEPARTMENT DETAILS MODAL COMPONENT
+
+  interface ViewDepartmentDetailsModalProps {
+    isOpen: boolean
+    onClose: () => void
+    data: DepartmentMasterData | null
+  }
+
+  const ViewDepartmentDetailsModal: React.FC<ViewDepartmentDetailsModalProps> = ({
+    isOpen,
+    onClose,
+    data
+  }) => {
+    if (!data) return null
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Settings - Company setup (Department Details)"
+        onSubmit={(e) => {
+          e.preventDefault()
+          onClose()
+        }}
+        saveText="Close"
+        loading={false}
+      >
+        <div className="space-y-6">
+          {/* Department Information */}
+          <div className="space-y-4">
+
+            {/* Department Code */}
+            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+              <span className="text-sm font-medium text-gray-700">
+                Department Code
+              </span>
+              <span className="text-sm text-blue-600 font-medium">
+                <TooltipText
+                  text={data.DepartmentCode || 'N/A'}
+                  maxWidth="170px"
+                  tooltipThreshold={15}
+                  tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
+                />
+              </span>
+            </div>
 
 
+            {/* Department Name */}
+            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+              <span className="text-sm font-medium text-gray-700">
+                Department Name
+              </span>
+              <span className="text-sm text-blue-600 font-medium">
+                {data.DepartmentName || 'N/A'}
+              </span>
+            </div>
+
+
+            {/* Number of Employees */}
+            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+              <span className="text-sm font-medium text-gray-700">Number of Employees</span>
+              <span className="text-sm text-blue-600 font-medium">
+                <TooltipText
+                  text={data.NumberOfEmployee.toString()}
+                  maxWidth="170px"
+                  tooltipThreshold={15}
+                  tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 overflow-hidden text-ellipsis whitespace-nowrap'
+                />
+
+              </span>
+            </div>
+
+          </div>
+          {/* Action Details Header */}
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Created By</span>
+                  <span className="text-sm text-blue-600 font-medium">
+                    {data.CreatedBy || 'N/A'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Created Date</span>
+                  <span className="text-sm text-blue-600 font-medium">
+                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
+                  </span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {data.ModifiedBy && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-600">Modified By</span>
+                    <span className="text-sm text-blue-600 font-medium">
+                      {data.ModifiedBy}
+                    </span>
+                  </div>
+                )}
+                {data.ModifiedDate && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-600">Modified Date</span>
+                    <span className="text-sm text-blue-600 font-medium">
+                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+      </Modal>
+    )
+  }
+
+  const handleViewepartmentDetails = (row: DepartmentMasterData) => {
+    setViewDepartmentDetailsData(row)
+    setModalOpen(true)
+  }
+  //#endregion
+
+  //#region FILTER MODAL
+  <Modal
+    isOpen={showFilterPopup}
+    onClose={() => setShowFilterPopup(false)}
+    title="Filter - Department Master"
+    onSubmit={(e) => {
+      e.preventDefault()
+      applyFilters()
+    }}
+    saveText="Apply Filter"
+    cancelText="Clear Filter"
+    onCancel={() => clearFilters()}
+    size="half-screen"
+  >
+    <form onSubmit={(e) => {
+      e.preventDefault()
+      applyFilters()
+    }} className="space-y-6">
+      <div className="space-y-4">
+        {/* Department Name Field */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Department Name
+          </label>
+          <input
+            type="text"
+            value={tempFilters.DepartmentName || ''}
+            onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter department name"
+          />
+        </div>
+      </div>
+    </form>
+  </Modal>
+
+  const applyFilters = () => {
+    setFilters(tempFilters)
+    loadDepartments(1, tempFilters)
+    setShowFilterPopup(false)
+  }
+
+  const clearFilters = () => {
+    setTempFilters({})
+    setFilters({})
+    loadDepartments(1, {})
+    setShowFilterPopup(false)
+  }
+
+  const handleFilterChange = (key: string, value: string) => {
+    const newFilters = { ...tempFilters }
+    if (value.trim()) {
+      newFilters[key] = value.trim()
+    } else {
+      delete newFilters[key]
+    }
+    setTempFilters(newFilters)
+  }
+  //#endregion
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
@@ -362,6 +539,7 @@ export const DepartmentMaster: React.FC = () => {
         {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
+
         <Loader loading={loading} title={loadingMessage}>  <div></div> </Loader>
 
         {/* ============================================================================
@@ -412,10 +590,10 @@ export const DepartmentMaster: React.FC = () => {
               {/* FILTER BUTTON */}
               <button
                 onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  // setTempFilters(filters)
-                  // setShowFilterPopup(true)
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setTempFilters(filters);
+                  setShowFilterPopup(true);
                 }}
                 className={`flex items-center p-2 rounded-md transition-colors relative ${Object.keys(filters).length > 0
                   ? 'bg-blue-50 text-blue-700 border border-blue-200'
@@ -508,6 +686,15 @@ export const DepartmentMaster: React.FC = () => {
           className="flex-1"
           sortInfo={sortInfo}
           onSort={handleSortColumn}
+        />
+
+        {/* VIEW */}
+        <ViewDepartmentDetailsModal isOpen={modalOpen}
+          onClose={() => {
+            setModalOpen(false)
+            setViewDepartmentDetailsData(null)
+          }}
+          data={ViewDepartmentDetailsData}
         />
       </div>
     </>

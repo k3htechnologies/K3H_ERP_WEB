@@ -41,7 +41,7 @@ export const Modal: React.FC<ModalProps> = ({
     // Half-screen modal layout
     if (size === 'half-screen') {
         return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
+            <div className="fixed inset-0 bg-opacity-50 z-50">
                 {/* Half-screen modal on the right */}
                 <div className="fixed right-0 top-0 h-full w-1/2 bg-white shadow-2xl flex flex-col">
                     {/* Header */}

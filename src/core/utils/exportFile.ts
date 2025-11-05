@@ -67,7 +67,7 @@ export const handleBase64Export = (
     window.URL.revokeObjectURL(url)
     
     // Show success message
-    addToast({ type: 'success', title: `Exported as ${exportType}` })
+    addToast({ type: 'success', title: `Successfully Exported as ${exportType}` })
     
   } catch (error: any) {
     console.error('Export error:', error)

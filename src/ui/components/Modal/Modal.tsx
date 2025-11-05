@@ -65,7 +65,7 @@ export const Modal: React.FC<ModalProps> = ({
                         </div>
 
                         {/* Footer inside form - Fixed at bottom */}
-                        <div className="flex justify-end items-center h-16 px-6 border-t border-gray-200 bg-white flex-shrink-0 space-x-3">
+                        <div className="flex justify-end items-center h-10 px-6 border-t border-gray-200 bg-white flex-shrink-0 space-x-3">
                             {cancelText && onCancel && (
                                 <button
                                     type="button"

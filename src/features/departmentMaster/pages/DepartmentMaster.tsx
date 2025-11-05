@@ -42,9 +42,9 @@ export const DepartmentMaster: React.FC = () => {
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
 
-  //MODAL STATES
+  //VIEW DEPARTMENT MASTER MODAL STATES
   const [viewDepartmentMasterDetailsData, setViewDepartmentMasterDetailsData] = useState<DepartmentMasterData | null>(null)
-  const [isViewModalOpen, setIsViewisViewModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
@@ -53,7 +53,7 @@ export const DepartmentMaster: React.FC = () => {
 
   // EDIT DEPARTMENT MASTER
   const [editingDepartmentMasterData, setEditingDepartmentMasterData] = useState<DepartmentMasterData | null>(null);
-
+  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
   //DELETE DEPARTMENT MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
@@ -69,7 +69,7 @@ export const DepartmentMaster: React.FC = () => {
   }, [])
   //#endregion
 
-  //#region DATA LOADING
+  //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchDepartmentList = async (page: number = pagination.currentPage) => {
     return loadDepartments(page, filters)
@@ -478,7 +478,7 @@ export const DepartmentMaster: React.FC = () => {
 
   const handleViewDepartmentDetails = (row: DepartmentMasterData) => {
     setViewDepartmentMasterDetailsData(row)
-    setIsViewisViewModalOpen(true)
+    setIsViewModalOpen(true)
   }
   //#endregion
 
@@ -510,7 +510,7 @@ export const DepartmentMaster: React.FC = () => {
   //#region ADD UPDATE EDIT DEPARTMENT MASTER
   const handleAddDepartmentModal = () => {
     setEditingDepartmentMasterData(null)
-    setIsViewisViewModalOpen(true)
+    setIsAddUpdateModalOpen(true)
   }
 
   interface AddUpdateDepartmentModalProps {
@@ -558,6 +558,7 @@ export const DepartmentMaster: React.FC = () => {
     }, [isOpen, data])
 
     const handleSubmitAddUpdateDepartment = (e: React.FormEvent) => {
+
       e.preventDefault()
 
       // Clear previous errors
@@ -600,9 +601,9 @@ export const DepartmentMaster: React.FC = () => {
     }
 
     const handleFieldChange = (field: keyof AddUpdateDepartmentMasterRequest, value: string) => {
+
       setFormData(prev => ({ ...prev, [field]: value }))
 
-      // Clear error while typing
       if (field === 'DepartmentName') {
         setNameError('')
       } else if (field === 'DepartmentCode') {
@@ -621,7 +622,6 @@ export const DepartmentMaster: React.FC = () => {
       >
         <form onSubmit={handleSubmitAddUpdateDepartment} className="space-y-6">
           <div className="space-y-4">
-            {/* Department Code Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Department Code <span className="text-red-500">*</span>
@@ -672,7 +672,7 @@ export const DepartmentMaster: React.FC = () => {
       DepartmentCode: row.DepartmentCode || '',
       DepartmentName: row.DepartmentName || ''
     })
-    setIsViewisViewModalOpen(true);
+    setIsAddUpdateModalOpen(true);
 
   }
 
@@ -686,7 +686,7 @@ export const DepartmentMaster: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          setIsViewisViewModalOpen(false);
+          setIsAddUpdateModalOpen(false);
 
           const isAdd = formData.DepartmentMasterId === 0
 
@@ -719,7 +719,7 @@ export const DepartmentMaster: React.FC = () => {
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
-          setIsViewisViewModalOpen(false);
+          setIsAddUpdateModalOpen(false);
 
           setEditingDepartmentMasterData(null);
 
@@ -816,6 +816,7 @@ export const DepartmentMaster: React.FC = () => {
           <div className="flex items-center space-x-4">
 
             {/* SEARCH BAR */}
+
             <div className="flex-1 relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-4 w-4 text-gray-400" />
@@ -838,6 +839,7 @@ export const DepartmentMaster: React.FC = () => {
             </div>
 
             {/* ACTION BUTTON */}
+
             <div className="flex items-center space-x-1">
               {/* Add Button */}
               <button
@@ -853,6 +855,7 @@ export const DepartmentMaster: React.FC = () => {
               </button>
 
               {/* FILTER BUTTON */}
+
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -876,7 +879,10 @@ export const DepartmentMaster: React.FC = () => {
                 )}
               </button>
 
+
               {/* IMPORT BUTTON */}
+
+
               <button
                 onClick={(e) => {
                   e.preventDefault()
@@ -956,16 +962,17 @@ export const DepartmentMaster: React.FC = () => {
         {/* VIEW DEPARTMENT MODAL */}
         <ViewDepartmentDetailsModal isOpen={isViewModalOpen}
           onClose={() => {
-            setIsViewisViewModalOpen(false)
+            setIsViewModalOpen(false)
             setViewDepartmentMasterDetailsData(null)
           }}
           data={viewDepartmentMasterDetailsData}
         />
+
         {/*  ADD EDIT UPDATE DEPARTMENT MODAL */}
         <AddUpdateDepartmentModal
-          isOpen={isViewModalOpen}
+          isOpen={isAddUpdateModalOpen}
           onClose={() => {
-            setIsViewisViewModalOpen(false)
+            setIsAddUpdateModalOpen(false)
             setEditingDepartmentMasterData(null)
           }}
           onSubmit={handleAddUpdateDepartmentMaster}
@@ -992,7 +999,6 @@ export const DepartmentMaster: React.FC = () => {
             applyFilters()
           }} className="space-y-6">
             <div className="space-y-4">
-              {/* Department Name Field */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Department Name

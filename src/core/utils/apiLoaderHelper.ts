@@ -1,6 +1,7 @@
 /**
  * Runs an API call with automatic loader and status handling.
  * @param setLoading - Function to set loading state
+ * @param setLoadingMessage - Function to set loading message text
  * @param apiCall - The async API function to call
  * @param onSuccess - Optional callback for success response
  * @param onError - Optional callback for error response
@@ -8,13 +9,16 @@
  */
 export const runApiWithLoader = async <T>(
     setLoading: (loading: boolean) => void,
+    setLoadingMessage: (message: string) => void,
     apiCall: () => Promise<T>,
     onSuccess?: (result: T) => void,
     onError?: (error: any) => void,
-    onWarning?: (warning: any) => void
+    onWarning?: (warning: any) => void,
+    loadingMessage: string = 'Please wait...'
 ): Promise<T | null> => {
     try {
 
+        setLoadingMessage(loadingMessage);
         setLoading(true);
 
         const result = await apiCall();
@@ -41,5 +45,7 @@ export const runApiWithLoader = async <T>(
     } finally {
 
         setLoading(false);
+        setLoadingMessage('');
+
     }
 }

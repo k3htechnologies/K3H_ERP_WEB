@@ -14,6 +14,7 @@ import { departmentMasterService } from '@/features/departmentMaster/services/De
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { Download, Edit, FileSpreadsheet, FileText, Filter, Plus, Search, Trash2, Upload, X } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
+import { Loader } from '@/core/utils/loader';
 
 
 export const DepartmentMaster: React.FC = () => {
@@ -21,24 +22,21 @@ export const DepartmentMaster: React.FC = () => {
   // STATE MANAGEMENT
   const [departmentMasterList, setDepartmentMasterList] = useState<DepartmentMasterData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
 
-  // Pagination State
+  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
   // Filter and Sort States
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
   const [filters, setFilters] = useState<FilterInfo>({});
 
-  // Toast
+  // TOAST
   const { toasts, removeToast, addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<DepartmentMasterData[]>([]);
-
-  // EXPORT TO EXCEL | PDF LOADING STATE
-  const [exportLoading, setExportLoading] = useState(false)
-
 
   //END STATE MANAGEMENT
   // ============================================================================
@@ -66,6 +64,7 @@ export const DepartmentMaster: React.FC = () => {
   const loadDepartments = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setLoading,
+      setLoadingMessage,
       async () => {
 
         let sortByParam = undefined;
@@ -112,10 +111,13 @@ export const DepartmentMaster: React.FC = () => {
       (error: any) => {
 
         addToast({ type: 'error', title: error.message })
-      }
+      },
+      undefined,
+      'Loading Department Data...'
     )
   }
 
+  // SERACH DEPARTMENT 
   const searchDepartments = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -134,15 +136,18 @@ export const DepartmentMaster: React.FC = () => {
 
   }
 
-   const clearsearchDepartments = () => {
+  const clearsearchDepartments = () => {
     setSearchTerm('');
     setSearchResults([]);
     fetchDepartmentList();
   }
+  // END SERACH DEPARTMENT 
 
+  // EXPORT EXCEL | PDF
   const handleExportDepartments = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
-      setExportLoading,
+      setLoading,
+      setLoadingMessage,
       async () => {
         // Find the column label for sorting
         let sortByParam = undefined
@@ -171,19 +176,25 @@ export const DepartmentMaster: React.FC = () => {
       undefined,
       (error: any) => {
         addToast({ type: 'error', title: error.message || 'Export failed' })
-      }
+      },
+      undefined,
+      'Preparing Export...'
     )
   }
 
-  
   const handleExportDepartmentExcel = () => handleExportDepartments('Excel')
   const handleExportDepartmentPdf = () => handleExportDepartments('PDF')
+
+  //END EXPORT EXCEL | PDF
+
+  //API | SERVICES CALL TO GET DEPARTMENT 
 
   const getDepartments = async (filterParams: FilterWithPaginationDepartmentMasterRequest) => {
 
     return await departmentMasterService.apiCallPullDepartmentMaster(filterParams);
   }
 
+  //END API | SERVICES CALL TO GET DEPARTMENT
 
 
   // ============================================================================
@@ -338,10 +349,6 @@ export const DepartmentMaster: React.FC = () => {
     // }
   ]
 
-
-
-
-
   // ============================================================================
   // END TABLE CONFIGURATION
   // ============================================================================
@@ -352,6 +359,10 @@ export const DepartmentMaster: React.FC = () => {
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
       <div className="h-full flex flex-col">
+        {/* ============================================================================
+          COMMAN LOADER FOR PAGE
+           ============================================================================ */}
+        <Loader loading={loading} title={loadingMessage}>  <div></div> </Loader>
 
         {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
@@ -456,14 +467,12 @@ export const DepartmentMaster: React.FC = () => {
                         e.stopPropagation()
                         handleExportDepartmentExcel()
                       }}
-                      disabled={exportLoading}
+                      disabled={loading}
                       className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {exportLoading ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-blue-600 mr-2"></div>
-                      ) : (
-                        <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
-                      )}
+
+                      <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
+
                       Export as Excel
                     </button>
                     <button
@@ -472,14 +481,12 @@ export const DepartmentMaster: React.FC = () => {
                         e.stopPropagation()
                         handleExportDepartmentPdf()
                       }}
-                      disabled={exportLoading}
+                      disabled={loading}
                       className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {exportLoading ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-blue-600 mr-2"></div>
-                      ) : (
-                        <FileText className="h-4 w-4 mr-2 text-red-600" />
-                      )}
+
+                      <FileText className="h-4 w-4 mr-2 text-red-600" />
+
                       Export as PDF
                     </button>
                   </div>
@@ -502,7 +509,6 @@ export const DepartmentMaster: React.FC = () => {
           sortInfo={sortInfo}
           onSort={handleSortColumn}
         />
-
       </div>
     </>
 

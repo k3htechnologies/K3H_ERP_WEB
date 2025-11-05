@@ -16,8 +16,8 @@ export const Loader: React.FC<LoaderProps> = ({
     if (!loading) return <>{children}</>
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 flex flex-col items-center space-y-4 min-w-[300px]">
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 flex flex-col items-center space-y-4 min-w-[300px] shadow-lg">
                 <div className="flex items-center space-x-3">
                     <div className="h-8 w-8">
                         <img

@@ -1,15 +1,14 @@
-import React, { useEffect, Suspense, lazy } from 'react'
+import React, { useEffect, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from '../ui/layouts/Layout';
 import ErrorFallbackPage from '@/features/errorFallbackPage/pages/ErrorFallbackPage'
 import { useNetworkStatus } from '@/core/hooks/useNetworkStatus';
 
 // Lazy load routes for code splitting and better performance
-const Login = lazy(() => import('@/features/authentication/pages/signIn'))
-const Dashboard = lazy(() => import('@/features/dashboard/pages/Dashboard'))
-const DepartmentMaster = lazy(() => import('@/features/departmentMaster/pages/DepartmentMaster'))
-const DesignationMaster = lazy(() => import('@/features/designationMaster/pages/DesignationMaster'))
-const EmployeeMaster = lazy(() => import('@/features/employeeMaster/pages/EmployeeMaster'))
+import { SignIn } from '@/features/authentication/pages/signIn';
+import Dashboard from '@/features/dashboard/pages/Dashboard';
+import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMaster';
+import EmployeeMaster from '@/features/employeeMaster/pages/EmployeeMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -48,7 +47,7 @@ function App() {
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
         {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<SignIn />} />
         <Route path="/error" element={<ErrorFallbackPage />} />
 
         {/* Protected Routes with Layout */}
@@ -63,8 +62,8 @@ function App() {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="departmentMaster" element={<DepartmentMaster />} />
-          <Route path="designationMaster" element={<DesignationMaster />} />
           <Route path="employeeMaster" element={<EmployeeMaster />} />
+          {/* <Route path="designationMaster" element={<DesignationMaster />} /> */}
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

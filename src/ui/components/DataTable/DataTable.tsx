@@ -439,10 +439,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                 <tr key={index} className="hover:bg-gray-50 h-10 border-b border-gray-200">
                   {columns.map((column) => {
                     const cellValue = column.render ? column.render(row[column.key], row) : row[column.key]
-                    // For tooltip, we need the raw data value, not the rendered JSX
-                    const rawValue = row[column.key]
-                    const displayValue = rawValue?.toString() || ''
-
+                    
                     return (
                       <td
                         key={column.key}
@@ -458,7 +455,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                           lineHeight: '100%',
                           letterSpacing: '0%'
                         }}
-                        title={displayValue}
+                        title=""
                       >
                         <div
                           className={`${column.truncate !== false ? 'truncate overflow-hidden whitespace-nowrap' : ''} max-w-full`}

@@ -251,7 +251,7 @@ export const DepartmentMaster: React.FC = () => {
           <TooltipText
             text={value || 'N/A'}
             maxWidth="250px"
-            tooltipThreshold={20}
+            tooltipThreshold={25}
             onClick={() => handleViewDepartmentDetails(row)} // just pass a function, no need for e.preventDefault here
           />
 
@@ -521,17 +521,12 @@ export const DepartmentMaster: React.FC = () => {
 
 
             {/* Department Name */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+            <div className="flex justify-between items-start py-2 border-b border-gray-200">
               <span className="text-sm font-medium text-gray-700">
                 Department Name
               </span>
-              <span className="text-sm text-blue-600 font-medium">
-
-                <TooltipText
-                  text={data.DepartmentName || 'N/A'}
-                  maxWidth="250px"
-                  tooltipThreshold={20}
-                />
+              <span className="text-sm text-blue-600 font-medium text-right break-words whitespace-normal max-w-[400px]">
+                {data.DepartmentName || 'N/A'}
               </span>
             </div>
 

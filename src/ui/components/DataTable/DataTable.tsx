@@ -443,7 +443,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                     return (
                       <td
                         key={column.key}
-                        className={`px-4 py-2 text-gray-900 h-10 border-r border-gray-200 ${column.align === 'center' ? 'text-center' :
+                        className={`px-4 py-2 text-gray-900 border-r border-gray-200 ${column.align === 'center' ? 'text-center' :
                           column.align === 'right' ? 'text-right' : 'text-left'
                           } ${column.fixed === 'left' ? 'sticky left-0 bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-400' :
                             column.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-400' : ''
@@ -452,15 +452,18 @@ export const DataTable: React.FC<DataTableProps> = ({
                           ...(column.width ? { width: column.width } : {}),
                           fontSize: '14px',
                           fontWeight: '400',
-                          lineHeight: '100%',
-                          letterSpacing: '0%'
+                          lineHeight: '1.5',
+                          letterSpacing: '0%',
+                          minHeight: '40px',
+                          verticalAlign: 'middle'
                         }}
                         title=""
                       >
                         <div
-                          className={`${column.truncate !== false ? 'truncate overflow-hidden whitespace-nowrap' : ''} max-w-full`}
+                          className={`${column.truncate !== false ? 'truncate whitespace-nowrap' : ''} max-w-full`}
                           style={{
-                            maxWidth: column.maxWidth || column.width || '200px'
+                            maxWidth: column.maxWidth || column.width || '200px',
+                            lineHeight: '1.5'
                           }}
                         >
                           {cellValue}
@@ -470,12 +473,14 @@ export const DataTable: React.FC<DataTableProps> = ({
                   })}
                   {actions.length > 0 && (
                     <td
-                      className="px-4 py-2 whitespace-nowrap h-10"
+                      className="px-4 py-2 whitespace-nowrap"
                       style={{
                         fontSize: '14px',
                         fontWeight: '400',
-                        lineHeight: '100%',
-                        letterSpacing: '0%'
+                        lineHeight: '1.5',
+                        letterSpacing: '0%',
+                        minHeight: '40px',
+                        verticalAlign: 'middle'
                       }}
                     >
                       <div className="flex items-center space-x-2">

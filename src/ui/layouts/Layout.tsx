@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import * as E from 'fp-ts/Either';
+import { useNetworkStatus } from "@/core/hooks/useNetworkStatus";
 import { menuService } from '../../features/menu/services/MenuService'
 import { LocalStorageHelper } from '../../core/utils/localStorageHelper';
 import type { PullMenuRequest } from '../../features/menu/models/MenuModel';
@@ -16,11 +17,12 @@ export const Layout: React.FC = () => {
     const [selectedModule, setSelectedModule] = useState<ModuleData | null>(null)
     const [selectedSubModule, setSelectedSubModule] = useState<SubModuleData | null>(null)
     const [selectedSubSubModule, setSelectedSubSubModule] = useState<SubSubModuleData | null>(null)
-
     const pageInfo = getPageInfo(location.pathname);
 
-    useEffect(() => {
+    // THIS WILL AUTOMATICALLY HANDLE OFFLINE / ONLINE REDIRECTS
+    useNetworkStatus();
 
+    useEffect(() => {
         const loadMenuData = async () => {
             try {
                 const request: PullMenuRequest = {

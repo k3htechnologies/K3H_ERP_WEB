@@ -442,7 +442,7 @@ export const DepartmentMaster: React.FC = () => {
         saveText="Apply Changes"
         cancelText="Cancel"
       >
-        <form onSubmit={handleApplyCustomizeDepartmentMasterColumns} className="space-y-4">
+        <div className="space-y-4">
           <div className="flex items-center justify-end space-x-2">
             <button type="button" onClick={selectAll} className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md">Select All</button>
             <button type="button" onClick={clearAll} className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md">Clear All</button>
@@ -467,7 +467,7 @@ export const DepartmentMaster: React.FC = () => {
               )
             })}
           </div>
-        </form>
+        </div>
       </Modal>
     )
   }
@@ -740,7 +740,7 @@ export const DepartmentMaster: React.FC = () => {
         saveText={data ? 'Update' : 'Save'}
         loading={loading}
       >
-        <form onSubmit={handleSubmitAddUpdateDepartment} className="space-y-6">
+        <div className="space-y-6">
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -781,7 +781,7 @@ export const DepartmentMaster: React.FC = () => {
 
 
           </div>
-        </form>
+        </div>
       </Modal>
     )
   }
@@ -1154,10 +1154,7 @@ export const DepartmentMaster: React.FC = () => {
           onCancel={() => clearFilters()}
           size="half-screen"
         >
-          <form onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }} className="space-y-6">
+          <div className="space-y-6">
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1172,7 +1169,7 @@ export const DepartmentMaster: React.FC = () => {
                 />
               </div>
             </div>
-          </form>
+          </div>
         </Modal>
 
         {/* DELETE CONFIRMATION DEPARTMENT MODAL */}

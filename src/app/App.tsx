@@ -1,13 +1,15 @@
 import React, { useEffect, Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { Layout } from '../ui/layouts/Layout'
+import { Layout } from '../ui/layouts/Layout';
+import ErrorFallbackPage from '@/features/errorFallbackPage/pages/ErrorFallbackPage'
+import { useNetworkStatus } from '@/core/hooks/useNetworkStatus';
 
 // Lazy load routes for code splitting and better performance
-const Login = lazy(() => import('../features/authentication/pages/signIn'))
-const Dashboard = lazy(() => import('../features/dashboard/pages/Dashboard'))
-const DepartmentMaster = lazy(() => import('../features/departmentMaster/pages/DepartmentMaster'))
-const DesignationMaster = lazy(() => import('../features/designationMaster/pages/DesignationMaster'))
-const EmployeeMaster = lazy(() => import('../features/employeeMaster/pages/EmployeeMaster'))
+const Login = lazy(() => import('@/features/authentication/pages/signIn'))
+const Dashboard = lazy(() => import('@/features/dashboard/pages/Dashboard'))
+const DepartmentMaster = lazy(() => import('@/features/departmentMaster/pages/DepartmentMaster'))
+const DesignationMaster = lazy(() => import('@/features/designationMaster/pages/DesignationMaster'))
+const EmployeeMaster = lazy(() => import('@/features/employeeMaster/pages/EmployeeMaster'))
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -22,15 +24,16 @@ const LoadingSpinner = () => (
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('auth_token')
-  
+
   if (!token) {
     return <Navigate to="/login" replace />
   }
-  
+
   return <>{children}</>
 }
 
 function App() {
+  useNetworkStatus();
 
   // Check for existing auth token on app load
   useEffect(() => {
@@ -40,16 +43,17 @@ function App() {
     }
   }, [])
 
-  
+
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
-        
+        <Route path="/error" element={<ErrorFallbackPage />} />
+
         {/* Protected Routes with Layout */}
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
             <ProtectedRoute>
               <Layout />
@@ -62,7 +66,7 @@ function App() {
           <Route path="designationMaster" element={<DesignationMaster />} />
           <Route path="employeeMaster" element={<EmployeeMaster />} />
         </Route>
-        
+
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Suspense>

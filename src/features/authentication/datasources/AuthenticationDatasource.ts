@@ -1,7 +1,7 @@
-import type { ApiResponse } from '../../../core/api/ApiResponse'
-import baseClient from '../../../core/config/baseClient'
-import { AuthenticationApi } from '../api/AuthenticationApi'
-import type { AuthenticationResponse } from '../models/AuthenticationModel'
+import type { ApiResponse } from '@/core/api/ApiResponse'
+import baseClient from '@/core/config/baseClient'
+import { AuthenticationApi } from '@/features/authentication/api/AuthenticationApi'
+import type { AuthenticationResponse } from '@/features/authentication/models/AuthenticationModel'
 
 export abstract class AuthenticationDatasource {
 

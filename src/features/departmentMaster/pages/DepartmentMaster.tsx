@@ -525,7 +525,7 @@ export const DepartmentMaster: React.FC = () => {
               <span className="text-sm font-medium text-gray-700">
                 Department Name
               </span>
-              <span className="text-sm text-blue-600 font-medium text-right break-words whitespace-normal max-w-[400px]">
+              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
                 {data.DepartmentName || 'N/A'}
               </span>
             </div>

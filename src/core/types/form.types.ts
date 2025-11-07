@@ -1,5 +1,5 @@
 // src/core/types/form.types.ts
-import type { ReactNode, CSSProperties, InputHTMLAttributes,ButtonHTMLAttributes } from 'react'
+import type { ReactNode, CSSProperties, InputHTMLAttributes, ButtonHTMLAttributes } from 'react'
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string
@@ -14,8 +14,24 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   loading?: boolean
   className?: string
   style?: CSSProperties
+  autoResize?: boolean
 }
 
+export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string
+  helperText?: string
+  error?: string
+  leftIcon?: ReactNode
+  rightIcon?: ReactNode
+  size?: 'sm' | 'md' | 'lg'
+  variant?: 'default' | 'outlined' | 'filled'
+  color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'
+  fullWidth?: boolean
+  loading?: boolean
+  className?: string
+  style?: CSSProperties
+  autoResize?: boolean
+}
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size' | 'color'> {
   variant?: 'solid' | 'outline' | 'ghost' | 'link'
   size?: 'sm' | 'md' | 'lg'
@@ -30,17 +46,3 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   loadingText?: string
 }
 
-export interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'size' | 'color'> {
-  variant?: 'default' | 'filled' | 'outlined' | 'ghost'
-  size?: 'sm' | 'md' | 'lg'
-  color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'
-  disabled?: boolean
-  loading?: boolean
-  fullWidth?: boolean
-  className?: string
-  style?: React.CSSProperties
-  label?: string
-  helperText?: string
-  error?: string
-  resize?: 'none' | 'vertical' | 'horizontal' | 'both'
-}

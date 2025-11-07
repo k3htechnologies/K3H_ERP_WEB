@@ -59,7 +59,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         border: `1px solid ${theme.colors.border}`,
         outline: 'none',
         transition: theme.transitions.normal,
-        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
         boxSizing: 'border-box' as const,
       }
 
@@ -76,13 +75,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ...baseStyles,
             backgroundColor: 'transparent',
             borderWidth: '2px',
-          }
-        case 'ghost':
-          return {
-            ...baseStyles,
-            backgroundColor: 'transparent',
-            border: `1px solid ${theme.colors.border}`,
-            boxShadow: 'none',
           }
         default:
           return {
@@ -184,7 +176,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {(error || helperText) && (
           <div style={{
             marginTop: theme.spacing.sm,
-            fontSize: theme.fontSize.xs,
+            fontSize: theme.fontSize.lg,
             color: error ? theme.colors.error : theme.colors.textSecondary,
           }}>
             {error || helperText}

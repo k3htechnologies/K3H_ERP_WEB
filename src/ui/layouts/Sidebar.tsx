@@ -8,7 +8,7 @@ import {
   LogOut
 } from 'lucide-react'
 import type { ModuleData, SubModuleData, SubSubModuleData } from '@/features/menu/models/MenuModel'
-import { mapPathToRoute } from '@/core/utils/pathMapper';
+import { normalizePath, mapPathToRoute } from '@/core/utils/pathMapper';
 
 interface SidebarProps {
   isOpen: boolean
@@ -47,31 +47,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const location = useLocation()
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
-
-  // Function to find the active menu item based on current path
+  const normalizedLocationPath = normalizePath(location.pathname);
+  
   const findActiveMenuItem = (currentPath: string) => {
+    const normalizedCurrent = normalizePath(currentPath)
     if (!modules || modules.length === 0) return null
 
     for (const module of modules) {
       if (!module.SubModuleData || module.SubModuleData.length === 0) continue
 
       for (const subModule of module.SubModuleData) {
+        
+        const subModuleRoute = normalizePath(mapPathToRoute(subModule.Path))
+        if (subModuleRoute && subModuleRoute === normalizedCurrent) {
+          return { module, subModule, subSubModule: null }
+        }
+
         if (subModule.SubSubModuleData && subModule.SubSubModuleData.length > 0) {
           for (const subSubModule of subModule.SubSubModuleData) {
-            if (mapPathToRoute(subSubModule.Path) === currentPath) {
-              return {
-                module,
-                subModule,
-                subSubModule
-              }
+            const subSubRoute = normalizePath(mapPathToRoute(subSubModule.Path))
+            if (subSubRoute && subSubRoute === normalizedCurrent) {
+              return { module, subModule, subSubModule }
             }
-          }
-        }
-        if (mapPathToRoute(subModule.Path) === currentPath) {
-          return {
-            module,
-            subModule,
-            subSubModule: null
           }
         }
       }
@@ -79,18 +76,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return null
   }
 
-  // Auto-expand active path on component mount
   React.useEffect(() => {
     const activeMenuItem = findActiveMenuItem(location.pathname)
     if (activeMenuItem) {
       const newExpanded = new Set<string>()
-
-      // Always expand the module
+      
       if (activeMenuItem.module) {
         newExpanded.add(`module-${activeMenuItem.module.ModulesMasterId}`)
       }
 
-      // Expand submodule if it exists
       if (activeMenuItem.subModule) {
         newExpanded.add(`submodule-${activeMenuItem.subModule.SubModulesMasterId}`)
       }
@@ -99,15 +93,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [location.pathname, modules])
 
-  // Function to handle image load errors
+  
   const handleImageError = useCallback((iconPath: string) => {
     setImageErrors(prev => new Set(prev).add(iconPath))
   }, [])
 
-
-
-  // Function to render icon from API response
-  const renderIcon = (iconPath: string, fallbackIcon: React.ReactNode, size: string = "h-5 w-5") => {
+  
+  const renderIcon = (iconPath: string | undefined, fallbackIcon: React.ReactNode, size: string = "h-5 w-5") => {
     if (iconPath && iconPath.startsWith('assets/') && !imageErrors.has(iconPath)) {
       return (
         <img
@@ -121,16 +113,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return fallbackIcon
   }
 
-  // Build menu items from API data only
   const menuItems: MenuItem[] = [
-    // Dashboard (always first)
+    
     {
       id: 'dashboard',
       label: 'Dashboard',
       icon: <Home className="h-5 w-5" />,
       path: '/dashboard'
     },
-    // Modules from API - with null/undefined safety checks
+    
     ...(modules || []).map(module => ({
       id: `module-${module.ModulesMasterId}`,
       label: module.ModuleName,
@@ -139,18 +130,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         id: `submodule-${subModule.SubModulesMasterId}`,
         label: subModule.SubModuleName,
         icon: renderIcon(subModule.Icon, <Home className="h-4 w-4" />, "h-4 w-4"),
-        path: mapPathToRoute(subModule.Path),
+       
+        path: normalizePath(mapPathToRoute(subModule.Path)),
         children: (subModule.SubSubModuleData || [])
           .filter(subSubModule => subSubModule?.IsDisplay)
           .map(subSubModule => ({
             id: `subsubmodule-${subSubModule.SubSubModulesMasterId}`,
             label: subSubModule.SubSubModuleName,
             icon: renderIcon(subSubModule.Icon, <Home className="h-4 w-4" />, "h-4 w-4"),
-            path: mapPathToRoute(subSubModule.Path)
+            path: normalizePath(mapPathToRoute(subSubModule.Path))
           }))
       }))
     })),
-
   ]
 
   const toggleExpanded = (itemId: string) => {
@@ -167,12 +158,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (item.children) {
       toggleExpanded(item.id)
     } else {
-      // Handle navigation for items with paths
       if (item.path) {
-        // Map API paths to actual routes
+        
         const route = mapPathToRoute(item.path)
-        navigate(route)
-        // Close sidebar on mobile after navigation
+        
+        const navigateTo = route || item.path;
+
+        navigate(navigateTo)
+
         if (window.innerWidth < 1024) {
           onClose()
         }
@@ -222,20 +215,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const isSubModule = item.id.startsWith('submodule-')
     const isSubSubModule = item.id.startsWith('subsubmodule-')
 
-    // Check if current page is active based on location
-    const isCurrentPage = item.path && location.pathname === item.path
+    const isCurrentPage = !!(item.path && normalizePath(item.path) === normalizedLocationPath)
 
-    // Find the active menu item based on current path
     const activeMenuItem = findActiveMenuItem(location.pathname)
 
-    // Check if this item is part of the active path dynamically
     const isInActivePath = activeMenuItem && (
       (isModule && activeMenuItem.module && item.id === `module-${activeMenuItem.module.ModulesMasterId}`) ||
       (isSubModule && activeMenuItem.subModule && item.id === `submodule-${activeMenuItem.subModule.SubModulesMasterId}`) ||
       (isSubSubModule && activeMenuItem.subSubModule && item.id === `subsubmodule-${activeMenuItem.subSubModule.SubSubModulesMasterId}`)
     )
 
-    // Check if any parent is selected to color all levels
     const isParentSelected = selectedModule && (
       (isModule && item.id === `module-${selectedModule.ModulesMasterId}`) ||
       (isSubModule && selectedModule.ModulesMasterId) ||
@@ -293,8 +282,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       } else {
         return {
           container: `${item.path?.toUpperCase() === '/DASHBOARD'
-              ? 'relative border-gray-200'
-              : 'relative ml-8 border-l-2 border-gray-200 pl-4'
+              ? 'relative'
+              : 'relative ml-8 pl-4'
             }`,
           button: `
             w-full flex items-center space-x-3 px-3 py-2 rounded-md transition-all duration-200

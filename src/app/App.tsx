@@ -47,7 +47,7 @@ function App() {
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
         {/* Public Routes */}
-        <Route path="/login" element={<SignIn />} />
+        <Route path="/sign-in" element={<SignIn />} />
         <Route path="/error" element={<ErrorFallbackPage />} />
 
         {/* Protected Routes with Layout */}
@@ -66,7 +66,7 @@ function App() {
           {/* <Route path="designationMaster" element={<DesignationMaster />} /> */}
         </Route>
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/sign-in" replace />} />
       </Routes>
     </Suspense>
   )

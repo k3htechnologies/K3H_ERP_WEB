@@ -76,7 +76,7 @@ export const Layout: React.FC = () => {
 
     const handleLogout = () => {
         LocalStorageHelper.clearLocalStorageData();
-        window.location.href = '/login'
+        window.location.href = '/sign-in'
     }
 
     return (

@@ -1,5 +1,7 @@
+import { COLORS } from '@/core/constants';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
+
 
 interface TooltipTextProps {
     text: string | null | undefined | number
@@ -21,12 +23,13 @@ const TooltipText: React.FC<TooltipTextProps> = ({
     const [show, setShow] = useState(false);
     const [pos, setPos] = useState({ x: 0, y: 0 });
 
-    const getBgColor = () => {
-        if (tooltipClassName.includes('blue')) return 'from-blue-500 to-blue-600 border-blue-400';
-        if (tooltipClassName.includes('green')) return 'from-green-500 to-green-600 border-green-400';
-        if (tooltipClassName.includes('red')) return 'from-red-500 to-red-600 border-red-400';
-        return 'from-blue-500 to-blue-600 border-blue-400';
+    const getBgColor = (): React.CSSProperties => {
+        return {
+            backgroundColor: COLORS.primary,
+            borderColor: COLORS.primary
+        };
     };
+
 
     const onEnter = (e: React.MouseEvent) => {
         if (!isLong) return;
@@ -51,7 +54,7 @@ const TooltipText: React.FC<TooltipTextProps> = ({
 
             {isLong && show && createPortal(
                 <div className="fixed pointer-events-none z-[99999]" style={{ left: `${pos.x}px`, top: `${pos.y}px`, maxWidth: '300px' }}>
-                    <div className={`bg-gradient-to-r ${getBgColor()} text-white text-sm px-4 py-3 rounded-lg shadow-2xl border`}>
+                    <div className={`bg-gradient-to-r text-white text-sm px-4 py-3 rounded-lg shadow-2xl border`}  style={getBgColor()} >
                         <div className="font-medium break-words whitespace-normal" style={{ wordWrap: 'break-word' }}>
                             {displayText}
                         </div>

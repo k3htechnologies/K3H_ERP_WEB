@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface TooltipTextProps {
     text: string | null | undefined | number
@@ -48,14 +49,15 @@ const TooltipText: React.FC<TooltipTextProps> = ({
                 )}
             </div>
 
-            {isLong && show && (
+            {isLong && show && createPortal(
                 <div className="fixed pointer-events-none z-[99999]" style={{ left: `${pos.x}px`, top: `${pos.y}px`, maxWidth: '300px' }}>
                     <div className={`bg-gradient-to-r ${getBgColor()} text-white text-sm px-4 py-3 rounded-lg shadow-2xl border`}>
                         <div className="font-medium break-words whitespace-normal" style={{ wordWrap: 'break-word' }}>
                             {displayText}
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );

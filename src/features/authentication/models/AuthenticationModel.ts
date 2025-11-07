@@ -72,6 +72,6 @@ export interface ProjectData {
   ProjectWithBankDetailsData: any[]
 }
 
-export type AuthenticationResponse = ApiResponse<EmployeeData>;
+export type AuthenticationResponse = ApiResponse<EmployeeData[]>;
 
 

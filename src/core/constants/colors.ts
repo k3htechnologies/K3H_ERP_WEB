@@ -1,20 +1,21 @@
 export const COLORS = {
-    primary: '#1e40af',
-    primaryLight: '#bfdbfe',
+    primary: '#1AA0DB',
+    primaryLight: '#3B82F6',
     primaryHover:'#bfdbfe',
-    secondary: '#9333ea',
+    secondary: '#D0D7DE',
     success: '#16a34a',
     error: '#dc2626',
     errorLight: '#fecaca',
     warning: '#f59e0b',
     info: '#3b82f6',
     background: '#f9fafb',
-    text: '#111827',
+    text: '#374151',
     textSecondary: '#6b7280',
     border: '#e5e7eb',
     backgroundSecondary: '#f9fafb',
     textLight: '#9ca3af',         // Light text
     placeholder: '#9ca3af',       // Placeholder text
+    
 } as const
 
 export type ColorType = keyof typeof COLORS

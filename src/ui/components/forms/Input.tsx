@@ -1,6 +1,6 @@
 import { forwardRef } from 'react'
-import { THEME } from '../../../core/constants/theme'
-import type { InputProps } from '../../../core/types/form.types'
+import { THEME } from '@/core/constants/theme'
+import type { InputProps } from '@/core/types/form.types'
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({
@@ -100,8 +100,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     }
 
     const focusStyles = {
-      borderColor: error ? theme.colors.error : theme.colors.primary,
-      boxShadow: error ? `0 0 0 3px ${theme.colors.errorLight}` : `0 0 0 3px ${theme.colors.primaryLight}`,
+      borderColor: error ? theme.colors.errorLight : theme.colors.primaryLight,
+      boxShadow: error ? `0 0 0 3px ${theme.colors.errorLight}` : `0 0 0 1px ${theme.colors.primaryLight}`,
       backgroundColor: variant === 'filled' ? theme.colors.background : theme.colors.background,
     }
 

@@ -8,6 +8,7 @@ import { authenticationService } from '@/features/authentication/services/Authen
 import * as E from 'fp-ts/Either';
 import { runApiWithLoader } from '@/core/utils';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
+import { Loader } from '@/core/utils/loader';
 
 export function SignIn() {
 
@@ -85,7 +86,7 @@ export function SignIn() {
 
                     LocalStorageHelper.storeEmployeeData(employeeData);
 
-                    showSuccess('Login Successful', `Welcome, ${employeeData.FullName}`);
+                    showSuccess('Login Successful', `Welcome, ${employeeData[0].FullName}`);
 
                     setIsVerified(true)
 
@@ -147,7 +148,13 @@ export function SignIn() {
     return (
         <>
             <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+            <div className="h-full flex flex-col">
+                {/* ============================================================================
+          COMMAN LOADER FOR PAGE
+           ============================================================================ */}
 
+                <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+            
             <div
                 style={{
                     minHeight: '100vh',
@@ -171,7 +178,7 @@ export function SignIn() {
                 >
                     {step === 'mobile' ? (
                         <form onSubmit={(e) => { e.preventDefault(); handleSendOTP() }}>
-                            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '32px' }}>
                                 <img
                                     src={appLogo}
                                     alt="App Logo"
@@ -220,7 +227,7 @@ export function SignIn() {
                         </form>
                     ) : (
                         <form onSubmit={(e) => { e.preventDefault(); handleVerifyOTP() }}>
-                            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '32px' }}>
                                 <img
                                     src={appLogo}
                                     alt="App Logo"
@@ -290,6 +297,7 @@ export function SignIn() {
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
         </>
     )

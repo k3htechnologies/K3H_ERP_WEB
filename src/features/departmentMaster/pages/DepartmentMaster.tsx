@@ -245,6 +245,7 @@ export const DepartmentMaster: React.FC = () => {
       label: 'Department Name',
       width: '33',
       sortable: true,
+      fixed: 'left',
       align: 'left',
       render: (value, row) => (
         <div className="flex items-center justify-between">

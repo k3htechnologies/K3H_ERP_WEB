@@ -20,6 +20,7 @@ import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 
 
 export const DepartmentMaster: React.FC = () => {
@@ -369,7 +370,7 @@ export const DepartmentMaster: React.FC = () => {
 
     try {
 
-      const saved = localStorage.getItem('departmentMaster.selectedColumns');
+      const saved = LocalStorageHelper.getDepartmentMasterTableColumns();
 
       if (saved) {
 
@@ -1121,7 +1122,7 @@ export const DepartmentMaster: React.FC = () => {
             setSelectedDepartmentMasterColumnKeys(withRequired);
 
             try {
-              localStorage.setItem('departmentMaster.selectedColumns', JSON.stringify(withRequired))
+              LocalStorageHelper.storeDepartmentMasterTableColumns(JSON.stringify(withRequired))
             }
             catch {
 

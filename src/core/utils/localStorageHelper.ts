@@ -60,25 +60,25 @@ export const LocalStorageHelper = {
     },
     //#endregion
     //#region LAST VISITED PAGE DATA STORE IN LOCAL STORAGE
-    storeDepartmentMasterTableColumns: (path: string): void => {
+    storeDepartmentMasterTableColumns: (columns: string): void => {
         try {
-            localStorage.setItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS, path);
+            localStorage.setItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS, columns);
 
         } catch (error) {
-            console.error('Error storing last visited page:', error)
+            console.error('Error Department Master Columns Details:', error)
         }
     },
     //#endregion
     //#region GET LAST VISITED PAGE STORE IN LOCAL STORAGE 
     getDepartmentMasterTableColumns: (): string | null => {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LAST_VISITED_PAGE)
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS)
         if (stored) {
             try {
 
-                return localStorage.getItem(LOCAL_STORAGE_KEYS.LAST_VISITED_PAGE);;
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS);;
 
             } catch (error) {
-                console.error('Error reading last visited page:', error)
+                console.error('Error reading Department Master Columns Details:', error)
                 return null
             }
         }

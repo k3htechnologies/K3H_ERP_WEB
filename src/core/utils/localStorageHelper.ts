@@ -1,4 +1,4 @@
-import type { EmployeeData } from "../../features/authentication/models/AuthenticationModel"
+import type { EmployeeData } from "@/features/authentication/models/AuthenticationModel"
 import { LOCAL_STORAGE_KEYS } from "../constants/localStorageKeys"
 
 export const LocalStorageHelper = {
@@ -85,7 +85,6 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
-    
     //#region CLEAR LOCAL STORAGE 
     clearLocalStorageData: (): void => {
         try {

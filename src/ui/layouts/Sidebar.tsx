@@ -7,8 +7,8 @@ import {
   X,
   LogOut
 } from 'lucide-react'
-import type { ModuleData, SubModuleData, SubSubModuleData } from '../../features/menu/models/MenuModel'
-import { mapPathToRoute } from '../../core/utils/pathMapper';
+import type { ModuleData, SubModuleData, SubSubModuleData } from '@/features/menu/models/MenuModel'
+import { mapPathToRoute } from '@/core/utils/pathMapper';
 
 interface SidebarProps {
   isOpen: boolean

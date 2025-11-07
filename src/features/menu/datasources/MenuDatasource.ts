@@ -1,11 +1,10 @@
-import type { ApiResponse } from '../../../core/api/ApiResponse'
-import baseClient from '../../../core/config/baseClient'
-import { MenuApi } from '../api/MenuApi'
-import type { ModuleData, PullMenuRequest } from '../models/MenuModel'
+import baseClient from '@/core/config/baseClient'
+import { MenuApi } from '@/features/menu/api/MenuApi'
+import type { ModuleDataListResponse, PullMenuRequest } from '@/features/menu/models/MenuModel'
 
 export abstract class MenuDatasource {
 
-    abstract pullMenu(params: PullMenuRequest): Promise<ApiResponse<ModuleData>>;
+    abstract pullMenu(params: PullMenuRequest): Promise<ModuleDataListResponse>;
 }
 
 export class MenuDatasourceImpl implements MenuDatasource {
@@ -14,9 +13,9 @@ export class MenuDatasourceImpl implements MenuDatasource {
     }
 
 
-    async pullMenu(params: PullMenuRequest): Promise<ApiResponse<ModuleData>> {
+    async pullMenu(params: PullMenuRequest): Promise<ModuleDataListResponse> {
         try {
-            
+
             const queryParams = new URLSearchParams({
                 EmployeeId: (params.EmployeeId).toString(),
             });
@@ -25,7 +24,7 @@ export class MenuDatasourceImpl implements MenuDatasource {
                 `${MenuApi.PULL}?${queryParams.toString()}`
             );
 
-            return response as ApiResponse<ModuleData>;
+            return response;
 
         } catch (error) {
 

@@ -1,3 +1,5 @@
+import type { ApiResponse } from "@/core/api/ApiResponse"
+
 export interface PullMenuRequest {
     EmployeeId: number | 0
 }
@@ -29,3 +31,5 @@ export interface SubSubModuleData {
     IsView: boolean | false
     IsExport: boolean | false
 }
+
+export type ModuleDataListResponse = ApiResponse<ModuleData[]>;

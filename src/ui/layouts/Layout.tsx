@@ -4,11 +4,11 @@ import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import * as E from 'fp-ts/Either';
 import { useNetworkStatus } from "@/core/hooks/useNetworkStatus";
-import { menuService } from '../../features/menu/services/MenuService'
-import { LocalStorageHelper } from '../../core/utils/localStorageHelper';
-import type { PullMenuRequest } from '../../features/menu/models/MenuModel';
-import type { ModuleData, SubModuleData, SubSubModuleData } from '../../features/menu/models/MenuModel';
-import { getPageInfo } from '../../core/constants/pageInfo';
+import { menuService } from '@/features/menu/services/MenuService'
+import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
+import type { PullMenuRequest } from '@/features/menu/models/MenuModel';
+import type { ModuleData, SubModuleData, SubSubModuleData } from '@/features/menu/models/MenuModel';
+import { getPageInfo } from '@/core/constants/pageInfo';
 
 export const Layout: React.FC = () => {
     const location = useLocation()
@@ -33,7 +33,7 @@ export const Layout: React.FC = () => {
                 if (E.isRight(response)) {
                     const menu = response.right.Data;
                     if (menu) {
-                        setMenuData(Array.isArray(menu) ? menu : [menu]);
+                        setMenuData(response.right.Data);
                     } else {
                         setMenuData([]);
                     }

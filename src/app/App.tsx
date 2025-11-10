@@ -25,14 +25,18 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   const token =LocalStorageHelper.getStoredTokenData();
 
-  // if (!token) {
-  //   return <Navigate to="/login" replace />
-  // }
+  if (!token) {
+
+    LocalStorageHelper.clearLocalStorageData();
+    
+    return <Navigate to="/sign-in" replace />
+  }
 
   return <>{children}</>
 }
 
 function App() {
+
   useNetworkStatus();
 
   // Check for existing auth token on app load

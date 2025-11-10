@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -69,7 +69,14 @@ export const DepartmentMaster: React.FC = () => {
 
   //#region INITIALIZATION
 
+  const hasFetchedInitialDepartments = useRef(false)
+
   useEffect(() => {
+
+    if (hasFetchedInitialDepartments.current) return
+
+    hasFetchedInitialDepartments.current = true;
+    
     fetchDepartmentList()
   }, [])
   //#endregion

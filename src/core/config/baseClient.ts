@@ -20,7 +20,6 @@ export class BaseClient {
     constructor({
         apiKey,
         token = null,
-        userUniqueKey = null
     }: {
         baseUrl?: string
         apiKey?: string

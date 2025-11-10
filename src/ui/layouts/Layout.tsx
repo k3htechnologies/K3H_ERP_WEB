@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
@@ -22,7 +22,14 @@ export const Layout: React.FC = () => {
     // THIS WILL AUTOMATICALLY HANDLE OFFLINE / ONLINE REDIRECTS
     useNetworkStatus();
 
+    const hasFetchedMenu = useRef(false);
+
     useEffect(() => {
+
+        if (hasFetchedMenu.current) return
+
+        hasFetchedMenu.current = true;
+
         const loadMenuData = async () => {
             try {
                 const request: PullMenuRequest = {

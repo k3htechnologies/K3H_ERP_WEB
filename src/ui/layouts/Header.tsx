@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Menu, Bell } from 'lucide-react'
 import appLogo from '@/assets/images/appLogo.png'
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
@@ -67,9 +67,17 @@ export const Header: React.FC<HeaderProps> = ({
 
     //#region INITIALIZATION
 
+    const hasFetchedInitialNotifications = useRef(false)
+
     useEffect(() => {
+
+        if (hasFetchedInitialNotifications.current) return
+
+        hasFetchedInitialNotifications.current = true;
+
         fetchNotificationList()
     }, [])
+
     //#endregion
 
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
@@ -152,7 +160,7 @@ export const Header: React.FC<HeaderProps> = ({
     const employeeCode = emp?.EmployeeCode ?? '—';
     const branch = emp?.Branch ?? '—';
     const LastLogin = emp?.LastLogin ?? '—';
-//#endregion
+    //#endregion
     return (
         <>
             <ToastContainer toasts={toasts} onRemoveToast={removeToast} />

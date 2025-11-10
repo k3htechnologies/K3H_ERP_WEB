@@ -152,7 +152,7 @@ export const Header: React.FC<HeaderProps> = ({
     const employeeCode = emp?.EmployeeCode ?? '—';
     const branch = emp?.Branch ?? '—';
     const LastLogin = emp?.LastLogin ?? '—';
-
+//#endregion
     return (
         <>
             <ToastContainer toasts={toasts} onRemoveToast={removeToast} />

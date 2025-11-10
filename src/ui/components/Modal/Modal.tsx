@@ -5,13 +5,13 @@ export interface ModalProps {
     isOpen: boolean
     onClose: () => void
     title: string
-    onSubmit: (e: React.FormEvent) => void
+    onSubmit?: (e: React.FormEvent) => void
     children: React.ReactNode
     saveText?: string
     cancelText?: string
     onCancel?: () => void
     loading?: boolean
-    size?: 'sm' | 'md' | 'lg' | 'xl' | 'half-screen'
+    size?: 'sm' | 'md' | 'lg' | 'xl' | 'half-screen' | 'small-half' | 'large-half'
     className?: string
 }
 
@@ -21,7 +21,7 @@ export const Modal: React.FC<ModalProps> = ({
     title,
     onSubmit,
     children,
-    saveText = 'Save',
+    saveText = '',
     cancelText,
     onCancel,
     loading = false,
@@ -35,15 +35,23 @@ export const Modal: React.FC<ModalProps> = ({
         md: 'max-w-md',
         lg: 'max-w-lg',
         xl: 'max-w-xl',
-        'half-screen': 'w-1/2'
+        'half-screen': 'w-1/2',
+        'small-half': 'w-1/3',   // 👈 add this line
+        'large-half': 'w-2/3'
     }
 
+    const widthSize =
+        size === 'half-screen' ? sizeClasses['half-screen']
+            : size === 'small-half' ? sizeClasses['small-half']
+                : size === 'large-half' ? sizeClasses['large-half'] : sizeClasses['half-screen'];
+
     // Half-screen modal layout
-    if (size === 'half-screen') {
+    if (size === 'half-screen' || size === 'small-half' || size === 'large-half') {
+
         return (
             <div className="fixed inset-0 bg-opacity-50 z-50">
                 {/* Half-screen modal on the right */}
-                <div className="fixed right-0 top-0 h-full w-1/2 bg-white shadow-2xl flex flex-col">
+                <div className={`fixed right-0 top-0 h-full  bg-white shadow-2xl flex flex-col ${widthSize}`}>
                     {/* Header */}
                     <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 bg-white">
                         <h3 className="text-lg font-semibold text-gray-900">
@@ -58,42 +66,49 @@ export const Modal: React.FC<ModalProps> = ({
                         </button>
                     </div>
 
-                    {/* Form Content - Scrollable */}
+                    {/* CHILDERN */}
+
                     <form onSubmit={onSubmit} className="flex-1 flex flex-col p-6">
                         <div className="flex-1 space-y-6">
                             {children}
                         </div>
 
                         {/* Footer inside form - Fixed at bottom */}
-                        <div className="flex justify-end items-center h-10 px-6 border-t border-gray-200 bg-white flex-shrink-0 space-x-3">
-                            {cancelText && onCancel && (
+                        {saveText !== '' ?
+
+                            <div className="flex justify-end items-center h-10 px-6 border-t border-gray-200 bg-white flex-shrink-0 space-x-3 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] z-50">
+                                {cancelText && onCancel && (
+                                    <button
+                                        type="button"
+                                        onClick={onCancel}
+                                        disabled={loading}
+                                        className="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                                    >
+                                        {cancelText}
+                                    </button>
+                                )}
+
                                 <button
-                                    type="button"
-                                    onClick={onCancel}
+                                    type="submit"
                                     disabled={loading}
-                                    className="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                                    className="flex items-center space-x-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
                                 >
-                                    {cancelText}
+                                    <Save className="h-4 w-4" />
+                                    <span>{loading ? 'Saving...' : saveText}</span>
                                 </button>
-                            )}
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="flex items-center space-x-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-                            >
-                                <Save className="h-4 w-4" />
-                                <span>{loading ? 'Saving...' : saveText}</span>
-                            </button>
-                        </div>
+                            </div>
+
+                            : ''}
                     </form>
-                </div>
-            </div>
+
+                </div >
+            </div >
         )
     }
 
     // Regular centered modal layout
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className={`bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} ${className}`}>
                 {/* Header */}
                 <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
@@ -116,7 +131,7 @@ export const Modal: React.FC<ModalProps> = ({
                     </div>
 
                     {/* Footer inside form */}
-                    <div className="flex justify-end pt-6 mt-6 border-t border-gray-200 space-x-3">
+                    <div className="flex justify-end pt-6 mt-6 border-t border-gray-200 space-x-3 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] z-50">
                         {cancelText && onCancel && (
                             <button
                                 type="button"

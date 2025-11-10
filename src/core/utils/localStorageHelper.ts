@@ -31,6 +31,33 @@ export const LocalStorageHelper = {
         }
         return null
     },
+    //#endregion
+   //#region GET TOKEN STORE IN LOCAL STORAGE 
+    storeToken: (token :string): void => {
+          try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.TOKEN, token);
+
+        } catch (error) {
+            console.error('Error storing Token:', error)
+        }
+    },
+    //#endregion
+    
+    //#region GET TOKEN STORE IN LOCAL STORAGE 
+    getStoredTokenData: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TOKEN)
+        if (stored) {
+            try {
+
+                return stored;
+
+            } catch (error) {
+                console.error('Error parsing stored employee data:', error)
+                return null
+            }
+        }
+        return null
+    },
 
     //#endregion
     //#region LAST VISITED PAGE DATA STORE IN LOCAL STORAGE
@@ -75,7 +102,7 @@ export const LocalStorageHelper = {
         if (stored) {
             try {
 
-                return localStorage.getItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS);;
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS);
 
             } catch (error) {
                 console.error('Error reading Department Master Columns Details:', error)

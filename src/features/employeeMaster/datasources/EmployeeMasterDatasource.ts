@@ -1,16 +1,15 @@
-import type { ApiResponse } from '../../../core/api/ApiResponse'
-import baseClient from '../../../core/config/baseClient'
-import { EmployeeMasterApi } from '../api/EmployeeMasterApi'
+import baseClient from '@/core/config/baseClient'
+import { EmployeeMasterApi } from '@/features/employeeMaster/api/EmployeeMasterApi'
 import type {
     FilterWithPaginationEmployeeMasterRequest,
     AddUpdateEmployeeMasterRequest,
-    EmployeeMasterData
+    EmployeeMasterListResponse
 } from '../models/EmployeeMasterModel'
 
 export abstract class EmployeeMasterDatasource {
 
-    abstract pullEmployeeMaster(params: FilterWithPaginationEmployeeMasterRequest): Promise<ApiResponse<EmployeeMasterData>>;
-    abstract addUpdateEmployeeMaster(data: AddUpdateEmployeeMasterRequest): Promise<ApiResponse<EmployeeMasterData>>;
+    abstract pullEmployeeMaster(params: FilterWithPaginationEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
+    abstract addUpdateEmployeeMaster(data: AddUpdateEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
 }
 
 export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
@@ -19,7 +18,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
     }
 
 
-    async pullEmployeeMaster(params: FilterWithPaginationEmployeeMasterRequest): Promise<ApiResponse<EmployeeMasterData>> {
+    async pullEmployeeMaster(params: FilterWithPaginationEmployeeMasterRequest): Promise<EmployeeMasterListResponse> {
         try {
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
@@ -43,7 +42,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
                 `${EmployeeMasterApi.PULL}?${queryParams.toString()}`
             )
 
-            return response as ApiResponse<EmployeeMasterData>
+            return response
         } catch (error) {
 
             console.error('Error: Pull Employee Master:', error);
@@ -51,7 +50,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
         }
     }
 
-    async addUpdateEmployeeMaster(data: AddUpdateEmployeeMasterRequest): Promise<ApiResponse<EmployeeMasterData>> {
+    async addUpdateEmployeeMaster(data: AddUpdateEmployeeMasterRequest): Promise<EmployeeMasterListResponse> {
 
         try {
 
@@ -97,7 +96,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
                 payLoad
             )
 
-            return response as ApiResponse<EmployeeMasterData>
+            return response
         } catch (error) {
             console.error('Error: Add Update Employee Master:', error)
             throw error

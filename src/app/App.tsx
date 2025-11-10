@@ -3,12 +3,12 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from '../ui/layouts/Layout';
 import ErrorFallbackPage from '@/features/errorFallbackPage/pages/ErrorFallbackPage'
 import { useNetworkStatus } from '@/core/hooks/useNetworkStatus';
-
-// Lazy load routes for code splitting and better performance
 import { SignIn } from '@/features/authentication/pages/signIn';
 import Dashboard from '@/features/dashboard/pages/Dashboard';
 import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMaster';
 import EmployeeMaster from '@/features/employeeMaster/pages/EmployeeMaster';
+import { Profile } from '@/features/profile/page/profile';
+import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -22,7 +22,8 @@ const LoadingSpinner = () => (
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem('auth_token')
+
+  const token =LocalStorageHelper.getStoredTokenData();
 
   if (!token) {
     return <Navigate to="/login" replace />
@@ -36,7 +37,7 @@ function App() {
 
   // Check for existing auth token on app load
   useEffect(() => {
-    const token = localStorage.getItem('auth_token')
+    const token = LocalStorageHelper.getStoredTokenData()
     if (!token) {
       // Token validation could be added here if needed
     }
@@ -63,7 +64,7 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="departmentMaster" element={<DepartmentMaster />} />
           <Route path="employeeMaster" element={<EmployeeMaster />} />
-          {/* <Route path="designationMaster" element={<DesignationMaster />} /> */}
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/sign-in" replace />} />

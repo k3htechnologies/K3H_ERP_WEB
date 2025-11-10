@@ -1,4 +1,5 @@
 import { config, getApiUrl } from '../config/environment'
+import { LocalStorageHelper } from '../utils/localStorageHelper'
 import {
     BadRequestException,
     ApiNotRespondingException,
@@ -26,7 +27,7 @@ export class BaseClient {
 
         this.apiKey = apiKey || config.apiKey
 
-        this.token = token || localStorage.getItem('auth_token');
+        this.token = token || LocalStorageHelper.getStoredTokenData();
 
         this.userUniqueKey = userUniqueKey
     }
@@ -309,9 +310,10 @@ export class BaseClient {
             const response = await this.getRequestWithoutAuthentication(url)
             if (response?.data) {
                 this.token = response.data
-                // Update localStorage with new token
+
                 if (typeof window !== 'undefined' && this.token) {
-                    localStorage.setItem('auth_token', this.token)
+
+                    LocalStorageHelper.storeToken(this.token);
                 }
                 // Token refreshed successfully, retry original request
                 return

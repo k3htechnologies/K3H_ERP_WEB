@@ -49,7 +49,7 @@ export const Modal: React.FC<ModalProps> = ({
     if (size === 'half-screen' || size === 'small-half' || size === 'large-half') {
 
         return (
-            <div className="fixed inset-0 bg-opacity-50 z-50">
+            <div className="fixed inset-0  bg-opacity-50 z-50">
                 {/* Half-screen modal on the right */}
                 <div className={`fixed right-0 top-0 h-full  bg-white shadow-2xl flex flex-col ${widthSize}`}>
                     {/* Header */}
@@ -68,8 +68,8 @@ export const Modal: React.FC<ModalProps> = ({
 
                     {/* CHILDERN */}
 
-                    <form onSubmit={onSubmit} className="flex-1 flex flex-col p-6">
-                        <div className="flex-1 space-y-6">
+                    <form onSubmit={onSubmit} className="flex-1 flex flex-col p-6 min-h-0 overflow-hidden">
+                        <div className="flex-1 flex flex-col space-y-6 min-h-0">
                             {children}
                         </div>
 

@@ -212,10 +212,10 @@ export const Header: React.FC<HeaderProps> = ({
                     title="Notifications"
                     size="small-half"
                 >
-                    <div className="p-4 relative flex flex-col">
+                    <div className="flex flex-1 flex-col min-h-0 relative">
 
                         <div
-                            className="flex-1 min-h-0 overflow-auto pr-2 divide-y divide-gray-200 pt-4 pb-20 max-h-[calc(100vh-6rem)]"
+                            className="flex-1 min-h-0 overflow-auto divide-y divide-gray-200"
                             onScroll={handleNotificationScroll}
                         >
                             {notificationList.length > 0 ? (

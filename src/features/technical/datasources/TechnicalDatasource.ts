@@ -1,11 +1,14 @@
+import type { ApiResponse } from '@/core/api/ApiResponse';
 import baseClient from '@/core/config/baseClient'
+import { TokenExpiredException } from '@/core/config/baseClientexceptions';
 import { TechnicalApi } from '@/features/technical/api/TechnicalApi'
-import type { FilterWithPaginationNotificationRequest, NotificationListResponse, TechnicalListResponse } from '@/features/technical/models/TechnicalModel'
+import type { FilterRefreshTokenRequest, FilterWithPaginationNotificationRequest, NotificationListResponse, TechnicalListResponse } from '@/features/technical/models/TechnicalModel'
 
 export abstract class TechnicalDatasource {
 
     abstract getEnvironment(): Promise<TechnicalListResponse>;
     abstract pullNotification(params: FilterWithPaginationNotificationRequest): Promise<NotificationListResponse>;
+    abstract refreshToken(params: FilterRefreshTokenRequest): Promise<ApiResponse<string>>;
 }
 
 export class TechnicalDatasourceImpl implements TechnicalDatasource {
@@ -42,9 +45,32 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
             )
 
             return response;
-        } catch (error) {
 
+        } catch (error) {
             console.error('ERROR: PULL NOTIFICATION :', error);
+
+            if (error === TokenExpiredException) {
+
+            await this.pullNotification(params);
+            }
+
+            throw error
+        }
+    }
+
+    async refreshToken(params: FilterRefreshTokenRequest): Promise<ApiResponse<string>> {
+        try {
+            const queryParams = new URLSearchParams({
+                Uniquekey: (params.Uniquekey ?? '').toString()
+            })
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${TechnicalApi.REFRESH_TOKEN}?${queryParams.toString()}`
+            )
+
+            return response;
+        } catch (error) {
+            console.error('ERROR: REFRESH TOKEN :', error);
             throw error
         }
     }

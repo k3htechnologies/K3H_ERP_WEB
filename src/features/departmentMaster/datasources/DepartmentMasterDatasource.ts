@@ -1,5 +1,5 @@
-import baseClient from '../../../core/config/baseClient'
-import { DepartmentMasterApi } from '../api/DepartmentMasterApi'
+import baseClient from '@/core/config/baseClient'
+import { DepartmentMasterApi } from '@/features/departmentMaster/api/DepartmentMasterApi'
 import type {
     FilterWithPaginationDepartmentMasterRequest,
     AddUpdateDepartmentMasterRequest,
@@ -39,10 +39,10 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
                 `${DepartmentMasterApi.PULL}?${queryParams.toString()}`
             )
 
-            return response ;
+            return response;
         } catch (error) {
 
-            console.error('Error: Pull Department Master:', error);
+            console.error('ERROR: PULL DEPARTMENT MASTER :', error);
             throw error
         }
     }
@@ -65,7 +65,7 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
 
             return response
         } catch (error) {
-            console.error('Error: Add Update Department Master:', error)
+            console.error('ERROR: ADD UPDATE DEPARTMENT MASTER :', error)
             throw error
         }
     }
@@ -85,7 +85,7 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
 
         } catch (error) {
 
-            console.error('❌ Error: Delete Department Master:', error)
+            console.error('ERROR: DELETE DEPARTMENT MASTER :', error)
             throw error
         }
     }

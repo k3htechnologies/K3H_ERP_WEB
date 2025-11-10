@@ -343,7 +343,7 @@ export const DataTable: React.FC<DataTableProps> = ({
               backgroundColor: '#E5E5E5',
               position: fixedHeight ? 'sticky' : 'static',
               top: 0,
-              zIndex: 40,
+              zIndex: 30,
             }}
           >
             <tr

@@ -1,4 +1,4 @@
-import type { ApiResponse } from "../../../core/api/ApiResponse"
+import type { ApiResponse } from "@/core/api/ApiResponse"
 
 export interface FilterWithPaginationDepartmentMasterRequest {
     PageSize: number

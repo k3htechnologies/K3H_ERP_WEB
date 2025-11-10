@@ -315,7 +315,6 @@ export class BaseClient {
 
                     LocalStorageHelper.storeToken(this.token);
                 }
-                // Token refreshed successfully, retry original request
                 return
             }
             throw new TokenExpiredException('TOKEN EXPIRED')

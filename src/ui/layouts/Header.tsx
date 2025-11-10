@@ -210,7 +210,7 @@ export const Header: React.FC<HeaderProps> = ({
                     isOpen={isNotificationOpen}
                     onClose={() => setIsNotificationOpen(false)}
                     title="Notifications"
-                    size="small-half"
+                    size="half-screen"
                 >
                     <div className="flex flex-1 flex-col min-h-0 relative">
 
@@ -222,20 +222,24 @@ export const Header: React.FC<HeaderProps> = ({
                                 notificationList.map((n, i) => (
                                     <div
                                         key={n.NotificationId ?? i}
-                                        className="flex justify-between items-center py-3 hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                                        className="flex items-start gap-3 py-3 hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
                                         onClick={() => { if (n.Path) navigate(n.Path); }}
                                     >
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                {!n.IsRead && <span className="h-2 w-2 bg-blue-500 rounded-full flex-shrink-0" />}
-                                                <p className="text-sm font-medium text-gray-900 truncate">{n.Title}</p>
+                                                {!n.IsRead && <span className="h-2 w-2 bg-blue-500 rounded-full flex-shrink-0 mt-1" />}
+                                                <p className="text-sm font-medium text-gray-900 break-words">{n.Title}</p>
                                             </div>
-                                            <p className="text-xs text-gray-500 mt-1 truncate">{n.Description}</p>
+                                            <div className="flex items-center justify-between gap-3 mt-1">
+                                                <p className="text-xs text-gray-500 flex-1 whitespace-normal break-words">
+                                                    {n.Description}
+                                                </p>
+                                                <span className="text-xs text-gray-400 flex-shrink-0 whitespace-nowrap">
+                                                    {formatDate_dd_MonthName_yy_hh_mm(n.CreatedDate)}
+                                                </span>
+                                            </div>
                                         </div>
 
-                                        <div className="ml-3 text-xs text-gray-400 whitespace-nowrap">
-                                            {formatDate_dd_MonthName_yy_hh_mm(n.CreatedDate)}
-                                        </div>
                                     </div>
                                 ))
                             ) : (

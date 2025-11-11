@@ -106,7 +106,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     }
 
     return (
-      <div style={{ width: fullWidth ? '100%' : 'auto', marginBottom: theme.spacing.lg }}>
+      <div style={{ width: fullWidth ? '100%' : 'auto', marginBottom: theme.spacing.sm }}>
         {label && (
           <label style={{
             display: 'block',

@@ -159,7 +159,7 @@ export const Profile: React.FC = () => {
                                         value={safe(employeeData.PermanentAddress)}
                                     />
                                 </div>
-                                
+
                                 <FieldItem label="Country" value={safe(employeeData.CountryName)} />
                                 <FieldItem label="State" value={safe(employeeData.StateName)} />
                                 <FieldItem label="District" value={safe(employeeData.DistrictName)} />

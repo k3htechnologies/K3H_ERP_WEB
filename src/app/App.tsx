@@ -54,6 +54,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/error" element={<ErrorFallbackPage />} />
+        <Route path="profile" element={<Profile />} />
 
         {/* Protected Routes with Layout */}
         <Route
@@ -68,7 +69,7 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="departmentMaster" element={<DepartmentMaster />} />
           <Route path="employeeMaster" element={<EmployeeMaster />} />
-          <Route path="profile" element={<Profile />} />
+          
         </Route>
 
         <Route path="*" element={<Navigate to="/sign-in" replace />} />

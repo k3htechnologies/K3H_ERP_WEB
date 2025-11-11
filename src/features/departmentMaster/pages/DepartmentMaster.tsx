@@ -23,6 +23,7 @@ import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
 import Checkbox from '@/ui/components/forms/Checkbox';
+import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 
 
 export const DepartmentMaster: React.FC = () => {
@@ -67,6 +68,13 @@ export const DepartmentMaster: React.FC = () => {
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeDepartmentMasterColumnsModal, setIsShowCustomizeDepartmentMasterColumnsModal] = useState(false);
 
+  //EXPORT EXCEL AND PDF DIALOG BOX
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const exportRef = useRef<HTMLDivElement | null>(null);
+  //#endregion
+
+  //#region MENU PERMISSIONS
+  const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
   //#region INITIALIZATION
@@ -81,6 +89,17 @@ export const DepartmentMaster: React.FC = () => {
 
     fetchDepartmentList()
   }, [])
+
+  //EXPORT EXCEL AND PDF DIALOG BOX
+  useEffect(() => {
+    function handleDocClick(e: MouseEvent) {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+        setIsExportOpen(false);
+      }
+    }
+    document.addEventListener('click', handleDocClick);
+    return () => document.removeEventListener('click', handleDocClick);
+  }, []);
   //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
@@ -257,7 +276,7 @@ export const DepartmentMaster: React.FC = () => {
       fixed: 'left',
       align: 'left',
       render: (value, row) => (
-        <div className="flex items-center justify-between">
+        <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
 
           <TooltipText
             text={value || 'N/A'}
@@ -266,60 +285,62 @@ export const DepartmentMaster: React.FC = () => {
             onClick={() => handleViewDepartmentDetails(row)} // just pass a function, no need for e.preventDefault here
           />
 
-          <div className="flex items-center justify-end ml-2 w-20">
-            {(row.NumberOfEmployee || 0) === 0 ? (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    handleEditDepartmentMaster(row)
-                  }}
-                  className="p-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors duration-200 mr-1"
-                  title="Edit Department"
-                  style={{
-                    color: '#0B3251',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                  onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                >
-                  <Edit className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    handleConfirmationDialogBoxOpen(row)
-                  }}
-                  className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-200"
-                  title="Delete Department"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    handleEditDepartmentMaster(row)
-                  }}
-                  className="p-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors duration-200"
-                  title="Edit Department"
-                  style={{
-                    color: '#0B3251',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                  onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                >
-                  <Edit className="h-4 w-4" />
-                </button>
-                <div className="w-[30px]" />
-              </>
+          {canAction && (
+            <div className="flex items-center justify-end ml-2 w-20">
+              {(row.NumberOfEmployee || 0) === 0 ? (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleEditDepartmentMaster(row)
+                    }}
+                    className="p-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors duration-200 mr-1"
+                    title="Edit Department"
+                    style={{
+                      color: '#0B3251',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                  >
+                    <Edit className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleConfirmationDialogBoxOpen(row)
+                    }}
+                    className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-200"
+                    title="Delete Department"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleEditDepartmentMaster(row)
+                    }}
+                    className="p-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors duration-200"
+                    title="Edit Department"
+                    style={{
+                      color: '#0B3251',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                  >
+                    <Edit className="h-4 w-4" />
+                  </button>
+                  <div className="w-[30px]" />
+                </>
 
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       )
     },
@@ -938,7 +959,7 @@ export const DepartmentMaster: React.FC = () => {
         <div className="bg-white border-b border-gray-200 pb-4">
           <div className="flex items-center space-x-4">
             {/* SEARCH BAR */}
-            <div className="flex-1 relative">
+            <div className="flex-1 relative min-w-0">
               <Input
                 type="text"
                 value={searchTerm}
@@ -947,14 +968,59 @@ export const DepartmentMaster: React.FC = () => {
                 leftIcon={
                   <Search className="h-4 w-4 text-gray-400" />
                 }
-                rightIcon={searchTerm && (
-                  <button
-                    onClick={clearsearchDepartments}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
+                rightIcon={
+                  <div className="flex items-center space-x-1 pr-1">
+                    {/* CLEAR SEARCH (X) BUTTON */}
+                    {searchTerm && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          clearsearchDepartments();
+                        }}
+                        className="p-1 text-gray-400 hover:text-gray-600"
+                        title="Clear search"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+
+                    {/* FILTER BUTTON */}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setTempFilters(filters);
+                        setShowFilterPopup(true);
+                      }}
+                      className={`flex items-center p-1.5 rounded-md transition-colors relative ${Object.keys(filters).length > 0
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      title={
+                        Object.keys(filters).length > 0
+                          ? `Active filters: ${Object.entries(filters)
+                            .filter(([_, value]) => value)
+                            .map(([key, value]) => `${key}: ${value}`)
+                            .join(', ')}`
+                          : 'Filter'
+                      }
+                    >
+                      <Filter className="h-4 w-4" />
+                      {Object.keys(filters).length > 0 && (
+                        <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
+                          <span className="text-xs text-white font-bold">
+                            {
+                              Object.values(filters).filter(
+                                (value) => value && value.trim() !== ''
+                              ).length
+                            }
+                          </span>
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                }
               />
 
             </div>
@@ -977,105 +1043,92 @@ export const DepartmentMaster: React.FC = () => {
                 Customize Table
               </button>
 
-              {/* Add Button */}
-              <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleAddDepartmentModal()
-                }}
-                className="flex items-center p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                title="Add Department"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
+              {/* ADD BUTTON AND IMPORT BUTTON */}
+              {canAction && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleAddDepartmentModal()
+                    }}
+                    className="flex items-center p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    title="Add Department"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
 
-              {/* FILTER BUTTON */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      // setImportisViewModalOpen(true)
+                    }}
+                    className="flex items-center p-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
+                    title="Import"
+                  >
+                    <Upload className="h-4 w-4" />
+                  </button>
 
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setTempFilters(filters);
-                  setShowFilterPopup(true);
-                }}
-                className={`flex items-center p-2 rounded-md transition-colors relative ${Object.keys(filters).length > 0
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                title={Object.keys(filters).length > 0 ? `Active filters: ${Object.entries(filters).filter(([_, value]) => value).map(([key, value]) => `${key}: ${value}`).join(', ')}` : 'Filter'}
-              >
-                <Filter className="h-4 w-4" />
-                {Object.keys(filters).length > 0 && (
-                  <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-xs text-white font-bold">
-                      {Object.values(filters).filter(value => value && value.trim() !== '').length}
-                    </span>
-                  </div>
-                )}
-              </button>
+                </>
+              )}
 
+              {/* EXPORT BUTTON */}
+              {canExport && (
+                <div className="relative" ref={exportRef}>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsExportOpen((s) => !s);
+                    }}
+                    aria-haspopup="menu"
+                    aria-expanded={isExportOpen}
+                    className="flex items-center p-2 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 transition-colors"
+                    title="Export"
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>
 
-              {/* IMPORT BUTTON */}
+                  {isExportOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-50">
+                      <div className="py-1">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleExportDepartmentExcel();
+                            setIsExportOpen(false);
+                          }}
+                          disabled={isLoading}
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Export as Excel"
+                        >
+                          <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
+                          Export as Excel
+                        </button>
 
-              <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  // setImportisViewModalOpen(true)
-                }}
-                className="flex items-center p-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
-                title="Import"
-              >
-                <Upload className="h-4 w-4" />
-              </button>
-
-              {/* EXPORT DROPDOWN */}
-              <div className="relative group">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                  }}
-                  className="flex items-center p-2 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 transition-colors"
-                  title="Export"
-                >
-                  <Download className="h-4 w-4" />
-                </button>
-
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="py-1">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleExportDepartmentExcel()
-                      }}
-                      disabled={isLoading}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-
-                      <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
-
-                      Export as Excel
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleExportDepartmentPdf()
-                      }}
-                      disabled={isLoading}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-
-                      <FileText className="h-4 w-4 mr-2 text-red-600" />
-
-                      Export as PDF
-                    </button>
-                  </div>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleExportDepartmentPdf();
+                            setIsExportOpen(false);
+                          }}
+                          disabled={isLoading}
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Export as PDF"
+                        >
+                          <FileText className="h-4 w-4 mr-2 text-red-600" />
+                          Export as PDF
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
+
+
             </div>
           </div>
         </div>

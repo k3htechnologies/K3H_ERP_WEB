@@ -126,12 +126,12 @@ export const LocalStorageHelper = {
     //#endregion
 
     //#region GET MENU DATA 
-    getMenuData: (): ModuleData | null => {
+    getMenuData: (): ModuleData[] | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MENU_MODULE)
         if (stored) {
             try {
 
-                return JSON.parse(stored) as ModuleData;
+                return JSON.parse(stored) as ModuleData[];
 
             } catch (error) {
                 console.error('ERROR : GET MENU DATA :', error)

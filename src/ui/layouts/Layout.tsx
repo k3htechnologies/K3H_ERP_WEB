@@ -9,6 +9,7 @@ import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import type { PullMenuRequest } from '@/features/menu/models/MenuModel';
 import type { ModuleData, SubModuleData, SubSubModuleData } from '@/features/menu/models/MenuModel';
 import { getPageInfo } from '@/core/constants/pageInfo';
+import { MenuProvider } from '@/features/menu/context/MenuContext';
 
 export const Layout: React.FC = () => {
     const location = useLocation()
@@ -47,12 +48,6 @@ export const Layout: React.FC = () => {
                     if (menu) {
 
                         setMenuData(response.right.Data);
-
-                        // ============================================================================
-                        // ✅ STORE MODULE MENU DATA INTO LOCAL STORAGE
-                        // ============================================================================
-
-                        LocalStorageHelper.storeMenuData(response.right.Data);
 
                     } else {
 
@@ -109,7 +104,8 @@ export const Layout: React.FC = () => {
     }
 
     return (
-        <div className="h-screen bg-gray-50 flex overflow-hidden">
+        <MenuProvider menu={menuData}>
+            <div className="h-screen bg-gray-50 flex overflow-hidden">
             {/* Sidebar */}
             <Sidebar
                 isOpen={isSidebarOpen}
@@ -206,6 +202,7 @@ export const Layout: React.FC = () => {
                     </div>
                 </main>
             </div>
-        </div>
+            </div>
+        </MenuProvider>
     )
 }

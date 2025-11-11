@@ -16,7 +16,6 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   style?: CSSProperties
   autoResize?: boolean
 }
-
 export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string
   helperText?: string
@@ -45,7 +44,6 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   rightIcon?: ReactNode
   loadingText?: string
 }
-
 export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: React.ReactNode
   helperText?: React.ReactNode

@@ -39,7 +39,6 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${DepartmentMasterApi.PULL}?${queryParams.toString()}`
             )
-console.log('AKASH');
             return response;
         } catch (error) {
 

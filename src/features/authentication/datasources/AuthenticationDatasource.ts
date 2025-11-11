@@ -1,5 +1,6 @@
 import type { ApiResponse } from '@/core/api/ApiResponse'
 import baseClient from '@/core/config/baseClient'
+import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { AuthenticationApi } from '@/features/authentication/api/AuthenticationApi'
 import type { AuthenticationResponse } from '@/features/authentication/models/AuthenticationModel'
 
@@ -26,7 +27,7 @@ export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
             return response as ApiResponse<string>;
 
         } catch (error) {
-
+            
             throw error
         }
     }

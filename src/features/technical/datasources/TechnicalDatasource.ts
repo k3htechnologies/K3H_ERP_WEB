@@ -51,7 +51,7 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
 
             if (error === TokenExpiredException) {
 
-            await this.pullNotification(params);
+                await this.pullNotification(params);
             }
 
             throw error
@@ -70,6 +70,7 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
 
             return response;
         } catch (error) {
+
             console.error('ERROR: REFRESH TOKEN :', error);
             throw error
         }

@@ -31,18 +31,33 @@ export const Layout: React.FC = () => {
         hasFetchedMenu.current = true;
 
         const loadMenuData = async () => {
+
             try {
+
                 const request: PullMenuRequest = {
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
                 };
+
                 const response = await menuService.apiCallPullMenu(request)
 
                 if (E.isRight(response)) {
+
                     const menu = response.right.Data;
+
                     if (menu) {
+
                         setMenuData(response.right.Data);
+
+                        // ============================================================================
+                        // ✅ STORE MODULE MENU DATA INTO LOCAL STORAGE
+                        // ============================================================================
+
+                        LocalStorageHelper.storeMenuData(response.right.Data);
+
                     } else {
+
                         setMenuData([]);
+
                     }
                 }
             } catch (err: any) {
@@ -53,35 +68,42 @@ export const Layout: React.FC = () => {
         }
 
         loadMenuData();
+
     }, [])
 
     const handleToggleSidebar = () => {
+
         setIsSidebarOpen(!isSidebarOpen)
     }
 
     const handleCloseSidebar = () => {
+
         setIsSidebarOpen(false)
     }
 
     const handleModuleSelect = (module: ModuleData) => {
+
         setSelectedModule(module)
         setSelectedSubModule(null)
         setSelectedSubSubModule(null)
     }
 
     const handleSubModuleSelect = (subModule: SubModuleData) => {
+
         setSelectedSubModule(subModule)
         setSelectedModule(null)
         setSelectedSubSubModule(null)
     }
 
     const handleSubSubModuleSelect = (subSubModule: SubSubModuleData) => {
+
         setSelectedSubSubModule(subSubModule)
         setSelectedModule(null)
         setSelectedSubModule(null)
     }
 
     const handleLogout = () => {
+
         LocalStorageHelper.clearLocalStorageData();
         window.location.href = '/sign-in'
     }
@@ -105,6 +127,7 @@ export const Layout: React.FC = () => {
             {/* Main content area */}
             <div className="flex-1 flex flex-col overflow-hidden min-w-0">
                 {/* Header */}
+                
                 <Header
                     isSidebarOpen={isSidebarOpen}
                     onToggleSidebar={handleToggleSidebar}

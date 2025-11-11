@@ -1,6 +1,6 @@
 export const EmployeeMasterApi = {
-    PULL: '/EmployeeMaster/PullEmployeeMaster',
-    ADD_UPDATE: '/EmployeeMaster/AddUpdateEmployeeMaster'
+    PULL: '/Employee/PullEmployee',
+    ADD_UPDATE: '/Employee/AddUpdateEmployeeMaster'
 } as const
 
 export type EmployeeMasterApiKeys = keyof typeof EmployeeMasterApi

@@ -1,19 +1,18 @@
-import type { ApiResponse } from '../../../core/api/ApiResponse';
-import type { Failure } from '../../../core/api/FailureResponse';
-import { EmployeeMasterDatasourceImpl } from '../datasources/EmployeeMasterDatasource'
+import type { Failure } from '@/core/api/FailureResponse';
+import { EmployeeMasterDatasourceImpl } from '@/features/employeeMaster/datasources/EmployeeMasterDatasource'
 import type {
     FilterWithPaginationEmployeeMasterRequest,
     AddUpdateEmployeeMasterRequest,
-    EmployeeMasterData
+    EmployeeMasterListResponse
 } from '../models/EmployeeMasterModel';
 
 import * as E from 'fp-ts/Either';
 
 const employeeMasterDatasource = new EmployeeMasterDatasourceImpl();
 
-export const EmployeeMasterService = {
+export const employeeMasterService = {
 
-    apiCallPullEmployeeMaster: async (params: FilterWithPaginationEmployeeMasterRequest): Promise<E.Either<Failure, ApiResponse<EmployeeMasterData>>> => {
+    apiCallPullEmployeeMaster: async (params: FilterWithPaginationEmployeeMasterRequest): Promise<E.Either<Failure, EmployeeMasterListResponse>> => {
         try {
 
             return E.right(await employeeMasterDatasource.pullEmployeeMaster(params));
@@ -25,7 +24,7 @@ export const EmployeeMasterService = {
         }
     },
 
-    apiCallAddUpdateEmployeeMaster: async (data: AddUpdateEmployeeMasterRequest): Promise<E.Either<Failure, ApiResponse<EmployeeMasterData>>> => {
+    apiCallAddUpdateEmployeeMaster: async (data: AddUpdateEmployeeMasterRequest): Promise<E.Either<Failure,EmployeeMasterListResponse>> => {
         try {
 
             return E.right(await employeeMasterDatasource.addUpdateEmployeeMaster(data));

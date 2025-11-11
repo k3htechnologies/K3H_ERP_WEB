@@ -1,5 +1,6 @@
-import baseClient from '../../../core/config/baseClient'
-import { DepartmentMasterApi } from '../api/DepartmentMasterApi'
+import baseClient from '@/core/config/baseClient'
+import { TokenExpiredException } from '@/core/config/baseClientexceptions'
+import { DepartmentMasterApi } from '@/features/departmentMaster/api/DepartmentMasterApi'
 import type {
     FilterWithPaginationDepartmentMasterRequest,
     AddUpdateDepartmentMasterRequest,
@@ -38,24 +39,28 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${DepartmentMasterApi.PULL}?${queryParams.toString()}`
             )
-
-            return response ;
+            return response;
         } catch (error) {
 
-            console.error('Error: Pull Department Master:', error);
+            console.error('ERROR: PULL DEPARTMENT MASTER :', error);
+
+            if (error === TokenExpiredException) {
+                await this.pullDepartmentMaster(params);
+            }
+            console.log('AKASH 1');
             throw error
         }
     }
 
-    async addUpdateDepartmentMaster(data: AddUpdateDepartmentMasterRequest): Promise<DepartmentMasterSaveResponse> {
+    async addUpdateDepartmentMaster(params: AddUpdateDepartmentMasterRequest): Promise<DepartmentMasterSaveResponse> {
 
         try {
 
             const payLoad: AddUpdateDepartmentMasterRequest = {
-                DepartmentMasterId: data.DepartmentMasterId ?? 0,
-                Uniquekey: data.Uniquekey ?? '',
-                DepartmentCode: data.DepartmentCode?.trim() ?? '',
-                DepartmentName: data.DepartmentName?.trim() ?? '',
+                DepartmentMasterId: params.DepartmentMasterId ?? 0,
+                Uniquekey: params.Uniquekey ?? '',
+                DepartmentCode: params.DepartmentCode?.trim() ?? '',
+                DepartmentName: params.DepartmentName?.trim() ?? '',
             }
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
@@ -65,7 +70,11 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
 
             return response
         } catch (error) {
-            console.error('Error: Add Update Department Master:', error)
+            console.error('ERROR: ADD UPDATE DEPARTMENT MASTER :', error)
+
+            if (error === TokenExpiredException) {
+                await this.addUpdateDepartmentMaster(params);
+            }
             throw error
         }
     }
@@ -84,8 +93,12 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
             return response
 
         } catch (error) {
+            if (error === TokenExpiredException) {
+                console.error('ERROR: DELETE DEPARTMENT MASTER :', error)
+                await this.deleteDepartmentMaster(params);
 
-            console.error('❌ Error: Delete Department Master:', error)
+            }
+
             throw error
         }
     }

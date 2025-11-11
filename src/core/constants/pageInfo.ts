@@ -20,6 +20,11 @@ export const getPageInfo = (path: string) => {
                 title: 'Settings - Company setup (Employee)',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
+            case '/profile':
+            return {
+                title: 'Employee Profile',
+                description: 'Profile',
+            }
         // ✅ Add other cases here...
         default:
             return {

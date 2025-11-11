@@ -177,7 +177,6 @@ export const DataTable: React.FC<DataTableProps> = ({
     }
   }
 
-
   const getActionButtonClass = (variant: string = 'secondary') => {
     const baseClass = 'p-1.5 rounded-md transition-colors duration-200 touch-manipulation'
     switch (variant) {
@@ -263,12 +262,13 @@ export const DataTable: React.FC<DataTableProps> = ({
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col ${fixedHeight ? 'h-full' : ''} ${className}`}>
-      {/* Header with Filter Toggle, Add Button and Export Options */}
+    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${fixedHeight ? 'h-full' : ''} ${className}`}>
+
       {(onAdd || exportOptions || filterFields) && (
         <div className="border-b border-gray-200 flex-shrink-0">
           {/* Main Header Row */}
-          <div className="flex justify-between items-center p-4">
+          <div className="flex justify-between items-center px-4 pt-4 pb-0">
+
             {/* Filter Button - Direct Popup Open */}
             {filterFields && filterFields.length > 0 && (
               <button
@@ -331,93 +331,57 @@ export const DataTable: React.FC<DataTableProps> = ({
         </div>
       )}
 
-
       {/* Table Container with Fixed Height */}
-      <div className={`overflow-x-auto ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
-        maxHeight: recordsPerPage === 10 ? 'calc(10 * 2.5rem + 2.5rem)' : maxHeight
-      } : {}}>
-        <table className="min-w-full border-collapse border border-gray-300">
+      <div
+        className="relative overflow-auto"
+        style={{
+          maxHeight: fixedHeight
+            ? (recordsPerPage === 10
+              ? 'calc(10 * 2.5rem + 2.5rem)'
+              : maxHeight)
+            : undefined,
+        }}
+      >
+        <table className="min-w-full border-collapse border border-gray-300" style={{borderCollapse:'separate', borderSpacing:0, backgroundColor:"gray"}}>
+
           <thead
             className={`${fixedHeight ? 'sticky top-0 z-40' : ''} shadow-sm`}
             style={{
               backgroundColor: '#E5E5E5',
               position: fixedHeight ? 'sticky' : 'static',
               top: 0,
-              zIndex: 40,
+              zIndex: 30,
             }}
           >
-            <tr
-              className="h-10"
-              style={{
-                fontSize: '14px',
-                fontWeight: '500',
-                lineHeight: '1.4',
-                letterSpacing: '0%',
-                paddingTop: '6px',
-                paddingBottom: '6px',
-              }}
-            >
+            <tr className="h-10 text-sm font-medium text-gray-800 leading-none">
+
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-4 py-2 text-gray-800 tracking-wider whitespace-nowrap
-          ${column.align === 'center' ? 'text-center' :
-                      column.align === 'right' ? 'text-right' : 'text-left'}
-          ${column.width ? `w-${column.width}` : ''}
+                  className={`
+          px-4 py-2 whitespace-nowrap
+          ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
           ${column.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
           ${column.fixed === 'left'
-                      ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]'
+                      ? 'sticky left-0 bg-gray-200 z-[60] shadow-[2px_0_4px_rgba(0,0,0,0.1)]'
                       : column.fixed === 'right'
-                        ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
+                        ? 'sticky right-0 bg-gray-200 z-[60] shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
                         : ''
-                    }
-        `}
-                  style={{
-                    ...(column.width ? { width: column.width } : {}),
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    lineHeight: '1.4',
-                    letterSpacing: '0%',
-                    backgroundColor: '#E5E5E5',
-                    borderBottom: '1px solid #D1D5DB', // ✅ Only bottom border (prevents double)
-                    borderRight: '1px solid #D1D5DB',  // ✅ Keep vertical separation
-                  }}
+                    }`}
                   onClick={() => column.sortable && handleSort(column.key)}
                 >
-                  <div
-                    className={`flex items-center space-x-1 ${column.align === 'center'
-                        ? 'justify-center'
-                        : column.align === 'right'
-                          ? 'justify-end'
-                          : 'justify-start'
-                      }`}
-                  >
-                    <span className="truncate">{column.label}</span>
-                    {column.sortable && (
-                      <ArrowUpDown className="h-3 w-3 flex-shrink-0" />
-                    )}
+                  <div className="flex items-center space-x-1">
+                    <span>{column.label}</span>
+                    {column.sortable && <ArrowUpDown className="h-3 w-3" />}
                     {sortInfo?.column === column.key && (
-                      <span className="text-blue-500 flex-shrink-0">
-                        {sortInfo.direction === 'asc' ? '↑' : '↓'}
-                      </span>
+                      <span className="text-blue-500">{sortInfo.direction === 'asc' ? '↑' : '↓'}</span>
                     )}
                   </div>
                 </th>
               ))}
 
               {actions.length > 0 && (
-                <th
-                  className="px-4 py-2 text-left text-gray-800 uppercase tracking-wider w-24 whitespace-nowrap"
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    lineHeight: '100%',
-                    letterSpacing: '0%',
-                    backgroundColor: '#E5E5E5',
-                    borderBottom: '1px solid #D1D5DB',
-                    borderRight: '1px solid #D1D5DB',
-                  }}
-                >
+                <th className="px-4 py-2 sticky right-0 bg-gray-200 z-[60] shadow-[-2px_0_4px_rgba(0,0,0,0.1)]">
                   Actions
                 </th>
               )}
@@ -439,14 +403,17 @@ export const DataTable: React.FC<DataTableProps> = ({
                 <tr key={index} className="hover:bg-gray-50 h-10 border-b border-gray-200">
                   {columns.map((column) => {
                     const cellValue = column.render ? column.render(row[column.key], row) : row[column.key]
-                    
+
                     return (
                       <td
                         key={column.key}
                         className={`px-4 py-2 text-gray-900 border-r border-gray-200 ${column.align === 'center' ? 'text-center' :
                           column.align === 'right' ? 'text-right' : 'text-left'
-                          } ${column.fixed === 'left' ? 'sticky left-0 bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-400' :
-                            column.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-400' : ''
+                          } ${column.fixed === 'left'
+                            ? 'sticky left-0 bg-white z-10 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-400'
+                            : column.fixed === 'right'
+                              ? 'sticky right-0 bg-white z-10 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-400'
+                              : ''
                           }`}
                         style={{
                           ...(column.width ? { width: column.width } : {}),

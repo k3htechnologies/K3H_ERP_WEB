@@ -7,7 +7,7 @@ export const THEME = {
 
     spacing: {
         xs: '4px',
-        sm: '8px',
+        sm: '0',
         md: '12px',
         lg: '16px',
         xl: '20px',
@@ -15,9 +15,11 @@ export const THEME = {
     },
 
     borderRadius: {
-        sm: '6px',
-        md: '8px',
-        lg: '12px',
+        sm: '0.25rem',
+        md: '0.375rem',
+        lg: '0.5rem',
+        xl: '0.75rem',
+        doublexl: '1rem',
     },
 
     fontSize: {

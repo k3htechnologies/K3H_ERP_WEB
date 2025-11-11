@@ -1,14 +1,13 @@
-import type { Failure } from '../../../core/api/FailureResponse';
-import { DepartmentMasterDatasourceImpl } from '../datasources/DepartmentMasterDatasource'
+import type { Failure } from '@/core/api/FailureResponse';
+import { DepartmentMasterDatasourceImpl } from '@/features/departmentMaster/datasources/DepartmentMasterDatasource'
 import type {
     FilterWithPaginationDepartmentMasterRequest,
     AddUpdateDepartmentMasterRequest,
     DeleteDepartmentMasterRequest,
-
     DepartmentMasterListResponse,
     DepartmentMasterSaveResponse,
     DepartmentMasterDeleteResponse
-} from '../models/DepartmentMasterModel';
+} from '@/features/departmentMaster/models/DepartmentMasterModel';
 
 import * as E from 'fp-ts/Either';
 
@@ -28,10 +27,10 @@ export const departmentMasterService = {
         }
     },
 
-    apiCallAddUpdateDepartmentMaster: async (data: AddUpdateDepartmentMasterRequest): Promise<E.Either<Failure, DepartmentMasterSaveResponse>> => {
+    apiCallAddUpdateDepartmentMaster: async (params: AddUpdateDepartmentMasterRequest): Promise<E.Either<Failure, DepartmentMasterSaveResponse>> => {
         try {
 
-            return E.right(await departmentMasterDatasource.addUpdateDepartmentMaster(data));
+            return E.right(await departmentMasterDatasource.addUpdateDepartmentMaster(params));
 
         } catch (error: any) {
 

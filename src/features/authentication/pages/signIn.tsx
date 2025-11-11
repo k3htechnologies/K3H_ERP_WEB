@@ -291,7 +291,7 @@ export function SignIn() {
                         <p style={{ fontSize: '14px', color: '#9ca3af', marginBottom: '8px' }}>
                             Need help? Contact our support
                         </p>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', color: '#6b7280' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', color: '#6b7280' }}>
                             <span>📧 support@k3tech.com</span>
                             <span>📞 +91 9975535595</span>
                         </div>

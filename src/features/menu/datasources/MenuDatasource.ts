@@ -1,4 +1,5 @@
 import baseClient from '@/core/config/baseClient'
+import { TokenExpiredException } from '@/core/config/baseClientexceptions';
 import { MenuApi } from '@/features/menu/api/MenuApi'
 import type { ModuleDataListResponse, PullMenuRequest } from '@/features/menu/models/MenuModel'
 
@@ -29,6 +30,11 @@ export class MenuDatasourceImpl implements MenuDatasource {
         } catch (error) {
 
             console.error('ERROR :PULL MENU:', error);
+
+            if (error === TokenExpiredException) {
+
+                await this.pullMenu(params);
+            }
             throw error
         }
     }

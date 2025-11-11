@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
@@ -9,6 +9,7 @@ import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import type { PullMenuRequest } from '@/features/menu/models/MenuModel';
 import type { ModuleData, SubModuleData, SubSubModuleData } from '@/features/menu/models/MenuModel';
 import { getPageInfo } from '@/core/constants/pageInfo';
+import { MenuProvider } from '@/features/menu/context/MenuContext';
 
 export const Layout: React.FC = () => {
     const location = useLocation()
@@ -22,20 +23,36 @@ export const Layout: React.FC = () => {
     // THIS WILL AUTOMATICALLY HANDLE OFFLINE / ONLINE REDIRECTS
     useNetworkStatus();
 
+    const hasFetchedMenu = useRef(false);
+
     useEffect(() => {
+
+        if (hasFetchedMenu.current) return
+
+        hasFetchedMenu.current = true;
+
         const loadMenuData = async () => {
+
             try {
+
                 const request: PullMenuRequest = {
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
                 };
+
                 const response = await menuService.apiCallPullMenu(request)
 
                 if (E.isRight(response)) {
+
                     const menu = response.right.Data;
+
                     if (menu) {
+
                         setMenuData(response.right.Data);
+
                     } else {
+
                         setMenuData([]);
+
                     }
                 }
             } catch (err: any) {
@@ -46,41 +63,49 @@ export const Layout: React.FC = () => {
         }
 
         loadMenuData();
+
     }, [])
 
     const handleToggleSidebar = () => {
+
         setIsSidebarOpen(!isSidebarOpen)
     }
 
     const handleCloseSidebar = () => {
+
         setIsSidebarOpen(false)
     }
 
     const handleModuleSelect = (module: ModuleData) => {
+
         setSelectedModule(module)
         setSelectedSubModule(null)
         setSelectedSubSubModule(null)
     }
 
     const handleSubModuleSelect = (subModule: SubModuleData) => {
+
         setSelectedSubModule(subModule)
         setSelectedModule(null)
         setSelectedSubSubModule(null)
     }
 
     const handleSubSubModuleSelect = (subSubModule: SubSubModuleData) => {
+
         setSelectedSubSubModule(subSubModule)
         setSelectedModule(null)
         setSelectedSubModule(null)
     }
 
     const handleLogout = () => {
+
         LocalStorageHelper.clearLocalStorageData();
         window.location.href = '/sign-in'
     }
 
     return (
-        <div className="h-screen bg-gray-50 flex overflow-hidden">
+        <MenuProvider menu={menuData}>
+            <div className="h-screen bg-gray-50 flex overflow-hidden">
             {/* Sidebar */}
             <Sidebar
                 isOpen={isSidebarOpen}
@@ -98,6 +123,7 @@ export const Layout: React.FC = () => {
             {/* Main content area */}
             <div className="flex-1 flex flex-col overflow-hidden min-w-0">
                 {/* Header */}
+                
                 <Header
                     isSidebarOpen={isSidebarOpen}
                     onToggleSidebar={handleToggleSidebar}
@@ -176,6 +202,7 @@ export const Layout: React.FC = () => {
                     </div>
                 </main>
             </div>
-        </div>
+            </div>
+        </MenuProvider>
     )
 }

@@ -1,21 +1,22 @@
 export const COLORS = {
-    primary: '#1AA0DB',
-    primaryLight: '#3B82F6',
-    primaryHover:'#bfdbfe',
-    secondary: '#D0D7DE',
-    success: '#16a34a',
-    error: '#dc2626',
-    errorLight: '#fecaca',
-    warning: '#f59e0b',
-    info: '#3b82f6',
-    background: '#f9fafb',
-    text: '#374151',
-    textSecondary: '#6b7280',
-    border: '#e5e7eb',
-    backgroundSecondary: '#f9fafb',
-    textLight: '#9ca3af',         // Light text
-    placeholder: '#9ca3af',       // Placeholder text
-    
+  primary: '#1AA0DB',
+  primaryLight: '#3B82F6',
+  primaryHover: '#bfdbfe',
+  secondary: '#D0D7DE',
+  success: '#16a34a',
+  error: '#dc2626',
+  errorLight: '#fecaca',
+  warning: '#f59e0b',
+  info: '#3b82f6',
+  background: '#f9fafb',
+  text: '#374151',
+  textSecondary: '#6b7280',
+  border: '#e5e7eb',
+  backgroundSecondary: '#f9fafb',
+  textLight: '#9ca3af',         // Light text
+  placeholder: '#9ca3af',       // Placeholder text
+  black:'#333'
+
 } as const
 
 export type ColorType = keyof typeof COLORS
@@ -50,6 +51,32 @@ export const COLOR_MAP = {
       border: 'none',
       textDecoration: 'underline',
       hover: { color: COLORS.primaryHover },
+    },
+    gray: {
+      backgroundColor: '#8d99baff',
+      color: '#5c5b8d',
+      border: '#5c5b8d',
+      textDecoration: 'underline',
+      hover: { color: '5c5b8d' },
+    },
+    green: {
+      solid: {
+        backgroundColor: '#8d99ba1f',
+        color: '#5c5b8d',
+        border: '#5c5b8d',
+        textDecoration: 'underline',
+        hover: { color: '#5c5b8d' },
+      }
+    },
+
+    purple: {
+      solid: {
+        backgroundColor: '#b036da',
+        color: '#b036da ',
+        border: '#b036da',
+        textDecoration: 'underline',
+        hover: { color: '#b036da' },
+      }
     },
   },
   error: {
@@ -91,6 +118,36 @@ export const COLOR_MAP = {
       border: 'none',
       hover: { backgroundColor: '#0284c7' },
     },
+  },
+
+  gray: {
+    solid: {
+      backgroundColor: '#8d99ba1f',
+      color: '#5c5b8d',
+      border: '#5c5b8d',
+      textDecoration: 'underline',
+      hover: { color: '5c5b8d' },
+    }
+  },
+
+  green: {
+    solid: {
+      backgroundColor: '#8d99ba1f',
+      color: '#5c5b8d',
+      border: '#5c5b8d',
+      textDecoration: 'underline',
+      hover: { color: '#5c5b8d' },
+    }
+  },
+
+  purple: {
+    solid: {
+      backgroundColor: '#b036da',
+      color: '#b036da',
+      border: '#b036da',
+      textDecoration: 'underline',
+      hover: { color: '#b036da' },
+    }
   },
 } as const
 

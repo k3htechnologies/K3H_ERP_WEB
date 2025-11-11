@@ -1,4 +1,4 @@
-import type { ApiResponse } from "../../../core/api/ApiResponse"
+import type { ApiResponse } from "@/core/api/ApiResponse"
 
 export interface FilterWithPaginationEmployeeMasterRequest {
     PageSize: number
@@ -115,5 +115,5 @@ export interface AddUpdateEmployeeMasterRequest {
 }
 
 
-export type EmployeeMasterListResponse = ApiResponse<EmployeeMasterData>;
-export type EmployeeMasterSaveResponse = ApiResponse<EmployeeMasterData>;
+export type EmployeeMasterListResponse = ApiResponse<EmployeeMasterData[]>;
+export type EmployeeMasterSaveResponse = ApiResponse<EmployeeMasterData[]>;

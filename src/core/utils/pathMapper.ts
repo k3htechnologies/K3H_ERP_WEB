@@ -16,7 +16,8 @@ export const mapPathToRoute = (apiPath: string): string => {
     const routeMap: Record<string, string> = {
         '/departmentmaster': '/departmentMaster',
         '/designationmaster': '/designationMaster',
-        '/employeemaster': '/employeeMaster'
+        '/employeemaster': '/employeeMaster',
+        '/profile': '/profile',
     }
 
     // If a mapped route exists, return it (normalized)

@@ -16,7 +16,6 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   style?: CSSProperties
   autoResize?: boolean
 }
-
 export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string
   helperText?: string
@@ -35,7 +34,7 @@ export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size' | 'color'> {
   variant?: 'solid' | 'outline' | 'ghost' | 'link'
   size?: 'sm' | 'md' | 'lg'
-  color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'
+  color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info' | 'gray' | 'green' | 'purple' | 'outline'
   disabled?: boolean
   loading?: boolean
   fullWidth?: boolean
@@ -45,4 +44,12 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   rightIcon?: ReactNode
   loadingText?: string
 }
-
+export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
+  label?: React.ReactNode
+  helperText?: React.ReactNode
+  error?: string | boolean
+  size?: 'sm' | 'md' | 'lg'
+  fullWidth?: boolean
+  id?: string
+  indeterminate?: boolean
+}

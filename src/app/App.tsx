@@ -3,13 +3,17 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from '../ui/layouts/Layout';
 import ErrorFallbackPage from '@/features/errorFallbackPage/pages/ErrorFallbackPage'
 import { useNetworkStatus } from '@/core/hooks/useNetworkStatus';
-
-// Lazy load routes for code splitting and better performance
 import { SignIn } from '@/features/authentication/pages/signIn';
 import Dashboard from '@/features/dashboard/pages/Dashboard';
 import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMaster';
 import EmployeeMaster from '@/features/employeeMaster/pages/EmployeeMaster';
+<<<<<<< Updated upstream
+import { Profile } from '@/features/profile/page/profile';
+import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 
+=======
+import DepartmentPage from '@/ui/components/select/SinglePagetesting/DepartmentPage';
+>>>>>>> Stashed changes
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -22,21 +26,26 @@ const LoadingSpinner = () => (
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem('auth_token')
+
+  const token =LocalStorageHelper.getStoredTokenData();
 
   if (!token) {
-    return <Navigate to="/login" replace />
+
+    LocalStorageHelper.clearLocalStorageData();
+    
+    return <Navigate to="/sign-in" replace />
   }
 
   return <>{children}</>
 }
 
 function App() {
+
   useNetworkStatus();
 
   // Check for existing auth token on app load
   useEffect(() => {
-    const token = localStorage.getItem('auth_token')
+    const token = LocalStorageHelper.getStoredTokenData()
     if (!token) {
       // Token validation could be added here if needed
     }
@@ -49,6 +58,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/error" element={<ErrorFallbackPage />} />
+        <Route path="profile" element={<Profile />} />
 
         {/* Protected Routes with Layout */}
         <Route
@@ -63,13 +73,20 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="departmentMaster" element={<DepartmentMaster />} />
           <Route path="employeeMaster" element={<EmployeeMaster />} />
-          {/* <Route path="designationMaster" element={<DesignationMaster />} /> */}
+          
         </Route>
 
         <Route path="*" element={<Navigate to="/sign-in" replace />} />
+        <Route path="/department" element={<DepartmentPage />} />
+
       </Routes>
     </Suspense>
   )
 }
 
 export default App
+
+
+
+
+

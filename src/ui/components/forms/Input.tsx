@@ -50,7 +50,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       const baseStyles = {
         width: fullWidth ? '100%' : 'auto',
         height: currentSize.height,
-        padding: leftIcon ? `${currentSize.padding.split(' ')[0]} ${currentSize.padding.split(' ')[1]} ${currentSize.padding.split(' ')[0]} 50px` : 
+        padding: leftIcon ? `${currentSize.padding.split(' ')[0]} ${currentSize.padding.split(' ')[1]} ${currentSize.padding.split(' ')[0]} 40px` : 
                  rightIcon ? `${currentSize.padding.split(' ')[0]} 40px ${currentSize.padding.split(' ')[0]} ${currentSize.padding.split(' ')[1]}` : 
                  currentSize.padding,
         fontSize: currentSize.fontSize,
@@ -106,7 +106,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     }
 
     return (
-      <div style={{ width: fullWidth ? '100%' : 'auto', marginBottom: theme.spacing.lg }}>
+      <div style={{ width: fullWidth ? '100%' : 'auto', marginBottom: theme.spacing.sm }}>
         {label && (
           <label style={{
             display: 'block',
@@ -156,21 +156,21 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             }}
           />
           
-          {rightIcon && (
-            <div style={{
-              position: 'absolute',
-              right: theme.spacing.md,
-              zIndex: 1,
-              color: theme.colors.textSecondary,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: currentSize.iconSize,
-              height: currentSize.iconSize,
-            }}>
-              {rightIcon}
-            </div>
-          )}
+            {rightIcon && (
+              <div style={{
+                position: 'absolute',
+                right: theme.spacing.xl,
+                zIndex: 1,
+                color: theme.colors.textSecondary,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: currentSize.iconSize,
+                height: currentSize.iconSize,
+              }}>
+                {rightIcon}
+              </div>
+            )}
         </div>
         
         {(error || helperText) && (

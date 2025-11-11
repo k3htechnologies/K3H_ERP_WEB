@@ -9,6 +9,8 @@ import {
 } from 'lucide-react'
 import type { ModuleData, SubModuleData, SubSubModuleData } from '@/features/menu/models/MenuModel'
 import { normalizePath, mapPathToRoute } from '@/core/utils/pathMapper';
+import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
+import appLogo from '@/assets/images/appLogo.png'
 
 interface SidebarProps {
   isOpen: boolean
@@ -381,43 +383,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {isOpen ? (
               <div className="flex items-center space-x-3 flex-1">
                 <img
-                  src="/src/assets/images/appLogo.png"
+                  src={appLogo}
                   alt="K3H ERP"
                   className="h-8 w-8 flex-shrink-0"
                   onError={(e) => {
-                    e.currentTarget.src = '/src/assets/images/appLogo.png'
+                    e.currentTarget.src = appLogo
                   }}
                 />
                 <div className="flex-1 min-w-0">
                   {(() => {
-                    // Get user details from localStorage
-                    const userData = localStorage.getItem('employee_data')
-                    let userDetails = {
-                      name: '',
-                      designation: '',
-                      department: '',
-                      mobileNumber: ''
-                    }
-
-                    if (userData) {
-                      try {
-                        const parsedData = JSON.parse(userData)
-                        userDetails = {
-                          name: parsedData.FullName || 'User',
-                          designation: parsedData.Designation || 'Employee',
-                          department: parsedData.Department || 'General',
-                          mobileNumber: parsedData.PersonalMobileNumber || '0000000000'
-                        }
-                      } catch (error) {
-                        console.error('Error parsing user details:', error)
-                      }
-                    }
-
+                    
                     return (
                       <>
-                        <div className="text-sm font-medium text-gray-800 truncate">{userDetails.name}</div>
-                        <div className="text-xs text-gray-600 truncate">{userDetails.designation} • {userDetails.department}</div>
-                        <div className="text-xs text-gray-500 truncate">{userDetails.mobileNumber}</div>
+                        <div className="text-sm font-medium text-gray-800 truncate">{LocalStorageHelper.getStoredEmployeeData()?.FullName}</div>
+                        <div className="text-xs text-gray-600 truncate">{LocalStorageHelper.getStoredEmployeeData()?.Designation} • {LocalStorageHelper.getStoredEmployeeData()?.Department}</div>
+                        <div className="text-xs text-gray-500 truncate">{LocalStorageHelper.getStoredEmployeeData()?.PersonalMobileNumber}</div>
                       </>
                     )
                   })()}
@@ -426,11 +406,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             ) : (
               <div className="flex items-center justify-center w-full">
                 <img
-                  src="/src/assets/images/appLogo.png"
+                  src={appLogo}
                   alt="K3H"
                   className="h-8 w-8"
                   onError={(e) => {
-                    e.currentTarget.src = '/src/assets/images/appLogo.png'
+                    e.currentTarget.src = appLogo
                   }}
                 />
               </div>

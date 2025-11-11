@@ -1,4 +1,6 @@
+import type { FilterRefreshTokenRequest } from '@/features/technical/models/TechnicalModel'
 import { config, getApiUrl } from '../config/environment'
+import { LocalStorageHelper } from '../utils/localStorageHelper'
 import {
     BadRequestException,
     ApiNotRespondingException,
@@ -7,6 +9,8 @@ import {
     MenuChangedException,
     UserDeletedException
 } from './baseClientexceptions'
+import { technicalService } from '@/features/technical/services/TechnicalService'
+import * as E from 'fp-ts/Either';
 
 export class BaseClient {
     private apiKey: string
@@ -16,7 +20,6 @@ export class BaseClient {
     constructor({
         apiKey,
         token = null,
-        userUniqueKey = null
     }: {
         baseUrl?: string
         apiKey?: string
@@ -26,9 +29,9 @@ export class BaseClient {
 
         this.apiKey = apiKey || config.apiKey
 
-        this.token = token || localStorage.getItem('auth_token');
+        this.token = token || LocalStorageHelper.getStoredTokenData();
 
-        this.userUniqueKey = userUniqueKey
+        this.userUniqueKey = LocalStorageHelper.getStoredEmployeeData()?.UniqueKey ?? "";
     }
 
     //============================ [ GET REQUEST WITHOUT AUTHENTICATION ] ========================================================
@@ -87,6 +90,7 @@ export class BaseClient {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     'ApiKey': this.apiKey,
+                    // 'Authorization': `Bearer ${this.token}`,
                     'Authorization': `Bearer ${this.token}`,
                 },
             })
@@ -265,7 +269,7 @@ export class BaseClient {
 
         switch (response.status) {
             case 200:
-                return this.validateResponse(responseText)
+                return this.validateResponse(responseText);
             case 400:
                 throw new BadRequestException('Bad request exception')
             case 401:
@@ -298,30 +302,34 @@ export class BaseClient {
         }
     }
 
-    private async refreshToken(): Promise<void> {
-        if (!this.userUniqueKey) {
-            throw new TokenExpiredException('TOKEN EXPIRED')
-        }
-
-        const url = `Authentication/RefreshToken?Uniquekey=${this.userUniqueKey}`
-
+    private async refreshToken(): Promise<any> {
         try {
-            const response = await this.getRequestWithoutAuthentication(url)
-            if (response?.data) {
-                this.token = response.data
-                // Update localStorage with new token
-                if (typeof window !== 'undefined' && this.token) {
-                    localStorage.setItem('auth_token', this.token)
-                }
-                // Token refreshed successfully, retry original request
-                return
+
+            if (!this.userUniqueKey) {
+                throw new TokenExpiredException('TOKEN EXPIRED')
             }
-            throw new TokenExpiredException('TOKEN EXPIRED')
+
+            const params: FilterRefreshTokenRequest = {
+                Uniquekey: this.userUniqueKey,
+            };
+
+            const response = await technicalService.apiCallRefreshToken(params);
+
+            if (E.isRight(response)) {
+
+                const token = response.right.Data;
+
+                LocalStorageHelper.storeToken(token);   
+            }
+
         } catch (error) {
-            if (error instanceof TokenExpiredException) {
-                throw error
+
+            console.error('ERROR: DELETE DEPARTMENT MASTER :', error);
+            if (error === TokenExpiredException) {
+                await this.refreshToken();
             }
-            throw new TokenExpiredException('TOKEN EXPIRED')
+
+            throw new TokenExpiredException("TOKEN EXPIRED");
         }
     }
 

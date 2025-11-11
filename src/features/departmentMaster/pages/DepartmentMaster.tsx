@@ -21,7 +21,7 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import Checkbox from '@/ui/components/forms/Checkbox';
 
 
@@ -455,8 +455,8 @@ export const DepartmentMaster: React.FC = () => {
       >
         <div className="space-y-4">
           <div className="flex items-center justify-end space-x-2">
-            <button type="button" onClick={selectAll} className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md">Select All</button>
-            <button type="button" onClick={clearAll} className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md">Clear All</button>
+            <Button type="button" onClick={selectAll} size='sm' color='gray'>Select All</Button>
+            <Button type="button" onClick={clearAll} size='sm' color='gray'>Clear All</Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
             {columns.map(col => {
@@ -1017,7 +1017,6 @@ export const DepartmentMaster: React.FC = () => {
 
 
               {/* IMPORT BUTTON */}
-
 
               <button
                 onClick={(e) => {

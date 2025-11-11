@@ -26,9 +26,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         const theme = THEME
 
         const sizeConfig = {
-            sm: { height: '34px', width: '34px', padding: `${theme.spacing.sm} ${theme.spacing.lg}`, fontSize: theme.fontSize.sm, iconSize: '12px' },
-            md: { height: '44px', width: '44px', padding: `${theme.spacing.md} ${theme.spacing.xl}`, fontSize: theme.fontSize.md, iconSize: '20px' },
-            lg: { height: '52px', width: '52px', padding: `${theme.spacing.lg} ${theme.spacing.xxl}`, fontSize: theme.fontSize.lg, iconSize: '24px' },
+            sm: { height: '34px', width: '34px', padding: `${theme.spacing.sm} ${theme.spacing.lg}`,fontWeight:theme.fontWeight.normal, fontSize: theme.fontSize.sm, iconSize: '12px' },
+            md: { height: '44px', width: '44px', padding: `${theme.spacing.md} ${theme.spacing.xl}`,fontWeight:theme.fontWeight.medium, fontSize: theme.fontSize.md, iconSize: '20px' },
+            lg: { height: '52px', width: '52px', padding: `${theme.spacing.lg} ${theme.spacing.xxl}`,fontWeight:theme.fontWeight.bold, fontSize: theme.fontSize.lg, iconSize: '24px' },
         }
 
         const currentSize = sizeConfig[size];
@@ -46,11 +46,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             React.Children.toArray(children).every(ch => React.isValidElement(ch));
 
         const buttonStyles: React.CSSProperties = {
-            width: fullWidth ? '100%' : currentSize.width,
+            width: fullWidth ? '100%' : 'auto',
             height: currentSize.height,
             padding: currentSize.padding,
             fontSize: currentSize.fontSize,
-            fontWeight: theme.fontWeight.semibold,
+            fontWeight: currentSize.fontWeight,
             borderRadius: theme.borderRadius.lg,
             border: colorStyles.border,
             backgroundColor: colorStyles.backgroundColor,

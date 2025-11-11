@@ -35,7 +35,7 @@ export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size' | 'color'> {
   variant?: 'solid' | 'outline' | 'ghost' | 'link'
   size?: 'sm' | 'md' | 'lg'
-  color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info' | 'gray' | 'green' | 'purple'
+  color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info' | 'gray' | 'green' | 'purple' | 'outline'
   disabled?: boolean
   loading?: boolean
   fullWidth?: boolean

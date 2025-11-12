@@ -4,8 +4,8 @@ import type {
   FilterWithPaginationDepartmentMasterRequest,
   DepartmentMasterListResponse,
 } from "@/features/departmentMaster/models/DepartmentMasterModel";
-import { MultiSelectDropdown } from "@/ui/components/forms/MultiSelectDropdown";
 import baseClient from "@/core/config/baseClient";
+import { MultiSelectDropdown } from "@/ui/components/DropDownSelect/MultiSelectDropdown";
 
 export const Test2: React.FC = () => {
   const [departments, setDepartments] = useState<{ label: string; value: string | number }[]>([]);

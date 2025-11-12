@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import MultiSelectPagination from "@/ui/components/select/Multiselect/Multiselectpagination";
+import MultiSelectPagination from "@/ui/components/DropDownSelect/Multiselectpagination";
 import { departmentMasterService } from "@/features/departmentMaster/services/DepartmentMasterService";
 import * as E from "fp-ts/Either";
 

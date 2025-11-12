@@ -47,7 +47,6 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
             if (error === TokenExpiredException) {
                 await this.pullDepartmentMaster(params);
             }
-            console.log('AKASH 1');
             throw error
         }
     }

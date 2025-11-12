@@ -9,6 +9,7 @@ import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMa
 import EmployeeMaster from '@/features/employeeMaster/pages/EmployeeMaster';
 import { Profile } from '@/features/profile/page/profile';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
+import EmployeeModuleAccess from '@/features/employeeModuleAccess/pages/EmployeeModuleAccess';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -23,12 +24,12 @@ const LoadingSpinner = () => (
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
-  const token =LocalStorageHelper.getStoredTokenData();
+  const token = LocalStorageHelper.getStoredTokenData();
 
   if (!token) {
 
     LocalStorageHelper.clearLocalStorageData();
-    
+
     return <Navigate to="/sign-in" replace />
   }
 
@@ -55,6 +56,8 @@ function App() {
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/error" element={<ErrorFallbackPage />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="employeeModuleAccess" element={<EmployeeModuleAccess />} />
+
 
         {/* Protected Routes with Layout */}
         <Route
@@ -69,7 +72,7 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="departmentMaster" element={<DepartmentMaster />} />
           <Route path="employeeMaster" element={<EmployeeMaster />} />
-          
+
         </Route>
 
         <Route path="*" element={<Navigate to="/sign-in" replace />} />

@@ -636,7 +636,7 @@ const EmployeeModuleAccess: React.FC = () => {
 
                       return (
                         <div key={subModuleId} className="bg-white">
-                          <div className="grid grid-cols-[minmax(0,1fr)_repeat(3,120px)] items-start gap-4 px-3 py-1 md:px-4">
+                              <div className="grid grid-cols-[minmax(0,1fr)_repeat(3,120px)] items-start gap-4 px-3 py-1 md:px-4">
                             <div className="flex items-start gap-2" onClick={() => toggleSubModuleExpansion(moduleId, subModuleId)}>
                               {hasChildren ? (
                                 <button
@@ -669,49 +669,57 @@ const EmployeeModuleAccess: React.FC = () => {
                                 className="items-start"
                               />
                             </div>
-                            <div className="flex items-center justify-center">
-                              <label className="flex items-center justify-between px-3 py-2 ">
-
-                                <Checkbox
-                                  checked={subModuleActionState.checked}
-                                  indeterminate={subModuleActionState.indeterminate}
-                                  disabled={subModuleKeys.length === 0}
-                                  onChange={(event) => handleToggleSubModulePermission(module, subModule, 'action', event.target.checked)}
-
-                                />
-
-                                <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                                  Action</span>
-                              </label>
-                            </div>
-                            <div className="flex items-center justify-center">
-                              <label className="flex items-center justify-between px-3 py-2">
-
-                                <Checkbox
-                                  checked={subModuleExportState.checked}
-                                  indeterminate={subModuleExportState.indeterminate}
-                                  disabled={subModuleKeys.length === 0}
-                                  onChange={(event) => handleToggleSubModulePermission(module, subModule, 'export', event.target.checked)}
-
-                                />
-                                <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                                  Export</span>
-                              </label>
-                            </div>
-                            <div className="flex items-center justify-center">
-                              <label className="flex items-center justify-between px-3 py-2 ">
-
-                                <Checkbox
-                                  checked={subModuleViewState.checked}
-                                  indeterminate={subModuleViewState.indeterminate}
-                                  disabled={subModuleKeys.length === 0}
-                                  onChange={(event) => handleToggleSubModulePermission(module, subModule, 'view', event.target.checked)}
-
-                                />
-                                <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                                  View</span>
-                              </label>
-                            </div>
+                              <div className="flex items-center justify-center">
+                                {hasChildren ? (
+                                  <span className="text-sm text-gray-300"></span>
+                                ) : (
+                                  <label className="flex items-center justify-between px-3 py-2 ">
+                                    <Checkbox
+                                      checked={subModuleActionState.checked}
+                                      indeterminate={subModuleActionState.indeterminate}
+                                      disabled={subModuleKeys.length === 0}
+                                      onChange={(event) => handleToggleSubModulePermission(module, subModule, 'action', event.target.checked)}
+                                    />
+                                    <span className="text-sm text-gray-800 flex-1 pl-[6px]">
+                                      Action
+                                    </span>
+                                  </label>
+                                )}
+                              </div>
+                              <div className="flex items-center justify-center">
+                                {hasChildren ? (
+                                  <span className="text-sm text-gray-300"></span>
+                                ) : (
+                                  <label className="flex items-center justify-between px-3 py-2">
+                                    <Checkbox
+                                      checked={subModuleExportState.checked}
+                                      indeterminate={subModuleExportState.indeterminate}
+                                      disabled={subModuleKeys.length === 0}
+                                      onChange={(event) => handleToggleSubModulePermission(module, subModule, 'export', event.target.checked)}
+                                    />
+                                    <span className="text-sm text-gray-800 flex-1 pl-[6px]">
+                                      Export
+                                    </span>
+                                  </label>
+                                )}
+                              </div>
+                              <div className="flex items-center justify-center">
+                                {hasChildren ? (
+                                  <span className="text-sm text-gray-300"></span>
+                                ) : (
+                                  <label className="flex items-center justify-between px-3 py-2 ">
+                                    <Checkbox
+                                      checked={subModuleViewState.checked}
+                                      indeterminate={subModuleViewState.indeterminate}
+                                      disabled={subModuleKeys.length === 0}
+                                      onChange={(event) => handleToggleSubModulePermission(module, subModule, 'view', event.target.checked)}
+                                    />
+                                    <span className="text-sm text-gray-800 flex-1 pl-[6px]">
+                                      View
+                                    </span>
+                                  </label>
+                                )}
+                              </div>
                           </div>
 
                           {hasChildren && subExpanded && (

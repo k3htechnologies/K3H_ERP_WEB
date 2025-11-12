@@ -1,14 +1,20 @@
 import React, { useEffect, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { Layout } from '../ui/layouts/Layout';
+import { Layout } from '../ui/layouts/Layout'
 import ErrorFallbackPage from '@/features/errorFallbackPage/pages/ErrorFallbackPage'
-import { useNetworkStatus } from '@/core/hooks/useNetworkStatus';
+import { useNetworkStatus } from '@/core/hooks/useNetworkStatus'
 
 // Lazy load routes for code splitting and better performance
-import { SignIn } from '@/features/authentication/pages/signIn';
-import Dashboard from '@/features/dashboard/pages/Dashboard';
-import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMaster';
-import EmployeeMaster from '@/features/employeeMaster/pages/EmployeeMaster';
+import { SignIn } from '@/features/authentication/pages/signIn'
+import Dashboard from '@/features/dashboard/pages/Dashboard'
+import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMaster'
+import EmployeeMaster from '@/features/employeeMaster/pages/EmployeeMaster'
+
+// ✅ Your Multiselect Test Page
+import CallOfMultiselectPagination from '@/ui/components/select/Multiselect/Callofmultiselectpagination'
+
+
+
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -23,34 +29,32 @@ const LoadingSpinner = () => (
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('auth_token')
-
-  if (!token) {
-    return <Navigate to="/login" replace />
-  }
-
+  if (!token) return <Navigate to="/login" replace />
   return <>{children}</>
 }
 
 function App() {
-  useNetworkStatus();
+  useNetworkStatus()
 
   // Check for existing auth token on app load
   useEffect(() => {
     const token = localStorage.getItem('auth_token')
     if (!token) {
-      // Token validation could be added here if needed
+      // Optionally handle auth check
     }
   }, [])
-
 
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
-        {/* Public Routes */}
+        {/* ---------- Public Routes ---------- */}
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/error" element={<ErrorFallbackPage />} />
 
-        {/* Protected Routes with Layout */}
+        {/* ✅ Test route for Multiselect Pagination (Accessible without login) */}
+        <Route path="/test/multiselect" element={<CallOfMultiselectPagination />} />
+
+        {/* ---------- Protected Routes ---------- */}
         <Route
           path="/"
           element={
@@ -66,6 +70,7 @@ function App() {
           {/* <Route path="designationMaster" element={<DesignationMaster />} /> */}
         </Route>
 
+        {/* ---------- Fallback ---------- */}
         <Route path="*" element={<Navigate to="/sign-in" replace />} />
       </Routes>
     </Suspense>

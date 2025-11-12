@@ -70,7 +70,6 @@ export const SingleSelectWithPagination = forwardRef<HTMLDivElement, SingleSelec
       [dataFetchCallBack, searchText]
     )
 
-    // Initial fetch
     useEffect(() => {
       fetchData(true)
     }, [fetchData])
@@ -139,11 +138,10 @@ export const SingleSelectWithPagination = forwardRef<HTMLDivElement, SingleSelec
     style={{
       position: 'relative',
       width: sizeStyles.width,
-      marginLeft: '12px', // slight left margin to avoid sticking to screen
+      marginLeft: '20px',
       ...style,
     }}
   >
-    {/* MAIN SELECT BOX */}
     <div
       style={{
         display: 'flex',
@@ -184,7 +182,6 @@ export const SingleSelectWithPagination = forwardRef<HTMLDivElement, SingleSelec
       </svg>
     </div>
 
-    {/* DROPDOWN LIST */}
     {isOpen && (
       <div
         ref={scrollRef}
@@ -203,7 +200,6 @@ export const SingleSelectWithPagination = forwardRef<HTMLDivElement, SingleSelec
           padding: '6px',
         }}
       >
-        {/* SEARCH FIELD */}
         <div style={{ position: 'relative', marginBottom: '6px' }}>
           <input
             type="text"
@@ -250,7 +246,6 @@ export const SingleSelectWithPagination = forwardRef<HTMLDivElement, SingleSelec
           )}
         </div>
 
-        {/* OPTIONS */}
         {options.length > 0 ? (
           options.map(item => {
             const selected = selectedItem?.value === item.value

@@ -74,6 +74,7 @@ export const Test2: React.FC = () => {
   <MultiSelectDropdown
     title="Select Departments"
     dataList={departments}
+    size='lg'
     onSelected={handleSelection}
     onSearch={handleSearch}  // 👈 dynamic API-based search
     initialValues={[]}

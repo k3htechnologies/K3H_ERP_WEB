@@ -66,10 +66,10 @@ export const Test: React.FC = () => {
 
   return (
     <div>
-      <SingleSelectWithPagination
+      <SingleSelectWithPagination 
         title="Select Department"
         dataFetchCallBack={fetchOptions}
-        onSelected={(item) => console.log("✅ Selected Department:", item)}
+        onSelected={(item) => console.log("Selected Department:", item)}
         initialValue={null}
         dataList={[]} 
         options={[]}      />

@@ -45,24 +45,33 @@ const clonePermissionMap = (source: PermissionMap): PermissionMap => {
 
 const EmployeeModuleAccess: React.FC = () => {
 
+  //#region STATE MANAGEMENT
+  const [modules, setModules] = useState<ModuleData[]>([])
+  const [permissions, setPermissions] = useState<PermissionMap>({})
+  const [initialPermissions, setInitialPermissions] = useState<PermissionMap>({})
+  const [isLoading, setIsLoading] = useState(false)
+  const [loadingMessage, setLoadingMessage] = useState('')
+  const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>({})
+  const [expandedSubModules, setExpandedSubModules] = useState<Record<string, boolean>>({})
+
+  // TOAST
+  const { toasts, addToast, removeToast } = useToast();
+
+  //#region INITIALIZATION
+
+
+   //#endregion
+
+   //#region DATA LOADING 
+
+   //#endregion
+
   const [searchParams] = useSearchParams();
 
   const designationId = useMemo(
     () => Number(1),
     [searchParams]
   )
-
-  const { toasts, addToast, removeToast } = useToast()
-
-  const [modules, setModules] = useState<ModuleData[]>([])
-  const [permissions, setPermissions] = useState<PermissionMap>({})
-  const [initialPermissions, setInitialPermissions] = useState<PermissionMap>({})
-
-  const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>({})
-  const [expandedSubModules, setExpandedSubModules] = useState<Record<string, boolean>>({})
-
-  const [isLoading, setIsLoading] = useState(false)
-  const [loadingMessage, setLoadingMessage] = useState('')
 
   const ensureFlags = useCallback(
     (key: string) => permissions[key] ?? createDefaultFlags(),
@@ -167,6 +176,7 @@ const EmployeeModuleAccess: React.FC = () => {
   )
 
   const buildInitialPermissionMap = useCallback(
+
     (data: ModuleData[]): PermissionMap => {
       const map: PermissionMap = {}
 
@@ -212,23 +222,20 @@ const EmployeeModuleAccess: React.FC = () => {
   )
 
   const fetchModules = useCallback(async () => {
-    if (!designationId) {
-      setModules([])
-      setPermissions({})
-      setInitialPermissions({})
-      return
-    }
 
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
+
         const response = await employeeModuleAccessService.apiCallPullEmployeeModuleAccess({
           DesignationMasterId: designationId
         })
 
         if (E.isRight(response)) {
+
           const moduleList = response.right.Data ?? []
+
           setModules(moduleList)
           setExpandedModules({})
           setExpandedSubModules({})
@@ -252,6 +259,7 @@ const EmployeeModuleAccess: React.FC = () => {
           title: error?.message ?? 'Failed to load module permissions.'
         })
       },
+      
       undefined,
       'Loading module permissions...'
     )
@@ -447,7 +455,7 @@ const EmployeeModuleAccess: React.FC = () => {
   }, [])
 
   const convertPermissionsToPayload = useCallback(() => {
-    
+
     const payload: Array<{
       ModulesMasterId: number
       SubModuleMasterId: number
@@ -636,12 +644,12 @@ const EmployeeModuleAccess: React.FC = () => {
 
                       return (
                         <div key={subModuleId} className="bg-white">
-                              <div className="grid grid-cols-[minmax(0,1fr)_repeat(3,120px)] items-start gap-4 px-3 py-1 md:px-4">
+                          <div className="grid grid-cols-[minmax(0,1fr)_repeat(3,120px)] items-start gap-4 px-3 py-1 md:px-4">
                             <div className="flex items-start gap-2" onClick={() => toggleSubModuleExpansion(moduleId, subModuleId)}>
                               {hasChildren ? (
                                 <button
                                   type="button"
-                                  
+
                                   className="mt-1 flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
                                   aria-label={subExpanded ? 'Collapse sub module' : 'Expand sub module'}
                                 >
@@ -669,57 +677,57 @@ const EmployeeModuleAccess: React.FC = () => {
                                 className="items-start"
                               />
                             </div>
-                              <div className="flex items-center justify-center">
-                                {hasChildren ? (
-                                  <span className="text-sm text-gray-300"></span>
-                                ) : (
-                                  <label className="flex items-center justify-between px-3 py-2 ">
-                                    <Checkbox
-                                      checked={subModuleActionState.checked}
-                                      indeterminate={subModuleActionState.indeterminate}
-                                      disabled={subModuleKeys.length === 0}
-                                      onChange={(event) => handleToggleSubModulePermission(module, subModule, 'action', event.target.checked)}
-                                    />
-                                    <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                                      Action
-                                    </span>
-                                  </label>
-                                )}
-                              </div>
-                              <div className="flex items-center justify-center">
-                                {hasChildren ? (
-                                  <span className="text-sm text-gray-300"></span>
-                                ) : (
-                                  <label className="flex items-center justify-between px-3 py-2">
-                                    <Checkbox
-                                      checked={subModuleExportState.checked}
-                                      indeterminate={subModuleExportState.indeterminate}
-                                      disabled={subModuleKeys.length === 0}
-                                      onChange={(event) => handleToggleSubModulePermission(module, subModule, 'export', event.target.checked)}
-                                    />
-                                    <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                                      Export
-                                    </span>
-                                  </label>
-                                )}
-                              </div>
-                              <div className="flex items-center justify-center">
-                                {hasChildren ? (
-                                  <span className="text-sm text-gray-300"></span>
-                                ) : (
-                                  <label className="flex items-center justify-between px-3 py-2 ">
-                                    <Checkbox
-                                      checked={subModuleViewState.checked}
-                                      indeterminate={subModuleViewState.indeterminate}
-                                      disabled={subModuleKeys.length === 0}
-                                      onChange={(event) => handleToggleSubModulePermission(module, subModule, 'view', event.target.checked)}
-                                    />
-                                    <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                                      View
-                                    </span>
-                                  </label>
-                                )}
-                              </div>
+                            <div className="flex items-center justify-center">
+                              {hasChildren ? (
+                                <span className="text-sm text-gray-300"></span>
+                              ) : (
+                                <label className="flex items-center justify-between px-3 py-2 ">
+                                  <Checkbox
+                                    checked={subModuleActionState.checked}
+                                    indeterminate={subModuleActionState.indeterminate}
+                                    disabled={subModuleKeys.length === 0}
+                                    onChange={(event) => handleToggleSubModulePermission(module, subModule, 'action', event.target.checked)}
+                                  />
+                                  <span className="text-sm text-gray-800 flex-1 pl-[6px]">
+                                    Action
+                                  </span>
+                                </label>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-center">
+                              {hasChildren ? (
+                                <span className="text-sm text-gray-300"></span>
+                              ) : (
+                                <label className="flex items-center justify-between px-3 py-2">
+                                  <Checkbox
+                                    checked={subModuleExportState.checked}
+                                    indeterminate={subModuleExportState.indeterminate}
+                                    disabled={subModuleKeys.length === 0}
+                                    onChange={(event) => handleToggleSubModulePermission(module, subModule, 'export', event.target.checked)}
+                                  />
+                                  <span className="text-sm text-gray-800 flex-1 pl-[6px]">
+                                    Export
+                                  </span>
+                                </label>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-center">
+                              {hasChildren ? (
+                                <span className="text-sm text-gray-300"></span>
+                              ) : (
+                                <label className="flex items-center justify-between px-3 py-2 ">
+                                  <Checkbox
+                                    checked={subModuleViewState.checked}
+                                    indeterminate={subModuleViewState.indeterminate}
+                                    disabled={subModuleKeys.length === 0}
+                                    onChange={(event) => handleToggleSubModulePermission(module, subModule, 'view', event.target.checked)}
+                                  />
+                                  <span className="text-sm text-gray-800 flex-1 pl-[6px]">
+                                    View
+                                  </span>
+                                </label>
+                              )}
+                            </div>
                           </div>
 
                           {hasChildren && subExpanded && (
@@ -753,7 +761,7 @@ const EmployeeModuleAccess: React.FC = () => {
                                           {child.SubSubModuleName}
                                         </span>
                                       }
-                                      
+
                                     />
                                     <div className="flex items-center justify-center">
                                       <label className="flex items-center justify-between px-3 py-2 ">

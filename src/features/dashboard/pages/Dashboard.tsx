@@ -1,6 +1,7 @@
 import React from 'react'
 
 const Dashboard: React.FC = () => {
+  console.log("App component rendered");
   return (
     <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

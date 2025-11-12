@@ -10,11 +10,11 @@ import Dashboard from '@/features/dashboard/pages/Dashboard'
 import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMaster'
 import EmployeeMaster from '@/features/employeeMaster/pages/EmployeeMaster'
 
+// ✅ Company Master Page
+import CompanyMaster from '@/features/companyMaster/pages/CompanyMaster'
+
 // ✅ Your Multiselect Test Page
 import CallOfMultiselectPagination from '@/ui/components/select/Multiselect/Callofmultiselectpagination'
-
-
-
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -36,11 +36,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
   useNetworkStatus()
 
-  // Check for existing auth token on app load
   useEffect(() => {
     const token = localStorage.getItem('auth_token')
     if (!token) {
-      // Optionally handle auth check
+      // Optional: handle auth check
     }
   }, [])
 
@@ -51,8 +50,9 @@ function App() {
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/error" element={<ErrorFallbackPage />} />
 
-        {/* ✅ Test route for Multiselect Pagination (Accessible without login) */}
+        {/* ✅ Test routes accessible without login */}
         <Route path="/test/multiselect" element={<CallOfMultiselectPagination />} />
+        <Route path="/companyMaster" element={<CompanyMaster />} />
 
         {/* ---------- Protected Routes ---------- */}
         <Route

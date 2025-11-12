@@ -2,23 +2,8 @@ import React, { useState, useEffect, forwardRef } from 'react'
 import { THEME } from '../../../core/constants/theme'
 import { COLOR_MAP } from '../../../core/constants'
 import { Search, X } from 'lucide-react'
+import type { MultiSelectDropdownProps } from '@/core/types/dropDownSelectionType'
 
-interface MultiSelectDropdownProps {
-  dataList: { label: string; value: string | number }[]
-  onSelected: (selectedItems: { label: string; value: string | number }[]) => void
-  title: string
-  validator?: (values: (string | number)[]) => string | undefined
-  initialValues?: { label: string; value: string | number }[]
-  disabled?: boolean
-  className?: string
-  style?: React.CSSProperties
-  color?: keyof typeof COLOR_MAP
-  variant?: 'solid' | 'outline'
-  onSearch?: (searchValue: string) => void
-  loading?: boolean
-  noDataText?: string
-  size?: 'sm' | 'md' | 'lg'
-}
 
 export const MultiSelectDropdown = forwardRef<HTMLDivElement, MultiSelectDropdownProps>(
   (

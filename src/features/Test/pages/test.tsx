@@ -1,11 +1,11 @@
 import React from "react";
-import { SingleSelectWithPagination } from "@/ui/components/forms/SingleSelectWithPagination";
 import type {
   FilterWithPaginationDepartmentMasterRequest,
   DepartmentMasterListResponse,
 } from "@/features/departmentMaster/models/DepartmentMasterModel";
 import { DepartmentMasterApi } from "@/features/departmentMaster/api/DepartmentMasterApi";
 import baseClient from "@/core/config/baseClient";
+import { SingleSelectDropdownWithPagination } from "@/ui/components/DropDownSelect/SingleSelectDropdownWithPagination";
 
 export const Test: React.FC = () => {
   // ✅ API call to fetch paginated departments
@@ -66,7 +66,7 @@ export const Test: React.FC = () => {
 
   return (
     <div>
-      <SingleSelectWithPagination 
+      <SingleSelectDropdownWithPagination 
         title="Select Department"
         dataFetchCallBack={fetchOptions}
         onSelected={(item) => console.log("Selected Department:", item)}

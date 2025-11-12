@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback, forwardRef } from 'react'
 import { THEME } from '@/core/constants/theme'
 import { COLOR_MAP } from '@/core/constants/colors'
-import type { SingleSelectWithPaginationProps } from '@/core/types/form.types'
 import { Search, X } from 'lucide-react'
+import type { SingleSelectWithPaginationProps } from '@/core/types/dropDownSelectionType'
 
-export const SingleSelectWithPagination = forwardRef<HTMLDivElement, SingleSelectWithPaginationProps>(
+export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, SingleSelectWithPaginationProps>(
   (
     {
       dataFetchCallBack,
@@ -312,4 +312,4 @@ export const SingleSelectWithPagination = forwardRef<HTMLDivElement, SingleSelec
   }
 )
 
-SingleSelectWithPagination.displayName = 'SingleSelectWithPagination'
+SingleSelectDropdownWithPagination.displayName = 'SingleSelectDropdownWithPagination'

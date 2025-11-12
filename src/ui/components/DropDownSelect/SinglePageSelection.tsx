@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, forwardRef } from "react";
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
+import type { SinglePageSelectionProps } from "@/core/types/dropDownSelectionType";
 
 export interface DropdownOption {
   DepartmentName: string | "";
@@ -7,20 +8,6 @@ export interface DropdownOption {
   DepartmentCode?: string;
   LastModifiedBy?: string;
   LastModifiedDate?: string | null;
-}
-
-export interface SinglePageSelectionProps {
-  label?: string;
-  options: DropdownOption[];
-  value?: string | number;
-  onChange: (value: string | number) => void;
-  disabled?: boolean;
-  placeholder?: string;
-  size?: "sm" | "md" | "lg";
-  theme?: {
-    spacing: Record<string, string>;
-    fontSize: Record<string, string>;
-  };
 }
 
 export const SinglePageSelection = forwardRef<

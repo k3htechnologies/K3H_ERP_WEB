@@ -1,0 +1,281 @@
+
+
+import React, { useState, useEffect, useRef, useCallback, forwardRef } from 'react'
+import { THEME } from '@/core/constants/theme'
+import { COLOR_MAP } from '@/core/constants/colors'
+import type { SingleSelectWithPaginationProps } from '@/core/types/form.types'
+import { Search, X } from 'lucide-react'
+
+export const SingleSelectWithPagination = forwardRef<HTMLDivElement, SingleSelectWithPaginationProps>(
+  (
+    {
+      dataFetchCallBack,
+      onSelected,
+      title,
+      validator,
+      initialValue,
+      dataList = [],
+      disabled = false,
+      className = '',
+      style,
+      color = 'primary',
+      variant = 'outline',
+      size = 'md',
+    },
+    ref
+  ) => {
+    const theme = THEME
+    const scrollRef = useRef<HTMLDivElement>(null)
+    const [options, setOptions] = useState(dataList)
+    const [selectedItem, setSelectedItem] = useState(initialValue || null)
+    const [searchText, setSearchText] = useState('')
+    const [,setPage] = useState(1)
+    const [totalRecords, setTotalRecords] = useState(0)
+    const [loading,setLoading] = useState(false)
+    const [error, setError] = useState<string | undefined>(undefined)
+    const [isOpen, setIsOpen] = useState(false)
+    const isFetchingRef = useRef(false);
+    const pageRef=useRef(1);
+    const SIZE_MAP = {
+      sm: { fontSize: 12, padding: 6, dropdownHeight: 150, width: 180 },
+      md: { fontSize: 14, padding: 8, dropdownHeight: 200, width: 250 },
+      lg: { fontSize: 16, padding: 10, dropdownHeight: 250, width: 320 },
+    }
+
+    const sizeStyles = SIZE_MAP[size as keyof typeof SIZE_MAP]
+
+    const baseColor =
+      COLOR_MAP[color as keyof typeof COLOR_MAP]?.[variant as keyof (typeof COLOR_MAP)[keyof typeof COLOR_MAP]] ||
+      COLOR_MAP.primary.outline
+const fetchData = useCallback(
+  async (reset?: boolean, search?: string) => {
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
+    setLoading(true)
+
+    try {
+      const currentPage = reset ? 1 : pageRef.current
+      const searchValue = search ?? searchText
+      const result = await dataFetchCallBack(currentPage, { value: searchValue })
+
+      setOptions(prev => (reset ? result.itemList : [...prev, ...result.itemList]))
+      setTotalRecords(result.totalNumberOfRecord)
+
+      pageRef.current = currentPage + 1
+    } finally {
+      setLoading(false)
+      isFetchingRef.current = false
+    }
+  },
+  [dataFetchCallBack, searchText]
+)
+
+
+    useEffect(() => {
+      fetchData(true)
+    }, [fetchData])
+
+const handleScroll = useCallback(() => {
+  const el = scrollRef.current;
+  if (!el || loading) return;
+
+  const nearBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 10;
+  if (nearBottom && options.length < totalRecords) {
+    fetchData(false);
+  }
+}, [loading, options.length, totalRecords, fetchData]);
+
+
+    useEffect(() => {
+      if (!isOpen) return
+      const el = scrollRef.current
+      if (el) el.addEventListener('scroll', handleScroll)
+      return () => {
+        if (el) el.removeEventListener('scroll', handleScroll)
+      }
+    }, [isOpen, handleScroll])
+
+    const handleSelect = (item: { label: string; value: string | number }) => {
+      setSelectedItem(item)
+      onSelected(item)
+      setIsOpen(false)
+    }
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+      setSearchText(value)
+      setPage(1)
+      fetchData(true, value)
+    }
+
+    const clearSearch = () => {
+      setSearchText('')
+      setPage(1)
+      fetchData(true, '')
+    }
+
+    useEffect(() => {
+      if (validator) setError(validator(selectedItem?.value))
+    }, [selectedItem, validator])
+
+    const getOptionStyles = (selected: boolean, hovered = false): React.CSSProperties => {
+      const isActive = selected || hovered
+      return {
+        padding: `${sizeStyles.padding}px ${sizeStyles.padding * 2 + 16}px`,
+        fontSize: sizeStyles.fontSize,
+        borderRadius: theme.borderRadius.sm,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        backgroundColor: isActive ? theme.colors.hover : baseColor.backgroundColor,
+        color: theme.colors.textSecondary,
+        transition: theme.transitions.normal,
+      }
+    }
+
+    return (
+      <div ref={ref} className={className} style={{ position: 'relative', width: sizeStyles.width, ...style }}>
+        {/* Trigger */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontWeight: theme.fontWeight.medium,
+            padding: `${sizeStyles.padding}px`,
+            fontSize: sizeStyles.fontSize,
+            borderRadius: theme.borderRadius.sm,
+            backgroundColor: baseColor.backgroundColor,
+            border: `1px solid ${theme.colors.border}`,
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            color: theme.colors.text,
+            userSelect: 'none',
+            boxSizing: 'border-box',
+          }}
+          onClick={() => !disabled && setIsOpen(prev => !prev)}
+        >
+          {selectedItem?.label || title}
+          <svg
+            width={sizeStyles.fontSize + 4}
+            height={sizeStyles.fontSize + 4}
+            style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', transition: theme.transitions.normal }}
+            fill="none"
+            stroke={theme.colors.text}
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+
+        {/* Dropdown */}
+        {isOpen && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              width: '100%',
+              maxHeight: sizeStyles.dropdownHeight,
+              overflowY: 'auto',
+              marginTop: theme.spacing.xs,
+              border: `1px solid ${theme.colors.border}`,
+              borderRadius: theme.borderRadius.sm,
+              backgroundColor: baseColor.backgroundColor,
+              boxShadow: theme.shadows.md,
+              zIndex: 999,
+              boxSizing: 'border-box',
+            }}
+            ref={scrollRef}
+          >
+            {/* Search */}
+            <div style={{ position: 'relative', marginBottom: theme.spacing.sm }}>
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchText}
+                onChange={handleSearch}
+                autoFocus
+                style={{
+                  width: '100%',
+                  padding: `${sizeStyles.padding}px ${sizeStyles.padding * 2 + 24}px ${sizeStyles.padding}px ${
+                    sizeStyles.padding * 2 + 24
+                  }px`,
+                  border: `1px solid ${theme.colors.border}`,
+                  borderRadius: theme.borderRadius.sm,
+                  outline: 'none',
+                  fontSize: sizeStyles.fontSize,
+                  backgroundColor: baseColor.backgroundColor,
+                  color: theme.colors.text,
+                  boxSizing: 'border-box',
+                }}
+              />
+              <Search
+                size={sizeStyles.fontSize + 2}
+                color={theme.colors.textSecondary}
+                style={{
+                  position: 'absolute',
+                  left: sizeStyles.padding,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  pointerEvents: 'none',
+                }}
+              />
+              {searchText.trim() && (
+                <X
+                  size={sizeStyles.fontSize + 2}
+                  color="#000"
+                  style={{
+                    position: 'absolute',
+                    right: sizeStyles.padding,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    cursor: 'pointer',
+                  }}
+                  onClick={clearSearch}
+                />
+              )}
+            </div>
+
+            {/* Options */}
+            {options.length > 0 ? (
+              options.map(item => {
+                const selected = selectedItem?.value === item.value
+                return (
+                  <div
+                    key={item.value}
+                    onClick={() => !disabled && handleSelect(item)}
+                    onMouseEnter={e =>
+                      !disabled && Object.assign(e.currentTarget.style, getOptionStyles(selected, true))
+                    }
+                    onMouseLeave={e =>
+                      !disabled && Object.assign(e.currentTarget.style, getOptionStyles(selected, false))
+                    }
+                    style={getOptionStyles(selected)}
+                  >
+                    {item.label}
+                  </div>
+                )
+              })
+            ) : (
+              <div style={{ padding: theme.spacing.sm, textAlign: 'center', color: theme.colors.textLight }}>
+                No records found
+              </div>
+            )}
+
+            {loading && options.length > 0 && (
+              <div style={{ textAlign: 'center', color: theme.colors.primary, fontSize: theme.fontSize.xs, padding: theme.spacing.xs }}>
+                Loading more...
+              </div>
+            )}
+
+            {error && (
+              <p style={{ color: theme.colors.error, fontSize: theme.fontSize.xs, marginTop: theme.spacing.xs }}>{error}</p>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+)
+
+SingleSelectWithPagination.displayName = 'SingleSelectWithPagination'
+

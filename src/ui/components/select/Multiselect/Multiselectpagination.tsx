@@ -43,22 +43,22 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
     setFilteredOptions(filtered);
   }, [searchTerm, options]);
 
-  // ✅ Toggle selection
+  // ✅ Select all
+  const selectAll = () => {
+    onChange(options.map((opt) => opt.value));
+  };
+
+  // ✅ Clear all
+  const clearAll = () => {
+    onChange([]);
+  };
+
+  // ✅ Toggle single selection
   const toggleSelect = (value: string | number) => {
     const updated = selectedValues.includes(value)
       ? selectedValues.filter((v) => v !== value)
       : [...selectedValues, value];
     onChange(updated);
-  };
-
-  // ✅ Select all options
-  const selectAll = () => {
-    onChange(options.map((opt) => opt.value));
-  };
-
-  // ✅ Deselect all options
-  const deselectAll = () => {
-    onChange([]);
   };
 
   // ✅ Remove single tag
@@ -97,22 +97,33 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
         </label>
       )}
 
-      {/* Search & Tag Container with Dropdown Arrow */}
+      {/* Search & Tag Container */}
       <div
         onClick={() => setIsOpen(!isOpen)}
         style={{
           display: "flex",
           alignItems: "center",
-          flexWrap: "wrap",
+          overflowX: "auto",
+          whiteSpace: "nowrap",
           minHeight: "44px",
+          maxHeight: "44px",
           border: "1px solid #ccc",
           borderRadius: "6px",
           padding: "6px 10px",
           background: "#fff",
           cursor: "pointer",
           position: "relative",
+          scrollbarWidth: "none",
         }}
       >
+        <style>
+          {`
+            ::-webkit-scrollbar {
+              display: none;
+            }
+          `}
+        </style>
+
         {/* Selected Tags */}
         {visibleTags.map((label, index) => (
           <div
@@ -120,13 +131,16 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             style={{
               backgroundColor: "#e0f2fe",
               color: "#0369a1",
-              padding: "4px 8px",
+              padding: "2px 6px",
               borderRadius: "4px",
               marginRight: "6px",
-              marginBottom: "4px",
-              display: "flex",
+              display: "inline-flex",
               alignItems: "center",
               fontSize: "13px",
+              maxWidth: "100px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {label}
@@ -139,7 +153,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
               style={{
                 background: "none",
                 border: "none",
-                marginLeft: "6px",
+                marginLeft: "4px",
                 color: "#0369a1",
                 cursor: "pointer",
                 fontWeight: 600,
@@ -154,13 +168,13 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
         {remainingCount > 0 && (
           <span
             style={{
-              fontSize: "14px",
-              color: "#333",
+              fontSize: "13px",
+              color: "#555",
               fontWeight: 500,
-              marginBottom: "4px",
+              marginRight: "8px",
             }}
           >
-            + {remainingCount} more
+            +{remainingCount} more
           </span>
         )}
 
@@ -175,9 +189,10 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             flexGrow: 1,
             border: "none",
             outline: "none",
-            minWidth: "100px",
             fontSize: "14px",
-            padding: "6px",
+            padding: "6px 0",
+            minWidth: "0",
+            width: "100%",
           }}
         />
 
@@ -211,88 +226,100 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             borderRadius: "8px",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
             zIndex: 999,
-            maxHeight: "300px",
+            maxHeight: "250px",
             overflowY: "auto",
-            padding: "8px 10px",
           }}
         >
-          {/* Select / Deselect All */}
+          {/* ✅ Sticky Header with Select All / Clear All */}
           <div
             style={{
+              position: "sticky",
+              top: 0,
+              background: "#fff",
+              zIndex: 10,
+              padding: "8px 10px",
+              borderBottom: "1px solid #eee",
               display: "flex",
-              justifyContent: "space-between",
-              marginBottom: "8px",
+              justifyContent: "flex-start",
+              gap: "20px",
             }}
           >
-            <button
-              onClick={selectAll}
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                selectAll();
+              }}
               style={{
-                padding: "6px 10px",
-                backgroundColor: "#3b82f6",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
                 fontSize: "13px",
+                fontWeight: 600,
+                color: "#2563eb",
+                cursor: "pointer",
               }}
             >
               Select All
-            </button>
-            <button
-              onClick={deselectAll}
+            </span>
+
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                clearAll();
+              }}
               style={{
-                padding: "6px 10px",
-                backgroundColor: "#ef4444",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
                 fontSize: "13px",
+                fontWeight: 600,
+                color: "#dc2626",
+                cursor: "pointer",
               }}
             >
-           Clear All
-            </button>
+              Clear All
+            </span>
           </div>
 
-          {/* Options */}
-          {filteredOptions.length > 0 ? (
-            filteredOptions.map((opt) => (
-              <div
-                key={opt.value}
+          {/* ✅ Scrollable Options */}
+          <div
+            style={{
+              padding: "8px 10px",
+            }}
+          >
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => (
+                <div
+                  key={opt.value}
+                  style={{
+                    marginBottom: "6px",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <label style={{ cursor: "pointer", fontSize: "14px", lineHeight: "1.4" }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedValues.includes(opt.value)}
+                      onChange={() => toggleSelect(opt.value)}
+                      style={{
+                        marginRight: "8px",
+                        cursor: "pointer",
+                        accentColor: "#007bff",
+                      }}
+                    />
+                    {opt.label}
+                  </label>
+                </div>
+              ))
+            ) : (
+              <p
                 style={{
-                  marginBottom: "6px",
-                  display: "flex",
-                  alignItems: "center",
+                  textAlign: "center",
+                  color: "#f59e0b",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  margin: "10px 0",
                 }}
               >
-                <label style={{ cursor: "pointer", fontSize: "14px" }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedValues.includes(opt.value)}
-                    onChange={() => toggleSelect(opt.value)}
-                    style={{
-                      marginRight: "8px",
-                      cursor: "pointer",
-                      accentColor: "#007bff",
-                    }}
-                  />
-                  {opt.label}
-                </label>
-              </div>
-            ))
-          ) : (
-            <p
-              style={{
-                textAlign: "center",
-                color: "#f59e0b",
-                fontSize: "14px",
-                fontWeight: 500,
-                margin: "10px 0",
-              }}
-            >
-              No departments found
-            </p>
-          )}
+                No departments found
+              </p>
+            )}
+          </div>
         </div>
       )}
     </div>

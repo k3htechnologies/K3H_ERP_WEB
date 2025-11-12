@@ -15,7 +15,7 @@ export const COLORS = {
   backgroundSecondary: '#f9fafb',
   textLight: '#9ca3af',         // Light text
   placeholder: '#9ca3af',       // Placeholder text
-  black:'#333'
+  black: '#333'
 
 } as const
 
@@ -25,6 +25,134 @@ export type ColorType = keyof typeof COLORS
 // ============================================================================
 // BUTTON / COMPONENT COLOR MAP
 // ============================================================================
+// export const COLOR_MAP = {
+//   primary: {
+//     solid: {
+//       backgroundColor: COLORS.primary,
+//       color: 'white',
+//       border: `1px solid ${COLORS.border}`,
+//       hover: { backgroundColor: COLORS.primaryHover },
+//     },
+//     outline: {
+//       backgroundColor: 'transparent',
+//       color: COLORS.primary,
+//       border: `1px solid ${COLORS.primary}`,
+//       hover: { backgroundColor: COLORS.primaryLight },
+//     },
+//     ghost: {
+//       backgroundColor: 'transparent',
+//       color: COLORS.primary,
+//       border: 'none',
+//       hover: { backgroundColor: COLORS.primaryLight },
+//     },
+//     link: {
+//       backgroundColor: 'transparent',
+//       color: COLORS.primary,
+//       border: 'none',
+//       textDecoration: 'underline',
+//       hover: { color: COLORS.primaryHover },
+//     },
+//     gray: {
+//       backgroundColor: '#8d99baff',
+//       color: '#5c5b8d',
+//       border: '#5c5b8d',
+//       textDecoration: 'underline',
+//       hover: { color: '5c5b8d' },
+//     },
+//     green: {
+//       solid: {
+//         backgroundColor: '#8d99ba1f',
+//         color: '#5c5b8d',
+//         border: '#5c5b8d',
+//         textDecoration: 'underline',
+//         hover: { color: '#5c5b8d' },
+//       }
+//     },
+
+//     purple: {
+//       solid: {
+//         backgroundColor: '#b036da',
+//         color: '#b036da ',
+//         border: '#b036da',
+//         textDecoration: 'underline',
+//         hover: { color: '#b036da' },
+//       }
+//     },
+//   },
+//   error: {
+//     solid: {
+//       backgroundColor: COLORS.error,
+//       color: 'white',
+//       border: `1px solid ${COLORS.border}`,
+//       hover: { backgroundColor: '#b91c1c' },
+//     },
+//   },
+//   secondary: {
+//     solid: {
+//       backgroundColor: '#64748b',
+//       color: 'white',
+//       border: 'none',
+//       hover: { backgroundColor: '#475569' },
+//     },
+//   },
+//   success: {
+//     solid: {
+//       backgroundColor: '#16a34a',
+//       color: 'white',
+//       border: 'none',
+//       hover: { backgroundColor: '#15803d' },
+//     },
+//   },
+//   warning: {
+//     solid: {
+//       backgroundColor: '#facc15',
+//       color: '#000',
+//       border: 'none',
+//       hover: { backgroundColor: '#eab308' },
+//     },
+//   },
+//   info: {
+//     solid: {
+//       backgroundColor: '#0ea5e9',
+//       color: 'white',
+//       border: 'none',
+//       hover: { backgroundColor: '#0284c7' },
+//     },
+//   },
+
+//   gray: {
+//     solid: {
+//       backgroundColor: '#8d99ba1f',
+//       color: '#5c5b8d',
+//       border: '#5c5b8d',
+//       textDecoration: 'underline',
+//       hover: { color: '5c5b8d' },
+//     }
+//   },
+
+//   green: {
+//     solid: {
+//       backgroundColor: '#8d99ba1f',
+//       color: '#5c5b8d',
+//       border: '#5c5b8d',
+//       textDecoration: 'underline',
+//       hover: { color: '#5c5b8d' },
+//     }
+//   },
+
+//   purple: {
+//     solid: {
+//       backgroundColor: '#b036da',
+//       color: '#b036da',
+//       border: '#b036da',
+//       textDecoration: 'underline',
+//       hover: { color: '#b036da' },
+//     }
+//   },
+// } as const
+
+// export type ColorMapType = typeof COLOR_MAP
+
 export const COLOR_MAP = {
   primary: {
     solid: {
@@ -119,40 +247,224 @@ export const COLOR_MAP = {
       hover: { backgroundColor: '#0284c7' },
     },
   },
-
   gray: {
     solid: {
-      backgroundColor: '#8d99ba1f',
-      color: '#5c5b8d',
-      border: '#5c5b8d',
-      textDecoration: 'underline',
-      hover: { color: '5c5b8d' },
-    }
+      light: {
+        backgroundColor: '#e2e8f0',
+        color: '#1e293b',
+        border: '1px solid #cbd5e1',
+        hover: { backgroundColor: '#cbd5e1' },
+      },
+      dark: {
+        backgroundColor: '#1e293b',
+        color: '#e2e8f0',
+        border: '1px solid #334155',
+        hover: { backgroundColor: '#334155' },
+      },
+    },
   },
 
   green: {
     solid: {
-      backgroundColor: '#8d99ba1f',
-      color: '#5c5b8d',
-      border: '#5c5b8d',
-      textDecoration: 'underline',
-      hover: { color: '#5c5b8d' },
-    }
+      light: {
+        backgroundColor: '#dcfce7',
+        color: '#008236',
+        border: '1px solid #dcfce7',
+        hover: { backgroundColor: '#b9f8cf  ' },
+      },
+      dark: {
+        backgroundColor: '#16a34a',
+        color: '#dcfce7',
+        border: '1px solid #15803d',
+        hover: { backgroundColor: '#15803d' },
+      },
+    },
   },
 
   purple: {
     solid: {
-      backgroundColor: '#b036da',
-      color: '#b036da',
-      border: '#b036da',
+      light: {
+        backgroundColor: '#f3e8ff',
+        color: '#8200db',
+        border: '1px solid #f3e8ff',
+        hover: { backgroundColor: '#f3e8ff' },
+      },
+      dark: {
+        backgroundColor: '#9333ea',
+        color: '#f3e8ff',
+        border: '1px solid #7e22ce',
+        hover: { backgroundColor: '#7e22ce' },
+      },
+    },
+  },
+
+  blue: {
+    solid: {
+      light: {
+        backgroundColor: '#3b82f6',
+        color: '#ffffff',
+        border: '1px solid #3b82f6',
+        hover: { backgroundColor: '#2563eb' },
+      },
+      dark: {
+        backgroundColor: '#1d4ed8',
+        color: '#dbeafe',
+        border: '1px solid #1e40af',
+        hover: { backgroundColor: '#1e40af' },
+      },
+    },
+  },
+
+  indigo: {
+    solid: {
+      light: {
+        backgroundColor: '#6366f1',
+        color: '#ffffff',
+        border: '1px solid #6366f1',
+        hover: { backgroundColor: '#4f46e5' },
+      },
+      dark: {
+        backgroundColor: '#4f46e5',
+        color: '#e0e7ff',
+        border: '1px solid #3730a3',
+        hover: { backgroundColor: '#3730a3' },
+      },
+    },
+  },
+
+  orange: {
+    solid: {
+      light: {
+        backgroundColor: '#fb923c',
+        color: '#000000',
+        border: '1px solid #f97316',
+        hover: { backgroundColor: '#f97316' },
+      },
+      dark: {
+        backgroundColor: '#f97316',
+        color: '#fff7ed',
+        border: '1px solid #ea580c',
+        hover: { backgroundColor: '#ea580c' },
+      },
+    },
+  },
+
+  red: {
+    solid: {
+      light: {
+        backgroundColor: '#ef4444',
+        color: '#ffffff',
+        border: '1px solid #ef4444',
+        hover: { backgroundColor: '#dc2626' },
+      },
+      dark: {
+        backgroundColor: '#dc2626',
+        color: '#fee2e2',
+        border: '1px solid #991b1b',
+        hover: { backgroundColor: '#991b1b' },
+      },
+    },
+  },
+
+  pink: {
+    solid: {
+      light: {
+        backgroundColor: '#ec4899',
+        color: '#ffffff',
+        border: '1px solid #ec4899',
+        hover: { backgroundColor: '#db2777' },
+      },
+      dark: {
+        backgroundColor: '#db2777',
+        color: '#fce7f3',
+        border: '1px solid #be185d',
+        hover: { backgroundColor: '#be185d' },
+      },
+    },
+  },
+
+  teal: {
+    solid: {
+      light: {
+        backgroundColor: '#14b8a6',
+        color: '#ffffff',
+        border: '1px solid #14b8a6',
+        hover: { backgroundColor: '#0d9488' },
+      },
+      dark: {
+        backgroundColor: '#0d9488',
+        color: '#ccfbf1',
+        border: '1px solid #115e59',
+        hover: { backgroundColor: '#115e59' },
+      },
+    },
+  },
+
+  lime: {
+    solid: {
+      light: {
+        backgroundColor: '#84cc16',
+        color: '#ffffff',
+        border: '1px solid #84cc16',
+        hover: { backgroundColor: '#65a30d' },
+      },
+      dark: {
+        backgroundColor: '#65a30d',
+        color: '#ecfccb',
+        border: '1px solid #4d7c0f',
+        hover: { backgroundColor: '#4d7c0f' },
+      },
+    },
+  },
+
+  black: {
+    solid: {
+      light: {
+        backgroundColor: '#111827',
+        color: '#ffffff',
+        border: '1px solid #1f2937',
+        hover: { backgroundColor: '#000000' },
+      },
+      dark: {
+        backgroundColor: '#000000',
+        color: '#f9fafb',
+        border: '1px solid #1f2937',
+        hover: { backgroundColor: '#111827' },
+      },
+    },
+  },
+
+  transparent: {
+    solid: {
+      // "solid" here is actually transparent — useful as a palette key
+      backgroundColor: 'transparent',
+      color: '#364153',      // inherit text color (or set a semantic color like COLORS.primary)
+      border: 'none',
+      hover: { backgroundColor: '#f6f3f4' },
+    },
+    outline: {
+      backgroundColor: 'transparent',
+      color: 'inherit',
+      border: 'none',
+      hover: { backgroundColor: 'transparent' },
+    },
+    ghost: {
+      backgroundColor: 'transparent',
+      color: 'inherit',
+      border: 'none',
+      hover: { backgroundColor: 'rgba(0,0,0,0.04)' }, // subtle hover if wanted
+    },
+    link: {
+      backgroundColor: 'transparent',
+      color: 'inherit',
+      border: 'none',
       textDecoration: 'underline',
-      hover: { color: '#b036da' },
-    }
+      hover: { color: 'inherit' },
+    },
   },
 } as const
 
 export type ColorMapType = typeof COLOR_MAP
-
 
 
 // ============================================================================

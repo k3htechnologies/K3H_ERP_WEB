@@ -8,14 +8,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     (
         {
             variant = 'solid',
+            colorMode = 'dark',
             size = 'md',
             color = 'primary',
             disabled = false,
             loading = false,
             fullWidth = false,
+            defineWidth = false,
             leftIcon,
             rightIcon,
             loadingText,
+            isborderRadius = false,
             children,
             className = '',
             style,
@@ -26,16 +29,27 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         const theme = THEME
 
         const sizeConfig = {
-            sm: { height: '34px', width: '34px', padding: `${theme.spacing.sm} ${theme.spacing.lg}`,fontWeight:theme.fontWeight.normal, fontSize: theme.fontSize.sm, iconSize: '12px' },
-            md: { height: '44px', width: '44px', padding: `${theme.spacing.md} ${theme.spacing.xl}`,fontWeight:theme.fontWeight.medium, fontSize: theme.fontSize.md, iconSize: '20px' },
-            lg: { height: '52px', width: '52px', padding: `${theme.spacing.lg} ${theme.spacing.xxl}`,fontWeight:theme.fontWeight.bold, fontSize: theme.fontSize.lg, iconSize: '24px' },
+            xs: { height: '32px', width: '32px', padding: `${theme.spacing.xs} ${theme.spacing.sm}`, fontWeight: theme.fontWeight.normal, fontSize: theme.fontSize.xs, iconSize: '10px', },
+            sm: { height: '34px', width: '34px', padding: `${theme.spacing.sm} ${theme.spacing.lg}`, fontWeight: theme.fontWeight.normal, fontSize: theme.fontSize.sm, iconSize: '12px' },
+            md: { height: '44px', width: '44px', padding: `${theme.spacing.md} ${theme.spacing.xl}`, fontWeight: theme.fontWeight.medium, fontSize: theme.fontSize.md, iconSize: '20px' },
+            lg: { height: '52px', width: '52px', padding: `${theme.spacing.lg} ${theme.spacing.xxl}`, fontWeight: theme.fontWeight.bold, fontSize: theme.fontSize.lg, iconSize: '24px' },
         }
 
         const currentSize = sizeConfig[size];
 
+        const iconSizeCss = currentSize.iconSize as string
+
+        const iconSizeNumber = (() => {
+            if (!iconSizeCss) return 16
+            const n = parseInt(String(iconSizeCss).replace('px', ''), 10)
+            return Number.isNaN(n) ? 16 : n
+        })()
+
         const colorStyles =
-            COLOR_MAP[color as keyof typeof COLOR_MAP]?.[variant as keyof (typeof COLOR_MAP)[keyof typeof COLOR_MAP]] ||
-            COLOR_MAP.primary.solid;
+            (COLOR_MAP as any)[color]?.[variant]?.[colorMode] ??
+            (COLOR_MAP as any)[color]?.[variant] ??
+            (COLOR_MAP as any)[color]?.solid?.[colorMode] ??
+            (COLOR_MAP.primary as any).solid
 
         const childCount = React.Children.count(children);
         const isIconOnly =
@@ -46,15 +60,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             React.Children.toArray(children).every(ch => React.isValidElement(ch));
 
         const buttonStyles: React.CSSProperties = {
-            width: fullWidth ? '100%' : 'auto',
+            width: defineWidth ? currentSize.width : fullWidth ? '100%' : 'auto',
             height: currentSize.height,
             padding: currentSize.padding,
             fontSize: currentSize.fontSize,
             fontWeight: currentSize.fontWeight,
-            borderRadius: theme.borderRadius.lg,
+            borderRadius: isborderRadius ? '0px': theme.borderRadius.lg ,
             border: colorStyles.border,
             backgroundColor: colorStyles.backgroundColor,
-            color: colorStyles.color,   
+            color: colorStyles.color,
             cursor: disabled || loading ? 'not-allowed' : 'pointer',
             transition: theme.transitions.normal,
             fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
@@ -82,9 +96,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
         const renderIconElement = (el: React.ReactNode, forcedSize?: number) => {
             if (!isValidElement(el)) return el
-            const sizeNum = typeof forcedSize === 'number' ? forcedSize : currentSize.iconSize
+            const sizeNum = typeof forcedSize === 'number' ? forcedSize : iconSizeNumber
             const existingProps = (el as any).props || {}
-            if (existingProps.size || existingProps.width || existingProps.height) {
+            if (existingProps.size !== undefined || existingProps.width !== undefined || existingProps.height !== undefined) {
                 return el
             }
             try {
@@ -93,6 +107,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 return el
             }
         }
+
 
         return (
             <button
@@ -115,12 +130,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     </>
                 ) : (
                     <>
-                        {leftIcon && <span style={{ fontSize: currentSize.iconSize }}>{leftIcon}</span>}
+                        {leftIcon && <span style={{ fontSize: iconSizeCss }}>{renderIconElement(leftIcon)}</span>}
+
                         {isIconOnly
-                            ? renderIconElement(React.Children.only(children), Number(currentSize.iconSize))
+                            ? renderIconElement(React.Children.only(children), iconSizeNumber)
                             : <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{children}</span>
                         }
-                        {rightIcon && <span style={{ fontSize: currentSize.iconSize }}>{rightIcon}</span>}
+
+                        {rightIcon && <span style={{ fontSize: iconSizeCss }}>{renderIconElement(rightIcon)}</span>}
+
                     </>
                 )}
             </button>
@@ -135,9 +153,9 @@ Button.displayName = 'Button'
 // Add CSS animation for spinner
 const styleEl = document.createElement('style')
 styleEl.textContent = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    `
 document.head.appendChild(styleEl)

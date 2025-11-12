@@ -289,43 +289,57 @@ export const DepartmentMaster: React.FC = () => {
             <div className="flex items-center justify-end ml-2 w-20">
               {(row.NumberOfEmployee || 0) === 0 ? (
                 <>
-                  <button
+                  <Button
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       handleEditDepartmentMaster(row)
                     }}
-                    className="p-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors duration-200 mr-1"
+                    color='transparent'
+                    fullWidth
+                    isborderRadius
+                    size='sm'
                     title="Edit Department"
                     style={{
                       color: '#0B3251',
+                      padding: '0px 8px'
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
                     onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
                   >
                     <Edit className="h-4 w-4" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       handleConfirmationDialogBoxOpen(row)
                     }}
-                    className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-200"
+                    color='transparent'
+                    fullWidth
+                    isborderRadius
+                    size='sm'
+                    style={{
+                      color: 'red',
+                      padding: '0px 8px'
+                    }}
                     title="Delete Department"
                   >
                     <Trash2 className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
-                  <button
+                  <Button
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       handleEditDepartmentMaster(row)
                     }}
-                    className="p-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors duration-200"
+                    color='transparent'
+                    fullWidth
+                    isborderRadius
+                    size='sm'
                     title="Edit Department"
                     style={{
                       color: '#0B3251',
@@ -334,7 +348,7 @@ export const DepartmentMaster: React.FC = () => {
                     onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
                   >
                     <Edit className="h-4 w-4" />
-                  </button>
+                  </Button>
                   <div className="w-[30px]" />
                 </>
 
@@ -469,7 +483,7 @@ export const DepartmentMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Customize Employee Master Table Columns"
+        title="Customize Department Master Table Columns"
         onSubmit={handleApplyCustomizeDepartmentMasterColumns}
         saveText="Apply Changes"
         cancelText="Cancel"
@@ -892,7 +906,11 @@ export const DepartmentMaster: React.FC = () => {
   }
 
   const handleDeleteDepartmentMaster = async () => {
+
+    setIsConfirmationDialogBoxOpen(false);
+
     if (!deleteDepartmentMasterDetailsData) return
+
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -969,20 +987,23 @@ export const DepartmentMaster: React.FC = () => {
                   <Search className="h-4 w-4 text-gray-400" />
                 }
                 rightIcon={
-                  <div className="flex items-center space-x-1 pr-1">
+                  <div className="flex items-center space-x-1 pr-8">
                     {/* CLEAR SEARCH (X) BUTTON */}
                     {searchTerm && (
-                      <button
+                      <Button
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
                           clearsearchDepartments();
                         }}
-                        className="p-1 text-gray-400 hover:text-gray-600"
+                        color='transparent'
+                        fullWidth
+                        isborderRadius
+                        size='sm'
                         title="Clear search"
                       >
-                        <X className="h-4 w-4" />
-                      </button>
+                        <X className="" />
+                      </Button>
                     )}
 
                     {/* FILTER BUTTON */}
@@ -1046,29 +1067,37 @@ export const DepartmentMaster: React.FC = () => {
               {/* ADD BUTTON AND IMPORT BUTTON */}
               {canAction && (
                 <>
-                  <button
+                  <Button
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       handleAddDepartmentModal()
                     }}
-                    className="flex items-center p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    color='blue'
+                    size='xs'
+                    variant='solid'
+                    colorMode='light'
+                    defineWidth
+                    className="bg-blue-200 hover:bg-blue-300 text-blue-800 border border-blue-400"
                     title="Add Department"
                   >
                     <Plus className="h-4 w-4" />
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       // setImportisViewModalOpen(true)
                     }}
-                    className="flex items-center p-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
+                    color='green'
+                    colorMode='light'
+                    size='xs'
+                    defineWidth
                     title="Import"
                   >
                     <Upload className="h-4 w-4" />
-                  </button>
+                  </Button>
 
                 </>
               )}
@@ -1076,24 +1105,26 @@ export const DepartmentMaster: React.FC = () => {
               {/* EXPORT BUTTON */}
               {canExport && (
                 <div className="relative" ref={exportRef}>
-                  <button
+                  <Button
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       setIsExportOpen((s) => !s);
                     }}
-                    aria-haspopup="menu"
-                    aria-expanded={isExportOpen}
-                    className="flex items-center p-2 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 transition-colors"
+                    color='purple'
+                    colorMode='light'
+                    size='xs'
+                    defineWidth
                     title="Export"
                   >
                     <Download className="h-4 w-4" />
-                  </button>
+                  </Button>
 
                   {isExportOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-50">
+                    <div className="absolute right-0 mt-2 w-42 bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-50">
                       <div className="py-1">
-                        <button
+
+                        <Button
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -1101,14 +1132,17 @@ export const DepartmentMaster: React.FC = () => {
                             setIsExportOpen(false);
                           }}
                           disabled={isLoading}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          color='transparent'
+                          fullWidth
+                          isborderRadius
+                          size='sm'
                           title="Export as Excel"
                         >
                           <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
                           Export as Excel
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -1116,12 +1150,15 @@ export const DepartmentMaster: React.FC = () => {
                             setIsExportOpen(false);
                           }}
                           disabled={isLoading}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          color='transparent'
+                          fullWidth
+                          isborderRadius
+                          size='sm'
                           title="Export as PDF"
                         >
                           <FileText className="h-4 w-4 mr-2 text-red-600" />
                           Export as PDF
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )}

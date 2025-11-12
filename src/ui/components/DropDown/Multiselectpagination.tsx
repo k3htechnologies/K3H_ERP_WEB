@@ -1,16 +1,11 @@
+import type { MultiSelectPaginationProps } from "@/core/types/dropDownSelectionType";
 import React, { useState, useEffect, useRef } from "react";
 
-export interface DropdownOption {
+export interface DropdownOptions {
   label: string;
   value: string | number;
 }
 
-export interface MultiSelectPaginationProps {
-  label?: string;
-  options: DropdownOption[];
-  selectedValues: (string | number)[];
-  onChange: (values: (string | number)[]) => void;
-}
 
 const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   label,
@@ -20,7 +15,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredOptions, setFilteredOptions] = useState<DropdownOption[]>(options);
+  const [filteredOptions, setFilteredOptions] = useState<DropdownOptions[]>(options);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // ✅ Close dropdown when clicking outside

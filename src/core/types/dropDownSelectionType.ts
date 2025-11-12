@@ -1,5 +1,6 @@
-import type { DropdownOption } from "@/ui/components/DropDownSelect/SinglePageSelection";
+import type { DropdownOption } from "@/ui/components/DropDown/SinglePageSelection";
 import type { COLOR_MAP } from "../constants/colors";
+import type { DropdownOptions } from "@/ui/components/DropDown/Multiselectpagination";
 
 export interface SingleSelectWithPaginationProps {
   options: { label: string; value: string | number }[]
@@ -50,4 +51,10 @@ export interface SinglePageSelectionProps {
     spacing: Record<string, string>;
     fontSize: Record<string, string>;
   };
+}
+export interface MultiSelectPaginationProps {
+  label?: string;
+  options: DropdownOptions[];
+  selectedValues: (string | number)[];
+  onChange: (values: (string | number)[]) => void;
 }

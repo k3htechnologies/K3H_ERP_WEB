@@ -5,7 +5,7 @@ import type {
 } from "@/features/departmentMaster/models/DepartmentMasterModel";
 import { DepartmentMasterApi } from "@/features/departmentMaster/api/DepartmentMasterApi";
 import baseClient from "@/core/config/baseClient";
-import { SingleSelectDropdownWithPagination } from "@/ui/components/DropDownSelect/SingleSelectDropdownWithPagination";
+import { SingleSelectDropdownWithPagination } from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 
 export const Test: React.FC = () => {
   // ✅ API call to fetch paginated departments

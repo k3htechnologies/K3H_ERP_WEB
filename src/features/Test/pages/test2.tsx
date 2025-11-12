@@ -5,7 +5,7 @@ import type {
   DepartmentMasterListResponse,
 } from "@/features/departmentMaster/models/DepartmentMasterModel";
 import baseClient from "@/core/config/baseClient";
-import { MultiSelectDropdown } from "@/ui/components/DropDownSelect/MultiSelectDropdown";
+import { MultiSelectDropdown } from "@/ui/components/DropDown/MultiSelectDropdown";
 
 export const Test2: React.FC = () => {
   const [departments, setDepartments] = useState<{ label: string; value: string | number }[]>([]);

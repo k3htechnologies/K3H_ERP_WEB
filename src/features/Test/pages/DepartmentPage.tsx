@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { DepartmentMasterDatasourceImpl } from "@/features/departmentMaster/datasources/DepartmentMasterDatasource";
 import type { DepartmentMasterData } from "@/features/departmentMaster/models/DepartmentMasterModel";
-import { SinglePageSelection } from "@/ui/components/DropDownSelect/SinglePageSelection";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 
 //  Create datasource instance
 const datasource = new DepartmentMasterDatasourceImpl();

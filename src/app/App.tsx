@@ -55,8 +55,8 @@ function App() {
         {/* Public Routes */}
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/error" element={<ErrorFallbackPage />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="employeeModuleAccess" element={<EmployeeModuleAccess />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/employeeModuleAccess" element={<EmployeeModuleAccess />} />
 
 
         {/* Protected Routes with Layout */}

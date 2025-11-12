@@ -8,6 +8,8 @@ export interface PullEmployeeModuleAccessRequest {
 export interface AddUpdateEmployeeModuleAccessRequest {
     DesignationMasterId?: number
     ModulesPermissionsJsonList?: string
+    // JSON FORMAT SAMPLE
+    // [{ModulesMasterId INT,SubModuleMasterId INT,SubSubModuleMasterId INT,IsAction BIT,IsView BIT, IsExport BIT}]
 }
 export type EmployeeModuleAccessListResponse = ApiResponse<ModuleData[]>;
 export type EmployeeModuleAccessSaveResponse = ApiResponse<ModuleData[]>;

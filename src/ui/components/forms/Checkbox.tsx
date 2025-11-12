@@ -65,7 +65,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(({
     display: 'inline-block',
     margin: 0,
     cursor: disabled ? 'not-allowed' : 'pointer',
-    accentColor: theme.colors.black, // modern browsers
+    accentColor: theme.colors.success, // modern browsers
   }
 
   const helperStyle: React.CSSProperties = {
@@ -76,7 +76,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(({
 
   return (
     <div style={wrapperStyle} className={className}>
-      <label htmlFor={inputId} style={labelStyle}>
+      <label htmlFor={inputId} style={labelStyle} >
         <input
           id={inputId}
           ref={ref}

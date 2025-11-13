@@ -13,7 +13,7 @@ import type {
 } from '@/features/designationMaster/models/DesignationMasterModel';
 
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
-import { Download, Edit, FileSpreadsheet, FileText, Filter, Plus, Search, Trash2, Upload, X } from 'lucide-react';
+import { Download, Edit, FileSpreadsheet, FileText, Filter, Key, Plus, Search, Trash2, Upload, X } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
@@ -25,6 +25,8 @@ import Checkbox from '@/ui/components/forms/Checkbox';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { DesignationMasterService } from '@/features/designationMaster/services/DesignationMasterService';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
+import { useNavigate } from 'react-router-dom';
+
 
 
 export const DesignationMaster: React.FC = () => {
@@ -75,6 +77,9 @@ export const DesignationMaster: React.FC = () => {
   //EXPORT EXCEL AND PDF DIALOG BOX
   const [isExportOpen, setIsExportOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement | null>(null);
+
+  //NAVIGATE 
+  const navigate = useNavigate();
 
   //#endregion
 
@@ -272,24 +277,24 @@ export const DesignationMaster: React.FC = () => {
   }
 
   const designationMasterPaginationInfo: PaginationInfo = useMemo(
-      () => ({
-        currentPage: pagination.currentPage,
-        totalPages: pagination.totalPages,
-        totalRecords: pagination.totalRecords,
-        pageSize: pagination.pageSize,
-        onPageChange: handlePageChange
-      }),
-      [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
-    )
+    () => ({
+      currentPage: pagination.currentPage,
+      totalPages: pagination.totalPages,
+      totalRecords: pagination.totalRecords,
+      pageSize: pagination.pageSize,
+      onPageChange: handlePageChange
+    }),
+    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
+  )
 
-    const designationMasterListForTable = useMemo(() => designationMasterList, [designationMasterList]);
+  const designationMasterListForTable = useMemo(() => designationMasterList, [designationMasterList]);
 
-     const handleViewDesignationDetails = (row: DesignationMasterData) => {
+  const handleViewDesignationDetails = (row: DesignationMasterData) => {
     setViewDesignationMasterDetailsData(row)
     setIsViewModalOpen(true)
   }
 
-   const handleEditDesignationMaster = (row: DesignationMasterData) => {
+  const handleEditDesignationMaster = (row: DesignationMasterData) => {
     setEditingDesignationMasterData({
       ...row,
       NoticePeriod: row.NoticePeriod ?? 'N/A',
@@ -303,141 +308,191 @@ export const DesignationMaster: React.FC = () => {
     setIsConfirmationDialogBoxOpen(true)
   }
 
-const designationMasterColumns = useMemo<TableColumn[]>(
+  const designationMasterColumns = useMemo<TableColumn[]>(
     () => [
-    {
-      key: 'DesignationName',
-      label: 'Designation Name',
-      width: '33',
-      sortable: true,
-      fixed: 'left',
-      align: 'left',
-      render: (value, row) => (
+      {
+        key: 'DesignationName',
+        label: 'Designation Name',
+        width: '33',
+        sortable: true,
+        fixed: 'left',
+        align: 'left',
+        render: (value, row) => (
 
-        <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
+          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
 
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="250px"
-            tooltipThreshold={25}
-            onClick={() => handleViewDesignationDetails(row)} // just pass a function, no need for e.preventDefault here
-          />
+            <TooltipText
+              text={value || 'N/A'}
+              maxWidth="250px"
+              tooltipThreshold={25}
+              onClick={() => handleViewDesignationDetails(row)} // just pass a function, no need for e.preventDefault here
+            />
 
-          {canAction && (
-            <div className="flex items-center justify-end ml-2 w-20">
-              {(row.NumberOfEmployee || 0) === 0 ? (
-                <>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEditDesignationMaster(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    title="Edit Designation"
-                    style={{
-                      color: '#0B3251',
-                      padding: '0px 8px'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
+            {canAction && (
+              <div className="flex items-center justify-end ml-2 w-20">
+                {(row.NumberOfEmployee || 0) === 0 ? (
+                  <>
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleEditDesignationMaster(row)
+                      }}
+                      color='transparent'
+                      fullWidth
+                      isborderRadius
+                      size='sm'
+                      title="Edit Designation"
+                      style={{
+                        color: '#0B3251',
+                        padding: '0px 8px'
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
 
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleConfirmationDialogBoxOpen(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    style={{
-                      color: 'red',
-                      padding: '0px 8px'
-                    }}
-                    title="Delete Designation"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEditDesignationMaster(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    title="Edit Designation"
-                    style={{
-                      color: '#0B3251',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <div className="w-[30px]" />
-                </>
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleConfirmationDialogBoxOpen(row)
+                      }}
+                      color='transparent'
+                      fullWidth
+                      isborderRadius
+                      size='sm'
+                      style={{
+                        color: 'red',
+                        padding: '0px 8px'
+                      }}
+                      title="Delete Designation"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
 
-              )}
-            </div>
-          )}
-        </div>
-      )
-    },
-    {
-      key: 'NoticePeriod',
-      label: 'Notice Period',
-      width: '30',
-      sortable: false,
-      align: 'center',
-      render: (value) => (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          {value}
-        </span>
-      )
-    },
-    {
-      key: 'NumberOfEmployee',
-      label: 'Employee Count',
-      width: '20',
-      sortable: false,
-      align: 'center',
-      render: (value) => (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-          {value}
-        </span>
-      )
-    },
-    {
-      key: 'CreatedBy',
-      label: 'Last Modified By',
-      width: '33',
-      sortable: true,
-      align: 'center',
-      render: (value) => value || 'N/A'
-    },
-    {
-      key: 'CreatedDate',
-      label: 'Last Modified Date',
-      width: '33',
-      sortable: true,
-      align: 'center',
-      render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
-    }
-  ],
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        navigate(`/employeeModuleAccess/${row.DesignationMasterId}`, {
+                          state: {
+                            designationName: row.DesignationName,
+                            uniqueKey: row.Uniquekey,
+                          },
+                        });
+                      }}
+                      color='transparent'
+                      fullWidth
+                      isborderRadius
+                      size='sm'
+                      style={{
+                        color: 'gray',
+                        padding: '0px 8px'
+                      }}
+                      title="Access Module"
+                    >
+                      <Key className="h-4 w-4" strokeWidth={row.IsSetAccessModule ? 3.5 : 0.5} />
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleEditDesignationMaster(row)
+                      }}
+                      color='transparent'
+                      fullWidth
+                      isborderRadius
+                      size='sm'
+                      title="Edit Designation"
+                      style={{
+                        color: '#0B3251',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    
+                    <div aria-hidden className="h-[32px] w-[36px] inline-flex items-center justify-center opacity-0" />
+
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        navigate(`/employeeModuleAccess/${row.DesignationMasterId}`, {
+                          state: {
+                            designationName: row.DesignationName,
+                            uniqueKey: row.Uniquekey,
+                          },
+                        });
+                      }}
+                      color='transparent'
+                      fullWidth
+                      isborderRadius
+                      size='sm'
+                      style={{
+                        color: 'gray',
+                        padding: '0px 8px'
+                      }}
+                      title="Access Module"
+                    >
+                      <Key className="h-4 w-4" strokeWidth={row.IsSetAccessModule ? 3.5 : 0.5} />
+                    </Button>
+                  </>
+
+                )}
+              </div>
+            )}
+          </div>
+          
+        )
+      },
+      {
+        key: 'NoticePeriod',
+        label: 'Notice Period',
+        width: '30',
+        sortable: false,
+        align: 'center',
+        render: (value) => (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            {value}
+          </span>
+        )
+      },
+      {
+        key: 'NumberOfEmployee',
+        label: 'Employee Count',
+        width: '20',
+        sortable: false,
+        align: 'center',
+        render: (value) => (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            {value}
+          </span>
+        )
+      },
+      {
+        key: 'CreatedBy',
+        label: 'Last Modified By',
+        width: '33',
+        sortable: true,
+        align: 'center',
+        render: (value) => value || 'N/A'
+      },
+      {
+        key: 'CreatedDate',
+        label: 'Last Modified Date',
+        width: '33',
+        sortable: true,
+        align: 'center',
+        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+      }
+    ],
     // dependencies: include everything used inside that might change
     [canAction, handleViewDesignationDetails, handleEditDesignationMaster, handleConfirmationDialogBoxOpen]
   )
@@ -480,7 +535,7 @@ const designationMasterColumns = useMemo<TableColumn[]>(
   }, [designationMasterColumns.length])
 
 
- const visibleDesignationMasterColumns = useMemo(
+  const visibleDesignationMasterColumns = useMemo(
     () => designationMasterColumns.filter(col => selectedDesignationMasterColumnKeys.includes(col.key)),
     [designationMasterColumns, selectedDesignationMasterColumnKeys]
   )
@@ -672,7 +727,7 @@ const designationMasterColumns = useMemo<TableColumn[]>(
     )
   }
 
- 
+
   //#endregion
 
   //#region FILTER MODAL HELPERS
@@ -863,7 +918,7 @@ const designationMasterColumns = useMemo<TableColumn[]>(
     )
   }
 
- 
+
 
   const handleAddUpdateDesignationMaster = async (formData: AddUpdateDesignationMasterRequest) => {
     setIsAddUpdateModalOpen(false);
@@ -981,6 +1036,9 @@ const designationMasterColumns = useMemo<TableColumn[]>(
   }
 
   //#endregion
+
+
+
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />

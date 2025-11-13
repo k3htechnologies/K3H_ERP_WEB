@@ -4,7 +4,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import * as E from 'fp-ts/Either'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { employeeModuleAccessService } from '@/features/employeeModuleAccess/services/EmployeeModuleAccessService'
@@ -55,6 +55,10 @@ const EmployeeModuleAccess: React.FC = () => {
   const [expandedSubModules, setExpandedSubModules] = useState<Record<string, boolean>>({})
   //#endregion
 
+  const { designationMasterId } = useParams(); // DepartmentMasterId from URL
+  const location = useLocation();
+  const { designationName, uniqueKey } = location.state || {};
+
   //#region TOAST
   const { toasts, addToast, removeToast } = useToast()
   //#endregion
@@ -66,7 +70,7 @@ const EmployeeModuleAccess: React.FC = () => {
   //#region ROUTER | PARAMETERS
   const [searchParams] = useSearchParams()
   const designationId = useMemo(
-    () => Number(searchParams.get('designationId') ?? 0),
+    () => Number(designationMasterId),
     [searchParams]
   )
   //#endregion
@@ -584,7 +588,7 @@ const EmployeeModuleAccess: React.FC = () => {
           setInitialPermissions(clonePermissionMap(permissions))
           addToast({
             type: 'success',
-            title: response.right.SuccessMessage?.[0] ?? 'Permissions saved successfully.'
+            title: 'Permissions saved successfully.'
           })
         } else {
           addToast({
@@ -618,7 +622,7 @@ const EmployeeModuleAccess: React.FC = () => {
 
       <div className="flex h-full flex-col space-y-6">
         <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-md h-16 flex items-center justify-between px-6">
-          <h1 className="text-2xl font-bold text-gray-900">Module Access Form</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Module Access Form {designationName}</h1>
           <label className="flex items-center justify-between px-10 py-2">
             <span className="text-sm text-gray-800 flex-1 pr-[6px]">
               Select All</span>

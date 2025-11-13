@@ -16,6 +16,7 @@ export interface DesignationMasterData {
     DesignationName: string | ''
     NoticePeriod: number | 0
     NumberOfEmployee: number | 0
+    IsSetAccessModule?: boolean | false
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -25,7 +25,6 @@ import Checkbox from '@/ui/components/forms/Checkbox';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { DesignationMasterService } from '@/features/designationMaster/services/DesignationMasterService';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
-import { useAbortController } from '@/core/hooks/useAbortController';
 
 
 export const DesignationMaster: React.FC = () => {
@@ -77,8 +76,6 @@ export const DesignationMaster: React.FC = () => {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement | null>(null);
 
-  // ABORT CONTROLLER
-  const { run: runWithSignal, abort: abortFetch } = useAbortController();
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -86,12 +83,6 @@ export const DesignationMaster: React.FC = () => {
   //#endregion
 
   //#region INITIALIZATION
-
-  useEffect(() => {
-    return () => {
-      abortFetch()
-    }
-  }, [abortFetch])
 
   const hasFetchedInitialDesignations = useRef(false)
 
@@ -127,12 +118,10 @@ export const DesignationMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchDesignationMasterList = async (page: number = pagination.currentPage) => {
-    return runWithSignal(async (signal) => {
-      return await loadDesignationMaster(page, filters, signal);
-    });
+    return await loadDesignationMaster(page, filters);
   }
 
-  const loadDesignationMaster = async (page: number, filterParams: FilterInfo, signal?: AbortSignal) => {
+  const loadDesignationMaster = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -158,7 +147,7 @@ export const DesignationMaster: React.FC = () => {
           SortBy: sortByParam
         }
 
-        const response = await getDesignationMaster(params, signal);
+        const response = await getDesignationMaster(params);
 
         if (E.isRight(response)) {
 
@@ -180,7 +169,6 @@ export const DesignationMaster: React.FC = () => {
       },
       undefined,
       (error: any) => {
-        if (error?.name === 'AbortError') return;
         addToast({ type: 'error', title: error.message })
       },
       undefined,
@@ -194,7 +182,6 @@ export const DesignationMaster: React.FC = () => {
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
-      abortFetch();
       fetchDesignationMasterList();
       return
     }
@@ -203,15 +190,12 @@ export const DesignationMaster: React.FC = () => {
       DesignationName: searchValue.trim(),
     };
 
-    await runWithSignal(async (signal) => {
-      return await loadDesignationMaster(1, filterParams, signal)
-    })
+    await loadDesignationMaster(1, filterParams)
   }
 
   const clearsearchDesignationMaster = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
-    abortFetch();
     fetchDesignationMasterList();
   }
   // END SERACH DESIGNATION 
@@ -262,9 +246,9 @@ export const DesignationMaster: React.FC = () => {
 
   //API | SERVICES CALL TO GET DESIGNATION 
 
-  const getDesignationMaster = async (filterParams: FilterWithPaginationDesignationMasterRequest, signal?: AbortSignal) => {
+  const getDesignationMaster = async (filterParams: FilterWithPaginationDesignationMasterRequest) => {
 
-    return await DesignationMasterService.apiCallPullDesignationMaster(filterParams,{signal});
+    return await DesignationMasterService.apiCallPullDesignationMaster(filterParams);
   }
 
   //END API | SERVICES CALL TO GET DESIGNATION
@@ -287,15 +271,40 @@ export const DesignationMaster: React.FC = () => {
 
   }
 
-  const designationMasterPaginationInfo: PaginationInfo = {
-    currentPage: pagination.currentPage,
-    totalPages: pagination.totalPages,
-    totalRecords: pagination.totalRecords,
-    pageSize: pagination.pageSize,
-    onPageChange: handlePageChange
+  const designationMasterPaginationInfo: PaginationInfo = useMemo(
+      () => ({
+        currentPage: pagination.currentPage,
+        totalPages: pagination.totalPages,
+        totalRecords: pagination.totalRecords,
+        pageSize: pagination.pageSize,
+        onPageChange: handlePageChange
+      }),
+      [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
+    )
+
+    const designationMasterListForTable = useMemo(() => designationMasterList, [designationMasterList]);
+
+     const handleViewDesignationDetails = (row: DesignationMasterData) => {
+    setViewDesignationMasterDetailsData(row)
+    setIsViewModalOpen(true)
   }
 
-  const designationMasterColumns: TableColumn[] = [
+   const handleEditDesignationMaster = (row: DesignationMasterData) => {
+    setEditingDesignationMasterData({
+      ...row,
+      NoticePeriod: row.NoticePeriod ?? 'N/A',
+      DesignationName: row.DesignationName ?? ''
+    })
+    setIsAddUpdateModalOpen(true)
+  }
+
+  const handleConfirmationDialogBoxOpen = (row: DesignationMasterData) => {
+    setDeleteDesignationMasterDetailsData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }
+
+const designationMasterColumns = useMemo<TableColumn[]>(
+    () => [
     {
       key: 'DesignationName',
       label: 'Designation Name',
@@ -428,7 +437,10 @@ export const DesignationMaster: React.FC = () => {
       align: 'center',
       render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
     }
-  ]
+  ],
+    // dependencies: include everything used inside that might change
+    [canAction, handleViewDesignationDetails, handleEditDesignationMaster, handleConfirmationDialogBoxOpen]
+  )
 
   //#endregion
 
@@ -467,7 +479,11 @@ export const DesignationMaster: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [designationMasterColumns.length])
 
-  const visibleDesignationMasterColumns = designationMasterColumns.filter(col => selectedDesignationMasterColumnKeys.includes(col.key));
+
+ const visibleDesignationMasterColumns = useMemo(
+    () => designationMasterColumns.filter(col => selectedDesignationMasterColumnKeys.includes(col.key)),
+    [designationMasterColumns, selectedDesignationMasterColumnKeys]
+  )
 
   interface CustomizeDesignationMasterColumnsModalProps {
     isOpen: boolean
@@ -656,10 +672,7 @@ export const DesignationMaster: React.FC = () => {
     )
   }
 
-  const handleViewDesignationDetails = (row: DesignationMasterData) => {
-    setViewDesignationMasterDetailsData(row)
-    setIsViewModalOpen(true)
-  }
+ 
   //#endregion
 
   //#region FILTER MODAL HELPERS
@@ -850,15 +863,7 @@ export const DesignationMaster: React.FC = () => {
     )
   }
 
-  const handleEditDesignationMaster = (row: DesignationMasterData) => {
-    setEditingDesignationMasterData({
-      ...row,
-      NoticePeriod: row.NoticePeriod ?? 'N/A',
-      DesignationName: row.DesignationName ?? ''
-    })
-    setIsAddUpdateModalOpen(true)
-  }
-
+ 
 
   const handleAddUpdateDesignationMaster = async (formData: AddUpdateDesignationMasterRequest) => {
     setIsAddUpdateModalOpen(false);
@@ -926,10 +931,6 @@ export const DesignationMaster: React.FC = () => {
 
   //#region DELETE DESIGNATION MASTER
 
-  const handleConfirmationDialogBoxOpen = (row: DesignationMasterData) => {
-    setDeleteDesignationMasterDetailsData(row)
-    setIsConfirmationDialogBoxOpen(true)
-  }
 
   const handleDeleteDesignationMaster = async () => {
     if (!deleteDesignationMasterDetailsData) return
@@ -1197,7 +1198,7 @@ export const DesignationMaster: React.FC = () => {
 
         {/* DATA TABLE DESIGNATION */}
         <DataTable
-          data={designationMasterList}
+          data={designationMasterListForTable}
           columns={visibleDesignationMasterColumns}
           pagination={designationMasterPaginationInfo}
           emptyMessage="No designation found"

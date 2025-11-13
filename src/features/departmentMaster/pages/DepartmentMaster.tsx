@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -25,7 +25,6 @@ import { Button, Input } from '@/ui/components/forms';
 import Checkbox from '@/ui/components/forms/Checkbox';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
-import { useAbortController } from '@/core/hooks/useAbortController';
 
 
 export const DepartmentMaster: React.FC = () => {
@@ -77,9 +76,6 @@ export const DepartmentMaster: React.FC = () => {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement | null>(null);
 
-  // ABORT CONTROLLER
-
-  const { run: runWithSignal, abort: abortFetch } = useAbortController();
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -87,13 +83,6 @@ export const DepartmentMaster: React.FC = () => {
   //#endregion
 
   //#region INITIALIZATION
-  useEffect(() => {
-    return () => {
-      abortFetch('component-unmount')
-    }
-  }, [abortFetch])
-
-
   const hasFetchedInitialDepartments = useRef(false)
 
   useEffect(() => {
@@ -130,14 +119,10 @@ export const DepartmentMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchDepartmentList = async (page: number = pagination.currentPage) => {
-
-    return runWithSignal(async (signal) => {
-      return await loadDepartments(page, filters, signal);
-    });
-
+    return await loadDepartments(page, filters);
   }
 
-  const loadDepartments = async (page: number, filterParams: FilterInfo, signal?: AbortSignal) => {
+  const loadDepartments = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -163,7 +148,7 @@ export const DepartmentMaster: React.FC = () => {
           SortBy: sortByParam
         }
 
-        const response = await getDepartments(params, signal);
+        const response = await getDepartments(params);
 
         if (E.isRight(response)) {
 
@@ -185,10 +170,6 @@ export const DepartmentMaster: React.FC = () => {
       },
       undefined,
       (error: any) => {
-        if (error?.name === 'AbortError') {
-           console.debug('Request aborted:', error?.reason ?? 'no-reason');
-          return;
-        }
         addToast({ type: 'error', title: error.message })
       },
       undefined,
@@ -203,8 +184,6 @@ export const DepartmentMaster: React.FC = () => {
 
     if (searchValue.trim() === '') {
 
-      abortFetch('search-empty-clear');
-
       fetchDepartmentList();
 
       return
@@ -214,16 +193,13 @@ export const DepartmentMaster: React.FC = () => {
       DepartmentName: searchValue.trim(),
     };
 
-    await runWithSignal(async (signal) => {
-      return await loadDepartments(1, filterParams, signal)
-    })
+    await loadDepartments(1, filterParams)
 
   }
 
   const clearsearchDepartments = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
-    abortFetch('user-cleared-search');
     fetchDepartmentList();
   }
   // END SERACH DEPARTMENT 
@@ -274,9 +250,9 @@ export const DepartmentMaster: React.FC = () => {
 
   //API | SERVICES CALL TO GET DEPARTMENT 
 
-  const getDepartments = async (filterParams: FilterWithPaginationDepartmentMasterRequest, signal?: AbortSignal) => {
+  const getDepartments = async (filterParams: FilterWithPaginationDepartmentMasterRequest) => {
 
-    return await departmentMasterService.apiCallPullDepartmentMaster(filterParams, { signal });
+    return await departmentMasterService.apiCallPullDepartmentMaster(filterParams);
   }
 
   //END API | SERVICES CALL TO GET DEPARTMENT
@@ -286,10 +262,8 @@ export const DepartmentMaster: React.FC = () => {
   //#region TABLE CONFIGURATION
 
   const handlePageChange = (page: number) => {
-
     fetchDepartmentList(page);
-
-  }
+  };
 
   const handleSortColumn = (sortInfo: SortInfo) => {
 
@@ -299,150 +273,181 @@ export const DepartmentMaster: React.FC = () => {
 
   }
 
-  const departmentMasterPaginationInfo: PaginationInfo = {
-    currentPage: pagination.currentPage,
-    totalPages: pagination.totalPages,
-    totalRecords: pagination.totalRecords,
-    pageSize: pagination.pageSize,
-    onPageChange: handlePageChange
-  }
+  const departmentMasterPaginationInfo: PaginationInfo = useMemo(
+    () => ({
+      currentPage: pagination.currentPage,
+      totalPages: pagination.totalPages,
+      totalRecords: pagination.totalRecords,
+      pageSize: pagination.pageSize,
+      onPageChange: handlePageChange
+    }),
+    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
+  )
 
-  const departmentMasterColumns: TableColumn[] = [
-    {
-      key: 'DepartmentName',
-      label: 'Department Name',
-      width: '33',
-      sortable: true,
-      fixed: 'left',
-      align: 'left',
-      render: (value, row) => (
-        <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
+  const departmentListForTable = useMemo(() => departmentMasterList, [departmentMasterList]);
 
+
+  // STABLE HANDLER VIEW EDIT CONFIRMATION DIALOG BOX
+  const handleViewDepartmentDetails = useCallback((row: DepartmentMasterData) => {
+    setViewDepartmentMasterDetailsData(row)
+    setIsViewModalOpen(true)
+  }, [])
+
+  const handleEditDepartmentMaster = useCallback((row: DepartmentMasterData) => {
+    setEditingDepartmentMasterData({
+      ...row,
+      DepartmentCode: row.DepartmentCode || '',
+      DepartmentName: row.DepartmentName || ''
+    })
+    setIsAddUpdateModalOpen(true);
+
+  }, [])
+
+  const handleConfirmationDialogBoxOpen = useCallback((row: DepartmentMasterData) => {
+    setDeleteDepartmentMasterDetailsData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
+
+  const departmentMasterColumns = useMemo<TableColumn[]>(
+    () => [
+      {
+        key: 'DepartmentName',
+        label: 'Department Name',
+        width: '33',
+        sortable: true,
+        fixed: 'left',
+        align: 'left',
+        render: (value, row) => (
+          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
+
+            <TooltipText
+              text={value || 'N/A'}
+              maxWidth="250px"
+              tooltipThreshold={25}
+              onClick={() => handleViewDepartmentDetails(row)} // just pass a function, no need for e.preventDefault here
+            />
+
+            {canAction && (
+              <div className="flex items-center justify-end ml-2 w-20">
+                {(row.NumberOfEmployee || 0) === 0 ? (
+                  <>
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleEditDepartmentMaster(row)
+                      }}
+                      color='transparent'
+                      fullWidth
+                      isborderRadius
+                      size='sm'
+                      title="Edit Department"
+                      style={{
+                        color: '#0B3251',
+                        padding: '0px 8px'
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleConfirmationDialogBoxOpen(row)
+                      }}
+                      color='transparent'
+                      fullWidth
+                      isborderRadius
+                      size='sm'
+                      style={{
+                        color: 'red',
+                        padding: '0px 8px'
+                      }}
+                      title="Delete Department"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleEditDepartmentMaster(row)
+                      }}
+                      color='transparent'
+                      fullWidth
+                      isborderRadius
+                      size='sm'
+                      title="Edit Department"
+                      style={{
+                        color: '#0B3251',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <div className="w-[30px]" />
+                  </>
+
+                )}
+              </div>
+            )}
+          </div>
+        )
+      },
+      {
+        key: 'DepartmentCode',
+        label: 'Department Code',
+        width: '30',
+        sortable: false,
+        align: 'center',
+        render: (value) => (
           <TooltipText
-            text={value || 'N/A'}
-            maxWidth="250px"
-            tooltipThreshold={25}
-            onClick={() => handleViewDepartmentDetails(row)} // just pass a function, no need for e.preventDefault here
+            text={value}
+            maxWidth="170px"
+            tooltipThreshold={15}
+            tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
           />
-
-          {canAction && (
-            <div className="flex items-center justify-end ml-2 w-20">
-              {(row.NumberOfEmployee || 0) === 0 ? (
-                <>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEditDepartmentMaster(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    title="Edit Department"
-                    style={{
-                      color: '#0B3251',
-                      padding: '0px 8px'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleConfirmationDialogBoxOpen(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    style={{
-                      color: 'red',
-                      padding: '0px 8px'
-                    }}
-                    title="Delete Department"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEditDepartmentMaster(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    title="Edit Department"
-                    style={{
-                      color: '#0B3251',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <div className="w-[30px]" />
-                </>
-
-              )}
-            </div>
-          )}
-        </div>
-      )
-    },
-    {
-      key: 'DepartmentCode',
-      label: 'Department Code',
-      width: '30',
-      sortable: false,
-      align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value}
-          maxWidth="170px"
-          tooltipThreshold={15}
-          tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
-        />
-      )
-    },
-    {
-      key: 'NumberOfEmployee',
-      label: 'Employee Count',
-      width: '20',
-      sortable: false,
-      align: 'center',
-      render: (value) => (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-          {value}
-        </span>
-      )
-    },
-    {
-      key: 'CreatedBy',
-      label: 'Last Modified By',
-      width: '33',
-      sortable: true,
-      align: 'center',
-      render: (value) => value || 'N/A'
-    },
-    {
-      key: 'CreatedDate',
-      label: 'Last Modified Date',
-      width: '33',
-      sortable: true,
-      align: 'center',
-      render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
-    }
-  ]
+        )
+      },
+      {
+        key: 'NumberOfEmployee',
+        label: 'Employee Count',
+        width: '20',
+        sortable: false,
+        align: 'center',
+        render: (value) => (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            {value}
+          </span>
+        )
+      },
+      {
+        key: 'CreatedBy',
+        label: 'Last Modified By',
+        width: '33',
+        sortable: true,
+        align: 'center',
+        render: (value) => value || 'N/A'
+      },
+      {
+        key: 'CreatedDate',
+        label: 'Last Modified Date',
+        width: '33',
+        sortable: true,
+        align: 'center',
+        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+      }
+    ],
+    // dependencies: include everything used inside that might change
+    [canAction, handleViewDepartmentDetails, handleEditDepartmentMaster, handleConfirmationDialogBoxOpen]
+  )
 
   //#endregion
 
@@ -481,7 +486,10 @@ export const DepartmentMaster: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [departmentMasterColumns.length])
 
-  const visibleDepartmentMasterColumns = departmentMasterColumns.filter(col => selectedDepartmentMasterColumnKeys.includes(col.key));
+  const visibleDepartmentMasterColumns = useMemo(
+    () => departmentMasterColumns.filter(col => selectedDepartmentMasterColumnKeys.includes(col.key)),
+    [departmentMasterColumns, selectedDepartmentMasterColumnKeys]
+  )
 
   interface CustomizeDepartmentMasterColumnsModalProps {
     isOpen: boolean
@@ -679,24 +687,20 @@ export const DepartmentMaster: React.FC = () => {
     )
   }
 
-  const handleViewDepartmentDetails = (row: DepartmentMasterData) => {
-    setViewDepartmentMasterDetailsData(row)
-    setIsViewModalOpen(true)
-  }
+
   //#endregion
 
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
     setFilters(tempFilters)
-    runWithSignal(async (signal) => loadDepartments(1, tempFilters, signal))
+    loadDepartments(1, tempFilters)
     setShowFilterPopup(false)
   }
 
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
-    abortFetch('clear-filters')
-    runWithSignal(async (signal) => loadDepartments(1, {}, signal))
+    loadDepartments(1, {})
     setShowFilterPopup(false)
   }
 
@@ -866,16 +870,6 @@ export const DepartmentMaster: React.FC = () => {
     )
   }
 
-  const handleEditDepartmentMaster = (row: DepartmentMasterData) => {
-    setEditingDepartmentMasterData({
-      ...row,
-      DepartmentCode: row.DepartmentCode || '',
-      DepartmentName: row.DepartmentName || ''
-    })
-    setIsAddUpdateModalOpen(true);
-
-  }
-
   const handleAddUpdateDepartmentMaster = async (formData: AddUpdateDepartmentMasterRequest) => {
 
     setIsAddUpdateModalOpen(false);
@@ -944,10 +938,7 @@ export const DepartmentMaster: React.FC = () => {
 
   //#region DELETE DEPARTMENT MASTER
 
-  const handleConfirmationDialogBoxOpen = (row: DepartmentMasterData) => {
-    setDeleteDepartmentMasterDetailsData(row)
-    setIsConfirmationDialogBoxOpen(true)
-  }
+
 
   const handleDeleteDepartmentMaster = async () => {
 
@@ -1218,7 +1209,7 @@ export const DepartmentMaster: React.FC = () => {
 
         {/* DATA TABLE DEPARTMENT */}
         <DataTable
-          data={departmentMasterList}
+          data={departmentListForTable}
           columns={visibleDepartmentMasterColumns}
           pagination={departmentMasterPaginationInfo}
           emptyMessage="No departments found"

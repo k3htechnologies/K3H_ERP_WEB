@@ -5,12 +5,12 @@ import ErrorFallbackPage from '@/features/errorFallbackPage/pages/ErrorFallbackP
 import { useNetworkStatus } from '@/core/hooks/useNetworkStatus';
 import { SignIn } from '@/features/authentication/pages/signIn';
 import Dashboard from '@/features/dashboard/pages/Dashboard';
-import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMaster';
-import EmployeeMaster from '@/features/employeeMaster/pages/EmployeeMaster';
 import { Profile } from '@/features/profile/page/profile';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import EmployeeModuleAccess from '@/features/employeeModuleAccess/pages/EmployeeModuleAccess';
-import DesignationMaster from '@/features/designationMaster/pages/DesignationMaster';
+import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMaster';
+import { DesignationMaster } from '@/features/designationMaster/pages/DesignationMaster';
+import EmployeeMaster from '@/features/employeeMaster/pages/EmployeeMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (

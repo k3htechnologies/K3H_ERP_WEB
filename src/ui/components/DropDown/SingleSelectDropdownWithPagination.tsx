@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, forwardRef } from 'react'
 import { THEME } from '@/core/constants/theme'
-import { COLOR_MAP } from '@/core/constants/colors'
 import { Search, X } from 'lucide-react'
 import type { SingleSelectWithPaginationProps } from '@/core/types/dropDownSelectionType'
 
@@ -16,8 +15,6 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
       disabled = false,
       className = '',
       style,
-      color = 'primary',
-      variant = 'outline',
       size = 'md',
     },
     ref
@@ -43,10 +40,6 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
     }
 
     const sizeStyles = SIZE_MAP[size as keyof typeof SIZE_MAP]
-
-    const baseColor =
-      COLOR_MAP[color as keyof typeof COLOR_MAP]?.[variant as keyof (typeof COLOR_MAP)[keyof typeof COLOR_MAP]] ||
-      COLOR_MAP.primary.outline
 
     const fetchData = useCallback(
       async (reset?: boolean, search?: string) => {
@@ -125,7 +118,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
         fontSize: sizeStyles.fontSize,
         borderRadius: theme.borderRadius.sm,
         cursor: disabled ? 'not-allowed' : 'pointer',
-        backgroundColor: isActive ? theme.colors.hover : baseColor.backgroundColor,
+        backgroundColor: isActive ? theme.colors.hover : theme.colors.background,
         color: theme.colors.textSecondary,
         transition: theme.transitions.normal,
       }
@@ -151,7 +144,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
         padding: `${sizeStyles.padding + 2}px ${sizeStyles.padding * 2}px`,
         fontSize: sizeStyles.fontSize,
         borderRadius: theme.borderRadius.md,
-        backgroundColor: baseColor.backgroundColor,
+        backgroundColor: theme.colors.background,
         border: `1px solid ${theme.colors.border}`,
         cursor: disabled ? 'not-allowed' : 'pointer',
         color: theme.colors.text,
@@ -193,8 +186,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
           maxHeight: sizeStyles.dropdownHeight,
           overflowY: 'auto',
           border: `1px solid ${theme.colors.border}`,
-          borderRadius: theme.borderRadius.md,
-          backgroundColor: baseColor.backgroundColor,
+          borderRadius:theme.colors.background,
           boxShadow: theme.shadows.lg,
           zIndex: 999,
           padding: '6px',
@@ -214,7 +206,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
               borderRadius: theme.borderRadius.sm,
               outline: 'none',
               fontSize: sizeStyles.fontSize,
-              backgroundColor: baseColor.backgroundColor,
+              backgroundColor: theme.colors.background,
               color: theme.colors.text,
               boxSizing: 'border-box',
             }}

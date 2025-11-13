@@ -1,6 +1,5 @@
 import React, { useState, useEffect, forwardRef } from 'react'
 import { THEME } from '../../../core/constants/theme'
-import { COLOR_MAP } from '../../../core/constants'
 import { Search, X } from 'lucide-react'
 import type { MultiSelectDropdownProps } from '@/core/types/dropDownSelectionType'
 
@@ -16,8 +15,6 @@ export const MultiSelectDropdown = forwardRef<HTMLDivElement, MultiSelectDropdow
       disabled = false,
       className = '',
       style,
-      color = 'primary',
-      variant = 'outline',
       onSearch,
       loading = false,
       noDataText = 'No records found',
@@ -41,11 +38,6 @@ export const MultiSelectDropdown = forwardRef<HTMLDivElement, MultiSelectDropdow
     const [searchText, setSearchText] = useState('')
     const [error, setError] = useState<string | undefined>(undefined)
     const [isOpen, setIsOpen] = useState(false)
-
-    // --- Colors ---
-    const baseColor =
-      COLOR_MAP[color as keyof typeof COLOR_MAP]?.[variant as keyof (typeof COLOR_MAP)[keyof typeof COLOR_MAP]] ||
-      COLOR_MAP.primary.outline
 
     // --- Handlers ---
     const handleSelect = (item: { label: string; value: string | number }) => {
@@ -101,7 +93,7 @@ export const MultiSelectDropdown = forwardRef<HTMLDivElement, MultiSelectDropdow
       padding: `${sizeStyles.padding}px ${sizeStyles.padding }px`,
       fontSize: sizeStyles.fontSize,
       cursor: disabled ? 'not-allowed' : 'pointer',
-      backgroundColor: selected ? theme.colors.hover : baseColor.backgroundColor,
+      backgroundColor: selected ? theme.colors.hover :theme.colors.background,
       color: selected ? theme.colors.text : theme.colors.textSecondary,
       borderRadius: theme.borderRadius.sm,
       transition: theme.transitions.normal,
@@ -129,7 +121,7 @@ export const MultiSelectDropdown = forwardRef<HTMLDivElement, MultiSelectDropdow
             padding: `${sizeStyles.padding}px ${sizeStyles.padding * 2}px`,
             fontSize: sizeStyles.fontSize,
             borderRadius: theme.borderRadius.sm,
-            backgroundColor: baseColor.backgroundColor,
+            backgroundColor: theme.colors.background,
             border: `1px solid ${theme.colors.border}`,
             cursor: disabled ? 'not-allowed' : 'pointer',
             color: theme.colors.text,
@@ -173,7 +165,7 @@ export const MultiSelectDropdown = forwardRef<HTMLDivElement, MultiSelectDropdow
               overflowY: 'auto',
               border: `1px solid ${theme.colors.border}`,
               borderRadius: theme.borderRadius.sm,
-              backgroundColor: baseColor.backgroundColor,
+              backgroundColor: theme.colors.background,
               boxShadow: theme.shadows.md,
               zIndex: 999,
               padding: `${sizeStyles.padding}px`,
@@ -193,7 +185,7 @@ export const MultiSelectDropdown = forwardRef<HTMLDivElement, MultiSelectDropdow
                   borderRadius: theme.borderRadius.sm,
                   outline: 'none',
                   fontSize: sizeStyles.fontSize,
-                  backgroundColor: baseColor.backgroundColor,
+                  backgroundColor: theme.colors.background,
                   color: theme.colors.text,
                   boxSizing: 'border-box',
                 }}

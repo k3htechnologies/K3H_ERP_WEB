@@ -4,7 +4,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import * as E from 'fp-ts/Either'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { employeeModuleAccessService } from '@/features/employeeModuleAccess/services/EmployeeModuleAccessService'
@@ -26,14 +26,14 @@ type PermissionMap = Record<string, PermissionFlags>
 
 type PermissionType = 'select' | 'action' | 'view' | 'export'
 
-const buildKey = (moduleId: number, subModuleId: number, subSubModuleId: number) =>
-  `${moduleId}|${subModuleId}|${subSubModuleId}`
-
 const createDefaultFlags = (): PermissionFlags => ({
   isAction: false,
   isView: false,
   isExport: false
 })
+
+const buildKey = (moduleId: number, subModuleId: number, subSubModuleId: number) =>
+  `${moduleId}|${subModuleId}|${subSubModuleId}`
 
 const clonePermissionMap = (source: PermissionMap): PermissionMap => {
   const next: PermissionMap = {}
@@ -53,26 +53,25 @@ const EmployeeModuleAccess: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState('')
   const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>({})
   const [expandedSubModules, setExpandedSubModules] = useState<Record<string, boolean>>({})
+  //#endregion
 
-  // TOAST
-  const { toasts, addToast, removeToast } = useToast();
+  //#region TOAST
+  const { toasts, addToast, removeToast } = useToast()
+  //#endregion
 
-  //#region INITIALIZATION
+  //#region NAVIGATE
+  const navigate = useNavigate();
+  //#endregion
 
-
-   //#endregion
-
-   //#region DATA LOADING 
-
-   //#endregion
-
-  const [searchParams] = useSearchParams();
-
+  //#region ROUTER | PARAMETERS
+  const [searchParams] = useSearchParams()
   const designationId = useMemo(
-    () => Number(1),
+    () => Number(searchParams.get('designationId') ?? 0),
     [searchParams]
   )
+  //#endregion
 
+  //#region PERMISSION HELPERS
   const ensureFlags = useCallback(
     (key: string) => permissions[key] ?? createDefaultFlags(),
     [permissions]
@@ -155,12 +154,15 @@ const EmployeeModuleAccess: React.FC = () => {
   )
 
   const syncSubModuleAggregate = useCallback(
+
     (map: PermissionMap, module: ModuleData, subModule: SubModuleData) => {
+
       const moduleId = module.ModulesMasterId ?? 0
       const subModuleId = subModule.SubModulesMasterId ?? 0
       const keys = getSubModuleLeafKeys(module, subModule)
       const aggregate = aggregateFlags(map, keys)
       map[buildKey(moduleId, subModuleId, 0)] = aggregate
+
     },
     [aggregateFlags, getSubModuleLeafKeys]
   )
@@ -175,16 +177,25 @@ const EmployeeModuleAccess: React.FC = () => {
     [aggregateFlags, getModuleLeafKeys]
   )
 
+  //#endregion
+
+  //#region PERMISSION MAP BUILDERS
+
   const buildInitialPermissionMap = useCallback(
 
     (data: ModuleData[]): PermissionMap => {
+
       const map: PermissionMap = {}
 
       data.forEach((module) => {
-        const moduleId = module.ModulesMasterId ?? 0
-        map[buildKey(moduleId, 0, 0)] = createDefaultFlags()
+
+        const moduleId = module.ModulesMasterId ?? 0;
+
+        map[buildKey(moduleId, 0, 0)] = createDefaultFlags();
+
 
         module.SubModuleData.forEach((subModule) => {
+
           const subModuleId = subModule.SubModulesMasterId ?? 0
           const subModuleKey = buildKey(moduleId, subModuleId, 0)
 
@@ -220,6 +231,11 @@ const EmployeeModuleAccess: React.FC = () => {
     },
     [syncModuleAggregate, syncSubModuleAggregate]
   )
+  //#endregion
+
+  //#endregion
+
+  //#region DATA LOADING | FETCH
 
   const fetchModules = useCallback(async () => {
 
@@ -236,13 +252,19 @@ const EmployeeModuleAccess: React.FC = () => {
 
           const moduleList = response.right.Data ?? []
 
-          setModules(moduleList)
-          setExpandedModules({})
-          setExpandedSubModules({})
+          setModules(moduleList);
 
-          const map = buildInitialPermissionMap(moduleList)
-          setPermissions(map)
-          setInitialPermissions(clonePermissionMap(map))
+          setExpandedModules({});
+
+          setExpandedSubModules({});
+
+
+          const map = buildInitialPermissionMap(moduleList);
+
+          setPermissions(map);
+
+          setInitialPermissions(clonePermissionMap(map));
+
         } else {
           addToast({
             type: 'error',
@@ -259,7 +281,7 @@ const EmployeeModuleAccess: React.FC = () => {
           title: error?.message ?? 'Failed to load module permissions.'
         })
       },
-      
+
       undefined,
       'Loading module permissions...'
     )
@@ -269,6 +291,7 @@ const EmployeeModuleAccess: React.FC = () => {
     fetchModules()
   }, [fetchModules])
 
+  //#region DERIVED STATE
   const allLeafKeys = useMemo(() => {
     const keys: string[] = []
     modules.forEach((module) => {
@@ -278,6 +301,7 @@ const EmployeeModuleAccess: React.FC = () => {
     })
     return keys
   }, [getSubModuleLeafKeys, modules])
+  //#endregion
 
   const hasChanges = useMemo(() => {
     const keys = new Set([
@@ -301,9 +325,22 @@ const EmployeeModuleAccess: React.FC = () => {
     return false
   }, [initialPermissions, permissions])
 
+  const selectAllState = useMemo(
+    () => getSelectAggregate(allLeafKeys),
+    [allLeafKeys, getSelectAggregate]
+  )
+
+  const isSaveDisabled =
+    !designationId || !hasChanges || modules.length === 0
+  //#endregion
+
+  //#region PERMISSION MUTATION HANDLERS
   const updateEntry = useCallback(
+
     (map: PermissionMap, key: string, type: PermissionType, value: boolean) => {
-      const current = map[key] ?? createDefaultFlags()
+
+      const current = map[key] ?? createDefaultFlags();
+
       const next = { ...current }
 
       if (type === 'select') {
@@ -320,22 +357,29 @@ const EmployeeModuleAccess: React.FC = () => {
 
       map[key] = next
     },
+
     []
   )
 
   const handleToggleSelectAll = useCallback(
+
     (checked: boolean) => {
       if (allLeafKeys.length === 0) return
 
       setPermissions((prev) => {
+
         const map: PermissionMap = { ...prev }
 
         modules.forEach((module) => {
-          module.SubModuleData.forEach((subModule) => {
-            const moduleId = module.ModulesMasterId ?? 0
-            const subModuleId = subModule.SubModulesMasterId ?? 0
 
-            const subModuleKey = buildKey(moduleId, subModuleId, 0)
+          module.SubModuleData.forEach((subModule) => {
+
+            const moduleId = module.ModulesMasterId ?? 0;
+
+            const subModuleId = subModule.SubModulesMasterId ?? 0;
+
+            const subModuleKey = buildKey(moduleId, subModuleId, 0);
+
             updateEntry(map, subModuleKey, 'select', checked)
 
             subModule.SubSubModuleData.forEach((child) => {
@@ -454,6 +498,9 @@ const EmployeeModuleAccess: React.FC = () => {
     }))
   }, [])
 
+  //#endregion
+
+  //#region SAVE HANDLERS
   const convertPermissionsToPayload = useCallback(() => {
 
     const payload: Array<{
@@ -559,14 +606,7 @@ const EmployeeModuleAccess: React.FC = () => {
       'Saving module permissions...'
     )
   }, [addToast, convertPermissionsToPayload, designationId, permissions])
-
-  const selectAllState = useMemo(
-    () => getSelectAggregate(allLeafKeys),
-    [allLeafKeys, getSelectAggregate]
-  )
-
-  const isSaveDisabled =
-    !designationId || !hasChanges || modules.length === 0
+  //#endregion
 
   return (
     <>
@@ -614,7 +654,7 @@ const EmployeeModuleAccess: React.FC = () => {
                         <ChevronRight className="h-4 w-4" />
                       )}
                     </button>
-                    <span className="text-base font-semibold text-gray-900">
+                    <span className="text-base text-[#666]">
                       {module.ModuleName}
                     </span>
                   </div>
@@ -669,7 +709,7 @@ const EmployeeModuleAccess: React.FC = () => {
                                 disabled={subModuleKeys.length === 0}
                                 onChange={(event) => handleToggleSubModuleSelect(module, subModule, event.target.checked)}
                                 label={
-                                  <span className="font-medium text-gray-900 pl-[6px]">
+                                  <span className="font-medium text-[#666] pl-[6px]">
                                     {subModule.SubModuleName}
                                   </span>
                                 }
@@ -681,7 +721,7 @@ const EmployeeModuleAccess: React.FC = () => {
                               {hasChildren ? (
                                 <span className="text-sm text-gray-300"></span>
                               ) : (
-                                <label className="flex items-center justify-between px-3 py-2 ">
+                                <label className="flex items-center justify-between px-3 py-1 ">
                                   <Checkbox
                                     checked={subModuleActionState.checked}
                                     indeterminate={subModuleActionState.indeterminate}
@@ -698,7 +738,7 @@ const EmployeeModuleAccess: React.FC = () => {
                               {hasChildren ? (
                                 <span className="text-sm text-gray-300"></span>
                               ) : (
-                                <label className="flex items-center justify-between px-3 py-2">
+                                <label className="flex items-center justify-between px-3 py-1">
                                   <Checkbox
                                     checked={subModuleExportState.checked}
                                     indeterminate={subModuleExportState.indeterminate}
@@ -715,7 +755,7 @@ const EmployeeModuleAccess: React.FC = () => {
                               {hasChildren ? (
                                 <span className="text-sm text-gray-300"></span>
                               ) : (
-                                <label className="flex items-center justify-between px-3 py-2 ">
+                                <label className="flex items-center justify-between px-3 py-1 ">
                                   <Checkbox
                                     checked={subModuleViewState.checked}
                                     indeterminate={subModuleViewState.indeterminate}
@@ -764,7 +804,7 @@ const EmployeeModuleAccess: React.FC = () => {
 
                                     />
                                     <div className="flex items-center justify-center">
-                                      <label className="flex items-center justify-between px-3 py-2 ">
+                                      <label className="flex items-center justify-between px-3 py-1 ">
                                         <Checkbox
                                           checked={childFlags.isAction}
                                           onChange={(event) => handleToggleLeaf(module, subModule, child, 'action', event.target.checked)}
@@ -775,26 +815,28 @@ const EmployeeModuleAccess: React.FC = () => {
                                       </label>
                                     </div>
                                     <div className="flex items-center justify-center">
-                                      <label className="flex items-center justify-between px-3 py-2 ">
+                                      <label className="flex items-center justify-between px-3 py-1 ">
                                         <Checkbox
                                           checked={childFlags.isExport}
                                           onChange={(event) => handleToggleLeaf(module, subModule, child, 'export', event.target.checked)}
 
                                         />
                                         <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                                          Export</span>
+                                          Export
+                                        </span>
                                       </label>
                                     </div>
                                     <div className="flex items-center justify-center">
 
-                                      <label className="flex items-center justify-between px-3 py-2 ">
+                                      <label className="flex items-center justify-between px-3 py-1 ">
                                         <Checkbox
                                           checked={childFlags.isView}
                                           onChange={(event) => handleToggleLeaf(module, subModule, child, 'view', event.target.checked)}
 
                                         />
                                         <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                                          View</span>
+                                          View
+                                        </span>
                                       </label>
                                     </div>
                                   </div>
@@ -814,9 +856,19 @@ const EmployeeModuleAccess: React.FC = () => {
 
         {/* ✅ Fixed Bottom SAVE Button */}
         <div
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end shadow-md h-16"
+          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
+          <Button
+            color="blue"
+            size="sm"
+            onClick={() => {
+              navigate(-1);
+            }}
+            className="px-6"
+          >
+            Cancel
+          </Button>
           <Button
             color="green"
             size="sm"

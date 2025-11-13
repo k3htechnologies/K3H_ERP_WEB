@@ -1,18 +1,18 @@
-import type { ApiResponse } from '../../../core/api/ApiResponse'
-import baseClient from '../../../core/config/baseClient'
-import { DesignationMasterApi } from '../api/DesignationMasterApi'
+import baseClient from '@/core/config/baseClient'
+import { DesignationMasterApi } from '@/features/designationMaster/api/DesignationMasterApi'
 import type {
     FilterWithPaginationDesignationMasterRequest,
     AddUpdateDesignationMasterRequest,
     DeleteDesignationMasterRequest,
-    DesignationMasterData
-} from '../models/DesignationMasterModel'
+    DesignationMasterListResponse,
+    DesignationMasterDeleteResponse
+} from '@/features/designationMaster/models/DesignationMasterModel'
 
 export abstract class DesignationMasterDatasource {
 
-    abstract pullDesignationMaster(params: FilterWithPaginationDesignationMasterRequest): Promise<ApiResponse<DesignationMasterData>>;
-    abstract addUpdateDesignationMaster(data: AddUpdateDesignationMasterRequest): Promise<ApiResponse<DesignationMasterData>>;
-    abstract deleteDesignationMaster(params: DeleteDesignationMasterRequest): Promise<ApiResponse<number>>;
+    abstract pullDesignationMaster(params: FilterWithPaginationDesignationMasterRequest): Promise<DesignationMasterListResponse>;
+    abstract addUpdateDesignationMaster(data: AddUpdateDesignationMasterRequest): Promise<DesignationMasterListResponse>;
+    abstract deleteDesignationMaster(params: DeleteDesignationMasterRequest): Promise<DesignationMasterDeleteResponse>;
 }
 
 export class DesignationMasterDatasourceImpl implements DesignationMasterDatasource {
@@ -21,7 +21,7 @@ export class DesignationMasterDatasourceImpl implements DesignationMasterDatasou
     }
 
 
-    async pullDesignationMaster(params: FilterWithPaginationDesignationMasterRequest): Promise<ApiResponse<DesignationMasterData>> {
+    async pullDesignationMaster(params: FilterWithPaginationDesignationMasterRequest): Promise<DesignationMasterListResponse> {
         try {
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
@@ -38,15 +38,15 @@ export class DesignationMasterDatasourceImpl implements DesignationMasterDatasou
                 `${DesignationMasterApi.PULL}?${queryParams.toString()}`
             )
 
-            return response as ApiResponse<DesignationMasterData>
+            return response 
         } catch (error) {
 
-            console.error('Error: Pull Designation Master:', error);
+            console.error('ERROR: PULL  DESIGNATION MASTER:', error);
             throw error
         }
     }
 
-    async addUpdateDesignationMaster(data: AddUpdateDesignationMasterRequest): Promise<ApiResponse<DesignationMasterData>> {
+    async addUpdateDesignationMaster(data: AddUpdateDesignationMasterRequest): Promise<DesignationMasterListResponse> {
 
         try {
 
@@ -62,14 +62,14 @@ export class DesignationMasterDatasourceImpl implements DesignationMasterDatasou
                 payLoad
             )
 
-            return response as ApiResponse<DesignationMasterData>
+            return response;
         } catch (error) {
-            console.error('Error: Add Update Designation Master:', error)
+            console.error('ERROR: ADD UPDATE  DESIGNATION MASTER:', error)
             throw error
         }
     }
 
-    async deleteDesignationMaster(params: DeleteDesignationMasterRequest): Promise<ApiResponse<number>> {
+    async deleteDesignationMaster(params: DeleteDesignationMasterRequest): Promise<DesignationMasterDeleteResponse> {
         try {
             const queryParams = new URLSearchParams({
                 DesignationMasterId: (params.DesignationMasterId ?? 0).toString(),
@@ -80,11 +80,11 @@ export class DesignationMasterDatasourceImpl implements DesignationMasterDatasou
                 `${DesignationMasterApi.DELETE}?${queryParams.toString()}`
             )
 
-            return response as ApiResponse<number>;
+            return response;
 
         } catch (error) {
 
-            console.error('❌ Error: Delete Designation Master:', error)
+            console.error('ERRPR : DELETE DESIGNATION MASTER:', error)
             throw error
         }
     }

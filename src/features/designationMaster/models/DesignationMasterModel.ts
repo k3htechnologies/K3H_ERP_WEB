@@ -1,4 +1,4 @@
-import type { ApiResponse } from "../../../core/api/ApiResponse"
+import type { ApiResponse } from "@/core/api/ApiResponse"
 
 export interface FilterWithPaginationDesignationMasterRequest {
     PageSize: number
@@ -38,6 +38,6 @@ export interface DeleteDesignationMasterRequest {
     UniqueKey: string
 }
 
-export type DesignationMasterListResponse = ApiResponse<DesignationMasterData>;
-export type DesignationMasterSaveResponse = ApiResponse<DesignationMasterData>;
+export type DesignationMasterListResponse = ApiResponse<DesignationMasterData[]>;
+export type DesignationMasterSaveResponse = ApiResponse<DesignationMasterData[]>;
 export type DesignationMasterDeleteResponse = ApiResponse<number>;

@@ -309,6 +309,7 @@ export const DepartmentMaster: React.FC = () => {
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
+
                   <Button
                     onClick={(e) => {
                       e.preventDefault()
@@ -835,6 +836,8 @@ export const DepartmentMaster: React.FC = () => {
   }
 
   const handleAddUpdateDepartmentMaster = async (formData: AddUpdateDepartmentMasterRequest) => {
+
+    setIsAddUpdateModalOpen(false);
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -1078,7 +1081,6 @@ export const DepartmentMaster: React.FC = () => {
                     variant='solid'
                     colorMode='light'
                     defineWidth
-                    className="bg-blue-200 hover:bg-blue-300 text-blue-800 border border-blue-400"
                     title="Add Department"
                   >
                     <Plus className="h-4 w-4" />

@@ -10,6 +10,7 @@ import EmployeeMaster from '@/features/employeeMaster/pages/EmployeeMaster';
 import { Profile } from '@/features/profile/page/profile';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import EmployeeModuleAccess from '@/features/employeeModuleAccess/pages/EmployeeModuleAccess';
+import DesignationMaster from '@/features/designationMaster/pages/DesignationMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -71,6 +72,7 @@ function App() {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="departmentMaster" element={<DepartmentMaster />} />
+          <Route path="designationMaster" element={<DesignationMaster />} />
           <Route path="employeeMaster" element={<EmployeeMaster />} />
 
         </Route>

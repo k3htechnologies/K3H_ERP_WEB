@@ -112,7 +112,30 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+//#region STORE DESIGNATION MASTER COLUMNS
+    storeDesignationMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.DESIGNATION_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Designation Master Columns Details:', error);
+        }
+    },
+    //#endregion
 
+    //#region GET DESIGNATION MASTER COLUMNS
+    getDesignationMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DESIGNATION_MASTER_SELECTED_COLUMNS);
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.DESIGNATION_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Designation Master Columns Details:', error);
+                return null;
+            }
+        }
+        return null;
+    },
+    //#endregion
     //#region STORE MENU DATA
     storeMenuData: (menuData: ModuleData[] | ModuleData): void => {
         try {
@@ -147,6 +170,7 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.TOKEN)
             localStorage.removeItem(LOCAL_STORAGE_KEYS.LAST_VISITED_PAGE);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.DESIGNATION_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
         } catch (error) {
             console.error('ERROR : CLEARING LOCAL STORAGE:', error)

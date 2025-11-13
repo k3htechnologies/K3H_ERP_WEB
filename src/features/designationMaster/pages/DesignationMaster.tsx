@@ -345,14 +345,12 @@ export const DesignationMaster: React.FC = () => {
                     title="Edit Designation"
                     style={{
                       color: '#0B3251',
-                      padding: '0px 8px'
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
                     onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
-
                   <div className="w-[30px]" />
                 </>
 
@@ -722,7 +720,7 @@ export const DesignationMaster: React.FC = () => {
       let hasErrors = false;
 
       // Designation Name validation
-      const designationName = formData.DesignationName || ''
+      const designationName = formData.DesignationName?.trim() || ''
       if (designationName.trim() === "") {
         setNameError("Designation Name is required.")
         hasErrors = true
@@ -733,11 +731,12 @@ export const DesignationMaster: React.FC = () => {
       }
 
       // Notice Period validation
-      const noticePeriod = String(formData.NoticePeriod || '').trim()
-      if (noticePeriod === '') {
+      const noticePeriod = formData.NoticePeriod || 0;
+      if (noticePeriod === 0) {
         setCodeError('Notice Period is required.')
         hasErrors = true
       }
+      
 
       if (hasErrors) {
         return
@@ -804,7 +803,10 @@ export const DesignationMaster: React.FC = () => {
                 type="text"
                 value={formData.NoticePeriod ?? ''}
                 maxLength={4}
-                onChange={(e) => handleFieldChange('NoticePeriod', e.target.value)}
+                onChange={(e) => {
+                  const personalMobileNumber = e.target.value.replace(/\D/g, ''); // remove non-digits
+                  handleFieldChange('NoticePeriod', personalMobileNumber)
+                }}
                 placeholder="Enter Notice Period"
               />
 
@@ -860,7 +862,7 @@ export const DesignationMaster: React.FC = () => {
             addToast({ type: 'success', title: 'Designation added successfully' })
           } else {
 
-            const updatedRecord = response.right.Data [0] as DesignationMasterData;
+            const updatedRecord = response.right.Data[0] as DesignationMasterData;
 
             setDesignationMasterList(prevData =>
               prevData.map(item =>

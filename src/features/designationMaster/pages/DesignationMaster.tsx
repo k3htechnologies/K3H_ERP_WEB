@@ -24,6 +24,9 @@ import { Button, Input } from '@/ui/components/forms';
 import Checkbox from '@/ui/components/forms/Checkbox';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { DesignationMasterService } from '@/features/designationMaster/services/DesignationMasterService';
+import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
+import { useAbortController } from '@/core/hooks/useAbortController';
+
 
 export const DesignationMaster: React.FC = () => {
 
@@ -44,6 +47,9 @@ export const DesignationMaster: React.FC = () => {
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    searchDesignationMaster(value)
+  }, 350)
 
   //VIEW DESIGNATION MASTER MODAL STATES
   const [viewDesignationMasterDetailsData, setViewDesignationMasterDetailsData] = useState<DesignationMasterData | null>(null)
@@ -70,6 +76,9 @@ export const DesignationMaster: React.FC = () => {
   //EXPORT EXCEL AND PDF DIALOG BOX
   const [isExportOpen, setIsExportOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement | null>(null);
+
+  // ABORT CONTROLLER
+  const { run: runWithSignal, abort: abortFetch } = useAbortController();
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -77,6 +86,12 @@ export const DesignationMaster: React.FC = () => {
   //#endregion
 
   //#region INITIALIZATION
+
+  useEffect(() => {
+    return () => {
+      abortFetch()
+    }
+  }, [abortFetch])
 
   const hasFetchedInitialDesignations = useRef(false)
 
@@ -100,15 +115,24 @@ export const DesignationMaster: React.FC = () => {
 
     return () => document.removeEventListener('click', handleDocClick);
   }, []);
+
+  //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel?.()
+    }
+  }, [debouncedSearch])
   //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchDesignationMasterList = async (page: number = pagination.currentPage) => {
-    return loadDesignationMaster(page, filters)
+    return runWithSignal(async (signal) => {
+      return await loadDesignationMaster(page, filters, signal);
+    });
   }
 
-  const loadDesignationMaster = async (page: number, filterParams: FilterInfo) => {
+  const loadDesignationMaster = async (page: number, filterParams: FilterInfo, signal?: AbortSignal) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -134,7 +158,7 @@ export const DesignationMaster: React.FC = () => {
           SortBy: sortByParam
         }
 
-        const response = await getDesignationMaster(params);
+        const response = await getDesignationMaster(params, signal);
 
         if (E.isRight(response)) {
 
@@ -156,7 +180,7 @@ export const DesignationMaster: React.FC = () => {
       },
       undefined,
       (error: any) => {
-
+        if (error?.name === 'AbortError') return;
         addToast({ type: 'error', title: error.message })
       },
       undefined,
@@ -170,6 +194,7 @@ export const DesignationMaster: React.FC = () => {
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
+      abortFetch();
       fetchDesignationMasterList();
       return
     }
@@ -178,12 +203,15 @@ export const DesignationMaster: React.FC = () => {
       DesignationName: searchValue.trim(),
     };
 
-    await loadDesignationMaster(1, filterParams);
-
+    await runWithSignal(async (signal) => {
+      return await loadDesignationMaster(1, filterParams, signal)
+    })
   }
 
   const clearsearchDesignationMaster = () => {
     setSearchTerm('');
+    debouncedSearch.cancel?.();
+    abortFetch();
     fetchDesignationMasterList();
   }
   // END SERACH DESIGNATION 
@@ -234,9 +262,9 @@ export const DesignationMaster: React.FC = () => {
 
   //API | SERVICES CALL TO GET DESIGNATION 
 
-  const getDesignationMaster = async (filterParams: FilterWithPaginationDesignationMasterRequest) => {
+  const getDesignationMaster = async (filterParams: FilterWithPaginationDesignationMasterRequest, signal?: AbortSignal) => {
 
-    return await DesignationMasterService.apiCallPullDesignationMaster(filterParams);
+    return await DesignationMasterService.apiCallPullDesignationMaster(filterParams,{signal});
   }
 
   //END API | SERVICES CALL TO GET DESIGNATION
@@ -736,7 +764,7 @@ export const DesignationMaster: React.FC = () => {
         setCodeError('Notice Period is required.')
         hasErrors = true
       }
-      
+
 
       if (hasErrors) {
         return
@@ -976,7 +1004,10 @@ export const DesignationMaster: React.FC = () => {
               <Input
                 type="text"
                 value={searchTerm}
-                onChange={(e) => searchDesignationMaster(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  debouncedSearch(e.target.value);
+                }}
                 placeholder="Search by designation name..."
                 leftIcon={
                   <Search className="h-4 w-4 text-gray-400" />

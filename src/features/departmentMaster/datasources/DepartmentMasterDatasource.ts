@@ -12,7 +12,7 @@ import type {
 
 export abstract class DepartmentMasterDatasource {
 
-    abstract pullDepartmentMaster(params: FilterWithPaginationDepartmentMasterRequest): Promise<DepartmentMasterListResponse>;
+    abstract pullDepartmentMaster(params: FilterWithPaginationDepartmentMasterRequest, signal?: AbortSignal): Promise<DepartmentMasterListResponse>;
     abstract addUpdateDepartmentMaster(data: AddUpdateDepartmentMasterRequest): Promise<DepartmentMasterSaveResponse>;
     abstract deleteDepartmentMaster(params: DeleteDepartmentMasterRequest): Promise<DepartmentMasterDeleteResponse>;
 }
@@ -23,7 +23,7 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
     }
 
 
-    async pullDepartmentMaster(params: FilterWithPaginationDepartmentMasterRequest): Promise<DepartmentMasterListResponse> {
+    async pullDepartmentMaster(params: FilterWithPaginationDepartmentMasterRequest, signal?: AbortSignal): Promise<DepartmentMasterListResponse> {
         try {
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
@@ -37,11 +37,15 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${DepartmentMasterApi.PULL}?${queryParams.toString()}`
+                `${DepartmentMasterApi.PULL}?${queryParams.toString()}`, { signal }
             )
             return response;
-        } catch (error) {
-
+        } catch (error: any) {
+            console.debug('pullDepartmentMaster aborted:', error.reason);
+            if (error?.name === 'AbortError') {
+                console.debug('pullDepartmentMaster aborted:', error ?? 'no-reason');
+                throw error;
+            }
             console.error('ERROR: PULL DEPARTMENT MASTER :', error);
 
             if (error === TokenExpiredException) {

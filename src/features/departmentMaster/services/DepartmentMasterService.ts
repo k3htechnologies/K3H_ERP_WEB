@@ -15,12 +15,17 @@ const departmentMasterDatasource = new DepartmentMasterDatasourceImpl();
 
 export const departmentMasterService = {
 
-    apiCallPullDepartmentMaster: async (params: FilterWithPaginationDepartmentMasterRequest): Promise<E.Either<Failure, DepartmentMasterListResponse>> => {
+    apiCallPullDepartmentMaster: async (params: FilterWithPaginationDepartmentMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, DepartmentMasterListResponse>> => {
         try {
 
-            return E.right(await departmentMasterDatasource.pullDepartmentMaster(params));
+            return E.right(await departmentMasterDatasource.pullDepartmentMaster(params, options?.signal));
 
         } catch (error: any) {
+
+            if (error?.name === 'AbortError') {
+                
+                return E.left({ message: 'Request aborted', code: 'ABORTED' })
+            }
 
             return E.left({ message: error.message, code: error.code });
 

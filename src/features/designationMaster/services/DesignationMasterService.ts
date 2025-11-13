@@ -14,10 +14,10 @@ const designationMasterDatasource = new DesignationMasterDatasourceImpl();
 
 export const DesignationMasterService = {
 
-    apiCallPullDesignationMaster: async (params: FilterWithPaginationDesignationMasterRequest): Promise<E.Either<Failure, DesignationMasterListResponse>> => {
+    apiCallPullDesignationMaster: async (params: FilterWithPaginationDesignationMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, DesignationMasterListResponse>> => {
         try {
 
-            return E.right(await designationMasterDatasource.pullDesignationMaster(params));
+            return E.right(await designationMasterDatasource.pullDesignationMaster(params,options?.signal));
 
         } catch (error: any) {
 

@@ -10,7 +10,7 @@ import type {
 
 export abstract class DesignationMasterDatasource {
 
-    abstract pullDesignationMaster(params: FilterWithPaginationDesignationMasterRequest): Promise<DesignationMasterListResponse>;
+    abstract pullDesignationMaster(params: FilterWithPaginationDesignationMasterRequest, signal?: AbortSignal): Promise<DesignationMasterListResponse>;
     abstract addUpdateDesignationMaster(data: AddUpdateDesignationMasterRequest): Promise<DesignationMasterListResponse>;
     abstract deleteDesignationMaster(params: DeleteDesignationMasterRequest): Promise<DesignationMasterDeleteResponse>;
 }
@@ -21,7 +21,7 @@ export class DesignationMasterDatasourceImpl implements DesignationMasterDatasou
     }
 
 
-    async pullDesignationMaster(params: FilterWithPaginationDesignationMasterRequest): Promise<DesignationMasterListResponse> {
+    async pullDesignationMaster(params: FilterWithPaginationDesignationMasterRequest,signal?: AbortSignal): Promise<DesignationMasterListResponse> {
         try {
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
@@ -35,7 +35,7 @@ export class DesignationMasterDatasourceImpl implements DesignationMasterDatasou
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${DesignationMasterApi.PULL}?${queryParams.toString()}`
+                `${DesignationMasterApi.PULL}?${queryParams.toString()}`,{ signal }
             )
 
             return response 

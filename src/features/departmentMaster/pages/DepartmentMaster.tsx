@@ -24,6 +24,8 @@ import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
 import Checkbox from '@/ui/components/forms/Checkbox';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
+import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
+import { useAbortController } from '@/core/hooks/useAbortController';
 
 
 export const DepartmentMaster: React.FC = () => {
@@ -45,6 +47,9 @@ export const DepartmentMaster: React.FC = () => {
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    searchDepartments(value)
+  }, 350)
 
   //VIEW DEPARTMENT MASTER MODAL STATES
   const [viewDepartmentMasterDetailsData, setViewDepartmentMasterDetailsData] = useState<DepartmentMasterData | null>(null)
@@ -71,6 +76,10 @@ export const DepartmentMaster: React.FC = () => {
   //EXPORT EXCEL AND PDF DIALOG BOX
   const [isExportOpen, setIsExportOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement | null>(null);
+
+  // ABORT CONTROLLER
+
+  const { run: runWithSignal, abort: abortFetch } = useAbortController();
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -78,6 +87,12 @@ export const DepartmentMaster: React.FC = () => {
   //#endregion
 
   //#region INITIALIZATION
+  useEffect(() => {
+    return () => {
+      abortFetch('component-unmount')
+    }
+  }, [abortFetch])
+
 
   const hasFetchedInitialDepartments = useRef(false)
 
@@ -100,15 +115,29 @@ export const DepartmentMaster: React.FC = () => {
     document.addEventListener('click', handleDocClick);
     return () => document.removeEventListener('click', handleDocClick);
   }, []);
+
+  //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel?.()
+    }
+  }, [debouncedSearch])
+  //#endregion
+
+
   //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchDepartmentList = async (page: number = pagination.currentPage) => {
-    return loadDepartments(page, filters)
+
+    return runWithSignal(async (signal) => {
+      return await loadDepartments(page, filters, signal);
+    });
+
   }
 
-  const loadDepartments = async (page: number, filterParams: FilterInfo) => {
+  const loadDepartments = async (page: number, filterParams: FilterInfo, signal?: AbortSignal) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -134,7 +163,7 @@ export const DepartmentMaster: React.FC = () => {
           SortBy: sortByParam
         }
 
-        const response = await getDepartments(params);
+        const response = await getDepartments(params, signal);
 
         if (E.isRight(response)) {
 
@@ -156,7 +185,10 @@ export const DepartmentMaster: React.FC = () => {
       },
       undefined,
       (error: any) => {
-
+        if (error?.name === 'AbortError') {
+           console.debug('Request aborted:', error?.reason ?? 'no-reason');
+          return;
+        }
         addToast({ type: 'error', title: error.message })
       },
       undefined,
@@ -170,7 +202,11 @@ export const DepartmentMaster: React.FC = () => {
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
+
+      abortFetch('search-empty-clear');
+
       fetchDepartmentList();
+
       return
     }
 
@@ -178,12 +214,16 @@ export const DepartmentMaster: React.FC = () => {
       DepartmentName: searchValue.trim(),
     };
 
-    await loadDepartments(1, filterParams);
+    await runWithSignal(async (signal) => {
+      return await loadDepartments(1, filterParams, signal)
+    })
 
   }
 
   const clearsearchDepartments = () => {
     setSearchTerm('');
+    debouncedSearch.cancel?.();
+    abortFetch('user-cleared-search');
     fetchDepartmentList();
   }
   // END SERACH DEPARTMENT 
@@ -234,9 +274,9 @@ export const DepartmentMaster: React.FC = () => {
 
   //API | SERVICES CALL TO GET DEPARTMENT 
 
-  const getDepartments = async (filterParams: FilterWithPaginationDepartmentMasterRequest) => {
+  const getDepartments = async (filterParams: FilterWithPaginationDepartmentMasterRequest, signal?: AbortSignal) => {
 
-    return await departmentMasterService.apiCallPullDepartmentMaster(filterParams);
+    return await departmentMasterService.apiCallPullDepartmentMaster(filterParams, { signal });
   }
 
   //END API | SERVICES CALL TO GET DEPARTMENT
@@ -648,14 +688,15 @@ export const DepartmentMaster: React.FC = () => {
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
     setFilters(tempFilters)
-    loadDepartments(1, tempFilters)
+    runWithSignal(async (signal) => loadDepartments(1, tempFilters, signal))
     setShowFilterPopup(false)
   }
 
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
-    loadDepartments(1, {})
+    abortFetch('clear-filters')
+    runWithSignal(async (signal) => loadDepartments(1, {}, signal))
     setShowFilterPopup(false)
   }
 
@@ -984,7 +1025,10 @@ export const DepartmentMaster: React.FC = () => {
               <Input
                 type="text"
                 value={searchTerm}
-                onChange={(e) => searchDepartments(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  debouncedSearch(e.target.value);
+                }}
                 placeholder="Search by department name..."
                 leftIcon={
                   <Search className="h-4 w-4 text-gray-400" />

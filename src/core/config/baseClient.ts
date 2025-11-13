@@ -82,7 +82,7 @@ export class BaseClient {
 
     //============================ [ GET REQUEST WITH AUTHENTICATION ] ========================================================
 
-    async getRequestWithAuthentication(url: string): Promise<any> {
+    async getRequestWithAuthentication(url: string, options?: { signal?: AbortSignal }): Promise<any> {
         try {
             const response = await fetch(getApiUrl(url), {
                 method: 'GET',
@@ -92,10 +92,15 @@ export class BaseClient {
                     'ApiKey': this.apiKey,
                     'Authorization': `Bearer ${this.token}`,
                 },
+                signal: options?.signal,
             })
 
             return this.processResponse(response)
-        } catch (error) {
+        } catch (error :any) {
+            if (error?.name === 'AbortError') {
+                throw error;
+            }
+
             if (error instanceof TypeError) {
                 throw new ApiNotRespondingException('PLEASE CHECK YOUR INTERNET CONNECTION')
             }
@@ -318,7 +323,7 @@ export class BaseClient {
 
                 const token = response.right.Data;
 
-                LocalStorageHelper.storeToken(token);   
+                LocalStorageHelper.storeToken(token);
             }
 
         } catch (error) {

@@ -14,9 +14,15 @@ export const COLORS = {
   border: '#e5e7eb',
   backgroundSecondary: '#f9fafb',
   textLight: '#9ca3af',         // Light text
+<<<<<<< HEAD
   placeholder: '#9ca3af',       // Placeholder text
   black: '#333',
   white:'#FFFFFF'
+=======
+  placeholder: '#9ca3af',       // Placeholder texts
+  black:'#333',
+  hover:'#f1e5e5ff',
+>>>>>>> 78d13d73138f976345e3309ba6a65effdee28080
 
 } as const
 

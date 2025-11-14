@@ -32,7 +32,7 @@ export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextArea
   autoResize?: boolean
 }
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size' | 'color'> {
-  variant?: 'solid' | 'outline' | 'ghost' | 'link' | 'dark'
+  variant?: 'solid' | 'outline' | 'ghost' | 'link' | 'dark' | 'transparent_border'
   colorMode?: string
   size?: 'xs' | 'sm' | 'md' | 'lg'
   color?: | 'primary'

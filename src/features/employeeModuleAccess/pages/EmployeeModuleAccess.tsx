@@ -518,17 +518,17 @@ const EmployeeModuleAccess: React.FC = () => {
 
     modules.forEach((module) => {
       const moduleId = module.ModulesMasterId ?? 0
-      const moduleKey = buildKey(moduleId, 0, 0)
-      const moduleFlags = ensureFlags(moduleKey)
+      // const moduleKey = buildKey(moduleId, 0, 0)
+      // const moduleFlags = ensureFlags(moduleKey)
 
-      payload.push({
-        ModulesMasterId: moduleId,
-        SubModuleMasterId: 0,
-        SubSubModuleMasterId: 0,
-        IsAction: moduleFlags.isAction,
-        IsView: moduleFlags.isView,
-        IsExport: moduleFlags.isExport
-      })
+      // payload.push({
+      //   ModulesMasterId: moduleId,
+      //   SubModuleMasterId: 0,
+      //   SubSubModuleMasterId: 0,
+      //   IsAction: moduleFlags.isAction,
+      //   IsView: moduleFlags.isView,
+      //   IsExport: moduleFlags.isExport
+      // })
 
       module.SubModuleData.forEach((subModule) => {
         const subModuleId = subModule.SubModulesMasterId ?? 0
@@ -622,10 +622,22 @@ const EmployeeModuleAccess: React.FC = () => {
 
       <div className="flex h-full flex-col space-y-6">
         <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-md h-16 flex items-center justify-between px-6">
-          <h1 className="text-2xl font-bold text-gray-900">Module Access Form {designationName}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-gray-900">
+              Module Access Form
+            </h1>
+
+            {designationName && (
+              <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-0.5 text-xs font-medium text-blue-700">
+                {designationName}
+              </span>
+            )}
+          </div>
+
           <label className="flex items-center justify-between px-10 py-2">
             <span className="text-sm text-gray-800 flex-1 pr-[6px]">
-              Select All</span>
+              Select All
+            </span>
             <Checkbox
               checked={selectAllState.checked}
               indeterminate={selectAllState.indeterminate}
@@ -775,79 +787,120 @@ const EmployeeModuleAccess: React.FC = () => {
                           </div>
 
                           {hasChildren && subExpanded && (
-                            <div className="space-y-2 px-18">
-                              {subModule.SubSubModuleData.map((child) => {
-                                const childKey = buildKey(
-                                  moduleId,
-                                  subModuleId,
-                                  child.SubSubModulesMasterId ?? 0
-                                )
-                                const childFlags = permissions[childKey] ?? createDefaultFlags()
-                                const childChecked =
-                                  childFlags.isAction && childFlags.isExport && childFlags.isView
-                                const childIndeterminate =
-                                  !childChecked &&
-                                  (childFlags.isAction ||
-                                    childFlags.isExport ||
-                                    childFlags.isView)
+  <div className="relative ml-10 mt-1">
+    {/* Vertical tree line (push it left so checkbox never overlaps) */}
+    <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-300" />
 
-                                return (
-                                  <div
-                                    key={child.SubSubModulesMasterId ?? 0}
-                                    className="grid grid-cols-[minmax(0,1fr)_repeat(3,120px)] items-center gap-4"
-                                  >
-                                    <Checkbox
-                                      checked={childChecked}
-                                      indeterminate={childIndeterminate}
-                                      onChange={(event) => handleToggleLeaf(module, subModule, child, 'select', event.target.checked)}
-                                      label={
-                                        <span className="text-sm text-gray-800 pl-[6px]">
-                                          {child.SubSubModuleName}
-                                        </span>
-                                      }
+    <div className="space-y-2">
+      {subModule.SubSubModuleData.map((child) => {
+        const childKey = buildKey(
+          moduleId,
+          subModuleId,
+          child.SubSubModulesMasterId ?? 0
+        )
+        const childFlags = permissions[childKey] ?? createDefaultFlags()
+        const childChecked =
+          childFlags.isAction && childFlags.isExport && childFlags.isView
+        const childIndeterminate =
+          !childChecked &&
+          (childFlags.isAction ||
+            childFlags.isExport ||
+            childFlags.isView)
 
-                                    />
-                                    <div className="flex items-center justify-center">
-                                      <label className="flex items-center justify-between px-3 py-1 ">
-                                        <Checkbox
-                                          checked={childFlags.isAction}
-                                          onChange={(event) => handleToggleLeaf(module, subModule, child, 'action', event.target.checked)}
+        return (
+          <div key={child.SubSubModulesMasterId ?? 0} className="relative pl-4">
+            
+            {/* horizontal connector */}
+            <div className="absolute left-0 top-4 w-4 h-px bg-gray-300" />
 
-                                        />
-                                        <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                                          Action</span>
-                                      </label>
-                                    </div>
-                                    <div className="flex items-center justify-center">
-                                      <label className="flex items-center justify-between px-3 py-1 ">
-                                        <Checkbox
-                                          checked={childFlags.isExport}
-                                          onChange={(event) => handleToggleLeaf(module, subModule, child, 'export', event.target.checked)}
+            <div className="grid grid-cols-[minmax(0,1fr)_repeat(3,120px)] items-center gap-4">
+              <Checkbox
+                checked={childChecked}
+                indeterminate={childIndeterminate}
+                onChange={(event) =>
+                  handleToggleLeaf(
+                    module,
+                    subModule,
+                    child,
+                    'select',
+                    event.target.checked
+                  )
+                }
+                label={
+                  <span className="text-sm text-gray-800 pl-[6px]">
+                    {child.SubSubModuleName}
+                  </span>
+                }
+              />
 
-                                        />
-                                        <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                                          Export
-                                        </span>
-                                      </label>
-                                    </div>
-                                    <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center">
+                <label className="flex items-center justify-between px-3 py-1">
+                  <Checkbox
+                    checked={childFlags.isAction}
+                    onChange={(event) =>
+                      handleToggleLeaf(
+                        module,
+                        subModule,
+                        child,
+                        'action',
+                        event.target.checked
+                      )
+                    }
+                  />
+                  <span className="text-sm text-gray-800 flex-1 pl-[6px]">
+                    Action
+                  </span>
+                </label>
+              </div>
 
-                                      <label className="flex items-center justify-between px-3 py-1 ">
-                                        <Checkbox
-                                          checked={childFlags.isView}
-                                          onChange={(event) => handleToggleLeaf(module, subModule, child, 'view', event.target.checked)}
+              <div className="flex items-center justify-center">
+                <label className="flex items-center justify-between px-3 py-1">
+                  <Checkbox
+                    checked={childFlags.isExport}
+                    onChange={(event) =>
+                      handleToggleLeaf(
+                        module,
+                        subModule,
+                        child,
+                        'export',
+                        event.target.checked
+                      )
+                    }
+                  />
+                  <span className="text-sm text-gray-800 flex-1 pl-[6px]">
+                    Export
+                  </span>
+                </label>
+              </div>
 
-                                        />
-                                        <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                                          View
-                                        </span>
-                                      </label>
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          )}
+              <div className="flex items-center justify-center">
+                <label className="flex items-center justify-between px-3 py-1">
+                  <Checkbox
+                    checked={childFlags.isView}
+                    onChange={(event) =>
+                      handleToggleLeaf(
+                        module,
+                        subModule,
+                        child,
+                        'view',
+                        event.target.checked
+                      )
+                    }
+                  />
+                  <span className="text-sm text-gray-800 flex-1 pl-[6px]">
+                    View
+                  </span>
+                </label>
+              </div>
+
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  </div>
+)}
+
                         </div>
                       )
                     })}
@@ -864,7 +917,8 @@ const EmployeeModuleAccess: React.FC = () => {
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <Button
-            color="blue"
+            color="transparent"
+            variant='transparent_border'
             size="sm"
             onClick={() => {
               navigate(-1);

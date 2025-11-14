@@ -331,6 +331,12 @@ export const COLOR_MAP = {
       textDecoration: 'underline',
       hover: { color: 'inherit' },
     },
+    transparent_border: {
+      backgroundColor: 'transparent',
+      color: 'inherit',
+      border: '1px solid #f6f3f4',
+      hover: { backgroundColor: '#f6f3f4' },
+    },
   },
 } as const
 

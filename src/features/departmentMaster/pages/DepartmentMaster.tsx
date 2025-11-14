@@ -14,7 +14,7 @@ import type {
 
 import { departmentMasterService } from '@/features/departmentMaster/services/DepartmentMasterService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
-import { Download, Edit, FileSpreadsheet, FileText, Filter, Plus, Search, Trash2, Upload, X } from 'lucide-react';
+import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
@@ -22,9 +22,10 @@ import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
-import Checkbox from '@/ui/components/forms/Checkbox';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
+import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
+import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 
 
 export const DepartmentMaster: React.FC = () => {
@@ -72,9 +73,6 @@ export const DepartmentMaster: React.FC = () => {
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeDepartmentMasterColumnsModal, setIsShowCustomizeDepartmentMasterColumnsModal] = useState(false);
 
-  //EXPORT EXCEL AND PDF DIALOG BOX
-  const [isExportOpen, setIsExportOpen] = useState(false);
-  const exportRef = useRef<HTMLDivElement | null>(null);
 
   //#endregion
 
@@ -94,16 +92,6 @@ export const DepartmentMaster: React.FC = () => {
     fetchDepartmentList()
   }, [])
 
-  //EXPORT EXCEL AND PDF DIALOG BOX
-  useEffect(() => {
-    function handleDocClick(e: MouseEvent) {
-      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
-        setIsExportOpen(false);
-      }
-    }
-    document.addEventListener('click', handleDocClick);
-    return () => document.removeEventListener('click', handleDocClick);
-  }, []);
 
   //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
@@ -491,82 +479,6 @@ export const DepartmentMaster: React.FC = () => {
     [departmentMasterColumns, selectedDepartmentMasterColumnKeys]
   )
 
-  interface CustomizeDepartmentMasterColumnsModalProps {
-    isOpen: boolean
-    onClose: () => void
-    onApply: (keys: string[]) => void
-    columns: TableColumn[]
-    selectedKeys: string[]
-    requiredKeys: string[]
-  }
-
-  const CustomizeDepartmentMasterColumnsModal: React.FC<CustomizeDepartmentMasterColumnsModalProps> = ({
-    isOpen,
-    onClose,
-    onApply,
-    columns,
-    selectedKeys,
-    requiredKeys
-  }) => {
-    const [localKeys, setLocalKeys] = useState<string[]>(selectedKeys)
-
-    useEffect(() => {
-      if (isOpen) setLocalKeys(Array.from(new Set([...selectedKeys, ...requiredKeys])))
-    }, [isOpen, selectedKeys, requiredKeys])
-
-    const toggleKey = (key: string) => {
-      if (requiredKeys.includes(key)) return
-      setLocalKeys(prev => (prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]))
-    }
-
-    const selectAll = () => setLocalKeys(Array.from(new Set([...columns.map(c => c.key), ...requiredKeys])))
-    const clearAll = () => setLocalKeys([...requiredKeys])
-
-    const handleApplyCustomizeDepartmentMasterColumns = (e: React.FormEvent) => {
-      e.preventDefault()
-      onApply(localKeys)
-      onClose()
-    }
-
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Customize Department Master Table Columns"
-        onSubmit={handleApplyCustomizeDepartmentMasterColumns}
-        saveText="Apply Changes"
-        cancelText="Cancel"
-      >
-        <div className="space-y-4">
-          <div className="flex items-center justify-end space-x-2">
-            <Button type="button" onClick={selectAll} size='sm' color='gray'>Select All</Button>
-            <Button type="button" onClick={clearAll} size='sm' color='gray'>Clear All</Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
-            {columns.map(col => {
-              const checked = localKeys.includes(col.key)
-              const required = requiredKeys.includes(col.key)
-              return (
-                <label key={col.key} className="flex items-center justify-between px-3 py-2 border rounded-md bg-gray-50">
-                  <span className="text-sm text-gray-800 flex-1">
-                    {col.label} {required && <span className="ml-1 text-xs text-blue-600">(Required)</span>}
-                  </span>
-                  <Checkbox
-                    size="sm"
-                    type="checkbox"
-                    checked={checked}
-                    disabled={required}
-                    onChange={() => toggleKey(col.key)}
-                    className="h-4 w-4"
-                  />
-                </label>
-              )
-            })}
-          </div>
-        </div>
-      </Modal>
-    )
-  }
   //#endregion
 
   //#region VIEW DEPARTMENT DETAILS MODAL COMPONENT
@@ -593,7 +505,7 @@ export const DepartmentMaster: React.FC = () => {
           e.preventDefault()
           onClose()
         }}
-        saveText="Close"
+        cancelText="Close"
         loading={false}
       >
         <div className="space-y-6">
@@ -756,6 +668,8 @@ export const DepartmentMaster: React.FC = () => {
           })
         } else {
           setFormData({
+            DepartmentMasterId: 0,
+            Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
             DepartmentCode: '',
             DepartmentName: ''
           })
@@ -823,9 +737,11 @@ export const DepartmentMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
+        onCancel={onClose}
         title="Settings - Company setup (Department)"
         onSubmit={handleSubmitAddUpdateDepartment}
         saveText={data ? 'Update' : 'Save'}
+        cancelText="Cancel"
         loading={loading}
       >
         <div className="space-y-6">
@@ -873,6 +789,7 @@ export const DepartmentMaster: React.FC = () => {
   const handleAddUpdateDepartmentMaster = async (formData: AddUpdateDepartmentMasterRequest) => {
 
     setIsAddUpdateModalOpen(false);
+
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -1008,204 +925,33 @@ export const DepartmentMaster: React.FC = () => {
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
+        <TableActionToolbar
+          isShowSearchBar
+          searchTerm={searchTerm}
+          searchPlaceholder="Search by department name..."
+          onSearchChange={(v) => {
+            setSearchTerm(v)
+            debouncedSearch(v)
+          }}
+          onClearSearch={clearsearchDepartments}
+          isShowFilterButton
+          filters={filters}
+          onOpenFilter={() => {
+            setTempFilters(filters)
+            setShowFilterPopup(true)
+          }}
+          isShowCustomizeButton
+          onCustomize={() => setIsShowCustomizeDepartmentMasterColumnsModal(true)}
+          isShowAddButton={canAction}
+          addTitle="Add Department"
+          onAdd={handleAddDepartmentModal}
+          isShowImportButton={canAction}
+          isShowExportButton={canExport}
+          onExportExcel={handleExportDepartmentExcel}
+          onExportPdf={handleExportDepartmentPdf}
+          exportLoading={isLoading}
+        />
 
-        <div className="bg-white border-b border-gray-200 pb-4">
-          <div className="flex items-center space-x-4">
-            {/* SEARCH BAR */}
-            <div className="flex-1 relative min-w-0">
-              <Input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  debouncedSearch(e.target.value);
-                }}
-                placeholder="Search by department name..."
-                leftIcon={
-                  <Search className="h-4 w-4 text-gray-400" />
-                }
-                rightIcon={
-                  <div className="flex items-center space-x-1 pr-8">
-                    {/* CLEAR SEARCH (X) BUTTON */}
-                    {searchTerm && (
-                      <Button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          clearsearchDepartments();
-                        }}
-                        color='transparent'
-                        fullWidth
-                        isborderRadius
-                        size='sm'
-                        title="Clear search"
-                      >
-                        <X className="" />
-                      </Button>
-                    )}
-
-                    {/* FILTER BUTTON */}
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setTempFilters(filters);
-                        setShowFilterPopup(true);
-                      }}
-                      className={`flex items-center p-1.5 rounded-md transition-colors relative ${Object.keys(filters).length > 0
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      title={
-                        Object.keys(filters).length > 0
-                          ? `Active filters: ${Object.entries(filters)
-                            .filter(([_, value]) => value)
-                            .map(([key, value]) => `${key}: ${value}`)
-                            .join(', ')}`
-                          : 'Filter'
-                      }
-                    >
-                      <Filter className="h-4 w-4" />
-                      {Object.keys(filters).length > 0 && (
-                        <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
-                          <span className="text-xs text-white font-bold">
-                            {
-                              Object.values(filters).filter(
-                                (value) => value && value.trim() !== ''
-                              ).length
-                            }
-                          </span>
-                        </div>
-                      )}
-                    </button>
-                  </div>
-                }
-              />
-
-            </div>
-
-            {/* ACTION BUTTON */}
-
-            <div className="flex items-center space-x-1">
-
-              {/* CUSTOMIZE TABLE BUTTON */}
-
-              <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setIsShowCustomizeDepartmentMasterColumnsModal(true)
-                }}
-                className="px-3 py-2 mr-2 border border-gray-300 text-blue-600 bg-white hover:bg-gray-50 rounded-md"
-                title="Customize Table"
-              >
-                Customize Table
-              </button>
-
-              {/* ADD BUTTON AND IMPORT BUTTON */}
-              {canAction && (
-                <>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleAddDepartmentModal()
-                    }}
-                    color='blue'
-                    size='xs'
-                    variant='solid'
-                    colorMode='light'
-                    defineWidth
-                    title="Add Department"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      // setImportisViewModalOpen(true)
-                    }}
-                    color='green'
-                    colorMode='light'
-                    size='xs'
-                    defineWidth
-                    title="Import"
-                  >
-                    <Upload className="h-4 w-4" />
-                  </Button>
-
-                </>
-              )}
-
-              {/* EXPORT BUTTON */}
-              {canExport && (
-                <div className="relative" ref={exportRef}>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setIsExportOpen((s) => !s);
-                    }}
-                    color='purple'
-                    colorMode='light'
-                    size='xs'
-                    defineWidth
-                    title="Export"
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
-
-                  {isExportOpen && (
-                    <div className="absolute right-0 mt-2 w-42 bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-50">
-                      <div className="py-1">
-
-                        <Button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleExportDepartmentExcel();
-                            setIsExportOpen(false);
-                          }}
-                          disabled={isLoading}
-                          color='transparent'
-                          fullWidth
-                          isborderRadius
-                          size='sm'
-                          title="Export as Excel"
-                        >
-                          <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
-                          Export as Excel
-                        </Button>
-
-                        <Button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleExportDepartmentPdf();
-                            setIsExportOpen(false);
-                          }}
-                          disabled={isLoading}
-                          color='transparent'
-                          fullWidth
-                          isborderRadius
-                          size='sm'
-                          title="Export as PDF"
-                        >
-                          <FileText className="h-4 w-4 mr-2 text-red-600" />
-                          Export as PDF
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-
-            </div>
-          </div>
-        </div>
 
         {/* DATA TABLE DEPARTMENT */}
         <DataTable
@@ -1243,28 +989,28 @@ export const DepartmentMaster: React.FC = () => {
         />
 
         {/* CUSTOMIZE COLUMNS MODAL */}
-        <CustomizeDepartmentMasterColumnsModal
+
+
+        <CustomizeColumnsModal
           isOpen={isShowCustomizeDepartmentMasterColumnsModal}
           onClose={() => setIsShowCustomizeDepartmentMasterColumnsModal(false)}
           onApply={(keys) => {
+            const withRequired = Array.from(
+              new Set([...keys, ...requiredDepartmentMasterColumnKeys]),
+            )
 
-            const withRequired = Array.from(new Set([...keys, ...requiredDepartmentMasterColumnKeys]));
-
-            setSelectedDepartmentMasterColumnKeys(withRequired);
+            setSelectedDepartmentMasterColumnKeys(withRequired)
 
             try {
-              LocalStorageHelper.storeDepartmentMasterTableColumns(JSON.stringify(withRequired))
-            }
-            catch {
-
-            }
+              LocalStorageHelper.storeDepartmentMasterTableColumns(
+                JSON.stringify(withRequired),
+              )
+            } catch { }
           }}
-
           columns={departmentMasterColumns}
-
           selectedKeys={selectedDepartmentMasterColumnKeys}
-
           requiredKeys={requiredDepartmentMasterColumnKeys}
+          title="Customize Department Master Table Columns"
         />
 
         {/* FILTER DEPARTMENT MODAL */}

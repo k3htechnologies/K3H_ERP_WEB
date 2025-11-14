@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Save } from 'lucide-react';
+import { Button } from '../forms';
 
 export interface ModalProps {
     isOpen: boolean
@@ -57,13 +58,15 @@ export const Modal: React.FC<ModalProps> = ({
                         <h3 className="text-lg font-semibold text-gray-900">
                             {title}
                         </h3>
-                        <button
+                        <Button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 rounded-md hover:bg-gray-100"
+                            color="transparent"
+                            isborderRadius
+                            size="sm"
                             disabled={loading}
                         >
                             <X className="h-5 w-5" />
-                        </button>
+                        </Button>
                     </div>
 
                     {/* CHILDERN */}
@@ -73,34 +76,38 @@ export const Modal: React.FC<ModalProps> = ({
                             {children}
                         </div>
 
-                    {/* Footer inside form - Fixed at bottom */}
-                    {saveText !== '' ?
+                        {/* Footer inside form - Fixed at bottom */}
+                        {saveText !== '' ?
 
-                        <div className="flex justify-end items-center h-16 px-6 border-t border-gray-200 bg-white flex-shrink-0 space-x-3 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] z-50">
-                            {cancelText && onCancel && (
-                                <button
-                                    type="button"
-                                    onClick={onCancel}
+                            <div className="flex justify-end items-center h-16 px-6 border-t border-gray-200 bg-white flex-shrink-0 space-x-3 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] z-50">
+                                {cancelText && onCancel && (
+                                    <Button
+                                        type="button"
+                                        color="transparent"
+                                        variant='transparent_border'
+                                        size="sm"
+                                        onClick={onCancel}
+                                        disabled={loading}
+                                    >
+                                        {cancelText}
+                                    </Button>
+                                )}
+
+                                <Button
+                                    type="submit"
+                                    color="green"
+                                    size="sm"
                                     disabled={loading}
-                                    className="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                                    
                                 >
-                                    {cancelText}
-                                </button>
-                            )}
+                                    <Save className="h-4 w-4  gap-2"  />
+                                    <span> {loading ? 'Saving...' : saveText}</span>
+                                </Button>
+                            </div>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="flex items-center space-x-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-                            >
-                                <Save className="h-4 w-4" />
-                                <span>{loading ? 'Saving...' : saveText}</span>
-                            </button>
-                        </div>
+                            : ''}
 
-                        : ''}
-
-                        </form>
+                    </form>
 
                 </div >
             </div >
@@ -116,13 +123,15 @@ export const Modal: React.FC<ModalProps> = ({
                     <h3 className="text-lg font-semibold text-gray-900">
                         {title}
                     </h3>
-                    <button
+                    <Button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 rounded-md hover:bg-gray-100"
+                        color="transparent"
+                        isborderRadius
+                        size="sm"
                         disabled={loading}
                     >
                         <X className="h-5 w-5" />
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Form Content */}
@@ -134,23 +143,27 @@ export const Modal: React.FC<ModalProps> = ({
                     {/* Footer inside form */}
                     <div className="flex justify-end pt-6 mt-6 border-t border-gray-200 space-x-3 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] z-50">
                         {cancelText && onCancel && (
-                            <button
+                            <Button
                                 type="button"
                                 onClick={onCancel}
                                 disabled={loading}
-                                className="px-6 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                                color="transparent"
+                                variant='transparent_border'
+                                size="sm"
                             >
                                 {cancelText}
-                            </button>
+                            </Button>
                         )}
-                        <button
+                        <Button
                             type="submit"
                             disabled={loading}
-                            className="flex items-center space-x-2 px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                            color="green"
+                            size="sm"
+
                         >
                             <Save className="h-4 w-4" />
                             <span>{loading ? 'Saving...' : saveText}</span>
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </div>

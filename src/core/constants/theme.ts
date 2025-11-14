@@ -7,7 +7,7 @@ export const THEME = {
 
     spacing: {
         xs: '4px',
-        sm: '0',
+        sm: '4px',
         md: '12px',
         lg: '16px',
         xl: '20px',

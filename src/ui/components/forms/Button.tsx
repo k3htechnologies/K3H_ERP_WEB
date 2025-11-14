@@ -130,11 +130,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     </>
                 ) : (
                     <>
-                        {leftIcon && <span style={{ fontSize: iconSizeCss }}>{renderIconElement(leftIcon)}</span>}
+                        {leftIcon && <span  style={{ fontSize: iconSizeCss }}>{renderIconElement(leftIcon)}</span>}
 
                         {isIconOnly
                             ? renderIconElement(React.Children.only(children), iconSizeNumber)
-                            : <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{children}</span>
+                            : <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center',gap: theme.spacing.sm }}>{children}</span>
                         }
 
                         {rightIcon && <span style={{ fontSize: iconSizeCss }}>{renderIconElement(rightIcon)}</span>}

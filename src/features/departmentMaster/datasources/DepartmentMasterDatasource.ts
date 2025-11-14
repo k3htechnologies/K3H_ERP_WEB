@@ -41,16 +41,13 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
             )
             return response;
         } catch (error: any) {
-            console.debug('pullDepartmentMaster aborted:', error.reason);
-            if (error?.name === 'AbortError') {
-                console.debug('pullDepartmentMaster aborted:', error ?? 'no-reason');
-                throw error;
-            }
+
             console.error('ERROR: PULL DEPARTMENT MASTER :', error);
 
             if (error === TokenExpiredException) {
                 await this.pullDepartmentMaster(params);
             }
+
             throw error
         }
     }
@@ -73,6 +70,7 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
 
             return response
         } catch (error) {
+
             console.error('ERROR: ADD UPDATE DEPARTMENT MASTER :', error)
 
             if (error === TokenExpiredException) {
@@ -96,8 +94,11 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
             return response
 
         } catch (error) {
+
+            console.error('ERROR: DELETE DEPARTMENT MASTER :', error)
+
             if (error === TokenExpiredException) {
-                console.error('ERROR: DELETE DEPARTMENT MASTER :', error)
+
                 await this.deleteDepartmentMaster(params);
 
             }

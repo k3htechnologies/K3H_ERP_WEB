@@ -516,7 +516,7 @@ export const DataTable: React.FC<DataTableProps> = ({
         <div className="fixed inset-0 z-50 flex">
           {/* Backdrop */}
           <div
-            className="flex-1 bg-black bg-opacity-50"
+            className="flex-1 bg-opacity-50"
             onClick={() => setShowFilterPopup(false)}
           />
 

@@ -22,11 +22,6 @@ export const departmentMasterService = {
 
         } catch (error: any) {
 
-            if (error?.name === 'AbortError') {
-                
-                return E.left({ message: 'Request aborted', code: 'ABORTED' })
-            }
-
             return E.left({ message: error.message, code: error.code });
 
         }

@@ -317,140 +317,94 @@ export const DesignationMaster: React.FC = () => {
         sortable: true,
         fixed: 'left',
         align: 'left',
-        render: (value, row) => (
+        render: (value, row) => {
+          const showEdit = true
+          const showDelete = (row.NumberOfEmployee || 0) === 0
+          const showKey = true
 
-          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
+          return (
+            <div className="flex items-center justify-end ml-2 gap-1">
+              <TooltipText
+                text={value || 'N/A'}
+                maxWidth="250px"
+                tooltipThreshold={25}
+                onClick={() => handleViewDesignationDetails(row)}
+              />
 
-            <TooltipText
-              text={value || 'N/A'}
-              maxWidth="250px"
-              tooltipThreshold={25}
-              onClick={() => handleViewDesignationDetails(row)} // just pass a function, no need for e.preventDefault here
-            />
-
-            {canAction && (
-              <div className="flex items-center justify-end ml-2 w-20">
-                {(row.NumberOfEmployee || 0) === 0 ? (
-                  <>
-                    <Button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleEditDesignationMaster(row)
-                      }}
-                      color='transparent'
-                      fullWidth
-                      isborderRadius
-                      size='sm'
-                      title="Edit Designation"
-                      style={{
-                        color: '#0B3251',
-                        padding: '0px 8px'
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-
-                    <Button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleConfirmationDialogBoxOpen(row)
-                      }}
-                      color='transparent'
-                      fullWidth
-                      isborderRadius
-                      size='sm'
-                      style={{
-                        color: 'red',
-                        padding: '0px 8px'
-                      }}
-                      title="Delete Designation"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-
-                    <Button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        navigate(`/employeeModuleAccess/${row.DesignationMasterId}`, {
-                          state: {
-                            designationName: row.DesignationName,
-                            uniqueKey: row.Uniquekey,
-                          },
-                        });
-                      }}
-                      color='transparent'
-                      fullWidth
-                      isborderRadius
-                      size='sm'
-                      style={{
-                        color: 'gray',
-                        padding: '0px 8px'
-                      }}
-                      title="Access Module"
-                    >
-                      <Key className="h-4 w-4" strokeWidth={row.IsSetAccessModule ? 3.5 : 0.5} />
-                    </Button>
-                  </>
+              {/* SLOT 1: EDIT */}
+              <div className="w-[34px] flex justify-center">
+                {showEdit ? (
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleEditDesignationMaster(row)
+                    }}
+                    color="transparent"
+                    isborderRadius
+                    size="sm"
+                    title="Edit"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                 ) : (
-                  <>
-                    <Button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleEditDesignationMaster(row)
-                      }}
-                      color='transparent'
-                      fullWidth
-                      isborderRadius
-                      size='sm'
-                      title="Edit Designation"
-                      style={{
-                        color: '#0B3251',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    
-                    <div aria-hidden className="h-[32px] w-[36px] inline-flex items-center justify-center opacity-0" />
-
-                    <Button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        navigate(`/employeeModuleAccess/${row.DesignationMasterId}`, {
-                          state: {
-                            designationName: row.DesignationName,
-                            uniqueKey: row.Uniquekey,
-                          },
-                        });
-                      }}
-                      color='transparent'
-                      fullWidth
-                      isborderRadius
-                      size='sm'
-                      style={{
-                        color: 'gray',
-                        padding: '0px 8px'
-                      }}
-                      title="Access Module"
-                    >
-                      <Key className="h-4 w-4" strokeWidth={row.IsSetAccessModule ? 3.5 : 0.5} />
-                    </Button>
-                  </>
-
+                  <div className="opacity-0 h-[32px] w-[34px]" />
                 )}
               </div>
-            )}
-          </div>
-          
-        )
+
+              {/* SLOT 2: DELETE */}
+              <div className="w-[34px] flex justify-center">
+                {showDelete ? (
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleConfirmationDialogBoxOpen(row)
+                    }}
+                    color="transparent"
+                    isborderRadius
+                    size="sm"
+                    style={{ color: 'red' }}
+                    title="Delete"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <div className="opacity-0 h-[32px] w-[34px]" />
+                )}
+              </div>
+
+              {/* SLOT 3: KEY */}
+              <div className="w-[34px] flex justify-center">
+                {showKey ? (
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      navigate(`/employeeModuleAccess/${row.DesignationMasterId}`, {
+                        state: {
+                          designationName: row.DesignationName,
+                          uniqueKey: row.Uniquekey,
+                        },
+                      })
+                    }}
+                    color="transparent"
+                    isborderRadius
+                    size="sm"
+                    style={{ color: 'gray' }}
+                    title="Module Access"
+                  >
+                    <Key className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <div className="opacity-0 h-[32px] w-[34px]" />
+                )}
+              </div>
+            </div>
+
+          )
+        }
+
       },
       {
         key: 'NoticePeriod',

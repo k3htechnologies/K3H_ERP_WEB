@@ -431,7 +431,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto min-h-0 flex flex-col">
+        <div className="flex-1 overflow-y-auto min-h-0 flex flex-col thin-scroll">
           <nav className="space-y-1 px-4 py-4 flex-1 flex flex-col">
             <div className="space-y-0">
               {menuItems.map(item => renderMenuItem(item))}

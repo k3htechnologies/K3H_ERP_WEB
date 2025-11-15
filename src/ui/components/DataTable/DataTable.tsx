@@ -333,7 +333,7 @@ export const DataTable: React.FC<DataTableProps> = ({
 
 
       {/* Table Container with Fixed Height */}
-      <div className={`overflow-x-auto ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
+      <div className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
         maxHeight: recordsPerPage === 10 ? 'calc(10 * 2.5rem + 2.5rem)' : maxHeight
       } : {}}>
         <table className="min-w-full border-collapse border border-gray-300">

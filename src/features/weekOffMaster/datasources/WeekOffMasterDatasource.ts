@@ -8,7 +8,7 @@ import type {
     WeekOffMasterListResponse,
     WeekOffMasterSaveResponse,
     WeekOffMasterDeleteResponse
-} from '@/features/weekOffMaster/models/WeekOffMasterMasterModel'
+} from '@/features/weekOffMaster/models/WeekOffMasterModel'
 
 export abstract class WeekOffMasterDatasource {
 
@@ -41,10 +41,9 @@ export class WeekOffMasterDatasourceImpl implements WeekOffMasterDatasource {
             return response;
         } catch (error: any) {
 
-            console.error('ERROR: PULL WEEK OFF POLICY MASTER :', error);
+            console.error('ERROR: PULL WEEK OFF MASTER :', error);
 
             if (error === TokenExpiredException) {
-                
                 await this.pullWeekOffMaster(params);
             }
 
@@ -58,19 +57,17 @@ export class WeekOffMasterDatasourceImpl implements WeekOffMasterDatasource {
 
             const payLoad: AddUpdateWeekOffMasterRequest = {
                 WeekOffPolicyMasterId: params.WeekOffPolicyMasterId ?? 0,
-                Uniquekey: params.Uniquekey ?? null,
+                Uniquekey: params.Uniquekey ?? '',
 
                 WeekOffPolicyCode: params.WeekOffPolicyCode?.trim() ?? '',
                 WeekOffPolicyName: params.WeekOffPolicyName?.trim() ?? '',
-
                 WeekDays: params.WeekDays ?? 0,
-                WeekDaysStartsOn: params.WeekDaysStartsOn?.trim() ?? '',
-                WeeklyOff: params.WeeklyOff?.trim() ?? '',
-                WeeklyOff2: params.WeeklyOff2?.trim() ?? '',
-                WeeklyOff2Type: params.WeeklyOff2Type?.trim() ?? '',
-                NotApplicableForMonths: params.NotApplicableForMonths?.trim() ?? ''
+                WeekDaysStartsOn: params.WeekDaysStartsOn ?? '',
+                WeeklyOff: params.WeeklyOff ?? '',
+                WeeklyOff2: params.WeeklyOff2 ?? '',
+                WeeklyOff2Type: params.WeeklyOff2Type ?? '',
+                NotApplicableForMonths: params.NotApplicableForMonths ?? '',
             }
-
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 WeekOffMasterApi.ADD_UPDATE,
@@ -80,7 +77,7 @@ export class WeekOffMasterDatasourceImpl implements WeekOffMasterDatasource {
             return response
         } catch (error) {
 
-            console.error('ERROR: ADD UPDATE WEEK OFF POLICY MASTER :', error)
+            console.error('ERROR: ADD UPDATE WEEK OFF MASTER :', error)
 
             if (error === TokenExpiredException) {
                 await this.addUpdateWeekOffMaster(params);
@@ -104,7 +101,7 @@ export class WeekOffMasterDatasourceImpl implements WeekOffMasterDatasource {
 
         } catch (error) {
 
-            console.error('ERROR: DELETE  WEEK OFF POLICY MASTER :', error)
+            console.error('ERROR: DELETE WEEK OFF MASTER :', error)
 
             if (error === TokenExpiredException) {
 

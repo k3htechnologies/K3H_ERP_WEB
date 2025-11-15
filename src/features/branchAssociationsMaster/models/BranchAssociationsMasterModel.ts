@@ -13,7 +13,6 @@ export interface FilterWithPaginationBranchAssociationsMasterRequest {
 export interface BranchAssociationsMasterData {
     BranchAssociationsId: number | null
     Uniquekey: string | null
-    AssetCode: string | null
     BranchName: string | null
     BranchMasterId: string | null
     EmployeeId: number | null

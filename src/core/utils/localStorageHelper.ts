@@ -136,6 +136,374 @@ export const LocalStorageHelper = {
         return null;
     },
     //#endregion
+    //#region STORE BRANCH MASTER COLUMNS
+    storeBranchMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.BRANCH_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Branch Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET BRANCH MASTER COLUMNS
+    getBranchMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BRANCH_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.BRANCH_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Branch Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE BRANCH ASSOCIATIONS MASTER COLUMNS
+    storeBranchAssociationsMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.BRANCH_ASSOCIATIONS_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Branch Associations Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET BRANCH ASSOCIATIONS MASTER COLUMNS
+    getBranchAssociationsMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BRANCH_ASSOCIATIONS_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.BRANCH_ASSOCIATIONS_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Branch Associations Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE ASSET MASTER COLUMNS
+    storeAssetMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.ASSET_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Asset Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET ASSET MASTER COLUMNS
+    getAssetMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ASSET_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.ASSET_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Asset Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE ASSET MAPPING MASTER COLUMNS
+    storeAssetMappingMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.ASSET_MAPPING_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Asset Mapping Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET ASSET MAPPING MASTER COLUMNS
+    getAssetMappingMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ASSET_MAPPING_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.ASSET_MAPPING_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Asset Mapping Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE DEDUCTION MASTER COLUMNS
+    storeDeductionMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.DEDUCTION_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Deduction Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET DEDUCTION MASTER COLUMNS
+    getDeductionMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DEDUCTION_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.DEDUCTION_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Deduction Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE EARNING MASTER COLUMNS
+    storeEarningMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.EARNING_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Earning Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET EARNING MASTER COLUMNS
+    getEarningMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.EARNING_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.EARNING_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Earning Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE VENDOR COLUMNS
+    storeVendorTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.VENDOR_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Vendor Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET VENDOR COLUMNS
+    getVendorTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.VENDOR_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.VENDOR_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Vendor Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE COMPANY MASTER COLUMNS
+    storeCompanyMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Company Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET COMPANY MASTER COLUMNS
+    getCompanyMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Company Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE HOLIDAY MASTER COLUMNS
+    storeHolidayMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.HOLIDAY_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Holiday Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET HOLIDAY MASTER COLUMNS
+    getHolidayMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.HOLIDAY_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.HOLIDAY_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Holiday Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE HOLIDAY MAPPING MASTER COLUMNS
+    storeHolidayMappingMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Holiday Mapping Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET HOLIDAY MAPPING MASTER COLUMNS
+    getHolidayMappingMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Holiday Mapping Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE LEAVE ENCASHMENT MASTER COLUMNS
+    storeLeaveEncashmentMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Leave Encashment Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET LEAVE ENCASHMENT MASTER COLUMNS
+    getLeaveEncashmentMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Leave Encashment Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE LEAVE TYPE MASTER COLUMNS
+    storeLeaveTypeMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.LEAVE_TYPE_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Leave Type Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET LEAVE TYPE MASTER COLUMNS
+    getLeaveTypeMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_TYPE_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_TYPE_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Leave Type Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE SHIFT MASTER COLUMNS
+    storeShiftMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.SHIFT_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Shift Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET SHIFT MASTER COLUMNS
+    getShiftMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SHIFT_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.SHIFT_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Shift Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE SHIFT MAPPING MASTER COLUMNS
+    storeShiftMappingMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.SHIFT_MAPPING_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Shift Mapping Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET SHIFT MAPPING MASTER COLUMNS
+    getShiftMappingMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SHIFT_MAPPING_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.SHIFT_MAPPING_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Shift Mapping Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE WEEK OFF MAPPING MASTER COLUMNS
+    storeWeekOffMappingMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Week Off Mapping Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET WEEK OFF MAPPING MASTER COLUMNS
+    getWeekOffMappingMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Week Off Mapping Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE WEEK OFF MASTER COLUMNS
+    storeWeekOffMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Week Off Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET WEEK OFF MASTER COLUMNS
+    getWeekOffMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Week Off Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
     //#region STORE MENU DATA
     storeMenuData: (menuData: ModuleData[] | ModuleData): void => {
         try {
@@ -171,6 +539,22 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.LAST_VISITED_PAGE);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.DESIGNATION_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.BRANCH_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.BRANCH_ASSOCIATIONS_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.ASSET_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.ASSET_MAPPING_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.DEDUCTION_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.EARNING_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.VENDOR_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.HOLIDAY_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_TYPE_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.SHIFT_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.SHIFT_MAPPING_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
         } catch (error) {
             console.error('ERROR : CLEARING LOCAL STORAGE:', error)

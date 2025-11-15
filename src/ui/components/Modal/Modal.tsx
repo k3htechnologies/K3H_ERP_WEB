@@ -71,7 +71,7 @@ export const Modal: React.FC<ModalProps> = ({
 
                     {/* CHILDERN */}
 
-                    <form onSubmit={onSubmit} className="flex-1 flex flex-col  min-h-0 overflow-hidden">
+                    <form onSubmit={onSubmit} className="flex-1 flex flex-col  min-h-0 overflow-hidden overflow-y-auto">
                         <div className="flex-1 flex flex-col space-y-6 min-h-0 p-6">
                             {children}
                         </div>

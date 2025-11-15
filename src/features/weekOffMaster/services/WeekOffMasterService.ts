@@ -1,5 +1,5 @@
 import type { Failure } from '@/core/api/FailureResponse';
-import { WeekOffMasterDatasourceImpl } from '@/features/weekOffMaster/datasources/WeekOffMasterMasterDatasource'
+import { WeekOffMasterDatasourceImpl } from '@/features/weekOffMaster/datasources/WeekOffMasterDatasource'
 import type {
     FilterWithPaginationWeekOffMasterRequest,
     AddUpdateWeekOffMasterRequest,
@@ -7,7 +7,7 @@ import type {
     WeekOffMasterListResponse,
     WeekOffMasterSaveResponse,
     WeekOffMasterDeleteResponse
-} from '@/features/weekOffMaster/models/WeekOffMasterMasterModel'
+} from '@/features/weekOffMaster/models/WeekOffMasterModel'
 
 import * as E from 'fp-ts/Either';
 

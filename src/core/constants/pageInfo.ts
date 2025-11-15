@@ -7,20 +7,103 @@ export const getPageInfo = (path: string) => {
             }
         case '/departmentMaster':
             return {
-                title: 'Settings - Company setup (Department)',
+                title: 'Department Master',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
         case '/designationMaster':
             return {
-                title: 'Settings - Company setup (Designation)',
+                title: 'Designation Master',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
+        case '/branchMaster':
+            return {
+                title: 'Branch Master',
+                description: 'Manage and organize branch  with complete CRUD operations',
+            }
+        case '/assetMaster':
+            return {
+                title: 'Asset Master',
+                description: 'Manage and organize asset  with complete CRUD operations',
+            }
+        case '/assetMappingMaster':
+            return {
+                title: 'Asset Mapping Master',
+                description: 'Manage and organize asset mapping with complete CRUD operations',
+            }
+        case '/branchAssociationsMaster':
+            return {
+                title: 'Branch Associations Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+        case '/deductionMaster':
+            return {
+                title: 'Deduction Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+        case '/earningMaster':
+            return {
+                title: 'Earning Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+        case '/holidayMaster':
+            return {
+                title: 'Holiday Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+
+        case '/holidayMappingMaster':
+            return {
+                title: 'Holiday Mapping Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+        case '/leaveEncashmentMaster':
+            return {
+                title: 'Leave Encashment Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+        case '/leaveTypeMaster':
+            return {
+                title: 'Leave Type Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+
+        case '/shiftMaster':
+            return {
+                title: 'Shift Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+        case '/shiftMappingMaster':
+            return {
+                title: 'Shift Mapping Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+        case '/weekOffMaster':
+            return {
+                title: 'Week Off Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+        case '/weekOffMappingMaster':
+            return {
+                title: 'Week Off Mapping Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+        case '/companyMaster':
+            return {
+                title: 'Company Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+        case '/vendor':
+            return {
+                title: 'Vendor Management',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+
         case '/employeeMaster':
             return {
-                title: 'Settings - Company setup (Employee)',
+                title: 'Employee Master',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
-            case '/profile':
+        case '/profile':
             return {
                 title: 'Employee Profile',
                 description: 'Profile',

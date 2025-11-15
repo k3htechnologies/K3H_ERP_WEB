@@ -12,10 +12,26 @@ export const normalizePath = (p?: string): string => {
 
 export const mapPathToRoute = (apiPath: string): string => {
     const normalized = normalizePath(apiPath);
-    
+
     const routeMap: Record<string, string> = {
         '/departmentmaster': '/departmentMaster',
         '/designationmaster': '/designationMaster',
+        '/branchmaster': '/branchMaster',
+        '/branchassociationsmaster': '/branchAssociationsMaster',
+        '/assetmaster': '/assetMaster',
+        '/assetmappingmaster': '/assetMappingMaster',
+        '/deductionmaster': '/deductionMaster',
+        '/earningmaster': '/earningMaster',
+        '/holidaymaster': '/holidayMaster',
+        '/holidaymappingmaster': '/holidayMappingMaster',
+        '/leaveencashmentmaster': '/leaveEncashmentMaster',
+        '/leavetypemaster': '/leaveTypeMaster',
+        '/shiftmaster': '/shiftMaster',
+        '/shiftmappingmaster': '/shiftMappingMaster',
+        '/weekoffmaster': '/weekOffMaster',
+        '/weekoffmappingmaster': '/weekOffMappingMaster',
+        '/companymaster': '/companyMaster',
+        '/vendor': '/vendor',
         '/employeemaster': '/employeeMaster',
         '/profile': '/profile',
     }

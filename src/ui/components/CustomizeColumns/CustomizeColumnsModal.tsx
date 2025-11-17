@@ -86,7 +86,7 @@ export const CustomizeColumnsModal: React.FC<CustomizeColumnsModalProps> = ({
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto thin-scroll">
           {columns.map(col => {
             const checked = localKeys.includes(col.key)
             const required = requiredKeys.includes(col.key)

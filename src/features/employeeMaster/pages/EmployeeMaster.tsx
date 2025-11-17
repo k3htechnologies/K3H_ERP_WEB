@@ -228,7 +228,7 @@ export const EmployeeMaster: React.FC = () => {
     () => [
       {
         key: 'FullName',
-        label: 'Employee Name',
+        label: 'Full Name',
         width: '22',
         sortable: true,
         fixed: 'left',
@@ -260,14 +260,28 @@ export const EmployeeMaster: React.FC = () => {
         )
       },
       {
-        key: 'Branch',
-        label: 'Branch',
+        key: 'Gender',
+        label: 'Gender',
         width: '14',
-        sortable: true,
-        align: 'left',
-        render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
-        )
+        sortable: false,
+        align: 'center',
+        render: value => value || 'N/A'
+      },
+      {
+        key: 'PersonalMobileNumber',
+        label: 'Personal Mobile Number',
+        width: '14',
+        sortable: false,
+        align: 'center',
+        render: value => value || 'N/A'
+      },
+      {
+        key: 'EmailId',
+        label: 'Email Id',
+        width: '14',
+        sortable: false,
+        align: 'center',
+        render: value => value || 'N/A'
       },
       {
         key: 'Department',
@@ -290,6 +304,103 @@ export const EmployeeMaster: React.FC = () => {
         )
       },
       {
+        key: 'Branch',
+        label: 'Branch',
+        width: '14',
+        sortable: true,
+        align: 'left',
+        render: value => (
+          <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+        )
+      },
+      {
+        key: 'ReportPersonName',
+        label: 'Report Person Name',
+        width: '14',
+        sortable: true,
+        align: 'left',
+        render: value => (
+          <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+        )
+      },
+
+      {
+        key: 'DateOfBirth',
+        label: 'DOB',
+        width: '14',
+        sortable: true,
+        align: 'center',
+        render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
+      },
+      {
+        key: 'JoiningDate',
+        label: 'Joining Date',
+        width: '14',
+        sortable: true,
+        align: 'center',
+        render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
+      },
+      {
+        key: 'ProbationDate',
+        label: 'Probation Date',
+        width: '14',
+        sortable: true,
+        align: 'center',
+        render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
+      },
+      {
+        key: 'MaritalStatus',
+        label: 'Marital Status',
+        width: '14',
+        sortable: false,
+        align: 'center',
+        render: value => value || 'N/A'
+      },
+      {
+        key: 'BloodGroup',
+        label: 'Blood Group',
+        width: '14',
+        sortable: false,
+        align: 'center',
+        render: value => value || 'N/A'
+      },
+      {
+        key: 'BankName',
+        label: 'Bank Name',
+        width: '18',
+        sortable: false,
+        align: 'left',
+        render: value => (
+          <TooltipText text={value || 'N/A'} maxWidth="220px" tooltipThreshold={22} />
+        )
+      },
+      {
+        key: 'BankBranchName',
+        label: 'Bank Branch Name',
+        width: '18',
+        sortable: false,
+        align: 'left',
+        render: value => (
+          <TooltipText text={value || 'N/A'} maxWidth="220px" tooltipThreshold={22} />
+        )
+      },
+      {
+        key: 'IFSCCode',
+        label: 'IFSC Code',
+        width: '18',
+        sortable: false,
+        align: 'left',
+        render: value => value || 'N/A'
+      },
+      {
+        key: 'AccountNo',
+        label: 'Account No',
+        width: '14',
+        sortable: false,
+        align: 'center',
+        render: value => value || 'N/A'
+      },
+      {
         key: 'OfficeEmailId',
         label: 'Office Email',
         width: '18',
@@ -308,12 +419,12 @@ export const EmployeeMaster: React.FC = () => {
         render: value => value || 'N/A'
       },
       {
-        key: 'JoiningDate',
-        label: 'Joining Date',
-        width: '14',
+        key: 'LastLogin',
+        label: 'Last Login',
+        width: '16',
         sortable: true,
         align: 'center',
-        render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
+        render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       },
       {
         key: 'CreatedBy',
@@ -398,58 +509,232 @@ export const EmployeeMaster: React.FC = () => {
       >
         <div className="space-y-6">
           <div className="space-y-4">
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Employee Name</span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.FullName || data.FirstName || 'N/A'}
-              </span>
+            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Basic Details</h4>
+
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">First Name</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.FirstName || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Middle Name</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.MiddleName || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Last Name</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.LastName || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Gender</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.Gender || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Marital Status</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.MaritalStatus || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Blood Group</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.BloodGroup || '-'}
+                </span>
+              </div>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Employee Code</span>
-              <span className="text-sm text-blue-600 font-medium">{data.EmployeeCode || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Branch</span>
-              <span className="text-sm text-blue-600 font-medium">{data.Branch || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Department</span>
-              <span className="text-sm text-blue-600 font-medium">{data.Department || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Designation</span>
-              <span className="text-sm text-blue-600 font-medium">{data.Designation || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Office Email</span>
-              <span className="text-sm text-blue-600 font-medium">{data.OfficeEmailId || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Office Mobile</span>
-              <span className="text-sm text-blue-600 font-medium">
-                {data.OfficeMobileNumber || data.PersonalMobileNumber || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Joining Date</span>
-              <span className="text-sm text-blue-600 font-medium">
-                {data.JoiningDate ? formatDate_dd_MonthName_yy(data.JoiningDate) : 'N/A'}
-              </span>
+
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">DOB</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.DateOfBirth ? formatDate_dd_MonthName_yy(data.DateOfBirth) : '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Office Email ID</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.OfficeEmailId || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Email ID</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.EmailId || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Personal Mobile Number</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.PersonalMobileNumber || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Office Mobile Number</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.OfficeMobileNumber || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Employment Type</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.EmployeeType || '-'}
+                </span>
+              </div>
             </div>
           </div>
 
+          {/* Employee Info Sheet Section */}
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Employee Info Sheet</h4>
+
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Company Name</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.CompanyName || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Branch</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.Branch || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Department</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.Department || '-'}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Designation</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.Designation || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Joining Date</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.JoiningDate ? formatDate_dd_MonthName_yy(data.JoiningDate) : '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Reporting Person</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.ReportPersonName || '-'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Address Section */}
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Address</h4>
+
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Communication Address</span>
+              </div>
+              <div className="flex justify-between  items-center py-1 border-b border-gray-200">
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.CommunicationAddress || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Permanent Address</span>
+              </div>
+              <div className="flex justify-between  items-center py-1 border-b border-gray-200">
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.PermanentAddress || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Country</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.CountryName || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">State</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.StateName || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">District</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.DistrictName || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">City</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.CityName || '-'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bank Details Section */}
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Bank Details</h4>
+
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Bank Name</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.BankName || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Account Number</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.AccountNo || '-'}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Bank Branch Name</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.BankBranchName || '-'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">IFSC Code</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {data.IFSCCode || '-'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Details Header - At Bottom */}
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-600">Created By</span>
-                  <span className="text-sm text-blue-600 font-medium">{data.CreatedBy || 'N/A'}</span>
+                  <span className="text-sm text-blue-600 font-medium">
+                    {data.CreatedBy || '-'}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-600">Created Date</span>
                   <span className="text-sm text-blue-600 font-medium">
-                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
+                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate|| '-')}
                   </span>
                 </div>
               </div>
@@ -457,14 +742,16 @@ export const EmployeeMaster: React.FC = () => {
                 {data.ModifiedBy && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-600">Modified By</span>
-                    <span className="text-sm text-blue-600 font-medium">{data.ModifiedBy}</span>
+                    <span className="text-sm text-blue-600 font-medium">
+                      {data.ModifiedBy}
+                    </span>
                   </div>
                 )}
                 {data.ModifiedDate && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-600">Modified Date</span>
                     <span className="text-sm text-blue-600 font-medium">
-                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
+                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate)}
                     </span>
                   </div>
                 )}

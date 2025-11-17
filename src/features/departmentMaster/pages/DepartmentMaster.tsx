@@ -510,19 +510,19 @@ export const DepartmentMaster: React.FC = () => {
         loading={false}
       >
         <div className="space-y-6">
-          {/* Department Information */}
+
           <div className="space-y-4">
-            <FieldItem label="Department Code" value={data.DepartmentCode} className='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap' isRow  withBorder={false}/>
-            <FieldItem label="Department Name" value={data.DepartmentName}  isRow  withBorder={false}/>
-            <FieldItem label="Number of Employees" value={data.NumberOfEmployee} className='inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 overflow-hidden text-ellipsis whitespace-nowrap' isRow  withBorder={false}/>
+            <FieldItem label="Department Code" value={data.DepartmentCode} className='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap' isRow withBorder={false} />
+            <FieldItem label="Department Name" value={data.DepartmentName} isRow withBorder={false} />
+            <FieldItem label="Number of Employees" value={data.NumberOfEmployee} className='inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 overflow-hidden text-ellipsis whitespace-nowrap' isRow withBorder={false} />
 
           </div>
-          {/* Action Details Header */}
+
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <FieldItem label="Created By" isRow={true} value={data.CreatedBy}  withBorder={false}/>
+                <FieldItem label="Created By" isRow={true} value={data.CreatedBy} withBorder={false} />
                 <FieldItem label="Created Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={false} />
 
               </div>

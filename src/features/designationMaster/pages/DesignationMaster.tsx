@@ -511,12 +511,11 @@ export const DesignationMaster: React.FC = () => {
           {/* Designation Information */}
           <div className="space-y-4">
 
-<FieldItem label="Designation Code" value={data.DesignationName}  isRow withBorder={false} />
-            <FieldItem label="Notice Period" value={data.NoticePeriod}  isRow  withBorder={false}/>
+            <FieldItem label="Designation Code" value={data.DesignationName} isRow withBorder={false} />
+            <FieldItem label="Notice Period" value={data.NoticePeriod} isRow withBorder={false} />
             <FieldItem label="Number of Employees" value={data.NumberOfEmployee} isRow withBorder={false} />
 
           </div>
-          {/* Action Details Header */}
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -528,7 +527,7 @@ export const DesignationMaster: React.FC = () => {
               <div className="space-y-2">
                 {data.ModifiedBy && (
                   <>
-                    <FieldItem label="Modified By" isRow={true} value={data.ModifiedBy}  withBorder={false}/>
+                    <FieldItem label="Modified By" isRow={true} value={data.ModifiedBy} withBorder={false} />
                     <FieldItem label="Modified Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
                   </>
                 )}

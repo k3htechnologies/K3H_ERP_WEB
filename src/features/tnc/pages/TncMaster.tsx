@@ -22,8 +22,11 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
+import { Tabs } from '@/ui/components/Tab/Tab';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
 
 export const TncMaster: React.FC = () => {
+
   //#region STATE
   const [tncList, setTncList] = useState<TncMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,6 +53,15 @@ export const TncMaster: React.FC = () => {
 
   const { canExport } = useMenuPermissions();
   const hasFetchedInitialTnc = useRef(false);
+
+  //TAB ACTIVITY
+  const tncTabList = [
+    { id: "Material Requisition", label: "Material Requisition" },
+    { id: "Booking", label: "Booking" },
+  ];
+
+  const [activeTab, setActiveTab] = useState<string>(tncTabList[0].id);
+
   //#endregion
 
   //#region INIT
@@ -85,6 +97,11 @@ export const TncMaster: React.FC = () => {
           }
         }
 
+        const moduleName =
+          filterParams.ModuleName?.toString().trim() ||
+          activeTab?.trim() ||
+          undefined;
+
         const params: FilterWithPaginationTncMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
@@ -92,7 +109,7 @@ export const TncMaster: React.FC = () => {
           TermsAndConditionsMasterId: filterParams.TermsAndConditionsMasterId
             ? Number(filterParams.TermsAndConditionsMasterId)
             : undefined,
-          ModuleName: filterParams.ModuleName?.trim() || undefined,
+          ModuleName: moduleName,
           Title: filterParams.Title?.trim() || undefined,
           SortBy: sortByParam
         };
@@ -124,12 +141,19 @@ export const TncMaster: React.FC = () => {
   const searchTnc = async (searchValue: string) => {
     setSearchTerm(searchValue);
 
+    const baseFilters: FilterInfo = {
+      ...filters,
+      ModuleName: filters.ModuleName || activeTab,
+    };
+
     if (searchValue.trim() === '') {
-      fetchTncList();
+      setFilters(baseFilters);
+      await loadTnc(1, baseFilters);
       return;
     }
 
     const filterParams: FilterInfo = {
+      ...baseFilters,
       Title: searchValue.trim()
     };
 
@@ -159,7 +183,7 @@ export const TncMaster: React.FC = () => {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
-          ModuleName: filters.ModuleName?.trim() || undefined,
+          ModuleName: activeTab?.trim() || undefined,
           Title: filters.Title?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
@@ -234,16 +258,6 @@ export const TncMaster: React.FC = () => {
               onClick={() => handleViewTncDetails(row)}
             />
           </div>
-        )
-      },
-      {
-        key: 'ModuleName',
-        label: 'Module',
-        width: '20',
-        sortable: true,
-        align: 'left',
-        render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="220px" tooltipThreshold={22} />
         )
       },
       {
@@ -325,7 +339,7 @@ export const TncMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Settings - Company setup (Terms & Conditions Details)"
+        title="View Terms & Conditions Details"
         onSubmit={e => {
           e.preventDefault();
           onClose();
@@ -335,55 +349,26 @@ export const TncMaster: React.FC = () => {
       >
         <div className="space-y-6">
           <div className="space-y-4">
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Module</span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.ModuleName || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Title</span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.Title || 'N/A'}
-              </span>
-            </div>
-            <div className="py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700 block mb-1">Description</span>
-              <p className="text-sm text-blue-600 font-medium whitespace-pre-line max-h-64 overflow-y-auto">
-                {data.Description || 'N/A'}
-              </p>
-            </div>
+            <FieldItem label="Module Name" value={data.ModuleName} isRow withBorder={false} />
+            <FieldItem label="Title" value={data.Title} isRow withBorder={false} />
+            <FieldItem label="Description" value={data.Description} isRow withBorder={false} />
+
           </div>
 
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created By</span>
-                  <span className="text-sm text-blue-600 font-medium">{data.CreatedBy || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created Date</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
-                  </span>
-                </div>
+                <FieldItem label="Created By" isRow={true} value={data.CreatedBy} withBorder={false} />
+                <FieldItem label="Created Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={false} />
+
               </div>
               <div className="space-y-2">
                 {data.ModifiedBy && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified By</span>
-                    <span className="text-sm text-blue-600 font-medium">{data.ModifiedBy}</span>
-                  </div>
-                )}
-                {data.ModifiedDate && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified Date</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
-                    </span>
-                  </div>
+                  <>
+                    <FieldItem label="Modified By" isRow={true} value={data.ModifiedBy} withBorder={false} />
+                    <FieldItem label="Modified Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
+                  </>
                 )}
               </div>
             </div>
@@ -450,6 +435,22 @@ export const TncMaster: React.FC = () => {
           onExportPdf={handleExportTncPdf}
           exportLoading={isLoading}
         />
+
+        <Tabs
+          tabs={tncTabList}
+          defaultActive={activeTab}
+          onTabChange={(t) => {
+            setActiveTab(t.id);
+
+            const newFilters: FilterInfo = {
+              ...filters,
+              ModuleName: t.id,
+            };
+
+            loadTnc(1, newFilters);
+          }}
+        />
+
         <DataTable
           data={tncListForTable}
           columns={visibleTncColumns}

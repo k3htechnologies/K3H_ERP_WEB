@@ -192,7 +192,7 @@ const BankListMaster: React.FC = () => {
         fixed: 'left',
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="400px" tooltipThreshold={40} />
+          value || 'N/A'
         )
       }
     ],

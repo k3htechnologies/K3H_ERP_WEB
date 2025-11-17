@@ -22,6 +22,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -509,251 +510,118 @@ export const EmployeeMaster: React.FC = () => {
       >
         <div className="space-y-6">
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Basic Details</h4>
+            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
+              Basic Details
+            </h4>
 
             <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">First Name</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.FirstName || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Middle Name</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.MiddleName || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Last Name</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.LastName || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Gender</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.Gender || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Marital Status</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.MaritalStatus || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Blood Group</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.BloodGroup || '-'}
-                </span>
-              </div>
+              <FieldItem label="First Name" value={data.FirstName} isRow />
+              <FieldItem label="Middle Name" value={data.MiddleName} isRow />
+              <FieldItem label="Last Name" value={data.LastName} isRow />
+              <FieldItem label="Gender" value={data.Gender} isRow />
+              <FieldItem label="Marital Status" value={data.MaritalStatus} isRow />
+              <FieldItem label="Blood Group" value={data.BloodGroup} isRow />
             </div>
 
             <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">DOB</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.DateOfBirth ? formatDate_dd_MonthName_yy(data.DateOfBirth) : '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Office Email ID</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.OfficeEmailId || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Email ID</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.EmailId || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Personal Mobile Number</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.PersonalMobileNumber || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Office Mobile Number</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.OfficeMobileNumber || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Employment Type</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.EmployeeType || '-'}
-                </span>
-              </div>
+              <FieldItem
+                label="DOB"
+                value={data.DateOfBirth ? formatDate_dd_MonthName_yy(data.DateOfBirth) : ''}
+                isRow
+              />
+              <FieldItem label="Office Email ID" value={data.OfficeEmailId} isRow />
+              <FieldItem label="Email ID" value={data.EmailId} isRow />
+              <FieldItem label="Personal Mobile Number" value={data.PersonalMobileNumber} isRow />
+              <FieldItem label="Office Mobile Number" value={data.OfficeMobileNumber} isRow />
+              <FieldItem label="Employment Type" value={data.EmployeeType} isRow />
             </div>
           </div>
 
           {/* Employee Info Sheet Section */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Employee Info Sheet</h4>
+            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
+              Employee Info Sheet
+            </h4>
 
             <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Company Name</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.CompanyName || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Branch</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.Branch || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Department</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.Department || '-'}
-                </span>
-              </div>
+              <FieldItem label="Company Name" value={data.CompanyName} isRow />
+              <FieldItem label="Branch" value={data.Branch} isRow />
+              <FieldItem label="Department" value={data.Department} isRow />
             </div>
 
             <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Designation</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.Designation || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Joining Date</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.JoiningDate ? formatDate_dd_MonthName_yy(data.JoiningDate) : '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Reporting Person</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.ReportPersonName || '-'}
-                </span>
-              </div>
+              <FieldItem label="Designation" value={data.Designation} isRow />
+              <FieldItem
+                label="Joining Date"
+                value={data.JoiningDate ? formatDate_dd_MonthName_yy(data.JoiningDate) : ''}
+                isRow
+              />
+              <FieldItem label="Reporting Person" value={data.ReportPersonName} isRow />
             </div>
           </div>
 
           {/* Address Section */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Address</h4>
+            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
+              Address
+            </h4>
 
             <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">Communication Address</span>
-              </div>
-              <div className="flex justify-between  items-center py-1 border-b border-gray-200">
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.CommunicationAddress || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">Permanent Address</span>
-              </div>
-              <div className="flex justify-between  items-center py-1 border-b border-gray-200">
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.PermanentAddress || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Country</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.CountryName || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">State</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.StateName || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">District</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.DistrictName || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">City</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.CityName || '-'}
-                </span>
-              </div>
+              {/* Communication Address as label + multi-line value */}
+              <FieldItem
+                label="Communication Address"
+                value={data.CommunicationAddress}
+                isRow={false}
+              />
+
+              {/* Permanent Address */}
+              <FieldItem
+                label="Permanent Address"
+                value={data.PermanentAddress}
+                isRow={false}
+              />
+
+              <FieldItem label="Country" value={data.CountryName} isRow />
+              <FieldItem label="State" value={data.StateName} isRow />
+              <FieldItem label="District" value={data.DistrictName} isRow />
+              <FieldItem label="City" value={data.CityName} isRow />
             </div>
           </div>
 
           {/* Bank Details Section */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Bank Details</h4>
+            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
+              Bank Details
+            </h4>
 
             <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Bank Name</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.BankName || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Account Number</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.AccountNo || '-'}
-                </span>
-              </div>
+              <FieldItem label="Bank Name" value={data.BankName} isRow />
+              <FieldItem label="Account Number" value={data.AccountNo} isRow />
             </div>
 
             <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Bank Branch Name</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.BankBranchName || '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">IFSC Code</span>
-                <span className="text-sm text-blue-600 font-medium">
-                  {data.IFSCCode || '-'}
-                </span>
-              </div>
+              <FieldItem label="Bank Branch Name" value={data.BankBranchName} isRow />
+              <FieldItem label="IFSC Code" value={data.IFSCCode} isRow />
             </div>
           </div>
 
-          {/* Action Details Header - At Bottom */}
+
+
+          {/* Action Details Header */}
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created By</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {data.CreatedBy || '-'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created Date</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate|| '-')}
-                  </span>
-                </div>
+                <FieldItem label="Created By" isRow={true} value={data.CreatedBy} withBorder={false} />
+                <FieldItem label="Created Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={false} />
+
               </div>
               <div className="space-y-2">
                 {data.ModifiedBy && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified By</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {data.ModifiedBy}
-                    </span>
-                  </div>
-                )}
-                {data.ModifiedDate && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified Date</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate)}
-                    </span>
-                  </div>
+                  <>
+                    <FieldItem label="Modified By" isRow={true} value={data.ModifiedBy} withBorder={false} />
+                    <FieldItem label="Modified Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
+                  </>
                 )}
               </div>
             </div>

@@ -26,6 +26,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
 
 
 export const DepartmentMaster: React.FC = () => {
@@ -511,47 +512,9 @@ export const DepartmentMaster: React.FC = () => {
         <div className="space-y-6">
           {/* Department Information */}
           <div className="space-y-4">
-
-            {/* Department Code */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Department Code
-              </span>
-              <span className="text-sm text-blue-600 font-medium">
-                <TooltipText
-                  text={data.DepartmentCode || 'N/A'}
-                  maxWidth="170px"
-                  tooltipThreshold={15}
-                  tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
-                />
-              </span>
-            </div>
-
-
-            {/* Department Name */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Department Name
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.DepartmentName || 'N/A'}
-              </span>
-            </div>
-
-
-            {/* Number of Employees */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Number of Employees</span>
-              <span className="text-sm text-blue-600 font-medium">
-                <TooltipText
-                  text={data.NumberOfEmployee}
-                  maxWidth="170px"
-                  tooltipThreshold={15}
-                  tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 overflow-hidden text-ellipsis whitespace-nowrap'
-                />
-
-              </span>
-            </div>
+            <FieldItem label="Department Code" value={data.DepartmentCode} className='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap' isRow />
+            <FieldItem label="Department Name" value={data.DepartmentName}  isRow />
+            <FieldItem label="Number of Employees" value={data.NumberOfEmployee} className='inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 overflow-hidden text-ellipsis whitespace-nowrap' isRow />
 
           </div>
           {/* Action Details Header */}
@@ -559,40 +522,20 @@ export const DepartmentMaster: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created By</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {data.CreatedBy || 'N/A'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created Date</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
-                  </span>
-                </div>
+                <FieldItem label="Created By" isRow={true} value={data.CreatedBy} />
+                <FieldItem label="Created Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} />
+
               </div>
               <div className="space-y-2">
                 {data.ModifiedBy && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified By</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {data.ModifiedBy}
-                    </span>
-                  </div>
-                )}
-                {data.ModifiedDate && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified Date</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
-                    </span>
-                  </div>
+                  <>
+                    <FieldItem label="Modified By" isRow={true} value={data.ModifiedBy} />
+                    <FieldItem label="Modified Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} />
+                  </>
                 )}
               </div>
             </div>
           </div>
-
 
         </div>
       </Modal>

@@ -22,6 +22,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
 
 
 export const CompanyMaster: React.FC = () => {
@@ -202,7 +203,7 @@ export const CompanyMaster: React.FC = () => {
         render: (value, row) => (
           <div className="flex items-center justify-start">
             <TooltipText
-              text={value || 'N/A'}
+              text={value || '-'}
               maxWidth="250px"
               tooltipThreshold={25}
               onClick={() => handleViewCompanyDetails(row)}
@@ -218,7 +219,7 @@ export const CompanyMaster: React.FC = () => {
         align: 'left',
         render: (value) => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="180px"
             tooltipThreshold={18}
           />
@@ -232,7 +233,7 @@ export const CompanyMaster: React.FC = () => {
         align: 'left',
         render: (value) => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="180px"
             tooltipThreshold={18}
           />
@@ -244,7 +245,15 @@ export const CompanyMaster: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'center',
-        render: (value) => value || 'N/A'
+        render: (value) => value || '-'
+      },
+      {
+        key: 'LandLineNumber',
+        label: 'Land Line Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
       },
       {
         key: 'EmailId',
@@ -254,19 +263,100 @@ export const CompanyMaster: React.FC = () => {
         align: 'left',
         render: (value) => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="200px"
             tooltipThreshold={20}
           />
         )
       },
       {
+        key: 'MobileNumber',
+        label: 'Mobile Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'GSTNumber',
+        label: 'GST Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'PANNumber',
+        label: 'PAN Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'RERANumber',
+        label: 'RERA Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'CINNumber',
+        label: 'CIN Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'StateName',
+        label: 'State',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'DistrictName',
+        label: 'District',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'CityName',
+        label: 'City',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'CompanyLetterheadHeaderURL',
+        label: 'Company Letter Head Header',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'CompanyLetterheadFooterURL',
+        label: 'Company Letter Head Footer',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+
+      {
         key: 'CreatedBy',
         label: 'Last Modified By',
         width: '15',
         sortable: true,
         align: 'center',
-        render: (value) => value || 'N/A'
+        render: (value) => value || '-'
       },
       {
         key: 'CreatedDate',
@@ -330,54 +420,17 @@ export const CompanyMaster: React.FC = () => {
       >
         <div className="space-y-6">
           <div className="space-y-4">
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Company Name</span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.CompanyName || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Company Type</span>
-              <span className="text-sm text-blue-600 font-medium">{data.CompanyType || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Contact Person</span>
-              <span className="text-sm text-blue-600 font-medium">{data.ContactPerson || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Mobile Number</span>
-              <span className="text-sm text-blue-600 font-medium">{data.MobileNumber || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Landline Number</span>
-              <span className="text-sm text-blue-600 font-medium">{data.LandLineNumber || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Email</span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.EmailId || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">GST Number</span>
-              <span className="text-sm text-blue-600 font-medium">{data.GSTNumber || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">PAN Number</span>
-              <span className="text-sm text-blue-600 font-medium">{data.PANNumber || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">CIN Number</span>
-              <span className="text-sm text-blue-600 font-medium">{data.CINNumber || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">City</span>
-              <span className="text-sm text-blue-600 font-medium">{data.CityName || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">State</span>
-              <span className="text-sm text-blue-600 font-medium">{data.StateName || 'N/A'}</span>
-            </div>
+            <FieldItem label="Company Name"  value={data.CompanyName} isRow/>
+            <FieldItem label="Company Type" value={data.CompanyType} isRow />
+            <FieldItem label="Contact Person" value={data.ContactPerson} isRow />
+            <FieldItem label="Mobile Number" value={data.MobileNumber} isRow />
+            <FieldItem label="Landline Number" value={data.LandLineNumber} isRow />
+            <FieldItem label="Email" value={data.EmailId} isRow />
+            <FieldItem label="GST Number" value={data.GSTNumber} isRow />
+            <FieldItem label="PAN Number" value={data.PANNumber} isRow />
+            <FieldItem label="CIN Number" value={data.CINNumber} isRow />
+            <FieldItem label="City" value={data.CityName} isRow />
+            <FieldItem label="State" value={data.StateName} isRow />
             {data.CompanyPartnerData && data.CompanyPartnerData.length > 0 && (
               <div className="py-2 border-b border-gray-200">
                 <span className="text-sm font-medium text-gray-700 block mb-2">Partners ({data.CompanyPartnerData.length})</span>
@@ -395,31 +448,16 @@ export const CompanyMaster: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created By</span>
-                  <span className="text-sm text-blue-600 font-medium">{data.CreatedBy || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created Date</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
-                  </span>
-                </div>
+                <FieldItem label="Created By" isRow={true} value={data.CreatedBy} />
+                <FieldItem label="Created Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} />
+
               </div>
               <div className="space-y-2">
                 {data.ModifiedBy && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified By</span>
-                    <span className="text-sm text-blue-600 font-medium">{data.ModifiedBy}</span>
-                  </div>
-                )}
-                {data.ModifiedDate && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified Date</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
-                    </span>
-                  </div>
+                  <>
+                    <FieldItem label="Modified By" isRow={true} value={data.ModifiedBy} />
+                    <FieldItem label="Modified Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} />
+                  </>
                 )}
               </div>
             </div>

@@ -27,6 +27,7 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import { useNavigate } from 'react-router-dom';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
 
 export const DesignationMaster: React.FC = () => {
 
@@ -498,7 +499,7 @@ export const DesignationMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Settings - Company setup (Designation Details)"
+        title="View Designation Master Details"
         onSubmit={(e) => {
           e.preventDefault()
           onClose()
@@ -510,37 +511,9 @@ export const DesignationMaster: React.FC = () => {
           {/* Designation Information */}
           <div className="space-y-4">
 
-            {/* Designation Name */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Designation Name
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.DesignationName || 'N/A'}
-              </span>
-            </div>
-
-
-            {/* Notice Period */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Notice Period
-              </span>
-              <span className="text-sm text-blue-600 font-medium">
-                {data.NoticePeriod || 0}
-              </span>
-            </div>
-
-
-
-
-            {/* Number of Employees */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Number of Employees</span>
-              <span className="text-sm text-blue-600 font-medium">
-                {data.NumberOfEmployee}
-              </span>
-            </div>
+<FieldItem label="Designation Code" value={data.DesignationName}  isRow withBorder={false} />
+            <FieldItem label="Notice Period" value={data.NoticePeriod}  isRow  withBorder={false}/>
+            <FieldItem label="Number of Employees" value={data.NumberOfEmployee} isRow withBorder={false} />
 
           </div>
           {/* Action Details Header */}
@@ -548,40 +521,20 @@ export const DesignationMaster: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created By</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {data.CreatedBy || 'N/A'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created Date</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
-                  </span>
-                </div>
+                <FieldItem label="Created By" isRow={true} value={data.CreatedBy} withBorder={false} />
+                <FieldItem label="Created Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={false} />
+
               </div>
               <div className="space-y-2">
                 {data.ModifiedBy && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified By</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {data.ModifiedBy}
-                    </span>
-                  </div>
-                )}
-                {data.ModifiedDate && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified Date</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
-                    </span>
-                  </div>
+                  <>
+                    <FieldItem label="Modified By" isRow={true} value={data.ModifiedBy}  withBorder={false}/>
+                    <FieldItem label="Modified Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
+                  </>
                 )}
               </div>
             </div>
           </div>
-
 
         </div>
       </Modal>

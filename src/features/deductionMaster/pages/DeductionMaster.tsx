@@ -648,3 +648,4 @@ export const DeductionMaster: React.FC = () => {
 
 export default DeductionMaster
 
+

@@ -17,6 +17,29 @@ export const LocalStorageHelper = {
         }
     },
     //#endregion
+    //#region STORE BANK LIST MASTER COLUMNS
+    storeBankListMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.BANK_LIST_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Bank List Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET BANK LIST MASTER COLUMNS
+    getBankListMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BANK_LIST_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.BANK_LIST_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Bank List Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
     //#region GET EMPLOYEE DATA 
     getStoredEmployeeData: (): EmployeeData | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.EMPLOYEE)
@@ -112,7 +135,7 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
-//#region STORE DESIGNATION MASTER COLUMNS
+    //#region STORE DESIGNATION MASTER COLUMNS
     storeDesignationMasterTableColumns: (columns: string): void => {
         try {
             localStorage.setItem(LOCAL_STORAGE_KEYS.DESIGNATION_MASTER_SELECTED_COLUMNS, columns);
@@ -130,6 +153,30 @@ export const LocalStorageHelper = {
                 return localStorage.getItem(LOCAL_STORAGE_KEYS.DESIGNATION_MASTER_SELECTED_COLUMNS);
             } catch (error) {
                 console.error('Error reading Designation Master Columns Details:', error);
+                return null;
+            }
+        }
+        return null;
+    },
+    //#endregion
+    //#region STORE EMPLOYEE MASTER COLUMNS
+    storeEmployeeMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.EMPLOYEE_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Employee Master Columns Details:', error);
+        }
+    },
+    //#endregion
+
+    //#region GET EMPLOYEE MASTER COLUMNS
+    getEmployeeMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.EMPLOYEE_MASTER_SELECTED_COLUMNS);
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.EMPLOYEE_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Employee Master Columns Details:', error);
                 return null;
             }
         }
@@ -504,10 +551,33 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE TNC MASTER COLUMNS
+    storeTncMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.TNC_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Tnc Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET TNC MASTER COLUMNS
+    getTncMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TNC_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.TNC_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Tnc Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
     //#region STORE MENU DATA
     storeMenuData: (menuData: ModuleData[] | ModuleData): void => {
         try {
-          
+
             localStorage.setItem(LOCAL_STORAGE_KEYS.MENU_MODULE, JSON.stringify(menuData));
 
         } catch (error) {
@@ -547,6 +617,7 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.EARNING_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.VENDOR_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.BANK_LIST_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.HOLIDAY_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS);
@@ -555,6 +626,8 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.SHIFT_MAPPING_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.TNC_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
         } catch (error) {
             console.error('ERROR : CLEARING LOCAL STORAGE:', error)

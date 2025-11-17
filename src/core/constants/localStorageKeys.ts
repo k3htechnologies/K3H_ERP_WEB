@@ -4,6 +4,7 @@ export const LOCAL_STORAGE_KEYS = {
     LAST_VISITED_PAGE: 'lastVisitedPage',
     DAPARTMENT_MASTER_SELECTED_COLUMNS: 'departmentMaster.selectedColumns',
     DESIGNATION_MASTER_SELECTED_COLUMNS: 'designationMaster.selectedColumns',
+    EMPLOYEE_MASTER_SELECTED_COLUMNS: 'employeeMaster.selectedColumns',
     BRANCH_MASTER_SELECTED_COLUMNS: 'branchMaster.selectedColumns',
     BRANCH_ASSOCIATIONS_MASTER_SELECTED_COLUMNS: 'branchAssociationsMaster.selectedColumns',
     ASSET_MASTER_SELECTED_COLUMNS: 'assetMaster.selectedColumns',
@@ -12,6 +13,7 @@ export const LOCAL_STORAGE_KEYS = {
     EARNING_MASTER_SELECTED_COLUMNS: 'earningMaster.selectedColumns',
     VENDOR_SELECTED_COLUMNS: 'vendor.selectedColumns',
     COMPANY_MASTER_SELECTED_COLUMNS: 'companyMaster.selectedColumns',
+    BANK_LIST_MASTER_SELECTED_COLUMNS: 'bankListMaster.selectedColumns',
     HOLIDAY_MASTER_SELECTED_COLUMNS: 'holidayMaster.selectedColumns',
     HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS: 'holidayMappingMaster.selectedColumns',
     LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS: 'leaveEncashmentMaster.selectedColumns',
@@ -20,5 +22,6 @@ export const LOCAL_STORAGE_KEYS = {
     SHIFT_MAPPING_MASTER_SELECTED_COLUMNS: 'shiftMappingMaster.selectedColumns',
     WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS: 'weekOffMappingMaster.selectedColumns',
     WEEK_OFF_MASTER_SELECTED_COLUMNS: 'weekOffMaster.selectedColumns',
+    TNC_MASTER_SELECTED_COLUMNS: 'tncMaster.selectedColumns',
     MENU_MODULE: 'menuModule',
 } as const

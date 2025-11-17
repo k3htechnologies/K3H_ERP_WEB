@@ -10,7 +10,7 @@ import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import EmployeeModuleAccess from '@/features/employeeModuleAccess/pages/EmployeeModuleAccess';
 import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMaster';
 import { DesignationMaster } from '@/features/designationMaster/pages/DesignationMaster';
-import EmployeeMaster from '@/features/employeeMaster/pages/EmployeeMaster';
+import { EmployeeMaster } from '@/features/employeeMaster/pages/EmployeeMaster';
 import BranchMaster from '@/features/branchMaster/pages/BranchMaster';
 import BranchAssociationsMaster from '@/features/branchAssociationsMaster/pages/BranchAssociationsMaster';
 import AssetMaster from '@/features/assetMaster/pages/AssetMaste';
@@ -27,6 +27,8 @@ import WeekOffMasterMaster from '@/features/weekOffMaster/pages/WeekOffMasterMas
 import WeekOffMappingMaster from '@/features/weekOffMappingMaster/pages/WeekOffMappingMaster';
 import Vendor from '@/features/vendor/pages/Vendor';
 import CompanyMaster from '@/features/companyMaster/pages/CompanyMaster';
+import TncMaster from '@/features/tnc/pages/TncMaster';
+import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -89,6 +91,10 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="departmentMaster" element={<DepartmentMaster />} />
           <Route path="designationMaster" element={<DesignationMaster />} />
+          <Route path="employeeMaster" element={<EmployeeMaster />} />
+          <Route path="companyMaster" element={<CompanyMaster />} />
+          <Route path="tnc" element={<TncMaster />} />
+          <Route path="bankListMaster" element={<BankListMaster />} />
           <Route path="branchMaster" element={<BranchMaster />} />
           <Route path="branchAssociationsMaster" element={<BranchAssociationsMaster />} />
           <Route path="assetMaster" element={<AssetMaster />} />
@@ -104,9 +110,9 @@ function App() {
           <Route path="weekOffMaster" element={<WeekOffMasterMaster />} />
           <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
           <Route path="vendor" element={<Vendor />} />
-          <Route path="companyMaster" element={<CompanyMaster />} />
+
           <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
-          <Route path="employeeMaster" element={<EmployeeMaster />} />
+
 
         </Route>
 

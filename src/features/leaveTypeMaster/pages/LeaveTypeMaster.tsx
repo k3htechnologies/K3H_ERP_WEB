@@ -512,3 +512,4 @@ export const LeaveTypeMaster: React.FC = () => {
 
 export default LeaveTypeMaster
 
+

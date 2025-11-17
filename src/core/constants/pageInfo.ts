@@ -92,6 +92,16 @@ export const getPageInfo = (path: string) => {
                 title: 'Company Master',
                 description: 'Manage and organize branch associations with complete CRUD operations',
             }
+        case '/tnc':
+            return {
+                title: 'Terms & Conditions Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
+        case '/bankListMaster':
+            return {
+                title: 'Bank List Master',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
         case '/vendor':
             return {
                 title: 'Vendor Management',

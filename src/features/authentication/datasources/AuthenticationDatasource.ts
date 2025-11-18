@@ -1,6 +1,5 @@
 import type { ApiResponse } from '@/core/api/ApiResponse'
 import baseClient from '@/core/config/baseClient'
-import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { AuthenticationApi } from '@/features/authentication/api/AuthenticationApi'
 import type { AuthenticationResponse } from '@/features/authentication/models/AuthenticationModel'
 

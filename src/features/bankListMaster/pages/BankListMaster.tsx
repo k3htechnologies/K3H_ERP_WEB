@@ -11,7 +11,6 @@ import type {
 } from '@/features/bankListMaster/models/BankListMasterModel';
 
 import { BankListMasterService } from '@/features/bankListMaster/services/BankListMasterService';
-import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';

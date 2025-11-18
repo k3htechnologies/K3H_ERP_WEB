@@ -28,7 +28,7 @@ export const CustomizeColumnsModal: React.FC<CustomizeColumnsModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       // ensure required keys are always included
-      setLocalKeys(prev =>
+      setLocalKeys(
         Array.from(
           new Set([
             ...selectedKeys,

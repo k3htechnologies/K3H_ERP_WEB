@@ -57,7 +57,7 @@ const EmployeeModuleAccess: React.FC = () => {
 
   const { designationMasterId } = useParams(); // DepartmentMasterId from URL
   const location = useLocation();
-  const { designationName, uniqueKey } = location.state || {};
+  const { designationName } = location.state || {};
 
   //#region TOAST
   const { toasts, addToast, removeToast } = useToast()

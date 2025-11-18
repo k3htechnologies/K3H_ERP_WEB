@@ -13,6 +13,7 @@ import { technicalService } from '@/features/technical/services/TechnicalService
 import * as E from 'fp-ts/Either';
 import useToast from '@/core/hooks/useToast'
 import { ToastContainer } from '@/ui/components/Toast';
+import { Loader } from '@/core/utils/loader'
 
 interface HeaderProps {
     isSidebarOpen: boolean
@@ -164,14 +165,14 @@ export const Header: React.FC<HeaderProps> = ({
     return (
         <>
             <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-
+            <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
             <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex-shrink-0 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40">
                 {/* Left side - Menu toggle and title */}
                 <div className="flex items-center space-x-2 lg:space-x-4 flex-1 min-w-0">
                     <button
                         onClick={onToggleSidebar}
                         className="p-2 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 touch-manipulation flex-shrink-0"
-                        aria-label="Toggle sidebar"
+                        aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
                     >
                         <Menu className="h-5 w-5 text-gray-600" />
                     </button>

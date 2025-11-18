@@ -631,7 +631,7 @@ export const TncMaster: React.FC = () => {
               </label>
               <RichTextEditor
                 value={formData.Description}
-                // onChange={(e) => handleFieldChange('Description', e.target.value)}
+                onChange={(html) => handleFieldChange('Description', html)}
                 placeholder="Enter description"
               />
               {descriptionError && (

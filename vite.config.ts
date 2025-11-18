@@ -14,4 +14,17 @@ export default defineConfig({
     open: true,
     host: true,
   },
+
+  // ✅ ADD THIS PART
+  build: {
+    sourcemap: false,     // ❌ Hides TSX, JSX, source files in production
+    minify: 'esbuild',    // Faster & smaller bundle
+    outDir: 'dist',       // Output folder
+    assetsDir: 'assets',  // Assets folder
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,  // Keep bundle optimized
+      },
+    },
+  },
 })

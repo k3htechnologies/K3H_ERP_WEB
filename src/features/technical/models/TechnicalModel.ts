@@ -24,13 +24,42 @@ export interface NotificationData {
     Path: string | ''
 }
 
-//#region END  NOTIFICATION
+//#endregion END  NOTIFICATION
 
 //#region REFRESH TOKEN
 export interface FilterRefreshTokenRequest {
     Uniquekey: string | ''
 }
 
-//#region END  NOTIFICATION
+//#endregion END  NOTIFICATION
+
+
+//#region COUNTRY_STATE_CITY_DISTRICT_VILLAGE
+
+export interface CountryStateCityDistrictVillageData {
+    CountryMasterId: number
+    CountryName: string
+    StateMasterId: number
+    StateName: string
+    CountryMasterIdRef: number
+    DistrictMasterId: number
+    DistrictName: string
+    StateMasterIdRef: number
+    CityMasterId: number
+    CityName: string
+    DistrictMasterIdRef: number
+    VillageMasterId: number
+    VillageName: string
+    CityMasterIdRef: number
+}
+
+export interface CountryStateCityDistrictVillageDataWrapper {
+  CountryStateCityDistrictVillageData: CountryStateCityDistrictVillageData[];
+}
+
+
+//#endregion END  NOTIFICATION
+
 export type TechnicalListResponse = ApiResponse<TechnicalData[]>;
 export type NotificationListResponse = ApiResponse<NotificationData[]>;
+export type CountryStateCityDistrictVillageListResponse = ApiResponse<CountryStateCityDistrictVillageDataWrapper[]>;

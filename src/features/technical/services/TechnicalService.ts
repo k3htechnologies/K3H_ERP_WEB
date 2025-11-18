@@ -1,7 +1,7 @@
 import type { Failure } from '@/core/api/FailureResponse';
 import * as E from 'fp-ts/Either';
 import { TechnicalDatasourceImpl } from '@/features/technical/datasources/TechnicalDatasource';
-import type { FilterRefreshTokenRequest, FilterWithPaginationNotificationRequest, NotificationListResponse, TechnicalListResponse } from '@/features/technical/models/TechnicalModel';
+import type { CountryStateCityDistrictVillageListResponse, FilterRefreshTokenRequest, FilterWithPaginationNotificationRequest, NotificationListResponse, TechnicalListResponse } from '@/features/technical/models/TechnicalModel';
 import type { ApiResponse } from '@/core/api/ApiResponse';
 
 const technicalDatasource = new TechnicalDatasourceImpl();
@@ -36,6 +36,18 @@ export const technicalService = {
         try {
 
             return E.right(await technicalDatasource.refreshToken(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+     apiCallCountryStateDistrictCityVillage: async (): Promise<E.Either<Failure, CountryStateCityDistrictVillageListResponse>> => {
+        try {
+
+            return E.right(await technicalDatasource.getCountryStateDistrictCityVillage());
 
         } catch (error: any) {
 

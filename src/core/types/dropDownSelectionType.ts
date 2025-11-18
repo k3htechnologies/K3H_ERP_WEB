@@ -1,9 +1,8 @@
-import type { DropdownOption } from "@/ui/components/DropDown/SinglePageSelection";
 import type { COLOR_MAP } from "../constants/colors";
 import type { DropdownOptions } from "@/ui/components/DropDown/Multiselectpagination";
 
 export interface SingleSelectWithPaginationProps {
-  options: { label: string; value: string | number }[]
+  options?: { label: string; value: string | number }[]
   value?: string | number
   size?: 'sm' | 'md' | 'lg'
   variant?: 'default' | 'outlined' | 'filled'
@@ -13,8 +12,9 @@ export interface SingleSelectWithPaginationProps {
     pageNumber: number,
     params?: { value?: string }
   ) => Promise<{ totalNumberOfRecord: number; itemList: { label: string; value: string | number }[] }>
-  onSelected: (item: { label: string; value: string | number }) => void
+  onSelected: (item: { label: string; value: string | number | null}) => void
   title?: string
+  label?:string
   validator?: (value?: string | number | null) => string | undefined
   initialValue?: { label: string; value: string | number } | null
   dataList?: { label: string; value: string | number }[]
@@ -39,9 +39,22 @@ export interface MultiSelectDropdownProps {
   noDataText?: string
   size?: 'sm' | 'md' | 'lg'
 }
+// export interface SinglePageSelectionProps {
+//   label?: string;
+//   options: { label: string; value: string | number }[];
+//   value?: string | number;
+//   onChange: (value: string | number) => void;
+//   disabled?: boolean;
+//   placeholder?: string;
+//   size?: "sm" | "md" | "lg";
+//   theme?: {
+//     spacing: Record<string, string>;
+//     fontSize: Record<string, string>;
+//   };
+// }
 export interface SinglePageSelectionProps {
   label?: string;
-  options: DropdownOption[];
+  options: { label: string; value: string | number }[];
   value?: string | number;
   onChange: (value: string | number) => void;
   disabled?: boolean;
@@ -52,6 +65,7 @@ export interface SinglePageSelectionProps {
     fontSize: Record<string, string>;
   };
 }
+
 export interface MultiSelectPaginationProps {
   label?: string;
   options: DropdownOptions[];

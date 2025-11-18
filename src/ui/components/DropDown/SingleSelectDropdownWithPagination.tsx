@@ -9,6 +9,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
       dataFetchCallBack,
       onSelected,
       title,
+      label,
       validator,
       initialValue,
       dataList = [],
@@ -34,9 +35,9 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
     const pageRef = useRef(1)
 
     const SIZE_MAP = {
-      sm: { fontSize: 12, padding: 6, dropdownHeight: 150, width: 180 },
-      md: { fontSize: 14, padding: 8, dropdownHeight: 200, width: 250 },
-      lg: { fontSize: 16, padding: 10, dropdownHeight: 250, width: 320 },
+      sm: { fontSize: 12, padding: 6, dropdownHeight: 150},
+      md: { fontSize: 14, padding: 8, dropdownHeight: 200},
+      lg: { fontSize: 16, padding: 8, dropdownHeight: 250},
     }
 
     const sizeStyles = SIZE_MAP[size as keyof typeof SIZE_MAP]
@@ -66,6 +67,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
     useEffect(() => {
       fetchData(true)
     }, [fetchData])
+
 
 
     const handleScroll = useCallback(() => {
@@ -125,16 +127,32 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
     }
 
    return (
+  
+    
   <div
     ref={ref}
     className={className}
     style={{
       position: 'relative',
-      width: sizeStyles.width,
-      marginLeft: '20px',
+      width:"100%",
+      maxWidth: "100%",
+      minWidth:"150px",
+      marginLeft: '0',
       ...style,
     }}
   >
+     {label && (
+      <div
+        style={{
+          marginBottom: '6px',
+          fontSize: sizeStyles.fontSize,
+          fontWeight: theme.fontWeight.medium,
+          color: theme.colors.black,
+        }}
+      >
+        {label}
+      </div>
+    )}
     <div
       style={{
         display: 'flex',
@@ -156,9 +174,8 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
       }}
       onClick={() => !disabled && setIsOpen(prev => !prev)}
     >
-      <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-        {selectedItem?.label || title}
-      </span>
+    <span style={{flex: 1,whiteSpace: "nowrap",overflow: "hidden",textOverflow: "ellipsis",fontWeight: "normal",color: '#888'}}>{selectedItem?.label || title}
+    </span>
       <svg
         width={sizeStyles.fontSize + 4}
         height={sizeStyles.fontSize + 4}

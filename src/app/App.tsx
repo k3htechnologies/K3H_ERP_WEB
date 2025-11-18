@@ -29,7 +29,8 @@ import Vendor from '@/features/vendor/pages/Vendor';
 import CompanyMaster from '@/features/companyMaster/pages/CompanyMaster';
 import TncMaster from '@/features/tnc/pages/TncMaster';
 import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
-import AddCompany from '@/features/companyMaster/pages/addCompany';
+import AddUpdateEmployeeMaster from '@/features/employeeMaster/pages/AddUpdateEmployeeMaster';
+import AddCompany from '@/features/companyMaster/pages/AddCompany';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -78,6 +79,8 @@ function App() {
         <Route path="profile" element={<Profile />} />
         <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
         <Route path="companyMaster/addCompany" element={<AddCompany />} />
+        <Route path="/employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
+
         {/* Protected Routes with Layout */}
         <Route
           path="/"
@@ -112,6 +115,7 @@ function App() {
           <Route path="vendor" element={<Vendor />} />
 
           <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
+
 
 
         </Route>

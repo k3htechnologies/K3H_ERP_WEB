@@ -79,41 +79,96 @@ export interface EmployeeMasterData {
 }
 
 export interface AddUpdateEmployeeMasterRequest {
-    EmployeeId?: number
-    UniqueKey?: string
-    FirstName?: string
-    MiddleName?: string
-    LastName?: string
-    DepartmentMasterId?: number
-    DesignationMasterId?: number
-    BranchMasterId?: number
-    Gender?: string
-    MaritalStatus?: string
-    DateOfBirth?: string
-    JoiningDate?: string
-    IsGeoFenceLocation?: boolean
-    EmailId?: string
-    OfficeEmailId?: string
-    ReportPersonId?: number
-    PersonalMobileNumber?: string
-    OfficeMobileNumber?: string
-    BankListMasterId?: number
-    BankBranchName?: string
-    IFSCCode?: string
-    AccountNo?: string
-    EmployeeType?: string
-    EmergencyMobileNumber?: string
-    EmergencyContactPersonRelationship?: string
-    CommunicationAddress?: string
-    PermanentAddress?: string
-    BloodGroup?: string
-    CompanyId?: number
-    CountryMasterId?: number
-    StateMasterId?: number
-    DistrictMasterId?: number
-    CityMasterId?: number
+  EmployeeId: number;
+  UniqueKey: string | null;
+  FirstName: string;
+  MiddleName: string;
+  LastName: string;
+  DepartmentMasterId: number | null;
+  DesignationMasterId: number | null;
+  BranchMasterId: number | null;
+  Gender: string;
+  MaritalStatus: string;
+  DateOfBirth: string | null;
+  JoiningDate: string | null;
+  IsGeoFenceLocation: boolean;
+  EmailId: string;
+  OfficeEmailId: string;
+  ReportPersonId: number | null;
+  PersonalMobileNumber: string;
+  OfficeMobileNumber: string;
+  BankListMasterId: number | null;
+  BankBranchName: string;
+  IFSCCode: string;
+  AccountNo: string;
+  EmployeeType: string;
+  EmergencyMobileNumber: string;
+  EmergencyContactPersonRelationship: string;
+  CommunicationAddress: string;
+  PermanentAddress: string;
+  BloodGroup: string;
+  CompanyId: number | null;
+  CountryMasterId: number | null;
+  StateMasterId: number | null;
+  DistrictMasterId: number | null;
+  CityMasterId: number | null;
 }
 
+export interface FilterWithPaginationLocationRequest {
+  countryId?: number;
+  StateName:string;
+  stateId?: number;
+  CityId?: number;
+  DistrictId?: number;
+  VillageId?: number;
+  SearchText?: string;
+  PageNumber?: number;
+  PageSize?: number;
+  IsCheckPermission:boolean;
+}
+export interface Country {
+  id: number;
+  name: string;
+}
 
+export interface State {
+  StateId: number;
+  StateName: string;
+  countryId: number;
+}
+
+export interface City {
+  id: number;
+  name: string;
+  stateId: number;
+}
+
+export interface District {
+  id: number;
+  name: string;
+  cityId: number;
+}
+
+export interface Village {
+  id: number;
+  name: string;
+  districtId: number;
+}
+export interface LocationListResponse {
+  CountryMasterId: number;
+  CountryName: string;
+  StateMasterId: number;
+  StateName: string;
+  DistrictMasterId: number;
+  DistrictName: string;
+  CityMasterId: number;
+  CityName: string;
+  VillageMasterId: number;
+  VillageName: string;
+}
+export interface LocationDataWrapper {
+  CountryStateCityDistrictVillageData: LocationListResponse[];
+}
+export type LocationResponse = ApiResponse<LocationDataWrapper>;
 export type EmployeeMasterListResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMasterSaveResponse = ApiResponse<EmployeeMasterData[]>;

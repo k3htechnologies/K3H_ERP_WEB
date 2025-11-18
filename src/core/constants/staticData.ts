@@ -29,7 +29,7 @@ export const MASTER_DATA = {
 
     bloodGroups: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
 
-    companyType: ['LLP','Proprietorship']
+    companyType: ['LLP','Private Limited Company','Proprietorship']
 } as const
 
 // ============================================================================
@@ -61,3 +61,4 @@ export const GENDER_OPTIONS = toOptions(MASTER_DATA.genders)
 export const MARITAL_STATUS_OPTIONS = toOptions(MASTER_DATA.maritalStatuses)
 export const BLOOD_GROUP_OPTIONS = toOptions(MASTER_DATA.bloodGroups)
 export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType)
+export const COUNTRY = toOptions(MASTER_DATA.companyType)

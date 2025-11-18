@@ -31,6 +31,7 @@ import TncMaster from '@/features/tnc/pages/TncMaster';
 import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
 import AddUpdateEmployeeMaster from '@/features/employeeMaster/pages/AddUpdateEmployeeMaster';
 import AddCompany from '@/features/companyMaster/pages/AddCompany';
+import { CountryStateCityDistrictVillage } from '@/core/hooks/useCountryStateCityDistrictVillage';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -71,58 +72,60 @@ function App() {
 
 
   return (
-    <Suspense fallback={<LoadingSpinner />}>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/sign-in" element={<SignIn />} />
-        <Route path="error" element={<ErrorFallbackPage />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
-        <Route path="companyMaster/addCompany" element={<AddCompany />} />
-        <Route path="/employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
+    <CountryStateCityDistrictVillage>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/sign-in" element={<SignIn />} />
+          <Route path="error" element={<ErrorFallbackPage />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
+          <Route path="companyMaster/addCompany" element={<AddCompany />} />
+          <Route path="/employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
 
-        {/* Protected Routes with Layout */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="departmentMaster" element={<DepartmentMaster />} />
-          <Route path="designationMaster" element={<DesignationMaster />} />
-          <Route path="employeeMaster" element={<EmployeeMaster />} />
-          <Route path="companyMaster" element={<CompanyMaster />} />
-          <Route path="tnc" element={<TncMaster />} />
-          <Route path="bankListMaster" element={<BankListMaster />} />
-          <Route path="branchMaster" element={<BranchMaster />} />
-          <Route path="branchAssociationsMaster" element={<BranchAssociationsMaster />} />
-          <Route path="assetMaster" element={<AssetMaster />} />
-          <Route path="assetMappingMaster" element={<AssetMappingMaster />} />
-          <Route path="deductionMaster" element={<DeductionMaster />} />
-          <Route path="earningMaster" element={<EarningMaster />} />
-          <Route path="holidayMaster" element={<HolidayMaster />} />
-          <Route path="holidayMappingMaster" element={<HolidayMappingMaster />} />
-          <Route path="leaveEncashmentMaster" element={<LeaveEncashmentMaster />} />
-          <Route path="leaveTypeMaster" element={<LeaveTypeMaster />} />
-          <Route path="shiftMaster" element={<ShiftMaster />} />
-          <Route path="shiftMappingMaster" element={<ShiftMappingMaster />} />
-          <Route path="weekOffMaster" element={<WeekOffMasterMaster />} />
-          <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
-          <Route path="vendor" element={<Vendor />} />
+          {/* Protected Routes with Layout */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="departmentMaster" element={<DepartmentMaster />} />
+            <Route path="designationMaster" element={<DesignationMaster />} />
+            <Route path="employeeMaster" element={<EmployeeMaster />} />
+            <Route path="companyMaster" element={<CompanyMaster />} />
+            <Route path="tnc" element={<TncMaster />} />
+            <Route path="bankListMaster" element={<BankListMaster />} />
+            <Route path="branchMaster" element={<BranchMaster />} />
+            <Route path="branchAssociationsMaster" element={<BranchAssociationsMaster />} />
+            <Route path="assetMaster" element={<AssetMaster />} />
+            <Route path="assetMappingMaster" element={<AssetMappingMaster />} />
+            <Route path="deductionMaster" element={<DeductionMaster />} />
+            <Route path="earningMaster" element={<EarningMaster />} />
+            <Route path="holidayMaster" element={<HolidayMaster />} />
+            <Route path="holidayMappingMaster" element={<HolidayMappingMaster />} />
+            <Route path="leaveEncashmentMaster" element={<LeaveEncashmentMaster />} />
+            <Route path="leaveTypeMaster" element={<LeaveTypeMaster />} />
+            <Route path="shiftMaster" element={<ShiftMaster />} />
+            <Route path="shiftMappingMaster" element={<ShiftMappingMaster />} />
+            <Route path="weekOffMaster" element={<WeekOffMasterMaster />} />
+            <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
+            <Route path="vendor" element={<Vendor />} />
 
-          <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
+            <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
 
 
 
         </Route>
 
-        <Route path="*" element={<Navigate to="/sign-in" replace />} />
-      </Routes>
-    </Suspense>
+          <Route path="*" element={<Navigate to="/sign-in" replace />} />
+        </Routes>
+      </Suspense>
+    </CountryStateCityDistrictVillage>
   )
 }
 

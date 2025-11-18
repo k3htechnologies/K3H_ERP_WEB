@@ -20,6 +20,8 @@ export interface SingleSelectWithPaginationProps {
   dataList?: { label: string; value: string | number }[]
   pageSize?: number
   disabled?: boolean
+  required?: boolean
+  error?: string
   className?: string
   style?: React.CSSProperties
 }
@@ -48,6 +50,8 @@ export interface SinglePageSelectionProps {
   disabled?: boolean;
   placeholder?: string;
   size?: "sm" | "md" | "lg";
+  required?: boolean;
+  error?: string;
   theme?: {
     spacing: Record<string, string>;
     fontSize: Record<string, string>;

@@ -96,7 +96,7 @@ export class BaseClient {
             })
 
             return this.processResponse(response)
-        } catch (error :any) {
+        } catch (error: any) {
             if (error?.name === 'AbortError') {
                 throw error;
             }
@@ -167,9 +167,8 @@ export class BaseClient {
 
             // Add files to FormData
             for (const item of fileList) {
-                // Note: In a real implementation, you'd need to handle file selection differently
-                // This is a simplified version for the structure
-                // File item processed (removed console.log for production)
+                
+                formData.append(item.key, item.value)
             }
 
             // Add payload fields

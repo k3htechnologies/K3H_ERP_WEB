@@ -23,6 +23,8 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
+import { CollapseCard } from '@/ui/components/Card/CollapseCard';
 
 
 export const CompanyMaster: React.FC = () => {
@@ -283,16 +285,77 @@ export const CompanyMaster: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'center',
-        render: (value) => value || '-'
+        render: (value: string, row: any) => {
+          const images: string[] = (row.GSTCertificateURL || '')
+            .split(',')
+            .map((x: string) => x.trim())
+            .filter((x: string) => x.length > 0);
+
+          if (!images.length) {
+            return value || '-';
+          }
+
+          return (
+            <MultiImageViewer
+              images={images}
+              title="GST Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
       },
       {
         key: 'PANNumber',
-        label: 'PAN Number',
+        label: 'Pan Number',
         width: '15',
         sortable: false,
         align: 'center',
-        render: (value) => value || '-'
+        render: (value: string, row: any) => {
+          const images: string[] = (row.PanCardURL || '')
+            .split(',')
+            .map((x: string) => x.trim())
+            .filter((x: string) => x.length > 0);
+
+          if (!images.length) {
+            return value || '-';
+          }
+
+          return (
+            <MultiImageViewer
+              images={images}
+              title="Pan Card Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
       },
+
+      {
+        key: 'CINNumber',
+        label: 'CIN Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value: string, row: any) => {
+          const images: string[] = (row.CINURL || '')
+            .split(',')
+            .map((x: string) => x.trim())
+            .filter((x: string) => x.length > 0);
+
+          if (!images.length) {
+            return value || '-';
+          }
+
+          return (
+            <MultiImageViewer
+              images={images}
+              title="CIN Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
+      },
+
       {
         key: 'RERANumber',
         label: 'RERA Number',
@@ -301,14 +364,7 @@ export const CompanyMaster: React.FC = () => {
         align: 'center',
         render: (value) => value || '-'
       },
-      {
-        key: 'CINNumber',
-        label: 'CIN Number',
-        width: '15',
-        sortable: false,
-        align: 'center',
-        render: (value) => value || '-'
-      },
+
       {
         key: 'StateName',
         label: 'State',
@@ -328,22 +384,6 @@ export const CompanyMaster: React.FC = () => {
       {
         key: 'CityName',
         label: 'City',
-        width: '15',
-        sortable: false,
-        align: 'center',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'CompanyLetterheadHeaderURL',
-        label: 'Company Letter Head Header',
-        width: '15',
-        sortable: false,
-        align: 'center',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'CompanyLetterheadFooterURL',
-        label: 'Company Letter Head Footer',
         width: '15',
         sortable: false,
         align: 'center',
@@ -410,7 +450,7 @@ export const CompanyMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Settings - Company setup (Company Details)"
+        title="View Company Details"
         onSubmit={(e) => {
           e.preventDefault()
           onClose()
@@ -420,30 +460,69 @@ export const CompanyMaster: React.FC = () => {
       >
         <div className="space-y-6">
           <div className="space-y-4">
-            <FieldItem label="Company Name"  value={data.CompanyName} isRow/>
-            <FieldItem label="Company Type" value={data.CompanyType} isRow />
-            <FieldItem label="Contact Person" value={data.ContactPerson} isRow />
-            <FieldItem label="Mobile Number" value={data.MobileNumber} isRow />
-            <FieldItem label="Landline Number" value={data.LandLineNumber} isRow />
-            <FieldItem label="Email" value={data.EmailId} isRow />
+            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
+              Basic Details
+            </h4>
+
+            <div className="space-y-3">
+
+              <FieldItem label="Company Name" value={data.CompanyName} isRow />
+              <FieldItem label="Company Type" value={data.CompanyType} isRow />
+              <FieldItem label="Contact Person" value={data.ContactPerson} isRow />
+              <FieldItem label="Mobile Number" value={data.MobileNumber} isRow />
+              <FieldItem label="Landline Number" value={data.LandLineNumber} isRow />
+              <FieldItem label="Email" value={data.EmailId} isRow />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
+              Government Identifiers
+            </h4>
             <FieldItem label="GST Number" value={data.GSTNumber} isRow />
             <FieldItem label="PAN Number" value={data.PANNumber} isRow />
             <FieldItem label="CIN Number" value={data.CINNumber} isRow />
-            <FieldItem label="City" value={data.CityName} isRow />
-            <FieldItem label="State" value={data.StateName} isRow />
-            {data.CompanyPartnerData && data.CompanyPartnerData.length > 0 && (
-              <div className="py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700 block mb-2">Partners ({data.CompanyPartnerData.length})</span>
-                <div className="space-y-2">
-                  {data.CompanyPartnerData.map((partner, idx) => (
-                    <div key={idx} className="text-sm text-blue-600 font-medium">
-                      {partner.FullName || partner.FirstName} ({partner.PartnerPercentage}%)
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <FieldItem label="RERA Number" value={data.RERANumber} isRow />
           </div>
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
+              Address
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <FieldItem label="State" value={data.StateName} isRow={false} />
+              <FieldItem label="District" value={data.DistrictName} isRow={false} />
+              <FieldItem label="City" value={data.CityName} isRow={false} />
+
+            </div>
+          </div>
+          {data.CompanyPartnerData && data.CompanyPartnerData.length > 0 && (
+            <div className="py-2">
+              <span className="text-sm font-medium text-gray-700 block mb-3">
+                Partners ({data.CompanyPartnerData.length})
+              </span>
+
+              <div className="space-y-3">
+                {data.CompanyPartnerData.map((partner, idx) => (
+                  <CollapseCard
+                    key={partner.CompanyPartnerId ?? idx}
+                    name={partner.FullName || partner.FirstName || '-'}
+                    mobileNumber={partner.MobileNumber || '-'}
+                    partnershipPercent={partner.PartnerPercentage ?? '-'}
+                    gender={partner.Gender || '-'}
+                    defaultOpen={false}
+                  >
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(partner.DateOfBirth || '-')} isRow={false} withBorder={false} />
+                      <FieldItem label="Email" value={partner.EmailId} isRow={false} withBorder={false} />
+                      <FieldItem label="Pan Number" value={partner.PanNumber} isRow={false} withBorder={false} />
+                      <FieldItem label="Aadhar Card" value={partner.AadharCardNumber} isRow={false} withBorder={false} />
+                    </div>
+                  </CollapseCard>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -463,7 +542,7 @@ export const CompanyMaster: React.FC = () => {
             </div>
           </div>
         </div>
-      </Modal>
+      </Modal >
     )
   }
 

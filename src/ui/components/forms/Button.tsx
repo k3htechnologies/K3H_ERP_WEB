@@ -65,7 +65,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             padding: currentSize.padding,
             fontSize: currentSize.fontSize,
             fontWeight: currentSize.fontWeight,
-            borderRadius: isborderRadius ? '0px': theme.borderRadius.lg ,
+            borderRadius: isborderRadius ? '0px' : theme.borderRadius.lg,
             border: colorStyles.border,
             backgroundColor: colorStyles.backgroundColor,
             color: colorStyles.color,
@@ -96,13 +96,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
         const renderIconElement = (el: React.ReactNode, forcedSize?: number) => {
             if (!isValidElement(el)) return el
+            const iconElement = el as React.ReactElement<any>
             const sizeNum = typeof forcedSize === 'number' ? forcedSize : iconSizeNumber
             const existingProps = (el as any).props || {}
             if (existingProps.size !== undefined || existingProps.width !== undefined || existingProps.height !== undefined) {
                 return el
             }
             try {
-                return cloneElement(el as React.ReactElement, { size: sizeNum })
+                return cloneElement(iconElement, { size: sizeNum } as any)
             } catch {
                 return el
             }
@@ -130,11 +131,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     </>
                 ) : (
                     <>
-                        {leftIcon && <span  style={{ fontSize: iconSizeCss }}>{renderIconElement(leftIcon)}</span>}
+                        {leftIcon && <span style={{ fontSize: iconSizeCss }}>{renderIconElement(leftIcon)}</span>}
 
                         {isIconOnly
                             ? renderIconElement(React.Children.only(children), iconSizeNumber)
-                            : <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center',gap: theme.spacing.sm }}>{children}</span>
+                            : <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: theme.spacing.sm }}>{children}</span>
                         }
 
                         {rightIcon && <span style={{ fontSize: iconSizeCss }}>{renderIconElement(rightIcon)}</span>}

@@ -73,3 +73,15 @@ export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement
   id?: string
   indeterminate?: boolean
 }
+
+
+export interface RichTextEditorProps {
+  name?: string;
+  value: string;                          // HTML
+  onChange: (value: string) => void;      // returns HTML string
+  placeholder?: string;
+  error?: string;
+  helperText?: string;
+  className?: string;
+}
+

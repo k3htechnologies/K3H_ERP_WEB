@@ -215,7 +215,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                         )}
 
                         {/* IMPORT BUTTON */}
-                        {isShowImportButton && (
+                        {isShowImportButton && onImport && (
                             <Button
                                 onClick={(e) => {
                                     e.preventDefault()

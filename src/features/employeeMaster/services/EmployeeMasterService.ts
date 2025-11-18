@@ -3,7 +3,9 @@ import { EmployeeMasterDatasourceImpl } from '@/features/employeeMaster/datasour
 import type {
     FilterWithPaginationEmployeeMasterRequest,
     AddUpdateEmployeeMasterRequest,
-    EmployeeMasterListResponse
+    EmployeeMasterListResponse,
+
+    LocationResponse
 } from '../models/EmployeeMasterModel';
 
 import * as E from 'fp-ts/Either';
@@ -12,6 +14,15 @@ const employeeMasterDatasource = new EmployeeMasterDatasourceImpl();
 
 export const employeeMasterService = {
 
+    apiCallPullLocationHierarchy: async (): Promise<E.Either<Failure, LocationResponse>> => {
+        debugger
+    try {
+      const response = await employeeMasterDatasource.pullLocationHierarchy();
+      return E.right(response);
+    } catch (error: any) {
+      return E.left({ message: error.message, code: error.code });
+    }
+  },
     apiCallPullEmployeeMaster: async (params: FilterWithPaginationEmployeeMasterRequest): Promise<E.Either<Failure, EmployeeMasterListResponse>> => {
         try {
 

@@ -24,7 +24,6 @@ export const Profile: React.FC = () => {
 
     //#endregion
 
-
     //#region NAVIGATE PREVIOUS PAGE
     const navigate = useNavigate() // ✅ initialize router navigate
 

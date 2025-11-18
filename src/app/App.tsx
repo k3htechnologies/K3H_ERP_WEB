@@ -9,6 +9,27 @@ import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMa
 import EmployeeMaster from '@/features/employeeMaster/pages/EmployeeMaster';
 import { Profile } from '@/features/profile/page/profile';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
+import EmployeeModuleAccess from '@/features/employeeModuleAccess/pages/EmployeeModuleAccess';
+import { DesignationMaster } from '@/features/designationMaster/pages/DesignationMaster';
+import BranchMaster from '@/features/branchMaster/pages/BranchMaster';
+import BranchAssociationsMaster from '@/features/branchAssociationsMaster/pages/BranchAssociationsMaster';
+import AssetMaster from '@/features/assetMaster/pages/AssetMaste';
+import AssetMappingMaster from '@/features/assetMappingMaster/pages/AssetMappingMaster';
+import DeductionMaster from '@/features/deductionMaster/pages/DeductionMaster';
+import EarningMaster from '@/features/earningMaster/pages/EarningMaster';
+import HolidayMaster from '@/features/holidayMaster/pages/HolidayMaster';
+import HolidayMappingMaster from '@/features/holidayMappingMaster/pages/HolidayMappingMaster';
+import LeaveEncashmentMaster from '@/features/leaveEncashmentMaster/pages/LeaveEncashmentMaster';
+import LeaveTypeMaster from '@/features/leaveTypeMaster/pages/LeaveTypeMaster';
+import ShiftMaster from '@/features/shiftMaster/pages/ShiftMaster';
+import ShiftMappingMaster from '@/features/shiftMappingMaster/pages/ShiftMappingMaster';
+import WeekOffMasterMaster from '@/features/weekOffMaster/pages/WeekOffMasterMaster';
+import WeekOffMappingMaster from '@/features/weekOffMappingMaster/pages/WeekOffMappingMaster';
+import Vendor from '@/features/vendor/pages/Vendor';
+import CompanyMaster from '@/features/companyMaster/pages/CompanyMaster';
+import TncMaster from '@/features/tnc/pages/TncMaster';
+import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
+import AddUpdateEmployeeMaster from '@/features/employeeMaster/pages/AddUpdateEmployeeMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -54,7 +75,11 @@ function App() {
         {/* Public Routes */}
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/error" element={<ErrorFallbackPage />} />
-        <Route path="profile" element={<Profile />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
+        <Route path="/employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
+
+
 
         {/* Protected Routes with Layout */}
         <Route
@@ -69,7 +94,29 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="departmentMaster" element={<DepartmentMaster />} />
           <Route path="employeeMaster" element={<EmployeeMaster />} />
-          
+          <Route path="companyMaster" element={<CompanyMaster />} />
+          <Route path="tnc" element={<TncMaster />} />
+          <Route path="bankListMaster" element={<BankListMaster />} />
+          <Route path="branchMaster" element={<BranchMaster />} />
+          <Route path="branchAssociationsMaster" element={<BranchAssociationsMaster />} />
+          <Route path="assetMaster" element={<AssetMaster />} />
+          <Route path="assetMappingMaster" element={<AssetMappingMaster />} />
+          <Route path="deductionMaster" element={<DeductionMaster />} />
+          <Route path="earningMaster" element={<EarningMaster />} />
+          <Route path="holidayMaster" element={<HolidayMaster />} />
+          <Route path="holidayMappingMaster" element={<HolidayMappingMaster />} />
+          <Route path="leaveEncashmentMaster" element={<LeaveEncashmentMaster />} />
+          <Route path="leaveTypeMaster" element={<LeaveTypeMaster />} />
+          <Route path="shiftMaster" element={<ShiftMaster />} />
+          <Route path="shiftMappingMaster" element={<ShiftMappingMaster />} />
+          <Route path="weekOffMaster" element={<WeekOffMasterMaster />} />
+          <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
+          <Route path="vendor" element={<Vendor />} />
+
+          <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
+
+
+
         </Route>
 
         <Route path="*" element={<Navigate to="/sign-in" replace />} />

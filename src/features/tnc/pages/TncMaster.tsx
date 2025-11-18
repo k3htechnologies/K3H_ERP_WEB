@@ -7,7 +7,9 @@ import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   TncMasterData,
-  FilterWithPaginationTncMasterRequest
+  FilterWithPaginationTncMasterRequest,
+  AddUpdateTncMasterRequest,
+  DeleteTncMasterRequest
 } from '@/features/tnc/models/TncMasterModel';
 
 import { TncMasterService } from '@/features/tnc/services/TncMasterService';
@@ -17,13 +19,16 @@ import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { Tabs } from '@/ui/components/Tab/Tab';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { Edit, Trash2 } from 'lucide-react';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import RichTextEditor from '@/ui/components/forms/RichTextEditor';
 
 export const TncMaster: React.FC = () => {
 
@@ -32,27 +37,48 @@ export const TncMaster: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
 
+  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
+
+  //TABLE SORT INFO
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
+  // TOAST
   const { toasts, removeToast, addToast } = useToast();
 
+  // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchTnc(value);
   }, 350);
 
+  //VIEW TNC MASTER MODAL STATES
   const [viewTncData, setViewTncData] = useState<TncMasterData | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
+  //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
+
+  //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeTncColumnsModal, setIsShowCustomizeTncColumnsModal] = useState(false);
 
-  const { canExport } = useMenuPermissions();
+  //#region MENU PERMISSIONS
+  const { canAction, canExport } = useMenuPermissions();
   const hasFetchedInitialTnc = useRef(false);
+
+  // EDIT TNC MASTER
+  const [editingTncMasterData, setEditingTncMasterData] = useState<TncMasterData | null>(null);
+  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+
+  //DELETE TNC MASTER STATES
+
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+
+  const [deleteTncMasterDetailsData, setDeleteTncMasterDetailsData] = useState<TncMasterData | null>(null)
+
 
   //TAB ACTIVITY
   const tncTabList = [
@@ -240,6 +266,22 @@ export const TncMaster: React.FC = () => {
     setIsViewModalOpen(true);
   }, []);
 
+  const handleEditTncMaster = useCallback((row: TncMasterData) => {
+    setEditingTncMasterData({
+      ...row,
+      ModuleName: row.ModifiedDate || '',
+      Title: row.Title || '',
+      Description: row.Description || ''
+    })
+    setIsAddUpdateModalOpen(true);
+
+  }, [])
+
+  const handleConfirmationDialogBoxOpen = useCallback((row: TncMasterData) => {
+    setDeleteTncMasterDetailsData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
+
   const tncColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -257,6 +299,53 @@ export const TncMaster: React.FC = () => {
               tooltipThreshold={30}
               onClick={() => handleViewTncDetails(row)}
             />
+
+            {canAction && (
+              <div className="flex items-center justify-end ml-2 w-20">
+                <>
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleEditTncMaster(row)
+                    }}
+                    color='transparent'
+                    fullWidth
+                    isborderRadius
+                    size='sm'
+                    title="Edit Tnc"
+                    style={{
+                      color: '#0B3251',
+                      padding: '0px 8px'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleConfirmationDialogBoxOpen(row)
+                    }}
+                    color='transparent'
+                    fullWidth
+                    isborderRadius
+                    size='sm'
+                    style={{
+                      color: 'red',
+                      padding: '0px 8px'
+                    }}
+                    title="Delete Tnc"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+
+              </div>
+            )}
           </div>
         )
       },
@@ -287,7 +376,7 @@ export const TncMaster: React.FC = () => {
         render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       }
     ],
-    [handleViewTncDetails]
+    [handleViewTncDetails, handleViewTncDetails, handleEditTncMaster, handleConfirmationDialogBoxOpen]
   );
   //#endregion
 
@@ -404,6 +493,284 @@ export const TncMaster: React.FC = () => {
   };
   //#endregion
 
+  //#region ADD UPDATE EDIT TNC MASTER
+  const handleAddTncModal = () => {
+    setEditingTncMasterData(null)
+    setIsAddUpdateModalOpen(true)
+  }
+
+  interface AddUpdateTncModalProps {
+    isOpen: boolean
+    onClose: () => void
+    onSubmit: (data: AddUpdateTncMasterRequest) => void
+    data?: TncMasterData | null
+    loading?: boolean
+  }
+
+  const AddUpdateTncModal: React.FC<AddUpdateTncModalProps> = ({
+    isOpen,
+    onClose,
+    onSubmit,
+    data,
+    loading = false
+  }) => {
+    const [formData, setFormData] = useState<AddUpdateTncMasterRequest>({
+      TermsAndConditionsMasterId: 0,
+      Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+      ModuleName: '',
+      Title: '',
+      Description: ''
+    })
+    const [titleError, setTitleError] = useState('')
+    const [descriptionError, setDescriptionError] = useState('')
+
+    useEffect(() => {
+      if (isOpen) {
+        if (data) {
+          setFormData({
+            TermsAndConditionsMasterId: data.TermsAndConditionsMasterId ?? 0,
+            Uniquekey: data.Uniquekey,
+            ModuleName: activeTab?.trim() || "",
+            Title: data.Title || '',
+            Description: data.Description || ''
+          })
+        } else {
+          setFormData({
+            TermsAndConditionsMasterId: 0,
+            Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+            ModuleName: '',
+            Title: '',
+            Description: ''
+          })
+        }
+        setTitleError('')
+        setDescriptionError('')
+      }
+    }, [isOpen, data])
+
+    const handleSubmitAddUpdateTnc = (e: React.FormEvent) => {
+
+      e.preventDefault()
+
+      // Clear previous errors
+      setTitleError('')
+      setDescriptionError('')
+
+      let hasErrors = false;
+
+      // TITLE  validation
+      const title = formData.Title || ''
+      if (title.trim() === "") {
+        setTitleError("Title is required.")
+        hasErrors = true
+      }
+
+      // DESCRIPTION validation
+      const description = formData.Description || ''
+      if (description.trim() === "") {
+        setDescriptionError("Description is required.")
+        hasErrors = true
+      }
+
+      if (hasErrors) {
+        return
+      }
+
+      onSubmit({
+        TermsAndConditionsMasterId: data?.TermsAndConditionsMasterId || 0,
+        Uniquekey: data?.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        ModuleName: activeTab?.trim() || "",
+        Title: title,
+        Description: description
+      })
+    }
+
+    const handleFieldChange = (field: keyof AddUpdateTncMasterRequest, value: string) => {
+
+      setFormData(prev => ({ ...prev, [field]: value }))
+
+      if (field === 'Title') {
+        setTitleError('')
+      } else if (field === 'Description') {
+        setDescriptionError('')
+      }
+    }
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        onCancel={onClose}
+        title={data ? 'Update Terms & Condtion' : 'Add Terms & Condtion'}
+        onSubmit={handleSubmitAddUpdateTnc}
+        saveText={data ? 'Update' : 'Save'}
+        cancelText="Cancel"
+        loading={loading}
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Title <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="text"
+                value={formData.Title}
+                onChange={(e) => handleFieldChange('Title', e.target.value)}
+                placeholder="Enter title"
+              />
+              {titleError && (
+                <p className="text-red-500 text-sm mt-1">{titleError}</p>
+              )}
+            </div>
+
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description <span className="text-red-500">*</span>
+              </label>
+              <RichTextEditor
+                value={formData.Description}
+                // onChange={(e) => handleFieldChange('Description', e.target.value)}
+                placeholder="Enter description"
+              />
+              {descriptionError && (
+                <p className="text-red-500 text-sm mt-1">{descriptionError}</p>
+              )}
+            </div>
+
+
+          </div>
+        </div>
+      </Modal>
+    )
+  }
+
+  const handleAddUpdateTncMaster = async (formData: AddUpdateTncMasterRequest) => {
+
+    setIsAddUpdateModalOpen(false);
+
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+
+        const response = await TncMasterService.apiCallAddUpdateTncMaster(formData);
+
+        if (E.isRight(response)) {
+
+          setIsAddUpdateModalOpen(false);
+
+          const isAdd = formData.TermsAndConditionsMasterId === 0
+
+          if (isAdd) {
+
+            const newRecord = response.right.Data[0] as TncMasterData
+
+            setTncList(prevData => [newRecord, ...prevData]);
+
+            setPagination({
+              currentPage: pagination.currentPage,
+              totalRecords: pagination.totalRecords + 1,
+              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
+            });
+
+
+            addToast({ type: 'success', title: 'Tnc added successfully' })
+          } else {
+
+            const updatedRecord = response.right.Data[0] as TncMasterData;
+
+            setTncList(prevData =>
+              prevData.map(item =>
+                item.TermsAndConditionsMasterId === formData.TermsAndConditionsMasterId
+                  ? updatedRecord
+                  : item
+              )
+            )
+
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+          }
+
+          setIsAddUpdateModalOpen(false);
+
+          setEditingTncMasterData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+        }
+
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Operation failed' })
+      },
+      undefined,
+      formData.TermsAndConditionsMasterId === 0 ? 'Add Tnc' : 'Update Tnc...'
+    )
+  }
+  //#endregion 
+
+  //#region DELETE TNC MASTER
+
+
+
+  const handleDeleteTncMaster = async () => {
+
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteTncMasterDetailsData) return
+
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+
+      async () => {
+
+        const params: DeleteTncMasterRequest = {
+          TermsAndConditionsMasterId: deleteTncMasterDetailsData.TermsAndConditionsMasterId ?? 0,
+          UniqueKey: deleteTncMasterDetailsData.Uniquekey ?? ""
+        }
+
+        const response = await TncMasterService.apiCallDeleteTncMaster(params);
+
+        if (E.isRight(response)) {
+
+          setTncList(prevData => prevData.filter(item => item.TermsAndConditionsMasterId !== deleteTncMasterDetailsData.TermsAndConditionsMasterId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+
+          addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteTncMasterDetailsData(null);
+
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+        }
+
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message })
+      },
+      undefined,
+      'Delete tnc master data...'
+    )
+  }
+
+  //#endregion
+
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
@@ -428,7 +795,9 @@ export const TncMaster: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeTncColumnsModal(true)}
-          isShowAddButton={false}
+          isShowAddButton={canAction}
+          addTitle="Add Tnc Master"
+          onAdd={handleAddTncModal}
           isShowImportButton={false}
           isShowExportButton={canExport}
           onExportExcel={handleExportTncExcel}
@@ -471,6 +840,18 @@ export const TncMaster: React.FC = () => {
           }}
           data={viewTncData}
         />
+        {/*  ADD EDIT UPDATE TNC MODAL */}
+        <AddUpdateTncModal
+          isOpen={isAddUpdateModalOpen}
+          onClose={() => {
+            setIsAddUpdateModalOpen(false)
+            setEditingTncMasterData(null)
+          }}
+          onSubmit={handleAddUpdateTncMaster}
+          data={editingTncMasterData}
+          loading={isLoading}
+        />
+
         <CustomizeColumnsModal
           isOpen={isShowCustomizeTncColumnsModal}
           onClose={() => setIsShowCustomizeTncColumnsModal(false)}
@@ -524,6 +905,22 @@ export const TncMaster: React.FC = () => {
             </div>
           </div>
         </Modal>
+
+        {/* DELETE CONFIRMATION TNC MODAL */}
+        <ConfirmationDialogBox
+          isOpen={isConfirmationDialogBoxOpen}
+          onClose={() => {
+            setIsConfirmationDialogBoxOpen(false)
+            setDeleteTncMasterDetailsData(null)
+          }}
+          onConfirm={handleDeleteTncMaster}
+          title="You are about to delete a tnc?"
+          message="Deleting this terms & Conditions will permanently remove its contents."
+          confirmText="Delete"
+          cancelText="Cancel"
+          loading={isLoading}
+          variant="danger"
+        />
       </div>
     </>
   );

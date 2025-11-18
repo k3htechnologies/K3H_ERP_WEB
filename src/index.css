@@ -50,3 +50,11 @@ body {
 .thin-scroll::-webkit-scrollbar-thumb {
     background: transparent;
 }
+
+
+/* Hide duplicate Quill toolbars caused by React StrictMode double-mount */
+.ql-toolbar.ql-snow:nth-of-type(n + 2) {
+  display: none !important;
+}
+
+

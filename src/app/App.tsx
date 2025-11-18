@@ -75,8 +75,7 @@ function App() {
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="error" element={<ErrorFallbackPage />} />
         <Route path="profile" element={<Profile />} />
-        <Route path="employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
-
+        <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
 
         {/* Protected Routes with Layout */}
         <Route

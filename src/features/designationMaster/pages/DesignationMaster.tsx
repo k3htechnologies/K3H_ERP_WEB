@@ -365,7 +365,7 @@ export const DesignationMaster: React.FC = () => {
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
-                      navigate(`/employeeModuleAccess/${row.DesignationMasterId}`, {
+                      navigate(`/designationMaster/employeeModuleAccess/${row.DesignationMasterId}`, {
                         state: {
                           designationName: row.DesignationName
                         },

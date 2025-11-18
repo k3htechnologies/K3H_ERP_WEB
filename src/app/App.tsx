@@ -29,6 +29,7 @@ import Vendor from '@/features/vendor/pages/Vendor';
 import CompanyMaster from '@/features/companyMaster/pages/CompanyMaster';
 import TncMaster from '@/features/tnc/pages/TncMaster';
 import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
+import AddTncMaster from '@/features/tnc/pages/AddTncMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -115,7 +116,7 @@ function App() {
 
 
         </Route>
-
+        <Route path="/tnc/add" element={<AddTncMaster />} />
         <Route path="*" element={<Navigate to="/sign-in" replace />} />
       </Routes>
     </Suspense>

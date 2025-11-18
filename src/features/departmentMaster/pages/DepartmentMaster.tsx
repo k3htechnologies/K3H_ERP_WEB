@@ -932,8 +932,6 @@ export const DepartmentMaster: React.FC = () => {
         />
 
         {/* CUSTOMIZE COLUMNS MODAL */}
-
-
         <CustomizeColumnsModal
           isOpen={isShowCustomizeDepartmentMasterColumnsModal}
           onClose={() => setIsShowCustomizeDepartmentMasterColumnsModal(false)}

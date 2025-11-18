@@ -22,8 +22,13 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
+<<<<<<< Updated upstream
 import { Tabs } from '@/ui/components/Tab/Tab';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+=======
+import { useNavigate } from "react-router-dom";
+
+>>>>>>> Stashed changes
 
 export const TncMaster: React.FC = () => {
 
@@ -52,6 +57,7 @@ export const TncMaster: React.FC = () => {
   const [isShowCustomizeTncColumnsModal, setIsShowCustomizeTncColumnsModal] = useState(false);
 
   const { canExport } = useMenuPermissions();
+  const navigate = useNavigate();
   const hasFetchedInitialTnc = useRef(false);
 
   //TAB ACTIVITY
@@ -178,7 +184,6 @@ export const TncMaster: React.FC = () => {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
-
         const params: FilterWithPaginationTncMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -325,6 +330,8 @@ export const TncMaster: React.FC = () => {
   );
   //#endregion
 
+
+
   //#region VIEW MODAL
   interface ViewTncDetailsModalProps {
     isOpen: boolean;
@@ -428,7 +435,9 @@ export const TncMaster: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeTncColumnsModal(true)}
-          isShowAddButton={false}
+          isShowAddButton={true}
+          addTitle="Add T&C"
+          onAdd={() => navigate("/tnc/add")}
           isShowImportButton={false}
           isShowExportButton={canExport}
           onExportExcel={handleExportTncExcel}

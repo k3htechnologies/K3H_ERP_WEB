@@ -733,6 +733,9 @@ import { runApiWithLoader } from "@/core/utils";
 import { employeeMasterService } from "@/features/employeeMaster/services/EmployeeMasterService";
 import useToast from "@/core/hooks/useToast";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { Button } from "@/ui/components/forms/Button";
+import { Loader } from "@/core/utils/loader";
+import ToastContainer from "@/ui/components/Toast/ToastContainer";
 import {
   BLOOD_GROUP_OPTIONS,
   EMERGENCY_RELATION_OPTIONS,
@@ -843,17 +846,30 @@ const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
 
 const AddUpdateEmployeePage: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id?: string }>();
-  const { addToast } = useToast();
+  const { employeeId } = useParams<{ employeeId?: string }>();
+  const { toasts, removeToast, addToast } = useToast();
 
   const [formData, setFormData] = useState<AddUpdateEmployeeMasterRequest>(initialFormState());
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-  const [, setLoading] = useState(false);
-  const { employeeId } = useParams<{ employeeId?: string }>();
-// const employeeIdNumber = employeeId ? Number(employeeId) : 0;
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  
   // Location cache: load once from apiCallPullLocationHierarchy() and reuse
   const [locationRows, setLocationRows] = useState<LocationRow[] | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
+  
+  // Store label names for dropdowns when editing
+  const [dropdownLabels, setDropdownLabels] = useState<{
+    companyName?: string;
+    departmentName?: string;
+    branchName?: string;
+    designationName?: string;
+    reportPersonName?: string;
+    stateName?: string;
+    districtName?: string;
+    cityName?: string;
+    bankName?: string;
+  }>({});
 
   // memoized states list (no pagination required)
   const statesList = useMemo(() => {
@@ -892,7 +908,10 @@ const AddUpdateEmployeePage: React.FC = () => {
   // Generic helper to set field and clear error for that field
   const handleFieldChange = (field: keyof AddUpdateEmployeeMasterRequest, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: "" }));
+    // Clear error for this field when value changes
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
   };
 
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -1123,18 +1142,18 @@ const fetchBanks = async (pageNumber: number,params?: { value?: string }) => {
 };
 
 useEffect(() => {
-  debugger
   if (!employeeId) return;
-debugger
+  
   const loadEmployeeAndLocation = async () => {
-    setLoading(true);
+    setIsLoading(true);
+    setLoadingMessage('Loading employee data...');
 
     try {
       // 1) Load employee
       const resp = await employeeMasterService.apiCallPullEmployeeMaster({
         PageSize: 1,
         PageNumber: 1,
-        EmployeeId: Number(id),
+        EmployeeId: Number(employeeId),
       });
 
       if (E.isRight(resp)) {
@@ -1188,6 +1207,19 @@ debugger
             DistrictMasterId: e.DistrictMasterId ?? null,
             CityMasterId: e.CityMasterId ?? null,
           }));
+          
+          // Store label names for dropdowns
+          setDropdownLabels({
+            companyName: e.CompanyName ?? undefined,
+            departmentName: e.Department ?? undefined,
+            branchName: e.Branch ?? undefined,
+            designationName: e.Designation ?? undefined,
+            reportPersonName: e.ReportPersonName ?? undefined,
+            stateName: e.StateName ?? undefined,
+            districtName: e.DistrictName ?? undefined,
+            cityName: e.CityName ?? undefined,
+            bankName: e.BankName ?? undefined,
+          });
         }
       } else {
         console.error("Failed to fetch employee:", resp.left);
@@ -1199,27 +1231,59 @@ debugger
 
     } catch (error) {
       console.error("Error:", error);
+      addToast({ type: "error", title: "Failed to load employee data" });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+      setLoadingMessage('');
     }
   };
 
   loadEmployeeAndLocation();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [id]);
+}, [employeeId]);
 
   // -------------------------
   // Validation
   // -------------------------
   const validateForm = () => {
     const e: { [k: string]: string } = {};
-    if (!formData.FirstName || formData.FirstName.trim().length < 2) e.FirstName = "First name required (min 2 chars)";
-    if (!formData.LastName || formData.LastName.trim().length < 2) e.LastName = "Last name required (min 2 chars)";
-    if (formData.EmailId && !validateEmail(formData.EmailId)) e.EmailId = "Invalid email";
-    if (!formData.PersonalMobileNumber || formData.PersonalMobileNumber.trim().length < 6) e.PersonalMobileNumber = "Enter a valid mobile number";
-    if (!formData.CompanyId) e.CompanyId = "Select company";
-    if (!formData.DepartmentMasterId) e.DepartmentMasterId = "Select department";
+    
+    // Basic Employee Details - Required fields
+    if (!formData.FirstName || formData.FirstName.trim().length < 2) e.FirstName = "First name is required (min 2 chars)";
+    if (!formData.MiddleName || formData.MiddleName.trim().length < 2) e.MiddleName = "Middle name is required (min 2 chars)";
+    if (!formData.LastName || formData.LastName.trim().length < 2) e.LastName = "Last name is required (min 2 chars)";
+    if (!formData.Gender) e.Gender = "Gender is required";
+    if (!formData.MaritalStatus) e.MaritalStatus = "Marital status is required";
+    if (!formData.BloodGroup) e.BloodGroup = "Blood group is required";
+    if (!formData.DateOfBirth) e.DateOfBirth = "Date of birth is required";
+    if (!formData.EmailId || !validateEmail(formData.EmailId)) e.EmailId = "Valid email is required";
+    if (!formData.PersonalMobileNumber || formData.PersonalMobileNumber.trim().length < 10) e.PersonalMobileNumber = "Valid mobile number is required (min 10 digits)";
+    if (!formData.EmployeeType) e.EmployeeType = "Employee type is required";
+    if (!formData.EmergencyMobileNumber || formData.EmergencyMobileNumber.trim().length < 10) e.EmergencyMobileNumber = "Emergency contact number is required (min 10 digits)";
+    if (!formData.EmergencyContactPersonRelationship) e.EmergencyContactPersonRelationship = "Relation to emergency contact is required";
+    
+    // Employee Info Sheet - Required fields
+    if (!formData.CompanyId) e.CompanyId = "Company is required";
+    if (!formData.BranchMasterId) e.BranchMasterId = "Branch is required";
+    if (!formData.DepartmentMasterId) e.DepartmentMasterId = "Department is required";
+    if (!formData.DesignationMasterId) e.DesignationMasterId = "Designation is required";
+    if (!formData.JoiningDate) e.JoiningDate = "Joining date is required";
+    if (!formData.ReportPersonId) e.ReportPersonId = "Reporting person is required";
+    
+    // Address - Required fields
+    if (!formData.CommunicationAddress || formData.CommunicationAddress.trim().length < 5) e.CommunicationAddress = "Communication address is required (min 5 chars)";
+    if (!formData.PermanentAddress || formData.PermanentAddress.trim().length < 5) e.PermanentAddress = "Permanent address is required (min 5 chars)";
+    if (!formData.StateMasterId) e.StateMasterId = "State is required";
+    if (!formData.DistrictMasterId) e.DistrictMasterId = "District is required";
+    if (!formData.CityMasterId) e.CityMasterId = "City is required";
+    
+    // Bank Details - Required fields
+    if (!formData.BankListMasterId) e.BankListMasterId = "Bank name is required";
+    if (!formData.BankBranchName || formData.BankBranchName.trim().length < 2) e.BankBranchName = "Bank branch name is required (min 2 chars)";
+    if (!formData.AccountNo || formData.AccountNo.trim().length < 5) e.AccountNo = "Account number is required (min 5 chars)";
+    if (!formData.IFSCCode || formData.IFSCCode.trim().length < 11) e.IFSCCode = "IFSC code is required (min 11 chars)";
+    
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -1229,9 +1293,13 @@ debugger
   // -------------------------
   const handleSubmit = async (ev?: React.FormEvent) => {
     if (ev) ev.preventDefault();
-    if (!validateForm()) return;
+    
+    // Validate form
+    if (!validateForm()) {
+      addToast({ type: "error", title: "Please fix validation errors before submitting" });
+      return;
+    }
 
-    setLoading(true);
     try {
       const payload = {
         EmployeeId: formData.EmployeeId,
@@ -1263,80 +1331,115 @@ debugger
         PermanentAddress: formData.PermanentAddress,
         BloodGroup: formData.BloodGroup,
         CompanyId: formData.CompanyId ?? 0,
-        CountryMasterId: 1 ,
+        CountryMasterId: 1,
         StateMasterId: formData.StateMasterId ?? 0,
         DistrictMasterId: formData.DistrictMasterId ?? 0,
         CityMasterId: formData.CityMasterId ?? 0,
       };
 
       await runApiWithLoader(
-        setLoading,
-        () => {},
+        setIsLoading,
+        setLoadingMessage,
         async () => {
           const response = await employeeMasterService.apiCallAddUpdateEmployeeMaster(payload);
           if (E.isRight(response)) {
-            addToast({ type: "success", title: formData.EmployeeId ? "Employee updated" : "Employee added" });
-            navigate("/employeMaster");
+            addToast({ 
+              type: "success", 
+              title: formData.EmployeeId ? "Employee updated successfully" : "Employee added successfully" 
+            });
+            // Navigate after a short delay to allow toast to show
+            setTimeout(() => {
+              navigate("/employeeMaster");
+            }, 500);
           } else {
             addToast({ type: "error", title: response.left?.message || "Operation failed" });
           }
           return response;
         },
         () => {},
-        (err: any) => addToast({ type: "error", title: err?.message || "Operation failed" }),
+        (err: any) => {
+          console.error("API Error:", err);
+          addToast({ type: "error", title: err?.message || "Operation failed" });
+        },
         () => {},
-        formData.EmployeeId === 0 ? "Add Employee" : "Update Employee..."
+        formData.EmployeeId === 0 ? "Adding Employee..." : "Updating Employee..."
       );
     } catch (err) {
       console.error("Submit error:", err);
-      addToast({ type: "error", title: "Submit failed" });
-    } finally {
-      setLoading(false);
+      addToast({ type: "error", title: "Submit failed. Please try again." });
+      setIsLoading(false);
+      setLoadingMessage('');
     }
   };
 
   // -------------------------
-  // Small helper to convert numeric id to dropdown value (string)
+  // Helper to convert numeric id to dropdown initialValue format { label, value }
   // -------------------------
-  const toDropdownValue = (v: NullableNumber) => (v ? String(v) : "");
+  const toDropdownInitialValue = (
+    id: NullableNumber,
+    label?: string
+  ): { label: string; value: string | number } | null => {
+    if (!id) return null;
+    return {
+      label: label || String(id),
+      value: String(id),
+    };
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col p-8">
-      <h1 className="text-3xl font-bold mb-6">{formData.EmployeeId ? "Edit Employee" : "Add Employee"}</h1>
+    <>
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+      <div className="h-full flex flex-col">
+        <Loader loading={isLoading} title={loadingMessage}>
+          <div></div>
+        </Loader>
+        
+        {/* Fixed Header */}
+        <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-md h-16 flex items-center justify-between px-6">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-gray-900">
+              {formData.EmployeeId ? "Edit Employee" : "Add Employee"}
+            </h1>
+          </div>
+        </div>
 
-      <form onSubmit={handleSubmit} className="flex-1 flex flex-col gap-8 overflow-auto">
+        {/* Scrollable Body */}
+        <div className="space-y-2 px-6 py-3 pt-20 pb-20 overflow-y-auto">
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col gap-8">
         {/* Basic Employee Details */}
         <section className="flex flex-col gap-4">
-          <h2 className="text-xl font-semibold text-gray-700">Basic Employee Details</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <Input label="First Name*" value={formData.FirstName} onChange={(e) => handleFieldChange("FirstName", e.target.value)} error={errors.FirstName} />
-            <Input label="Middle Name" value={formData.MiddleName} onChange={(e) => handleFieldChange("MiddleName", e.target.value)} />
-            <Input label="Last Name*" value={formData.LastName} onChange={(e) => handleFieldChange("LastName", e.target.value)} error={errors.LastName} />
-            <SinglePageSelection label="Gender*" value={formData.Gender} onChange={(val) => handleFieldChange("Gender", String(val))} options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
-            <SinglePageSelection label="Marital Status*" value={formData.MaritalStatus} onChange={(val) => handleFieldChange("MaritalStatus", String(val))} options={MARITAL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
-            <SinglePageSelection label="Blood Group*" value={formData.BloodGroup} onChange={(val) => handleFieldChange("BloodGroup", String(val))} options={BLOOD_GROUP_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
-            <DatePicker label="DOB" value={formData.DateOfBirth ?? ""} onChange={(e) => handleFieldChange("DateOfBirth", e.target.value)} />
+          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Employee Details</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Input label="First Name" value={formData.FirstName} onChange={(e) => handleFieldChange("FirstName", e.target.value)} error={errors.FirstName} required />
+            <Input label="Middle Name" value={formData.MiddleName} onChange={(e) => handleFieldChange("MiddleName", e.target.value)} error={errors.MiddleName} required />
+            <Input label="Last Name" value={formData.LastName} onChange={(e) => handleFieldChange("LastName", e.target.value)} error={errors.LastName} required />
+            <SinglePageSelection label="Gender" value={formData.Gender} onChange={(val) => handleFieldChange("Gender", String(val))} options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} required error={errors.Gender} />
+            <SinglePageSelection label="Marital Status" value={formData.MaritalStatus} onChange={(val) => handleFieldChange("MaritalStatus", String(val))} options={MARITAL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} required error={errors.MaritalStatus} />
+            <SinglePageSelection label="Blood Group" value={formData.BloodGroup} onChange={(val) => handleFieldChange("BloodGroup", String(val))} options={BLOOD_GROUP_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} required error={errors.BloodGroup} />
+            <DatePicker label="DOB" value={formData.DateOfBirth ?? ""} onChange={(e) => handleFieldChange("DateOfBirth", e.target.value)} error={errors.DateOfBirth} required />
             <Input label="Office Email Id" value={formData.OfficeEmailId} onChange={(e) => handleFieldChange("OfficeEmailId", e.target.value)} />
-            <Input label="Email Id" value={formData.EmailId} onChange={(e) => handleFieldChange("EmailId", e.target.value)} error={errors.EmailId} />
-            <Input label="Personal Mobile Number" prefix="+91" value={formData.PersonalMobileNumber} onChange={(e) => handleFieldChange("PersonalMobileNumber", e.target.value)} error={errors.PersonalMobileNumber} />
+            <Input label="Email Id" value={formData.EmailId} onChange={(e) => handleFieldChange("EmailId", e.target.value)} error={errors.EmailId} required />
+            <Input label="Personal Mobile Number" prefix="+91" value={formData.PersonalMobileNumber} onChange={(e) => handleFieldChange("PersonalMobileNumber", e.target.value)} error={errors.PersonalMobileNumber} required />
             <Input label="Office Mobile Number" value={formData.OfficeMobileNumber} onChange={(e) => handleFieldChange("OfficeMobileNumber", e.target.value)} />
-            <SinglePageSelection label="Employee Type" value={formData.EmployeeType} onChange={(val) => handleFieldChange("EmployeeType", String(val))} options={EMPLOYEE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
-            <SinglePageSelection label="Relation to Emergency Contact" value={formData.EmergencyContactPersonRelationship} onChange={(val) => handleFieldChange("EmergencyContactPersonRelationship", String(val))} options={EMERGENCY_RELATION_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
-            <Input label="Emergency Contact Number" prefix="+91" value={formData.EmergencyMobileNumber} onChange={(e) => handleFieldChange("EmergencyMobileNumber", e.target.value)} />
+            <SinglePageSelection label="Employee Type" value={formData.EmployeeType} onChange={(val) => handleFieldChange("EmployeeType", String(val))} options={EMPLOYEE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} required error={errors.EmployeeType} />
+            <SinglePageSelection label="Relation to Emergency Contact" value={formData.EmergencyContactPersonRelationship} onChange={(val) => handleFieldChange("EmergencyContactPersonRelationship", String(val))} options={EMERGENCY_RELATION_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} required error={errors.EmergencyContactPersonRelationship} />
+            <Input label="Emergency Contact Number" prefix="+91" value={formData.EmergencyMobileNumber} onChange={(e) => handleFieldChange("EmergencyMobileNumber", e.target.value)} error={errors.EmergencyMobileNumber} required />
           </div>
         </section>
 
         {/* Employee Info Sheet */}
         <section className="flex flex-col gap-4">
-          <h2 className="text-xl font-semibold text-gray-700">Employee Info Sheet</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Employee Info Sheet</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
             <SingleSelectDropdownWithPagination
               title="Select..."
               label="Company"
               size="lg"
               dataFetchCallBack={fetchCompanyOptions}
               onSelected={(item) => handleFieldChange("CompanyId", Number(item.value))}
-              value={toDropdownValue(formData.CompanyId)}
+              initialValue={toDropdownInitialValue(formData.CompanyId, dropdownLabels.companyName)}
+              error={errors.CompanyId}
+              required
             />
             <SingleSelectDropdownWithPagination
               title="Select..."
@@ -1344,7 +1447,9 @@ debugger
               size="lg"
               dataFetchCallBack={fetchDepartmentOptions}
               onSelected={(item) => handleFieldChange("DepartmentMasterId", Number(item.value))}
-              value={toDropdownValue(formData.DepartmentMasterId)}
+              initialValue={toDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
+              error={errors.DepartmentMasterId}
+              required
             />
             <SingleSelectDropdownWithPagination
               title="Select..."
@@ -1352,7 +1457,9 @@ debugger
               size="lg"
               dataFetchCallBack={fetchBranchOptions}
               onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
-              value={toDropdownValue(formData.BranchMasterId)}
+              initialValue={toDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
+              error={errors.BranchMasterId}
+              required
             />
             <SingleSelectDropdownWithPagination
               title="Select..."
@@ -1360,26 +1467,30 @@ debugger
               size="lg"
               dataFetchCallBack={fetchDesignationOptions}
               onSelected={(item) => handleFieldChange("DesignationMasterId", Number(item.value))}
-              value={toDropdownValue(formData.DesignationMasterId)}
+              initialValue={toDropdownInitialValue(formData.DesignationMasterId, dropdownLabels.designationName)}
+              error={errors.DesignationMasterId}
+              required
             />
-            <DatePicker className="py-1" label="Joining Date" size="lg" value={formData.JoiningDate ?? ""} onChange={(e) => handleFieldChange("JoiningDate", e.target.value)} />
+            <DatePicker className="py-1" label="Joining Date" size="lg" value={formData.JoiningDate ?? ""} onChange={(e) => handleFieldChange("JoiningDate", e.target.value)} error={errors.JoiningDate} required />
             <SingleSelectDropdownWithPagination
               title="Select..."
               label="Reporting Person"
               size="lg"
               dataFetchCallBack={fetchReportingOptions}
               onSelected={(item) => handleFieldChange("ReportPersonId", Number(item.value))}
-              value={toDropdownValue(formData.ReportPersonId)}
+              initialValue={toDropdownInitialValue(formData.ReportPersonId, dropdownLabels.reportPersonName)}
+              error={errors.ReportPersonId}
+              required
             />
           </div>
         </section>
 
         {/* Address */}
         <section className="flex flex-col gap-4">
-          <h2 className="text-xl font-semibold text-gray-700">Address</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <TextArea label="Communication Address" value={formData.CommunicationAddress} onChange={(e) => handleFieldChange("CommunicationAddress", e.target.value)} />
-            <TextArea label="Permanent Address" value={formData.PermanentAddress} onChange={(e) => handleFieldChange("PermanentAddress", e.target.value)} />
+          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Address</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <TextArea label="Communication Address" value={formData.CommunicationAddress} onChange={(e) => handleFieldChange("CommunicationAddress", e.target.value)} error={errors.CommunicationAddress} required />
+            <TextArea label="Permanent Address" value={formData.PermanentAddress} onChange={(e) => handleFieldChange("PermanentAddress", e.target.value)} error={errors.PermanentAddress} required />
            <SingleSelectDropdownWithPagination
   title="Select..."
   label="State"
@@ -1392,7 +1503,9 @@ debugger
     handleFieldChange("DistrictMasterId", null);
     handleFieldChange("CityMasterId", null);
   }}
-  value={toDropdownValue(formData.StateMasterId)}
+  initialValue={toDropdownInitialValue(formData.StateMasterId, dropdownLabels.stateName)}
+  error={errors.StateMasterId}
+  required
 />
 
             <SingleSelectDropdownWithPagination
@@ -1406,7 +1519,9 @@ debugger
                 // reset city when district changes
                 handleFieldChange("CityMasterId", null);
               }}
-              value={toDropdownValue(formData.DistrictMasterId)}
+              initialValue={toDropdownInitialValue(formData.DistrictMasterId, dropdownLabels.districtName)}
+              error={errors.DistrictMasterId}
+              required
             />
             <SingleSelectDropdownWithPagination
               title="Select..."
@@ -1414,15 +1529,17 @@ debugger
               size="lg"
               dataFetchCallBack={fetchCities}
               onSelected={(item) => handleFieldChange("CityMasterId", Number(item.value))}
-              value={toDropdownValue(formData.CityMasterId)}
+              initialValue={toDropdownInitialValue(formData.CityMasterId, dropdownLabels.cityName)}
+              error={errors.CityMasterId}
+              required
             />
           </div>
         </section>
 
         {/* Bank Details */}
-        <section className="flex flex-col gap-4 mt-6">
-          <h2 className="text-xl font-semibold text-gray-700">Bank Details</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <section className="flex flex-col gap-4">
+          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Bank Details</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <SingleSelectDropdownWithPagination
   title="Select..."
   label="Bank"
@@ -1431,22 +1548,52 @@ debugger
   onSelected={(item) => {
     handleFieldChange("BankListMasterId", Number(item?.value || 0));
   }}
-  value={toDropdownValue(formData.BankListMasterId)}
+  initialValue={toDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
+  error={errors.BankListMasterId}
+  required
 />
 
-            <Input label="Bank Branch Name" value={formData.BankBranchName} onChange={(e) => handleFieldChange("BankBranchName", e.target.value)} />
-            <Input label="Account Number" value={formData.AccountNo} onChange={(e) => handleFieldChange("AccountNo", e.target.value)} />
-            <Input label="IFSC Code" value={formData.IFSCCode} onChange={(e) => handleFieldChange("IFSCCode", e.target.value)} />
+            <Input label="Bank Branch Name" value={formData.BankBranchName} onChange={(e) => handleFieldChange("BankBranchName", e.target.value)} error={errors.BankBranchName} required />
+            <Input label="Account Number" value={formData.AccountNo} onChange={(e) => handleFieldChange("AccountNo", e.target.value)} error={errors.AccountNo} required />
+            <Input label="IFSC Code" value={formData.IFSCCode} onChange={(e) => handleFieldChange("IFSCCode", e.target.value)} error={errors.IFSCCode} required />
           </div>
         </section>
 
-        <div className="flex justify-end mt-4">
-          <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-            {formData.EmployeeId ? "Update Employee" : "Add Employee"}
-          </button>
+          </form>
         </div>
-      </form>
-    </div>
+
+        {/* Fixed Bottom Footer */}
+        <div
+          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
+          <Button
+            color="transparent"
+            variant="transparent_border"
+            size="sm"
+            onClick={() => {
+              navigate(-1);
+            }}
+            className="px-6"
+          >
+            Cancel
+          </Button>
+          <Button
+            color="green"
+            size="sm"
+            onClick={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+            className="px-6"
+            disabled={isLoading}
+            type="button"
+          >
+            {formData.EmployeeId ? "Update Employee" : "Add Employee"}
+          </Button>
+        </div>
+      </div>
+    </>
   );
 };
 

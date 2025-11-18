@@ -15,6 +15,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(({
   value,
   onChange,
   placeholder = 'Select date',
+  required = false,
   ...props
 }, ref) => {
 
@@ -47,7 +48,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(({
   const labelStyle: React.CSSProperties = {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.medium,
-    color: error ? theme.colors.error : theme.colors.text,
+    color: theme.colors.text, // Label color always normal, not red on error
     marginBottom: theme.spacing.xs,
   }
 
@@ -79,6 +80,9 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(({
       {label && (
         <label htmlFor={inputId} style={labelStyle}>
           {label}
+          {required && (
+            <span style={{ color: theme.colors.error, marginLeft: '4px' }}>*</span>
+          )}
         </label>
       )}
 

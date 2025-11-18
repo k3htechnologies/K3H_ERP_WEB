@@ -23,7 +23,8 @@ export const SinglePageSelection = forwardRef<
       valueKey = "value",
       searchable = true,
       size = "md",
-    
+      required = false,
+      error,
     },
     ref
   ) => {
@@ -86,10 +87,13 @@ export const SinglePageSelection = forwardRef<
               marginBottom: "6px",
               fontWeight: 600,
               fontSize: theme.fontSize.md,
-              color: "#333",
+              color: theme.colors.text,
             }}
           >
             {label}
+            {required && (
+              <span style={{ color: theme.colors.error, marginLeft: '4px' }}>*</span>
+            )}
           </label>
         )}
 
@@ -100,7 +104,7 @@ export const SinglePageSelection = forwardRef<
             height: currentSize.height,
             fontSize: currentSize.fontSize,
             padding: currentSize.padding,
-            border: "1px solid #ccc",
+            border: `1px solid ${error ? theme.colors.error : "#ccc"}`,
             borderRadius: "6px",
             backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
             cursor: disabled ? "not-allowed" : "pointer",
@@ -192,6 +196,20 @@ export const SinglePageSelection = forwardRef<
               </div>
             )}
           </div>
+        )}
+        {/* Error message */}
+        {error && (
+          <p
+            style={{
+              color: theme.colors.error,
+              fontSize: theme.fontSize.xs,
+              marginTop: '4px',
+              marginLeft: '0',
+              marginBottom: '0',
+            }}
+          >
+            {error}
+          </p>
         )}
       </div>
     );

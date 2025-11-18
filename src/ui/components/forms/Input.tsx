@@ -56,7 +56,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         fontSize: currentSize.fontSize,
         fontWeight: theme.fontWeight.normal,
         borderRadius: theme.borderRadius.lg,
-        border: `1px solid ${theme.colors.border}`,
+        border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
         outline: 'none',
         transition: theme.transitions.normal,
         boxSizing: 'border-box' as const,
@@ -112,7 +112,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             display: 'block',
             fontSize: theme.fontSize.sm,
             fontWeight: theme.fontWeight.medium,
-            color: error ? theme.colors.error : theme.colors.text,
+            color: theme.colors.text,
             marginBottom: theme.spacing.sm,
           }}>
             {label}

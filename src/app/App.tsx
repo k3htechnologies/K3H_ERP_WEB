@@ -29,6 +29,7 @@ import Vendor from '@/features/vendor/pages/Vendor';
 import CompanyMaster from '@/features/companyMaster/pages/CompanyMaster';
 import TncMaster from '@/features/tnc/pages/TncMaster';
 import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
+import AddCompany from '@/features/companyMaster/pages/addCompany';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -76,7 +77,7 @@ function App() {
         <Route path="error" element={<ErrorFallbackPage />} />
         <Route path="profile" element={<Profile />} />
         <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
-
+        <Route path="companyMaster/addCompany" element={<AddCompany />} />
         {/* Protected Routes with Layout */}
         <Route
           path="/"

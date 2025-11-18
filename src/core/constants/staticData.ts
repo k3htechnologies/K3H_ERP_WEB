@@ -27,7 +27,9 @@ export const MASTER_DATA = {
 
     maritalStatuses: ['Single', 'Married', 'Divorced', 'Widowed', 'Separated'],
 
-    bloodGroups: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+    bloodGroups: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+
+    companyType: ['LLP','Proprietorship']
 } as const
 
 // ============================================================================
@@ -58,3 +60,4 @@ export const EMPLOYEE_TYPE_OPTIONS = toOptions(MASTER_DATA.employeeTypes)
 export const GENDER_OPTIONS = toOptions(MASTER_DATA.genders)
 export const MARITAL_STATUS_OPTIONS = toOptions(MASTER_DATA.maritalStatuses)
 export const BLOOD_GROUP_OPTIONS = toOptions(MASTER_DATA.bloodGroups)
+export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType)

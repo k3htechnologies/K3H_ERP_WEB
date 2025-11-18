@@ -17,18 +17,21 @@ import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { useNavigate } from 'react-router-dom';
+import { Edit } from 'lucide-react';
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
   const [employeeList, setEmployeeList] = useState<EmployeeMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
+  const navigate = useNavigate();
 
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
@@ -49,7 +52,7 @@ export const EmployeeMaster: React.FC = () => {
 
   const [isShowCustomizeEmployeeColumnsModal, setIsShowCustomizeEmployeeColumnsModal] = useState(false);
 
-  const { canExport } = useMenuPermissions();
+  const { canAction, canExport } = useMenuPermissions();
   const hasFetchedInitialEmployees = useRef(false);
   //#endregion
 
@@ -191,6 +194,11 @@ export const EmployeeMaster: React.FC = () => {
 
   const handleExportEmployeeExcel = () => handleExportEmployees('Excel');
   const handleExportEmployeePdf = () => handleExportEmployees('PDF');
+ const handleEditEmployee = (row: EmployeeMasterData) => {
+  debugger
+  navigate(`/employeeMaster/add/${row.EmployeeId}`); // assuming EmployeeId is the identifier
+
+};
 
   const getEmployees = async (filterParams: FilterWithPaginationEmployeeMasterRequest) => {
     return await employeeMasterService.apiCallPullEmployeeMaster(filterParams);
@@ -235,14 +243,69 @@ export const EmployeeMaster: React.FC = () => {
         fixed: 'left',
         align: 'left',
         render: (value, row) => (
-          <div className="flex items-center justify-start">
+          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
             <TooltipText
               text={value || row.FirstName || 'N/A'}
               maxWidth="260px"
               tooltipThreshold={26}
               onClick={() => handleViewEmployeeDetails(row)}
             />
+               {canAction && (
+              <div className="flex items-center justify-end ml-2 w-20">
+                {(row.NumberOfEmployee || 0) === 0 ? (
+                  <>
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleEditEmployee(row)
+                      }}
+                      color='transparent'
+                      fullWidth
+                      isborderRadius
+                      size='sm'
+                      title="Edit Department"
+                      style={{
+                        color: '#0B3251',
+                        padding: '0px 8px'
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+
+              
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleEditEmployee(row)
+                      }}
+                      color='transparent'
+                      fullWidth
+                      isborderRadius
+                      size='sm'
+                      title="Edit Department"
+                      style={{
+                        color: '#0B3251',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <div className="w-[30px]" />
+                  </>
+
+                )}
+              </div>
+            )}
           </div>
+          
         )
       },
       {
@@ -444,7 +507,8 @@ export const EmployeeMaster: React.FC = () => {
         render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       }
     ],
-    [handleViewEmployeeDetails]
+        [canAction, handleViewEmployeeDetails]
+
   );
   //#endregion
 
@@ -645,6 +709,10 @@ export const EmployeeMaster: React.FC = () => {
     loadEmployees(1, {});
     setShowFilterPopup(false);
   };
+  const handleAddEmployeeModal = () => {
+    navigate('/employeeMaster/add'); 
+};
+
 
   const handleFilterChange = (key: string, value: string) => {
     const newFilters: FilterInfo = { ...tempFilters };
@@ -681,8 +749,9 @@ export const EmployeeMaster: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeEmployeeColumnsModal(true)}
-          isShowAddButton={false}
-          isShowImportButton={false}
+          isShowAddButton={canAction}
+          onAdd={handleAddEmployeeModal} 
+          isShowImportButton={canAction}
           isShowExportButton={canExport}
           onExportExcel={handleExportEmployeeExcel}
           onExportPdf={handleExportEmployeePdf}

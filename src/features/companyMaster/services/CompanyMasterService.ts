@@ -2,7 +2,6 @@ import type { Failure } from '@/core/api/FailureResponse';
 import { CompanyMasterDatasourceImpl } from '@/features/companyMaster/datasources/CompanyMasterDatasource'
 import type {
     FilterWithPaginationCompanyMasterRequest,
-    AddUpdateCompanyMasterRequest,
     DeleteCompanyMasterRequest,
     CompanyMasterListResponse,
     CompanyMasterSaveResponse,
@@ -27,10 +26,10 @@ export const CompanyMasterService = {
         }
     },
 
-    apiCallAddUpdateCompanyMaster: async (params: AddUpdateCompanyMasterRequest): Promise<E.Either<Failure, CompanyMasterSaveResponse>> => {
+    apiCallAddUpdateCompanyMaster: async (formData: FormData): Promise<E.Either<Failure, CompanyMasterSaveResponse>> => {
         try {
 
-            return E.right(await companyMasterDatasource.addUpdateCompanyMaster(params));
+            return E.right(await companyMasterDatasource.addUpdateCompanyMaster(formData));
 
         } catch (error: any) {
 

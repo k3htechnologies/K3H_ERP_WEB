@@ -159,23 +159,11 @@ export class BaseClient {
 
     async multipartRequestWithAuthentication(
         url: string,
-        fileList: Array<{ key: string; value: string }>,
-        payload: Record<string, string>
+        // fileList: Array<{ key: string; value: string }>,
+        payload: FormData
     ): Promise<any> {
         try {
-            const formData = new FormData()
-
-            // Add files to FormData
-            for (const item of fileList) {
-                
-                formData.append(item.key, item.value)
-            }
-
-            // Add payload fields
-            Object.entries(payload).forEach(([key, value]) => {
-                formData.append(key, value)
-            })
-
+           
             const response = await fetch(getApiUrl(url), {
                 method: 'POST',
                 headers: {
@@ -183,7 +171,7 @@ export class BaseClient {
                     'apiKey': this.apiKey,
                     'Authorization': `Bearer ${this.token}`,
                 },
-                body: formData,
+                body: payload,
             })
 
             return this.processResponse(response)

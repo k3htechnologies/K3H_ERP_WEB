@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Toast } from './Toast'
 import type { ToastProps } from './Toast'
 import { Modal } from '../Modal/Modal'
+import { LOCAL_STORAGE_KEYS } from '@/core/constants'
 
 export interface ToastContainerProps {
     toasts: ToastProps[]
@@ -15,7 +16,9 @@ export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
     // Whenever toasts change, check if any have title === 'Menu Changed'
     useEffect(() => {
         const hasMenuChangedToast = toasts.some(t => t.title === 'Menu Changed')
+
         if (hasMenuChangedToast) {
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
             setIsMenuModalOpen(true)
         }
     }, [toasts])

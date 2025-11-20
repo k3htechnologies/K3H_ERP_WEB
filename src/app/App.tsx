@@ -11,7 +11,7 @@ import EmployeeModuleAccess from '@/features/employeeModuleAccess/pages/Employee
 import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMaster';
 import { DesignationMaster } from '@/features/designationMaster/pages/DesignationMaster';
 import { EmployeeMaster } from '@/features/employeeMaster/pages/EmployeeMaster';
-import BranchMaster from '@/features/branchMaster/pages/BranchMaster';
+import { BranchMaster } from '@/features/branchMaster/pages/BranchMaster';
 import BranchAssociationsMaster from '@/features/branchAssociationsMaster/pages/BranchAssociationsMaster';
 import AssetMaster from '@/features/assetMaster/pages/AssetMaste';
 import AssetMappingMaster from '@/features/assetMappingMaster/pages/AssetMappingMaster';
@@ -29,7 +29,7 @@ import Vendor from '@/features/vendor/pages/Vendor';
 import CompanyMaster from '@/features/companyMaster/pages/CompanyMaster';
 import TncMaster from '@/features/tnc/pages/TncMaster';
 import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
-import AddCompany from '@/features/companyMaster/pages/addCompany';
+import AddCompany from '@/features/companyMaster/pages/AddCompany';
 import { CountryStateCityDistrictVillage } from '@/core/hooks/useCountryStateCityDistrictVillage';
 
 // Loading component for Suspense fallback

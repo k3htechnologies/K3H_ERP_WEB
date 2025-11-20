@@ -144,7 +144,6 @@ export const LocalStorageHelper = {
         }
     },
     //#endregion
-
     //#region GET DESIGNATION MASTER COLUMNS
     getDesignationMasterTableColumns: (): string | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DESIGNATION_MASTER_SELECTED_COLUMNS);
@@ -168,7 +167,6 @@ export const LocalStorageHelper = {
         }
     },
     //#endregion
-
     //#region GET EMPLOYEE MASTER COLUMNS
     getEmployeeMasterTableColumns: (): string | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.EMPLOYEE_MASTER_SELECTED_COLUMNS);
@@ -585,7 +583,6 @@ export const LocalStorageHelper = {
         }
     },
     //#endregion
-
     //#region GET MENU DATA 
     getMenuData: (): ModuleData[] | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MENU_MODULE)
@@ -601,6 +598,7 @@ export const LocalStorageHelper = {
         }
         return null
     },
+    //#endregion
     //#region CLEAR LOCAL STORAGE 
     clearLocalStorageData: (): void => {
         try {

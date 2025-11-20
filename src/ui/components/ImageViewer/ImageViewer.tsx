@@ -6,17 +6,25 @@ import {
   FileText,
   FileSpreadsheet,
   File,
-  Download
+  Download,
 } from 'lucide-react'
 import { COLORS } from '@/core/constants'
 
 type PanelSize = 'half-screen' | 'small-half' | 'large-half'
 type FileType = 'image' | 'pdf' | 'excel' | 'other'
 
+export interface ViewerFile {
+  url: string
+  mimeType?: string // e.g. "image/jpeg", "application/pdf"
+}
+
+// 👇 images can be string OR ViewerFile
+type ViewerInput = string | ViewerFile
+
 interface MultiImageViewerProps {
-  images: string[]              // image / pdf / excel URLs
+  images: ViewerInput[]
   title?: string
-  triggerLabel?: string         // text like "View Docs" or GST number
+  triggerLabel?: React.ReactNode
   size?: PanelSize
 }
 
@@ -26,16 +34,22 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
   triggerLabel,
   size = 'large-half',
 }) => {
+  // Normalize to ViewerFile[]
+  const normalizedFiles: ViewerFile[] = (images || []).map((item) =>
+    typeof item === 'string' ? { url: item } : item
+  )
+
   const [isOpen, setIsOpen] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  if (!images || images.length === 0) {
+  if (!normalizedFiles || normalizedFiles.length === 0) {
     return triggerLabel ? <span>{triggerLabel}</span> : null
   }
 
   // -------- helpers ----------
 
-  const getFileType = (url: string): FileType => {
+  const detectFileTypeFromUrl = (url: unknown): FileType => {
+    if (typeof url !== 'string') return 'other'
     const lower = url.split('?')[0].toLowerCase()
     if (lower.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)$/)) return 'image'
     if (lower.endsWith('.pdf')) return 'pdf'
@@ -43,8 +57,27 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     return 'other'
   }
 
+  const getFileType = (file: ViewerFile): FileType => {
+    if (file.mimeType) {
+      const mime = file.mimeType.toLowerCase()
+      if (mime.startsWith('image/')) return 'image'
+      if (mime === 'application/pdf') return 'pdf'
+      if (
+        mime.includes('excel') ||
+        mime.includes('spreadsheet') ||
+        mime.includes('csv')
+      )
+        return 'excel'
+      return 'other'
+    }
+    // fallback → URL extension (for normal http://… files)
+    return detectFileTypeFromUrl(file.url)
+  }
+
   const getExcelEmbedUrl = (url: string) =>
-    `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`
+    `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
+      url,
+    )}`
 
   const sizeClasses: Record<PanelSize, string> = {
     'half-screen': 'w-1/2',
@@ -62,12 +95,16 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
   const closeViewer = () => setIsOpen(false)
 
   const showPrev = useCallback(() => {
-    setCurrentIndex(prev => (prev === 0 ? images.length - 1 : prev - 1))
-  }, [images.length])
+    setCurrentIndex((prev) =>
+      prev === 0 ? normalizedFiles.length - 1 : prev - 1,
+    )
+  }, [normalizedFiles.length])
 
   const showNext = useCallback(() => {
-    setCurrentIndex(prev => (prev === images.length - 1 ? 0 : prev + 1))
-  }, [images.length])
+    setCurrentIndex((prev) =>
+      prev === normalizedFiles.length - 1 ? 0 : prev + 1,
+    )
+  }, [normalizedFiles.length])
 
   useEffect(() => {
     if (!isOpen) return
@@ -82,13 +119,13 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, showNext, showPrev])
 
-  const currentUrl = images[currentIndex]
-  const currentType = getFileType(currentUrl)
+  const currentFile = normalizedFiles[currentIndex]
+  const currentUrl = currentFile.url
+  const currentType = getFileType(currentFile)
 
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault()
     e.stopPropagation()
-
     if (e.deltaY > 0) showNext()
     else if (e.deltaY < 0) showPrev()
   }
@@ -97,31 +134,28 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     window.open(currentUrl, '_blank', 'noopener,noreferrer')
   }
 
-  // 🔽 NEW: Download current file
   const handleDownloadCurrent = () => {
     try {
       const link = document.createElement('a')
       link.href = currentUrl
-      // let browser/server decide filename; you can also parse from url if needed
       link.download = ''
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
     } catch {
-      // fallback: open in new tab if download attribute not respected
       handleOpenInNewTab()
     }
   }
 
   // ---------- thumbnails ----------
 
-  const renderThumb = (url: string, index: number) => {
-    const type = getFileType(url)
+  const renderThumb = (file: ViewerFile, index: number) => {
+    const type = getFileType(file)
 
     if (type === 'image') {
       return (
         <img
-          src={url}
+          src={file.url}
           alt={`Image ${index + 1}`}
           className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
         />
@@ -194,7 +228,6 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
       )
     }
 
-    // Other file types
     return (
       <div className="flex flex-col items-center justify-center space-y-4 px-6 text-center">
         <File className="h-12 w-12 text-gray-500" />
@@ -202,9 +235,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
           <p className="text-sm font-medium text-gray-800">
             Preview not supported.
           </p>
-          <p className="text-xs text-gray-500 break-all">
-            {currentUrl}
-          </p>
+          <p className="text-xs text-gray-500 break-all">{currentUrl}</p>
         </div>
         <button
           type="button"
@@ -220,7 +251,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
   // --- UI ------------------------------------------------------
   return (
     <div className="space-y-3">
-      {/* Trigger (e.g. GST Number text) */}
+      {/* Trigger */}
       {triggerLabel ? (
         <button
           type="button"
@@ -231,30 +262,28 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
           {triggerLabel}
         </button>
       ) : (
-        // Thumbnail grid (if you want to use without triggerLabel)
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {images.map((url, index) => (
+          {normalizedFiles.map((file, index) => (
             <button
-              key={`${url}-${index}`}
+              key={`${file.url}-${index}`}
               type="button"
               onClick={() => openViewer(index)}
               className="relative group focus:outline-none"
             >
               <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 bg-gray-100 flex items-center justify-center">
-                {renderThumb(url, index)}
+                {renderThumb(file, index)}
               </div>
             </button>
           ))}
         </div>
       )}
 
-      {/* Right-side Modal Viewer (half-screen / small-half / large-half) */}
+      {/* Panel */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-opacity-50 z-50"
           onClick={closeViewer}
         >
-          {/* Right-side panel (your modal style) */}
           <div
             className={`fixed right-0 top-0 h-full bg-white shadow-2xl flex flex-col ${widthSize}`}
             onClick={(e) => e.stopPropagation()}
@@ -266,7 +295,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
                   {title || 'Preview'}
                 </span>
                 <span className="text-xs text-gray-500">
-                  {currentIndex + 1} / {images.length}
+                  {currentIndex + 1} / {normalizedFiles.length}
                 </span>
               </div>
               <button
@@ -279,13 +308,13 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
               </button>
             </div>
 
-            {/* Body: viewer with wheel + arrows */}
+            {/* Body */}
             <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
               <div
-                className="relative flex-1 bg-white flex items-center justify-center overflow-hidden"
+                className="relative flex-1 bg-white flex items-center justify_center overflow-hidden"
                 onWheel={handleWheel}
               >
-                {images.length > 1 && (
+                {normalizedFiles.length > 1 && (
                   <button
                     type="button"
                     onClick={showPrev}
@@ -298,7 +327,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
 
                 {renderViewerContent()}
 
-                {images.length > 1 && (
+                {normalizedFiles.length > 1 && (
                   <button
                     type="button"
                     onClick={showNext}
@@ -310,14 +339,13 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
                 )}
               </div>
 
-              {/* Footer with dots + DOWNLOAD */}
+              {/* Footer */}
               <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-gray-50 flex-none">
                 <span className="text-xs text-gray-500">
                   Scroll mouse or use ← → keys to change, Esc to close
                 </span>
 
                 <div className="flex items-center gap-3">
-                  {/* Download current file */}
                   <button
                     type="button"
                     onClick={handleDownloadCurrent}
@@ -327,19 +355,17 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
                     <span>Download</span>
                   </button>
 
-                  {/* Dots */}
                   <div className="flex items-center gap-2">
-                    {images.map((_, index) => (
+                    {normalizedFiles.map((_, index) => (
                       <button
                         key={index}
                         type="button"
                         onClick={() => setCurrentIndex(index)}
-                        className={`
-                          h-2.5 w-2.5 rounded-full transition-colors
-                          ${index === currentIndex
+                        className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                          index === currentIndex
                             ? 'bg-blue-600'
-                            : 'bg-gray-300 hover:bg-blue-400'}
-                        `}
+                            : 'bg-gray-300 hover:bg-blue-400'
+                        }`}
                         aria-label={`Go to item ${index + 1}`}
                       />
                     ))}

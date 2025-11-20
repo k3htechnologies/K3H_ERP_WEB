@@ -28,7 +28,7 @@ import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { CollapseCard } from '@/ui/components/Card/CollapseCard';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Edit, Trash2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 
 export const CompanyMaster: React.FC = () => {
@@ -77,14 +77,39 @@ export const CompanyMaster: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate()
+  const location = useLocation() as {
+    state?: {
+      listState?: {
+        page: number;
+        filters: FilterInfo;
+      };
+    };
+  };
   //#endregion
 
   //#region INIT
+  // useEffect(() => {
+  //   if (hasFetchedInitialCompanies.current) return
+  //   hasFetchedInitialCompanies.current = true;
+  //   fetchCompanyList()
+  // }, [])
+
   useEffect(() => {
-    if (hasFetchedInitialCompanies.current) return
+    if (hasFetchedInitialCompanies.current) return;
     hasFetchedInitialCompanies.current = true;
-    fetchCompanyList()
-  }, [])
+
+    // 🔥 If coming back from AddCompany with saved state
+    const savedListState = location.state?.listState;
+
+    const initialPage = savedListState?.page ?? pagination.currentPage;
+    const initialFilters: FilterInfo = savedListState?.filters ?? {};
+
+    setFilters(initialFilters);
+    setTempFilters(initialFilters);
+
+    // load with same page + filters as before
+    loadCompanies(initialPage, initialFilters);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -144,13 +169,21 @@ export const CompanyMaster: React.FC = () => {
   const searchCompanies = async (searchValue: string) => {
     setSearchTerm(searchValue);
     if (searchValue.trim() === '') {
-      fetchCompanyList();
-      return
+
+      const emptyFilters: FilterInfo = { ...filters };
+      delete emptyFilters.CompanyName;
+
+      setFilters(emptyFilters);
+      await loadCompanies(1, emptyFilters);
+      return;
+
     }
-    const filterParams: FilterInfo = {
+    const newFilters: FilterInfo = {
+      ...filters,
       CompanyName: searchValue.trim(),
     };
-    await loadCompanies(1, filterParams)
+    setFilters(newFilters);
+    await loadCompanies(1, newFilters);
   }
 
   const clearsearchCompanies = () => {
@@ -663,8 +696,34 @@ export const CompanyMaster: React.FC = () => {
 
   //#region EDIT COMPANY MASTER DATA
   const handleEditCompanyMasterData = (row: CompanyMasterData) => {
-    navigate('/companyMaster/addCompany', { state: { editCompanyMasterData: row } })
+    navigate('/companyMaster/addCompany', {
+      state: {
+        editCompanyMasterData: row,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+        },
+      },
+    });
   }
+  //#endregion
+
+
+  //#region ADD COMPANY MASTER DATA
+  const handleAddCompanyMaster = () => {
+    navigate('/companyMaster/addCompany', {
+      state: {
+        editCompanyMasterData: null,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+        },
+      },
+    });
+  }
+
   //#endregion
 
   const handleDeleteCompanyMaster = async () => {
@@ -747,6 +806,7 @@ export const CompanyMaster: React.FC = () => {
           isShowAddButton={canAction}
           isShowImportButton={canAction}
           isShowExportButton={canExport}
+          onAdd={handleAddCompanyMaster}
           onExportExcel={handleExportCompanyExcel}
           onExportPdf={handleExportCompanyPdf}
           exportLoading={isLoading}

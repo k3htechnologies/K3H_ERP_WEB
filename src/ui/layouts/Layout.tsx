@@ -12,6 +12,7 @@ import { getPageInfo } from '@/core/constants/pageInfo';
 import { MenuProvider } from '@/features/menu/context/MenuContext';
 
 export const Layout: React.FC = () => {
+
     const location = useLocation()
     const [isSidebarOpen, setIsSidebarOpen] = useState(true)
     const [menuData, setMenuData] = useState<ModuleData[]>([])
@@ -21,6 +22,7 @@ export const Layout: React.FC = () => {
     const pageInfo = getPageInfo(location.pathname);
 
     // THIS WILL AUTOMATICALLY HANDLE OFFLINE / ONLINE REDIRECTS
+
     useNetworkStatus();
 
     const hasFetchedMenu = useRef(false);
@@ -34,16 +36,27 @@ export const Layout: React.FC = () => {
         const loadMenuData = async () => {
 
             try {
+                // CHECK MENU IS AVAILABLE IN LOCAL STORAGE
+                const storedMenu = LocalStorageHelper.getMenuData();
+
+                if (storedMenu && storedMenu.length > 0) {
+                    
+                    setMenuData(storedMenu);
+                    return;
+                }
 
                 const request: PullMenuRequest = {
+
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
                 };
 
-                const response = await menuService.apiCallPullMenu(request)
+                const response = await menuService.apiCallPullMenu(request);
 
                 if (E.isRight(response)) {
 
                     const menu = response.right.Data;
+
+                    LocalStorageHelper.storeMenuData(menu);
 
                     if (menu) {
 
@@ -106,102 +119,102 @@ export const Layout: React.FC = () => {
     return (
         <MenuProvider menu={menuData}>
             <div className="h-screen bg-gray-50 flex overflow-hidden">
-            {/* Sidebar */}
-            <Sidebar
-                isOpen={isSidebarOpen}
-                modules={menuData}
-                onModuleSelect={handleModuleSelect}
-                onSubModuleSelect={handleSubModuleSelect}
-                onSubSubModuleSelect={handleSubSubModuleSelect}
-                onClose={handleCloseSidebar}
-                onLogout={handleLogout}
-                selectedModule={selectedModule || undefined}
-                selectedSubModule={selectedSubModule || undefined}
-                selectedSubSubModule={selectedSubSubModule || undefined}
-            />
-
-            {/* Main content area */}
-            <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-                {/* Header */}
-                
-                <Header
-                    isSidebarOpen={isSidebarOpen}
-                    onToggleSidebar={handleToggleSidebar}
-                    pageTitle={pageInfo.title}
-                    pageDescription={pageInfo.description}
+                {/* Sidebar */}
+                <Sidebar
+                    isOpen={isSidebarOpen}
+                    modules={menuData}
+                    onModuleSelect={handleModuleSelect}
+                    onSubModuleSelect={handleSubModuleSelect}
+                    onSubSubModuleSelect={handleSubSubModuleSelect}
+                    onClose={handleCloseSidebar}
+                    onLogout={handleLogout}
+                    selectedModule={selectedModule || undefined}
+                    selectedSubModule={selectedSubModule || undefined}
+                    selectedSubSubModule={selectedSubSubModule || undefined}
                 />
 
-                {/* Main content */}
-                <main className="flex-1 overflow-y-auto p-4 lg:p-3 bg-gray-50 thin-scroll">
-                    {/* Selected module info */}
-                    {selectedModule && (
-                        <div className="mb-4 lg:mb-6 p-3 lg:p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                            <div className="flex items-center space-x-3 lg:space-x-4">
-                                <div className="h-10 w-10 lg:h-12 lg:w-12 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <span className="text-white text-sm lg:text-lg font-bold">
-                                        {selectedModule.ModuleName.charAt(0)}
-                                    </span>
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <h2 className="text-base lg:text-lg font-semibold text-gray-800 truncate">
-                                        {selectedModule.ModuleName}
-                                    </h2>
-                                    <p className="text-xs lg:text-sm text-gray-600">
-                                        Module ID: {selectedModule.ModulesMasterId}
-                                    </p>
+                {/* Main content area */}
+                <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+                    {/* Header */}
+
+                    <Header
+                        isSidebarOpen={isSidebarOpen}
+                        onToggleSidebar={handleToggleSidebar}
+                        pageTitle={pageInfo.title}
+                        pageDescription={pageInfo.description}
+                    />
+
+                    {/* Main content */}
+                    <main className="flex-1 overflow-y-auto p-4 lg:p-3 bg-gray-50 thin-scroll">
+                        {/* Selected module info */}
+                        {selectedModule && (
+                            <div className="mb-4 lg:mb-6 p-3 lg:p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                                <div className="flex items-center space-x-3 lg:space-x-4">
+                                    <div className="h-10 w-10 lg:h-12 lg:w-12 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <span className="text-white text-sm lg:text-lg font-bold">
+                                            {selectedModule.ModuleName.charAt(0)}
+                                        </span>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <h2 className="text-base lg:text-lg font-semibold text-gray-800 truncate">
+                                            {selectedModule.ModuleName}
+                                        </h2>
+                                        <p className="text-xs lg:text-sm text-gray-600">
+                                            Module ID: {selectedModule.ModulesMasterId}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Selected sub-module info */}
-                    {selectedSubModule && (
-                        <div className="mb-4 lg:mb-6 p-3 lg:p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                            <div className="flex items-center space-x-3 lg:space-x-4">
-                                <div className="h-10 w-10 lg:h-12 lg:w-12 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <span className="text-white text-sm lg:text-lg font-bold">
-                                        {selectedSubModule.SubModuleName.charAt(0)}
-                                    </span>
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <h2 className="text-base lg:text-lg font-semibold text-gray-800 truncate">
-                                        {selectedSubModule.SubModuleName}
-                                    </h2>
-                                    <p className="text-xs lg:text-sm text-gray-600 truncate">
-                                        Path: {selectedSubModule.Path} • ID: {selectedSubModule.SubModulesMasterId}
-                                    </p>
+                        {/* Selected sub-module info */}
+                        {selectedSubModule && (
+                            <div className="mb-4 lg:mb-6 p-3 lg:p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                                <div className="flex items-center space-x-3 lg:space-x-4">
+                                    <div className="h-10 w-10 lg:h-12 lg:w-12 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <span className="text-white text-sm lg:text-lg font-bold">
+                                            {selectedSubModule.SubModuleName.charAt(0)}
+                                        </span>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <h2 className="text-base lg:text-lg font-semibold text-gray-800 truncate">
+                                            {selectedSubModule.SubModuleName}
+                                        </h2>
+                                        <p className="text-xs lg:text-sm text-gray-600 truncate">
+                                            Path: {selectedSubModule.Path} • ID: {selectedSubModule.SubModulesMasterId}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Selected sub-sub-module info */}
-                    {selectedSubSubModule && (
-                        <div className="mb-4 lg:mb-6 p-3 lg:p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                            <div className="flex items-center space-x-3 lg:space-x-4">
-                                <div className="h-10 w-10 lg:h-12 lg:w-12 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <span className="text-white text-sm lg:text-lg font-bold">
-                                        {selectedSubSubModule.SubSubModuleName.charAt(0)}
-                                    </span>
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <h2 className="text-base lg:text-lg font-semibold text-gray-800 truncate">
-                                        {selectedSubSubModule.SubSubModuleName}
-                                    </h2>
-                                    <p className="text-xs lg:text-sm text-gray-600 truncate">
-                                        Path: {selectedSubSubModule.Path} • ID: {selectedSubSubModule.SubSubModulesMasterId}
-                                    </p>
+                        {/* Selected sub-sub-module info */}
+                        {selectedSubSubModule && (
+                            <div className="mb-4 lg:mb-6 p-3 lg:p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                                <div className="flex items-center space-x-3 lg:space-x-4">
+                                    <div className="h-10 w-10 lg:h-12 lg:w-12 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <span className="text-white text-sm lg:text-lg font-bold">
+                                            {selectedSubSubModule.SubSubModuleName.charAt(0)}
+                                        </span>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <h2 className="text-base lg:text-lg font-semibold text-gray-800 truncate">
+                                            {selectedSubSubModule.SubSubModuleName}
+                                        </h2>
+                                        <p className="text-xs lg:text-sm text-gray-600 truncate">
+                                            Path: {selectedSubSubModule.Path} • ID: {selectedSubSubModule.SubSubModulesMasterId}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Page content */}
-                    <div className="min-h-full">
-                        <Outlet />
-                    </div>
-                </main>
-            </div>
+                        {/* Page content */}
+                        <div className="min-h-full">
+                            <Outlet />
+                        </div>
+                    </main>
+                </div>
             </div>
         </MenuProvider>
     )

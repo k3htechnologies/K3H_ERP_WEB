@@ -2,13 +2,23 @@ import useToast from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader'
 import { Button } from '@/ui/components/forms/Button';
 import ToastContainer from '@/ui/components/Toast/ToastContainer'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom';
-import type { AddUpdateCompanyMasterRequest, CompanyMasterData } from '../models/CompanyMasterModel';
+import type { AddUpdateCompanyMasterRequest, CompanyMasterData, CompanyPartnerData } from '@/features/companyMaster/models/CompanyMasterModel';
 import { Input } from '@/ui/components/forms';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { COMPANY_TYPE_OPTIONS } from '@/core/constants';
 import { useCountryStateCityDistrictVillageData } from '@/core/hooks/useCountryStateCityDistrictVillage';
+import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
+import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
+import { Mail, Phone } from 'lucide-react';
+import { filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterRERA, isValidCIN, isValidEmail, isValidMobile, isValidPAN, isValidRERA } from '@/core/utils/fileValidation';
+import { runApiWithLoader } from '@/core/utils';
+import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
+import * as E from 'fp-ts/Either';
 
 const AddCompany: React.FC = () => {
 
@@ -19,18 +29,41 @@ const AddCompany: React.FC = () => {
   // TOAST
   const { toasts, removeToast, addToast } = useToast()
 
-  //#region NAVIGATE
+  // NAVIGATE
   const navigate = useNavigate();
 
-  //#region LOCATION
-  const location = useLocation()
+  //LOCATION
+  const location = useLocation() as {
+    state?: {
+      editCompanyMasterData?: CompanyMasterData | null;
+      fromList?: boolean;
+      listState?: {
+        page: number;
+        filters: any;
+      };
+    };
+  };
 
-  //#region ERROR SET
+  // ERROR SET
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
   // Get COMPANY EDIT DATA FROM LOCATION STATE
-  const editCompanyData = location.state?.editCompanyMasterData as CompanyMasterData | null
+  const editCompanyData = (location.state?.editCompanyMasterData ?? null) as CompanyMasterData | null;
   const isCompanyEdit = !!editCompanyData
+
+  //FILE PICKER
+  const [companyLetterHeadHeaderFiles, setCompanyLetterHeadHeaderFiles] = useState<(File | string)[]>([]);
+  const [companyLetterHeadFooterFiles, setCompanyLetterHeadFooterFiles] = useState<(File | string)[]>([]);
+
+  const [gstCertificateFiles, setGSTCertificateFiles] = useState<(File | string)[]>([]);
+  const [panURLFiles, setPANURLFiles] = useState<(File | string)[]>([]);
+
+  const [cinURLFiles, setCINURLFiles] = useState<(File | string)[]>([]);
+
+
+  //COMPANY PARTNER LIST
+  const [companyPartnerList, setCompanyPartnerList] = useState<CompanyPartnerData[]>([]);
+
   //#endregion
 
 
@@ -41,7 +74,6 @@ const AddCompany: React.FC = () => {
     statesByCountryId,
     districtsByStateId,
     citiesByDistrictId,
-    villagesByCityId,
   } = useCountryStateCityDistrictVillageData()
 
   const [selectedCountryId, setSelectedCountryId] = React.useState<number | null>(1)
@@ -72,14 +104,6 @@ const AddCompany: React.FC = () => {
       ? (citiesByDistrictId[selectedDistrictId] || []).map(c => ({
         label: c.name,
         value: c.id,
-      }))
-      : []
-
-  const villageOptions =
-    selectedCityId != null
-      ? (villagesByCityId[selectedCityId] || []).map(v => ({
-        label: v.name,
-        value: v.id,
       }))
       : []
 
@@ -116,7 +140,7 @@ const AddCompany: React.FC = () => {
   })
   //#endregion
 
-  // set default country = 1 in form also
+  //#region INITIALIZATION
   useEffect(() => {
     if (!isCompanyEdit) {
       setSelectedCountryId(1)
@@ -144,7 +168,7 @@ const AddCompany: React.FC = () => {
         CINNumber: editCompanyData.CINNumber || '',
         CINURL: null,
         RemoveCINURL: '',
-        PanNumber: '',
+        PanNumber: editCompanyData.PANNumber || '',
         PanCardURL: null,
         RemovePanCardURL: '',
         RERANumber: editCompanyData.RERANumber || '',
@@ -163,10 +187,13 @@ const AddCompany: React.FC = () => {
       setSelectedStateId(editCompanyData.StateMasterId || null)
       setSelectedDistrictId(editCompanyData.DistrictMasterId || null)
       setSelectedCityId(editCompanyData.CityMasterId || null)
+      setCompanyPartnerList(editCompanyData.CompanyPartnerData);
     }
   }, [isCompanyEdit, editCompanyData])
 
+  //#endregion
 
+  //#region HANDLE CHANGE EVENT
   const handleFieldChange = (field: keyof AddUpdateCompanyMasterRequest, value: string | number | boolean) => {
 
     setCompanyFormData(prev => ({ ...prev, [field]: value }))
@@ -177,6 +204,412 @@ const AddCompany: React.FC = () => {
       setErrors(prev => ({ ...prev, [field]: '' }))
     }
   }
+  //#endregion
+
+  //#region PARTNER DATA
+  const companyListForTable = useMemo(() => companyPartnerList, [companyPartnerList]);
+
+  const companyPartnerColumns = useMemo<TableColumn[]>(
+    () => [
+      {
+        key: 'FullName',
+        label: 'Full Name',
+        width: '25',
+        sortable: true,
+        fixed: 'left',
+        align: 'left',
+        render: (value, row) => {
+          // Get images from PhotoURL CSV
+          const images: string[] = (row.PhotoURL || "")
+            .split(",")
+            .map((x: string) => x.trim())
+            .filter((x: string) => x.length > 0);
+
+          const photo = images.length ? images[0] : null;
+
+          return (
+            <div className="flex items-center justify-start">
+
+              {/* Circle Avatar with Viewer */}
+              <MultiImageViewer
+                images={images}
+                title="Profile Photo"
+                triggerLabel={
+                  photo ? (
+                    <img
+                      src={photo}
+                      alt="Profile"
+                      className="h-9 w-9 rounded-full object-cover mr-4 cursor-pointer border"
+                    />
+                  ) : (
+                    <div className="h-9 w-9 rounded-full bg-gray-300 mr-4"></div>
+                  )
+                }
+              />
+
+              {/* Name */}
+              <TooltipText
+                text={value || "-"}
+                maxWidth="250px"
+                tooltipThreshold={25}
+              />
+            </div>
+          );
+        }
+      },
+
+      {
+        key: 'DateOfBirth',
+        label: 'Date of Birth',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+      },
+      {
+        key: 'Gender',
+        label: 'Gender',
+        width: '10',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-',
+      },
+      {
+        key: 'MobileNumber',
+        label: 'Mobile Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-',
+      },
+      {
+        key: 'EmailId',
+        label: 'Email ID',
+        width: '20',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-',
+      },
+      {
+        key: 'PartnerPercentage',
+        label: 'Share (%)',
+        width: '10',
+        sortable: false,
+        align: 'center',
+        render: (value) => (value !== null && value !== undefined ? value : '-'),
+      },
+      {
+        key: 'PanNumber',
+        label: 'PAN Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value: string, row: any) => {
+          const images: string[] = (row.PanCardURL || '')
+            .split(',')
+            .map((x: string) => x.trim())
+            .filter((x: string) => x.length > 0);
+
+          if (!images.length) {
+            return value || '-';
+          }
+
+          return (
+            <MultiImageViewer
+              images={images}
+              title="PAN Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
+      },
+
+
+      {
+        key: 'AadharCardNumber',
+        label: 'Aadhar Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value: string, row: any) => {
+          const images: string[] = (row.AadharCardURL || '')
+            .split(',')
+            .map((x: string) => x.trim())
+            .filter((x: string) => x.length > 0);
+
+          if (!images.length) {
+            return value || '-';
+          }
+
+          return (
+            <MultiImageViewer
+              images={images}
+              title="Aadhar Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
+
+      }
+    ],
+    []
+  )
+  //#endregion
+
+  //#region ADD UPDATE COMPANY MASTER
+
+  const PushCompanyFormData = (): FormData => {
+
+    const fd = new FormData();
+
+    fd.append('CompanyId', String(companyFormData.CompanyId ?? 0));
+    fd.append('Uniquekey', companyFormData.Uniquekey ?? '');
+    fd.append('CompanyName', companyFormData.CompanyName ?? '');
+    fd.append('CompanyType', companyFormData.CompanyType ?? '');
+    fd.append('ContactPerson', companyFormData.ContactPerson ?? '');
+    fd.append('MobileNumber', companyFormData.MobileNumber ?? '');
+    fd.append('EmailId', companyFormData.EmailId ?? '');
+    fd.append('LandLineNumber', companyFormData.LandLineNumber ?? '');
+    fd.append('GSTNumber', companyFormData.GSTNumber ?? '');
+    fd.append('CINNumber', companyFormData.CINNumber ?? '');
+    fd.append('PanNumber', companyFormData.PanNumber ?? '');
+    fd.append('RERANumber', companyFormData.RERANumber ?? '');
+
+    fd.append('CountryMasterId', String(companyFormData.CountryMasterId ?? 0));
+    fd.append('StateMasterId', String(companyFormData.StateMasterId ?? 0));
+    fd.append('DistrictMasterId', String(companyFormData.DistrictMasterId ?? 0));
+    fd.append('CityMasterId', String(companyFormData.CityMasterId ?? 0));
+
+    // 2) Existing URLs (string) from file pickers
+    const gstExistingUrls = gstCertificateFiles
+      .filter(f => typeof f === 'string') as string[];
+    const panExistingUrls = panURLFiles
+      .filter(f => typeof f === 'string') as string[];
+    const cinExistingUrls = cinURLFiles
+      .filter(f => typeof f === 'string') as string[];
+    const headerExistingUrls = companyLetterHeadHeaderFiles
+      .filter(f => typeof f === 'string') as string[];
+    const footerExistingUrls = companyLetterHeadFooterFiles
+      .filter(f => typeof f === 'string') as string[];
+
+    fd.append('GSTCertificateURL', gstExistingUrls.join(','));
+    fd.append('PanCardURL', panExistingUrls.join(','));
+    fd.append('CINURL', cinExistingUrls.join(','));
+    fd.append('CompanyLetterheadHeaderURL', headerExistingUrls.join(','));
+    fd.append('CompanyLetterheadFooterURL', footerExistingUrls.join(','));
+
+    // Remove flags if you use them
+    fd.append(
+      'RemoveGSTCertificateURL',
+      companyFormData.RemoveGSTCertificateURL ?? '',
+    );
+    fd.append('RemovePanCardURL', companyFormData.RemovePanCardURL ?? '');
+
+    fd.append('RemoveCINURL', companyFormData.RemoveCINURL ?? '');
+
+    fd.append(
+      'RemoveCompanyLetterheadHeaderURL',
+      companyFormData.RemoveCompanyLetterheadHeaderURL ?? '',
+    );
+
+    fd.append(
+      'RemoveCompanyLetterheadFooterURL',
+      companyFormData.RemoveCompanyLetterheadFooterURL ?? '',
+    );
+
+    // 3) New uploaded files (File) – append with backend field names
+    gstCertificateFiles.forEach(file => {
+      if (file instanceof File) {
+        fd.append('GSTCertificateURL', file); // name expected by backend
+      }
+    });
+
+    panURLFiles.forEach(file => {
+      if (file instanceof File) {
+        fd.append('PanCardURL', file);
+      }
+    });
+
+    cinURLFiles.forEach(file => {
+      if (file instanceof File) {
+        fd.append('CINURL', file);
+      }
+    });
+
+    companyLetterHeadHeaderFiles.forEach(file => {
+      if (file instanceof File) {
+        fd.append('CompanyLetterheadHeaderURL', file);
+      }
+    });
+
+    companyLetterHeadFooterFiles.forEach(file => {
+      if (file instanceof File) {
+        fd.append('CompanyLetterheadFooterURL', file);
+      }
+    });
+
+    return fd;
+  };
+
+
+  const handleAddUpdateCompanyMaster = async () => {
+
+    // Clear previous errors
+    setErrors({})
+
+    // Validate form
+    const validation = validateCompanyMasterForm()
+
+    if (!validation.isValid) {
+      setErrors(validation.errors)
+      return
+    }
+
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+
+
+        const pushCompanyFormData = PushCompanyFormData();
+
+        const response = await CompanyMasterService.apiCallAddUpdateCompanyMaster(pushCompanyFormData);
+
+        if (E.isRight(response)) {
+
+
+          const isAdd = companyFormData.CompanyId === 0
+
+          if (isAdd) {
+
+            addToast({ type: 'success', title: 'Company master added successfully' });
+
+          } else {
+
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+          }
+
+          if (location.state?.fromList && location.state.listState) {
+            navigate('/companyMaster', {
+              state: {
+                listState: location.state.listState,
+              },
+              replace: true,
+            });
+          } else {
+            
+            navigate('/companyMaster');
+          }
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+        }
+
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Operation failed' })
+      },
+      undefined,
+      companyFormData.CompanyId === 0 ? 'Add Company Master' : 'Update Company Master...'
+    )
+  }
+
+
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateCompanyMasterForm = (): {
+    isValid: boolean;
+    errors: { [key: string]: string };
+  } => {
+    const newErrors: { [key: string]: string } = {};
+
+    // Company Name
+    if (!companyFormData.CompanyName?.trim()) {
+      newErrors.CompanyName = "Company Name is required.";
+    } else if (companyFormData.CompanyName?.length > 50) {
+      newErrors.CompanyName = "Company Name must be at most 50 characters.";
+    }
+
+    // Company Type
+    if (!companyFormData.CompanyType?.trim()) {
+      newErrors.CompanyType = "Company Type is required.";
+    }
+
+    // Contact Person
+    if (!companyFormData.ContactPerson?.trim()) {
+      newErrors.ContactPerson = "Contact Person is required.";
+    }
+
+    // Mobile
+    if (!companyFormData.MobileNumber?.trim()) {
+      newErrors.MobileNumber = "Mobile Number is required.";
+    } else if (!isValidMobile(companyFormData.MobileNumber?.trim())) {
+      newErrors.MobileNumber = "Enter a valid 10-digit mobile number.";
+    }
+
+    // Email
+    if (!companyFormData.EmailId?.trim()) {
+      newErrors.EmailId = "Email Id is required.";
+    } else if (!isValidEmail(companyFormData.EmailId?.trim())) {
+      newErrors.EmailId = "Enter a valid email address.";
+    }
+
+    // Landline (if required)
+    if (!companyFormData.LandLineNumber?.trim()) {
+      newErrors.LandLineNumber = "Land Line Number is required.";
+    }
+
+    // GST Number
+    if (!companyFormData.GSTNumber?.trim()) {
+      newErrors.GSTNumber = "GST Number is required.";
+    }
+    // (You can add a GST regex if you want stricter)
+
+    // PAN
+    if (!companyFormData.PanNumber?.trim()) {
+      newErrors.PanNumber = "PAN Number is required.";
+    } else if (!isValidPAN(companyFormData.PanNumber?.trim())) {
+      newErrors.PanNumber = "Enter a valid PAN Number.";
+    }
+
+    // CIN
+    if (!companyFormData.CINNumber?.trim()) {
+      newErrors.CINNumber = "CIN Number is required.";
+    } else if (!isValidCIN(companyFormData.CINNumber?.trim())) {
+      newErrors.CINNumber = "Enter a valid CIN Number.";
+    }
+
+    // RERA
+    if (!companyFormData.RERANumber?.trim()) {
+      newErrors.RERANumber = "RERA Number is required.";
+    } else if (!isValidRERA(companyFormData.RERANumber?.trim())) {
+      newErrors.RERANumber = "Enter a valid RERA Number.";
+    }
+
+    // Location
+    if (!companyFormData.CountryMasterId) {
+      newErrors.CountryMasterId = "Country is required.";
+    }
+    if (!companyFormData.StateMasterId) {
+      newErrors.StateMasterId = "State is required.";
+    }
+    if (!companyFormData.DistrictMasterId) {
+      newErrors.DistrictMasterId = "District is required.";
+    }
+
+    if (!companyFormData.CityMasterId) {
+      newErrors.CityMasterId = "City is required.";
+    }
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors,
+    };
+  };
+
+  //#endregion
 
   return (
     <>
@@ -185,7 +618,7 @@ const AddCompany: React.FC = () => {
 
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
         {/* ✅ Fixed HEADER */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-md h-16 flex items-center justify-between px-6">
+        <div className="fixed top-0 left-0 right-0 z-20 bg-white border-b border-gray-200 shadow-md h-16 flex items-center justify-between px-6">
 
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-semibold text-gray-900">
@@ -213,13 +646,14 @@ const AddCompany: React.FC = () => {
                   type="text"
                   value={companyFormData.CompanyName}
                   onChange={(e) => {
-                    const companyName = e.target.value.replace(/[^a-zA-Z]/g, '');
-                    handleFieldChange('CompanyName', companyName)
+                    handleFieldChange('CompanyName', e.target.value)
                   }}
-                  placeholder="Enter first name"
+                  minLength={5}
+                  maxLength={50}
+                  placeholder="Enter company name"
                 />
-                {errors.FirstName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.companyName}</p>
+                {errors.CompanyName && (
+                  <p className="text-red-500 text-xs mt-1">{errors.CompanyName}</p>
                 )}
               </div>
               <div>
@@ -249,8 +683,10 @@ const AddCompany: React.FC = () => {
                 <Input
                   type="text"
                   value={companyFormData.MobileNumber}
+                  maxLength={10}
+                  leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
                   onChange={(e) => {
-                    const mobileNumber = e.target.value.replace(/[^a-zA-Z]/g, '');
+                    const mobileNumber = filterMobile(e.target.value);
                     handleFieldChange('MobileNumber', mobileNumber)
                   }}
                   placeholder="Enter valid mobile number"
@@ -268,14 +704,17 @@ const AddCompany: React.FC = () => {
                 <Input
                   type="text"
                   value={companyFormData.ContactPerson}
+                  leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                  minLength={5}
+                  maxLength={50}
                   onChange={(e) => {
-                    const contactPerson = e.target.value.replace(/[^a-zA-Z]/g, '');
-                    handleFieldChange('CompanyName', contactPerson)
+                    const contactPerson = filterLetters(e.target.value);
+                    handleFieldChange('ContactPerson', contactPerson)
                   }}
                   placeholder="Enter contact person name"
                 />
-                {errors.contactPerson && (
-                  <p className="text-red-500 text-xs mt-1">{errors.contactPerson}</p>
+                {errors.ContactPerson && (
+                  <p className="text-red-500 text-xs mt-1">{errors.ContactPerson}</p>
                 )}
               </div>
               <div>
@@ -287,8 +726,9 @@ const AddCompany: React.FC = () => {
                 <Input
                   type="text"
                   value={companyFormData.EmailId}
+                  leftIcon={<Mail className="h-4 w-4 text-gray-400" />}
                   onChange={(e) => {
-                    const emailId = e.target.value.replace(/[^a-zA-Z]/g, '');
+                    const emailId = filterEmail(e.target.value);
                     handleFieldChange('EmailId', emailId)
                   }}
                   placeholder="Enter valid email id"
@@ -306,8 +746,9 @@ const AddCompany: React.FC = () => {
                 <Input
                   type="text"
                   value={companyFormData.LandLineNumber}
+                  leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
                   onChange={(e) => {
-                    const landLineNumber = e.target.value.replace(/[^a-zA-Z]/g, '');
+                    const landLineNumber = filterLandline(e.target.value);
                     handleFieldChange('LandLineNumber', landLineNumber)
                   }}
                   placeholder="Enter land line number"
@@ -333,10 +774,10 @@ const AddCompany: React.FC = () => {
                   type="text"
                   value={companyFormData.GSTNumber}
                   onChange={(e) => {
-                    const gstNumber = e.target.value.replace(/[^a-zA-Z]/g, '');
+                    const gstNumber = filterGST(e.target.value);
                     handleFieldChange('GSTNumber', gstNumber)
                   }}
-                  placeholder="Enter GST Number"
+                  placeholder="Enter valid GST Number"
                 />
                 {errors.GSTNumber && (
                   <p className="text-red-500 text-xs mt-1">{errors.GSTNumber}</p>
@@ -347,7 +788,21 @@ const AddCompany: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   GST Certificate <span className="text-red-500">*</span>
                 </label>
-
+                <MultiFilePicker
+                  label='GST Certificate'
+                  value={gstCertificateFiles}
+                  onChange={setGSTCertificateFiles}
+                  availableFilesURL={editCompanyData?.GSTCertificateURL ?? ""}
+                  allowedTypes={[
+                    "image/jpeg",
+                    "image/png",
+                    "application/pdf",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  ]}
+                  maxFiles={5}
+                  maxSizeMB={10}
+                />
 
                 {errors.GSTCertificateURL && (
                   <p className="text-red-500 text-xs mt-1">{errors.GSTCertificateURL}</p>
@@ -363,7 +818,7 @@ const AddCompany: React.FC = () => {
                   type="text"
                   value={companyFormData.PanNumber}
                   onChange={(e) => {
-                    const panNumber = e.target.value.replace(/[^a-zA-Z]/g, '');
+                    const panNumber = filterPAN(e.target.value);
                     handleFieldChange('PanNumber', panNumber)
                   }}
                   placeholder="Enter valid PAN number"
@@ -377,7 +832,21 @@ const AddCompany: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   PAN URL <span className="text-red-500">*</span>
                 </label>
-
+                <MultiFilePicker
+                  label='PAN Card'
+                  value={panURLFiles}
+                  onChange={setPANURLFiles}
+                  availableFilesURL={editCompanyData?.PanCardURL ?? ""}
+                  allowedTypes={[
+                    "image/jpeg",
+                    "image/png",
+                    "application/pdf",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  ]}
+                  maxFiles={5}
+                  maxSizeMB={10}
+                />
                 {errors.PanCardURL && (
                   <p className="text-red-500 text-xs mt-1">{errors.PanCardURL}</p>
                 )}
@@ -391,8 +860,9 @@ const AddCompany: React.FC = () => {
                 <Input
                   type="text"
                   value={companyFormData.CINNumber}
+                  maxLength={21}
                   onChange={(e) => {
-                    const cinNumber = e.target.value.replace(/[^a-zA-Z]/g, '');
+                    const cinNumber = filterCIN(e.target.value);
                     handleFieldChange('CINNumber', cinNumber)
                   }}
                   placeholder="Enter valid CIN Number"
@@ -406,7 +876,21 @@ const AddCompany: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   CIN URL<span className="text-red-500">*</span>
                 </label>
-
+                <MultiFilePicker
+                  label='CIN'
+                  value={cinURLFiles}
+                  onChange={setCINURLFiles}
+                  availableFilesURL={editCompanyData?.CINURL ?? ""}
+                  allowedTypes={[
+                    "image/jpeg",
+                    "image/png",
+                    "application/pdf",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  ]}
+                  maxFiles={5}
+                  maxSizeMB={10}
+                />
                 {errors.CINURL && (
                   <p className="text-red-500 text-xs mt-1">{errors.CINURL}</p>
                 )}
@@ -421,8 +905,9 @@ const AddCompany: React.FC = () => {
                 <Input
                   type="text"
                   value={companyFormData.RERANumber}
+                  maxLength={20}
                   onChange={(e) => {
-                    const reraNumber = e.target.value.replace(/[^a-zA-Z]/g, '');
+                    const reraNumber = filterRERA(e.target.value);
                     handleFieldChange('RERANumber', reraNumber)
                   }}
                   placeholder="Enter valid RERA Number"
@@ -549,6 +1034,21 @@ const AddCompany: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Company Letterhead Header <span className="text-red-500">*</span>
                 </label>
+                <MultiFilePicker
+                  label='Company Letterhead Header'
+                  value={companyLetterHeadHeaderFiles}
+                  onChange={setCompanyLetterHeadHeaderFiles}
+                  availableFilesURL={editCompanyData?.CompanyLetterheadHeaderURL ?? ""}
+                  allowedTypes={[
+                    "image/jpeg",
+                    "image/png",
+                    "application/pdf",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  ]}
+                  maxFiles={5}
+                  maxSizeMB={10}
+                />
                 {errors.CompanyLetterheadHeaderURL && (
                   <p className="text-red-500 text-xs mt-1">{errors.CompanyLetterheadHeaderURL}</p>
                 )}
@@ -559,6 +1059,22 @@ const AddCompany: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Company Letterhead Footer <span className="text-red-500">*</span>
                 </label>
+
+                <MultiFilePicker
+                  label='Company Letterhead Footer'
+                  value={companyLetterHeadFooterFiles}
+                  onChange={setCompanyLetterHeadFooterFiles}
+                  availableFilesURL={editCompanyData?.CompanyLetterheadFooterURL ?? ""}
+                  allowedTypes={[
+                    "image/jpeg",
+                    "image/png",
+                    "application/pdf",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  ]}
+                  maxFiles={5}
+                  maxSizeMB={10}
+                />
                 {errors.CompanyLetterheadFooterURL && (
                   <p className="text-red-500 text-xs mt-1">{errors.CompanyLetterheadFooterURL}</p>
                 )}
@@ -571,12 +1087,20 @@ const AddCompany: React.FC = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Company Partner</h3>
 
-
+            <DataTable
+              data={companyListForTable ?? []}
+              columns={companyPartnerColumns}
+              emptyMessage="No company Partner found"
+              fixedHeight={true}
+              maxHeight="calc(100vh - 200px)"
+              recordsPerPage={20}
+              className="flex-1"
+            />
           </div>
         </div>
         {/* ✅ Fixed Bottom  */}
         <div
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+          className="fixed bottom-0 left-0 right-0 z-16 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <Button
@@ -593,7 +1117,7 @@ const AddCompany: React.FC = () => {
           <Button
             color="green"
             size="sm"
-            // onClick={() => handleSavePermissions()}
+            onClick={handleAddUpdateCompanyMaster}
             className="px-6"
           >
             Save

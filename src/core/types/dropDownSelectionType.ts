@@ -39,22 +39,10 @@ export interface MultiSelectDropdownProps {
   noDataText?: string
   size?: 'sm' | 'md' | 'lg'
 }
-// export interface SinglePageSelectionProps {
-//   label?: string;
-//   options: { label: string; value: string | number }[];
-//   value?: string | number;
-//   onChange: (value: string | number) => void;
-//   disabled?: boolean;
-//   placeholder?: string;
-//   size?: "sm" | "md" | "lg";
-//   theme?: {
-//     spacing: Record<string, string>;
-//     fontSize: Record<string, string>;
-//   };
-// }
+
 export interface SinglePageSelectionProps {
   label?: string;
-  options: { label: string; value: string | number }[];
+  options: Record<string, any>[];
   value?: string | number;
   onChange: (value: string | number) => void;
   disabled?: boolean;

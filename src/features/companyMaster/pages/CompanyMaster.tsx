@@ -88,12 +88,6 @@ export const CompanyMaster: React.FC = () => {
   //#endregion
 
   //#region INIT
-  // useEffect(() => {
-  //   if (hasFetchedInitialCompanies.current) return
-  //   hasFetchedInitialCompanies.current = true;
-  //   fetchCompanyList()
-  // }, [])
-
   useEffect(() => {
     if (hasFetchedInitialCompanies.current) return;
     hasFetchedInitialCompanies.current = true;

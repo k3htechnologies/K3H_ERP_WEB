@@ -594,8 +594,8 @@ export const DesignationMaster: React.FC = () => {
       DesignationName: '',
       NoticePeriod: 0
     })
-    const [nameError, setNameError] = useState('')
-    const [codeError, setCodeError] = useState('')
+    const [designationNameError, setDesignationNameError] = useState('')
+    const [noticePeriodError, setNoticePeriodError] = useState('')
 
     useEffect(() => {
       if (isOpen) {
@@ -614,8 +614,8 @@ export const DesignationMaster: React.FC = () => {
             NoticePeriod: 0,
           })
         }
-        setNameError('')
-        setCodeError('')
+        setDesignationNameError('')
+        setNoticePeriodError('')
       }
     }, [isOpen, data])
 
@@ -624,26 +624,25 @@ export const DesignationMaster: React.FC = () => {
       e.preventDefault()
 
       // Clear previous errors
-      setNameError('')
-      setCodeError('')
+      setDesignationNameError('')
+      setNoticePeriodError('')
 
       let hasErrors = false;
 
-      // Designation Name validation
       const designationName = formData.DesignationName?.trim() || ''
+      
       if (designationName.trim() === "") {
-        setNameError("Designation Name is required.")
+        setDesignationNameError("Designation Name is required.")
         hasErrors = true
       }
       else if (designationName.length < 3) {
-        setNameError("Designation Name must be at least 3 characters long.")
+        setDesignationNameError("Designation Name must be at least 3 characters long.")
         hasErrors = true
       }
 
-      // Notice Period validation
       const noticePeriod = formData.NoticePeriod || 0;
       if (noticePeriod === 0) {
-        setCodeError('Notice Period is required.')
+        setNoticePeriodError('Notice Period is required.')
         hasErrors = true
       }
 
@@ -666,9 +665,9 @@ export const DesignationMaster: React.FC = () => {
 
 
       if (field === 'DesignationName') {
-        setNameError('')
+        setDesignationNameError('')
       } else if (field === 'NoticePeriod') {
-        setCodeError('')
+        setNoticePeriodError('')
       }
     }
 
@@ -678,7 +677,7 @@ export const DesignationMaster: React.FC = () => {
         isOpen={isOpen}
         onClose={onClose}
         onCancel={onClose}
-        title="Settings - Company setup (Designation Details)"
+        title={data ? 'Update Designation Master' : 'Add Designation Master'}
         onSubmit={handleSubmitAddUpdateDesignation}
         saveText={data ? 'Update' : 'Save'}
         cancelText='Cancel'
@@ -687,31 +686,26 @@ export const DesignationMaster: React.FC = () => {
         <div className="space-y-6">
           <div className="space-y-4">
 
-            {/* Designation Name Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Designation Name <span className="text-red-500">*</span>
-              </label>
               <Input
+                label='Designation Name'
+                required
+                error={designationNameError}
                 type="text"
                 value={formData.DesignationName}
                 maxLength={100}
                 onChange={(e) => handleFieldChange('DesignationName', e.target.value)}
-                placeholder="Enter designation name"
+                placeholder="Enter Designation Name"
               />
-              {nameError && (
-                <p className="text-red-500 text-sm mt-1">{nameError}</p>
-              )}
+
             </div>
 
-
-            {/* NOTICE PERIOD Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Notice Period <span className="text-red-500">*</span>
-              </label>
 
               <Input
+                label='Notice Period'
+                required
+                error={noticePeriodError}
                 type="text"
                 value={formData.NoticePeriod ?? ''}
                 maxLength={4}
@@ -722,10 +716,6 @@ export const DesignationMaster: React.FC = () => {
                 placeholder="Enter Notice Period"
               />
 
-
-              {codeError && (
-                <p className="text-red-500 text-sm mt-1">{codeError}</p>
-              )}
             </div>
 
           </div>
@@ -975,10 +965,9 @@ export const DesignationMaster: React.FC = () => {
           <div className="space-y-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Designation Name
-                </label>
+
                 <Input
+                  label='Designation Name'
                   type="text"
                   value={tempFilters.DesignationName || ''}
                   onChange={(e) => handleFilterChange('DesignationName', e.target.value)}

@@ -105,6 +105,27 @@ export interface AddUpdateCompanyMasterRequest {
     RemoveCompanyLetterheadFooterURL: string | ''
 }
 
+export interface AddUpdateCompanyPartnerRequest {
+    CompanyPartnerId: number | 0
+    FirstName: string | ''
+    LastName: string | ''
+    MiddleName: string | ''
+    DateOfBirth: string | null
+    Gender: string | ''
+    MobileNumber: string | ''
+    EmailId: string | ''
+    PartnerPercentage: number | 0
+    PanNumber: string | ''
+    PanCardURL: File[] | null
+    RemovePanCardURL: string | ''
+    AadharCardNumber: string | ''
+    AadharCardURL: File[] | null
+    RemoveAadharCardURL: string | ''
+    PhotoURL: File[] | null
+    RemovePhotoURL: string | ''
+}
+
+
 export interface DeleteCompanyMasterRequest {
     CompanyId: number
     UniqueKey: string

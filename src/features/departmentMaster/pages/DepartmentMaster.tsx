@@ -597,8 +597,9 @@ export const DepartmentMaster: React.FC = () => {
       DepartmentCode: '',
       DepartmentName: ''
     })
-    const [nameError, setNameError] = useState('')
-    const [codeError, setCodeError] = useState('')
+    const [departmentCodeError, setDepartmentCodeError] = useState('')
+    const [departmentNameError, setDepartmentNameError] = useState('')
+
 
     useEffect(() => {
       if (isOpen) {
@@ -617,8 +618,8 @@ export const DepartmentMaster: React.FC = () => {
             DepartmentName: ''
           })
         }
-        setNameError('')
-        setCodeError('')
+        setDepartmentCodeError('')
+        setDepartmentNameError('')
       }
     }, [isOpen, data])
 
@@ -627,29 +628,29 @@ export const DepartmentMaster: React.FC = () => {
       e.preventDefault()
 
       // Clear previous errors
-      setNameError('')
-      setCodeError('')
+      setDepartmentCodeError('')
+      setDepartmentNameError('')
 
       let hasErrors = false;
 
       // Department Name validation
       const departmentName = formData.DepartmentName || ''
       if (departmentName.trim() === "") {
-        setNameError("Department Name is required.")
+        setDepartmentNameError("Department Name is required.")
         hasErrors = true
       }
       else if (departmentName.length < 3) {
-        setNameError("Department Name must be at least 3 characters long.")
+        setDepartmentNameError("Department Name must be at least 3 characters long.")
         hasErrors = true
       }
 
       // Department Code validation
       const departmentCode = formData.DepartmentCode || ''
       if (departmentCode.trim() === "") {
-        setCodeError("Department Code is required.")
+        setDepartmentCodeError("Department Code is required.")
         hasErrors = true
       } else if (departmentCode.length >= 5) {
-        setCodeError("Department Code must be at least 4 characters long.")
+        setDepartmentCodeError("Department Code must be at least 4 characters long.")
         hasErrors = true
       }
 
@@ -670,9 +671,9 @@ export const DepartmentMaster: React.FC = () => {
       setFormData(prev => ({ ...prev, [field]: value }))
 
       if (field === 'DepartmentName') {
-        setNameError('')
+        setDepartmentNameError('')
       } else if (field === 'DepartmentCode') {
-        setCodeError('')
+        setDepartmentCodeError('')
       }
     }
 
@@ -690,36 +691,32 @@ export const DepartmentMaster: React.FC = () => {
         <div className="space-y-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Department Code <span className="text-red-500">*</span>
-              </label>
+
               <Input
+                label='Department Code'
+                required
+                error={departmentCodeError}
                 type="text"
                 value={formData.DepartmentCode}
                 maxLength={4}
                 onChange={(e) => handleFieldChange('DepartmentCode', e.target.value)}
                 placeholder="Enter department code"
               />
-              {codeError && (
-                <p className="text-red-500 text-sm mt-1">{codeError}</p>
-              )}
+
             </div>
 
-            {/* Department Name Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Department Name <span className="text-red-500">*</span>
-              </label>
               <Input
+                label='Department Name'
+                required
+                error={departmentNameError}
                 type="text"
                 value={formData.DepartmentName}
                 maxLength={100}
                 onChange={(e) => handleFieldChange('DepartmentName', e.target.value)}
                 placeholder="Enter department name"
               />
-              {nameError && (
-                <p className="text-red-500 text-sm mt-1">{nameError}</p>
-              )}
+
             </div>
 
 
@@ -973,10 +970,8 @@ export const DepartmentMaster: React.FC = () => {
           <div className="space-y-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Department Name
-                </label>
                 <Input
+                  label='Department Name'
                   type="text"
                   value={tempFilters.DepartmentName || ''}
                   onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}

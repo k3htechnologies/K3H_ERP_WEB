@@ -9,6 +9,7 @@ export const SinglePageSelection = forwardRef<
     labelKey?: string;
     valueKey?: string;
     searchable?: boolean;
+    error?: string;
   }
 >(
   (
@@ -23,6 +24,7 @@ export const SinglePageSelection = forwardRef<
       valueKey = "value",
       searchable = true,
       size = "md",
+      error,
     },
     ref
   ) => {
@@ -129,13 +131,14 @@ export const SinglePageSelection = forwardRef<
             height: currentSize.height,
             fontSize: currentSize.fontSize,
             padding: currentSize.padding,
-            border: "1px solid #ccc",
             borderRadius: "6px",
             backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
             cursor: disabled ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
+
           }}
         >
           <span style={{ color: value ? "#000" : "#888" }}>{selectedLabel}</span>

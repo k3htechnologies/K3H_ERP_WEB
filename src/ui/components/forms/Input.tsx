@@ -56,7 +56,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         fontSize: currentSize.fontSize,
         fontWeight: theme.fontWeight.normal,
         borderRadius: theme.borderRadius.lg,
-        border: `1px solid ${theme.colors.border}`,
+        border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
         outline: 'none',
         transition: theme.transitions.normal,
         boxSizing: 'border-box' as const,
@@ -100,8 +100,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     }
 
     const focusStyles = {
-      borderColor: error ? theme.colors.errorLight : theme.colors.primaryLight,
-      boxShadow: error ? `0 0 0 3px ${theme.colors.errorLight}` : `0 0 0 1px ${theme.colors.primaryLight}`,
+      borderColor: error ? theme.colors.error : theme.colors.primaryLight,
+      boxShadow: error ? `0 0 0 1px ${theme.colors.error}` : `0 0 0 1px ${theme.colors.primaryLight}`,
       backgroundColor: variant === 'filled' ? theme.colors.background : theme.colors.background,
     }
 
@@ -112,12 +112,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             display: 'block',
             fontSize: theme.fontSize.sm,
             fontWeight: theme.fontWeight.medium,
-            color: error ? theme.colors.error : theme.colors.text,
+            color:  theme.colors.text,
             marginBottom: theme.spacing.sm,
           }}>
             {label}
             {props.required && <span style={{ color: theme.colors.error, marginLeft: '4px' }}>*</span>}
           </label>
+          
         )}
         
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -143,8 +144,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             disabled={disabled || loading}
             style={{
               ...inputStyles,
-              ...style,
+              ...style
+              
             }}
+
+           
             className={className}
             onFocus={(e) => {
               Object.assign(e.target.style, focusStyles)
@@ -176,7 +180,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {(error || helperText) && (
           <div style={{
             marginTop: theme.spacing.sm,
-            fontSize: theme.fontSize.lg,
+            fontSize: theme.fontSize.sm,
             color: error ? theme.colors.error : theme.colors.textSecondary,
           }}>
             {error || helperText}

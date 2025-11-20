@@ -6,8 +6,9 @@ import React, {
   type ReactNode,
 } from 'react'
 import * as E from 'fp-ts/Either'
-import type { CountryStateCityDistrictVillageData } from '@/features/technical/models/TechnicalModel';
-import { technicalService } from '@/features/technical/services/TechnicalService';
+import type { CountryStateCityDistrictVillageData } from '@/features/technical/models/TechnicalModel'
+import { technicalService } from '@/features/technical/services/TechnicalService'
+import { LocalStorageHelper } from '../utils/localStorageHelper'
 
 // Generic option type for dropdowns
 export interface CountryStateCityDistrictVillageOption {
@@ -26,28 +27,59 @@ interface CountryStateCityDistrictVillageContextValue {
   villagesByCityId: Record<number, CountryStateCityDistrictVillageOption[]>
 }
 
-const CountryStateCityDistrictVillageContext = createContext<CountryStateCityDistrictVillageContextValue | undefined>(
-  undefined,
-)
+const CountryStateCityDistrictVillageContext =
+  createContext<CountryStateCityDistrictVillageContextValue | undefined>(
+    undefined,
+  )
 
 export const CountryStateCityDistrictVillage: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [value, setValue] = useState<CountryStateCityDistrictVillageContextValue>({
-    isLoading: true,
-    error: null,
-    countries: [],
-    statesByCountryId: {},
-    districtsByStateId: {},
-    citiesByDistrictId: {},
-    villagesByCityId: {},
-  })
+  const [value, setValue] =
+    useState<CountryStateCityDistrictVillageContextValue>({
+      isLoading: true,
+      error: null,
+      countries: [],
+      statesByCountryId: {},
+      districtsByStateId: {},
+      citiesByDistrictId: {},
+      villagesByCityId: {},
+    })
 
   useEffect(() => {
     let isMounted = true
 
     const loadLocations = async () => {
       try {
+        
+        // 1️⃣ FIRST: try from localStorage
+        // const stored = LocalStorageHelper.getCountry_State_District_City_VillageData?.()
+
+        // if (stored && stored.length > 0) {
+        //   const {
+        //     countries,
+        //     statesByCountryId,
+        //     districtsByStateId,
+        //     citiesByDistrictId,
+        //     villagesByCityId,
+        //   } = buildLocationMaps(stored)
+
+        //   if (!isMounted) return
+        //   setValue({
+        //     isLoading: false,
+        //     error: null,
+        //     countries,
+        //     statesByCountryId,
+        //     districtsByStateId,
+        //     citiesByDistrictId,
+        //     villagesByCityId,
+        //   })
+
+        //   // ✅ We already have data, no API call
+        //   return
+        // }
+
+        // 2️⃣ If no local data, call API
         const result = await technicalService.apiCallCountryStateDistrictCityVillage()
 
         if (!isMounted) return
@@ -61,9 +93,8 @@ export const CountryStateCityDistrictVillage: React.FC<{ children: ReactNode }> 
           return
         }
 
-        // 👉 Adjust this line according to your real response property name
         const list: CountryStateCityDistrictVillageData[] =
-          result.right.Data?.CountryStateCityDistrictVillageData || [];
+          result.right.Data?.CountryStateCityDistrictVillageData || []
 
         const {
           countries,
@@ -72,6 +103,9 @@ export const CountryStateCityDistrictVillage: React.FC<{ children: ReactNode }> 
           citiesByDistrictId,
           villagesByCityId,
         } = buildLocationMaps(list)
+
+        // 3️⃣ Store in localStorage for next time
+        LocalStorageHelper.storeCountry_State_District_City_Village_Data?.(list)
 
         setValue({
           isLoading: false,
@@ -181,9 +215,9 @@ function buildLocationMaps(list: CountryStateCityDistrictVillageData[]) {
     }
   }
 
-  const countries: CountryStateCityDistrictVillageOption[] = Array.from(countryMap.entries()).map(
-    ([id, name]) => ({ id, name }),
-  )
+  const countries: CountryStateCityDistrictVillageOption[] = Array.from(
+    countryMap.entries(),
+  ).map(([id, name]) => ({ id, name }))
 
   return {
     countries,
@@ -194,11 +228,13 @@ function buildLocationMaps(list: CountryStateCityDistrictVillageData[]) {
   }
 }
 
-// Nice hook to use in components
+// Hook
 export const useCountryStateCityDistrictVillageData = () => {
   const ctx = useContext(CountryStateCityDistrictVillageContext)
   if (!ctx) {
-    throw new Error('useLocationData must be used within LocationProvider')
+    throw new Error(
+      'useCountryStateCityDistrictVillageData must be used within CountryStateCityDistrictVillage provider',
+    )
   }
   return ctx
 }

@@ -131,8 +131,9 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
   // ❌ Delete existing file
   const removeExisting = (index: number) => {
     setExistingUrls((prev) => prev.filter((_, i) => i !== index));
-  };
 
+  };
+  
   // ❌ Delete uploaded file
   const removeUploaded = (index: number) => {
     const updated = value.filter((_, i) => i !== index);
@@ -228,7 +229,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
             marginTop: openUpwards ? 0 : 6,
             marginBottom: openUpwards ? 6 : 0,
             overflow: "hidden",
-            zIndex: 20,
+            zIndex: 31,
             boxShadow: "0 5px 10px rgba(0,0,0,0.12)",
           }}
         >

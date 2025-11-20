@@ -52,6 +52,7 @@ export interface SinglePageSelectionProps {
     spacing: Record<string, string>;
     fontSize: Record<string, string>;
   };
+  error?: string;
 }
 
 export interface MultiSelectPaginationProps {

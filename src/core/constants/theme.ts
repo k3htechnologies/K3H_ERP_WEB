@@ -20,6 +20,7 @@ export const THEME = {
         lg: '0.5rem',
         xl: '0.75rem',
         doublexl: '1rem',
+        xs: '1px',
     },
 
     fontSize: {

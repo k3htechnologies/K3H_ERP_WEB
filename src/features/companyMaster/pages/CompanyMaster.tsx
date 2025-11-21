@@ -524,10 +524,10 @@ export const CompanyMaster: React.FC = () => {
   //#region CUSTOMIZE COLUMNS
   const requiredCompanyMasterColumnKeys: string[] = ['CompanyName'];
 
-  
+
   const [selectedCompanyMasterColumnKeys, setSelectedCompanyMasterColumnKeys] = useState<string[]>([]);
 
- 
+
   useEffect(() => {
     if (companyMasterColumns.length === 0) return;
 
@@ -552,10 +552,10 @@ export const CompanyMaster: React.FC = () => {
         return;
       }
     } catch {
-      
+
     }
 
-    
+
     const allKeys = companyMasterColumns.map(c => c.key);
     const final = Array.from(
       new Set([...allKeys, ...requiredCompanyMasterColumnKeys])
@@ -570,7 +570,7 @@ export const CompanyMaster: React.FC = () => {
     ),
     [companyMasterColumns, selectedCompanyMasterColumnKeys]
   );
-  
+
 
   //#endregion
 
@@ -619,9 +619,9 @@ export const CompanyMaster: React.FC = () => {
             <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
               Government Identifiers
             </h4>
-            <FieldItem label="GST Number" value={data.GSTNumber} isRow />
-            <FieldItem label="PAN Number" value={data.PANNumber} isRow />
-            <FieldItem label="CIN Number" value={data.CINNumber} isRow />
+            <FieldItem label="GST Number" value={data.GSTNumber} urls={data.GSTCertificateURL} isRow />
+            <FieldItem label="PAN Number" value={data.PANNumber}  urls={data.PanCardURL}isRow />
+            <FieldItem label="CIN Number" value={data.CINNumber}  urls={data.CINURL} isRow />
             <FieldItem label="RERA Number" value={data.RERANumber} isRow />
           </div>
           <div className="space-y-4">
@@ -853,14 +853,20 @@ export const CompanyMaster: React.FC = () => {
           }}
           data={viewCompanyMasterDetailsData}
         />
+
+
         <CustomizeColumnsModal
           isOpen={isShowCustomizeCompanyMasterColumnsModal}
           onClose={() => setIsShowCustomizeCompanyMasterColumnsModal(false)}
           onApply={(keys) => {
-            const withRequired = Array.from(new Set([...keys, ...requiredCompanyMasterColumnKeys]))
-            setSelectedCompanyMasterColumnKeys(withRequired)
+            const withRequired = Array.from(
+              new Set([...keys, ...requiredCompanyMasterColumnKeys])
+            );
+            setSelectedCompanyMasterColumnKeys(withRequired);
             try {
-              LocalStorageHelper.storeCompanyMasterTableColumns(JSON.stringify(withRequired))
+              LocalStorageHelper.storeCompanyMasterTableColumns(
+                JSON.stringify(withRequired)
+              );
             } catch { }
           }}
           columns={companyMasterColumns}
@@ -868,6 +874,7 @@ export const CompanyMaster: React.FC = () => {
           requiredKeys={requiredCompanyMasterColumnKeys}
           title="Customize Company Master Table Columns"
         />
+
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}

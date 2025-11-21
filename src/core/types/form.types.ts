@@ -85,17 +85,19 @@ export interface RichTextEditorProps {
   className?: string;
 }
 
-export interface DatePickerProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
-  label?: string
-  helperText?: string
-  error?: string
-  size?: 'sm' | 'md' | 'lg'
-  fullWidth?: boolean
-  id?: string
-  disabled?: boolean
-  className?: string
-  style?: React.CSSProperties
-  value?: string
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
-  placeholder?: string
+export interface DatePickerProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    'size' | 'value' | 'onChange'
+  > {
+  label?: string;
+  value?: string | null;              // DD-MM-YYYY or null
+  onChange: (value: string | null) => void;
+
+  required?: boolean;
+  error?: string;
+  minYear?: number;
+  maxYear?: number;
+  disabled?: boolean;
+  helperText?: string;
 }

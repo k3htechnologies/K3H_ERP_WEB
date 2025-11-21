@@ -75,6 +75,8 @@ export const CompanyMaster: React.FC = () => {
 
   const [deleteCompanyMasterDetailsData, setDeleteCompanyMasterDetailsData] = useState<CompanyMasterData | null>(null)
 
+
+
   // NAVIGATE
   const navigate = useNavigate()
   const location = useLocation() as {
@@ -521,28 +523,55 @@ export const CompanyMaster: React.FC = () => {
 
   //#region CUSTOMIZE COLUMNS
   const requiredCompanyMasterColumnKeys: string[] = ['CompanyName'];
-  const allCompanyMasterColumnKeys: string[] = companyMasterColumns.map(c => c.key)
-  const [selectedCompanyMasterColumnKeys, setSelectedCompanyMasterColumnKeys] = useState<string[]>(() => {
+
+  
+  const [selectedCompanyMasterColumnKeys, setSelectedCompanyMasterColumnKeys] = useState<string[]>([]);
+
+ 
+  useEffect(() => {
+    if (companyMasterColumns.length === 0) return;
+
     try {
       const saved = LocalStorageHelper.getCompanyMasterTableColumns();
       if (saved) {
-        const parsed = JSON.parse(saved) as string[]
-        const withRequired = Array.from(new Set([...parsed, ...requiredCompanyMasterColumnKeys]));
-        return withRequired.filter(k => allCompanyMasterColumnKeys.includes(k));
+        const parsed: string[] = JSON.parse(saved);
+
+        // keep only keys that still exist in current columns
+        const filtered = parsed.filter(k =>
+          companyMasterColumns.some(col => col.key === k)
+        );
+
+        const final = Array.from(
+          new Set([
+            ...filtered,
+            ...requiredCompanyMasterColumnKeys,
+          ])
+        );
+
+        setSelectedCompanyMasterColumnKeys(final);
+        return;
       }
-    } catch { }
-    return allCompanyMasterColumnKeys
-  })
+    } catch {
+      
+    }
 
-  useEffect(() => {
-    setSelectedCompanyMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredCompanyMasterColumnKeys])).filter(k => allCompanyMasterColumnKeys.includes(k)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [companyMasterColumns.length])
+    
+    const allKeys = companyMasterColumns.map(c => c.key);
+    const final = Array.from(
+      new Set([...allKeys, ...requiredCompanyMasterColumnKeys])
+    );
+    setSelectedCompanyMasterColumnKeys(final);
+  }, [companyMasterColumns]);
 
+  // 3) Compute visible columns
   const visibleCompanyMasterColumns = useMemo(
-    () => companyMasterColumns.filter(col => selectedCompanyMasterColumnKeys.includes(col.key)),
+    () => companyMasterColumns.filter(col =>
+      selectedCompanyMasterColumnKeys.includes(col.key)
+    ),
     [companyMasterColumns, selectedCompanyMasterColumnKeys]
-  )
+  );
+  
+
   //#endregion
 
   //#region VIEW MODAL
@@ -862,7 +891,7 @@ export const CompanyMaster: React.FC = () => {
                   value={tempFilters.CompanyName || ''}
                   onChange={(e) => handleFilterChange('CompanyName', e.target.value)}
                   placeholder="Enter company name"
-                  
+
                 />
               </div>
               <div>

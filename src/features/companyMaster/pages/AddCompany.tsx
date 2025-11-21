@@ -20,6 +20,7 @@ import { runApiWithLoader } from '@/core/utils';
 import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import * as E from 'fp-ts/Either';
 import { Modal } from '@/ui/components/Modal/Modal';
+import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 
 const AddCompany: React.FC = () => {
 
@@ -919,19 +920,15 @@ const AddCompany: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Date of Birth
-                </label>
-                <Input
-                  type="date"
+
+                <DatePickerInput
+                  label='Date of Birth'
+                  required
+                  error={errors.DateOfBirth}
                   value={companyPartnerformData.DateOfBirth || ''}
-                  onChange={e => handleFieldChange('DateOfBirth', e.target.value || null)}
+                  onChange={(val) => handleFieldChange('DateOfBirth', val)}
                 />
-                {errors.DateOfBirth && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.DateOfBirth}
-                  </p>
-                )}
+
               </div>
 
               <div>
@@ -1648,13 +1645,7 @@ const AddCompany: React.FC = () => {
           onClose={() => {
             setIsAddUpdateCompanyPartnerModalOpen(false)
             setEditingCompanyPartnerMasterData(null)
-            // 🔹 reset file states if you want fresh form next time
-            setCompanyPartnerPANURLFiles([])
-            setCompanyPartnerAadhaarCardURLFiles([])
-            setCompanyPartnerPhotoURLFiles([])
-            setRemovedCompanyPartnerPANURLs([])
-            setRemovedCompanyPartnerAadhaarCardURLs([])
-            setRemovedCompanyPartnerPhotoURLs([])
+
           }}
           onSubmit={handleAddUpdateCompanyPartner}
           data={editingCompanyPartnerMasterData}

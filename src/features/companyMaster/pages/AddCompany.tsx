@@ -21,6 +21,7 @@ import { CompanyMasterService } from '@/features/companyMaster/services/CompanyM
 import * as E from 'fp-ts/Either';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
 
 const AddCompany: React.FC = () => {
 
@@ -538,18 +539,9 @@ const AddCompany: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value: string, row: any) => {
-          const images: string[] = (row.PanCardURL || '')
-            .split(',')
-            .map((x: string) => x.trim())
-            .filter((x: string) => x.length > 0);
-
-          if (!images.length) {
-            return value || '-';
-          }
-
           return (
             <MultiImageViewer
-              images={images}
+              images={parseDocumentUrls(row.PanCardURL)}
               title="PAN Document"
               triggerLabel={value || '-'}
             />
@@ -565,18 +557,10 @@ const AddCompany: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value: string, row: any) => {
-          const images: string[] = (row.AadharCardURL || '')
-            .split(',')
-            .map((x: string) => x.trim())
-            .filter((x: string) => x.length > 0);
-
-          if (!images.length) {
-            return value || '-';
-          }
-
+          
           return (
             <MultiImageViewer
-              images={images}
+              images={parseDocumentUrls(row.AadharCardURL)}
               title="Aadhar Document"
               triggerLabel={value || '-'}
             />
@@ -857,7 +841,7 @@ const AddCompany: React.FC = () => {
           isOpen={isOpen}
           onClose={onClose}
           onCancel={onClose}
-          title="Settings - Company setup (Partner)"
+          title={data ? 'Update Company' : 'Add Company'}
           onSubmit={handleSubmitAddUpdateCompanyPartner}
           saveText={data ? 'Update' : 'Save'}
           cancelText="Cancel"
@@ -1184,7 +1168,7 @@ const AddCompany: React.FC = () => {
 
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-semibold text-gray-900">
-              Company Master
+              {companyFormData.CompanyId == 0 ? 'Add Company' : 'Update Company'}
             </h1>
 
           </div>
@@ -1615,7 +1599,7 @@ const AddCompany: React.FC = () => {
         </div>
         {/* ✅ Fixed Bottom  */}
         <div
-          className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+          className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <Button

@@ -29,6 +29,7 @@ import { CollapseCard } from '@/ui/components/Card/CollapseCard';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Edit, Trash2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
 
 
 export const CompanyMaster: React.FC = () => {
@@ -396,18 +397,9 @@ export const CompanyMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value: string, row: any) => {
-          const images: string[] = (row.GSTCertificateURL || '')
-            .split(',')
-            .map((x: string) => x.trim())
-            .filter((x: string) => x.length > 0);
-
-          if (!images.length) {
-            return value || '-';
-          }
-
           return (
             <MultiImageViewer
-              images={images}
+             images={parseDocumentUrls(row.GSTCertificateURL)}
               title="GST Document"
               triggerLabel={value || '-'}
             />
@@ -421,18 +413,10 @@ export const CompanyMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value: string, row: any) => {
-          const images: string[] = (row.PanCardURL || '')
-            .split(',')
-            .map((x: string) => x.trim())
-            .filter((x: string) => x.length > 0);
-
-          if (!images.length) {
-            return value || '-';
-          }
-
+          
           return (
             <MultiImageViewer
-              images={images}
+              images={parseDocumentUrls(row.PanCardURL)}
               title="Pan Card Document"
               triggerLabel={value || '-'}
             />
@@ -447,18 +431,9 @@ export const CompanyMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value: string, row: any) => {
-          const images: string[] = (row.CINURL || '')
-            .split(',')
-            .map((x: string) => x.trim())
-            .filter((x: string) => x.length > 0);
-
-          if (!images.length) {
-            return value || '-';
-          }
-
           return (
             <MultiImageViewer
-              images={images}
+              images={parseDocumentUrls(row.CINURL)}
               title="CIN Document"
               triggerLabel={value || '-'}
             />

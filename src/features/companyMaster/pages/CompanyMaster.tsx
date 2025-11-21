@@ -628,7 +628,8 @@ export const CompanyMaster: React.FC = () => {
             <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
               Address
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <FieldItem label="Country" value={data.CountryName} isRow={false} />
               <FieldItem label="State" value={data.StateName} isRow={false} />
               <FieldItem label="District" value={data.DistrictName} isRow={false} />
               <FieldItem label="City" value={data.CityName} isRow={false} />

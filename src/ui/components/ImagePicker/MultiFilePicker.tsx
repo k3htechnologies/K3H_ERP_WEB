@@ -10,18 +10,21 @@ import {
 } from "lucide-react";
 import { MultiImageViewer } from "@/ui/components/ImageViewer/ImageViewer";
 import useToast from "@/core/hooks/useToast";
+import { THEME } from "@/core/constants";
 
 export type FileValue = File | string;
 
 interface MultiFilePickerProps {
   label?: string;
+  required?: boolean;
   allowedTypes?: string[];
   maxSizeMB?: number;
   maxFiles?: number;
   value: FileValue[];
-  availableFilesURL?: string; // "https://1,https://2"
+  availableFilesURL?: string;
   onChange: (files: FileValue[]) => void;
   placeholder?: string;
+  error?: string;
 }
 
 const parseUrls = (urls?: string): string[] =>
@@ -32,6 +35,7 @@ const parseUrls = (urls?: string): string[] =>
 
 export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
   label,
+  required,
   allowedTypes = ["image/jpeg", "image/png", "application/pdf"],
   maxSizeMB = 5,
   maxFiles = 5,
@@ -39,10 +43,11 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
   availableFilesURL,
   onChange,
   placeholder = "Select file(s)...",
+  error,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
+  const theme = THEME
   const [isListOpen, setIsListOpen] = useState(false);
   const [openUpwards, setOpenUpwards] = useState(false);
   const [existingUrls, setExistingUrls] = useState<string[]>(() =>
@@ -133,7 +138,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
     setExistingUrls((prev) => prev.filter((_, i) => i !== index));
 
   };
-  
+
   // ❌ Delete uploaded file
   const removeUploaded = (index: number) => {
     const updated = value.filter((_, i) => i !== index);
@@ -164,6 +169,25 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
 
   return (
     <div ref={containerRef} style={{ width: "100%", position: "relative" }}>
+
+      {/* === LABEL LIKE INPUT === */}
+      {label && (
+        <label
+          style={{
+            display: "block",
+            fontSize: theme.fontSize.sm,
+            fontWeight: theme.fontWeight.medium,
+            color: theme.colors.text,
+            marginBottom: theme.spacing.sm,
+          }}
+        >
+          {label}
+          {required && (
+            <span style={{ color: theme.colors.error, marginLeft: 4 }}>*</span>
+          )}
+        </label>
+      )}
+
       {/* Top INPUT BOX */}
       <div
         style={{
@@ -339,6 +363,19 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* ERROR MESSAGE BLOCK (MATCHES INPUT STYLE) */}
+      {(error) && (
+        <div
+          style={{
+            marginTop: theme.spacing.sm,
+            fontSize: theme.fontSize.sm,
+            color: error ? theme.colors.error : theme.colors.textSecondary,
+          }}
+        >
+          {error}
         </div>
       )}
     </div>

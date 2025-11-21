@@ -508,6 +508,7 @@ export const DepartmentMaster: React.FC = () => {
         }}
         cancelText="Close"
         loading={false}
+        size='half-screen'
       >
         <div className="space-y-6">
 
@@ -682,11 +683,12 @@ export const DepartmentMaster: React.FC = () => {
         isOpen={isOpen}
         onClose={onClose}
         onCancel={onClose}
-        title="Settings - Company setup (Department)"
+        title={data ? 'Update Department' : 'Add Department'}
         onSubmit={handleSubmitAddUpdateDepartment}
         saveText={data ? 'Update' : 'Save'}
         cancelText="Cancel"
         loading={loading}
+        size='small-half'
       >
         <div className="space-y-6">
           <div className="space-y-4">
@@ -965,7 +967,7 @@ export const DepartmentMaster: React.FC = () => {
           saveText="Apply Filter"
           cancelText="Clear Filter"
           onCancel={() => clearFilters()}
-          size="half-screen"
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">

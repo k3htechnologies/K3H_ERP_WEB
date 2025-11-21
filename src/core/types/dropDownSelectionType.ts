@@ -53,6 +53,7 @@ export interface SinglePageSelectionProps {
     fontSize: Record<string, string>;
   };
   error?: string;
+  required?: boolean;
 }
 
 export interface MultiSelectPaginationProps {

@@ -864,13 +864,14 @@ const AddCompany: React.FC = () => {
           size='large-half'
         >
           <div className="space-y-6">
-            {/* Row 1: Name Fields */}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name <span className="text-red-500">*</span>
-                </label>
+
                 <Input
+                  label='First Name'
+                  required
+                  error={errors.FirstName}
                   type="text"
                   value={companyPartnerformData.FirstName}
                   maxLength={50}
@@ -879,16 +880,14 @@ const AddCompany: React.FC = () => {
                   }
                   placeholder="Enter first name"
                 />
-                {errors.FirstName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.FirstName}</p>
-                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name
-                </label>
+
                 <Input
+                  label='Last Name'
+                  required
+                  error={errors.LastName}
                   type="text"
                   value={companyPartnerformData.LastName}
                   maxLength={50}
@@ -897,16 +896,15 @@ const AddCompany: React.FC = () => {
                   }
                   placeholder="Enter last name"
                 />
-                {errors.LastName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.LastName}</p>
-                )}
+
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Middle Name
-                </label>
+
                 <Input
+                  label='Middle Name'
+                  required
+                  error={errors.MiddleName}
                   type="text"
                   value={companyPartnerformData.MiddleName}
                   maxLength={50}
@@ -915,9 +913,7 @@ const AddCompany: React.FC = () => {
                   }
                   placeholder="Enter middle name"
                 />
-                {errors.MiddleName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.MiddleName} </p>
-                )}
+
               </div>
             </div>
 
@@ -939,27 +935,26 @@ const AddCompany: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Gender
-                </label>
 
                 <SinglePageSelection
+                  label='Gender'
+                  required
+                  error={errors.Gender}
                   value={companyPartnerformData.Gender}
                   onChange={(e) => {
                     handleFieldChange('Gender', String(e))
                   }}
 
                   options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
-                {errors.Gender && (
-                  <p className="text-red-500 text-xs mt-1">{errors.Gender}</p>
-                )}
+
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Share (%) <span className="text-red-500">*</span>
-                </label>
+
                 <Input
+                  label='Share (%)'
+                  required
+                  error={errors.PartnerPercentage}
                   type="text"
                   value={companyPartnerformData.PartnerPercentage ?? 0}
                   onChange={e =>
@@ -967,19 +962,18 @@ const AddCompany: React.FC = () => {
                   }
                   placeholder="Enter share %"
                 />
-                {errors.PartnerPercentage && (
-                  <p className="text-red-500 text-xs mt-1">{errors.PartnerPercentage} </p>
-                )}
+
               </div>
             </div>
 
-            {/* Row 3: Mobile / Email */}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Mobile Number <span className="text-red-500">*</span>
-                </label>
+
                 <Input
+                  label='Mobile Number'
+                  required
+                  error={errors.MobileNumber}
                   type="text"
                   value={companyPartnerformData.MobileNumber}
                   maxLength={10}
@@ -988,18 +982,15 @@ const AddCompany: React.FC = () => {
                   }
                   placeholder="Enter mobile number"
                 />
-                {errors.MobileNumber && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.MobileNumber}
-                  </p>
-                )}
+
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Id
-                </label>
+
                 <Input
+                  label='Email Id'
+                  required
+                  error={errors.EmailId}
                   type="text"
                   value={companyPartnerformData.EmailId}
                   onChange={e =>
@@ -1007,19 +998,18 @@ const AddCompany: React.FC = () => {
                   }
                   placeholder="Enter email id"
                 />
-                {errors.EmailId && (
-                  <p className="text-red-500 text-xs mt-1">{errors.EmailId}</p>
-                )}
+
               </div>
             </div>
 
-            {/* Row 4: PAN / Aadhar */}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  PAN Number <span className="text-red-500">*</span>
-                </label>
+
                 <Input
+                  label='PAN Number'
+                  required
+                  error={errors.PanNumber}
                   type="text"
                   value={companyPartnerformData.PanNumber}
                   maxLength={10}
@@ -1029,16 +1019,15 @@ const AddCompany: React.FC = () => {
                   }
                   placeholder="Enter PAN number"
                 />
-                {errors.PanNumber && (
-                  <p className="text-red-500 text-xs mt-1">{errors.PanNumber}</p>
-                )}
+
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Aadhar Number <span className="text-red-500">*</span>
-                </label>
+
                 <Input
+                  label='Aadhar Number'
+                  required
+                  error={errors.AadharCardNumber}
                   type="text"
                   value={companyPartnerformData.AadharCardNumber}
                   maxLength={12}
@@ -1046,23 +1035,17 @@ const AddCompany: React.FC = () => {
                   }
                   placeholder="Enter Aadhar number"
                 />
-                {errors.AadharCardNumber && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.AadharCardNumber}
-                  </p>
-                )}
+
               </div>
             </div>
 
-            {/* Row 5: File uploads (simple) */}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  PAN Card
-                </label>
-
                 <MultiFilePicker
                   label='PAN Card'
+                  required
+                  error={errors.PanCardURL}
                   value={companyPartnerPANURLFiles}
                   onChange={setCompanyPartnerPANURLFiles}
                   availableFilesURL={editingCompanyPartnerMasterData?.PanCardURL ?? ""}
@@ -1077,18 +1060,14 @@ const AddCompany: React.FC = () => {
                   maxSizeMB={10}
                 />
 
-                {errors.PanCardURL && (
-                  <p className="text-red-500 text-xs mt-1">{errors.PanCardURL}
-                  </p>
-                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Aadhaar Card
-                </label>
+
                 <MultiFilePicker
                   label='Aadhaar Card'
+                  required
+                  error={errors.AadharCardURL}
                   value={companyPartnerAadhaarCardURLFiles}
                   onChange={setCompanyPartnerAadhaarCardURLFiles}
                   availableFilesURL={editingCompanyPartnerMasterData?.AadharCardURL ?? ""}
@@ -1102,19 +1081,14 @@ const AddCompany: React.FC = () => {
                   maxFiles={5}
                   maxSizeMB={10}
                 />
-                {errors.AadharCardURL && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.AadharCardURL}
-                  </p>
-                )}
+
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Photo
-                </label>
                 <MultiFilePicker
                   label='Photo'
+                  required
+                  error={errors.PhotoURL}
                   value={companyPartnerPhotoURLFiles}
                   onChange={setCompanyPartnerPhotoURLFiles}
                   availableFilesURL={editingCompanyPartnerMasterData?.PhotoURL ?? ""}
@@ -1129,9 +1103,6 @@ const AddCompany: React.FC = () => {
                   maxSizeMB={10}
 
                 />
-                {errors.PhotoURL && (
-                  <p className="text-red-500 text-xs mt-1">{errors.PhotoURL}</p>
-                )}
               </div>
             </div>
           </div>
@@ -1232,14 +1203,12 @@ const AddCompany: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company Name <span className="text-red-500">*</span>
-                </label>
-
                 <Input
+                  label='Company Name'
+                  required
+                  error={errors.CompanyName}
                   type="text"
                   value={companyFormData.CompanyName}
-                  error={errors.CompanyName}
                   onChange={(e) => {
                     handleFieldChange('CompanyName', e.target.value)
                   }}
@@ -1247,39 +1216,31 @@ const AddCompany: React.FC = () => {
                   maxLength={50}
                   placeholder="Enter company name"
                 />
-                {errors.CompanyName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.CompanyName}</p>
-                )}
+
               </div>
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company Type <span className="text-red-500">*</span>
-                </label>
-
                 <SinglePageSelection
-                  value={companyFormData.CompanyType}
+                  label='Company Type'
+                  required
                   error={errors.CompanyType}
+                  value={companyFormData.CompanyType}
                   onChange={(e) => {
                     handleFieldChange('CompanyType', String(e))
                   }}
 
                   options={COMPANY_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
 
-                {errors.CompanyType && (
-                  <p className="text-red-500 text-xs mt-1">{errors.CompanyType}</p>
-                )}
+
               </div>
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Mobile Number <span className="text-red-500">*</span>
-                </label>
-
                 <Input
+                  label='Mobile Number'
+                  required
+                  error={errors.MobileNumber}
                   type="text"
                   value={companyFormData.MobileNumber}
-                  error={errors.MobileNumber}
                   maxLength={10}
                   leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
                   onChange={(e) => {
@@ -1288,20 +1249,16 @@ const AddCompany: React.FC = () => {
                   }}
                   placeholder="Enter valid mobile number"
                 />
-                {errors.MobileNumber && (
-                  <p className="text-red-500 text-xs mt-1">{errors.MobileNumber}</p>
-                )}
+
               </div>
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contact Person <span className="text-red-500">*</span>
-                </label>
-
                 <Input
+                  label='Contact Person'
+                  required
+                  error={errors.ContactPerson}
                   type="text"
                   value={companyFormData.ContactPerson}
-                  error={errors.ContactPerson}
                   leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
                   minLength={5}
                   maxLength={50}
@@ -1311,17 +1268,13 @@ const AddCompany: React.FC = () => {
                   }}
                   placeholder="Enter contact person name"
                 />
-                {errors.ContactPerson && (
-                  <p className="text-red-500 text-xs mt-1">{errors.ContactPerson}</p>
-                )}
+
               </div>
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Id <span className="text-red-500">*</span>
-                </label>
-
                 <Input
+                  label='Email Id'
+                  required
                   type="text"
                   value={companyFormData.EmailId}
                   error={errors.EmailId}
@@ -1332,17 +1285,13 @@ const AddCompany: React.FC = () => {
                   }}
                   placeholder="Enter valid email id"
                 />
-                {errors.EmailId && (
-                  <p className="text-red-500 text-xs mt-1">{errors.EmailId}</p>
-                )}
+
               </div>
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Land Line Number<span className="text-red-500">*</span>
-                </label>
-
                 <Input
+                  label='Land Line Number'
+                  required
                   type="text"
                   value={companyFormData.LandLineNumber}
                   error={errors.LandLineNumber}
@@ -1353,9 +1302,7 @@ const AddCompany: React.FC = () => {
                   }}
                   placeholder="Enter land line number"
                 />
-                {errors.LandLineNumber && (
-                  <p className="text-red-500 text-xs mt-1">{errors.LandLineNumber}</p>
-                )}
+
               </div>
             </div>
           </div>
@@ -1366,11 +1313,9 @@ const AddCompany: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  GST Number <span className="text-red-500">*</span>
-                </label>
-
                 <Input
+                  label='GST Number'
+                  required
                   type="text"
                   value={companyFormData.GSTNumber}
                   error={errors.GSTNumber}
@@ -1380,17 +1325,15 @@ const AddCompany: React.FC = () => {
                   }}
                   placeholder="Enter valid GST Number"
                 />
-                {errors.GSTNumber && (
-                  <p className="text-red-500 text-xs mt-1">{errors.GSTNumber}</p>
-                )}
+
               </div>
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  GST Certificate <span className="text-red-500">*</span>
-                </label>
+
                 <MultiFilePicker
                   label='GST Certificate'
+                  required
+                  error={errors.GSTCertificateURL}
                   value={gstGSTCertificateFiles}
                   onChange={setGSTCertificateFiles}
                   availableFilesURL={editCompanyData?.GSTCertificateURL ?? ""}
@@ -1405,18 +1348,12 @@ const AddCompany: React.FC = () => {
                   maxSizeMB={10}
 
                 />
-
-                {errors.GSTCertificateURL && (
-                  <p className="text-red-500 text-xs mt-1">{errors.GSTCertificateURL}</p>
-                )}
               </div>
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  PAN Number <span className="text-red-500">*</span>
-                </label>
-
                 <Input
+                  label='PAN Number'
+                  required
                   type="text"
                   value={companyFormData.PanNumber}
                   error={errors.PanNumber}
@@ -1426,17 +1363,14 @@ const AddCompany: React.FC = () => {
                   }}
                   placeholder="Enter valid PAN number"
                 />
-                {errors.PanNumber && (
-                  <p className="text-red-500 text-xs mt-1">{errors.PanNumber}</p>
-                )}
+
               </div>
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  PAN URL <span className="text-red-500">*</span>
-                </label>
                 <MultiFilePicker
                   label='PAN Card'
+                  required
+                  error={errors.PanCardURL}
                   value={panURLFiles}
                   onChange={setPANURLFiles}
                   availableFilesURL={editCompanyData?.PanCardURL ?? ""}
@@ -1450,17 +1384,13 @@ const AddCompany: React.FC = () => {
                   maxFiles={2}
                   maxSizeMB={10}
                 />
-                {errors.PanCardURL && (
-                  <p className="text-red-500 text-xs mt-1">{errors.PanCardURL}</p>
-                )}
+
               </div>
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  CIN Number <span className="text-red-500">*</span>
-                </label>
-
                 <Input
+                  label='CIN Number'
+                  required
                   type="text"
                   value={companyFormData.CINNumber}
                   error={errors.CINNumber}
@@ -1471,18 +1401,14 @@ const AddCompany: React.FC = () => {
                   }}
                   placeholder="Enter valid CIN Number"
                 />
-                {errors.CINNumber && (
-                  <p className="text-red-500 text-xs mt-1">{errors.CINNumber}</p>
-                )}
+
               </div>
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  CIN URL<span className="text-red-500">*</span>
-                </label>
                 <MultiFilePicker
                   label='CIN'
                   value={cinURLFiles}
+                  error={errors.CINURL}
                   onChange={setCINURLFiles}
                   availableFilesURL={editCompanyData?.CINURL ?? ""}
                   allowedTypes={[
@@ -1495,18 +1421,14 @@ const AddCompany: React.FC = () => {
                   maxFiles={5}
                   maxSizeMB={10}
                 />
-                {errors.CINURL && (
-                  <p className="text-red-500 text-xs mt-1">{errors.CINURL}</p>
-                )}
+
               </div>
 
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  RERA Number <span className="text-red-500">*</span>
-                </label>
-
                 <Input
+                  label='RERA Number'
+                  required
                   type="text"
                   value={companyFormData.RERANumber}
                   error={errors.RERANumber}
@@ -1517,9 +1439,7 @@ const AddCompany: React.FC = () => {
                   }}
                   placeholder="Enter valid RERA Number"
                 />
-                {errors.RERANumber && (
-                  <p className="text-red-500 text-xs mt-1">{errors.RERANumber}</p>
-                )}
+
               </div>
             </div>
           </div>
@@ -1528,13 +1448,12 @@ const AddCompany: React.FC = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Address</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* COUNTRY */}
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Country <span className="text-red-500">*</span>
-                </label>
 
                 <SinglePageSelection
+                  label='Country'
+                  required
                   value={selectedCountryId || ''}
                   error={errors.CountryMasterId}
                   onChange={val => {
@@ -1550,18 +1469,13 @@ const AddCompany: React.FC = () => {
                   options={countryOptions}
                 />
 
-                {errors.CountryMasterId && (
-                  <p className="text-red-500 text-xs mt-1">{errors.CountryMasterId}</p>
-                )}
               </div>
 
-              {/* STATE */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  State <span className="text-red-500">*</span>
-                </label>
 
                 <SinglePageSelection
+                  label='State'
+                  required
                   value={selectedStateId ?? ''}
                   error={errors.StateMasterId}
                   onChange={val => {
@@ -1576,18 +1490,13 @@ const AddCompany: React.FC = () => {
                   options={stateOptions}
                 />
 
-                {errors.StateMasterId && (
-                  <p className="text-red-500 text-xs mt-1">{errors.StateMasterId}</p>
-                )}
               </div>
 
-              {/* DISTRICT */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  District <span className="text-red-500">*</span>
-                </label>
 
                 <SinglePageSelection
+                  label='District'
+                  required
                   value={selectedDistrictId ?? ''}
                   error={errors.DistrictMasterId}
                   onChange={val => {
@@ -1601,18 +1510,14 @@ const AddCompany: React.FC = () => {
                   options={districtOptions}
                 />
 
-                {errors.DistrictMasterId && (
-                  <p className="text-red-500 text-xs mt-1">{errors.DistrictMasterId}</p>
-                )}
+
               </div>
 
-              {/* CITY */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  City <span className="text-red-500">*</span>
-                </label>
 
                 <SinglePageSelection
+                  label='City'
+                  required
                   value={selectedCityId ?? ''}
                   error={errors.CityMasterId}
                   onChange={val => {
@@ -1624,9 +1529,7 @@ const AddCompany: React.FC = () => {
                   options={cityOptions}
                 />
 
-                {errors.CityMasterId && (
-                  <p className="text-red-500 text-xs mt-1">{errors.CityMasterId}</p>
-                )}
+
               </div>
 
             </div>
@@ -1640,11 +1543,10 @@ const AddCompany: React.FC = () => {
 
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company Letterhead Header <span className="text-red-500">*</span>
-                </label>
                 <MultiFilePicker
                   label='Company Letterhead Header'
+                  required
+                  error={errors.CompanyLetterheadHeaderURL}
                   value={companyLetterHeadHeaderFiles}
                   onChange={setCompanyLetterHeadHeaderFiles}
                   availableFilesURL={editCompanyData?.CompanyLetterheadHeaderURL ?? ""}
@@ -1658,20 +1560,16 @@ const AddCompany: React.FC = () => {
                   maxFiles={5}
                   maxSizeMB={10}
                 />
-                {errors.CompanyLetterheadHeaderURL && (
-                  <p className="text-red-500 text-xs mt-1">{errors.CompanyLetterheadHeaderURL}</p>
-                )}
+
               </div>
 
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company Letterhead Footer <span className="text-red-500">*</span>
-                </label>
-
                 <MultiFilePicker
                   label='Company Letterhead Footer'
+                  required
                   value={companyLetterHeadFooterFiles}
+                  error={errors.CompanyLetterheadFooterURL}
                   onChange={setCompanyLetterHeadFooterFiles}
                   availableFilesURL={editCompanyData?.CompanyLetterheadFooterURL ?? ""}
                   allowedTypes={[
@@ -1684,9 +1582,7 @@ const AddCompany: React.FC = () => {
                   maxFiles={5}
                   maxSizeMB={10}
                 />
-                {errors.CompanyLetterheadFooterURL && (
-                  <p className="text-red-500 text-xs mt-1">{errors.CompanyLetterheadFooterURL}</p>
-                )}
+
               </div>
             </div>
           </div>
@@ -1722,7 +1618,7 @@ const AddCompany: React.FC = () => {
         </div>
         {/* ✅ Fixed Bottom  */}
         <div
-          className="fixed bottom-0 left-0 right-0 z-16 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+          className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <Button

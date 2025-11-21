@@ -855,17 +855,20 @@ export const CompanyMaster: React.FC = () => {
           <div className="space-y-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+
                 <Input
+                  label='Company Name'
                   type="text"
                   value={tempFilters.CompanyName || ''}
                   onChange={(e) => handleFilterChange('CompanyName', e.target.value)}
                   placeholder="Enter company name"
+                  
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company Type</label>
+
                 <Input
+                  label='Company Type'
                   type="text"
                   value={tempFilters.CompanyType || ''}
                   onChange={(e) => handleFilterChange('CompanyType', e.target.value)}

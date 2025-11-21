@@ -3,14 +3,13 @@ import { ChevronDown, ChevronUp, Search } from "lucide-react";
 import type { SinglePageSelectionProps } from "@/core/types/dropDownSelectionType";
 import { THEME } from "@/core/constants/theme";
 
-export const SinglePageSelection = forwardRef<
-  HTMLDivElement,
-  SinglePageSelectionProps & {
-    labelKey?: string;
-    valueKey?: string;
-    searchable?: boolean;
-    error?: string;
-  }
+export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectionProps & {
+  labelKey?: string;
+  valueKey?: string;
+  searchable?: boolean;
+  error?: string;
+  required?: boolean;
+}
 >(
   (
     {
@@ -25,6 +24,7 @@ export const SinglePageSelection = forwardRef<
       searchable = true,
       size = "md",
       error,
+      required
     },
     ref
   ) => {
@@ -121,6 +121,7 @@ export const SinglePageSelection = forwardRef<
             }}
           >
             {label}
+            {required && <span style={{ color: theme.colors.error, marginLeft: '4px' }}>*</span>}
           </label>
         )}
 
@@ -148,7 +149,15 @@ export const SinglePageSelection = forwardRef<
             <ChevronDown size={20} color="#888" />
           )}
         </div>
-
+        {(error) && (
+          <div style={{
+            marginTop: theme.spacing.sm,
+            fontSize: theme.fontSize.sm,
+            color: error ? theme.colors.error : theme.colors.textSecondary,
+          }}>
+            {error}
+          </div>
+        )}
         {/* Dropdown */}
         {isOpen && !disabled && (
           <div

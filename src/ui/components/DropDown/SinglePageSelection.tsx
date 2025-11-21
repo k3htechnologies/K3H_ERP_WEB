@@ -202,7 +202,7 @@ export const SinglePageSelection = forwardRef<
           <p
             style={{
               color: theme.colors.error,
-              fontSize: theme.fontSize.xs,
+              fontSize: theme.fontSize.sm,
               marginTop: '4px',
               marginLeft: '0',
               marginBottom: '0',

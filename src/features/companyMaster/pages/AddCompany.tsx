@@ -170,8 +170,6 @@ const AddCompany: React.FC = () => {
   const handleFieldChange = (field: keyof AddUpdateCompanyMasterRequest, value: string | number | boolean) => {
 
     setCompanyFormData(prev => ({ ...prev, [field]: value }))
-
-    // Clear error while typing
     if (errors[field]) {
 
       setErrors(prev => ({ ...prev, [field]: '' }))
@@ -196,7 +194,6 @@ const AddCompany: React.FC = () => {
 
         </div>
 
-        {/* ✅ BODY  */}
         <div className="flex-1 space-y-2 px-6 py-3 pt-20 pb-20 overflow-y-auto thin-scroll">
           {/* ============================================================= [BASIC COMPANY DETAILS] ============================================================================================= */}
           <div className="space-y-4">

@@ -31,6 +31,7 @@ import TncMaster from '@/features/tnc/pages/TncMaster';
 import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
 import AddUpdateEmployeeMaster from '@/features/employeeMaster/pages/AddUpdateEmployeeMaster';
 import AddCompany from '@/features/companyMaster/pages/AddCompany';
+import AddUpdateVendorManagement from '@/features/vendor/pages/AddUpdateVendorManagement';
 import { CountryStateCityDistrictVillage } from '@/core/hooks/useCountryStateCityDistrictVillage';
 
 // Loading component for Suspense fallback
@@ -82,6 +83,7 @@ function App() {
           <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
           <Route path="companyMaster/addCompany" element={<AddCompany />} />
           <Route path="/employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
+          <Route path="vendor/addVendorManagement" element={<AddUpdateVendorManagement />} />
 
           {/* Protected Routes with Layout */}
           <Route

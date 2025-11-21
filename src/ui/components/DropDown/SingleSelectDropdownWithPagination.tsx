@@ -16,6 +16,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
       disabled = false,
       required = false,
       error: externalError,
+      hasSubmitted = false,
       className = '',
       style,
       size = 'md',
@@ -46,27 +47,39 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
 
     const sizeStyles = SIZE_MAP[size as keyof typeof SIZE_MAP]
 
-    const fetchData = useCallback(
-      async (reset?: boolean, search?: string) => {
-        if (isFetchingRef.current) return
-        isFetchingRef.current = true
-        setLoading(true)
+const fetchData = useCallback(
+  async (reset?: boolean, search?: string) => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+    setLoading(true);
 
-        try {
-          const currentPage = reset ? 1 : pageRef.current
-          const searchValue = search ?? searchText
+    // ✅ Case 1: No dataFetchCallBack provided → exit without fetching
+    if (typeof dataFetchCallBack !== "function") {
+      setLoading(false);
+      isFetchingRef.current = false;
+      return;
+    }
 
-          const result = await dataFetchCallBack(currentPage, { value: searchValue })
-          setOptions(prev => (reset ? result.itemList : [...prev, ...result.itemList]))
-          setTotalRecords(result.totalNumberOfRecord)
-          pageRef.current = currentPage + 1
-        } finally {
-          setLoading(false)
-          isFetchingRef.current = false
-        }
-      },
-      [dataFetchCallBack, searchText]
-    )
+    try {
+      const currentPage = reset ? 1 : pageRef.current;
+      const searchValue = search ?? searchText;
+
+      const result = await dataFetchCallBack(currentPage, { value: searchValue });
+
+      setOptions(prev =>
+        reset ? result.itemList : [...prev, ...result.itemList]
+      );
+
+      setTotalRecords(result.totalNumberOfRecord);
+      pageRef.current = currentPage + 1;
+    } finally {
+      setLoading(false);
+      isFetchingRef.current = false;
+    }
+  },
+  [dataFetchCallBack, searchText]
+);
+
 
     useEffect(() => {
       fetchData(true)
@@ -165,23 +178,27 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
 
     // Use external error if provided, otherwise use internal validation
     const displayError = externalError !== undefined ? externalError : error
+  useEffect(() => {
+  if (externalError !== undefined) {
+    setError(externalError);
+    return;
+  }
 
-    useEffect(() => {
-      // Only run internal validation if external error is not provided
-      if (externalError === undefined) {
-        if (validator) {
-          // Validator takes precedence
-          const validationError = validator(selectedItem?.value)
-          setError(validationError)
-        } else if (required && !selectedItem?.value) {
-          // Auto-validate required fields only if no validator is provided
-          setError(`${label || 'This field'} is required`)
-        } else if (!required || selectedItem?.value) {
-          // Clear error if not required or has a value
-          setError(undefined)
-        }
-      }
-    }, [selectedItem, validator, required, label, externalError])
+  if (!hasSubmitted) {
+    setError(undefined);
+    return;
+  }
+
+  if (validator) {
+    const validationError = validator(selectedItem?.value);
+    setError(validationError);
+  } else if (required && !selectedItem?.value) {
+    setError(`${label || 'This field'} is required`);
+  } else {
+    setError(undefined);
+  }
+}, [selectedItem, validator, required, label, externalError, hasSubmitted]);
+
 
 
     const getOptionStyles = (selected: boolean, hovered = false): React.CSSProperties => {
@@ -391,7 +408,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
       <p
         style={{
           color: theme.colors.error,
-          fontSize: theme.fontSize.xs,
+          fontSize: theme.fontSize.sm,
           marginTop: '4px',
           marginLeft: '0',
           marginBottom: '0',

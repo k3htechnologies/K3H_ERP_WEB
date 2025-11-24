@@ -23,8 +23,8 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
       valueKey = "value",
       searchable = true,
       size = "md",
+      required = false,
       error,
-      required
     },
     ref
   ) => {
@@ -117,7 +117,7 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
               marginBottom: "4px",
               fontWeight: 500,
               fontSize: theme.fontSize.md,
-              color: "#333",
+              color: theme.colors.text,
             }}
           >
             {label}
@@ -248,6 +248,20 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
               )}
             </div>
           </div>
+        )}
+        {/* Error message */}
+        {error && (
+          <p
+            style={{
+              color: theme.colors.error,
+              fontSize: theme.fontSize.sm,
+              marginTop: '4px',
+              marginLeft: '0',
+              marginBottom: '0',
+            }}
+          >
+            {error}
+          </p>
         )}
       </div>
     );

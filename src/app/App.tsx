@@ -31,7 +31,11 @@ import TncMaster from '@/features/tnc/pages/TncMaster';
 import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
 import AddCompany from '@/features/companyMaster/pages/AddCompany';
 import { CountryStateCityDistrictVillage } from '@/core/hooks/useCountryStateCityDistrictVillage';
+<<<<<<< HEAD
 import ProjectMaster from '@/features/projectMaster/pages/ProjectMaster';
+=======
+import AddUpdateEmployeeMaster from '@/features/employeeMaster/pages/AddUpdateEmployeeMaster';
+>>>>>>> 4f004f5ad28ab061751590e0299ffa90b89982cd
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -81,6 +85,8 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
           <Route path="companyMaster/addCompany" element={<AddCompany />} />
+          <Route path="/employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
+
           {/* Protected Routes with Layout */}
           <Route
             path="/"

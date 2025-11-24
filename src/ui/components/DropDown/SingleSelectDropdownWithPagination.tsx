@@ -14,6 +14,9 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
       initialValue,
       dataList = [],
       disabled = false,
+      required = false,
+      error: externalError,
+      hasSubmitted = false,
       className = '',
       style,
       size = 'md',
@@ -33,6 +36,8 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
     const [isOpen, setIsOpen] = useState(false)
     const isFetchingRef = useRef(false)
     const pageRef = useRef(1)
+    const prevInitialValueRef = useRef<{ label: string; value: string | number } | null | undefined>(initialValue)
+    const userSelectedRef = useRef(false) // Track if user has made a selection
 
     const SIZE_MAP = {
       sm: { fontSize: 12, padding: 6, dropdownHeight: 150},
@@ -42,27 +47,39 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
 
     const sizeStyles = SIZE_MAP[size as keyof typeof SIZE_MAP]
 
-    const fetchData = useCallback(
-      async (reset?: boolean, search?: string) => {
-        if (isFetchingRef.current) return
-        isFetchingRef.current = true
-        setLoading(true)
+const fetchData = useCallback(
+  async (reset?: boolean, search?: string) => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+    setLoading(true);
 
-        try {
-          const currentPage = reset ? 1 : pageRef.current
-          const searchValue = search ?? searchText
+    // ✅ Case 1: No dataFetchCallBack provided → exit without fetching
+    if (typeof dataFetchCallBack !== "function") {
+      setLoading(false);
+      isFetchingRef.current = false;
+      return;
+    }
 
-          const result = await dataFetchCallBack(currentPage, { value: searchValue })
-          setOptions(prev => (reset ? result.itemList : [...prev, ...result.itemList]))
-          setTotalRecords(result.totalNumberOfRecord)
-          pageRef.current = currentPage + 1
-        } finally {
-          setLoading(false)
-          isFetchingRef.current = false
-        }
-      },
-      [dataFetchCallBack, searchText]
-    )
+    try {
+      const currentPage = reset ? 1 : pageRef.current;
+      const searchValue = search ?? searchText;
+
+      const result = await dataFetchCallBack(currentPage, { value: searchValue });
+
+      setOptions(prev =>
+        reset ? result.itemList : [...prev, ...result.itemList]
+      );
+
+      setTotalRecords(result.totalNumberOfRecord);
+      pageRef.current = currentPage + 1;
+    } finally {
+      setLoading(false);
+      isFetchingRef.current = false;
+    }
+  },
+  [dataFetchCallBack, searchText]
+);
+
 
     useEffect(() => {
       fetchData(true)
@@ -90,9 +107,26 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
     }, [isOpen, handleScroll])
 
     const handleSelect = (item: { label: string; value: string | number }) => {
-      setSelectedItem(item)
-      onSelected(item)
+      // Create a new object to ensure React detects the state change
+      const selectedItemObj = { label: item.label, value: item.value }
+      setSelectedItem(selectedItemObj)
+      // Mark that user has made a selection and update refs
+      userSelectedRef.current = true
+      prevInitialValueRef.current = selectedItemObj
+      onSelected(selectedItemObj)
       setIsOpen(false)
+      // Clear search when item is selected
+      setSearchText('')
+      // Validate when a selection is made
+      if (validator) {
+        const validationError = validator(item.value)
+        setError(validationError)
+      } else if (required && !item.value) {
+        setError(`${label || 'This field'} is required`)
+      } else {
+        // Clear error if valid selection is made
+        setError(undefined)
+      }
     }
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,9 +142,63 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
       fetchData(true, '')
     }
 
+    // Sync initialValue prop changes with selectedItem state
+    // This allows the dropdown to update when initialValue changes (e.g., when form data loads)
+    // But don't override user selections unless the value actually changes from parent
     useEffect(() => {
-      if (validator) setError(validator(selectedItem?.value))
-    }, [selectedItem, validator])
+      // If user has made a selection, only update if parent explicitly changes to a different value
+      if (userSelectedRef.current) {
+        const currentSelectedValue = selectedItem?.value
+        const newValue = initialValue?.value
+        
+        // Only override user selection if parent explicitly sets a different value
+        if (newValue !== undefined && newValue !== null && newValue !== currentSelectedValue) {
+          setSelectedItem(initialValue || null)
+          prevInitialValueRef.current = initialValue
+          userSelectedRef.current = false // Reset flag since parent is overriding
+        }
+        // Otherwise, keep user's selection - don't update
+        return
+      }
+      
+      // User hasn't made a selection yet - sync with initialValue
+      const prevValue = prevInitialValueRef.current?.value
+      const newValue = initialValue?.value
+      
+      // Update if the value actually changed
+      if (prevValue !== newValue) {
+        setSelectedItem(initialValue || null)
+        prevInitialValueRef.current = initialValue
+      } else if (initialValue !== prevInitialValueRef.current) {
+        // Even if value is the same, update if the object reference changed (e.g., label updated)
+        setSelectedItem(initialValue || null)
+        prevInitialValueRef.current = initialValue
+      }
+    }, [initialValue, selectedItem?.value])
+
+    // Use external error if provided, otherwise use internal validation
+    const displayError = externalError !== undefined ? externalError : error
+  useEffect(() => {
+  if (externalError !== undefined) {
+    setError(externalError);
+    return;
+  }
+
+  if (!hasSubmitted) {
+    setError(undefined);
+    return;
+  }
+
+  if (validator) {
+    const validationError = validator(selectedItem?.value);
+    setError(validationError);
+  } else if (required && !selectedItem?.value) {
+    setError(`${label || 'This field'} is required`);
+  } else {
+    setError(undefined);
+  }
+}, [selectedItem, validator, required, label, externalError, hasSubmitted]);
+
 
 
     const getOptionStyles = (selected: boolean, hovered = false): React.CSSProperties => {
@@ -151,6 +239,9 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
         }}
       >
         {label}
+        {required && (
+          <span style={{ color: theme.colors.error, marginLeft: '4px' }}>*</span>
+        )}
       </div>
     )}
     <div
@@ -163,7 +254,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
         fontSize: sizeStyles.fontSize,
         borderRadius: theme.borderRadius.md,
         backgroundColor: theme.colors.background,
-        border: `1px solid ${theme.colors.border}`,
+        border: `1px solid ${displayError ? theme.colors.error : theme.colors.border}`,
         cursor: disabled ? 'not-allowed' : 'pointer',
         color: theme.colors.text,
         userSelect: 'none',
@@ -174,7 +265,15 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
       }}
       onClick={() => !disabled && setIsOpen(prev => !prev)}
     >
-    <span style={{flex: 1,whiteSpace: "nowrap",overflow: "hidden",textOverflow: "ellipsis",fontWeight: "normal",color: '#888'}}>{selectedItem?.label || title}
+    <span style={{
+      flex: 1,
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      fontWeight: "normal",
+      color: selectedItem ? theme.colors.text : '#888'
+    }}>
+      {selectedItem?.label ?? title}
     </span>
       <svg
         width={sizeStyles.fontSize + 4}
@@ -302,18 +401,21 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
           </div>
         )}
 
-        {error && (
-          <p
-            style={{
-              color: theme.colors.error,
-              fontSize: theme.fontSize.xs,
-              marginTop: theme.spacing.xs,
-            }}
-          >
-            {error}
-          </p>
-        )}
       </div>
+    )}
+    {/* Error message displayed below the dropdown */}
+    {displayError && (
+      <p
+        style={{
+          color: theme.colors.error,
+          fontSize: theme.fontSize.sm,
+          marginTop: '4px',
+          marginLeft: '0',
+          marginBottom: '0',
+        }}
+      >
+        {displayError}
+      </p>
     )}
   </div>
 )

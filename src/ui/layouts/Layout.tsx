@@ -40,7 +40,6 @@ export const Layout: React.FC = () => {
                 const storedMenu = LocalStorageHelper.getMenuData();
 
                 if (storedMenu && storedMenu.length > 0) {
-                    
                     setMenuData(storedMenu);
                     return;
                 }
@@ -118,7 +117,7 @@ export const Layout: React.FC = () => {
 
     return (
         <MenuProvider menu={menuData}>
-            <div className="h-screen bg-gray-50 flex overflow-hidden">
+            <div className="h-screen  flex overflow-hidden">
                 {/* Sidebar */}
                 <Sidebar
                     isOpen={isSidebarOpen}
@@ -145,7 +144,7 @@ export const Layout: React.FC = () => {
                     />
 
                     {/* Main content */}
-                    <main className="flex-1 overflow-y-auto p-4 lg:p-3 bg-gray-50 thin-scroll">
+                    <main className="flex-1 overflow-y-auto p-4 lg:p-3 thin-scroll">
                         {/* Selected module info */}
                         {selectedModule && (
                             <div className="mb-4 lg:mb-6 p-3 lg:p-4 bg-white rounded-lg shadow-sm border border-gray-200">

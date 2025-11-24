@@ -30,6 +30,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
         const sizeConfig = {
             xs: { height: '32px', width: '32px', padding: `${theme.spacing.xs} ${theme.spacing.sm}`, fontWeight: theme.fontWeight.normal, fontSize: theme.fontSize.xs, iconSize: '10px', },
+            mxs: { height: '40px', width: '180px', padding: `${theme.spacing.xs} ${theme.spacing.sm}`, fontWeight: theme.fontWeight.medium, fontSize: theme.fontSize.mxs, iconSize: '10px', },
             sm: { height: '34px', width: '34px', padding: `${theme.spacing.sm} ${theme.spacing.lg}`, fontWeight: theme.fontWeight.normal, fontSize: theme.fontSize.sm, iconSize: '12px' },
             md: { height: '44px', width: '44px', padding: `${theme.spacing.md} ${theme.spacing.xl}`, fontWeight: theme.fontWeight.medium, fontSize: theme.fontSize.md, iconSize: '20px' },
             lg: { height: '52px', width: '52px', padding: `${theme.spacing.lg} ${theme.spacing.xxl}`, fontWeight: theme.fontWeight.bold, fontSize: theme.fontSize.lg, iconSize: '24px' },

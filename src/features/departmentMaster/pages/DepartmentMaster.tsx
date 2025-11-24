@@ -316,77 +316,6 @@ export const DepartmentMaster: React.FC = () => {
               onClick={() => handleViewDepartmentDetails(row)} // just pass a function, no need for e.preventDefault here
             />
 
-            {canAction && (
-              <div className="flex items-center justify-end ml-2 w-20">
-                {(row.NumberOfEmployee || 0) === 0 ? (
-                  <>
-                    <Button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleEditDepartmentMaster(row)
-                      }}
-                      color='transparent'
-                      fullWidth
-                      isborderRadius
-                      size='sm'
-                      title="Edit Department"
-                      style={{
-                        color: '#0B3251',
-                        padding: '0px 8px'
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-
-                    <Button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleConfirmationDialogBoxOpen(row)
-                      }}
-                      color='transparent'
-                      fullWidth
-                      isborderRadius
-                      size='sm'
-                      style={{
-                        color: 'red',
-                        padding: '0px 8px'
-                      }}
-                      title="Delete Department"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleEditDepartmentMaster(row)
-                      }}
-                      color='transparent'
-                      fullWidth
-                      isborderRadius
-                      size='sm'
-                      title="Edit Department"
-                      style={{
-                        color: '#0B3251',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <div className="w-[30px]" />
-                  </>
-
-                )}
-              </div>
-            )}
           </div>
         )
       },
@@ -396,14 +325,7 @@ export const DepartmentMaster: React.FC = () => {
         width: '30',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <TooltipText
-            text={value}
-            maxWidth="170px"
-            tooltipThreshold={15}
-            tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
-          />
-        )
+        render: (value) => value || ''
       },
       {
         key: 'NumberOfEmployee',
@@ -411,11 +333,8 @@ export const DepartmentMaster: React.FC = () => {
         width: '20',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            {value}
-          </span>
-        )
+        render: (value) => value || '0'
+
       },
       {
         key: 'CreatedBy',
@@ -501,43 +420,74 @@ export const DepartmentMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="View Department Master Details"
+        title="Department Master Details"
         onSubmit={(e) => {
           e.preventDefault()
           onClose()
         }}
         cancelText="Close"
         loading={false}
-        size='half-screen'
+        size='lg'
       >
         <div className="space-y-6">
 
           <div className="space-y-4">
-            <FieldItem label="Department Code" value={data.DepartmentCode} className='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap' isRow withBorder={false} />
-            <FieldItem label="Department Name" value={data.DepartmentName} isRow withBorder={false} />
-            <FieldItem label="Number of Employees" value={data.NumberOfEmployee} className='inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 overflow-hidden text-ellipsis whitespace-nowrap' isRow withBorder={false} />
-
+            <FieldItem label="Department Code" value={data.DepartmentCode} isRow withBorder={true} />
+            <FieldItem label="Department Name" value={data.DepartmentName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Number of Employees" value={data.NumberOfEmployee} isRow withBorder={true} />
           </div>
 
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <FieldItem label="Created By" isRow={true} value={data.CreatedBy} withBorder={false} />
-                <FieldItem label="Created Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={false} />
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold pb-2">
+              Action Details
+            </h4>
 
-              </div>
-              <div className="space-y-2">
-                {data.ModifiedBy && (
-                  <>
-                    <FieldItem label="Modified By" isRow={true} value={data.ModifiedBy} withBorder={false} />
-                    <FieldItem label="Modified Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
-                  </>
-                )}
-              </div>
-            </div>
+            <FieldItem label="Created By" isRow={true} value={data.CreatedBy} withBorder={true} />
+            <FieldItem label="Created Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={true} />
+            <FieldItem label="Modified By" isRow={true} value={data.ModifiedBy} withBorder={true} />
+            <FieldItem label="Modified Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={true} />
+
           </div>
+          <div className="flex justify-between items-center pt-4">
 
+            {canAction && (
+              <>
+                {(data.NumberOfEmployee || 0) === 0 ? (
+
+                  <Button
+                    color='gray'
+                    variant='solid'
+                    colorMode="light"
+                    size='md'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsViewModalOpen(false)
+                      handleConfirmationDialogBoxOpen(data)
+                    }}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    Delete
+                  </Button>
+                ) : <div style={{ width: "120px", height: "44px" }}></div>}
+
+
+                <Button
+                  color='blue'
+                  size='md'
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setIsViewModalOpen(false)
+                    handleEditDepartmentMaster(data)
+                  }}
+                >
+                  <Edit className="h-5 w-5" />
+                  Edit
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </Modal>
     )
@@ -690,8 +640,8 @@ export const DepartmentMaster: React.FC = () => {
         loading={loading}
         size='small-half'
       >
-        <div className="space-y-6">
-          <div className="space-y-4">
+        <div className="space-y-6 p-6 bg-blue-100">
+          <div className="space-y-4" >
             <div>
 
               <Input
@@ -720,8 +670,6 @@ export const DepartmentMaster: React.FC = () => {
               />
 
             </div>
-
-
           </div>
         </div>
       </Modal>
@@ -855,151 +803,151 @@ export const DepartmentMaster: React.FC = () => {
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-
-      <div className="h-full flex flex-col">
-        {/* ============================================================================
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+          <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        {/* ============================================================================
+          {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search by department name..."
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchDepartments}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeDepartmentMasterColumnsModal(true)}
-          isShowAddButton={canAction}
-          addTitle="Add Department"
-          onAdd={handleAddDepartmentModal}
-          isShowImportButton={canAction}
-          isShowExportButton={canExport}
-          onExportExcel={handleExportDepartmentExcel}
-          onExportPdf={handleExportDepartmentPdf}
-          exportLoading={isLoading}
-        />
+          <TableActionToolbar
+            isShowSearchBar
+            searchTerm={searchTerm}
+            searchPlaceholder="Search By Department Name"
+            onSearchChange={(v) => {
+              setSearchTerm(v)
+              debouncedSearch(v)
+            }}
+            onClearSearch={clearsearchDepartments}
+            isShowFilterButton
+            filters={filters}
+            onOpenFilter={() => {
+              setTempFilters(filters)
+              setShowFilterPopup(true)
+            }}
+            isShowCustomizeButton
+            onCustomize={() => setIsShowCustomizeDepartmentMasterColumnsModal(true)}
+            isShowAddButton={canAction}
+            addTitle="Add Department"
+            onAdd={handleAddDepartmentModal}
+            isShowImportButton={canAction}
+            isShowExportButton={canExport}
+            onExportExcel={handleExportDepartmentExcel}
+            onExportPdf={handleExportDepartmentPdf}
+            exportLoading={isLoading}
+          />
 
 
-        {/* DATA TABLE DEPARTMENT */}
-        <DataTable
-          data={departmentListForTable}
-          columns={visibleDepartmentMasterColumns}
-          pagination={departmentMasterPaginationInfo}
-          emptyMessage="No departments found"
-          fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+          {/* DATA TABLE DEPARTMENT */}
+          <DataTable
+            data={departmentListForTable}
+            columns={visibleDepartmentMasterColumns}
+            pagination={departmentMasterPaginationInfo}
+            emptyMessage="No departments found"
+            fixedHeight={true}
+            maxHeight="calc(100vh - 255px)"
+            recordsPerPage={20}
+            className="flex-1"
+            sortInfo={sortInfo}
+            onSort={handleSortColumn}
+          />
 
-        {/* VIEW DEPARTMENT MODAL */}
-        <ViewDepartmentDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewDepartmentMasterDetailsData(null)
-          }}
-          data={viewDepartmentMasterDetailsData}
-        />
+          {/* VIEW DEPARTMENT MODAL */}
+          <ViewDepartmentDetailsModal isOpen={isViewModalOpen}
+            onClose={() => {
+              setIsViewModalOpen(false)
+              setViewDepartmentMasterDetailsData(null)
+            }}
+            data={viewDepartmentMasterDetailsData}
+          />
 
-        {/*  ADD EDIT UPDATE DEPARTMENT MODAL */}
-        <AddUpdateDepartmentModal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingDepartmentMasterData(null)
-          }}
-          onSubmit={handleAddUpdateDepartmentMaster}
-          data={editingDepartmentMasterData}
-          loading={isLoading}
-        />
+          {/*  ADD EDIT UPDATE DEPARTMENT MODAL */}
+          <AddUpdateDepartmentModal
+            isOpen={isAddUpdateModalOpen}
+            onClose={() => {
+              setIsAddUpdateModalOpen(false)
+              setEditingDepartmentMasterData(null)
+            }}
+            onSubmit={handleAddUpdateDepartmentMaster}
+            data={editingDepartmentMasterData}
+            loading={isLoading}
+          />
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
+          {/* CUSTOMIZE COLUMNS MODAL */}
 
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeDepartmentMasterColumnsModal}
-          onClose={() => setIsShowCustomizeDepartmentMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredDepartmentMasterColumnKeys]),
-            )
-
-            setSelectedDepartmentMasterColumnKeys(withRequired)
-
-            try {
-              LocalStorageHelper.storeDepartmentMasterTableColumns(
-                JSON.stringify(withRequired),
+          <CustomizeColumnsModal
+            isOpen={isShowCustomizeDepartmentMasterColumnsModal}
+            onClose={() => setIsShowCustomizeDepartmentMasterColumnsModal(false)}
+            onApply={(keys) => {
+              const withRequired = Array.from(
+                new Set([...keys, ...requiredDepartmentMasterColumnKeys]),
               )
-            } catch { }
-          }}
-          columns={departmentMasterColumns}
-          selectedKeys={selectedDepartmentMasterColumnKeys}
-          requiredKeys={requiredDepartmentMasterColumnKeys}
-          title="Customize Department Master Table Columns"
-        />
 
-        {/* FILTER DEPARTMENT MODAL */}
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Department Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <Input
-                  label='Department Name'
-                  type="text"
-                  value={tempFilters.DepartmentName || ''}
-                  onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}
-                  placeholder="Enter department name"
-                />
+              setSelectedDepartmentMasterColumnKeys(withRequired)
+
+              try {
+                LocalStorageHelper.storeDepartmentMasterTableColumns(
+                  JSON.stringify(withRequired),
+                )
+              } catch { }
+            }}
+            columns={departmentMasterColumns}
+            selectedKeys={selectedDepartmentMasterColumnKeys}
+            requiredKeys={requiredDepartmentMasterColumnKeys}
+            title="Customize Table Columns"
+          />
+
+          {/* FILTER DEPARTMENT MODAL */}
+          <Modal
+            isOpen={showFilterPopup}
+            onClose={() => setShowFilterPopup(false)}
+            title="Filter - Department Master"
+            onSubmit={(e) => {
+              e.preventDefault()
+              applyFilters()
+            }}
+            saveText="Apply Filter"
+            cancelText="Clear Filter"
+            onCancel={() => clearFilters()}
+            size="small-half"
+          >
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <Input
+                    label='Department Name'
+                    type="text"
+                    value={tempFilters.DepartmentName || ''}
+                    onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}
+                    placeholder="Enter department name"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </Modal>
+          </Modal>
 
-        {/* DELETE CONFIRMATION DEPARTMENT MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteDepartmentMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteDepartmentMaster}
-          title="You are about to delete a department?"
-          message="Deleting this department will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
+          {/* DELETE CONFIRMATION DEPARTMENT MODAL */}
+          <ConfirmationDialogBox
+            isOpen={isConfirmationDialogBoxOpen}
+            onClose={() => {
+              setIsConfirmationDialogBoxOpen(false)
+              setDeleteDepartmentMasterDetailsData(null)
+            }}
+            onConfirm={handleDeleteDepartmentMaster}
+            title="You are about to delete a department?"
+            message="Deleting this department will permanently remove its contents."
+            confirmText="Delete"
+            cancelText="Cancel"
+            loading={isLoading}
+            variant="danger"
+          />
 
+       
       </div>
     </>
 

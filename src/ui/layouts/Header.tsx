@@ -14,6 +14,7 @@ import * as E from 'fp-ts/Either';
 import useToast from '@/core/hooks/useToast'
 import { ToastContainer } from '@/ui/components/Toast';
 import { Loader } from '@/core/utils/loader'
+import { COLORS } from '@/core/constants'
 
 interface HeaderProps {
     isSidebarOpen: boolean
@@ -171,10 +172,11 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="flex items-center space-x-2 lg:space-x-4 flex-1 min-w-0">
                     <button
                         onClick={onToggleSidebar}
-                        className="p-2 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 touch-manipulation flex-shrink-0"
+                        className="p-2 rounded-md  transition-colors duration-200 touch-manipulation flex-shrink-0"
                         aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+                        style={{ background: COLORS.menu_toggleColor,cursor: "pointer"}}
                     >
-                        <Menu className="h-5 w-5 text-gray-600" />
+                        <Menu  style={{color:COLORS.primary1 }} className="h-5 w-5" />
                     </button>
 
                     <div className="flex flex-col min-w-0 flex-1">

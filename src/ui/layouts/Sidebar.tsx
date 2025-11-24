@@ -377,7 +377,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ${isOpen ? 'w-[18rem]' : 'w-16'}
         h-screen lg:h-full overflow-hidden flex flex-col z-50
       `}>
-        
+
         {/* Fixed Header with Logo and User Details */}
         <div className="flex-shrink-0 border-b border-gray-200 bg-white">
           <div className="flex items-center justify-between h-16 px-4">
@@ -429,6 +429,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
         </div>
+        
+        <div className="w-full h-2 bg-[#f1f1f1]" />
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto min-h-0 flex flex-col thin-scroll">
@@ -436,7 +438,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="space-y-0">
               {menuItems.map(item => renderMenuItem(item))}
             </div>
-
             {/* Flexible spacer to push footer down when content is minimal */}
             <div className="flex-1"></div>
           </nav>

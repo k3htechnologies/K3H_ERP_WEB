@@ -270,7 +270,7 @@
 //   }
 // };
 
-  
+
 
 //   const fetchDepartmentOptions = async (pageNumber: number, params?: { value?: string }) => {
 //     const responseEither = await departmentMasterService.apiCallPullDepartmentMaster({
@@ -725,7 +725,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import { TextArea } from "@/ui/components/forms/Textarea";
-import { DatePicker } from "@/ui/components/forms/Datepicker";
+import { DatePickerInput } from "@/ui/components/forms/Datepicker";
 import { SingleSelectDropdownWithPagination } from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import * as E from "fp-ts/Either";
 import { departmentMasterService } from "@/features/departmentMaster/services/DepartmentMasterService";
@@ -750,6 +750,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BankListMasterService } from "@/features/bankListMaster/services/BankListMasterService";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 
 type NullableNumber = number | null;
 
@@ -850,58 +851,58 @@ const AddUpdateEmployeePage: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState('');
   const [locationRows, setLocationRows] = useState<LocationRow[] | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
-  
+
   //#region COUNTRY STATE CITY DISTRICT 
-    const {
-      isLoading: isLocationLoading,
-      countries,
-      statesByCountryId,
-      districtsByStateId,
-      citiesByDistrictId,
-      villagesByCityId,
-    } = useCountryStateCityDistrictVillageData()
-  
-    const [selectedCountryId, setSelectedCountryId] = React.useState<number | null>(1)
-    const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null)
-    const [selectedDistrictId, setSelectedDistrictId] = React.useState<number | null>(null)
-    const [selectedCityId, setSelectedCityId] = React.useState<number | null>(null)
-  
-    const countryOptions = countries.map(c => ({ label: c.name, value: c.id }))
-  
-    const stateOptions =
-      selectedCountryId != null
-        ? (statesByCountryId[selectedCountryId] || []).map(s => ({
-          label: s.name,
-          value: s.id,
-        }))
-        : []
-  
-    const districtOptions =
-      selectedStateId != null
-        ? (districtsByStateId[selectedStateId] || []).map(d => ({
-          label: d.name,
-          value: d.id,
-        }))
-        : []
-  
-    const cityOptions =
-      selectedDistrictId != null
-        ? (citiesByDistrictId[selectedDistrictId] || []).map(c => ({
-          label: c.name,
-          value: c.id,
-        }))
-        : []
-  
-    const villageOptions =
-      selectedCityId != null
-        ? (villagesByCityId[selectedCityId] || []).map(v => ({
-          label: v.name,
-          value: v.id,
-        }))
-        : []
-  
-    //#endregion
-  
+  const {
+    isLoading: isLocationLoading,
+    countries,
+    statesByCountryId,
+    districtsByStateId,
+    citiesByDistrictId,
+    villagesByCityId,
+  } = useCountryStateCityDistrictVillageData()
+
+  const [selectedCountryId, setSelectedCountryId] = React.useState<number | null>(1)
+  const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null)
+  const [selectedDistrictId, setSelectedDistrictId] = React.useState<number | null>(null)
+  const [selectedCityId, setSelectedCityId] = React.useState<number | null>(null)
+
+  const countryOptions = countries.map(c => ({ label: c.name, value: c.id }))
+
+  const stateOptions =
+    selectedCountryId != null
+      ? (statesByCountryId[selectedCountryId] || []).map(s => ({
+        label: s.name,
+        value: s.id,
+      }))
+      : []
+
+  const districtOptions =
+    selectedStateId != null
+      ? (districtsByStateId[selectedStateId] || []).map(d => ({
+        label: d.name,
+        value: d.id,
+      }))
+      : []
+
+  const cityOptions =
+    selectedDistrictId != null
+      ? (citiesByDistrictId[selectedDistrictId] || []).map(c => ({
+        label: c.name,
+        value: c.id,
+      }))
+      : []
+
+  const villageOptions =
+    selectedCityId != null
+      ? (villagesByCityId[selectedCityId] || []).map(v => ({
+        label: v.name,
+        value: v.id,
+      }))
+      : []
+
+  //#endregion
+
   const [dropdownLabels, setDropdownLabels] = useState<{
     companyName?: string;
     departmentName?: string;
@@ -998,7 +999,7 @@ const AddUpdateEmployeePage: React.FC = () => {
   //   return { totalNumberOfRecord: list.length, itemList: list };
   // };
 
-  
+
   const fetchCompanyOptions = async (pageNumber: number, params?: { value?: string }) => {
     const responseEither = await CompanyMasterService.apiCallPullCompanyMaster({
       PageSize: 10,
@@ -1012,37 +1013,37 @@ const AddUpdateEmployeePage: React.FC = () => {
     return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? companyList.length, itemList: companyList };
   };
 
-const fetchBanks = async (pageNumber: number,params?: { value?: string }) => {
-  try {
-    const resp = await BankListMasterService.apiCallPullBankListMaster({
-      PageNumber: pageNumber,
-      PageSize: 10,
-      BankName:params?.value || "",
-    });
+  const fetchBanks = async (pageNumber: number, params?: { value?: string }) => {
+    try {
+      const resp = await BankListMasterService.apiCallPullBankListMaster({
+        PageNumber: pageNumber,
+        PageSize: 10,
+        BankName: params?.value || "",
+      });
 
-    if (E.isLeft(resp)) {
-      console.error("Bank list API failed", resp.left);
+      if (E.isLeft(resp)) {
+        console.error("Bank list API failed", resp.left);
+        return { totalNumberOfRecord: 0, itemList: [] };
+      }
+
+      const api = resp.right;
+
+      const rows = api?.Data ?? [];
+
+      const bankDropdown = rows.map((b) => ({
+        label: b.BankNameWithCode,
+        value: String(b.BankListMasterId),
+      }));
+
+      return {
+        totalNumberOfRecord: api.TotalNumberOfRecord ?? bankDropdown.length,
+        itemList: bankDropdown,
+      };
+    } catch (error) {
+      console.error("Error fetching bank list:", error);
       return { totalNumberOfRecord: 0, itemList: [] };
     }
-
-    const api = resp.right;
-
-    const rows = api?.Data ?? [];
-
-    const bankDropdown = rows.map((b) => ({
-      label: b.BankNameWithCode,
-      value: String(b.BankListMasterId),
-    }));
-
-    return {
-      totalNumberOfRecord: api.TotalNumberOfRecord ?? bankDropdown.length,
-      itemList: bankDropdown,
-    };
-  } catch (error) {
-    console.error("Error fetching bank list:", error);
-    return { totalNumberOfRecord: 0, itemList: [] };
-  }
-};
+  };
 
   const fetchDepartmentOptions = async (pageNumber: number, params?: { value?: string }) => {
     const responseEither = await departmentMasterService.apiCallPullDepartmentMaster({
@@ -1166,94 +1167,94 @@ const fetchBanks = async (pageNumber: number,params?: { value?: string }) => {
   //   // eslint-disable-next-line react-hooks/exhaustive-deps
   // }, [id]);
   const formatDateForInput = (date?: string | null) => {
-  if (!date) return "";
-  return date.split("T")[0];
-};
-useEffect(() => {
-  if (!employeeId) return;
-
-  const loadEmployeeAndLocation = async () => {
-    setIsLoading(true);
-    setLoadingMessage('Loading employee data...');
-
-    try {
-      const resp = await employeeMasterService.apiCallPullEmployeeMaster({
-        PageSize: 1,
-        PageNumber: 1,
-        EmployeeId: Number(employeeId),
-      });
-
-      if (E.isRight(resp)) {
-        const e = resp.right?.Data?.[0];
-
-        if (e) {
-          // 1️⃣ UPDATE FORM DATA
-          setFormData(prev => ({
-            ...prev,
-
-            EmployeeId: e.EmployeeId ?? prev.EmployeeId,
-            UniqueKey: e.UniqueKey ?? prev.UniqueKey,
-
-            FirstName: e.FirstName ?? "",
-            MiddleName: e.MiddleName ?? "",
-            LastName: e.LastName ?? "",
-
-            DepartmentMasterId: e.DepartmentMasterId ?? null,
-            DesignationMasterId: e.DesignationMasterId ?? null,
-            BranchMasterId: e.BranchMasterId ?? null,
-
-            Gender: e.Gender ?? "",
-            MaritalStatus: e.MaritalStatus ?? "",
-
-            DateOfBirth: formatDateForInput(e.DateOfBirth),
-            JoiningDate: formatDateForInput(e.JoiningDate),
-
-            IsGeoFenceLocation: !!e.IsGeoFenceLocation,
-
-            EmailId: e.EmailId ?? "",
-            OfficeEmailId: e.OfficeEmailId ?? "",
-            ReportPersonId: e.ReportPersonId ?? null,
-
-            PersonalMobileNumber: e.PersonalMobileNumber ?? "",
-            OfficeMobileNumber: e.OfficeMobileNumber ?? "",
-
-            BankListMasterId: e.BankListMasterId ?? null,
-            BankBranchName: e.BankBranchName ?? "",
-            IFSCCode: e.IFSCCode ?? "",
-            AccountNo: e.AccountNo ?? "",
-
-            EmployeeType: e.EmployeeType ?? "",
-            EmergencyMobileNumber: e.EmergencyMobileNumber ?? "",
-            EmergencyContactPersonRelationship: e.EmergencyContactPersonRelationship ?? "",
-
-            CommunicationAddress: e.CommunicationAddress ?? "",
-            PermanentAddress: e.PermanentAddress ?? "",
-            BloodGroup: e.BloodGroup ?? "",
-            CompanyId: e.CompanyId ?? null,
-
-            CountryMasterId: e.CountryMasterId ?? null,
-            StateMasterId: e.StateMasterId ?? null,
-            DistrictMasterId: e.DistrictMasterId ?? null,
-            CityMasterId: e.CityMasterId ?? null,
-          }));
-
-          // 2️⃣ UPDATE UI DROPDOWNS - Sync cascading dropdown selections
-          setSelectedCountryId(e.CountryMasterId ?? null);
-          setSelectedStateId(e.StateMasterId ?? null);
-          setSelectedDistrictId(e.DistrictMasterId ?? null);
-          setSelectedCityId(e.CityMasterId ?? null);
-        }
-      }
-    } catch (error) {
-      console.error("Error loading employee", error);
-    } finally {
-      setIsLoading(false);
-      setLoadingMessage('');
-    }
+    if (!date) return "";
+    return date.split("T")[0];
   };
+  useEffect(() => {
+    if (!employeeId) return;
 
-  loadEmployeeAndLocation();
-}, [employeeId]);
+    const loadEmployeeAndLocation = async () => {
+      setIsLoading(true);
+      setLoadingMessage('Loading employee data...');
+
+      try {
+        const resp = await employeeMasterService.apiCallPullEmployeeMaster({
+          PageSize: 1,
+          PageNumber: 1,
+          EmployeeId: Number(employeeId),
+        });
+
+        if (E.isRight(resp)) {
+          const e = resp.right?.Data?.[0];
+
+          if (e) {
+            // 1️⃣ UPDATE FORM DATA
+            setFormData(prev => ({
+              ...prev,
+
+              EmployeeId: e.EmployeeId ?? prev.EmployeeId,
+              UniqueKey: e.UniqueKey ?? prev.UniqueKey,
+
+              FirstName: e.FirstName ?? "",
+              MiddleName: e.MiddleName ?? "",
+              LastName: e.LastName ?? "",
+
+              DepartmentMasterId: e.DepartmentMasterId ?? null,
+              DesignationMasterId: e.DesignationMasterId ?? null,
+              BranchMasterId: e.BranchMasterId ?? null,
+
+              Gender: e.Gender ?? "",
+              MaritalStatus: e.MaritalStatus ?? "",
+
+              DateOfBirth: formatDateForInput(e.DateOfBirth),
+              JoiningDate: formatDateForInput(e.JoiningDate),
+
+              IsGeoFenceLocation: !!e.IsGeoFenceLocation,
+
+              EmailId: e.EmailId ?? "",
+              OfficeEmailId: e.OfficeEmailId ?? "",
+              ReportPersonId: e.ReportPersonId ?? null,
+
+              PersonalMobileNumber: e.PersonalMobileNumber ?? "",
+              OfficeMobileNumber: e.OfficeMobileNumber ?? "",
+
+              BankListMasterId: e.BankListMasterId ?? null,
+              BankBranchName: e.BankBranchName ?? "",
+              IFSCCode: e.IFSCCode ?? "",
+              AccountNo: e.AccountNo ?? "",
+
+              EmployeeType: e.EmployeeType ?? "",
+              EmergencyMobileNumber: e.EmergencyMobileNumber ?? "",
+              EmergencyContactPersonRelationship: e.EmergencyContactPersonRelationship ?? "",
+
+              CommunicationAddress: e.CommunicationAddress ?? "",
+              PermanentAddress: e.PermanentAddress ?? "",
+              BloodGroup: e.BloodGroup ?? "",
+              CompanyId: e.CompanyId ?? null,
+
+              CountryMasterId: e.CountryMasterId ?? null,
+              StateMasterId: e.StateMasterId ?? null,
+              DistrictMasterId: e.DistrictMasterId ?? null,
+              CityMasterId: e.CityMasterId ?? null,
+            }));
+
+            // 2️⃣ UPDATE UI DROPDOWNS - Sync cascading dropdown selections
+            setSelectedCountryId(e.CountryMasterId ?? null);
+            setSelectedStateId(e.StateMasterId ?? null);
+            setSelectedDistrictId(e.DistrictMasterId ?? null);
+            setSelectedCityId(e.CityMasterId ?? null);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading employee", error);
+      } finally {
+        setIsLoading(false);
+        setLoadingMessage('');
+      }
+    };
+
+    loadEmployeeAndLocation();
+  }, [employeeId]);
 
   // set default country = 1 in form also
   useEffect(() => {
@@ -1264,106 +1265,106 @@ useEffect(() => {
   }, [employeeId]);
 
 
-// useEffect(() => {
-//   if (!employeeId) return;
-  
-//   const loadEmployeeAndLocation = async () => {
-//     setIsLoading(true);
-//     setLoadingMessage('Loading employee data...');
+  // useEffect(() => {
+  //   if (!employeeId) return;
 
-//     try {
-//       const resp = await employeeMasterService.apiCallPullEmployeeMaster({
-//         PageSize: 1,
-//         PageNumber: 1,
-//         EmployeeId: Number(employeeId),
-//       });
+  //   const loadEmployeeAndLocation = async () => {
+  //     setIsLoading(true);
+  //     setLoadingMessage('Loading employee data...');
 
-//       if (E.isRight(resp)) {
-//         const e = resp.right?.Data?.[0];
-//         if (e) {
-//           setFormData(prev => ({
-//             ...prev,
-//             EmployeeId: e.EmployeeId ?? prev.EmployeeId,
-//             UniqueKey: e.UniqueKey ?? prev.UniqueKey,
+  //     try {
+  //       const resp = await employeeMasterService.apiCallPullEmployeeMaster({
+  //         PageSize: 1,
+  //         PageNumber: 1,
+  //         EmployeeId: Number(employeeId),
+  //       });
 
-//             FirstName: e.FirstName ?? "",
-//             MiddleName: e.MiddleName ?? "",
-//             LastName: e.LastName ?? "",
+  //       if (E.isRight(resp)) {
+  //         const e = resp.right?.Data?.[0];
+  //         if (e) {
+  //           setFormData(prev => ({
+  //             ...prev,
+  //             EmployeeId: e.EmployeeId ?? prev.EmployeeId,
+  //             UniqueKey: e.UniqueKey ?? prev.UniqueKey,
 
-//             DepartmentMasterId: e.DepartmentMasterId ?? null,
-//             DesignationMasterId: e.DesignationMasterId ?? null,
-//             BranchMasterId: e.BranchMasterId ?? null,
+  //             FirstName: e.FirstName ?? "",
+  //             MiddleName: e.MiddleName ?? "",
+  //             LastName: e.LastName ?? "",
 
-//             Gender: e.Gender ?? "",
-//             MaritalStatus: e.MaritalStatus ?? "",
+  //             DepartmentMasterId: e.DepartmentMasterId ?? null,
+  //             DesignationMasterId: e.DesignationMasterId ?? null,
+  //             BranchMasterId: e.BranchMasterId ?? null,
 
-//             DateOfBirth: formatDateForInput(e.DateOfBirth),
-//             JoiningDate: formatDateForInput(e.JoiningDate),
+  //             Gender: e.Gender ?? "",
+  //             MaritalStatus: e.MaritalStatus ?? "",
 
-//             IsGeoFenceLocation: !!e.IsGeoFenceLocation,
+  //             DateOfBirth: formatDateForInput(e.DateOfBirth),
+  //             JoiningDate: formatDateForInput(e.JoiningDate),
 
-//             EmailId: e.EmailId ?? "",
-//             OfficeEmailId: e.OfficeEmailId ?? "",
-//             ReportPersonId: e.ReportPersonId ?? null,
+  //             IsGeoFenceLocation: !!e.IsGeoFenceLocation,
 
-//             PersonalMobileNumber: e.PersonalMobileNumber ?? "",
-//             OfficeMobileNumber: e.OfficeMobileNumber ?? "",
+  //             EmailId: e.EmailId ?? "",
+  //             OfficeEmailId: e.OfficeEmailId ?? "",
+  //             ReportPersonId: e.ReportPersonId ?? null,
 
-//             BankListMasterId: e.BankListMasterId ?? null,
-//             BankBranchName: e.BankBranchName ?? "",
-//             IFSCCode: e.IFSCCode ?? "",
-//             AccountNo: e.AccountNo ?? "",
+  //             PersonalMobileNumber: e.PersonalMobileNumber ?? "",
+  //             OfficeMobileNumber: e.OfficeMobileNumber ?? "",
 
-//             EmployeeType: e.EmployeeType ?? "",
-//             EmergencyMobileNumber: e.EmergencyMobileNumber ?? "",
-//             EmergencyContactPersonRelationship: e.EmergencyContactPersonRelationship ?? "",
+  //             BankListMasterId: e.BankListMasterId ?? null,
+  //             BankBranchName: e.BankBranchName ?? "",
+  //             IFSCCode: e.IFSCCode ?? "",
+  //             AccountNo: e.AccountNo ?? "",
 
-//             CommunicationAddress: e.CommunicationAddress ?? "",
-//             PermanentAddress: e.PermanentAddress ?? "",
-//             BloodGroup: e.BloodGroup ?? "",
+  //             EmployeeType: e.EmployeeType ?? "",
+  //             EmergencyMobileNumber: e.EmergencyMobileNumber ?? "",
+  //             EmergencyContactPersonRelationship: e.EmergencyContactPersonRelationship ?? "",
 
-//             CompanyId: e.CompanyId ?? null,
-            
-//             // CountryMasterId:1,
-//             // StateMasterId: e.StateMasterId ?? null,
-//             // DistrictMasterId: e.DistrictMasterId ?? null,
-//             // CityMasterId: e.CityMasterId ?? null,
-            
-//           }));
-          
-//           // Store label names for dropdowns
-//           setDropdownLabels({
-//             companyName: e.CompanyName ?? undefined,
-//             departmentName: e.Department ?? undefined,
-//             branchName: e.Branch ?? undefined,
-//             designationName: e.Designation ?? undefined,
-//             reportPersonName: e.ReportPersonName ?? undefined,
-//             stateName: e.StateName ?? undefined,
-//             districtName: e.DistrictName ?? undefined,
-//             cityName: e.CityName ?? undefined,
-//             bankName: e.BankName ?? undefined,
-//           });
-//         }
-//       } else {
-//         console.error("Failed to fetch employee:", resp.left);
-//         addToast({ type: "error", title: "Failed to load employee details" });
-//       }
+  //             CommunicationAddress: e.CommunicationAddress ?? "",
+  //             PermanentAddress: e.PermanentAddress ?? "",
+  //             BloodGroup: e.BloodGroup ?? "",
 
-//       // 2) Load location hierarchy
-//       await loadLocationHierarchy();
+  //             CompanyId: e.CompanyId ?? null,
 
-//     } catch (error) {
-//       console.error("Error:", error);
-//       addToast({ type: "error", title: "Failed to load employee data" });
-//     } finally {
-//       setIsLoading(false);
-//       setLoadingMessage('');
-//     }
-//   };
+  //             // CountryMasterId:1,
+  //             // StateMasterId: e.StateMasterId ?? null,
+  //             // DistrictMasterId: e.DistrictMasterId ?? null,
+  //             // CityMasterId: e.CityMasterId ?? null,
 
-//   loadEmployeeAndLocation();
+  //           }));
 
-// }, [employeeId]);
+  //           // Store label names for dropdowns
+  //           setDropdownLabels({
+  //             companyName: e.CompanyName ?? undefined,
+  //             departmentName: e.Department ?? undefined,
+  //             branchName: e.Branch ?? undefined,
+  //             designationName: e.Designation ?? undefined,
+  //             reportPersonName: e.ReportPersonName ?? undefined,
+  //             stateName: e.StateName ?? undefined,
+  //             districtName: e.DistrictName ?? undefined,
+  //             cityName: e.CityName ?? undefined,
+  //             bankName: e.BankName ?? undefined,
+  //           });
+  //         }
+  //       } else {
+  //         console.error("Failed to fetch employee:", resp.left);
+  //         addToast({ type: "error", title: "Failed to load employee details" });
+  //       }
+
+  //       // 2) Load location hierarchy
+  //       await loadLocationHierarchy();
+
+  //     } catch (error) {
+  //       console.error("Error:", error);
+  //       addToast({ type: "error", title: "Failed to load employee data" });
+  //     } finally {
+  //       setIsLoading(false);
+  //       setLoadingMessage('');
+  //     }
+  //   };
+
+  //   loadEmployeeAndLocation();
+
+  // }, [employeeId]);
 
 
   const validateForm = () => {
@@ -1395,14 +1396,14 @@ useEffect(() => {
     if (!formData.BankBranchName || formData.BankBranchName.trim().length < 2) e.BankBranchName = "Bank branch name is required (min 2 chars)";
     if (!formData.AccountNo || formData.AccountNo.trim().length < 5) e.AccountNo = "Account number is required (min 5 chars)";
     if (!formData.IFSCCode || formData.IFSCCode.trim().length < 11) e.IFSCCode = "IFSC code is required (min 11 chars)";
-    
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   const handleSubmit = async (ev?: React.FormEvent) => {
     if (ev) ev.preventDefault();
-     setHasSubmitted(true); 
+    setHasSubmitted(true);
     if (!validateForm()) {
       addToast({ type: "error", title: "Please fix validation errors before submitting" });
       return;
@@ -1451,9 +1452,9 @@ useEffect(() => {
         async () => {
           const response = await employeeMasterService.apiCallAddUpdateEmployeeMaster(payload);
           if (E.isRight(response)) {
-            addToast({ 
-              type: "success", 
-              title: formData.EmployeeId ? "Employee updated successfully" : "Employee added successfully" 
+            addToast({
+              type: "success",
+              title: formData.EmployeeId ? "Employee updated successfully" : "Employee added successfully"
             });
             setTimeout(() => {
               navigate("/employeeMaster");
@@ -1463,12 +1464,12 @@ useEffect(() => {
           }
           return response;
         },
-        () => {},
+        () => { },
         (err: any) => {
           console.error("API Error:", err);
           addToast({ type: "error", title: err?.message || "Operation failed" });
         },
-        () => {},
+        () => { },
         formData.EmployeeId === 0 ? "Adding Employee..." : "Updating Employee..."
       );
     } catch (err) {
@@ -1509,344 +1510,354 @@ useEffect(() => {
 
         <div className="flex-1 space-y-2 px-6 py-3 pt-20 pb-20 overflow-y-auto thin-scroll">
           <form onSubmit={handleSubmit}>
-          {/* ============================================================= [BASIC EMPLOYEE DETAILS] ============================================================================================= */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Employee Details</h3>
+            {/* ============================================================= [BASIC EMPLOYEE DETAILS] ============================================================================================= */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Employee Details</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name <span className="text-red-500">*</span>
-                </label>
-                <Input value={formData.FirstName} onChange={(e) => handleFieldChange("FirstName", e.target.value)} error={hasSubmitted ? errors.FirstName : undefined} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Middle Name <span className="text-red-500">*</span>
-                </label>
-                <Input value={formData.MiddleName} onChange={(e) => handleFieldChange("MiddleName", e.target.value)} error={hasSubmitted ? errors.MiddleName : undefined} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name <span className="text-red-500">*</span>
-                </label>
-                <Input value={formData.LastName} onChange={(e) => handleFieldChange("LastName", e.target.value)} error={hasSubmitted ? errors.LastName : undefined} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Gender <span className="text-red-500">*</span>
-                </label>
-                <SinglePageSelection
-                  value={formData.Gender}
-                  onChange={(val) => handleFieldChange("Gender", String(val))}
-                  options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={hasSubmitted ? errors.Gender : undefined}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Marital Status <span className="text-red-500">*</span>
-                </label>
-                <SinglePageSelection
-                  value={formData.MaritalStatus}
-                  onChange={(val) => handleFieldChange("MaritalStatus", String(val))}
-                  options={MARITAL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={hasSubmitted ? errors.MaritalStatus : undefined}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Blood Group <span className="text-red-500">*</span>
-                </label>
-                <SinglePageSelection
-                  value={formData.BloodGroup}
-                  onChange={(val) => handleFieldChange("BloodGroup", String(val))}
-                  options={BLOOD_GROUP_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={hasSubmitted ? errors.BloodGroup : undefined}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  DOB <span className="text-red-500">*</span>
-                </label>
-                <DatePicker value={formData.DateOfBirth ?? ""} onChange={(e) => handleFieldChange("DateOfBirth", e.target.value)} error={hasSubmitted ? errors.DateOfBirth : undefined} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Office Email Id
-                </label>
-                <Input value={formData.OfficeEmailId} onChange={(e) => handleFieldChange("OfficeEmailId", e.target.value)} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Id <span className="text-red-500">*</span>
-                </label>
-                <Input value={formData.EmailId} onChange={(e) => handleFieldChange("EmailId", e.target.value)} error={hasSubmitted ? errors.EmailId : undefined} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Personal Mobile Number <span className="text-red-500">*</span>
-                </label>
-                <Input prefix="+91" value={formData.PersonalMobileNumber} onChange={(e) => handleFieldChange("PersonalMobileNumber", e.target.value)} error={hasSubmitted ? errors.PersonalMobileNumber : undefined} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Office Mobile Number
-                </label>
-                <Input value={formData.OfficeMobileNumber} onChange={(e) => handleFieldChange("OfficeMobileNumber", e.target.value)} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Employee Type <span className="text-red-500">*</span>
-                </label>
-                <SinglePageSelection
-                  value={formData.EmployeeType}
-                  onChange={(val) => handleFieldChange("EmployeeType", String(val))}
-                  options={EMPLOYEE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={hasSubmitted ? errors.EmployeeType : undefined}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Relation to Emergency Contact <span className="text-red-500">*</span>
-                </label>
-                <SinglePageSelection
-                  value={formData.EmergencyContactPersonRelationship}
-                  onChange={(val) => handleFieldChange("EmergencyContactPersonRelationship", String(val))}
-                  options={EMERGENCY_RELATION_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={hasSubmitted ? errors.EmergencyContactPersonRelationship : undefined}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Emergency Contact Number <span className="text-red-500">*</span>
-                </label>
-                <Input prefix="+91" value={formData.EmergencyMobileNumber} onChange={(e) => handleFieldChange("EmergencyMobileNumber", e.target.value)} error={hasSubmitted ? errors.EmergencyMobileNumber : undefined} />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    First Name <span className="text-red-500">*</span>
+                  </label>
+                  <Input value={formData.FirstName} onChange={(e) => handleFieldChange("FirstName", e.target.value)} error={hasSubmitted ? errors.FirstName : undefined} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Middle Name <span className="text-red-500">*</span>
+                  </label>
+                  <Input value={formData.MiddleName} onChange={(e) => handleFieldChange("MiddleName", e.target.value)} error={hasSubmitted ? errors.MiddleName : undefined} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Last Name <span className="text-red-500">*</span>
+                  </label>
+                  <Input value={formData.LastName} onChange={(e) => handleFieldChange("LastName", e.target.value)} error={hasSubmitted ? errors.LastName : undefined} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Gender <span className="text-red-500">*</span>
+                  </label>
+                  <SinglePageSelection
+                    value={formData.Gender}
+                    onChange={(val) => handleFieldChange("Gender", String(val))}
+                    options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                    error={hasSubmitted ? errors.Gender : undefined}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Marital Status <span className="text-red-500">*</span>
+                  </label>
+                  <SinglePageSelection
+                    value={formData.MaritalStatus}
+                    onChange={(val) => handleFieldChange("MaritalStatus", String(val))}
+                    options={MARITAL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                    error={hasSubmitted ? errors.MaritalStatus : undefined}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Blood Group <span className="text-red-500">*</span>
+                  </label>
+                  <SinglePageSelection
+                    value={formData.BloodGroup}
+                    onChange={(val) => handleFieldChange("BloodGroup", String(val))}
+                    options={BLOOD_GROUP_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                    error={hasSubmitted ? errors.BloodGroup : undefined}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    DOB <span className="text-red-500">*</span>
+                  </label>
+                  <DatePickerInput
+                    value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
+                    onChange={(val) => handleFieldChange('DateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  />
+
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Office Email Id
+                  </label>
+                  <Input value={formData.OfficeEmailId} onChange={(e) => handleFieldChange("OfficeEmailId", e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email Id <span className="text-red-500">*</span>
+                  </label>
+                  <Input value={formData.EmailId} onChange={(e) => handleFieldChange("EmailId", e.target.value)} error={hasSubmitted ? errors.EmailId : undefined} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Personal Mobile Number <span className="text-red-500">*</span>
+                  </label>
+                  <Input prefix="+91" value={formData.PersonalMobileNumber} onChange={(e) => handleFieldChange("PersonalMobileNumber", e.target.value)} error={hasSubmitted ? errors.PersonalMobileNumber : undefined} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Office Mobile Number
+                  </label>
+                  <Input value={formData.OfficeMobileNumber} onChange={(e) => handleFieldChange("OfficeMobileNumber", e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Employee Type <span className="text-red-500">*</span>
+                  </label>
+                  <SinglePageSelection
+                    value={formData.EmployeeType}
+                    onChange={(val) => handleFieldChange("EmployeeType", String(val))}
+                    options={EMPLOYEE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                    error={hasSubmitted ? errors.EmployeeType : undefined}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Relation to Emergency Contact <span className="text-red-500">*</span>
+                  </label>
+                  <SinglePageSelection
+                    value={formData.EmergencyContactPersonRelationship}
+                    onChange={(val) => handleFieldChange("EmergencyContactPersonRelationship", String(val))}
+                    options={EMERGENCY_RELATION_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                    error={hasSubmitted ? errors.EmergencyContactPersonRelationship : undefined}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Emergency Contact Number <span className="text-red-500">*</span>
+                  </label>
+                  <Input prefix="+91" value={formData.EmergencyMobileNumber} onChange={(e) => handleFieldChange("EmergencyMobileNumber", e.target.value)} error={hasSubmitted ? errors.EmergencyMobileNumber : undefined} />
+                </div>
               </div>
             </div>
-          </div>
-          {/* ============================================================= [EMPLOYEE INFO SHEET] ============================================================================================= */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Employee Info Sheet</h3>
+            {/* ============================================================= [EMPLOYEE INFO SHEET] ============================================================================================= */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Employee Info Sheet</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company <span className="text-red-500">*</span>
-                </label>
-                <SingleSelectDropdownWithPagination
-                  title="Select..."
-                  size="lg"
-                  dataFetchCallBack={fetchCompanyOptions}
-                  onSelected={(item) => handleFieldChange("CompanyId", Number(item.value))}
-                  initialValue={toDropdownInitialValue(formData.CompanyId, dropdownLabels.companyName)}
-                  error={hasSubmitted ? errors.CompanyId : undefined}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Department <span className="text-red-500">*</span>
-                </label>
-                <SingleSelectDropdownWithPagination
-                  title="Select..."
-                  size="lg"
-                  dataFetchCallBack={fetchDepartmentOptions}
-                  onSelected={(item) => handleFieldChange("DepartmentMasterId", Number(item.value))}
-                  initialValue={toDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
-                  error={hasSubmitted ? errors.DepartmentMasterId : undefined}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Branch <span className="text-red-500">*</span>
-                </label>
-                <SingleSelectDropdownWithPagination
-                  title="Select..."
-                  size="lg"
-                  dataFetchCallBack={fetchBranchOptions}
-                  onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
-                  initialValue={toDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
-                  error={hasSubmitted ? errors.BranchMasterId : undefined}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Designation <span className="text-red-500">*</span>
-                </label>
-                <SingleSelectDropdownWithPagination
-                  title="Select..."
-                  size="lg"
-                  dataFetchCallBack={fetchDesignationOptions}
-                  onSelected={(item) => handleFieldChange("DesignationMasterId", Number(item.value))}
-                  initialValue={toDropdownInitialValue(formData.DesignationMasterId, dropdownLabels.designationName)}
-                  error={hasSubmitted ? errors.DesignationMasterId : undefined}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Joining Date <span className="text-red-500">*</span>
-                </label>
-                <DatePicker className="py-1" size="lg" value={formData.JoiningDate ?? ""} onChange={(e) => handleFieldChange("JoiningDate", e.target.value)} error={hasSubmitted ? errors.JoiningDate : undefined} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Reporting Person <span className="text-red-500">*</span>
-                </label>
-                <SingleSelectDropdownWithPagination
-                  title="Select..."
-                  size="lg"
-                  dataFetchCallBack={fetchReportingOptions}
-                  onSelected={(item) => handleFieldChange("ReportPersonId", Number(item.value))}
-                  initialValue={toDropdownInitialValue(formData.ReportPersonId, dropdownLabels.reportPersonName)}
-                  error={hasSubmitted ? errors.ReportPersonId : undefined}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Company <span className="text-red-500">*</span>
+                  </label>
+                  <SingleSelectDropdownWithPagination
+                    title="Select..."
+                    size="lg"
+                    dataFetchCallBack={fetchCompanyOptions}
+                    onSelected={(item) => handleFieldChange("CompanyId", Number(item.value))}
+                    initialValue={toDropdownInitialValue(formData.CompanyId, dropdownLabels.companyName)}
+                    error={hasSubmitted ? errors.CompanyId : undefined}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Department <span className="text-red-500">*</span>
+                  </label>
+                  <SingleSelectDropdownWithPagination
+                    title="Select..."
+                    size="lg"
+                    dataFetchCallBack={fetchDepartmentOptions}
+                    onSelected={(item) => handleFieldChange("DepartmentMasterId", Number(item.value))}
+                    initialValue={toDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
+                    error={hasSubmitted ? errors.DepartmentMasterId : undefined}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Branch <span className="text-red-500">*</span>
+                  </label>
+                  <SingleSelectDropdownWithPagination
+                    title="Select..."
+                    size="lg"
+                    dataFetchCallBack={fetchBranchOptions}
+                    onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
+                    initialValue={toDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
+                    error={hasSubmitted ? errors.BranchMasterId : undefined}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Designation <span className="text-red-500">*</span>
+                  </label>
+                  <SingleSelectDropdownWithPagination
+                    title="Select..."
+                    size="lg"
+                    dataFetchCallBack={fetchDesignationOptions}
+                    onSelected={(item) => handleFieldChange("DesignationMasterId", Number(item.value))}
+                    initialValue={toDropdownInitialValue(formData.DesignationMasterId, dropdownLabels.designationName)}
+                    error={hasSubmitted ? errors.DesignationMasterId : undefined}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Joining Date <span className="text-red-500">*</span>
+                  </label>
+
+                  <DatePickerInput
+                    label="Joining Date"
+                    value={formatDate_dd_mm_yyyy(formData.JoiningDate)}
+                    onChange={(val) => handleFieldChange('JoiningDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  />
+
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Reporting Person <span className="text-red-500">*</span>
+                  </label>
+                  <SingleSelectDropdownWithPagination
+                    title="Select..."
+                    size="lg"
+                    dataFetchCallBack={fetchReportingOptions}
+                    onSelected={(item) => handleFieldChange("ReportPersonId", Number(item.value))}
+                    initialValue={toDropdownInitialValue(formData.ReportPersonId, dropdownLabels.reportPersonName)}
+                    error={hasSubmitted ? errors.ReportPersonId : undefined}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-          {/* ============================================================= [ADDRESS] ============================================================================================= */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Address</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Communication Address <span className="text-red-500">*</span>
-                </label>
-                <TextArea value={formData.CommunicationAddress} onChange={(e) => handleFieldChange("CommunicationAddress", e.target.value)} error={hasSubmitted ? errors.CommunicationAddress : undefined} />
+            {/* ============================================================= [ADDRESS] ============================================================================================= */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Address</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Communication Address <span className="text-red-500">*</span>
+                  </label>
+                  <TextArea value={formData.CommunicationAddress} onChange={(e) => handleFieldChange("CommunicationAddress", e.target.value)} error={hasSubmitted ? errors.CommunicationAddress : undefined} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Permanent Address <span className="text-red-500">*</span>
+                  </label>
+                  <TextArea value={formData.PermanentAddress} onChange={(e) => handleFieldChange("PermanentAddress", e.target.value)} error={hasSubmitted ? errors.PermanentAddress : undefined} />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Permanent Address <span className="text-red-500">*</span>
-                </label>
-                <TextArea value={formData.PermanentAddress} onChange={(e) => handleFieldChange("PermanentAddress", e.target.value)} error={hasSubmitted ? errors.PermanentAddress : undefined} />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* COUNTRY */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Country <span className="text-red-500">*</span>
-                </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* COUNTRY */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Country <span className="text-red-500">*</span>
+                  </label>
 
-                <SinglePageSelection
-                  value={selectedCountryId || ''}
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedCountryId(id)
-                    setSelectedStateId(null)
-                    setSelectedDistrictId(null)
-                    setSelectedCityId(null)
+                  <SinglePageSelection
+                    value={selectedCountryId || ''}
+                    onChange={val => {
+                      const id = Number(val)
+                      setSelectedCountryId(id)
+                      setSelectedStateId(null)
+                      setSelectedDistrictId(null)
+                      setSelectedCityId(null)
 
-                    handleFieldChange('CountryMasterId', id)
-                  }}
-                  disabled={isLocationLoading}
-                  options={countryOptions}
-                  error={hasSubmitted ? errors.CountryMasterId : undefined}
-                />
-              </div>
+                      handleFieldChange('CountryMasterId', id)
+                    }}
+                    disabled={isLocationLoading}
+                    options={countryOptions}
+                    error={hasSubmitted ? errors.CountryMasterId : undefined}
+                  />
+                </div>
 
-              {/* STATE */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  State <span className="text-red-500">*</span>
-                </label>
+                {/* STATE */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    State <span className="text-red-500">*</span>
+                  </label>
 
-                <SinglePageSelection
-                  value={selectedStateId ?? ''}
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedStateId(id)
-                    setSelectedDistrictId(null)
-                    setSelectedCityId(null)
+                  <SinglePageSelection
+                    value={selectedStateId ?? ''}
+                    onChange={val => {
+                      const id = Number(val)
+                      setSelectedStateId(id)
+                      setSelectedDistrictId(null)
+                      setSelectedCityId(null)
 
-                    handleFieldChange('StateMasterId', id)
-                  }}
-                  disabled={!selectedCountryId || stateOptions.length === 0}
-                  options={stateOptions}
-                  error={hasSubmitted ? errors.StateMasterId : undefined}
-                />
-              </div>
+                      handleFieldChange('StateMasterId', id)
+                    }}
+                    disabled={!selectedCountryId || stateOptions.length === 0}
+                    options={stateOptions}
+                    error={hasSubmitted ? errors.StateMasterId : undefined}
+                  />
+                </div>
 
-              {/* DISTRICT */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  District <span className="text-red-500">*</span>
-                </label>
+                {/* DISTRICT */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    District <span className="text-red-500">*</span>
+                  </label>
 
-                <SinglePageSelection
-                  value={selectedDistrictId ?? ''}
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedDistrictId(id)
-                    setSelectedCityId(null)
+                  <SinglePageSelection
+                    value={selectedDistrictId ?? ''}
+                    onChange={val => {
+                      const id = Number(val)
+                      setSelectedDistrictId(id)
+                      setSelectedCityId(null)
 
-                    handleFieldChange('DistrictMasterId', id)
-                  }}
-                  disabled={!selectedStateId || districtOptions.length === 0}
-                  options={districtOptions}
-                  error={hasSubmitted ? errors.DistrictMasterId : undefined}
-                />
-              </div>
+                      handleFieldChange('DistrictMasterId', id)
+                    }}
+                    disabled={!selectedStateId || districtOptions.length === 0}
+                    options={districtOptions}
+                    error={hasSubmitted ? errors.DistrictMasterId : undefined}
+                  />
+                </div>
 
-              {/* CITY */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  City <span className="text-red-500">*</span>
-                </label>
+                {/* CITY */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    City <span className="text-red-500">*</span>
+                  </label>
 
-                <SinglePageSelection
-                  value={selectedCityId ?? ''}
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedCityId(id)
-                    handleFieldChange('CityMasterId', id)
-                  }}
-                  disabled={!selectedDistrictId || cityOptions.length === 0}
-                  options={cityOptions}
-                  error={hasSubmitted ? errors.CityMasterId : undefined}
-                />
-              </div>
+                  <SinglePageSelection
+                    value={selectedCityId ?? ''}
+                    onChange={val => {
+                      const id = Number(val)
+                      setSelectedCityId(id)
+                      handleFieldChange('CityMasterId', id)
+                    }}
+                    disabled={!selectedDistrictId || cityOptions.length === 0}
+                    options={cityOptions}
+                    error={hasSubmitted ? errors.CityMasterId : undefined}
+                  />
+                </div>
 
-            </div>
-          </div>
-     
-          {/* ============================================================= [BANK DETAILS] ============================================================================================= */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Bank Details</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Bank <span className="text-red-500">*</span>
-                </label>
-                <SingleSelectDropdownWithPagination
-                  title="Select..."
-                  size="lg"
-                  dataFetchCallBack={fetchBanks}
-                  onSelected={(item) => {handleFieldChange("BankListMasterId", Number(item?.value || 0));}}
-                  initialValue={toDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
-                  error={hasSubmitted ? errors.BankListMasterId : undefined}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Bank Branch Name <span className="text-red-500">*</span>
-                </label>
-                <Input value={formData.BankBranchName} onChange={(e) => handleFieldChange("BankBranchName", e.target.value)} error={hasSubmitted ? errors.BankBranchName : undefined} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Account Number <span className="text-red-500">*</span>
-                </label>
-                <Input value={formData.AccountNo} onChange={(e) => handleFieldChange("AccountNo", e.target.value)} error={hasSubmitted ? errors.AccountNo : undefined} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  IFSC Code <span className="text-red-500">*</span>
-                </label>
-                <Input value={formData.IFSCCode} onChange={(e) => handleFieldChange("IFSCCode", e.target.value)} error={hasSubmitted ? errors.IFSCCode : undefined} />
               </div>
             </div>
-          </div>
+
+            {/* ============================================================= [BANK DETAILS] ============================================================================================= */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Bank Details</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Bank <span className="text-red-500">*</span>
+                  </label>
+                  <SingleSelectDropdownWithPagination
+                    title="Select..."
+                    size="lg"
+                    dataFetchCallBack={fetchBanks}
+                    onSelected={(item) => { handleFieldChange("BankListMasterId", Number(item?.value || 0)); }}
+                    initialValue={toDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
+                    error={hasSubmitted ? errors.BankListMasterId : undefined}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Bank Branch Name <span className="text-red-500">*</span>
+                  </label>
+                  <Input value={formData.BankBranchName} onChange={(e) => handleFieldChange("BankBranchName", e.target.value)} error={hasSubmitted ? errors.BankBranchName : undefined} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Account Number <span className="text-red-500">*</span>
+                  </label>
+                  <Input value={formData.AccountNo} onChange={(e) => handleFieldChange("AccountNo", e.target.value)} error={hasSubmitted ? errors.AccountNo : undefined} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    IFSC Code <span className="text-red-500">*</span>
+                  </label>
+                  <Input value={formData.IFSCCode} onChange={(e) => handleFieldChange("IFSCCode", e.target.value)} error={hasSubmitted ? errors.IFSCCode : undefined} />
+                </div>
+              </div>
+            </div>
           </form>
         </div>
         {/* ✅ Fixed Bottom  */}

@@ -149,15 +149,6 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
             <ChevronDown size={20} color="#888" />
           )}
         </div>
-        {(error) && (
-          <div style={{
-            marginTop: theme.spacing.sm,
-            fontSize: theme.fontSize.sm,
-            color: error ? theme.colors.error : theme.colors.textSecondary,
-          }}>
-            {error}
-          </div>
-        )}
         {/* Dropdown */}
         {isOpen && !disabled && (
           <div

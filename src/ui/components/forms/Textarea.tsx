@@ -169,7 +169,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
                     <div
                         style={{
                             marginTop: theme.spacing.sm,
-                            fontSize: theme.fontSize.lg,
+                            fontSize: theme.fontSize.sm,
                             color: error ? theme.colors.error : theme.colors.textSecondary,
                         }}
                     >

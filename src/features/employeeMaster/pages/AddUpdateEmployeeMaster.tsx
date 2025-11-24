@@ -429,7 +429,7 @@ const AddUpdateEmployeePage: React.FC = () => {
     if (ev) ev.preventDefault();
     setHasSubmitted(true);
     if (!validateForm()) {
-      addToast({ type: "error", title: "Please fix validation errors before submitting" });
+      addToast({ type: "error", title: "Please fill all required fields before submitting" });
       return;
     }
 
@@ -520,7 +520,6 @@ const AddUpdateEmployeePage: React.FC = () => {
       <div className="flex flex-col h-screen overflow-hidden">
 
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
-        {/* ✅ Fixed HEADER */}
         <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-md h-16 flex items-center justify-between px-6">
 
           <div className="flex items-center gap-3">
@@ -540,28 +539,17 @@ const AddUpdateEmployeePage: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    First Name <span className="text-red-500">*</span>
-                  </label>
-                  <Input value={formData.FirstName} onChange={(e) => handleFieldChange("FirstName", e.target.value)} error={hasSubmitted ? errors.FirstName : undefined} />
+                  <Input label=" First Name " value={formData.FirstName}  required onChange={(e) => handleFieldChange("FirstName", e.target.value)} error={hasSubmitted ? errors.FirstName : undefined} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Middle Name <span className="text-red-500">*</span>
-                  </label>
-                  <Input value={formData.MiddleName} onChange={(e) => handleFieldChange("MiddleName", e.target.value)} error={hasSubmitted ? errors.MiddleName : undefined} />
+                  <Input value={formData.MiddleName} label=" Middle Name " required onChange={(e) => handleFieldChange("MiddleName", e.target.value)} error={hasSubmitted ? errors.MiddleName : undefined} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Last Name <span className="text-red-500">*</span>
-                  </label>
-                  <Input value={formData.LastName} onChange={(e) => handleFieldChange("LastName", e.target.value)} error={hasSubmitted ? errors.LastName : undefined} />
+                  <Input value={formData.LastName} label="Last Name" required onChange={(e) => handleFieldChange("LastName", e.target.value)} error={hasSubmitted ? errors.LastName : undefined} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Gender <span className="text-red-500">*</span>
-                  </label>
                   <SinglePageSelection
+                    label="Gender" required
                     value={formData.Gender}
                     onChange={(val) => handleFieldChange("Gender", String(val))}
                     options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
@@ -569,23 +557,19 @@ const AddUpdateEmployeePage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Marital Status <span className="text-red-500">*</span>
-                  </label>
                   <SinglePageSelection
+                    label="Marital Status"
                     value={formData.MaritalStatus}
                     onChange={(val) => handleFieldChange("MaritalStatus", String(val))}
-                    options={MARITAL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                    options={MARITAL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} required
                     error={hasSubmitted ? errors.MaritalStatus : undefined}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Blood Group <span className="text-red-500">*</span>
-                  </label>
                   <SinglePageSelection
                     value={formData.BloodGroup}
-                    onChange={(val) => handleFieldChange("BloodGroup", String(val))}
+                    label="Blood Group" 
+                    onChange={(val) => handleFieldChange("BloodGroup", String(val))} required
                     options={BLOOD_GROUP_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                     error={hasSubmitted ? errors.BloodGroup : undefined}
                   />
@@ -595,60 +579,43 @@ const AddUpdateEmployeePage: React.FC = () => {
                     label="DOB"
                     value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
                     onChange={(val) => handleFieldChange('DateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required
+                    error={hasSubmitted ? errors.DateOfBirth : undefined}
+
                   />
 
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Office Email Id
-                  </label>
-                  <Input value={formData.OfficeEmailId} onChange={(e) => handleFieldChange("OfficeEmailId", e.target.value)} />
+                  <Input label="Office Email Id" value={formData.OfficeEmailId} onChange={(e) => handleFieldChange("OfficeEmailId", e.target.value)} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Id <span className="text-red-500">*</span>
-                  </label>
-                  <Input value={formData.EmailId} onChange={(e) => handleFieldChange("EmailId", e.target.value)} error={hasSubmitted ? errors.EmailId : undefined} />
+                  <Input label="Email Id" value={formData.EmailId}  required onChange={(e) => handleFieldChange("EmailId", e.target.value)} error={hasSubmitted ? errors.EmailId : undefined} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Personal Mobile Number <span className="text-red-500">*</span>
-                  </label>
-                  <Input prefix="+91" value={formData.PersonalMobileNumber} onChange={(e) => handleFieldChange("PersonalMobileNumber", e.target.value)} error={hasSubmitted ? errors.PersonalMobileNumber : undefined} />
+                  <Input prefix="+91" label="Personal Mobile Number" required  value={formData.PersonalMobileNumber} onChange={(e) => handleFieldChange("PersonalMobileNumber", e.target.value)} error={hasSubmitted ? errors.PersonalMobileNumber : undefined} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Office Mobile Number
-                  </label>
-                  <Input value={formData.OfficeMobileNumber} onChange={(e) => handleFieldChange("OfficeMobileNumber", e.target.value)} />
+                  <Input value={formData.OfficeMobileNumber} label=" Office Mobile Number" onChange={(e) => handleFieldChange("OfficeMobileNumber", e.target.value)} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Employee Type <span className="text-red-500">*</span>
-                  </label>
                   <SinglePageSelection
-                    value={formData.EmployeeType}
+                    label=" Employee Type"
+                    value={formData.EmployeeType} required
                     onChange={(val) => handleFieldChange("EmployeeType", String(val))}
                     options={EMPLOYEE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                     error={hasSubmitted ? errors.EmployeeType : undefined}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Relation to Emergency Contact <span className="text-red-500">*</span>
-                  </label>
                   <SinglePageSelection
-                    value={formData.EmergencyContactPersonRelationship}
+                    label="Relation to Emergency Contact"
+                    value={formData.EmergencyContactPersonRelationship} required
                     onChange={(val) => handleFieldChange("EmergencyContactPersonRelationship", String(val))}
                     options={EMERGENCY_RELATION_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                     error={hasSubmitted ? errors.EmergencyContactPersonRelationship : undefined}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Emergency Contact Number <span className="text-red-500">*</span>
-                  </label>
-                  <Input prefix="+91" value={formData.EmergencyMobileNumber} onChange={(e) => handleFieldChange("EmergencyMobileNumber", e.target.value)} error={hasSubmitted ? errors.EmergencyMobileNumber : undefined} />
+                  <Input label=" Emergency Contact Number" prefix="+91" value={formData.EmergencyMobileNumber} required onChange={(e) => handleFieldChange("EmergencyMobileNumber", e.target.value)} error={hasSubmitted ? errors.EmergencyMobileNumber : undefined} />
                 </div>
               </div>
             </div>
@@ -658,10 +625,8 @@ const AddUpdateEmployeePage: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Company <span className="text-red-500">*</span>
-                  </label>
                   <SingleSelectDropdownWithPagination
+                    label="Company"
                     title="Select..."
                     size="lg"
                     dataFetchCallBack={fetchCompanyOptions}
@@ -671,10 +636,8 @@ const AddUpdateEmployeePage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Department <span className="text-red-500">*</span>
-                  </label>
                   <SingleSelectDropdownWithPagination
+                    label="Department"
                     title="Select..."
                     size="lg"
                     dataFetchCallBack={fetchDepartmentOptions}
@@ -684,10 +647,8 @@ const AddUpdateEmployeePage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Branch <span className="text-red-500">*</span>
-                  </label>
                   <SingleSelectDropdownWithPagination
+                    label="Branch"
                     title="Select..."
                     size="lg"
                     dataFetchCallBack={fetchBranchOptions}
@@ -697,10 +658,8 @@ const AddUpdateEmployeePage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Designation <span className="text-red-500">*</span>
-                  </label>
                   <SingleSelectDropdownWithPagination
+                    label="Designation"
                     title="Select..."
                     size="lg"
                     dataFetchCallBack={fetchDesignationOptions}
@@ -714,14 +673,14 @@ const AddUpdateEmployeePage: React.FC = () => {
                     label="Joining Date"
                     value={formatDate_dd_mm_yyyy(formData.JoiningDate)}
                     onChange={(val) => handleFieldChange('JoiningDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required
+                    error={hasSubmitted ? errors.JoiningDate : undefined}
+
                   />
 
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Reporting Person <span className="text-red-500">*</span>
-                  </label>
                   <SingleSelectDropdownWithPagination
+                    label="Reporting Person"
                     title="Select..."
                     size="lg"
                     dataFetchCallBack={fetchReportingOptions}
@@ -737,27 +696,17 @@ const AddUpdateEmployeePage: React.FC = () => {
               <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Address</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Communication Address <span className="text-red-500">*</span>
-                  </label>
-                  <TextArea value={formData.CommunicationAddress} onChange={(e) => handleFieldChange("CommunicationAddress", e.target.value)} error={hasSubmitted ? errors.CommunicationAddress : undefined} />
+                  <TextArea label="Communication Address" required value={formData.CommunicationAddress} onChange={(e) => handleFieldChange("CommunicationAddress", e.target.value)} error={hasSubmitted ? errors.CommunicationAddress : undefined} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Permanent Address <span className="text-red-500">*</span>
-                  </label>
-                  <TextArea value={formData.PermanentAddress} onChange={(e) => handleFieldChange("PermanentAddress", e.target.value)} error={hasSubmitted ? errors.PermanentAddress : undefined} />
+                  <TextArea label="Permanent Address"  required value={formData.PermanentAddress} onChange={(e) => handleFieldChange("PermanentAddress", e.target.value)} error={hasSubmitted ? errors.PermanentAddress : undefined} />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* COUNTRY */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Country <span className="text-red-500">*</span>
-                  </label>
-
                   <SinglePageSelection
-                    value={selectedCountryId || ''}
+                    label="Country"
+                    value={selectedCountryId || ''} required
                     onChange={val => {
                       const id = Number(val)
                       setSelectedCountryId(id)
@@ -772,15 +721,11 @@ const AddUpdateEmployeePage: React.FC = () => {
                     error={hasSubmitted ? errors.CountryMasterId : undefined}
                   />
                 </div>
-
-                {/* STATE */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    State <span className="text-red-500">*</span>
-                  </label>
 
                   <SinglePageSelection
-                    value={selectedStateId ?? ''}
+                    label="State"
+                    value={selectedStateId ?? ''} required
                     onChange={val => {
                       const id = Number(val)
                       setSelectedStateId(id)
@@ -794,15 +739,10 @@ const AddUpdateEmployeePage: React.FC = () => {
                     error={hasSubmitted ? errors.StateMasterId : undefined}
                   />
                 </div>
-
-                {/* DISTRICT */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    District <span className="text-red-500">*</span>
-                  </label>
-
                   <SinglePageSelection
-                    value={selectedDistrictId ?? ''}
+                    label="District"
+                    value={selectedDistrictId ?? ''} required
                     onChange={val => {
                       const id = Number(val)
                       setSelectedDistrictId(id)
@@ -815,15 +755,10 @@ const AddUpdateEmployeePage: React.FC = () => {
                     error={hasSubmitted ? errors.DistrictMasterId : undefined}
                   />
                 </div>
-
-                {/* CITY */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    City <span className="text-red-500">*</span>
-                  </label>
-
                   <SinglePageSelection
-                    value={selectedCityId ?? ''}
+                    label="City"
+                    value={selectedCityId ?? ''} required
                     onChange={val => {
                       const id = Number(val)
                       setSelectedCityId(id)
@@ -844,35 +779,24 @@ const AddUpdateEmployeePage: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Bank <span className="text-red-500">*</span>
-                  </label>
                   <SingleSelectDropdownWithPagination
+                    label="Bank" required
                     title="Select..."
                     size="lg"
-                    dataFetchCallBack={fetchBanks}
+                    dataFetchCallBack={fetchBanks} 
                     onSelected={(item) => { handleFieldChange("BankListMasterId", Number(item?.value || 0)); }}
                     initialValue={toDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
                     error={hasSubmitted ? errors.BankListMasterId : undefined}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Bank Branch Name <span className="text-red-500">*</span>
-                  </label>
-                  <Input value={formData.BankBranchName} onChange={(e) => handleFieldChange("BankBranchName", e.target.value)} error={hasSubmitted ? errors.BankBranchName : undefined} />
+                  <Input label="Bank Branch Name "required value={formData.BankBranchName} onChange={(e) => handleFieldChange("BankBranchName", e.target.value)} error={hasSubmitted ? errors.BankBranchName : undefined} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Account Number <span className="text-red-500">*</span>
-                  </label>
-                  <Input value={formData.AccountNo} onChange={(e) => handleFieldChange("AccountNo", e.target.value)} error={hasSubmitted ? errors.AccountNo : undefined} />
+                  <Input label="Account Number"  required value={formData.AccountNo} onChange={(e) => handleFieldChange("AccountNo", e.target.value)} error={hasSubmitted ? errors.AccountNo : undefined} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    IFSC Code <span className="text-red-500">*</span>
-                  </label>
-                  <Input value={formData.IFSCCode} onChange={(e) => handleFieldChange("IFSCCode", e.target.value)} error={hasSubmitted ? errors.IFSCCode : undefined} />
+                  <Input label="IFSC Code" required value={formData.IFSCCode} onChange={(e) => handleFieldChange("IFSCCode", e.target.value)} error={hasSubmitted ? errors.IFSCCode : undefined} />
                 </div>
               </div>
             </div>

@@ -29,7 +29,11 @@ export const MASTER_DATA = {
 
     bloodGroups: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
 
-    companyType: ['LLP','Private Limited Company','Proprietorship']
+    companyType: ['LLP','Private Limited Company','Proprietorship'],
+    
+    projectStatus: ['On-Going', 'Completed', 'On-Hold', 'Cancelled', 'Planning'],
+    
+    businessCategory: ['Real Estate', 'Construction', 'Infrastructure', 'Residential', 'Commercial', 'Mixed Use']
 } as const
 
 // ============================================================================
@@ -61,4 +65,6 @@ export const GENDER_OPTIONS = toOptions(MASTER_DATA.genders)
 export const MARITAL_STATUS_OPTIONS = toOptions(MASTER_DATA.maritalStatuses)
 export const BLOOD_GROUP_OPTIONS = toOptions(MASTER_DATA.bloodGroups)
 export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType)
+export const PROJECT_STATUS_OPTIONS = toOptions(MASTER_DATA.projectStatus)
+export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory)
 export const COUNTRY = toOptions(MASTER_DATA.companyType)

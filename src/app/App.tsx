@@ -31,6 +31,7 @@ import TncMaster from '@/features/tnc/pages/TncMaster';
 import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
 import AddCompany from '@/features/companyMaster/pages/AddCompany';
 import { CountryStateCityDistrictVillage } from '@/core/hooks/useCountryStateCityDistrictVillage';
+import ProjectMaster from '@/features/projectMaster/pages/ProjectMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -112,6 +113,7 @@ function App() {
             <Route path="weekOffMaster" element={<WeekOffMasterMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
             <Route path="vendor" element={<Vendor />} />
+            <Route path="projectMaster" element={<ProjectMaster />} />
 
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
 

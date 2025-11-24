@@ -12,7 +12,7 @@ export interface ModalProps {
     cancelText?: string
     onCancel?: () => void
     loading?: boolean
-    size?: 'sm' | 'md' | 'lg' | 'xl' | 'half-screen' | 'small-half' | 'large-half'
+    size?: 'sm' | 'md' | 'lg' | 'xl' | 'half-screen' | 'small-half' | 'large-half' | 'large75' | 'large80' | 'large90' | 'large100'
     className?: string
 }
 
@@ -37,20 +37,30 @@ export const Modal: React.FC<ModalProps> = ({
         lg: 'max-w-lg',
         xl: 'max-w-xl',
         'half-screen': 'w-1/2',
-        'small-half': 'w-1/3',   // 👈 add this line
-        'large-half': 'w-2/3'
+        'small-half': 'w-1/3',  
+        'large-half': 'w-2/3',
+        'large75': 'w-[75%]',
+        'large80': 'w-[80%]',
+        'large90': 'w-[90%]',
+        'large100': 'w-[100%]'
     }
 
     const widthSize =
-        size === 'half-screen' ? sizeClasses['half-screen']
-            : size === 'small-half' ? sizeClasses['small-half']
-                : size === 'large-half' ? sizeClasses['large-half'] : sizeClasses['half-screen'];
+                  size === 'half-screen' ? sizeClasses['half-screen']
+                : size === 'small-half' ? sizeClasses['small-half']
+                : size === 'large-half' ? sizeClasses['large-half']
+                : size === 'large75' ? sizeClasses['large75']
+                : size === 'large80' ? sizeClasses['large80']
+                : size === 'large90' ? sizeClasses['large90']
+                : size === 'large100' ? sizeClasses['large100'] : sizeClasses['half-screen'];
 
     // Half-screen modal layout
-    if (size === 'half-screen' || size === 'small-half' || size === 'large-half') {
+    if (size === 'half-screen' || size === 'small-half' || size === 'large-half' || size === 'large75' || size === 'large80' || size === 'large90' || size === 'large100' ) {
 
         return (
-            <div className="fixed inset-0  bg-opacity-50 z-50">
+            // <div className="fixed inset-0  bg-opacity-50 z-50">
+                <div className="fixed inset-0 bg-black/30 z-50">
+
                 {/* Half-screen modal on the right */}
                 <div className={`fixed right-0 top-0 h-full  bg-white shadow-2xl flex flex-col ${widthSize}`}>
                     {/* Header */}
@@ -63,6 +73,7 @@ export const Modal: React.FC<ModalProps> = ({
                             color="transparent"
                             isborderRadius
                             size="sm"
+                            type='button'
                             disabled={loading}
                         >
                             <X className="h-5 w-5" />
@@ -71,8 +82,8 @@ export const Modal: React.FC<ModalProps> = ({
 
                     {/* CHILDERN */}
 
-                    <form onSubmit={onSubmit} className="flex-1 flex flex-col  min-h-0 overflow-hidden overflow-y-auto thin-scroll">
-                        <div className="flex-1 flex flex-col space-y-6 min-h-0 p-6">
+                    <form onSubmit={onSubmit} className="flex-1 flex flex-col min-h-0">
+                        <div className="flex-1 min-h-0 overflow-y-auto thin-scroll p-6 space-y-6">
                             {children}
                         </div>
 
@@ -116,8 +127,10 @@ export const Modal: React.FC<ModalProps> = ({
 
     // Regular centered modal layout
     return (
-        <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className={`bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} ${className}`}>
+        // <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50 p-4">
+           <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+
+           <div className={`bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} ${className} max-h-[90vh] flex flex-col`}>
                 {/* Header */}
                 <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
                     <h3 className="text-lg font-semibold text-gray-900">

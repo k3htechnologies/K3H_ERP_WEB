@@ -114,8 +114,8 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
           <label
             style={{
               display: "block",
-              marginBottom: "6px",
-              fontWeight: 600,
+              marginBottom: "4px",
+              fontWeight: 500,
               fontSize: theme.fontSize.md,
               color: "#333",
             }}

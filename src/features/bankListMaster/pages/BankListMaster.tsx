@@ -255,26 +255,26 @@ const BankListMaster: React.FC = () => {
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <Loader loading={isLoading} title={loadingMessage}>
           <div></div>
         </Loader>
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by bank name..."
+          searchPlaceholder="Search By Bank Name"
           onSearchChange={v => {
             setSearchTerm(v);
             debouncedSearch(v);
           }}
           onClearSearch={clearSearchBanks}
-          isShowFilterButton
+          isShowFilterButton={false}
           filters={filters}
           onOpenFilter={() => {
             setTempFilters(filters);
             setShowFilterPopup(true);
           }}
-          isShowCustomizeButton
+          isShowCustomizeButton={false}
           onCustomize={() => setIsShowCustomizeColumnsModal(true)}
           isShowAddButton={false}
           isShowImportButton={false}
@@ -289,7 +289,7 @@ const BankListMaster: React.FC = () => {
           pagination={bankPaginationInfo}
           emptyMessage="No banks found"
           fixedHeight
-          maxHeight="calc(100vh - 200px)"
+          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}

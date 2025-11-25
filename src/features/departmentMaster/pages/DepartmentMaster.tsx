@@ -18,7 +18,7 @@ import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
@@ -27,6 +27,8 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
+import { technicalService } from '@/features/technical/services/TechnicalService';
 
 
 export const DepartmentMaster: React.FC = () => {
@@ -100,7 +102,7 @@ export const DepartmentMaster: React.FC = () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
-  //#endregion
+
 
 
   //#endregion
@@ -192,8 +194,9 @@ export const DepartmentMaster: React.FC = () => {
     fetchDepartmentList();
   }
   // END SERACH DEPARTMENT 
+  //#endregion
 
-  // EXPORT EXCEL | PDF
+  //#region EXPORT EXCEL | PDF
   const handleExportDepartments = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -237,7 +240,9 @@ export const DepartmentMaster: React.FC = () => {
 
   //END EXPORT EXCEL | PDF
 
-  //API | SERVICES CALL TO GET DEPARTMENT 
+  //#endregion
+
+  //#region API | SERVICES CALL TO GET DEPARTMENT 
 
   const getDepartments = async (filterParams: FilterWithPaginationDepartmentMasterRequest) => {
 
@@ -312,7 +317,7 @@ export const DepartmentMaster: React.FC = () => {
             <TooltipText
               text={value || 'N/A'}
               maxWidth="250px"
-              tooltipThreshold={25}
+              tooltipThreshold={30}
               onClick={() => handleViewDepartmentDetails(row)} // just pass a function, no need for e.preventDefault here
             />
 
@@ -335,22 +340,6 @@ export const DepartmentMaster: React.FC = () => {
         align: 'center',
         render: (value) => value || '0'
 
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '33',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '33',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       }
     ],
     // dependencies: include everything used inside that might change
@@ -427,7 +416,7 @@ export const DepartmentMaster: React.FC = () => {
         }}
         cancelText="Close"
         loading={false}
-        size='lg'
+        size='xl'
       >
         <div className="space-y-6">
 
@@ -442,11 +431,13 @@ export const DepartmentMaster: React.FC = () => {
               Action Details
             </h4>
 
-            <FieldItem label="Created By" isRow={true} value={data.CreatedBy} withBorder={true} />
-            <FieldItem label="Created Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={true} />
-            <FieldItem label="Modified By" isRow={true} value={data.ModifiedBy} withBorder={true} />
-            <FieldItem label="Modified Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={true} />
+            <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
 
+            {data.ModifiedBy !== '' ?
+              <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
+
+              :
+              ''}
           </div>
           <div className="flex justify-between items-center pt-4">
 
@@ -635,8 +626,8 @@ export const DepartmentMaster: React.FC = () => {
         onCancel={onClose}
         title={data ? 'Update Department' : 'Add Department'}
         onSubmit={handleSubmitAddUpdateDepartment}
-        saveText={data ? 'Update' : 'Save'}
-        cancelText="Cancel"
+        saveText={data ? 'Update Department' : 'Save Department'}
+        resetText='Reset'
         loading={loading}
         size='small-half'
       >
@@ -741,12 +732,69 @@ export const DepartmentMaster: React.FC = () => {
       formData.DepartmentMasterId === 0 ? 'Add Department' : 'Update Department...'
     )
   }
+
+
   //#endregion 
 
+  //#region IMPORT EXCEL | DOWNLOAD
+
+  const excelImportDepartmentMaster = async () => {
+
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setIsLoadingMessage,
+
+      async () => {
+
+
+        return null;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Import failed' })
+      },
+      undefined,
+      'Preparing Import...'
+    )
+  }
+
+
+  const downloadExcelSampleDepartmentMaster = async () => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+        // Find the column label for sorting
+
+        const params: FilterPullExcelSample = {
+          TableName: 'DEPARTMENT MASTER'
+        }
+
+        const response = await technicalService.apiCallPullExcelSample(params);
+
+        handleExportFile(response, 'Excel', 'Department Master', addToast, 'Sample file download successfully')
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Export failed' })
+      },
+      undefined,
+      'Preparing Downloading...'
+    )
+  }
+
+  const handleExcelImportDepartmentMaster = () => excelImportDepartmentMaster()
+  const handleDownloadExcelSampleDepartmentMaster = () => downloadExcelSampleDepartmentMaster()
+
+
+
+  //#endregion
+
   //#region DELETE DEPARTMENT MASTER
-
-
-
   const handleDeleteDepartmentMaster = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
@@ -800,154 +848,161 @@ export const DepartmentMaster: React.FC = () => {
   }
 
   //#endregion
+
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          {/* ============================================================================
+        {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
 
-          <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-          {/* ============================================================================
+        {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
-          <TableActionToolbar
-            isShowSearchBar
-            searchTerm={searchTerm}
-            searchPlaceholder="Search By Department Name"
-            onSearchChange={(v) => {
-              setSearchTerm(v)
-              debouncedSearch(v)
-            }}
-            onClearSearch={clearsearchDepartments}
-            isShowFilterButton
-            filters={filters}
-            onOpenFilter={() => {
-              setTempFilters(filters)
-              setShowFilterPopup(true)
-            }}
-            isShowCustomizeButton
-            onCustomize={() => setIsShowCustomizeDepartmentMasterColumnsModal(true)}
-            isShowAddButton={canAction}
-            addTitle="Add Department"
-            onAdd={handleAddDepartmentModal}
-            isShowImportButton={canAction}
-            isShowExportButton={canExport}
-            onExportExcel={handleExportDepartmentExcel}
-            onExportPdf={handleExportDepartmentPdf}
-            exportLoading={isLoading}
-          />
+        <TableActionToolbar
+          isShowSearchBar
+          searchTerm={searchTerm}
+          searchPlaceholder="Search By Department Name"
+          onSearchChange={(v) => {
+            setSearchTerm(v)
+            debouncedSearch(v)
+          }}
+          onClearSearch={clearsearchDepartments}
+          isShowFilterButton={false}
+          filters={filters}
+          onOpenFilter={() => {
+            setTempFilters(filters)
+            setShowFilterPopup(true)
+          }}
+          isShowCustomizeButton
+          onCustomize={() => setIsShowCustomizeDepartmentMasterColumnsModal(true)}
+          // ADD
+          isShowAddButton={canAction}
+          addTitle="Add Department"
+          onAdd={handleAddDepartmentModal}
+
+          // IMPORT
+          isShowImportButton={canAction}
+          onUploadExcel={handleExcelImportDepartmentMaster}
+          onDownloadSampleExcel={handleDownloadExcelSampleDepartmentMaster}
+
+          // EXPORT
+          isShowExportButton={canExport}
+          onExportExcel={handleExportDepartmentExcel}
+          onExportPdf={handleExportDepartmentPdf}
+          exportLoading={isLoading}
+        />
 
 
-          {/* DATA TABLE DEPARTMENT */}
-          <DataTable
-            data={departmentListForTable}
-            columns={visibleDepartmentMasterColumns}
-            pagination={departmentMasterPaginationInfo}
-            emptyMessage="No departments found"
-            fixedHeight={true}
-            maxHeight="calc(100vh - 255px)"
-            recordsPerPage={20}
-            className="flex-1"
-            sortInfo={sortInfo}
-            onSort={handleSortColumn}
-          />
+        {/* DATA TABLE DEPARTMENT */}
+        <DataTable
+          data={departmentListForTable}
+          columns={visibleDepartmentMasterColumns}
+          pagination={departmentMasterPaginationInfo}
+          emptyMessage="No departments found"
+          fixedHeight={true}
+          maxHeight="calc(100vh - 255px)"
+          recordsPerPage={20}
+          className="flex-1"
+          sortInfo={sortInfo}
+          onSort={handleSortColumn}
+        />
 
-          {/* VIEW DEPARTMENT MODAL */}
-          <ViewDepartmentDetailsModal isOpen={isViewModalOpen}
-            onClose={() => {
-              setIsViewModalOpen(false)
-              setViewDepartmentMasterDetailsData(null)
-            }}
-            data={viewDepartmentMasterDetailsData}
-          />
+        {/* VIEW DEPARTMENT MODAL */}
+        <ViewDepartmentDetailsModal isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false)
+            setViewDepartmentMasterDetailsData(null)
+          }}
+          data={viewDepartmentMasterDetailsData}
+        />
 
-          {/*  ADD EDIT UPDATE DEPARTMENT MODAL */}
-          <AddUpdateDepartmentModal
-            isOpen={isAddUpdateModalOpen}
-            onClose={() => {
-              setIsAddUpdateModalOpen(false)
-              setEditingDepartmentMasterData(null)
-            }}
-            onSubmit={handleAddUpdateDepartmentMaster}
-            data={editingDepartmentMasterData}
-            loading={isLoading}
-          />
+        {/*  ADD EDIT UPDATE DEPARTMENT MODAL */}
+        <AddUpdateDepartmentModal
+          isOpen={isAddUpdateModalOpen}
+          onClose={() => {
+            setIsAddUpdateModalOpen(false)
+            setEditingDepartmentMasterData(null)
+          }}
+          onSubmit={handleAddUpdateDepartmentMaster}
+          data={editingDepartmentMasterData}
+          loading={isLoading}
+        />
 
-          {/* CUSTOMIZE COLUMNS MODAL */}
+        {/* CUSTOMIZE COLUMNS MODAL */}
 
 
-          <CustomizeColumnsModal
-            isOpen={isShowCustomizeDepartmentMasterColumnsModal}
-            onClose={() => setIsShowCustomizeDepartmentMasterColumnsModal(false)}
-            onApply={(keys) => {
-              const withRequired = Array.from(
-                new Set([...keys, ...requiredDepartmentMasterColumnKeys]),
+        <CustomizeColumnsModal
+          isOpen={isShowCustomizeDepartmentMasterColumnsModal}
+          onClose={() => setIsShowCustomizeDepartmentMasterColumnsModal(false)}
+          onApply={(keys) => {
+            const withRequired = Array.from(
+              new Set([...keys, ...requiredDepartmentMasterColumnKeys]),
+            )
+
+            setSelectedDepartmentMasterColumnKeys(withRequired)
+
+            try {
+              LocalStorageHelper.storeDepartmentMasterTableColumns(
+                JSON.stringify(withRequired),
               )
+            } catch { }
+          }}
+          columns={departmentMasterColumns}
+          selectedKeys={selectedDepartmentMasterColumnKeys}
+          requiredKeys={requiredDepartmentMasterColumnKeys}
+          title="Customize Table Columns"
+        />
 
-              setSelectedDepartmentMasterColumnKeys(withRequired)
-
-              try {
-                LocalStorageHelper.storeDepartmentMasterTableColumns(
-                  JSON.stringify(withRequired),
-                )
-              } catch { }
-            }}
-            columns={departmentMasterColumns}
-            selectedKeys={selectedDepartmentMasterColumnKeys}
-            requiredKeys={requiredDepartmentMasterColumnKeys}
-            title="Customize Table Columns"
-          />
-
-          {/* FILTER DEPARTMENT MODAL */}
-          <Modal
-            isOpen={showFilterPopup}
-            onClose={() => setShowFilterPopup(false)}
-            title="Filter - Department Master"
-            onSubmit={(e) => {
-              e.preventDefault()
-              applyFilters()
-            }}
-            saveText="Apply Filter"
-            cancelText="Clear Filter"
-            onCancel={() => clearFilters()}
-            size="small-half"
-          >
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <Input
-                    label='Department Name'
-                    type="text"
-                    value={tempFilters.DepartmentName || ''}
-                    onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}
-                    placeholder="Enter department name"
-                  />
-                </div>
+        {/* FILTER DEPARTMENT MODAL */}
+        <Modal
+          isOpen={showFilterPopup}
+          onClose={() => setShowFilterPopup(false)}
+          title="Filter - Department Master"
+          onSubmit={(e) => {
+            e.preventDefault()
+            applyFilters()
+          }}
+          saveText="Apply Filter"
+          onCancel={() => clearFilters()}
+          size="small-half"
+        >
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <Input
+                  label='Department Name'
+                  type="text"
+                  value={tempFilters.DepartmentName || ''}
+                  onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}
+                  placeholder="Enter department name"
+                />
               </div>
             </div>
-          </Modal>
+          </div>
+        </Modal>
 
-          {/* DELETE CONFIRMATION DEPARTMENT MODAL */}
-          <ConfirmationDialogBox
-            isOpen={isConfirmationDialogBoxOpen}
-            onClose={() => {
-              setIsConfirmationDialogBoxOpen(false)
-              setDeleteDepartmentMasterDetailsData(null)
-            }}
-            onConfirm={handleDeleteDepartmentMaster}
-            title="You are about to delete a department?"
-            message="Deleting this department will permanently remove its contents."
-            confirmText="Delete"
-            cancelText="Cancel"
-            loading={isLoading}
-            variant="danger"
-          />
+        {/* DELETE CONFIRMATION DEPARTMENT MODAL */}
+        <ConfirmationDialogBox
+          isOpen={isConfirmationDialogBoxOpen}
+          onClose={() => {
+            setIsConfirmationDialogBoxOpen(false)
+            setDeleteDepartmentMasterDetailsData(null)
+          }}
+          onConfirm={handleDeleteDepartmentMaster}
+          title="You are about to delete a department?"
+          message="Deleting this department will permanently remove its contents."
+          confirmText="Delete"
+          cancelText="Cancel"
+          loading={isLoading}
+          variant="danger"
+        />
 
-       
+
       </div>
     </>
 

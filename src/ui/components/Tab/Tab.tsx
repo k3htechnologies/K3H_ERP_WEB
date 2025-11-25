@@ -28,7 +28,7 @@ export const Tabs: React.FC<TabsProps> = ({
     return (
         <div className="w-full pb-5">
             <div
-                className="flex border-b border-gray-300"
+                className="flex border-b border-blue-300"
                 style={{ gap: 8 }}
             >
                 {tabs.map((tab) => {
@@ -52,15 +52,15 @@ export const Tabs: React.FC<TabsProps> = ({
 
                                 // ✅ border
                                 border: isActive
-                                    ? `2px solid ${COLORS.primary}`
+                                    ? `2px solid ${COLORS.primary1}`
                                     : "2px solid transparent",
 
 
                                 // ✅ text color
                                 color: isActive
-                                    ? COLORS.primary
+                                    ? COLORS.primary1
                                     : isHovered
-                                        ? COLORS.primary
+                                        ? COLORS.primary1
                                         : "#4B5563",
                                 fontWeight: isActive || isHovered ? 600 : 400
                             }}

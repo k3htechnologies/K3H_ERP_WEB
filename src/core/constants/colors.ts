@@ -140,7 +140,7 @@
         light: {
           backgroundColor: '#dcfce7',
           color: '#008236',
-          border: '1px solid #dcfce7',
+          border: '1px solid #008236',
           hover: { backgroundColor: '#b9f8cf  ' },
         },
         dark: {
@@ -157,7 +157,7 @@
         light: {
           backgroundColor: '#f3e8ff',
           color: '#8200db',
-          border: '1px solid #f3e8ff',
+          border: '1px solid #8200db',
           hover: { backgroundColor: '#f3e8ff' },
         },
         dark: {

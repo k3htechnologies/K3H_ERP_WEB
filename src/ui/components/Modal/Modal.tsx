@@ -11,8 +11,10 @@ export interface ModalProps {
     saveText?: string
     cancelText?: string
     onCancel?: () => void
+    resetText?: string
+    onreset?: () => void
     loading?: boolean
-    size?: 'sm' | 'md' | 'lg' | 'xl' | 'half-screen' | 'small-half' | 'large-half' | 'large75' | 'large80' | 'large90' | 'large100'
+    size?: 'sm' | 'md' | 'lg' | 'xl' | 'half-screen' | 'small-half' | 'large-half' | 'large75' | 'large80' | 'large90' | 'large100' | 'small25' | 'small30' | 'small35' | 'small40' | 'small45' | 'small50'
     className?: string
 }
 
@@ -25,6 +27,8 @@ export const Modal: React.FC<ModalProps> = ({
     saveText = '',
     cancelText,
     onCancel,
+    resetText = 'Reset',
+    onreset,
     loading = false,
     size = 'half-screen',
     className = ''
@@ -36,6 +40,12 @@ export const Modal: React.FC<ModalProps> = ({
         md: 'max-w-md',
         lg: 'max-w-lg',
         xl: 'max-w-xl',
+        'small25': 'w-[25%]',
+        'small30': 'w-[30%]',
+        'small35': 'w-[35%]',
+        'small40': 'w-[40%]',
+        'small45': 'w-[45%]',
+        'small50': 'w-[50%]',
         'half-screen': 'w-1/2',
         'small-half': 'w-1/3',
         'large-half': 'w-2/3',
@@ -52,10 +62,15 @@ export const Modal: React.FC<ModalProps> = ({
                     : size === 'large75' ? sizeClasses['large75']
                         : size === 'large80' ? sizeClasses['large80']
                             : size === 'large90' ? sizeClasses['large90']
-                                : size === 'large100' ? sizeClasses['large100'] : sizeClasses['half-screen'];
-
+                                : size === 'large100' ? sizeClasses['large100']
+                                    : size === 'small25' ? sizeClasses['small25']
+                                        : size === 'small30' ? sizeClasses['small30']
+                                            : size === 'small35' ? sizeClasses['small35']
+                                                : size === 'small40' ? sizeClasses['small40']
+                                                    : size === 'small45' ? sizeClasses['small45']
+                                                        : size === 'small50' ? sizeClasses['small50'] : sizeClasses['half-screen'];
     // Half-screen modal layout
-    if (size === 'half-screen' || size === 'small-half' || size === 'large-half' || size === 'large75' || size === 'large80' || size === 'large90' || size === 'large100') {
+    if (size === 'half-screen' || size === 'small-half' || size === 'large-half' || size === 'large75' || size === 'large80' || size === 'large90' || size === 'large100' || size === 'small25' || size === 'small30' || size === 'small35' || size === 'small40' || size === 'small45' || size === 'small50') {
 
         return (
             // <div className="fixed inset-0  bg-opacity-50 z-50">
@@ -90,30 +105,51 @@ export const Modal: React.FC<ModalProps> = ({
                         {/* Footer inside form - Fixed at bottom */}
                         {saveText !== '' ?
 
-                            <div className="flex justify-end items-center h-16 px-6 border-t border-gray-200 bg-white flex-shrink-0 space-x-3 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] z-50">
-                                {cancelText && onCancel && (
+                            <div className="flex justify-between items-center h-16 px-6 border-t border-gray-200 bg-white flex-shrink-0 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] z-50">
+
+                                {/* LEFT SIDE — Reset + Cancel */}
+                                <div className="flex items-center space-x-3">
+                                    {resetText && (
+                                        <Button
+                                            type="button"
+                                            color="gray"
+                                            variant="solid"
+                                            colorMode="light"
+                                            size="sm"
+                                            onClick={onreset}
+                                            disabled={loading}
+                                        >
+                                            {resetText}
+                                        </Button>
+                                    )}
+
+                                    {cancelText && onCancel && (
+                                        <Button
+                                            type="button"
+                                            color="transparent"
+                                            variant="transparent_border"
+                                            size="sm"
+                                            onClick={onCancel}
+                                            disabled={loading}
+                                        >
+                                            {cancelText}
+                                        </Button>
+                                    )}
+                                </div>
+
+                                {/* RIGHT SIDE — Save */}
+                                <div>
                                     <Button
-                                        type="button"
-                                        color="transparent"
-                                        variant='transparent_border'
+                                        type="submit"
+                                        color="blue"
                                         size="sm"
-                                        onClick={onCancel}
                                         disabled={loading}
                                     >
-                                        {cancelText}
+                                        <Save className="h-4 w-4 gap-2" />
+                                        <span>{loading ? 'Saving...' : saveText}</span>
                                     </Button>
-                                )}
+                                </div>
 
-                                <Button
-                                    type="submit"
-                                    color="green"
-                                    size="sm"
-                                    disabled={loading}
-
-                                >
-                                    <Save className="h-4 w-4  gap-2" />
-                                    <span> {loading ? 'Saving...' : saveText}</span>
-                                </Button>
                             </div>
 
                             : ''}

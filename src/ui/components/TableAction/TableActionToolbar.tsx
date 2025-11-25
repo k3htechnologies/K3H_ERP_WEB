@@ -1,311 +1,394 @@
-    import React, { useEffect, useRef, useState } from 'react'
-    import { Search, X, Filter, Plus, Upload, Download, FileSpreadsheet, FileText, Table } from 'lucide-react'
-    import type { FilterInfo } from '@/ui/components/DataTable/DataTable'
-    import { Button, Input } from '@/ui/components/forms'
+import React, { useEffect, useRef, useState } from 'react'
+import { Search, X, Plus, Upload, Download, Table, SlidersHorizontal } from 'lucide-react'
+import type { FilterInfo } from '@/ui/components/DataTable/DataTable'
+import { Button, Input } from '@/ui/components/forms'
 
-    export interface TableActionToolbarProps {
-        isShowSearchBar?: boolean
-        searchTerm?: string
-        searchPlaceholder?: string
-        onSearchChange?: (value: string) => void
-        onClearSearch?: () => void
+export interface TableActionToolbarProps {
+  isShowSearchBar?: boolean
+  searchTerm?: string
+  searchPlaceholder?: string
+  onSearchChange?: (value: string) => void
+  onClearSearch?: () => void
 
-        /** FILTER BUTTON */
-        isShowFilterButton?: boolean
-        filters?: FilterInfo
-        filterTooltipOverride?: string
-        onOpenFilter?: () => void
+  /** FILTER BUTTON */
+  isShowFilterButton?: boolean
+  filters?: FilterInfo
+  filterTooltipOverride?: string
+  onOpenFilter?: () => void
 
-        /** CUSTOMIZE TABLE BUTTON */
-        isShowCustomizeButton?: boolean
-        customizeLabel?: string
-        onCustomize?: () => void
+  /** CUSTOMIZE TABLE BUTTON */
+  isShowCustomizeButton?: boolean
+  customizeLabel?: string
+  onCustomize?: () => void
 
-        /** ADD BUTTON */
-        isShowAddButton?: boolean
-        addTitle?: string
-        onAdd?: () => void
+  /** ADD BUTTON */
+  isShowAddButton?: boolean
+  addTitle?: string
+  onAdd?: () => void
 
-        /** IMPORT BUTTON */
-        isShowImportButton?: boolean
-        importTitle?: string
-        onImport?: () => void
+  /** IMPORT BUTTON */
+  isShowImportButton?: boolean
+  importTitle?: string
+  onUploadExcel?: () => void
+  onDownloadSampleExcel?: () => void
 
-        /** EXPORT BUTTON + DROPDOWN */
-        isShowExportButton?: boolean
-        onExportExcel?: () => void
-        onExportPdf?: () => void
-        exportLoading?: boolean
+  /** EXPORT BUTTON + DROPDOWN */
+  isShowExportButton?: boolean
+  onExportExcel?: () => void
+  onExportPdf?: () => void
+  exportLoading?: boolean
+}
+
+export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
+  // SEARCH
+  isShowSearchBar = true,
+  searchTerm = '',
+  searchPlaceholder = 'Search...',
+  onSearchChange,
+  onClearSearch,
+
+  // FILTER
+  isShowFilterButton = true,
+  filters = {},
+  filterTooltipOverride,
+  onOpenFilter,
+
+  // CUSTOMIZE
+  isShowCustomizeButton = true,
+  customizeLabel = 'Customize',
+  onCustomize,
+
+  // ADD
+  isShowAddButton = true,
+  addTitle = 'Add',
+  onAdd,
+
+  // IMPORT
+  isShowImportButton = true,
+  importTitle = 'Import',
+  onUploadExcel,
+  onDownloadSampleExcel,
+
+  // EXPORT
+  isShowExportButton = true,
+  onExportExcel,
+  onExportPdf,
+  exportLoading = false,
+}) => {
+  const [isExportOpen, setIsExportOpen] = useState(false)
+  const [isImportOpen, setIsImportOpen] = useState(false)
+
+  const exportRef = useRef<HTMLDivElement | null>(null)
+  const importRef = useRef<HTMLDivElement | null>(null)
+
+  // Close export/import dropdown when clicked outside or Escape pressed.
+  useEffect(() => {
+    if (!isExportOpen && !isImportOpen) return
+
+    function handleDocClick(e: MouseEvent) {
+      const target = e.target as Node | null
+
+      // click inside export menu -> do nothing
+      if (exportRef.current && exportRef.current.contains(target!)) return
+      // click inside import menu -> do nothing
+      if (importRef.current && importRef.current.contains(target!)) return
+
+      // otherwise close both
+      setIsExportOpen(false)
+      setIsImportOpen(false)
     }
 
-    export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
-        // SEARCH
-        isShowSearchBar = true,
-        searchTerm = '',
-        searchPlaceholder = 'Search...',
-        onSearchChange,
-        onClearSearch,
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setIsExportOpen(false)
+        setIsImportOpen(false)
+      }
+    }
 
-        // FILTER
-        isShowFilterButton = true,
-        filters = {},
-        filterTooltipOverride,
-        onOpenFilter,
+    document.addEventListener('mousedown', handleDocClick)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleDocClick)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isExportOpen, isImportOpen])
 
-        // CUSTOMIZE
-        isShowCustomizeButton = true,
-        customizeLabel = 'Customize',
-        onCustomize,
+  const activeFilterCount = Object.values(filters || {}).filter(
+    (value) => value && String(value).trim() !== ''
+  ).length
 
-        // ADD
-        isShowAddButton = true,
-        addTitle = 'Add',
-        onAdd,
+  const hasFilters = activeFilterCount > 0
 
-        // IMPORT
-        isShowImportButton = true,
-        importTitle = 'Import',
-        onImport,
+  const computedFilterTooltip =
+    filterTooltipOverride ??
+    (hasFilters && Object.keys(filters).length > 0
+      ? `Active filters: ${Object.entries(filters)
+        .filter(([_, value]) => value)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(', ')}`
+      : 'Filter')
 
-        // EXPORT
-        isShowExportButton = true,
-        onExportExcel,
-        onExportPdf,
-        exportLoading = false,
-    }) => {
-        const [isExportOpen, setIsExportOpen] = useState(false)
-        const exportRef = useRef<HTMLDivElement | null>(null)
+  const hasAnyActions =
+    isShowCustomizeButton ||
+    isShowAddButton ||
+    isShowImportButton ||
+    (isShowExportButton && (onExportExcel || onExportPdf))
 
-        // Close export dropdown when clicked outside
-        useEffect(() => {
-            function handleDocClick(e: MouseEvent) {
-                if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
-                    setIsExportOpen(false)
-                }
-            }
-            if (isExportOpen) {
-                document.addEventListener('mousedown', handleDocClick)
-            }
-            return () => {
-                document.removeEventListener('mousedown', handleDocClick)
-            }
-        }, [isExportOpen])
+  return (
+    <div className="pb-4">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        {/* SEARCH BAR */}
+        {isShowSearchBar && (
+          <div className="relative min-w-0 w-[526px]">
+            <Input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => onSearchChange?.(e.target.value)}
+              placeholder={searchPlaceholder}
+              leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+              rightIcon={
+                <div className={`flex items-center space-x-1 ${searchTerm ? 'pr-8' : 'pr-2'}`}>
+                  {/* CLEAR SEARCH */}
+                  {searchTerm && onClearSearch && (
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        onClearSearch()
+                      }}
+                      color="transparent"
+                      fullWidth
+                      isborderRadius
+                      size="sm"
+                      title="Clear search"
+                      aria-label="Clear search"
+                    >
+                      <X />
+                    </Button>
+                  )}
 
-        const activeFilterCount = Object.values(filters || {}).filter(
-            (value) => value && String(value).trim() !== ''
-        ).length
-
-        const hasFilters = activeFilterCount > 0
-
-        const computedFilterTooltip =
-            filterTooltipOverride ??
-            (hasFilters && Object.keys(filters).length > 0
-                ? `Active filters: ${Object.entries(filters)
-                    .filter(([_, value]) => value)
-                    .map(([key, value]) => `${key}: ${value}`)
-                    .join(', ')}`
-                : 'Filter')
-
-        const hasAnyActions =
-            isShowCustomizeButton ||
-            isShowAddButton ||
-            isShowImportButton ||
-            (isShowExportButton && (onExportExcel || onExportPdf))
-
-        return (
-            <div className="pb-4">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                    {/* SEARCH BAR */}
-                    {isShowSearchBar && (
-                        <div className="relative min-w-0 w-[526px]">
-                            <Input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => {
-                                    const value = e.target.value
-                                    onSearchChange?.(value)
-                                }}
-                                placeholder={searchPlaceholder}
-                                leftIcon={<Search className="h-4 w-4 text-gray-400" />}
-                                rightIcon={
-                                    <div className="flex items-center space-x-1 pr-8">
-                                        {/* CLEAR SEARCH */}
-                                        {searchTerm && onClearSearch && (
-                                            <Button
-                                                onClick={(e) => {
-                                                    e.preventDefault()
-                                                    e.stopPropagation()
-                                                    onClearSearch()
-                                                }}
-                                                color="transparent"
-                                                fullWidth
-                                                isborderRadius
-                                                size="sm"
-                                                title="Clear search"
-                                            >
-                                                <X className="" />
-                                            </Button>
-                                        )}
-
-                                        {/* FILTER BUTTON */}
-                                        {isShowFilterButton && onOpenFilter && (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.preventDefault()
-                                                    e.stopPropagation()
-                                                    onOpenFilter()
-                                                }}
-                                                className={`flex items-center p-1.5 rounded-md transition-colors relative bg-blue-100`}
-
-                                                title={computedFilterTooltip}
-                                            >
-                                                <Filter className="h-4 w-4 text-black" />
-                                                {hasFilters && (
-                                                    <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
-                                                        <span className="text-xs text-white font-bold">
-                                                            {activeFilterCount}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </button>
-                                        )}
-                                    </div>
-                                }
-                            />
+                  {/* FILTER BUTTON */}
+                  {isShowFilterButton && onOpenFilter && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        onOpenFilter()
+                      }}
+                      className="flex items-center p-1.5 rounded-md transition-colors relative bg-blue-100"
+                      title={computedFilterTooltip}
+                      aria-label="Open filters"
+                    >
+                      <SlidersHorizontal className="h-4 w-4 text-black" />
+                      {hasFilters && (
+                        <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
+                          <span className="text-xs text-white font-bold">
+                            {activeFilterCount}
+                          </span>
                         </div>
-                    )}
-
-                    {/* RIGHT SIDE ACTIONS */}
-                    {hasAnyActions && (
-                        <div className="flex items-center space-x-1">
-                            {/* CUSTOMIZE TABLE BUTTON */}
-                            {isShowCustomizeButton && onCustomize && (
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        onCustomize()
-                                    }}
-                                    //className="px-3 py-2 mr-2 rounded-md flex items-center gap-2"
-                                    className="flex px-3 py-2 mr-2 border border-blue-500 text-black-600 bg-white hover:bg-black-50 rounded-md gap-2"
-                                    title={customizeLabel}
-                                >
-                                    <Table className=" w-4" />
-                                    <span>{customizeLabel}</span>
-                                </button>
-
-                            )}
-
-                            {/* EXPORT BUTTON + DROPDOWN */}
-                            {isShowExportButton && (onExportExcel || onExportPdf) && (
-                                <div className="relative" ref={exportRef}>
-                                    <Button
-                                        onClick={(e) => {
-                                            e.preventDefault()
-                                            e.stopPropagation()
-                                            setIsExportOpen((s) => !s)
-                                        }}
-                                        className="text-black gap-2"
-                                        color="purple"
-                                        colorMode="light"
-                                        size="mxs"
-                                        defineWidth
-                                        title="Export"
-                                        style={{width:"95px",border:'1px solid blue'}}
-                                    >
-                                        <Download className="h-4 w-4 text-black" /> <span className="text-black">Export</span>
-                                    </Button>
-
-                                    {isExportOpen && (
-                                        <div className="absolute right-0 mt-2 w-42 bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-50">
-                                            <div className="py-1">
-                                                {onExportExcel && (
-                                                    <Button
-                                                        onClick={(e) => {
-                                                            e.preventDefault()
-                                                            e.stopPropagation()
-                                                            onExportExcel()
-                                                            setIsExportOpen(false)
-                                                        }}
-                                                        disabled={exportLoading}
-                                                        color="transparent"
-                                                        fullWidth
-                                                        isborderRadius
-                                                        size="sm"
-                                                        title="Export as Excel"
-                                                    >
-                                                        <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
-                                                        Export as Excel
-                                                    </Button>
-                                                )}
-
-                                                {onExportPdf && (
-                                                    <Button
-                                                        onClick={(e) => {
-                                                            e.preventDefault()
-                                                            e.stopPropagation()
-                                                            onExportPdf()
-                                                            setIsExportOpen(false)
-                                                        }}
-                                                        disabled={exportLoading}
-                                                        color="transparent"
-                                                        fullWidth
-                                                        isborderRadius
-                                                        size="sm"
-                                                        title="Export as PDF"
-                                                    >
-                                                        <FileText className="h-4 w-4 mr-2 text-red-600" />
-                                                        Export as PDF
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                            {/* ADD BUTTON */}
-                            {isShowAddButton && onAdd && (
-                                <Button
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        onAdd()
-                                    }}
-                                    color="blue"
-                                    size="mxs"
-                                    variant="solid"
-                                    colorMode="light"
-                                    defineWidth
-                                    title={addTitle}
-                                >
-                                    <Plus className="h-4 w-4" /> <span>{addTitle}</span>
-                                </Button>
-                            )}
-
-                            {/* IMPORT BUTTON */}
-                            {isShowImportButton && onImport && (
-                                <Button
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        onImport()
-                                    }}
-                                    color="green"
-                                    colorMode="light"
-                                    size="xs"
-                                    defineWidth
-                                    title={importTitle}
-                                >
-                                    <Upload className="h-4 w-4" />
-                                </Button>
-                            )}
-
-
-                        </div>
-                    )}
+                      )}
+                    </button>
+                  )}
                 </div>
-            </div>
-        )
-    }
+              }
+            />
+          </div>
+        )}
 
-    export default TableActionToolbar
+        {/* RIGHT SIDE ACTIONS */}
+        {hasAnyActions && (
+          <div className="flex items-center space-x-1">
+            {/* CUSTOMIZE TABLE BUTTON */}
+            {isShowCustomizeButton && onCustomize && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onCustomize()
+                }}
+                className="flex px-3 py-2 mr-2 border border-blue-500 text-black-600 bg-white hover:bg-black-50 rounded-md gap-2"
+                title={customizeLabel}
+                aria-label={customizeLabel}
+              >
+                <Table className="w-4" />
+                <span>{customizeLabel}</span>
+              </button>
+            )}
+
+            {/* EXPORT */}
+            {isShowExportButton && (onExportExcel || onExportPdf) && (
+              <div className="relative" ref={exportRef}>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setIsExportOpen((s) => !s)
+                    setIsImportOpen(false) 
+                  }}
+                  className="text-black gap-2"
+                  color="purple"
+                  colorMode="light"
+                  size="mxs"
+                  defineWidth
+                  title="Export"
+                  aria-expanded={isExportOpen}
+                  aria-haspopup="menu"
+                  style={{ width: '95px' }}
+                >
+                  <Download className="h-4 w-4 text-black" /> <span className="text-black">Export</span>
+                </Button>
+
+                {isExportOpen && (
+                  <div
+                    className="absolute right-0 mt-2 min-w-[168px] bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-50"
+                    role="menu"
+                    aria-label="Export options"
+                  >
+                    <div className="py-1">
+                      {onExportExcel && (
+                        <Button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            onExportExcel()
+                            setIsExportOpen(false)
+                          }}
+                          disabled={exportLoading}
+                          color="transparent"
+                          fullWidth
+                          isborderRadius
+                          size="sm"
+                          title="Export as Excel"
+                        >
+
+                          Export as Excel
+                        </Button>
+                      )}    
+
+                      {onExportPdf && (
+                        <Button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            onExportPdf()
+                            setIsExportOpen(false)
+                          }}
+                          disabled={exportLoading}
+                          color="transparent"
+                          fullWidth
+                          isborderRadius
+                          size="sm"
+                          title="Export as PDF"
+                        >
+
+                          Export as PDF
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* IMPORT */}
+            {isShowImportButton && (onUploadExcel || onDownloadSampleExcel) && (
+              <div className="relative" ref={importRef}>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setIsImportOpen((s) => !s)
+                    setIsExportOpen(false) // close export when opening import
+                  }}
+                  className="text-black gap-2"
+                  color="green"
+                  colorMode="light"
+                  size="mxs"
+                  defineWidth
+                  title={importTitle}
+                  aria-expanded={isImportOpen}
+                  aria-haspopup="menu"
+                  style={{ width: '95px' }}
+                >
+                  <Upload className="h-4 w-4 text-black" /> <span className="text-black">{importTitle}</span>
+                </Button>
+
+                {isImportOpen && (
+                  <div
+                    className="absolute right-0 mt-2 min-w-[168px] bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-50"
+                    role="menu"
+                    aria-label="Import options"
+                  >
+                    <div className="py-1">
+                      {onUploadExcel && (
+                        <Button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            onUploadExcel()
+                            setIsImportOpen(false)
+                          }}
+                          disabled={exportLoading}
+                          color="transparent"
+                          fullWidth
+                          isborderRadius
+                          size="sm"
+                          title="Upload Excel"
+                        >
+
+                          Upload Excel
+                        </Button>
+                      )}
+
+                      {onDownloadSampleExcel && (
+                        <Button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            onDownloadSampleExcel()
+                            setIsImportOpen(false)
+                          }}
+                          disabled={exportLoading}
+                          color="transparent"
+                          fullWidth
+                          isborderRadius
+                          size="sm"
+                          title="Download Sample Excel"
+                        >
+
+                          Sample Excel
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ADD BUTTON */}
+            {isShowAddButton && onAdd && (
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onAdd()
+                }}
+                color="blue"
+                size="mxs"
+                variant="solid"
+                colorMode="light"
+                defineWidth
+                title={addTitle}
+                aria-label={addTitle}
+              >
+                <Plus className="h-4 w-4" /> <span>{addTitle}</span>
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default TableActionToolbar

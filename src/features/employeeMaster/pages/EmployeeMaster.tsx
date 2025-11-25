@@ -25,6 +25,8 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { useNavigate } from 'react-router-dom';
 import { Edit } from 'lucide-react';
+import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
+import { technicalService } from '@/features/technical/services/TechnicalService';
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -194,11 +196,11 @@ export const EmployeeMaster: React.FC = () => {
 
   const handleExportEmployeeExcel = () => handleExportEmployees('Excel');
   const handleExportEmployeePdf = () => handleExportEmployees('PDF');
- const handleEditEmployee = (row: EmployeeMasterData) => {
-  debugger
-  navigate(`/employeeMaster/add/${row.EmployeeId}`); // assuming EmployeeId is the identifier
+  const handleEditEmployee = (row: EmployeeMasterData) => {
+    debugger
+    navigate(`/employeeMaster/add/${row.EmployeeId}`); // assuming EmployeeId is the identifier
 
-};
+  };
 
   const getEmployees = async (filterParams: FilterWithPaginationEmployeeMasterRequest) => {
     return await employeeMasterService.apiCallPullEmployeeMaster(filterParams);
@@ -250,7 +252,7 @@ export const EmployeeMaster: React.FC = () => {
               tooltipThreshold={26}
               onClick={() => handleViewEmployeeDetails(row)}
             />
-               {canAction && (
+            {canAction && (
               <div className="flex items-center justify-end ml-2 w-20">
                 {(row.NumberOfEmployee || 0) === 0 ? (
                   <>
@@ -275,7 +277,7 @@ export const EmployeeMaster: React.FC = () => {
                       <Edit className="h-4 w-4" />
                     </Button>
 
-              
+
                   </>
                 ) : (
                   <>
@@ -305,7 +307,7 @@ export const EmployeeMaster: React.FC = () => {
               </div>
             )}
           </div>
-          
+
         )
       },
       {
@@ -489,25 +491,9 @@ export const EmployeeMaster: React.FC = () => {
         sortable: true,
         align: 'center',
         render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '16',
-        sortable: true,
-        align: 'center',
-        render: value => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '16',
-        sortable: true,
-        align: 'center',
-        render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       }
     ],
-        [canAction, handleViewEmployeeDetails]
+    [canAction, handleViewEmployeeDetails]
 
   );
   //#endregion
@@ -710,8 +696,8 @@ export const EmployeeMaster: React.FC = () => {
     setShowFilterPopup(false);
   };
   const handleAddEmployeeModal = () => {
-    navigate('/employeeMaster/add'); 
-};
+    navigate('/employeeMaster/add');
+  };
 
 
   const handleFilterChange = (key: string, value: string) => {
@@ -725,17 +711,75 @@ export const EmployeeMaster: React.FC = () => {
   };
   //#endregion
 
-  return (
+  //#region IMPORT EXCEL | DOWNLOAD
+  
+    const excelImportEmployeeMaster = async () => {
+  
+      await runApiWithLoader(
+  
+        setIsLoading,
+  
+        setIsLoadingMessage,
+  
+        async () => {
+  
+  
+          return null;
+        },
+        undefined,
+        (error: any) => {
+          addToast({ type: 'error', title: error.message || 'Import failed' })
+        },
+        undefined,
+        'Preparing Import...'
+      )
+    }
+  
+  
+    const downloadExcelSampleEmployeeMaster = async () => {
+      await runApiWithLoader(
+        setIsLoading,
+        setIsLoadingMessage,
+        async () => {
+          // Find the column label for sorting
+  
+          const params: FilterPullExcelSample = {
+            TableName: 'EMPLOYEE MASTER'
+          }
+  
+          const response = await technicalService.apiCallPullExcelSample(params);
+  
+          handleExportFile(response, 'Excel', 'Employee Master', addToast, 'Sample file download successfully')
+  
+          return response;
+        },
+        undefined,
+        (error: any) => {
+          addToast({ type: 'error', title: error.message || 'Export failed' })
+        },
+        undefined,
+        'Preparing Downloading...'
+      )
+    }
+  
+    const handleExcelImportEmployeeMaster = () => excelImportEmployeeMaster()
+    const handleDownloadExcelSampleEmployeeMaster = () => downloadExcelSampleEmployeeMaster()
+  
+  
+  
+    //#endregion
+  
+    return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <Loader loading={isLoading} title={loadingMessage}>
           <div></div>
         </Loader>
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by employee name..."
+          searchPlaceholder="Search By Employee Name"
           onSearchChange={v => {
             setSearchTerm(v);
             debouncedSearch(v);
@@ -749,9 +793,17 @@ export const EmployeeMaster: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeEmployeeColumnsModal(true)}
+          // ADD
           isShowAddButton={canAction}
-          onAdd={handleAddEmployeeModal} 
+          addTitle="Add Employee"
+          onAdd={handleAddEmployeeModal}
+
+          // IMPORT
           isShowImportButton={canAction}
+          onUploadExcel={handleExcelImportEmployeeMaster}
+          onDownloadSampleExcel={handleDownloadExcelSampleEmployeeMaster}
+
+          // EXPORT
           isShowExportButton={canExport}
           onExportExcel={handleExportEmployeeExcel}
           onExportPdf={handleExportEmployeePdf}
@@ -763,7 +815,7 @@ export const EmployeeMaster: React.FC = () => {
           pagination={employeePaginationInfo}
           emptyMessage="No employees found"
           fixedHeight
-          maxHeight="calc(100vh - 200px)"
+          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -792,7 +844,7 @@ export const EmployeeMaster: React.FC = () => {
           columns={employeeColumns}
           selectedKeys={selectedEmployeeColumnKeys}
           requiredKeys={requiredEmployeeColumnKeys}
-          title="Customize Employee Master Table Columns"
+          title="Customize Table Columns"
         />
         <Modal
           isOpen={showFilterPopup}
@@ -805,7 +857,8 @@ export const EmployeeMaster: React.FC = () => {
           saveText="Apply Filter"
           cancelText="Clear Filter"
           onCancel={() => clearFilters()}
-          size="half-screen"
+          resetText=''
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">
@@ -818,46 +871,45 @@ export const EmployeeMaster: React.FC = () => {
                   placeholder="Enter employee name"
                 />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
-                  <Input
-                    type="text"
-                    value={tempFilters.BranchName || ''}
-                    onChange={e => handleFilterChange('BranchName', e.target.value)}
-                    placeholder="Enter branch name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                  <Input
-                    type="text"
-                    value={tempFilters.DepartmentName || ''}
-                    onChange={e => handleFilterChange('DepartmentName', e.target.value)}
-                    placeholder="Enter department name"
-                  />
-                </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+                <Input
+                  type="text"
+                  value={tempFilters.BranchName || ''}
+                  onChange={e => handleFilterChange('BranchName', e.target.value)}
+                  placeholder="Enter branch name"
+                />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
-                  <Input
-                    type="text"
-                    value={tempFilters.DesignationName || ''}
-                    onChange={e => handleFilterChange('DesignationName', e.target.value)}
-                    placeholder="Enter designation"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-                  <Input
-                    type="text"
-                    value={tempFilters.MobileNumber || ''}
-                    onChange={e => handleFilterChange('MobileNumber', e.target.value)}
-                    placeholder="Enter mobile number"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                <Input
+                  type="text"
+                  value={tempFilters.DepartmentName || ''}
+                  onChange={e => handleFilterChange('DepartmentName', e.target.value)}
+                  placeholder="Enter department name"
+                />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+                <Input
+                  type="text"
+                  value={tempFilters.DesignationName || ''}
+                  onChange={e => handleFilterChange('DesignationName', e.target.value)}
+                  placeholder="Enter designation"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                <Input
+                  type="text"
+                  value={tempFilters.MobileNumber || ''}
+                  onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+                  placeholder="Enter mobile number"
+                />
+              </div>
+
             </div>
           </div>
         </Modal>

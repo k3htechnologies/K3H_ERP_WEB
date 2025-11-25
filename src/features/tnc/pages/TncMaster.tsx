@@ -300,52 +300,6 @@ export const TncMaster: React.FC = () => {
               onClick={() => handleViewTncDetails(row)}
             />
 
-            {canAction && (
-              <div className="flex items-center justify-end ml-2 w-20">
-                <>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEditTncMaster(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    title="Edit Tnc"
-                    style={{
-                      color: '#0B3251',
-                      padding: '0px 8px'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleConfirmationDialogBoxOpen(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    style={{
-                      color: 'red',
-                      padding: '0px 8px'
-                    }}
-                    title="Delete Tnc"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </>
-
-              </div>
-            )}
           </div>
         )
       },
@@ -358,22 +312,6 @@ export const TncMaster: React.FC = () => {
         render: value => (
           <TooltipText text={value || 'N/A'} maxWidth="340px" tooltipThreshold={34} />
         )
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '12',
-        sortable: true,
-        align: 'center',
-        render: value => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '12',
-        sortable: true,
-        align: 'center',
-        render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       }
     ],
     [handleViewTncDetails, handleViewTncDetails, handleEditTncMaster, handleConfirmationDialogBoxOpen]
@@ -428,39 +366,71 @@ export const TncMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="View Terms & Conditions Details"
+        title="Terms & Conditions Details"
         onSubmit={e => {
           e.preventDefault();
           onClose();
         }}
         cancelText="Close"
         loading={false}
+        size='xl'
       >
         <div className="space-y-6">
           <div className="space-y-4">
-            <FieldItem label="Module Name" value={data.ModuleName} isRow withBorder={false} />
-            <FieldItem label="Title" value={data.Title} isRow withBorder={false} />
-            <FieldItem label="Description" value={data.Description} isRow withBorder={false} />
+            <FieldItem label="Module Name" value={data.ModuleName} isRow withBorder={true} />
+            <FieldItem label="Title" value={data.Title} isRow withBorder={true} />
+            <FieldItem label="Description" value={data.Description} isRow withBorder={true} />
 
           </div>
 
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <FieldItem label="Created By" isRow={true} value={data.CreatedBy} withBorder={false} />
-                <FieldItem label="Created Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={false} />
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold pb-2">
+              Action Details
+            </h4>
 
-              </div>
-              <div className="space-y-2">
-                {data.ModifiedBy && (
-                  <>
-                    <FieldItem label="Modified By" isRow={true} value={data.ModifiedBy} withBorder={false} />
-                    <FieldItem label="Modified Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
-                  </>
-                )}
-              </div>
-            </div>
+            <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
+
+            {data.ModifiedBy !== '' ?
+              <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
+
+              :
+              ''}
+          </div>
+          <div className="flex justify-between items-center pt-4">
+
+            {canAction && (
+              <>
+                <Button
+                  color='gray'
+                  variant='solid'
+                  colorMode="light"
+                  size='md'
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setIsViewModalOpen(false)
+                    handleConfirmationDialogBoxOpen(data)
+                  }}
+                >
+                  <Trash2 className="h-5 w-5" />
+                  Delete
+                </Button>
+
+                <Button
+                  color='blue'
+                  size='md'
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setIsViewModalOpen(false)
+                    handleEditTncMaster(data)
+                  }}
+                >
+                  <Edit className="h-5 w-5" />
+                  Edit
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </Modal>
@@ -603,11 +573,11 @@ export const TncMaster: React.FC = () => {
         onCancel={onClose}
         title={data ? 'Update Terms & Condtion' : 'Add Terms & Condtion'}
         onSubmit={handleSubmitAddUpdateTnc}
-        saveText={data ? 'Update' : 'Save'}
-        cancelText="Cancel"
+        saveText={data ? 'Update T&C' : 'Save T&C'}
         loading={loading}
+        size='small45'
       >
-        <div className="space-y-6">
+        <div className="space-y-6 p-6  bg-blue-100">
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -715,8 +685,6 @@ export const TncMaster: React.FC = () => {
 
   //#region DELETE TNC MASTER
 
-
-
   const handleDeleteTncMaster = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
@@ -774,29 +742,29 @@ export const TncMaster: React.FC = () => {
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <Loader loading={isLoading} title={loadingMessage}>
           <div></div>
         </Loader>
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by title..."
+          searchPlaceholder="Search By Title..."
           onSearchChange={v => {
             setSearchTerm(v);
             debouncedSearch(v);
           }}
           onClearSearch={clearSearchTnc}
-          isShowFilterButton
+          isShowFilterButton={false}
           filters={filters}
           onOpenFilter={() => {
             setTempFilters(filters);
             setShowFilterPopup(true);
           }}
-          isShowCustomizeButton
+          isShowCustomizeButton={false}
           onCustomize={() => setIsShowCustomizeTncColumnsModal(true)}
           isShowAddButton={canAction}
-          addTitle="Add Tnc Master"
+          addTitle="Add Tnc"
           onAdd={handleAddTncModal}
           isShowImportButton={false}
           isShowExportButton={canExport}
@@ -826,7 +794,7 @@ export const TncMaster: React.FC = () => {
           pagination={tncPaginationInfo}
           emptyMessage="No terms & conditions found"
           fixedHeight
-          maxHeight="calc(100vh - 200px)"
+          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}

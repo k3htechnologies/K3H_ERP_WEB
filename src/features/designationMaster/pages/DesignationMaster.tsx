@@ -17,7 +17,7 @@ import { Edit, LockIcon, Trash2 } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
@@ -28,6 +28,8 @@ import { useNavigate } from 'react-router-dom';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
+import { technicalService } from '@/features/technical/services/TechnicalService';
 
 export const DesignationMaster: React.FC = () => {
 
@@ -315,49 +317,6 @@ export const DesignationMaster: React.FC = () => {
                 onClick={() => handleViewDesignationDetails(row)}
               />
 
-              {/* SLOT 1: EDIT */}
-              <div className="w-[34px] flex justify-center">
-                {showEdit ? (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEditDesignationMaster(row)
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Edit"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
-              </div>
-
-              {/* SLOT 2: DELETE */}
-              <div className="w-[34px] flex justify-center">
-                {showDelete ? (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleConfirmationDialogBoxOpen(row)
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    style={{ color: 'red' }}
-                    title="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
-              </div>
-
               {/* SLOT 3: KEY */}
               <div className="w-[34px] flex justify-center">
                 {showKey ? (
@@ -412,22 +371,6 @@ export const DesignationMaster: React.FC = () => {
             {value}
           </span>
         )
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '33',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '33',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       }
     ],
     // dependencies: include everything used inside that might change
@@ -498,40 +441,78 @@ export const DesignationMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="View Designation Master Details"
+        title="Designation Master Details"
         onSubmit={(e) => {
           e.preventDefault()
           onClose()
         }}
         cancelText="Close"
         loading={false}
+        size='xl'
       >
         <div className="space-y-6">
           {/* Designation Information */}
           <div className="space-y-4">
 
-            <FieldItem label="Designation Code" value={data.DesignationName} isRow withBorder={false} />
-            <FieldItem label="Notice Period" value={data.NoticePeriod} isRow withBorder={false} />
-            <FieldItem label="Number of Employees" value={data.NumberOfEmployee} isRow withBorder={false} />
+            <FieldItem label="Designation Code" value={data.DesignationName} isRow withBorder={true} />
+            <FieldItem label="Notice Period" value={data.NoticePeriod} isRow withBorder={true} />
+            <FieldItem label="Number of Employees" value={data.NumberOfEmployee} isRow withBorder={true} />
 
           </div>
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <FieldItem label="Created By" isRow={true} value={data.CreatedBy} withBorder={false} />
-                <FieldItem label="Created Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={false} />
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold pb-2">
+              Action Details
+            </h4>
 
-              </div>
-              <div className="space-y-2">
-                {data.ModifiedBy && (
-                  <>
-                    <FieldItem label="Modified By" isRow={true} value={data.ModifiedBy} withBorder={false} />
-                    <FieldItem label="Modified Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
-                  </>
-                )}
-              </div>
-            </div>
+            <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
+
+            {data.ModifiedBy !== '' ?
+              <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
+
+              :
+              ''}
+
+
+          </div>
+          <div className="flex justify-between items-center pt-4">
+
+            {canAction && (
+              <>
+                {(data.NumberOfEmployee || 0) === 0 ? (
+
+                  <Button
+                    color='gray'
+                    variant='solid'
+                    colorMode="light"
+                    size='md'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsViewModalOpen(false)
+                      handleConfirmationDialogBoxOpen(data)
+                    }}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    Delete
+                  </Button>
+                ) : <div style={{ width: "120px", height: "44px" }}></div>}
+
+
+                <Button
+                  color='blue'
+                  size='md'
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setIsViewModalOpen(false)
+                    handleEditDesignationMaster(data)
+                  }}
+                >
+                  <Edit className="h-5 w-5" />
+                  Edit
+                </Button>
+              </>
+            )}
           </div>
 
         </div>
@@ -630,7 +611,7 @@ export const DesignationMaster: React.FC = () => {
       let hasErrors = false;
 
       const designationName = formData.DesignationName?.trim() || ''
-      
+
       if (designationName.trim() === "") {
         setDesignationNameError("Designation Name is required.")
         hasErrors = true
@@ -679,11 +660,12 @@ export const DesignationMaster: React.FC = () => {
         onCancel={onClose}
         title={data ? 'Update Designation Master' : 'Add Designation Master'}
         onSubmit={handleSubmitAddUpdateDesignation}
-        saveText={data ? 'Update' : 'Save'}
-        cancelText='Cancel'
+        saveText={data ? 'Update Designation' : 'Save Designation'}
+        resetText='Reset'
         loading={loading}
+        size='small-half'
       >
-        <div className="space-y-6">
+        <div className="space-y-6 p-6 bg-blue-100">
           <div className="space-y-4">
 
             <div>
@@ -790,6 +772,62 @@ export const DesignationMaster: React.FC = () => {
   }
   //#endregion 
 
+  //#region IMPORT EXCEL | DOWNLOAD
+
+  const excelImportDesignationMaster = async () => {
+
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setIsLoadingMessage,
+
+      async () => {
+
+
+        return null;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Import failed' })
+      },
+      undefined,
+      'Preparing Import...'
+    )
+  }
+
+
+  const downloadExcelSampleDesignationMaster = async () => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+        // Find the column label for sorting
+
+        const params: FilterPullExcelSample = {
+          TableName: 'DESIGNATION MASTER'
+        }
+
+        const response = await technicalService.apiCallPullExcelSample(params);
+
+        handleExportFile(response, 'Excel', 'Designation Master', addToast, 'Sample file download successfully')
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Export failed' })
+      },
+      undefined,
+      'Preparing Downloading...'
+    )
+  }
+
+  const handleExcelImportDesignationMaster = () => excelImportDesignationMaster()
+  const handleDownloadExcelSampleDesignationMaster = () => downloadExcelSampleDesignationMaster()
+
+  //#endregion
+
   //#region DELETE DESIGNATION MASTER
 
 
@@ -849,7 +887,7 @@ export const DesignationMaster: React.FC = () => {
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
@@ -864,13 +902,13 @@ export const DesignationMaster: React.FC = () => {
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by designation name..."
+          searchPlaceholder="Search By Designation Name"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
           }}
           onClearSearch={clearsearchDesignationMaster}
-          isShowFilterButton
+          isShowFilterButton={false}
           filters={filters}
           onOpenFilter={() => {
             setTempFilters(filters)
@@ -878,10 +916,18 @@ export const DesignationMaster: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeDesignationMasterColumnsModal(true)}
+
+          // ADD
           isShowAddButton={canAction}
           addTitle="Add Designation"
           onAdd={handleAddDesignationModal}
+
+          // IMPORT
           isShowImportButton={canAction}
+          onUploadExcel={handleExcelImportDesignationMaster}
+          onDownloadSampleExcel={handleDownloadExcelSampleDesignationMaster}
+
+          // EXPORT
           isShowExportButton={canExport}
           onExportExcel={handleExportDesignationExcel}
           onExportPdf={handleExportDesignationPdf}
@@ -895,7 +941,7 @@ export const DesignationMaster: React.FC = () => {
           pagination={designationMasterPaginationInfo}
           emptyMessage="No designation found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
+          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -944,7 +990,7 @@ export const DesignationMaster: React.FC = () => {
           columns={designationMasterColumns}
           selectedKeys={selectedDesignationMasterColumnKeys}
           requiredKeys={requiredDesignationMasterColumnKeys}
-          title="Customize Designation Master Table Columns"
+          title="Customize Table Columns"
         />
 
 
@@ -958,9 +1004,8 @@ export const DesignationMaster: React.FC = () => {
             applyFilters()
           }}
           saveText="Apply Filter"
-          cancelText="Clear Filter"
           onCancel={() => clearFilters()}
-          size="half-screen"
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">

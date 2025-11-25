@@ -30,6 +30,8 @@ import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Edit, Trash2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
+import { technicalService } from '@/features/technical/services/TechnicalService';
 
 
 export const CompanyMaster: React.FC = () => {
@@ -399,7 +401,7 @@ export const CompanyMaster: React.FC = () => {
         render: (value: string, row: any) => {
           return (
             <MultiImageViewer
-             images={parseDocumentUrls(row.GSTCertificateURL)}
+              images={parseDocumentUrls(row.GSTCertificateURL)}
               title="GST Document"
               triggerLabel={value || '-'}
             />
@@ -413,7 +415,7 @@ export const CompanyMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value: string, row: any) => {
-          
+
           return (
             <MultiImageViewer
               images={parseDocumentUrls(row.PanCardURL)}
@@ -473,23 +475,6 @@ export const CompanyMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value) => value || '-'
-      },
-
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       }
     ],
     [handleViewCompanyDetails, handleConfirmationDialogBoxOpen]
@@ -595,8 +580,8 @@ export const CompanyMaster: React.FC = () => {
               Government Identifiers
             </h4>
             <FieldItem label="GST Number" value={data.GSTNumber} urls={data.GSTCertificateURL} isRow />
-            <FieldItem label="PAN Number" value={data.PANNumber}  urls={data.PanCardURL}isRow />
-            <FieldItem label="CIN Number" value={data.CINNumber}  urls={data.CINURL} isRow />
+            <FieldItem label="PAN Number" value={data.PANNumber} urls={data.PanCardURL} isRow />
+            <FieldItem label="CIN Number" value={data.CINNumber} urls={data.CINURL} isRow />
             <FieldItem label="RERA Number" value={data.RERANumber} isRow />
           </div>
           <div className="space-y-4">
@@ -779,16 +764,74 @@ export const CompanyMaster: React.FC = () => {
 
   //#endregion
 
-
+//#region IMPORT EXCEL | DOWNLOAD
+  
+    const excelImportCompanyMaster = async () => {
+  
+      await runApiWithLoader(
+  
+        setIsLoading,
+  
+        setIsLoadingMessage,
+  
+        async () => {
+  
+  
+          return null;
+        },
+        undefined,
+        (error: any) => {
+          addToast({ type: 'error', title: error.message || 'Import failed' })
+        },
+        undefined,
+        'Preparing Import...'
+      )
+    }
+  
+  
+    const downloadExcelSampleCompanyMaster = async () => {
+      await runApiWithLoader(
+        setIsLoading,
+        setIsLoadingMessage,
+        async () => {
+          // Find the column label for sorting
+  
+          const params: FilterPullExcelSample = {
+            TableName: 'COMPANY MASTER'
+          }
+  
+          const response = await technicalService.apiCallPullExcelSample(params);
+  
+          handleExportFile(response, 'Excel', 'Company Master', addToast, 'Sample file download successfully')
+  
+          return response;
+        },
+        undefined,
+        (error: any) => {
+          addToast({ type: 'error', title: error.message || 'Export failed' })
+        },
+        undefined,
+        'Preparing Downloading...'
+      )
+    }
+  
+    const handleExcelImportCompanyMaster = () => excelImportCompanyMaster()
+    
+    const handleDownloadExcelSampleCompanyMaster = () => downloadExcelSampleCompanyMaster()
+  
+  
+  
+    //#endregion
+  
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by company name..."
+          searchPlaceholder="Search By Company Name"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
@@ -802,10 +845,19 @@ export const CompanyMaster: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeCompanyMasterColumnsModal(true)}
+
+          // ADD
           isShowAddButton={canAction}
-          isShowImportButton={canAction}
-          isShowExportButton={canExport}
+          addTitle="Add Company"
           onAdd={handleAddCompanyMaster}
+
+          // IMPORT
+          isShowImportButton={canAction}
+          onUploadExcel={handleExcelImportCompanyMaster}
+          onDownloadSampleExcel={handleDownloadExcelSampleCompanyMaster}
+
+          // EXPORT
+          isShowExportButton={canExport}
           onExportExcel={handleExportCompanyExcel}
           onExportPdf={handleExportCompanyPdf}
           exportLoading={isLoading}
@@ -816,7 +868,7 @@ export const CompanyMaster: React.FC = () => {
           pagination={companyMasterPaginationInfo}
           emptyMessage="No companies found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
+          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -861,8 +913,9 @@ export const CompanyMaster: React.FC = () => {
           }}
           saveText="Apply Filter"
           cancelText="Clear Filter"
+          resetText=''
           onCancel={() => clearFilters()}
-          size="half-screen"
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">

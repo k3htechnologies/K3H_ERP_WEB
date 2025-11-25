@@ -103,8 +103,7 @@ export const CustomizeColumnsModal: React.FC<CustomizeColumnsModalProps> = ({
       title={title}
       onSubmit={handleSubmit}
       saveText="Save Changes"
-      cancelText="Cancel"
-      size='small-half'
+      size='small30'
     >
       <div className="space-y-4">
         {/* Top action checkboxes */}

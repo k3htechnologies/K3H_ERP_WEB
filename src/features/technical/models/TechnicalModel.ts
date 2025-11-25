@@ -33,7 +33,6 @@ export interface FilterRefreshTokenRequest {
 
 //#endregion END  NOTIFICATION
 
-
 //#region COUNTRY_STATE_CITY_DISTRICT_VILLAGE
 
 export interface CountryStateCityDistrictVillageData {
@@ -57,6 +56,13 @@ export interface CountryStateCityDistrictVillageDataWrapper {
   CountryStateCityDistrictVillageData: CountryStateCityDistrictVillageData[];
 }
 
+
+//#endregion END  NOTIFICATION
+
+//#region EXCEL IMPORT & SAMPLE EXCEL DOWNLOAD 
+export interface FilterPullExcelSample {
+    TableName: string | ''
+}
 
 //#endregion END  NOTIFICATION
 

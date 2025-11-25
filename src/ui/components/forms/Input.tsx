@@ -17,6 +17,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     rightIcon,
     className = '',
     style,
+    required,
     ...props
   }, ref) => {
     const theme = THEME

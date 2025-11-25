@@ -639,7 +639,6 @@ export const TncMaster: React.FC = () => {
               )}
             </div>
 
-
           </div>
         </div>
       </Modal>

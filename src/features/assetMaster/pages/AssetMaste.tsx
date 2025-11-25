@@ -6,7 +6,9 @@ import * as E from 'fp-ts/Either';
 import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
+  AddUpdateAssetMasterRequest,
   AssetMasterData,
+  DeleteAssetMasterRequest,
   FilterWithPaginationAssetMasterRequest
 } from '@/features/assetMaster/models/AssetMasterModel';
 
@@ -17,11 +19,13 @@ import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
+import { Edit, Trash2 } from 'lucide-react';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 
 
 export const AssetMaster: React.FC = () => {
@@ -62,11 +66,20 @@ export const AssetMaster: React.FC = () => {
   //#endregion
 
   //#region MENU PERMISSIONS
-  const { canExport } = useMenuPermissions();
+  const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
   //#region INITIALIZATION
-  const hasFetchedInitialAssets = useRef(false)
+  const hasFetchedInitialAssets = useRef(false);
+
+  // EDIT ASSET MASTER
+  const [editingAssetMasterData, setEditingAssetMasterData] = useState<AssetMasterData | null>(null)
+  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+
+  //DELETE ASSET MASTER STATES
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+  const [deleteAssetMasterDetailsData, setDeleteAssetMasterDetailsData] = useState<AssetMasterData | null>(null)
+
 
   useEffect(() => {
 
@@ -266,6 +279,19 @@ export const AssetMaster: React.FC = () => {
     setIsViewModalOpen(true)
   }, [])
 
+  const handleEditAssetMaster = useCallback((row: AssetMasterData) => {
+    setEditingAssetMasterData({
+      ...row,
+
+    })
+    setIsAddUpdateModalOpen(true);
+
+  }, [])
+
+  const handleConfirmationDialogBoxOpen = useCallback((row: AssetMasterData) => {
+    setDeleteAssetMasterDetailsData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
   const assetMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -283,6 +309,51 @@ export const AssetMaster: React.FC = () => {
               tooltipThreshold={25}
               onClick={() => handleViewAssetDetails(row)}
             />
+            {canAction && (
+              <div className="flex items-center justify-end ml-2 w-20">
+                <>
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleEditAssetMaster(row)
+                    }}
+                    color='transparent'
+                    fullWidth
+                    isborderRadius
+                    size='sm'
+                    title="Edit Asset"
+                    style={{
+                      color: '#0B3251',
+                      padding: '0px 8px'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleConfirmationDialogBoxOpen(row)
+                    }}
+                    color='transparent'
+                    fullWidth
+                    isborderRadius
+                    size='sm'
+                    style={{
+                      color: 'red',
+                      padding: '0px 8px'
+                    }}
+                    title="Delete Asset"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+              </div>
+            )}
           </div>
         )
       },
@@ -364,11 +435,10 @@ export const AssetMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value) => (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            value === 'Active' ? 'bg-green-100 text-green-800' : 
-            value === 'Inactive' ? 'bg-red-100 text-red-800' : 
-            'bg-gray-100 text-gray-800'
-          }`}>
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${value === 'Active' ? 'bg-green-100 text-green-800' :
+              value === 'Inactive' ? 'bg-red-100 text-red-800' :
+                'bg-gray-100 text-gray-800'
+            }`}>
             {value || 'N/A'}
           </span>
         )
@@ -578,11 +648,10 @@ export const AssetMaster: React.FC = () => {
             <div className="flex justify-between items-center py-2 border-b border-gray-200">
               <span className="text-sm font-medium text-gray-700">Status</span>
               <span className="text-sm text-blue-600 font-medium">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  data.Status === 'Active' ? 'bg-green-100 text-green-800' : 
-                  data.Status === 'Inactive' ? 'bg-red-100 text-red-800' : 
-                  'bg-gray-100 text-gray-800'
-                }`}>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${data.Status === 'Active' ? 'bg-green-100 text-green-800' :
+                    data.Status === 'Inactive' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                  }`}>
                   {data.Status || 'N/A'}
                 </span>
               </span>
@@ -628,12 +697,10 @@ export const AssetMaster: React.FC = () => {
             </div>
           </div>
 
-
         </div>
       </Modal>
     )
   }
-
 
   //#endregion
 
@@ -661,6 +728,442 @@ export const AssetMaster: React.FC = () => {
     setTempFilters(newFilters)
   }
   //#endregion
+
+
+  //#region ADD UPDATE EDIT ASSET MASTER
+  const handleAddAssetModal = () => {
+    setEditingAssetMasterData(null);
+    setIsAddUpdateModalOpen(true);
+  };
+
+  interface AddUpdateAssetModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: AddUpdateAssetMasterRequest) => void;
+    data?: AssetMasterData | null;
+    loading?: boolean;
+  }
+
+  const AddUpdateAssetModel: React.FC<AddUpdateAssetModalProps> = ({
+    isOpen,
+    onClose,
+    onSubmit,
+    data,
+    loading = false
+  }) => {
+    const [formData, setFormData] = useState<AddUpdateAssetMasterRequest>({
+      AssetMasterId: 0,
+      Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      AssetCode: "",
+      AssetName: "",
+      AssetType: "",
+      AssetModel: "",
+      AssetBrand: "",
+      SerialNumber: "",
+      PurchaseDate: "",
+      WarrantyExpiryDate: "",
+      AssetCost: 0,
+      SupplierName: ""
+    });
+
+    // Single error object for all fields
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+    useEffect(() => {
+      if (isOpen) {
+        if (data) {
+          // EDIT Asset
+          setFormData({
+            AssetMasterId: data.AssetMasterId ?? 0,
+            Uniquekey: data.Uniquekey ?? "",
+            AssetCode: data.AssetCode ?? "",
+            AssetName: data.AssetName ?? "",
+            AssetType: data.AssetType ?? "",
+            AssetModel: data.AssetModel ?? "",
+            AssetBrand: data.AssetBrand ?? "",
+            SerialNumber: data.SerialNumber ?? "",
+            PurchaseDate: data.PurchaseDate ?? "",
+            WarrantyExpiryDate: data.WarrantyExpiryDate ?? "",
+            AssetCost: data.AssetCost ?? 0,
+            SupplierName: data.SupplierName ?? ""
+          });
+        } else {
+          // ADD Asset
+          setFormData({
+            AssetMasterId: 0,
+            Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            AssetCode: "",
+            AssetName: "",
+            AssetType: "",
+            AssetModel: "",
+            AssetBrand: "",
+            SerialNumber: "",
+            PurchaseDate: "",
+            WarrantyExpiryDate: "",
+            AssetCost: 0,
+            SupplierName: ""
+          });
+        }
+        setErrors({});
+      }
+    }, [isOpen, data]);
+
+    // Handle input change
+    const handleFieldChange = (
+      field: keyof AddUpdateAssetMasterRequest,
+      value: any
+    ) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    };
+
+    // Submit handler
+    const handleSubmitAddUpdateAsset = (e: React.FormEvent) => {
+      e.preventDefault();
+      const requiredFields = [
+        "AssetName",
+        "AssetCode",
+        "AssetType",
+        "AssetModel",
+        "AssetBrand",
+        "SerialNumber",
+        "AssetCost",
+        "SupplierName",
+        "PurchaseDate",
+        "WarrantyExpiryDate"
+      ];
+
+      const newErrors: any = {};
+
+      requiredFields.forEach((field) => {
+        const value = formData[field as keyof AddUpdateAssetMasterRequest];
+        if (value === null || value === undefined || value.toString().trim() === "") {
+          const label = field.replace(/([A-Z])/g, " $1");
+          newErrors[field] = `${label} is required`;
+        }
+      });
+      setErrors(newErrors);
+
+      // STOP submit if any error
+      if (Object.keys(newErrors).length > 0) return;
+
+      onSubmit(formData);
+    };
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        onCancel={onClose}
+        title={formData.AssetMasterId === 0 ? "Add Asset" : "Update Asset"}
+        onSubmit={handleSubmitAddUpdateAsset}
+        saveText={formData.AssetMasterId === 0 ? "Save" : "Update"}
+        cancelText="Cancel"
+        loading={loading}
+      >
+        <div className="space-y-6">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* Asset Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Asset Name <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="text"
+                value={formData.AssetName ?? ""}
+                onChange={(e) => handleFieldChange("AssetName", e.target.value)}
+                className={`w-full p-2 rounded border ${errors.AssetName ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder="Enter asset name"
+              />
+              {errors.AssetName && (
+                <p className="text-red-500 text-xs mt-1">{errors.AssetName}</p>
+              )}
+            </div>
+
+            {/* Asset Code */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Asset Code <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="text"
+                value={formData.AssetCode ?? ""}
+                onChange={(e) => handleFieldChange("AssetCode", e.target.value)}
+                className={`w-full p-2 rounded border ${errors.AssetCode ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder="Enter asset code"
+              />
+              {errors.AssetCode && (
+                <p className="text-red-500 text-xs mt-1">{errors.AssetCode}</p>
+              )}
+            </div>
+          </div>
+
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Asset Type */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Asset Type  <span className="text-red-500">*</span></label>
+              <Input
+                value={formData.AssetType ?? ""}
+                onChange={(e) => handleFieldChange("AssetType", e.target.value)}
+                className={`w-full p-2 rounded border ${errors.AssetType ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder="Enter asset type"
+              />
+              {errors.AssetType && (
+                <p className="text-red-500 text-xs mt-1">{errors.AssetType}</p>
+              )}
+            </div>
+
+            {/* Asset Model */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Asset Model <span className="text-red-500">*</span></label>
+              <Input
+                value={formData.AssetModel ?? ""}
+                onChange={(e) => handleFieldChange("AssetModel", e.target.value)}
+                className={`w-full p-2 rounded border ${errors.AssetModel ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder="Enter asset model"
+              />
+              {errors.AssetModel && (
+                <p className="text-red-500 text-xs mt-1">{errors.AssetModel}</p>
+              )}
+            </div>
+          </div>
+
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* Asset Brand */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Asset Brand <span className="text-red-500">*</span></label>
+              <Input
+                value={formData.AssetBrand ?? ""}
+                onChange={(e) => handleFieldChange("AssetBrand", e.target.value)}
+                className={`w-full p-2 rounded border ${errors.AssetBrand ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder="Enter asset brand"
+              />
+              {errors.AssetBrand && (
+                <p className="text-red-500 text-xs mt-1">{errors.AssetBrand}</p>
+              )}
+            </div>
+
+            {/* Serial Number */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Serial Number <span className="text-red-500">*</span></label>
+              <Input
+                value={formData.SerialNumber ?? ""}
+                onChange={(e) => handleFieldChange("SerialNumber", e.target.value)}
+                className={`w-full p-2 rounded border ${errors.SerialNumber ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder="Enter serial number"
+              />
+              {errors.SerialNumber && (
+                <p className="text-red-500 text-xs mt-1">{errors.SerialNumber}</p>
+              )}
+            </div>
+          </div>
+
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* Asset Cost */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Asset Cost <span className="text-red-500">*</span></label>
+              <Input
+                type="number"
+                value={formData.AssetCost as any}
+                onChange={(e) => handleFieldChange("AssetCost", e.target.value)}
+                className={`w-full p-2 rounded border ${errors.AssetCost ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder="Enter asset cost"
+              />
+              {errors.AssetCost && (
+                <p className="text-red-500 text-xs mt-1">{errors.AssetCost}</p>
+              )}
+            </div>
+
+            {/* Supplier Name */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Supplier Name <span className="text-red-500">*</span></label>
+              <Input
+                value={formData.SupplierName ?? ""}
+                onChange={(e) => handleFieldChange("SupplierName", e.target.value)}
+                className={`w-full p-2 rounded border ${errors.SupplierName ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder="Enter supplier name"
+              />
+              {errors.SupplierName && (
+                <p className="text-red-500 text-xs mt-1">{errors.SupplierName}</p>
+              )}
+            </div>
+          </div>
+
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* Purchase Date */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Purchase Date <span className="text-red-500">*</span></label>
+              <Input
+                type="date"
+                value={formData.PurchaseDate?.substring(0, 10)}
+                onChange={(e) => handleFieldChange("PurchaseDate", e.target.value)}
+                className={`w-full p-2 rounded border ${errors.PurchaseDate ? "border-red-500" : "border-gray-300"
+                  }`}
+              />
+              {errors.PurchaseDate && (
+                <p className="text-red-500 text-xs mt-1">{errors.PurchaseDate}</p>
+              )}
+            </div>
+
+            {/* Warranty Expiry Date */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Warranty Date <span className="text-red-500">*</span></label>
+              <Input
+                type="date"
+                value={formData.WarrantyExpiryDate?.substring(0, 10)}
+                onChange={(e) =>
+                  handleFieldChange("WarrantyExpiryDate", e.target.value)
+                }
+                className={`w-full p-2 rounded border ${errors.WarrantyExpiryDate ? "border-red-500" : "border-gray-300"
+                  }`}
+              />
+              {errors.WarrantyExpiryDate && (
+                <p className="text-red-500 text-xs mt-1">{errors.WarrantyExpiryDate}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </Modal>
+    );
+  };
+
+  const handleAddUpdateAssetMaster = async (formData: AddUpdateAssetMasterRequest) => {
+
+    setIsAddUpdateModalOpen(false);
+
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+
+        const response = await assetMasterService.apiCallAddUpdateAssetMaster(formData);
+
+        if (E.isRight(response)) {
+
+          setIsAddUpdateModalOpen(false);
+
+          const isAdd = formData.AssetMasterId === 0
+
+          if (isAdd) {
+
+            const newRecord = response.right.Data[0] as AssetMasterData
+
+            setAssetMasterList(prevData => [newRecord, ...prevData]);
+
+            setPagination({
+              currentPage: pagination.currentPage,
+              totalRecords: pagination.totalRecords + 1,
+              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
+            });
+
+
+            addToast({ type: 'success', title: 'Asset added successfully' })
+          } else {
+
+            const updatedRecord = response.right.Data[0] as AssetMasterData;
+
+            setAssetMasterList(prevData =>
+              prevData.map(item =>
+                item.AssetMasterId === formData.AssetMasterId
+                  ? updatedRecord
+                  : item
+              )
+            )
+
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+          }
+
+          setIsAddUpdateModalOpen(false);
+
+          setEditingAssetMasterData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+        }
+
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Operation failed' })
+      },
+      undefined,
+      formData.AssetMasterId === 0 ? 'Add Asset' : 'Update Asset...'
+    )
+  }
+
+  //#region DELETE Asset MASTER
+  const handleDeleteAssetMaster = async () => {
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteAssetMasterDetailsData) return
+
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+
+      async () => {
+
+        const params: DeleteAssetMasterRequest = {
+          AssetMasterId: deleteAssetMasterDetailsData.AssetMasterId ?? 0,
+          UniqueKey: deleteAssetMasterDetailsData.Uniquekey ?? ""
+        }
+        const response = await assetMasterService.apiCallDeleteAssetMaster(params);
+
+        if (E.isRight(response)) {
+          setAssetMasterList(prevData => prevData.filter(item => item.AssetMasterId !== deleteAssetMasterDetailsData.AssetMasterId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+
+          addToast({ type: "success", title: response.right.SuccessMessage[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+          setDeleteAssetMasterDetailsData(null);
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+        }
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message })
+      },
+      undefined,
+      'Delete Asset master data...'
+    )
+  }
 
   //#endregion
   return (
@@ -695,7 +1198,9 @@ export const AssetMaster: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeAssetMasterColumnsModal(true)}
-          isShowAddButton={false}
+          isShowAddButton={canAction}
+          addTitle="Add Asset Master"
+          onAdd={handleAddAssetModal}
           isShowImportButton={false}
           isShowExportButton={canExport}
           onExportExcel={handleExportAssetExcel}
@@ -727,6 +1232,18 @@ export const AssetMaster: React.FC = () => {
           data={viewAssetMasterDetailsData}
         />
 
+
+        {/*  ADD EDIT UPDATE TNC MODAL */}
+        <AddUpdateAssetModel
+          isOpen={isAddUpdateModalOpen}
+          onClose={() => {
+            setIsAddUpdateModalOpen(false)
+            setEditingAssetMasterData(null)
+          }}
+          onSubmit={handleAddUpdateAssetMaster}
+          data={editingAssetMasterData}
+          loading={isLoading}
+        />
         {/* CUSTOMIZE COLUMNS MODAL */}
 
 
@@ -774,7 +1291,7 @@ export const AssetMaster: React.FC = () => {
                 </label>
                 <Input
                   type="text"
-                  value={tempFilters.AssetName || ''}
+                  value={tempFilters?.AssetName ?? ''}
                   onChange={(e) => handleFilterChange('AssetName', e.target.value)}
                   placeholder="Enter asset name"
                 />
@@ -794,12 +1311,24 @@ export const AssetMaster: React.FC = () => {
           </div>
         </Modal>
 
+        {/* DELETE CONFIRMATION ASSET MODAL */}
+        <ConfirmationDialogBox
+          isOpen={isConfirmationDialogBoxOpen}
+          onClose={() => {
+            setIsConfirmationDialogBoxOpen(false)
+            setDeleteAssetMasterDetailsData(null)
+          }}
+          onConfirm={handleDeleteAssetMaster}
+          title="You are about to delete a asset?"
+          message="Deleting this Asset Data will permanently remove its contents."
+          confirmText="Delete"
+          cancelText="Cancel"
+          loading={isLoading}
+          variant="danger"
+        />
       </div>
     </>
+  );
+};
 
-  )
-}
-
-export default AssetMaster
-
-
+export default AssetMaster;

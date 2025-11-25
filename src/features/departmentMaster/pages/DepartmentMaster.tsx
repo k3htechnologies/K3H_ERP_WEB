@@ -722,7 +722,6 @@ export const DepartmentMaster: React.FC = () => {
               )}
             </div>
 
-
           </div>
         </div>
       </Modal>

@@ -3,7 +3,7 @@ import { DataTable } from "@/ui/components/DataTable/DataTable";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { ToastContainer } from "@/ui/components/Toast";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import type { AddUpdateMaterialMasterRequest, FilterWithPaginationMaterialMaster, MaterialMasterData } from "../models/MaterialMasterModel";
 import { MaterialMasterService } from "../services/MaterialMasterService";
 import * as E from 'fp-ts/Either';
@@ -48,6 +48,7 @@ export const MaterialMaster: React.FC = () => {
 
         if (E.isRight(apiResponse)) {
             setMaterialList(apiResponse.right.Data)
+
         } else {
             addToast({ type: 'error', title: "Error Fetching material list" })
         }
@@ -70,7 +71,7 @@ export const MaterialMaster: React.FC = () => {
             MaterialName: "",
             MaterialCode: '',
             MaterialMasterId: 0,
-            Uniquekey: ""
+            Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
         }
     )
 
@@ -90,20 +91,24 @@ export const MaterialMaster: React.FC = () => {
             })
             return;
         }
-        
+
         setIsLoading(true)
         apiCallToAddUpdateMaterial(formData)
 
     }
 
-    const apiCallToAddUpdateMaterial =  async (formData : AddUpdateMaterialMasterRequest) => {
-        try{
-            const apiResponse = await MaterialMasterService.apiCallToAddUpdateMaterialMaster(formData)
+    const apiCallToAddUpdateMaterial = async (formData: AddUpdateMaterialMasterRequest) => {
+
+        const apiResponse = await MaterialMasterService.apiCallToAddUpdateMaterialMaster(formData)
+        if (E.isRight(apiResponse)) {
             setMaterialList([])
             setDialogToAddEdit(false)
             loadMaterials()
-        } catch(error : any){
-            addToast({ type: 'error', title: "Error Adding or Updating material" })
+            setIsLoading(false)
+
+            addToast({ type: 'success', title:  apiResponse.right.SuccessMessage[0] })
+        } else {
+            addToast({ type: 'success', title: apiResponse.left.message })
         }
     }
 
@@ -114,8 +119,11 @@ export const MaterialMaster: React.FC = () => {
         }))
     }
 
+    const viewMaterialDetailsPopUp = useCallback( (material : MaterialMasterData)  => {
 
-    return <>
+    },[])
+
+    return isLoading ? <><h1>Loading</h1></> : <>
         <div>
             <ToastContainer toasts={toasts} onRemoveToast={removeToast}></ToastContainer>
             <TableActionToolbar
@@ -136,13 +144,19 @@ export const MaterialMaster: React.FC = () => {
                 {
                     key: 'MaterialName',
                     label: "Material Name",
-                    render: (value) => (
-                        <TooltipText
-                            text={value || '-'}
-                            maxWidth="180px"
-                            tooltipThreshold={18}
-                        />
-                    )
+                    // render: (value) => (
+                    //     <TooltipText
+                    //         text={value || '-'}
+                    //         maxWidth="180px"
+                    //         tooltipThreshold={18}
+                    //     />
+                    // )
+                    render(value, row) {
+                        return <TooltipText text={value} maxWidth="180px" 
+                        tooltipThreshold={18}
+                        onClick={() => viewMaterialDetailsPopUp(row)}
+                        ></TooltipText>
+                    },
                 },
 
                 {
@@ -171,8 +185,8 @@ export const MaterialMaster: React.FC = () => {
                         onChange={(e) => handleFieldChange('MaterialName', e.target.value)}
                     ></Input></div>
                     <div>  <Input label="Material Code" required
-                        value={formData.MaterialCode} 
-                        onChange={(e) => handleFieldChange("MaterialCode",e.target.value)}
+                        value={formData.MaterialCode}
+                        onChange={(e) => handleFieldChange("MaterialCode", e.target.value)}
                     ></Input></div>
                 </div>
 

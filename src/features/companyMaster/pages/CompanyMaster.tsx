@@ -46,7 +46,7 @@ export const CompanyMaster: React.FC = () => {
 
   //TABLE SORT INFO
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-
+  
   // TOAST
   const { toasts, removeToast, addToast } = useToast()
 
@@ -370,7 +370,7 @@ export const CompanyMaster: React.FC = () => {
         render: (value) => value || '-'
       },
       {
-        key: 'LandLineNumber',
+        key: 'LandLineNumbereee',
         label: 'Land Line Number',
         width: '15',
         sortable: false,
@@ -566,7 +566,6 @@ export const CompanyMaster: React.FC = () => {
             </h4>
 
             <div className="space-y-3">
-
               <FieldItem label="Company Name" value={data.CompanyName} isRow />
               <FieldItem label="Company Type" value={data.CompanyType} isRow />
               <FieldItem label="Contact Person" value={data.ContactPerson} isRow />

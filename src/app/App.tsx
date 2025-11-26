@@ -33,6 +33,7 @@ import AddCompany from '@/features/companyMaster/pages/AddCompany';
 import { CountryStateCityDistrictVillage } from '@/core/hooks/useCountryStateCityDistrictVillage';
 import ProjectMaster from '@/features/projectMaster/pages/ProjectMaster';
 import AddUpdateEmployeeMaster from '@/features/employeeMaster/pages/AddUpdateEmployeeMaster';
+import { MaterialMaster } from '@/features/materialMaster/pages/MaterialMaster';
 import ViewEmployeeMaster from '@/features/employeeMaster/pages/ViewEmployeeMaster';
 
 // Loading component for Suspense fallback
@@ -121,6 +122,7 @@ function App() {
             <Route path="vendor" element={<Vendor />} />
             <Route path="projectMaster" element={<ProjectMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
+            <Route path="materialMaster" element={<MaterialMaster/>} />
 
 
           </Route>

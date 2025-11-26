@@ -631,7 +631,7 @@ export const DepartmentMaster: React.FC = () => {
         loading={loading}
         size='small-half'
       >
-        <div className="space-y-6 p-6 bg-blue-100">
+        <div className="space-y-10 p-6 bg-blue-100">
           <div className="space-y-4" >
             <div>
 

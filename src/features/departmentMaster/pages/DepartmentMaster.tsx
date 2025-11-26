@@ -238,8 +238,6 @@ export const DepartmentMaster: React.FC = () => {
   const handleExportDepartmentExcel = () => handleExportDepartments('Excel')
   const handleExportDepartmentPdf = () => handleExportDepartments('PDF')
 
-  //END EXPORT EXCEL | PDF
-
   //#endregion
 
   //#region API | SERVICES CALL TO GET DEPARTMENT 
@@ -248,9 +246,6 @@ export const DepartmentMaster: React.FC = () => {
 
     return await departmentMasterService.apiCallPullDepartmentMaster(filterParams);
   }
-
-  //END API | SERVICES CALL TO GET DEPARTMENT
-
   //#endregion
 
   //#region TABLE CONFIGURATION

@@ -1,4 +1,3 @@
-// ProfilePage.tsx
 import React, { useEffect, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
 import type { EmployeeMasterData } from '../models/EmployeeMasterModel';

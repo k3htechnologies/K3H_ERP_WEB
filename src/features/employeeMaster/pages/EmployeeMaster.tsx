@@ -126,6 +126,9 @@ export const EmployeeMaster: React.FC = () => {
     );
   };
 
+  //#endregion
+
+  //#region SEARCH EMPLOYEE FILTER
   const searchEmployees = async (searchValue: string) => {
     setSearchTerm(searchValue);
 
@@ -146,7 +149,9 @@ export const EmployeeMaster: React.FC = () => {
     debouncedSearch.cancel?.();
     fetchEmployeeList();
   };
+  //#endregion
 
+  //#region  EXCEL EXPORT TO EXCEL | PDF
   const handleExportEmployees = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -192,7 +197,8 @@ export const EmployeeMaster: React.FC = () => {
   const handleExportEmployeeExcel = () => handleExportEmployees('Excel');
   const handleExportEmployeePdf = () => handleExportEmployees('PDF');
 
-
+  //#endregion
+  //#region PULL EMPLOYEE MASTER
   const getEmployees = async (filterParams: FilterWithPaginationEmployeeMasterRequest) => {
     return await employeeMasterService.apiCallPullEmployeeMaster(filterParams);
   };
@@ -559,8 +565,6 @@ export const EmployeeMaster: React.FC = () => {
 
   const handleExcelImportEmployeeMaster = () => excelImportEmployeeMaster()
   const handleDownloadExcelSampleEmployeeMaster = () => downloadExcelSampleEmployeeMaster()
-
-
 
   //#endregion
 

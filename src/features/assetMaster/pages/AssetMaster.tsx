@@ -28,6 +28,7 @@ import { Edit, Trash2 } from 'lucide-react';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { filterNumbers } from '@/core/utils/fileValidation';
 
 
 export const AssetMaster: React.FC = () => {
@@ -65,8 +66,24 @@ export const AssetMaster: React.FC = () => {
   const [isShowCustomizeAssetMasterColumnsModal, setIsShowCustomizeAssetMasterColumnsModal] = useState(false);
 
   // EDIT ASSET MASTER
-  const [editingAssetMasterData, setEditingAssetMasterData] = useState<AssetMasterData | null>(null)
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+  const [editingAssetMasterData, setEditingAssetMasterData] = useState<AssetMasterData | null>(null)
+
+  const [assetMasterFormData, setAssetMasterFormData] = useState<AddUpdateAssetMasterRequest>({
+    AssetMasterId: 0,
+    Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+    AssetCode: '',
+    AssetName: '',
+    AssetType: '',
+    AssetModel: '',
+    AssetBrand: '',
+    SerialNumber: '',
+    PurchaseDate: '',
+    WarrantyExpiryDate: '',
+    AssetCost: 0,
+    SupplierName: ''
+  });
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   //DELETE ASSET MASTER STATES
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
@@ -186,7 +203,7 @@ export const AssetMaster: React.FC = () => {
     debouncedSearch.cancel?.();
     fetchAssetList();
   }
- 
+
   //#endregion
 
   //#region EXPORT EXCEL | PDF
@@ -276,15 +293,7 @@ export const AssetMaster: React.FC = () => {
     setIsViewModalOpen(true)
   }, [])
 
-  const handleEditAssetMaster = useCallback((row: AssetMasterData) => {
-    setEditingAssetMasterData({
-      ...row,
-
-    })
-    setIsAddUpdateModalOpen(true);
-
-  }, [])
-
+  
   const handleConfirmationDialogBoxOpen = useCallback((row: AssetMasterData) => {
     setDeleteAssetMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
@@ -477,13 +486,13 @@ export const AssetMaster: React.FC = () => {
         <div className="space-y-6">
 
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <FieldItem label="Asset Code" value={data.AssetCode} />
-              <FieldItem label="Asset Name" value={data.AssetName} className='font-medium text-blue-900 ' />
-              <FieldItem label="Asset Type" value={data.AssetType} />
-            </div>
+
+            <FieldItem label="Asset Code" value={data.AssetCode} isRow withBorder={true} />
+            <FieldItem label="Asset Name" value={data.AssetName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Asset Type" value={data.AssetType} isRow withBorder={true} />
+
             <FieldItem label="Asset Brand" value={data.AssetBrand} isRow withBorder={true} />
-            <FieldItem label="Asset Model" value={data.AssetModel} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Asset Model" value={data.AssetModel} isRow withBorder={true} />
             <FieldItem label="Serial Number" value={data.SerialNumber} isRow withBorder={true} />
 
             <FieldItem label="Purchase Date" value={formatDate_dd_MonthName_yy_hh_mm(data.PurchaseDate || '-')} isRow withBorder={true} />
@@ -533,7 +542,7 @@ export const AssetMaster: React.FC = () => {
                     e.preventDefault()
                     e.stopPropagation()
                     setIsViewModalOpen(false)
-                    handleEditAssetMaster(data)
+                    handleEditAssetMasterData(data)
                   }}
                 >
                   <Edit className="h-5 w-5" />
@@ -576,288 +585,150 @@ export const AssetMaster: React.FC = () => {
   //#endregion
 
   //#region ADD UPDATE EDIT ASSET MASTER
-  const handleAddAssetModal = () => {
+  const handleAddAssetMaster = () => {
     setEditingAssetMasterData(null);
-    setIsAddUpdateModalOpen(true);
-  };
-
-  interface AddUpdateAssetModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSubmit: (data: AddUpdateAssetMasterRequest) => void;
-    data?: AssetMasterData | null;
-    loading?: boolean;
-  }
-
-  const AddUpdateAssetModel: React.FC<AddUpdateAssetModalProps> = ({
-    isOpen,
-    onClose,
-    onSubmit,
-    data,
-    loading = false
-  }) => {
-    const [formData, setFormData] = useState<AddUpdateAssetMasterRequest>({
+    setAssetMasterFormData({
       AssetMasterId: 0,
-      Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      AssetCode: "",
-      AssetName: "",
-      AssetType: "",
-      AssetModel: "",
-      AssetBrand: "",
-      SerialNumber: "",
-      PurchaseDate: "",
-      WarrantyExpiryDate: "",
+      Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+      AssetCode: '',
+      AssetName: '',
+      AssetType: '',
+      AssetModel: '',
+      AssetBrand: '',
+      SerialNumber: '',
+      PurchaseDate: '',
+      WarrantyExpiryDate: '',
       AssetCost: 0,
-      SupplierName: ""
+      SupplierName: ''
     });
 
-    // Single error object for all fields
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    setFormErrors({});
+    setIsAddUpdateModalOpen(true);
+  }
 
-    useEffect(() => {
-      if (isOpen) {
+  const handleEditAssetMasterData = (row: AssetMasterData) => {
+    setEditingAssetMasterData(row);
+    setAssetMasterFormData({
+      AssetMasterId: row.AssetMasterId || 0,
+      Uniquekey: row.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+      AssetCode: row.AssetCode || '',
+      AssetName: row.AssetName || '',
+      AssetType: row.AssetType || '',
+      AssetModel: row.AssetModel || '',
+      AssetBrand: row.AssetBrand || '',
+      SerialNumber: row.SerialNumber || '',
+      PurchaseDate: row.PurchaseDate,
+      WarrantyExpiryDate: row.WarrantyExpiryDate,
+      AssetCost: row.AssetCost,
+      SupplierName: row.SupplierName
+    });
+   
+    setFormErrors({});
+    setIsAddUpdateModalOpen(true);
+  }
 
-        if (data) {
 
-          setFormData({
-            AssetMasterId: data.AssetMasterId ?? 0,
-            Uniquekey: data.Uniquekey ?? "",
-            AssetCode: data.AssetCode ?? "",
-            AssetName: data.AssetName ?? "",
-            AssetType: data.AssetType ?? "",
-            AssetModel: data.AssetModel ?? "",
-            AssetBrand: data.AssetBrand ?? "",
-            SerialNumber: data.SerialNumber ?? "",
-            PurchaseDate: data.PurchaseDate ?? "",
-            WarrantyExpiryDate: data.WarrantyExpiryDate ?? "",
-            AssetCost: data.AssetCost ?? 0,
-            SupplierName: data.SupplierName ?? ""
-          });
-        } else {
-          
-          setFormData({
-            AssetMasterId: 0,
-            Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            AssetCode: "",
-            AssetName: "",
-            AssetType: "",
-            AssetModel: "",
-            AssetBrand: "",
-            SerialNumber: "",
-            PurchaseDate: "",
-            WarrantyExpiryDate: "",
-            AssetCost: 0,
-            SupplierName: ""
-          });
-        }
-        setErrors({});
-      }
-    }, [isOpen, data]);
+  const handleFieldChange = (field: keyof AddUpdateAssetMasterRequest, value: string | number | null) => {
+    setAssetMasterFormData(prev => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  }
 
-    // Handle input change
-    const handleFieldChange = (
-      field: keyof AddUpdateAssetMasterRequest,
-      value: any
-    ) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+
+  const validateAssetMasterForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!assetMasterFormData.AssetName?.trim()) {
+      newErrors.AssetName = "Asset name is required.";
+    }
+
+    if (!assetMasterFormData.AssetCode?.trim()) {
+      newErrors.AssetCode = "Asset Code is required.";
+    }
+
+    if (!assetMasterFormData.AssetType?.trim()) {
+      newErrors.AssetType = "Asset Type is required.";
+    }
+
+    if (!assetMasterFormData.AssetModel?.trim()) {
+      newErrors.AssetModel = "Asset Model is required.";
+    }
+
+    if (!assetMasterFormData.AssetBrand?.trim()) {
+      newErrors.AssetBrand = "Asset Brand is required.";
+    }
+
+    if (!assetMasterFormData.SerialNumber?.trim()) {
+      newErrors.SerialNumber = "Serial Number is required.";
+    }
+
+    if (!assetMasterFormData.PurchaseDate) {
+      newErrors.PurchaseDate = "Purchase Date is required.";
+    }
+
+    if (!Number(assetMasterFormData.AssetCost)) {
+      newErrors.AssetCost = "Asset Cost is required.";
+    }
+
+    if (!assetMasterFormData.SupplierName?.trim()) {
+      newErrors.SupplierName = "Supplier Name is required.";
+    }
+
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors,
+    };
+  }
+
+
+  const PushAssetMasterFormData = (): AddUpdateAssetMasterRequest => {
+    return {
+      AssetMasterId: assetMasterFormData.AssetMasterId || 0,
+      Uniquekey: assetMasterFormData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+      AssetCode: assetMasterFormData.AssetCode || '',
+      AssetName: assetMasterFormData.AssetName || '',
+      AssetType: assetMasterFormData.AssetType || '',
+      AssetModel: assetMasterFormData.AssetModel || '',
+      AssetBrand: assetMasterFormData.AssetBrand || '',
+      SerialNumber: assetMasterFormData.SerialNumber || '',
+      PurchaseDate: assetMasterFormData.PurchaseDate,
+      WarrantyExpiryDate: assetMasterFormData.WarrantyExpiryDate,
+      AssetCost: assetMasterFormData.AssetCost,
+      SupplierName: assetMasterFormData.SupplierName
     };
 
-    // Submit handler
-    const handleSubmitAddUpdateAsset = (e: React.FormEvent) => {
-      
-      e.preventDefault();
-      const requiredFields = [
-        "AssetName",
-        "AssetCode",
-        "AssetType",
-        "AssetModel",
-        "AssetBrand",
-        "SerialNumber",
-        "AssetCost",
-        "SupplierName",
-        "PurchaseDate",
-        "WarrantyExpiryDate"
-      ];
-
-      const newErrors: any = {};
-
-      requiredFields.forEach((field) => {
-        const value = formData[field as keyof AddUpdateAssetMasterRequest];
-        if (value === null || value === undefined || value === 0 || value.toString().trim() === "") {
-          const label = field.replace(/([A-Z])/g, " $1");
-          newErrors[field] = `${label} is required`;
-        }
-      });
-      setErrors(newErrors);
-
-
-      if (Object.keys(newErrors).length > 0) return;
-
-      onSubmit(formData);
-    };
-
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        onCancel={onClose}
-        title={formData.AssetMasterId === 0 ? "Add Asset" : "Update Asset"}
-        onSubmit={handleSubmitAddUpdateAsset}
-        saveText={formData.AssetMasterId === 0 ? "Add Asset" : "Update Asset"}
-        cancelText="Cancel"
-        loading={loading}
-        size='half-screen'
-      >
-        <div className="space-y-6 p-6 bg-blue-100">
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Input
-                type="text"
-                required
-                label='Asset Name'
-                value={formData.AssetName ?? ""}
-                onChange={(e) => handleFieldChange("AssetName", e.target.value)}
-                placeholder="Enter Asset Name"
-                error={errors.AssetName}
-              />
-            </div>
-
-            <div>
-              <Input
-                type="text"
-                label='Asset Code'
-                value={formData.AssetCode ?? ""}
-                onChange={(e) => handleFieldChange("AssetCode", e.target.value)}
-                required
-                placeholder="Enter Asset Code"
-                error={errors.AssetCode}
-              />
-
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Input
-                type="text"
-                label='Asset Type'
-                value={formData.AssetType ?? ""}
-                onChange={(e) => handleFieldChange("AssetType", e.target.value)}
-                required
-                placeholder="Enter Asset Type"
-                error={errors.AssetType}
-              />
-            </div>
-
-            <div>
-              <Input
-                type="text"
-                label='Asset Model'
-                value={formData.AssetModel ?? ""}
-                onChange={(e) => handleFieldChange("AssetModel", e.target.value)}
-                required
-                placeholder="Enter Asset Model"
-                error={errors.AssetModel}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Input
-                type="text"
-                label='Asset Brand'
-                value={formData.AssetBrand ?? ""}
-                onChange={(e) => handleFieldChange("AssetBrand", e.target.value)}
-                required
-                placeholder="Enter Asset Brand"
-                error={errors.AssetBrand}
-              />
-            </div>
-
-            <div>
-              <Input
-                type="text"
-                label='Serial Number'
-                value={formData.SerialNumber ?? ""}
-                onChange={(e) => handleFieldChange("SerialNumber", e.target.value)}
-                required
-                placeholder="Enter Serial Number"
-                error={errors.SerialNumber}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Input
-                type="text"
-                label='Asset Cost'
-                value={formData.AssetCost ?? ""}
-                onChange={(e) => handleFieldChange("AssetCost", e.target.value)}
-                required
-                placeholder="Enter Asset Cost"
-                error={errors.AssetCost}
-              />
-            </div>
-            <div>
-              <Input
-                type="text"
-                label='Supplier Name'
-                value={formData.SupplierName ?? ""}
-                onChange={(e) => handleFieldChange("SupplierName", e.target.value)}
-                required
-                placeholder="Enter Supplier Name"
-                error={errors.SupplierName}
-              />
-            </div>
-          </div>
-
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <DatePickerInput
-                label="Purchase Date"
-                value={formatDate_dd_mm_yyyy(formData.PurchaseDate)}
-                onChange={(val) => handleFieldChange('PurchaseDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                required
-                error={errors.PurchaseDate}
-              />
-            </div>
-
-            <div>
-              <DatePickerInput
-                label="DOB"
-                value={formatDate_dd_mm_yyyy(formData.WarrantyExpiryDate)}
-                onChange={(val) => handleFieldChange('WarrantyExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                required
-                error={errors.WarrantyExpiryDate}
-              />
-            </div>
-          </div>
-        </div>
-      </Modal>
-    );
   };
 
-  const handleAddUpdateAssetMaster = async (formData: AddUpdateAssetMasterRequest) => {
 
-    setIsAddUpdateModalOpen(false);
+
+  const handleAddUpdateAssetMaster = async () => {
+
+    setFormErrors({});
+
+    const validation = validateAssetMasterForm();
+
+    if (!validation.isValid) {
+      setFormErrors(validation.errors);
+      return;
+    }
+
 
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
 
-        const response = await assetMasterService.apiCallAddUpdateAssetMaster(formData);
+        const payload = PushAssetMasterFormData();
+
+        const response = await assetMasterService.apiCallAddUpdateAssetMaster(payload);
 
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = formData.AssetMasterId === 0
+          const isAdd = assetMasterFormData.AssetMasterId === 0
 
           if (isAdd) {
 
@@ -879,7 +750,7 @@ export const AssetMaster: React.FC = () => {
 
             setAssetMasterList(prevData =>
               prevData.map(item =>
-                item.AssetMasterId === formData.AssetMasterId
+                item.AssetMasterId === assetMasterFormData.AssetMasterId
                   ? updatedRecord
                   : item
               )
@@ -901,10 +772,11 @@ export const AssetMaster: React.FC = () => {
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Operation failed' })
+        addToast({ type: 'error', title: error.message })
       },
       undefined,
-      formData.AssetMasterId === 0 ? 'Add Asset' : 'Update Asset...'
+
+      assetMasterFormData.AssetMasterId === 0 ? 'Add Asset' : 'Update Asset'
     )
   }
 
@@ -951,7 +823,7 @@ export const AssetMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Asset master data...'
+      'Delete Asset master'
     )
   }
 
@@ -990,7 +862,7 @@ export const AssetMaster: React.FC = () => {
           onCustomize={() => setIsShowCustomizeAssetMasterColumnsModal(true)}
           isShowAddButton={canAction}
           addTitle="Add Asset Master"
-          onAdd={handleAddAssetModal}
+          onAdd={handleAddAssetMaster}
           isShowImportButton={false}
           isShowExportButton={canExport}
           onExportExcel={handleExportAssetExcel}
@@ -1022,18 +894,167 @@ export const AssetMaster: React.FC = () => {
           data={viewAssetMasterDetailsData}
         />
 
-
         {/*  ADD EDIT UPDATE TNC MODAL */}
-        <AddUpdateAssetModel
+        <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
             setIsAddUpdateModalOpen(false)
             setEditingAssetMasterData(null)
+            setFormErrors({})
           }}
-          onSubmit={handleAddUpdateAssetMaster}
-          data={editingAssetMasterData}
+          onCancel={() => {
+            setIsAddUpdateModalOpen(false)
+            setEditingAssetMasterData(null)
+            setFormErrors({})
+          }}
+          title={editingAssetMasterData ? 'Update Asset Master Details' : 'Add Asset Master Details'}
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleAddUpdateAssetMaster()
+          }}
+          saveText="Save"
+          cancelText="Cancel"
           loading={isLoading}
-        />
+          size="large75"
+        >
+          <div className="space-y-6 p-6 bg-blue-50">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Name'
+                  value={assetMasterFormData.AssetName ?? ""}
+                  onChange={(e) => handleFieldChange("AssetName", e.target.value)}
+                  placeholder="Enter Asset Name"
+                  maxLength={250}
+                  error={formErrors.AssetName}
+                />
+              </div>
+
+              <div>
+                <Input
+                  type="text"
+                  label='Asset Code'
+                  value={assetMasterFormData.AssetCode ?? ""}
+                  onChange={(e) => handleFieldChange("AssetCode", e.target.value)}
+                  required
+                  maxLength={20}
+                  placeholder="Enter Asset Code"
+                  error={formErrors.AssetCode}
+                />
+
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Input
+                  type="text"
+                  label='Asset Type'
+                  value={assetMasterFormData.AssetType ?? ""}
+                  onChange={(e) => handleFieldChange("AssetType", e.target.value)}
+                  required
+                  placeholder="Enter Asset Type"
+                  maxLength={250}
+                  error={formErrors.AssetType}
+                />
+              </div>
+
+              <div>
+                <Input
+                  type="text"
+                  label='Asset Model'
+                  value={assetMasterFormData.AssetModel ?? ""}
+                  onChange={(e) => handleFieldChange("AssetModel", e.target.value)}
+                  required
+                  placeholder="Enter Asset Model"
+                  maxLength={250}
+                  error={formErrors.AssetModel}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Input
+                  type="text"
+                  label='Asset Brand'
+                  value={assetMasterFormData.AssetBrand ?? ""}
+                  onChange={(e) => handleFieldChange("AssetBrand", e.target.value)}
+                  required
+                  placeholder="Enter Asset Brand"
+                  maxLength={100}
+                  error={formErrors.AssetBrand}
+                />
+              </div>
+
+              <div>
+                <Input
+                  type="text"
+                  label='Serial Number'
+                  value={assetMasterFormData.SerialNumber ?? ""}
+                  onChange={(e) => handleFieldChange("SerialNumber", e.target.value)}
+                  required
+                  placeholder="Enter Serial Number"
+                  maxLength={50}
+                  error={formErrors.SerialNumber}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Input
+                  type="text"
+                  label='Asset Cost'
+                  value={assetMasterFormData.AssetCost ?? ""}
+                  onChange={(e) => handleFieldChange("AssetCost", filterNumbers(e.target.value))}
+                  required
+                  placeholder="Enter Asset Cost"
+                  error={formErrors.AssetCost}
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  label='Supplier Name'
+                  value={assetMasterFormData.SupplierName ?? ""}
+                  onChange={(e) => handleFieldChange("SupplierName", e.target.value)}
+                  required
+                  placeholder="Enter Supplier Name"
+                  maxLength={250}
+                  error={formErrors.SupplierName}
+                />
+              </div>
+            </div>
+
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <DatePickerInput
+                  label="Purchase Date"
+                  value={formatDate_dd_mm_yyyy(assetMasterFormData.PurchaseDate)}
+                  onChange={(val) => handleFieldChange('PurchaseDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={formErrors.PurchaseDate}
+                />
+              </div>
+
+              <div>
+                <DatePickerInput
+                  label="DOB"
+                  value={formatDate_dd_mm_yyyy(assetMasterFormData.WarrantyExpiryDate)}
+                  onChange={(val) => handleFieldChange('WarrantyExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={formErrors.WarrantyExpiryDate}
+                />
+              </div>
+            </div>
+          </div>
+        </Modal>
+
         {/* CUSTOMIZE COLUMNS MODAL */}
 
 
@@ -1069,7 +1090,9 @@ export const AssetMaster: React.FC = () => {
             applyFilters()
           }}
           saveText="Apply Filter"
+          cancelText="Clear Filter"
           onCancel={() => clearFilters()}
+          resetText=''
           size="small-half"
         >
           <div className="space-y-6">

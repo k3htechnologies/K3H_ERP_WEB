@@ -75,6 +75,7 @@ export const ProjectMaster: React.FC = () => {
   //ADD/EDIT MODAL STATES
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [editingProjectData, setEditingProjectData] = useState<ProjectMasterData | null>(null);
+
   const [projectFormData, setProjectFormData] = useState<AddUpdateProjectMasterRequest>({
     ProjectId: 0,
     Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
@@ -806,7 +807,9 @@ export const ProjectMaster: React.FC = () => {
 
   const handleAddUpdateProjectMaster = async () => {
     setFormErrors({});
+
     const validation = validateProjectForm();
+
     if (!validation.isValid) {
       setFormErrors(validation.errors);
       return;
@@ -821,11 +824,14 @@ export const ProjectMaster: React.FC = () => {
 
         if (E.isRight(response)) {
           const isAdd = projectFormData.ProjectId === 0;
+          
           addToast({
             type: 'success',
             title: isAdd ? 'Project added successfully' : response.right.SuccessMessage?.[0] || 'Project updated successfully'
           });
+
           setIsAddEditModalOpen(false);
+          
           setEditingProjectData(null);
           await loadProjects(pagination.currentPage, filters);
         } else {

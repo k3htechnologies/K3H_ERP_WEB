@@ -280,7 +280,7 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
                       cursor: 'pointer',
                       fontSize: theme.fontSize.sm,
                       backgroundColor: selected
-                        ? theme.colors.primary
+                        ? theme.colors.primary1
                         : 'transparent',
                       color: selected ? '#fff' : theme.colors.text,
                     }}

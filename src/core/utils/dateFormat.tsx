@@ -130,3 +130,9 @@ export const convert_dd_mm_yyyy_To_Yyyy_mm_dd = (
   return `${yyyy}-${mm}-${dd}`;
 };
 
+
+export const convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd = (date?: string | null) => {
+  if (!date) return "";
+  return date.split("T")[0];
+};
+

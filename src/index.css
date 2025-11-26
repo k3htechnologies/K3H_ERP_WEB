@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   background-color: #f1f1f1 !important;
 }
@@ -8,7 +10,7 @@ html, body, #root {
 
 body {
   font-family: 'Montserrat', system-ui, sans-serif;
-    margin: 0;
+  margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -16,33 +18,36 @@ body {
 
 /* Apply to any scrollable div */
 .thin-scroll {
-    overflow: auto;
-    position: relative;
+  overflow: auto;
+  position: relative;
 }
 
 /* Hide scrollbar by default (thin + invisible) */
 .thin-scroll::-webkit-scrollbar {
-    width: 2px;          /* ultra thin */
-    height: 4px;
-    background: transparent;
+  width: 2px;
+  /* ultra thin */
+  height: 4px;
+  background: transparent;
 }
 
 /* Scrollbar track (appears only when scrolling/hover) */
 .thin-scroll:hover::-webkit-scrollbar-track,
 .thin-scroll:active::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);  /* very light grey */
+  background: rgba(0, 0, 0, 0.05);
+  /* very light grey */
 }
 
 /* Scrollbar thumb (light color + thin) */
 .thin-scroll:hover::-webkit-scrollbar-thumb,
 .thin-scroll:active::-webkit-scrollbar-thumb {
-    background: rgba(120, 120, 120, 0.4);  /* light grey */
-    border-radius: 10px;
+  background: rgba(120, 120, 120, 0.4);
+  /* light grey */
+  border-radius: 10px;
 }
 
 /* When NOT scrolling/hover → fully hidden */
 .thin-scroll::-webkit-scrollbar-thumb {
-    background: transparent;
+  background: transparent;
 }
 
 
@@ -50,5 +55,3 @@ body {
 .ql-toolbar.ql-snow:nth-of-type(1) {
   display: none !important;
 }
-
-

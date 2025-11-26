@@ -1,9 +1,19 @@
-import React, { useState, useEffect, useRef, useCallback, forwardRef } from 'react'
-import { THEME } from '@/core/constants/theme'
-import { Search, X } from 'lucide-react'
-import type { SingleSelectWithPaginationProps } from '@/core/types/dropDownSelectionType'
+// SingleSelectDropdownWithPagination.tsx
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  forwardRef,
+} from "react";
+import { THEME } from "@/core/constants/theme";
+import { Search, X } from "lucide-react";
+import type { SingleSelectWithPaginationProps } from "@/core/types/dropDownSelectionType";
 
-export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, SingleSelectWithPaginationProps>(
+export const SingleSelectDropdownWithPagination = forwardRef<
+  HTMLDivElement,
+  SingleSelectWithPaginationProps
+>(
   (
     {
       dataFetchCallBack,
@@ -17,410 +27,483 @@ export const SingleSelectDropdownWithPagination = forwardRef<HTMLDivElement, Sin
       required = false,
       error: externalError,
       hasSubmitted = false,
-      className = '',
+      className = "",
       style,
-      size = 'md',
+      size = "md",
     },
     ref
   ) => {
-    const theme = THEME
+    const theme = THEME;
 
-    const scrollRef = useRef<HTMLDivElement>(null)
-    const [options, setOptions] = useState(dataList)
-    const [selectedItem, setSelectedItem] = useState(initialValue || null)
-    const [searchText, setSearchText] = useState('')
-    const [, setPage] = useState(1)
-    const [totalRecords, setTotalRecords] = useState(0)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | undefined>(undefined)
-    const [isOpen, setIsOpen] = useState(false)
-    const isFetchingRef = useRef(false)
-    const pageRef = useRef(1)
-    const prevInitialValueRef = useRef<{ label: string; value: string | number } | null | undefined>(initialValue)
-    const userSelectedRef = useRef(false) // Track if user has made a selection
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+
+    const [options, setOptions] = useState(dataList);
+    const [selectedItem, setSelectedItem] = useState(initialValue || null);
+    const [searchText, setSearchText] = useState("");
+    const [, setPage] = useState(1);
+    const [totalRecords, setTotalRecords] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | undefined>(undefined);
+    const [isOpen, setIsOpen] = useState(false);
+
+    const isFetchingRef = useRef(false);
+    const pageRef = useRef(1);
+    const prevInitialValueRef = useRef<{ label: string; value: string | number } | null | undefined>(initialValue);
+    const userSelectedRef = useRef(false); // Track if user made a selection
 
     const SIZE_MAP = {
-      sm: { fontSize: 12, padding: 6, dropdownHeight: 150},
-      md: { fontSize: 14, padding: 8, dropdownHeight: 200},
-      lg: { fontSize: 16, padding: 8, dropdownHeight: 250},
-    }
+      sm: { fontSize: 12, padding: 6, dropdownHeight: 150 },
+      md: { fontSize: 14, padding: 6, dropdownHeight: 200 },
+      lg: { fontSize: 16, padding: 6, dropdownHeight: 250 },
+    };
 
-    const sizeStyles = SIZE_MAP[size as keyof typeof SIZE_MAP]
+    const sizeStyles = SIZE_MAP[size as keyof typeof SIZE_MAP];
 
-const fetchData = useCallback(
-  async (reset?: boolean, search?: string) => {
-    if (isFetchingRef.current) return;
-    isFetchingRef.current = true;
-    setLoading(true);
+    const fetchData = useCallback(
+      async (reset?: boolean, search?: string) => {
+        if (isFetchingRef.current) return;
+        isFetchingRef.current = true;
+        setLoading(true);
 
-    // ✅ Case 1: No dataFetchCallBack provided → exit without fetching
-    if (typeof dataFetchCallBack !== "function") {
-      setLoading(false);
-      isFetchingRef.current = false;
-      return;
-    }
+        if (typeof dataFetchCallBack !== "function") {
+          setLoading(false);
+          isFetchingRef.current = false;
+          return;
+        }
 
-    try {
-      const currentPage = reset ? 1 : pageRef.current;
-      const searchValue = search ?? searchText;
+        try {
+          const currentPage = reset ? 1 : pageRef.current;
+          const searchValue = search ?? searchText;
 
-      const result = await dataFetchCallBack(currentPage, { value: searchValue });
+          const result = await dataFetchCallBack(currentPage, { value: searchValue });
 
-      setOptions(prev =>
-        reset ? result.itemList : [...prev, ...result.itemList]
-      );
+          setOptions(prev => (reset ? result.itemList : [...prev, ...result.itemList]));
+          setTotalRecords(result.totalNumberOfRecord ?? 0);
 
-      setTotalRecords(result.totalNumberOfRecord);
-      pageRef.current = currentPage + 1;
-    } finally {
-      setLoading(false);
-      isFetchingRef.current = false;
-    }
-  },
-  [dataFetchCallBack, searchText]
-);
+          pageRef.current = currentPage + 1;
+          setPage(pageRef.current);
+        } finally {
+          setLoading(false);
+          isFetchingRef.current = false;
+        }
+      },
+      [dataFetchCallBack, searchText]
+    );
 
-
+    // initial load once (keeps behavior similar to your version)
     useEffect(() => {
-      fetchData(true)
-    }, [fetchData])
+      fetchData(true);
+    }, [fetchData]);
 
-
-
+    // infinite scroll handler
     const handleScroll = useCallback(() => {
-      const el = scrollRef.current
-      if (!el || loading) return
+      const el = scrollRef.current;
+      if (!el || loading) return;
 
-      const nearBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 10
+      const nearBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 10;
       if (nearBottom && options.length < totalRecords) {
-        fetchData(false)
+        fetchData(false);
       }
-    }, [loading, options.length, totalRecords, fetchData])
+    }, [loading, options.length, totalRecords, fetchData]);
 
     useEffect(() => {
-      if (!isOpen) return
-      const el = scrollRef.current
-      if (el) el.addEventListener('scroll', handleScroll)
+      if (!isOpen) return;
+      const el = scrollRef.current;
+      if (el) el.addEventListener("scroll", handleScroll);
       return () => {
-        if (el) el.removeEventListener('scroll', handleScroll)
-      }
-    }, [isOpen, handleScroll])
+        if (el) el.removeEventListener("scroll", handleScroll);
+      };
+    }, [isOpen, handleScroll]);
 
+    // select item
     const handleSelect = (item: { label: string; value: string | number }) => {
-      // Create a new object to ensure React detects the state change
-      const selectedItemObj = { label: item.label, value: item.value }
-      setSelectedItem(selectedItemObj)
-      // Mark that user has made a selection and update refs
-      userSelectedRef.current = true
-      prevInitialValueRef.current = selectedItemObj
-      onSelected(selectedItemObj)
-      setIsOpen(false)
-      // Clear search when item is selected
-      setSearchText('')
-      // Validate when a selection is made
+      const selectedItemObj = { label: item.label, value: item.value };
+      setSelectedItem(selectedItemObj);
+      userSelectedRef.current = true;
+      prevInitialValueRef.current = selectedItemObj;
+      onSelected?.(selectedItemObj);
+      setIsOpen(false);
+      setSearchText("");
       if (validator) {
-        const validationError = validator(item.value)
-        setError(validationError)
+        setError(validator(item.value));
       } else if (required && !item.value) {
-        setError(`${label || 'This field'} is required`)
+        setError(`${label || "This field"} is required`);
       } else {
-        // Clear error if valid selection is made
-        setError(undefined)
+        setError(undefined);
       }
-    }
+    };
 
+    // search handlers (sticky search)
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value
-      setSearchText(value)
-      setPage(1)
-      fetchData(true, value)
-    }
+      const value = e.target.value;
+      setSearchText(value);
+      setPage(1);
+      // reset page and fetch new results, then scroll smoothly to top
+      fetchData(true, value).then(() => {
+        if (scrollRef.current) {
+          // smooth scroll to top of options container
+          try {
+            scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+          } catch {
+            scrollRef.current.scrollTop = 0;
+          }
+        }
+      });
+    };
 
     const clearSearch = () => {
-      setSearchText('')
-      setPage(1)
-      fetchData(true, '')
-    }
-
-    // Sync initialValue prop changes with selectedItem state
-    // This allows the dropdown to update when initialValue changes (e.g., when form data loads)
-    // But don't override user selections unless the value actually changes from parent
-    useEffect(() => {
-      // If user has made a selection, only update if parent explicitly changes to a different value
-      if (userSelectedRef.current) {
-        const currentSelectedValue = selectedItem?.value
-        const newValue = initialValue?.value
-        
-        // Only override user selection if parent explicitly sets a different value
-        if (newValue !== undefined && newValue !== null && newValue !== currentSelectedValue) {
-          setSelectedItem(initialValue || null)
-          prevInitialValueRef.current = initialValue
-          userSelectedRef.current = false // Reset flag since parent is overriding
+      setSearchText("");
+      setPage(1);
+      fetchData(true, "").then(() => {
+        if (scrollRef.current) {
+          try {
+            scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+          } catch {
+            scrollRef.current.scrollTop = 0;
+          }
         }
-        // Otherwise, keep user's selection - don't update
-        return
+      });
+    };
+
+    // sync initialValue with selectedItem (preserve user selection)
+    useEffect(() => {
+      if (userSelectedRef.current) {
+        const currentSelectedValue = selectedItem?.value;
+        const newValue = initialValue?.value;
+        if (newValue !== undefined && newValue !== null && newValue !== currentSelectedValue) {
+          setSelectedItem(initialValue || null);
+          prevInitialValueRef.current = initialValue;
+          userSelectedRef.current = false;
+        }
+        return;
       }
-      
-      // User hasn't made a selection yet - sync with initialValue
-      const prevValue = prevInitialValueRef.current?.value
-      const newValue = initialValue?.value
-      
-      // Update if the value actually changed
+
+      const prevValue = prevInitialValueRef.current?.value;
+      const newValue = initialValue?.value;
       if (prevValue !== newValue) {
-        setSelectedItem(initialValue || null)
-        prevInitialValueRef.current = initialValue
+        setSelectedItem(initialValue || null);
+        prevInitialValueRef.current = initialValue;
       } else if (initialValue !== prevInitialValueRef.current) {
-        // Even if value is the same, update if the object reference changed (e.g., label updated)
-        setSelectedItem(initialValue || null)
-        prevInitialValueRef.current = initialValue
+        setSelectedItem(initialValue || null);
+        prevInitialValueRef.current = initialValue;
       }
-    }, [initialValue, selectedItem?.value])
+    }, [initialValue, selectedItem?.value]);
 
-    // Use external error if provided, otherwise use internal validation
-    const displayError = externalError !== undefined ? externalError : error
-  useEffect(() => {
-  if (externalError !== undefined) {
-    setError(externalError);
-    return;
-  }
+    // external validation and on submit validation
+    useEffect(() => {
+      if (externalError !== undefined) {
+        setError(externalError);
+        return;
+      }
 
-  if (!hasSubmitted) {
-    setError(undefined);
-    return;
-  }
+      if (!hasSubmitted) {
+        setError(undefined);
+        return;
+      }
 
-  if (validator) {
-    const validationError = validator(selectedItem?.value);
-    setError(validationError);
-  } else if (required && !selectedItem?.value) {
-    setError(`${label || 'This field'} is required`);
-  } else {
-    setError(undefined);
-  }
-}, [selectedItem, validator, required, label, externalError, hasSubmitted]);
+      if (validator) {
+        setError(validator(selectedItem?.value));
+      } else if (required && !selectedItem?.value) {
+        setError(`${label || "This field"} is required`);
+      } else {
+        setError(undefined);
+      }
+    }, [selectedItem, validator, required, label, externalError, hasSubmitted]);
 
-
+    const displayError = externalError !== undefined ? externalError : error;
 
     const getOptionStyles = (selected: boolean, hovered = false): React.CSSProperties => {
-      const isActive = selected || hovered
+      const isActive = selected || hovered;
       return {
         padding: `${sizeStyles.padding}px ${sizeStyles.padding * 2 + 16}px`,
         fontSize: sizeStyles.fontSize,
         borderRadius: theme.borderRadius.sm,
-        cursor: disabled ? 'not-allowed' : 'pointer',
+        cursor: disabled ? "not-allowed" : "pointer",
         backgroundColor: isActive ? theme.colors.hover : theme.colors.background,
         color: theme.colors.textSecondary,
         transition: theme.transitions.normal,
+      };
+    };
+
+    // close dropdown when clicking outside
+    useEffect(() => {
+      function handleDocClick(e: MouseEvent) {
+        if (!containerRef.current) return;
+        if (!containerRef.current.contains(e.target as Node)) {
+          setIsOpen(false);
+        }
       }
-    }
+      // handle Escape key
+      function handleKey(e: KeyboardEvent) {
+        if (e.key === "Escape") {
+          setIsOpen(false);
+        }
+      }
+      document.addEventListener("mousedown", handleDocClick);
+      document.addEventListener("keydown", handleKey);
+      return () => {
+        document.removeEventListener("mousedown", handleDocClick);
+        document.removeEventListener("keydown", handleKey);
+      };
+    }, []);
 
-   return (
-  
-    
-  <div
-    ref={ref}
-    className={className}
-    style={{
-      position: 'relative',
-      width:"100%",
-      maxWidth: "100%",
-      minWidth:"150px",
-      marginLeft: '0',
-      ...style,
-    }}
-  >
-     {label && (
+    return (
       <div
+        ref={(node) => {
+          // forward ref + local containerRef
+          // @ts-ignore
+          if (ref) {
+            if (typeof ref === "function") ref(node);
+            else (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+          }
+          containerRef.current = node;
+        }}
+        className={className}
         style={{
-          marginBottom: '6px',
-          fontSize: sizeStyles.fontSize,
-          fontWeight: theme.fontWeight.medium,
-          color: theme.colors.black,
+          position: "relative",
+          width: "100%",
+          maxWidth: "100%",
+          minWidth: "150px",
+          marginLeft: "0",
+          ...style,
         }}
       >
-        {label}
-        {required && (
-          <span style={{ color: theme.colors.error, marginLeft: '4px' }}>*</span>
-        )}
-      </div>
-    )}
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        fontWeight: theme.fontWeight.medium,
-        padding: `${sizeStyles.padding + 2}px ${sizeStyles.padding * 2}px`,
-        fontSize: sizeStyles.fontSize,
-        borderRadius: theme.borderRadius.md,
-        backgroundColor: theme.colors.background,
-        border: `1px solid ${displayError ? theme.colors.error : theme.colors.border}`,
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        color: theme.colors.text,
-        userSelect: 'none',
-        boxSizing: 'border-box',
-        minHeight: '38px',
-        transition: 'all 0.2s ease-in-out',
-        boxShadow: isOpen ? theme.shadows.sm : 'none',
-      }}
-      onClick={() => !disabled && setIsOpen(prev => !prev)}
-    >
-    <span style={{
-      flex: 1,
-      whiteSpace: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      fontWeight: "normal",
-      color: selectedItem ? theme.colors.text : '#888'
-    }}>
-      {selectedItem?.label ?? title}
-    </span>
-      <svg
-        width={sizeStyles.fontSize + 4}
-        height={sizeStyles.fontSize + 4}
-        style={{
-          transform: isOpen ? 'rotate(180deg)' : 'rotate(0)',
-          transition: theme.transitions.normal,
-        }}
-        fill="none"
-        stroke={theme.colors.text}
-        strokeWidth="2"
-        viewBox="0 0 24 24"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-      </svg>
-    </div>
-
-    {isOpen && (
-      <div
-        ref={scrollRef}
-        style={{
-          position: 'absolute',
-          top: 'calc(100% + 4px)',
-          left: 0,
-          width: '100%',
-          maxHeight: sizeStyles.dropdownHeight,
-          overflowY: 'auto',
-          border: `1px solid ${theme.colors.border}`,
-          borderRadius:theme.colors.background,
-          boxShadow: theme.shadows.lg,
-          zIndex: 999,
-          padding: '6px',
-        }}
-      >
-        <div style={{ position: 'relative', marginBottom: '6px' }}>
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchText}
-            onChange={handleSearch}
-            autoFocus
+        {label && (
+          <div
             style={{
-              width: '100%',
-              padding: `${sizeStyles.padding}px ${sizeStyles.padding * 2 + 24}px`,
-              border: `1px solid ${theme.colors.border}`,
-              borderRadius: theme.borderRadius.sm,
-              outline: 'none',
+              marginBottom: "6px",
               fontSize: sizeStyles.fontSize,
-              backgroundColor: theme.colors.background,
-              color: theme.colors.text,
-              boxSizing: 'border-box',
+              fontWeight: theme.fontWeight.medium,
+              color: theme.colors.black,
             }}
-          />
-          <Search
-            size={sizeStyles.fontSize + 2}
-            color={theme.colors.textSecondary}
+          >
+            {label}
+            {required && <span style={{ color: theme.colors.error, marginLeft: "4px" }}>*</span>}
+          </div>
+        )}
+
+        <div
+          role="button"
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          onClick={() => !disabled && setIsOpen(prev => !prev)}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            fontWeight: theme.fontWeight.medium,
+            padding: `${sizeStyles.padding + 2}px ${sizeStyles.padding * 2}px`,
+            fontSize: sizeStyles.fontSize,
+            borderRadius: theme.borderRadius.md,
+            backgroundColor: theme.colors.background,
+            border: `1px solid ${displayError ? theme.colors.error : theme.colors.border}`,
+            cursor: disabled ? "not-allowed" : "pointer",
+            color: theme.colors.text,
+            userSelect: "none",
+            boxSizing: "border-box",
+            minHeight: "38px",
+            transition: "all 0.2s ease-in-out",
+            boxShadow: isOpen ? theme.shadows.sm : "none",
+          }}
+        >
+          <span
             style={{
-              position: 'absolute',
-              left: sizeStyles.padding,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
+              flex: 1,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              fontWeight: "normal",
+              color: selectedItem ? theme.colors.text : "#888",
             }}
-          />
-          {searchText.trim() && (
-            <X
-              size={sizeStyles.fontSize + 2}
-              color="#000"
-              style={{
-                position: 'absolute',
-                right: sizeStyles.padding,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                cursor: 'pointer',
-              }}
-              onClick={clearSearch}
-            />
-          )}
+          >
+            {selectedItem?.label ?? title}
+          </span>
+
+          <svg
+            width={sizeStyles.fontSize + 4}
+            height={sizeStyles.fontSize + 4}
+            style={{
+              transform: isOpen ? "rotate(180deg)" : "rotate(0)",
+              transition: theme.transitions.normal,
+            }}
+            fill="none"
+            stroke={theme.colors.text}
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
 
-        {options.length > 0 ? (
-          options.map(item => {
-            const selected = selectedItem?.value === item.value
-            return (
-              <div
-                key={item.value}
-                onClick={() => !disabled && handleSelect(item)}
-                onMouseEnter={e =>
-                  !disabled && Object.assign(e.currentTarget.style, getOptionStyles(selected, true))
-                }
-                onMouseLeave={e =>
-                  !disabled && Object.assign(e.currentTarget.style, getOptionStyles(selected, false))
-                }
-                style={{
-                  ...getOptionStyles(selected),
-                  borderRadius: theme.borderRadius.sm,
-                }}
-              >
-                {item.label}
+        {isOpen && (
+          <div
+            style={{
+              position: "absolute",
+              top: "calc(100% + 4px)",
+              left: 0,
+              width: "100%",
+              maxHeight: sizeStyles.dropdownHeight,
+              overflow: "hidden",
+              border: `1px solid ${theme.colors.border}`,
+              borderRadius: theme.borderRadius.sm,
+              boxShadow: theme.shadows.lg,
+              zIndex: 999,
+              padding: 0,
+              background: theme.colors.background,
+            }}
+          >
+            {/* Sticky search bar */}
+            <div
+              style={{
+                position: "sticky",
+                top: 0,
+                zIndex: 50,
+                padding: 8,
+                borderBottom: `1px solid ${theme.colors.border}`,
+                background: theme.colors.background,
+                display: "flex",
+                alignItems: "center",
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{ position: "relative", width: "100%" }}>
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchText}
+                  onChange={handleSearch}
+                  autoFocus
+                  style={{
+                    width: "100%",
+                    padding: `${sizeStyles.padding}px ${sizeStyles.padding * 2 + 24}px`,
+                    border: "1px solid transparent",
+                    borderRadius: theme.borderRadius.sm,
+                    outline: "none",
+                    fontSize: sizeStyles.fontSize,
+                    backgroundColor: theme.colors.background,
+                    color: theme.colors.text,
+                    boxSizing: "border-box",
+                  }}
+                />
+                <Search
+                  size={sizeStyles.fontSize + 2}
+                  color={theme.colors.textSecondary}
+                  style={{
+                    position: "absolute",
+                    left: sizeStyles.padding,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    pointerEvents: "none",
+                  }}
+                />
+                {searchText.trim() && (
+                  <X
+                    size={sizeStyles.fontSize + 2}
+                    color="#000"
+                    style={{
+                      position: "absolute",
+                      right: sizeStyles.padding,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      cursor: "pointer",
+                    }}
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      clearSearch();
+                    }}
+                  />
+                )}
               </div>
-            )
-          })
-        ) : (
-          <div
-            style={{
-              padding: theme.spacing.sm,
-              textAlign: 'center',
-              color: theme.colors.textLight,
-            }}
-          >
-            No records found
+            </div>
+
+            {/* Options with smooth scrolling */}
+            <div
+              ref={scrollRef}
+              className="thin-scroll"
+              style={{
+                overflowY: "auto",
+                maxHeight: sizeStyles.dropdownHeight - 48, // leave room for search
+                scrollBehavior: "smooth",
+                WebkitOverflowScrolling: "touch",
+                paddingBottom: 10,          // <-- ensure last item not clipped
+                boxSizing: "border-box",
+              }}
+              onMouseDown={(e) => {
+                // prevent document mousedown from closing when interacting inside list
+                e.stopPropagation();
+              }}
+            >
+              {options.length > 0 ? (
+                options.map(item => {
+                  const selected = selectedItem?.value === item.value;
+                  return (
+                    <div
+                      key={String(item.value)}
+                      onClick={() => !disabled && handleSelect(item)}
+                      onMouseEnter={e =>
+                        !disabled && Object.assign(e.currentTarget.style, getOptionStyles(selected, true))
+                      }
+                      onMouseLeave={e =>
+                        !disabled && Object.assign(e.currentTarget.style, getOptionStyles(selected, false))
+                      }
+                      style={{
+                        ...getOptionStyles(selected),
+                        borderRadius: theme.borderRadius.sm,
+                      }}
+                    >
+                      {item.label}
+                    </div>
+                  );
+                })
+              ) : (
+                <div
+                  style={{
+                    padding: theme.spacing.sm,
+                    textAlign: "center",
+                    color: theme.colors.textLight,
+                  }}
+                >
+                  No records found
+                </div>
+              )}
+
+              {loading && (
+                <div
+                  style={{
+                    textAlign: "center",
+                    color: theme.colors.primary,
+                    fontSize: theme.fontSize.xs,
+                    padding: theme.spacing.xs,
+                  }}
+                >
+                  Loading more...
+                </div>
+              )}
+              <div style={{ height: 12, pointerEvents: "none" }} />
+            </div>
           </div>
         )}
 
-        {loading && (
-          <div
+        {/* Error message */}
+        {displayError && (
+          <p
             style={{
-              textAlign: 'center',
-              color: theme.colors.primary,
-              fontSize: theme.fontSize.xs,
-              padding: theme.spacing.xs,
+              color: theme.colors.error,
+              fontSize: theme.fontSize.sm,
+              marginTop: "4px",
+              marginLeft: "0",
+              marginBottom: "0",
             }}
           >
-            Loading more...
-          </div>
+            {displayError}
+          </p>
         )}
-
       </div>
-    )}
-    {/* Error message displayed below the dropdown */}
-    {displayError && (
-      <p
-        style={{
-          color: theme.colors.error,
-          fontSize: theme.fontSize.sm,
-          marginTop: '4px',
-          marginLeft: '0',
-          marginBottom: '0',
-        }}
-      >
-        {displayError}
-      </p>
-    )}
-  </div>
-)
-
+    );
   }
-)
+);
 
-SingleSelectDropdownWithPagination.displayName = 'SingleSelectDropdownWithPagination'
+SingleSelectDropdownWithPagination.displayName = "SingleSelectDropdownWithPagination";
+
+export default SingleSelectDropdownWithPagination;

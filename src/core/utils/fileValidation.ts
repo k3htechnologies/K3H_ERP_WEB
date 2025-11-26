@@ -117,3 +117,18 @@ export const isValidRERA = (rera: string): boolean => {
     return regex.test(value);
 };
 
+
+// ----------------------------------
+// 🔹 FILTER IFSC (Uppercase, 11 chars, A–Z + 0–9)
+// Format: 4 letters + '0' + 6 alphanum (e.g. HDFC0ABCD12)
+// ----------------------------------
+export const filterIFSC = (value: string): string =>
+  value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 11);
+
+export const isValidIFSC = (ifsc: string): boolean => {
+  if (!ifsc) return false;
+  const value = ifsc.toUpperCase().trim();
+  // Indian IFSC: 4 letters, '0', then 6 alpha-numeric characters
+  const regex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+  return regex.test(value);
+};

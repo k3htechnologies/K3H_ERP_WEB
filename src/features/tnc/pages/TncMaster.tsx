@@ -17,7 +17,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';

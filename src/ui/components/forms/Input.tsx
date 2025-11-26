@@ -117,7 +117,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             marginBottom: theme.spacing.sm,
           }}>
             {label}
-            {props.required && <span style={{ color: theme.colors.error, marginLeft: '4px' }}>*</span>}
+            {required && <span style={{ color: theme.colors.error, marginLeft: '4px' }}>*</span>}
           </label>
           
         )}

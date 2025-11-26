@@ -78,7 +78,7 @@ export const FieldItem: React.FC<{
   // COLUMN layout (default) — unchanged visually except preserved classes
   return (
     <div className={`flex flex-col ${borderClass} ${className}`}>
-      <span className="text-md font-medium text-[#1D1D1D80]">
+      <span className="text-sm font-medium text-[#1D1D1D80] truncate">
         {label}
       </span>
 

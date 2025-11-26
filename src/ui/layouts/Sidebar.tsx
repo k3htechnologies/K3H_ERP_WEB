@@ -52,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const normalizedLocationPath = normalizePath(location.pathname);
 
   const findActiveMenuItem = (currentPath: string) => {
-    const normalizedCurrent = normalizePath(currentPath)
+    const normalizedCurrent = normalizePath(currentPath.split("/").filter(Boolean)[0])
     if (!modules || modules.length === 0) return null
 
     for (const module of modules) {

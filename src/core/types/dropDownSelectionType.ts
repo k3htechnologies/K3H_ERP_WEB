@@ -1,25 +1,28 @@
-import type { DropdownOption } from "@/ui/components/DropDown/SinglePageSelection";
 import type { COLOR_MAP } from "../constants/colors";
 import type { DropdownOptions } from "@/ui/components/DropDown/Multiselectpagination";
 
 export interface SingleSelectWithPaginationProps {
-  options: { label: string; value: string | number }[]
+  options?: { label: string; value: string | number }[]
   value?: string | number
   size?: 'sm' | 'md' | 'lg'
   variant?: 'default' | 'outlined' | 'filled'
   color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'
   onChange?: (value: string | number) => void
-  dataFetchCallBack: (
+  dataFetchCallBack?: (
     pageNumber: number,
     params?: { value?: string }
   ) => Promise<{ totalNumberOfRecord: number; itemList: { label: string; value: string | number }[] }>
-  onSelected: (item: { label: string; value: string | number }) => void
+  onSelected: (item: { label: string; value: string | number | null}) => void
   title?: string
+  label?:string
   validator?: (value?: string | number | null) => string | undefined
   initialValue?: { label: string; value: string | number } | null
   dataList?: { label: string; value: string | number }[]
   pageSize?: number
   disabled?: boolean
+  hasSubmitted?: boolean,
+  required?: boolean
+  error?: string
   className?: string
   style?: React.CSSProperties
 }
@@ -39,19 +42,25 @@ export interface MultiSelectDropdownProps {
   noDataText?: string
   size?: 'sm' | 'md' | 'lg'
 }
+
 export interface SinglePageSelectionProps {
   label?: string;
-  options: DropdownOption[];
+  options: Record<string, any>[];
   value?: string | number;
   onChange: (value: string | number) => void;
   disabled?: boolean;
   placeholder?: string;
   size?: "sm" | "md" | "lg";
+  required?: boolean;
+  error?: string;
   theme?: {
     spacing: Record<string, string>;
     fontSize: Record<string, string>;
   };
+  error?: string;
+  required?: boolean;
 }
+
 export interface MultiSelectPaginationProps {
   label?: string;
   options: DropdownOptions[];

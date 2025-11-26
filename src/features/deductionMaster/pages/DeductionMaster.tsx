@@ -11,7 +11,9 @@ import type {
   DeleteDeductionMasterRequest,
   FilterWithPaginationDeductionMasterRequest
 } from '@/features/deductionMaster/models/DeductionMasterModel';
-
+import {
+  GENDER_OPTIONS,
+} from "@/core/constants/staticData";
 import { DeductionMasterService } from '@/features/deductionMaster/services/DeductionMasterService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
@@ -26,6 +28,9 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Edit, Trash2 } from 'lucide-react';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
+import { BranchMasterService } from '@/features/branchMaster/services/BranchMasteService';
 
 
 export const DeductionMaster: React.FC = () => {
@@ -659,6 +664,9 @@ export const DeductionMaster: React.FC = () => {
     });
     // Single error object for all fields
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [dropdownLabels, setDropdownLabels] = useState<{
+              branchName?:string;
+            }>({});
 
     useEffect(() => {
       if (isOpen) {
@@ -677,8 +685,12 @@ export const DeductionMaster: React.FC = () => {
             StateMasterId: data.StateMasterId ?? 0,
             BranchName: data.BranchName ?? "",
             StateName: data.StateName ?? "",
-
           });
+          setDropdownLabels({
+          branchName: data.BranchName ?? "",
+         
+
+        });
         } else {
           // ADD Deduction 
           setFormData({
@@ -726,7 +738,7 @@ export const DeductionMaster: React.FC = () => {
       const newErrors: any = {};
       requiredFields.forEach((field) => {
         const value = formData[field as keyof AddUpdateDeductionMasterRequest];
-        if (value === null || value === undefined || value.toString().trim() === "") {
+        if (value === null || value === undefined || value === 0 || value.toString().trim() === "") {
           const label = field.replace(/([A-Z])/g, " $1");
           newErrors[field] = `${label} is required`;
         }
@@ -737,6 +749,30 @@ export const DeductionMaster: React.FC = () => {
       if (Object.keys(newErrors).length > 0) return;
 
       onSubmit(formData);
+    };
+
+    const fetchBranchOptions = async (pageNumber: number, params?: { value?: string }) => {
+      const responseEither = await BranchMasterService.apiCallPullBranchMaster({
+        PageSize: 10,
+        PageNumber: pageNumber,
+        BranchName: params?.value || "",
+        IsCheckPermission: true,
+      });
+      if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
+      const apiResponse = responseEither.right;
+      const branchList = apiResponse?.Data?.map((item: any) => ({ label: item.BranchName, value: String(item.BranchMasterId) })) || [];
+      return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? branchList.length, itemList: branchList };
+    };
+
+    const toDropdownInitialValue = (
+      id?: number | null,
+      label?: string
+    ): { label: string; value: string | number } | null => {
+      if (!id) return null;
+      return {
+        label: label || String(id),
+        value: String(id),
+      };
     };
 
     return (
@@ -801,24 +837,12 @@ export const DeductionMaster: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Gender <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={formData.Gender ?? ""}
-                onChange={(e) => handleFieldChange("Gender", e.target.value)}
-                className={`w-full p-2 rounded-md border  
-                 ${errors.Gender ? "border-gray-500" : "border-gray-500"}`}
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-
-              {errors.Gender && (
-                <p className="text-red-500 text-xs mt-1">{errors.Gender}</p>
-              )}
+              <SinglePageSelection
+                label="Gender" required
+                value={formData.Gender}
+                onChange={(val) => handleFieldChange("Gender", String(val))}
+                options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+              />
             </div>
           </div>
 
@@ -853,259 +877,247 @@ export const DeductionMaster: React.FC = () => {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-              <label className="block text-sm font-medium mb-1">
-                StateName <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={formData.StateMasterId ?? ""}
-                onChange={(e) => handleFieldChange("StateMasterId", Number(e.target.value))}
-                className={`w-full p-2 rounded-md border  
-                 ${errors.StateMasterId ? "border-gray-500" : "border-gray-500"}`}
-              >
-                <option value="">Select StateName</option>
-                <option value="1">Andhra Pradesh</option>
-                <option value="2">Maharashtra</option>
-                <option value="3">Assam</option>
-                <option value="4">Bihar</option>
-                <option value="5">Uttar Pradesh</option>
-              </select>
-
-              {errors.StateMasterId && (
-                <p className="text-red-500 text-xs mt-1">{errors.StateMasterId}</p>
-              )}
+            <div>
+              <SingleSelectDropdownWithPagination
+                label="Branch"
+                title="Select..."
+                size="lg"
+                dataFetchCallBack={fetchBranchOptions}
+                onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
+                initialValue={toDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
+              />
             </div>
-            </div>
+          </div>
         </div>
-      </Modal>
+      </Modal >
     );
   };
 
-  const handleAddUpdateDeductionMaster = async (formData: AddUpdateDeductionMasterRequest) => {
+const handleAddUpdateDeductionMaster = async (formData: AddUpdateDeductionMasterRequest) => {
 
-    setIsAddUpdateModalOpen(false);
-    await runApiWithLoader(
-      setIsLoading,
-      setIsLoadingMessage,
-      async () => {
-        const response = await DeductionMasterService.apiCallAddUpdateDeductionMaster(formData);
-        if (E.isRight(response)) {
-          setIsAddUpdateModalOpen(false);
-          const isAdd = formData.DeductionMasterId === 0
-          if (isAdd) {
-            const newRecord = response.right.Data[0] as DeductionMasterData
+  setIsAddUpdateModalOpen(false);
+  await runApiWithLoader(
+    setIsLoading,
+    setIsLoadingMessage,
+    async () => {
+      const response = await DeductionMasterService.apiCallAddUpdateDeductionMaster(formData);
+      if (E.isRight(response)) {
+        setIsAddUpdateModalOpen(false);
+        const isAdd = formData.DeductionMasterId === 0
+        if (isAdd) {
+          const newRecord = response.right.Data[0] as DeductionMasterData
 
-            setDeductionMasterList(prevData => [newRecord, ...prevData]);
+          setDeductionMasterList(prevData => [newRecord, ...prevData]);
 
-            setPagination({
-              currentPage: pagination.currentPage,
-              totalRecords: pagination.totalRecords + 1,
-              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-            });
-
-            addToast({ type: 'success', title: 'Asset added successfully' })
-          } else {
-
-            const updatedRecord = response.right.Data[0] as DeductionMasterData;
-
-            setDeductionMasterList(prevData =>
-              prevData.map(item =>
-                item.DeductionMasterId === formData.DeductionMasterId
-                  ? updatedRecord
-                  : item
-              )
-            )
-
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-          }
-
-          setIsAddUpdateModalOpen(false);
-
-          setEditingDeductionMasterData(null);
-
-        } else {
-
-          addToast({ type: 'error', title: response.left.message });
-        }
-
-        return response
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Operation failed' })
-      },
-      undefined,
-      formData.DeductionMasterId === 0 ? 'Add Asset' : 'Update Asset...'
-    )
-  }
-  //#region DELETE Deduction MASTER
-  const handleDeleteDeductionMaster = async () => {
-    setIsConfirmationDialogBoxOpen(false);
-    if (!deleteDeductionMasterDetailsData) return
-
-    await runApiWithLoader(
-      setIsLoading,
-      setIsLoadingMessage,
-
-      async () => {
-
-        const params: DeleteDeductionMasterRequest = {
-          DeductionMasterId: deleteDeductionMasterDetailsData.DeductionMasterId ?? 0,
-          UniqueKey: deleteDeductionMasterDetailsData.Uniquekey ?? ""
-        }
-        const response = await DeductionMasterService.apiCallDeleteDeductionMaster(params);
-        if (E.isRight(response)) {
-          setDeductionMasterList(prevData => prevData.filter(item => item.DeductionMasterId! == deleteDeductionMasterDetailsData.DeductionMasterId));
           setPagination({
             currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords - 1,
-            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+            totalRecords: pagination.totalRecords + 1,
+            totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
           });
 
-          addToast({ type: "success", title: response.right.SuccessMessage[0] })
-
-          setIsConfirmationDialogBoxOpen(false);
-          setDeleteDeductionMasterDetailsData(null);
+          addToast({ type: 'success', title: 'Asset added successfully' })
         } else {
-          addToast({ type: 'error', title: response.left.message });
-          setIsConfirmationDialogBoxOpen(false);
+
+          const updatedRecord = response.right.Data[0] as DeductionMasterData;
+
+          setDeductionMasterList(prevData =>
+            prevData.map(item =>
+              item.DeductionMasterId === formData.DeductionMasterId
+                ? updatedRecord
+                : item
+            )
+          )
+
+          addToast({ type: 'success', title: response.right.SuccessMessage[0] })
         }
-        return response
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message })
-      },
-      undefined,
-      'Delete Deduction Master Data...'
-    )
-  }
 
-  return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search by deduction name..."
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchDeductions}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeDeductionMasterColumnsModal(true)}
-          isShowAddButton={canAction}
-          addTitle="Add Deduction"
-          onAdd={handleAddDeductionModal}
-          isShowImportButton={false}
-          isShowExportButton={canExport}
-          onExportExcel={handleExportDeductionExcel}
-          onExportPdf={handleExportDeductionPdf}
-          exportLoading={isLoading}
-        />
-        <DataTable
-          data={deductionListForTable}
-          columns={visibleDeductionMasterColumns}
-          pagination={deductionMasterPaginationInfo}
-          emptyMessage="No deductions found"
-          fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
-        <ViewDeductionDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewDeductionMasterDetailsData(null)
-          }}
-          data={viewDeductionMasterDetailsData}
-        />
+        setIsAddUpdateModalOpen(false);
+
+        setEditingDeductionMasterData(null);
+
+      } else {
+
+        addToast({ type: 'error', title: response.left.message });
+      }
+
+      return response
+    },
+    undefined,
+    (error: any) => {
+      addToast({ type: 'error', title: error.message || 'Operation failed' })
+    },
+    undefined,
+    formData.DeductionMasterId === 0 ? 'Add Asset' : 'Update Asset...'
+  )
+}
+//#region DELETE Deduction MASTER
+const handleDeleteDeductionMaster = async () => {
+  setIsConfirmationDialogBoxOpen(false);
+  if (!deleteDeductionMasterDetailsData) return
+
+  await runApiWithLoader(
+    setIsLoading,
+    setIsLoadingMessage,
+
+    async () => {
+
+      const params: DeleteDeductionMasterRequest = {
+        DeductionMasterId: deleteDeductionMasterDetailsData.DeductionMasterId ?? 0,
+        UniqueKey: deleteDeductionMasterDetailsData.Uniquekey ?? ""
+      }
+      const response = await DeductionMasterService.apiCallDeleteDeductionMaster(params);
+      if (E.isRight(response)) {
+        setDeductionMasterList(prevData => prevData.filter(item => item.DeductionMasterId! == deleteDeductionMasterDetailsData.DeductionMasterId));
+        setPagination({
+          currentPage: pagination.currentPage,
+          totalRecords: pagination.totalRecords - 1,
+          totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+        });
+
+        addToast({ type: "success", title: response.right.SuccessMessage[0] })
+
+        setIsConfirmationDialogBoxOpen(false);
+        setDeleteDeductionMasterDetailsData(null);
+      } else {
+        addToast({ type: 'error', title: response.left.message });
+        setIsConfirmationDialogBoxOpen(false);
+      }
+      return response
+    },
+    undefined,
+    (error: any) => {
+      addToast({ type: 'error', title: error.message })
+    },
+    undefined,
+    'Delete Deduction Master Data...'
+  )
+}
+
+return (
+  <>
+    <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    <div className="h-full flex flex-col">
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search by deduction name..."
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchDeductions}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeDeductionMasterColumnsModal(true)}
+        isShowAddButton={canAction}
+        addTitle="Add Deduction"
+        onAdd={handleAddDeductionModal}
+        isShowImportButton={false}
+        isShowExportButton={canExport}
+        onExportExcel={handleExportDeductionExcel}
+        onExportPdf={handleExportDeductionPdf}
+        exportLoading={isLoading}
+      />
+      <DataTable
+        data={deductionListForTable}
+        columns={visibleDeductionMasterColumns}
+        pagination={deductionMasterPaginationInfo}
+        emptyMessage="No deductions found"
+        fixedHeight={true}
+        maxHeight="calc(100vh - 200px)"
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
+      <ViewDeductionDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewDeductionMasterDetailsData(null)
+        }}
+        data={viewDeductionMasterDetailsData}
+      />
 
 
-        {/*  ADD EDIT UPDATE TNC MODAL */}
-        <AddUpdateDeductionModel
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingDeductionMasterData(null)
-          }}
-          onSubmit={handleAddUpdateDeductionMaster}
-          data={editingDeductionMasterData}
-          loading={isLoading}
-        />
-        {/* CUSTOMIZE COLUMNS MODAL */}
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeDeductionMasterColumnsModal}
-          onClose={() => setIsShowCustomizeDeductionMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(new Set([...keys, ...requiredDeductionMasterColumnKeys]))
-            setSelectedDeductionMasterColumnKeys(withRequired)
-            try {
-              LocalStorageHelper.storeDeductionMasterTableColumns(JSON.stringify(withRequired))
-            } catch { }
-          }}
-          columns={deductionMasterColumns}
-          selectedKeys={selectedDeductionMasterColumnKeys}
-          requiredKeys={requiredDeductionMasterColumnKeys}
-          title="Customize Deduction Master Table Columns"
-        />
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Deduction Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          size="half-screen"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Deduction Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.Name || ''}
-                  onChange={(e) => handleFilterChange('Name', e.target.value)}
-                  placeholder="Enter deduction name"
-                />
-              </div>
+      {/*  ADD EDIT UPDATE TNC MODAL */}
+      <AddUpdateDeductionModel
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false)
+          setEditingDeductionMasterData(null)
+        }}
+        onSubmit={handleAddUpdateDeductionMaster}
+        data={editingDeductionMasterData}
+        loading={isLoading}
+      />
+      {/* CUSTOMIZE COLUMNS MODAL */}
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeDeductionMasterColumnsModal}
+        onClose={() => setIsShowCustomizeDeductionMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(new Set([...keys, ...requiredDeductionMasterColumnKeys]))
+          setSelectedDeductionMasterColumnKeys(withRequired)
+          try {
+            LocalStorageHelper.storeDeductionMasterTableColumns(JSON.stringify(withRequired))
+          } catch { }
+        }}
+        columns={deductionMasterColumns}
+        selectedKeys={selectedDeductionMasterColumnKeys}
+        requiredKeys={requiredDeductionMasterColumnKeys}
+        title="Customize Deduction Master Table Columns"
+      />
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Deduction Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        size="half-screen"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Deduction Name</label>
+              <Input
+                type="text"
+                value={tempFilters.Name || ''}
+                onChange={(e) => handleFilterChange('Name', e.target.value)}
+                placeholder="Enter deduction name"
+              />
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        {/* DELETE CONFIRMATION deduction Master MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteDeductionMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteDeductionMaster}
-          title="You are about to delete a deduction?"
-          message="Deleting this deduction Master Data will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
-      </div>
-    </>
-  );
+      {/* DELETE CONFIRMATION deduction Master MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteDeductionMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteDeductionMaster}
+        title="You are about to delete a deduction?"
+        message="Deleting this deduction Master Data will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+    </div>
+  </>
+);
 };
 
 export default DeductionMaster

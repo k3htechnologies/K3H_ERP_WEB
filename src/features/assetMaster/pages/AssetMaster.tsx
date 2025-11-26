@@ -17,7 +17,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
@@ -26,6 +26,8 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { Edit, Trash2 } from 'lucide-react';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { DatePickerInput } from '@/ui/components/forms/Datepicker';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
 
 
 export const AssetMaster: React.FC = () => {
@@ -62,6 +64,13 @@ export const AssetMaster: React.FC = () => {
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeAssetMasterColumnsModal, setIsShowCustomizeAssetMasterColumnsModal] = useState(false);
 
+  // EDIT ASSET MASTER
+  const [editingAssetMasterData, setEditingAssetMasterData] = useState<AssetMasterData | null>(null)
+  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+
+  //DELETE ASSET MASTER STATES
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+  const [deleteAssetMasterDetailsData, setDeleteAssetMasterDetailsData] = useState<AssetMasterData | null>(null)
 
   //#endregion
 
@@ -71,15 +80,6 @@ export const AssetMaster: React.FC = () => {
 
   //#region INITIALIZATION
   const hasFetchedInitialAssets = useRef(false);
-
-  // EDIT ASSET MASTER
-  const [editingAssetMasterData, setEditingAssetMasterData] = useState<AssetMasterData | null>(null)
-  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-
-  //DELETE ASSET MASTER STATES
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-  const [deleteAssetMasterDetailsData, setDeleteAssetMasterDetailsData] = useState<AssetMasterData | null>(null)
-
 
   useEffect(() => {
 
@@ -97,8 +97,6 @@ export const AssetMaster: React.FC = () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
-  //#endregion
-
 
   //#endregion
 
@@ -188,9 +186,10 @@ export const AssetMaster: React.FC = () => {
     debouncedSearch.cancel?.();
     fetchAssetList();
   }
-  // END SEARCH ASSET 
+ 
+  //#endregion
 
-  // EXPORT EXCEL | PDF
+  //#region EXPORT EXCEL | PDF
   const handleExportAssets = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -232,16 +231,14 @@ export const AssetMaster: React.FC = () => {
   const handleExportAssetExcel = () => handleExportAssets('Excel')
   const handleExportAssetPdf = () => handleExportAssets('PDF')
 
-  //END EXPORT EXCEL | PDF
+  //#endregion
 
-  //API | SERVICES CALL TO GET ASSET 
+  //#region API | SERVICES CALL TO GET ASSET 
 
   const getAssets = async (filterParams: FilterWithPaginationAssetMasterRequest) => {
 
     return await assetMasterService.apiCallPullAssetMaster(filterParams);
   }
-
-  //END API | SERVICES CALL TO GET ASSET
 
   //#endregion
 
@@ -309,51 +306,7 @@ export const AssetMaster: React.FC = () => {
               tooltipThreshold={25}
               onClick={() => handleViewAssetDetails(row)}
             />
-            {canAction && (
-              <div className="flex items-center justify-end ml-2 w-20">
-                <>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEditAssetMaster(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    title="Edit Asset"
-                    style={{
-                      color: '#0B3251',
-                      padding: '0px 8px'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
 
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleConfirmationDialogBoxOpen(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    style={{
-                      color: 'red',
-                      padding: '0px 8px'
-                    }}
-                    title="Delete Asset"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </>
-              </div>
-            )}
           </div>
         )
       },
@@ -436,31 +389,15 @@ export const AssetMaster: React.FC = () => {
         align: 'center',
         render: (value) => (
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${value === 'Active' ? 'bg-green-100 text-green-800' :
-              value === 'Inactive' ? 'bg-red-100 text-red-800' :
-                'bg-gray-100 text-gray-800'
+            value === 'Inactive' ? 'bg-red-100 text-red-800' :
+              'bg-gray-100 text-gray-800'
             }`}>
             {value || 'N/A'}
           </span>
         )
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       }
     ],
-    // dependencies: include everything used inside that might change
+
     [handleViewAssetDetails]
   )
 
@@ -527,177 +464,86 @@ export const AssetMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Settings - Company setup (Asset Details)"
+        title="Asset Details"
         onSubmit={(e) => {
           e.preventDefault()
           onClose()
         }}
         cancelText="Close"
         loading={false}
+        size='xl'
       >
+
         <div className="space-y-6">
-          {/* Asset Information */}
+
           <div className="space-y-4">
-
-            {/* Asset Code */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Asset Code
-              </span>
-              <span className="text-sm text-blue-600 font-medium">
-                <TooltipText
-                  text={data.AssetCode || 'N/A'}
-                  maxWidth="170px"
-                  tooltipThreshold={15}
-                  tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
-                />
-              </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <FieldItem label="Asset Code" value={data.AssetCode} />
+              <FieldItem label="Asset Name" value={data.AssetName} className='font-medium text-blue-900 ' />
+              <FieldItem label="Asset Type" value={data.AssetType} />
             </div>
+            <FieldItem label="Asset Brand" value={data.AssetBrand} isRow withBorder={true} />
+            <FieldItem label="Asset Model" value={data.AssetModel} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Serial Number" value={data.SerialNumber} isRow withBorder={true} />
 
-            {/* Asset Name */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Asset Name
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.AssetName || 'N/A'}
-              </span>
-            </div>
+            <FieldItem label="Purchase Date" value={formatDate_dd_MonthName_yy_hh_mm(data.PurchaseDate || '-')} isRow withBorder={true} />
+            <FieldItem label="Warranty Expiry Date" value={formatDate_dd_MonthName_yy_hh_mm(data.WarrantyExpiryDate || '-')} isRow withBorder={true} />
 
-            {/* Asset Type */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Asset Type
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.AssetType || 'N/A'}
-              </span>
-            </div>
-
-            {/* Asset Brand */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Brand
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.AssetBrand || 'N/A'}
-              </span>
-            </div>
-
-            {/* Asset Model */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Model
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.AssetModel || 'N/A'}
-              </span>
-            </div>
-
-            {/* Serial Number */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Serial Number
-              </span>
-              <span className="text-sm text-blue-600 font-medium">
-                {data.SerialNumber || 'N/A'}
-              </span>
-            </div>
-
-            {/* Purchase Date */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Purchase Date
-              </span>
-              <span className="text-sm text-blue-600 font-medium">
-                {data.PurchaseDate ? formatDate_dd_MonthName_yy(data.PurchaseDate) : 'N/A'}
-              </span>
-            </div>
-
-            {/* Warranty Expiry Date */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Warranty Expiry Date
-              </span>
-              <span className="text-sm text-blue-600 font-medium">
-                {data.WarrantyExpiryDate ? formatDate_dd_MonthName_yy(data.WarrantyExpiryDate) : 'N/A'}
-              </span>
-            </div>
-
-            {/* Asset Cost */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Asset Cost
-              </span>
-              <span className="text-sm text-blue-600 font-medium">
-                {data.AssetCost ? `₹${data.AssetCost.toLocaleString('en-IN')}` : 'N/A'}
-              </span>
-            </div>
-
-            {/* Supplier Name */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Supplier Name
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.SupplierName || 'N/A'}
-              </span>
-            </div>
-
-            {/* Status */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Status</span>
-              <span className="text-sm text-blue-600 font-medium">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${data.Status === 'Active' ? 'bg-green-100 text-green-800' :
-                    data.Status === 'Inactive' ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-800'
-                  }`}>
-                  {data.Status || 'N/A'}
-                </span>
-              </span>
-            </div>
-
-          </div>
-          {/* Action Details Header */}
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created By</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {data.CreatedBy || 'N/A'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created Date</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {data.ModifiedBy && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified By</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {data.ModifiedBy}
-                    </span>
-                  </div>
-                )}
-                {data.ModifiedDate && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified Date</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
+            <FieldItem label="Supplier Name" value={data.SupplierName} isRow withBorder={true} />
+            <FieldItem label="Status" value={data.Status} isRow withBorder={true} />
           </div>
 
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold pb-2">
+              Action Details
+            </h4>
+
+            <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
+
+            {data.ModifiedBy !== '' ?
+              <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
+
+              :
+              ''}
+          </div>
+          <div className="flex justify-between items-center pt-4">
+
+            {canAction && (
+              <>
+                <Button
+                  color='gray'
+                  variant='solid'
+                  colorMode="light"
+                  size='md'
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setIsViewModalOpen(false)
+                    handleConfirmationDialogBoxOpen(data)
+                  }}
+                >
+                  <Trash2 className="h-5 w-5" />
+                  Delete
+                </Button>
+
+                <Button
+                  color='blue'
+                  size='md'
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setIsViewModalOpen(false)
+                    handleEditAssetMaster(data)
+                  }}
+                >
+                  <Edit className="h-5 w-5" />
+                  Edit
+                </Button>
+              </>
+            )}
+          </div>
         </div>
+
       </Modal>
     )
   }
@@ -728,7 +574,6 @@ export const AssetMaster: React.FC = () => {
     setTempFilters(newFilters)
   }
   //#endregion
-
 
   //#region ADD UPDATE EDIT ASSET MASTER
   const handleAddAssetModal = () => {
@@ -771,8 +616,9 @@ export const AssetMaster: React.FC = () => {
 
     useEffect(() => {
       if (isOpen) {
+
         if (data) {
-          // EDIT Asset
+
           setFormData({
             AssetMasterId: data.AssetMasterId ?? 0,
             Uniquekey: data.Uniquekey ?? "",
@@ -788,7 +634,7 @@ export const AssetMaster: React.FC = () => {
             SupplierName: data.SupplierName ?? ""
           });
         } else {
-          // ADD Asset
+          
           setFormData({
             AssetMasterId: 0,
             Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -819,6 +665,7 @@ export const AssetMaster: React.FC = () => {
 
     // Submit handler
     const handleSubmitAddUpdateAsset = (e: React.FormEvent) => {
+      
       e.preventDefault();
       const requiredFields = [
         "AssetName",
@@ -837,14 +684,14 @@ export const AssetMaster: React.FC = () => {
 
       requiredFields.forEach((field) => {
         const value = formData[field as keyof AddUpdateAssetMasterRequest];
-        if (value === null || value === undefined || value.toString().trim() === "") {
+        if (value === null || value === undefined || value === 0 || value.toString().trim() === "") {
           const label = field.replace(/([A-Z])/g, " $1");
           newErrors[field] = `${label} is required`;
         }
       });
       setErrors(newErrors);
 
-      // STOP submit if any error
+
       if (Object.keys(newErrors).length > 0) return;
 
       onSubmit(formData);
@@ -857,194 +704,137 @@ export const AssetMaster: React.FC = () => {
         onCancel={onClose}
         title={formData.AssetMasterId === 0 ? "Add Asset" : "Update Asset"}
         onSubmit={handleSubmitAddUpdateAsset}
-        saveText={formData.AssetMasterId === 0 ? "Save" : "Update"}
+        saveText={formData.AssetMasterId === 0 ? "Add Asset" : "Update Asset"}
         cancelText="Cancel"
         loading={loading}
+        size='half-screen'
       >
-        <div className="space-y-6">
+        <div className="space-y-6 p-6 bg-blue-100">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/* Asset Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Asset Name <span className="text-red-500">*</span>
-              </label>
               <Input
                 type="text"
+                required
+                label='Asset Name'
                 value={formData.AssetName ?? ""}
                 onChange={(e) => handleFieldChange("AssetName", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.AssetName ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder="Enter asset name"
+                placeholder="Enter Asset Name"
+                error={errors.AssetName}
               />
-              {errors.AssetName && (
-                <p className="text-red-500 text-xs mt-1">{errors.AssetName}</p>
-              )}
             </div>
 
-            {/* Asset Code */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Asset Code <span className="text-red-500">*</span>
-              </label>
               <Input
                 type="text"
+                label='Asset Code'
                 value={formData.AssetCode ?? ""}
                 onChange={(e) => handleFieldChange("AssetCode", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.AssetCode ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder="Enter asset code"
+                required
+                placeholder="Enter Asset Code"
+                error={errors.AssetCode}
               />
-              {errors.AssetCode && (
-                <p className="text-red-500 text-xs mt-1">{errors.AssetCode}</p>
-              )}
+
             </div>
           </div>
 
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Asset Type */}
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Asset Type  <span className="text-red-500">*</span></label>
               <Input
+                type="text"
+                label='Asset Type'
                 value={formData.AssetType ?? ""}
                 onChange={(e) => handleFieldChange("AssetType", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.AssetType ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder="Enter asset type"
+                required
+                placeholder="Enter Asset Type"
+                error={errors.AssetType}
               />
-              {errors.AssetType && (
-                <p className="text-red-500 text-xs mt-1">{errors.AssetType}</p>
-              )}
             </div>
 
-            {/* Asset Model */}
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Asset Model <span className="text-red-500">*</span></label>
               <Input
+                type="text"
+                label='Asset Model'
                 value={formData.AssetModel ?? ""}
                 onChange={(e) => handleFieldChange("AssetModel", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.AssetModel ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder="Enter asset model"
+                required
+                placeholder="Enter Asset Model"
+                error={errors.AssetModel}
               />
-              {errors.AssetModel && (
-                <p className="text-red-500 text-xs mt-1">{errors.AssetModel}</p>
-              )}
             </div>
           </div>
 
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/* Asset Brand */}
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Asset Brand <span className="text-red-500">*</span></label>
               <Input
+                type="text"
+                label='Asset Brand'
                 value={formData.AssetBrand ?? ""}
                 onChange={(e) => handleFieldChange("AssetBrand", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.AssetBrand ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder="Enter asset brand"
+                required
+                placeholder="Enter Asset Brand"
+                error={errors.AssetBrand}
               />
-              {errors.AssetBrand && (
-                <p className="text-red-500 text-xs mt-1">{errors.AssetBrand}</p>
-              )}
             </div>
 
-            {/* Serial Number */}
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Serial Number <span className="text-red-500">*</span></label>
               <Input
+                type="text"
+                label='Serial Number'
                 value={formData.SerialNumber ?? ""}
                 onChange={(e) => handleFieldChange("SerialNumber", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.SerialNumber ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder="Enter serial number"
+                required
+                placeholder="Enter Serial Number"
+                error={errors.SerialNumber}
               />
-              {errors.SerialNumber && (
-                <p className="text-red-500 text-xs mt-1">{errors.SerialNumber}</p>
-              )}
             </div>
           </div>
 
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/* Asset Cost */}
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Asset Cost <span className="text-red-500">*</span></label>
               <Input
-                type="number"
-                value={formData.AssetCost as any}
+                type="text"
+                label='Asset Cost'
+                value={formData.AssetCost ?? ""}
                 onChange={(e) => handleFieldChange("AssetCost", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.AssetCost ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder="Enter asset cost"
+                required
+                placeholder="Enter Asset Cost"
+                error={errors.AssetCost}
               />
-              {errors.AssetCost && (
-                <p className="text-red-500 text-xs mt-1">{errors.AssetCost}</p>
-              )}
             </div>
-
-            {/* Supplier Name */}
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Supplier Name <span className="text-red-500">*</span></label>
               <Input
+                type="text"
+                label='Supplier Name'
                 value={formData.SupplierName ?? ""}
                 onChange={(e) => handleFieldChange("SupplierName", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.SupplierName ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder="Enter supplier name"
+                required
+                placeholder="Enter Supplier Name"
+                error={errors.SupplierName}
               />
-              {errors.SupplierName && (
-                <p className="text-red-500 text-xs mt-1">{errors.SupplierName}</p>
-              )}
             </div>
           </div>
 
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/* Purchase Date */}
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Purchase Date <span className="text-red-500">*</span></label>
-              <Input
-                type="date"
-                value={formData.PurchaseDate?.substring(0, 10)}
-                onChange={(e) => handleFieldChange("PurchaseDate", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.PurchaseDate ? "border-red-500" : "border-gray-300"
-                  }`}
+              <DatePickerInput
+                label="Purchase Date"
+                value={formatDate_dd_mm_yyyy(formData.PurchaseDate)}
+                onChange={(val) => handleFieldChange('PurchaseDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                required
+                error={errors.PurchaseDate}
               />
-              {errors.PurchaseDate && (
-                <p className="text-red-500 text-xs mt-1">{errors.PurchaseDate}</p>
-              )}
             </div>
 
-            {/* Warranty Expiry Date */}
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Warranty Date <span className="text-red-500">*</span></label>
-              <Input
-                type="date"
-                value={formData.WarrantyExpiryDate?.substring(0, 10)}
-                onChange={(e) =>
-                  handleFieldChange("WarrantyExpiryDate", e.target.value)
-                }
-                className={`w-full p-2 rounded border ${errors.WarrantyExpiryDate ? "border-red-500" : "border-gray-300"
-                  }`}
+              <DatePickerInput
+                label="DOB"
+                value={formatDate_dd_mm_yyyy(formData.WarrantyExpiryDate)}
+                onChange={(val) => handleFieldChange('WarrantyExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                required
+                error={errors.WarrantyExpiryDate}
               />
-              {errors.WarrantyExpiryDate && (
-                <p className="text-red-500 text-xs mt-1">{errors.WarrantyExpiryDate}</p>
-              )}
             </div>
           </div>
         </div>
@@ -1170,7 +960,7 @@ export const AssetMaster: React.FC = () => {
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
@@ -1184,7 +974,7 @@ export const AssetMaster: React.FC = () => {
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by asset name..."
+          searchPlaceholder="Search By Asset Name"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
@@ -1216,7 +1006,7 @@ export const AssetMaster: React.FC = () => {
           pagination={assetMasterPaginationInfo}
           emptyMessage="No assets found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
+          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -1266,7 +1056,7 @@ export const AssetMaster: React.FC = () => {
           columns={assetMasterColumns}
           selectedKeys={selectedAssetMasterColumnKeys}
           requiredKeys={requiredAssetMasterColumnKeys}
-          title="Customize Asset Master Table Columns"
+          title="Customize Table Columns"
         />
 
         {/* FILTER ASSET MODAL */}
@@ -1279,32 +1069,28 @@ export const AssetMaster: React.FC = () => {
             applyFilters()
           }}
           saveText="Apply Filter"
-          cancelText="Clear Filter"
           onCancel={() => clearFilters()}
-          size="half-screen"
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Asset Name
-                </label>
                 <Input
                   type="text"
+                  label='Asset Name'
                   value={tempFilters?.AssetName ?? ''}
                   onChange={(e) => handleFilterChange('AssetName', e.target.value)}
                   placeholder="Enter asset name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
+
                 <Input
+                  label='Status'
                   type="text"
                   value={tempFilters.Status || ''}
                   onChange={(e) => handleFilterChange('Status', e.target.value)}
-                  placeholder="Enter status (Active/Inactive)"
+                  placeholder="Enter status (Active / Inactive)"
                 />
               </div>
             </div>

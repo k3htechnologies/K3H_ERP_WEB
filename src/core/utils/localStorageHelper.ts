@@ -1,6 +1,7 @@
 import type { EmployeeData } from "@/features/authentication/models/AuthenticationModel"
 import { LOCAL_STORAGE_KEYS } from "../constants/localStorageKeys"
 import type { ModuleData } from "@/features/menu/models/MenuModel";
+import type { CountryStateCityDistrictVillageData } from "@/features/technical/models/TechnicalModel";
 
 export const LocalStorageHelper = {
     //#region STORE EMPLOYEE DATA
@@ -144,7 +145,6 @@ export const LocalStorageHelper = {
         }
     },
     //#endregion
-
     //#region GET DESIGNATION MASTER COLUMNS
     getDesignationMasterTableColumns: (): string | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DESIGNATION_MASTER_SELECTED_COLUMNS);
@@ -168,7 +168,6 @@ export const LocalStorageHelper = {
         }
     },
     //#endregion
-
     //#region GET EMPLOYEE MASTER COLUMNS
     getEmployeeMasterTableColumns: (): string | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.EMPLOYEE_MASTER_SELECTED_COLUMNS);
@@ -585,7 +584,6 @@ export const LocalStorageHelper = {
         }
     },
     //#endregion
-
     //#region GET MENU DATA 
     getMenuData: (): ModuleData[] | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MENU_MODULE)
@@ -601,6 +599,34 @@ export const LocalStorageHelper = {
         }
         return null
     },
+    //#endregion
+    //#region STORE COUNTRY_STATE_DISTRICT_CITY_VILLAGE DATA
+    storeCountry_State_District_City_Village_Data: (locationData: CountryStateCityDistrictVillageData[] | ModuleData): void => {
+        try {
+
+            localStorage.setItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS, JSON.stringify(locationData));
+
+        } catch (error) {
+            console.error('ERROR : STORING MENU DATA :', error)
+        }
+    },
+    //#endregion
+    //#region GET COUNTRY_STATE_DISTRICT_CITY_VILLAGE DATA 
+    getCountry_State_District_City_VillageData: (): CountryStateCityDistrictVillageData[] | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+
+                return JSON.parse(stored) as CountryStateCityDistrictVillageData[];
+
+            } catch (error) {
+                console.error('ERROR : GET COUNTRY STATE DISTRICT CITY VILLAGE DATA :', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
     //#region CLEAR LOCAL STORAGE 
     clearLocalStorageData: (): void => {
         try {
@@ -629,6 +655,7 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.TNC_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER);
         } catch (error) {
             console.error('ERROR : CLEARING LOCAL STORAGE:', error)
         }

@@ -20,10 +20,12 @@ export const THEME = {
         lg: '0.5rem',
         xl: '0.75rem',
         doublexl: '1rem',
+        xs: '1px',
     },
 
     fontSize: {
         xs: '10px',
+         mxs: '14px',
         sm: '14px',
         md: '16px',
         lg: '18px',

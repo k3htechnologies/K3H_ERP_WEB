@@ -7,7 +7,9 @@ import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   HolidayMappingMasterData,
-  FilterWithPaginationHolidayMappingMasterRequest
+  FilterWithPaginationHolidayMappingMasterRequest,
+  DeleteHolidayMappingMasterRequest,
+  AddUpdateHolidayMappingMasterRequest
 } from '@/features/holidayMappingMaster/models/HolidayMappingMasterModel';
 
 import { HolidayMappingMasterService } from '@/features/holidayMappingMaster/services/HolidayMappingMasterService'
@@ -17,11 +19,16 @@ import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { Edit, Trash2 } from 'lucide-react';
+import { HolidayMasterService } from '@/features/holidayMaster/services/HolidayMasterService';
+import { BranchMasterService } from '@/features/branchMaster/services/BranchMasteService';
+import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 
 
 export const HolidayMappingMaster: React.FC = () => {
@@ -42,8 +49,17 @@ export const HolidayMappingMaster: React.FC = () => {
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
   const [isShowCustomizeHolidayMappingMasterColumnsModal, setIsShowCustomizeHolidayMappingMasterColumnsModal] = useState(false);
-  const { canExport } = useMenuPermissions();
+  const { canAction, canExport } = useMenuPermissions();
   const hasFetchedInitialHolidayMappings = useRef(false)
+
+
+  // EDIT  Holiday Mapping MASTER STATES
+  const [editingHolidayMappingMasterData, setEditingHolidayMappingMasterData] = useState<HolidayMappingMasterData | null>(null)
+  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+
+  //DELETE Holiday MappingMASTER STATES
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+  const [deleteHolidayMappingMasterDetailsData, setDeleteHolidayMappingMasterDetailsData] = useState<HolidayMappingMasterData | null>(null)
 
   useEffect(() => {
     if (hasFetchedInitialHolidayMappings.current) return
@@ -192,6 +208,19 @@ export const HolidayMappingMaster: React.FC = () => {
     setIsViewModalOpen(true)
   }, [])
 
+  const handleEditHolidayMappingMaster = useCallback((row: HolidayMappingMasterData) => {
+    setEditingHolidayMappingMasterData({
+      ...row,
+
+    })
+    setIsAddUpdateModalOpen(true);
+
+  }, [])
+  const handleConfirmationDialogBoxOpen = useCallback((row: HolidayMappingMasterData) => {
+    setDeleteHolidayMappingMasterDetailsData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
+
   const holidayMappingMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -209,6 +238,51 @@ export const HolidayMappingMaster: React.FC = () => {
               tooltipThreshold={25}
               onClick={() => handleViewHolidayMappingDetails(row)}
             />
+            {canAction && (
+              <div className="flex items-center justify-end ml-2 w-20">
+                <>
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleEditHolidayMappingMaster(row)
+                    }}
+                    color='transparent'
+                    fullWidth
+                    isborderRadius
+                    size='sm'
+                    title="Edit Holiday Mapping"
+                    style={{
+                      color: '#0B3251',
+                      padding: '0px 8px'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleConfirmationDialogBoxOpen(row)
+                    }}
+                    color='transparent'
+                    fullWidth
+                    isborderRadius
+                    size='sm'
+                    style={{
+                      color: 'red',
+                      padding: '0px 8px'
+                    }}
+                    title="Delete Holiday Mapping"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+              </div>
+            )}
           </div>
         )
       },
@@ -382,6 +456,299 @@ export const HolidayMappingMaster: React.FC = () => {
     setTempFilters(newFilters)
   }
 
+
+  //#region ADD UPDATE EDIT ASSET Mapping MASTER
+  const handleAddHolidayMappingModal = () => {
+    setEditingHolidayMappingMasterData(null);
+    setIsAddUpdateModalOpen(true);
+  };
+
+  interface AddUpdateAssetMappingModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: AddUpdateHolidayMappingMasterRequest) => void;
+    data?: HolidayMappingMasterData | null;
+    loading?: boolean;
+  }
+
+  const AddUpdateHolidayMappingModel: React.FC<AddUpdateAssetMappingModalProps> = ({
+    isOpen,
+    onClose,
+    onSubmit,
+    data,
+    loading = false
+  }) => {
+    const [formData, setFormData] = useState<AddUpdateHolidayMappingMasterRequest>({
+      HolidayMappingMasterId: 0,
+      Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      HolidayMasterId: 0,
+      BranchMasterId: "",
+      HolidayDate: ""
+    });
+    // Single error object for all fields
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [dropdownLabels, setDropdownLabels] = useState<{
+      branch?: string;
+      holiday?: string;
+    }>({});
+    useEffect(() => {
+      if (isOpen) {
+        if (data) {
+          //Edit Holiday Mapping
+          setFormData({
+            HolidayMappingMasterId: data.HolidayMappingMasterId || 0,
+            Uniquekey: data.Uniquekey || "",
+            HolidayMasterId: data.HolidayMasterId || 0,
+            BranchMasterId: data.BranchMasterId || "",
+            HolidayDate: data.HolidayDate || ""
+          });
+          setDropdownLabels({
+            branch: data.BranchName ?? "",
+            holiday: data.HolidayName ?? ""
+
+          });
+        } else {
+          //Add  Holiday Mapping
+          setFormData({
+            HolidayMappingMasterId: 0,
+            Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            HolidayMasterId: 0,
+            BranchMasterId: "",
+            HolidayDate: ""
+          });
+        } setErrors({});
+      }
+    }, [isOpen, data]);
+
+    //handle input change
+    const handleFieldChange = (
+      field: keyof AddUpdateHolidayMappingMasterRequest,
+      value: any
+    ) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    };
+
+    // Submit handler
+    const handleSubmitAddUpdateAsset = (e: React.FormEvent) => {
+      e.preventDefault();
+      const requiredFields = [
+        "HolidayDate"
+      ];
+
+      const newErrors: any = {};
+      requiredFields.forEach((field) => {
+        const value = formData[field as keyof AddUpdateHolidayMappingMasterRequest];
+        if (value === null || value === undefined || value === "" ||
+          value === 0 || value.toString().trim() === "") {
+          const label = field.replace(/([A-Z])/g, " $1");
+          newErrors[field] = `${label} is required`;
+        }
+      });
+      setErrors(newErrors);
+
+      // STOP submit if any error
+      if (Object.keys(newErrors).length > 0) return;
+
+      onSubmit(formData);
+    };
+
+
+    const fetchholidayOptions = async (pageNumber: number, params?: { value?: string }) => {
+      const responseEither = await HolidayMasterService.apiCallPullHolidayMaster({
+        PageSize: 10,
+        PageNumber: pageNumber,
+        HolidayName: params?.value || "",
+      });
+      if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
+      const apiResponse = responseEither.right;
+      const holidayList = apiResponse?.Data?.map((item: any) => ({ label: item.HolidayName, value: String(item.HolidayMasterId) })) || [];
+      return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? holidayList.length, itemList: holidayList };
+    };
+
+    const fetchBranchNameOptions = async (pageNumber: number, params?: { value?: string }) => {
+      const responseEither = await BranchMasterService.apiCallPullBranchMaster({
+        PageSize: 10,
+        PageNumber: pageNumber,
+        BranchName: params?.value || "",
+      });
+      if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
+      const apiResponse = responseEither.right;
+      const branchList = apiResponse?.Data?.map((item: any) => ({ label: item.BranchName, value: String(item.BranchMasterId) })) || [];
+      return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? branchList.length, itemList: branchList };
+    };
+    const toDropdownInitialValue = (
+      id?: string | number | null,
+      label?: string
+    ) => {
+      if (!id) return null;
+      return {
+        label: label || String(id),
+        value: String(id),
+      };
+    };
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        onCancel={onClose}
+        title={formData.HolidayMappingMasterId === 0 ? "Add HolidayMapping" : "Update HolidayMapping"}
+        onSubmit={handleSubmitAddUpdateAsset}
+        saveText={formData.HolidayMappingMasterId === 0 ? "Save" : "Update"}
+        cancelText="Cancel"
+        loading={loading}
+      >
+        <div className="space-y-6">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <SingleSelectDropdownWithPagination
+                label="Holiday"
+                title="Select..."
+                size="lg"
+                dataFetchCallBack={fetchholidayOptions}
+                onSelected={(item) => handleFieldChange("HolidayMasterId", Number(item.value))}
+                initialValue={toDropdownInitialValue(formData.HolidayMasterId, dropdownLabels.holiday)}
+              />
+            </div>
+            <div>
+              <SingleSelectDropdownWithPagination
+                label="Branch"
+                title="Select..."
+                size="lg"
+                dataFetchCallBack={fetchBranchNameOptions}
+                onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
+                initialValue={toDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branch)}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Holiday Date <span className="text-red-500">*</span></label>
+              <Input
+                type="date"
+                value={formData.HolidayDate?.substring(0, 10)}
+                onChange={(e) => handleFieldChange("HolidayDate", e.target.value)}
+                className={`w-full p-2 rounded border ${errors.HolidayDate ? "border-red-500" : "border-gray-300"
+                  }`}
+              />
+              {errors.HolidayDate && (
+                <p className="text-red-500 text-xs mt-1">{errors.HolidayDate}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
+  const handleAddUpdateHolidayMappingMaster = async (formData: AddUpdateHolidayMappingMasterRequest) => {
+
+    setIsAddUpdateModalOpen(false);
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+        const response = await HolidayMappingMasterService.apiCallAddUpdateHolidayMappingMaster(formData);
+        if (E.isRight(response)) {
+          setIsAddUpdateModalOpen(false);
+          const isAdd = formData.HolidayMappingMasterId === 0
+          if (isAdd) {
+            const newRecord = response.right.Data[0] as HolidayMappingMasterData
+
+            setHolidayMappingMasterList(prevData => [newRecord, ...prevData]);
+
+            setPagination({
+              currentPage: pagination.currentPage,
+              totalRecords: pagination.totalRecords + 1,
+              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
+            });
+
+
+            addToast({ type: 'success', title: 'Holiday Mapping added successfully' })
+          } else {
+
+            const updatedRecord = response.right.Data[0] as HolidayMappingMasterData;
+
+            setHolidayMappingMasterList(prevData =>
+              prevData.map(item =>
+                item.HolidayMappingMasterId === formData.HolidayMappingMasterId
+                  ? updatedRecord
+                  : item
+              )
+            )
+
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+          }
+
+          setIsAddUpdateModalOpen(false);
+
+          setEditingHolidayMappingMasterData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+        }
+
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Operation failed' })
+      },
+      undefined,
+      formData.HolidayMappingMasterId === 0 ? 'Add Holiday Mapping' : 'Update Holiday Mapping...'
+    )
+  }
+
+  //#region DELETE Holiday Mapping MASTER
+  const handleDeleteHolidayMappingMaster = async () => {
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteHolidayMappingMasterDetailsData) return
+
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+
+      async () => {
+
+        const params: DeleteHolidayMappingMasterRequest = {
+          HolidayMappingMasterId: deleteHolidayMappingMasterDetailsData.HolidayMappingMasterId ?? 0,
+          UniqueKey: deleteHolidayMappingMasterDetailsData.Uniquekey ?? ""
+        }
+        const response = await HolidayMappingMasterService.apiCallDeleteHolidayMappingMaster(params);
+
+        if (E.isRight(response)) {
+          setHolidayMappingMasterList(prevData => prevData.filter(item => item.HolidayMappingMasterId !== deleteHolidayMappingMasterDetailsData.HolidayMappingMasterId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+
+          addToast({ type: "success", title: response.right.SuccessMessage[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+          setDeleteHolidayMappingMasterDetailsData(null);
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+        }
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message })
+      },
+      undefined,
+      'Delete Holiday Mapping Master data...'
+    )
+  }
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
@@ -404,7 +771,9 @@ export const HolidayMappingMaster: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeHolidayMappingMasterColumnsModal(true)}
-          isShowAddButton={false}
+          isShowAddButton={canAction}
+          addTitle="Add holiday Mapping"
+          onAdd={handleAddHolidayMappingModal}
           isShowImportButton={false}
           isShowExportButton={canExport}
           onExportExcel={handleExportHolidayMappingExcel}
@@ -481,6 +850,33 @@ export const HolidayMappingMaster: React.FC = () => {
             </div>
           </div>
         </Modal>
+
+        {/*  ADD EDIT UPDATE Holiday Mapping MODAL */}
+        <AddUpdateHolidayMappingModel
+          isOpen={isAddUpdateModalOpen}
+          onClose={() => {
+            setIsAddUpdateModalOpen(false)
+            setEditingHolidayMappingMasterData(null)
+          }}
+          onSubmit={handleAddUpdateHolidayMappingMaster}
+          data={editingHolidayMappingMasterData}
+          loading={isLoading}
+        />
+        {/* DELETE CONFIRMATION Holiday Mapping MODAL */}
+        <ConfirmationDialogBox
+          isOpen={isConfirmationDialogBoxOpen}
+          onClose={() => {
+            setIsConfirmationDialogBoxOpen(false)
+            setDeleteHolidayMappingMasterDetailsData(null)
+          }}
+          onConfirm={handleDeleteHolidayMappingMaster}
+          title="You are about to delete a Holiday Mapping?"
+          message="Deleting this Holiday Mapping Data will permanently remove its contents."
+          confirmText="Delete"
+          cancelText="Cancel"
+          loading={isLoading}
+          variant="danger"
+        />
       </div>
     </>
   )

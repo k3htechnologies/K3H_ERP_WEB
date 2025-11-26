@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Modal } from '@/ui/components/Modal/Modal'
-import { Button } from '@/ui/components/forms'
 import Checkbox from '@/ui/components/forms/Checkbox'
 import type { TableColumn } from '@/ui/components/DataTable/DataTable'
 
@@ -25,9 +24,9 @@ export const CustomizeColumnsModal: React.FC<CustomizeColumnsModalProps> = ({
 }) => {
   const [localKeys, setLocalKeys] = useState<string[]>(selectedKeys)
 
+  // Sync local state when modal opens / selectedKeys changes
   useEffect(() => {
     if (isOpen) {
-      // ensure required keys are always included
       setLocalKeys(
         Array.from(
           new Set([
@@ -38,6 +37,17 @@ export const CustomizeColumnsModal: React.FC<CustomizeColumnsModalProps> = ({
       )
     }
   }, [isOpen, selectedKeys, requiredKeys])
+
+  // Derived booleans for the two checkboxes
+  const allColumnKeys = useMemo(() => columns.map(c => c.key), [columns])
+  const selectAllChecked = useMemo(
+    () => allColumnKeys.every(k => localKeys.includes(k)),
+    [allColumnKeys, localKeys]
+  )
+  const clearAllChecked = useMemo(
+    () => localKeys.length === requiredKeys.length,
+    [localKeys, requiredKeys]
+  )
 
   const toggleKey = (key: string) => {
     if (requiredKeys.includes(key)) return
@@ -52,13 +62,32 @@ export const CustomizeColumnsModal: React.FC<CustomizeColumnsModalProps> = ({
     setLocalKeys(
       Array.from(
         new Set([
-          ...columns.map(c => c.key),
+          ...allColumnKeys,
           ...requiredKeys,
         ]),
       ),
     )
 
   const clearAll = () => setLocalKeys([...requiredKeys])
+
+  // Checkbox handlers
+  const handleSelectAllCheckbox = (checked: boolean) => {
+    if (checked) {
+      selectAll()
+    } else {
+      // unchecking sets to required-only (consistent with Clear All)
+      clearAll()
+    }
+  }
+
+  const handleClearAllCheckbox = (checked: boolean) => {
+    if (checked) {
+      clearAll()
+    } else {
+      // unchecking sets to all selected
+      selectAll()
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,20 +102,32 @@ export const CustomizeColumnsModal: React.FC<CustomizeColumnsModalProps> = ({
       onCancel={onClose}
       title={title}
       onSubmit={handleSubmit}
-      saveText="Apply Changes"
-      cancelText="Cancel"
+      saveText="Save Changes"
+      size='small30'
     >
       <div className="space-y-4">
-        <div className="flex items-center justify-end space-x-2">
-          <Button type="button" onClick={selectAll} size="sm" color="gray">
-            Select All
-          </Button>
-          <Button type="button" onClick={clearAll} size="sm" color="gray">
-            Clear All
-          </Button>
+        {/* Top action checkboxes */}
+        <div className="flex items-center justify-end space-x-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              label="Select All"
+              checked={selectAllChecked}
+              onChange={(e) => handleSelectAllCheckbox(e.target.checked)}
+              size="sm"
+            />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              label="Clear All"
+              checked={clearAllChecked}
+              onChange={(e) => handleClearAllCheckbox(e.target.checked)}
+              size="sm"
+            />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto thin-scroll">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-2 overflow-y-auto thin-scroll">
           {columns.map(col => {
             const checked = localKeys.includes(col.key)
             const required = requiredKeys.includes(col.key)
@@ -94,19 +135,21 @@ export const CustomizeColumnsModal: React.FC<CustomizeColumnsModalProps> = ({
             return (
               <label
                 key={col.key}
-                className="flex items-center justify-between px-3 py-2 border rounded-md bg-gray-50"
+                className="flex items-center justify-between px-3 py-2  rounded-md bg-[#E4F0FF]"
               >
-                <span className="text-sm text-gray-800 flex-1">
+                <span
+                  className={`text-sm flex-1 ${required ? 'text-gray-500' : 'text-black'}`}
+                >
                   {col.label}{' '}
                   {required && (
-                    <span className="ml-1 text-xs text-blue-600">
+                    <span className="ml-1 text-xs text-gray-500">
                       (Required)
                     </span>
                   )}
                 </span>
+
                 <Checkbox
                   size="sm"
-                  type="checkbox"
                   checked={checked}
                   disabled={required}
                   onChange={() => toggleKey(col.key)}

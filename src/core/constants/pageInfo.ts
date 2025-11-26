@@ -107,6 +107,11 @@ export const getPageInfo = (path: string) => {
                 title: 'Vendor Management',
                 description: 'Manage and organize branch associations with complete CRUD operations',
             }
+            case '/projectMaster':
+            return {
+                title: 'Project Management',
+                description: 'Manage and organize branch associations with complete CRUD operations',
+            }
 
         case '/employeeMaster':
             return {

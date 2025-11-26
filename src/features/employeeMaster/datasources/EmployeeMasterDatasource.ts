@@ -3,7 +3,8 @@ import { EmployeeMasterApi } from '@/features/employeeMaster/api/EmployeeMasterA
 import type {
     FilterWithPaginationEmployeeMasterRequest,
     AddUpdateEmployeeMasterRequest,
-    EmployeeMasterListResponse
+    EmployeeMasterListResponse,
+    LocationResponse
 } from '../models/EmployeeMasterModel'
 
 export abstract class EmployeeMasterDatasource {
@@ -16,6 +17,15 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
     private get k3hHttpClient() {
         return baseClient
     }
+
+
+  async pullLocationHierarchy(): Promise<LocationResponse> {
+    debugger
+    const response = await this.k3hHttpClient.getRequestWithAuthentication(
+        `Static/PullCountryStateCityDistrictVillage`
+    );
+    return response;
+}
 
 
     async pullEmployeeMaster(params: FilterWithPaginationEmployeeMasterRequest): Promise<EmployeeMasterListResponse> {

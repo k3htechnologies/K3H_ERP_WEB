@@ -2,13 +2,14 @@ import type { ApiResponse } from '@/core/api/ApiResponse';
 import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions';
 import { TechnicalApi } from '@/features/technical/api/TechnicalApi'
-import type { FilterRefreshTokenRequest, FilterWithPaginationNotificationRequest, NotificationListResponse, TechnicalListResponse } from '@/features/technical/models/TechnicalModel'
+import type { CountryStateCityDistrictVillageListResponse, FilterPullExcelSample, FilterRefreshTokenRequest, FilterWithPaginationNotificationRequest, NotificationListResponse, TechnicalListResponse } from '@/features/technical/models/TechnicalModel'
 
 export abstract class TechnicalDatasource {
 
     abstract getEnvironment(): Promise<TechnicalListResponse>;
     abstract pullNotification(params: FilterWithPaginationNotificationRequest): Promise<NotificationListResponse>;
     abstract refreshToken(params: FilterRefreshTokenRequest): Promise<ApiResponse<string>>;
+    abstract getCountryStateDistrictCityVillage(): Promise<CountryStateCityDistrictVillageListResponse>;
 }
 
 export class TechnicalDatasourceImpl implements TechnicalDatasource {
@@ -72,6 +73,63 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
         } catch (error) {
 
             console.error('ERROR: REFRESH TOKEN :', error);
+            throw error
+        }
+    }
+
+    async getCountryStateDistrictCityVillage(): Promise<CountryStateCityDistrictVillageListResponse> {
+        try {
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${TechnicalApi.PULL_COUNTRY_STATE_CITY_DISTRICT_VILLAGE}`);
+
+
+            return response;
+
+        } catch (error) {
+
+            console.error('Error: GET COUNTRY STATE DISTRICT CITY VILLAGE :', error);
+
+            throw error
+        }
+    }
+
+    async excelImport(formData: FormData): Promise<string> {
+
+        try {
+
+            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
+                TechnicalApi.EXCEL_IMPORT,
+                formData
+            )
+
+            return response
+        } catch (error) {
+
+            console.error('ERROR: EXCEL IMPORT :', error)
+
+            if (error === TokenExpiredException) {
+                await this.excelImport(formData);
+            }
+            throw error
+        }
+    }
+
+    async pullExcelSample(params: FilterPullExcelSample): Promise<string> {
+        try {
+            const queryParams = new URLSearchParams({
+                TableName: (params.TableName ?? '').toString()
+            })
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${TechnicalApi.PULL_EXCEL_SAMPLE}?${queryParams.toString()}`
+            )
+
+            return response;
+
+        } catch (error) {
+
+            console.error('ERROR: PULL EXCEL SAMPLE :', error);
             throw error
         }
     }

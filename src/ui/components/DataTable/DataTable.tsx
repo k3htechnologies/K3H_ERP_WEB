@@ -378,7 +378,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                     fontWeight: '500',
                     lineHeight: '1.4',
                     letterSpacing: '0%',
-                    backgroundColor: '#E5E5E5',
+                    backgroundColor: '#E4F0FF',
                     borderBottom: '1px solid #D1D5DB', // ✅ Only bottom border (prevents double)
                     borderRight: '1px solid #D1D5DB',  // ✅ Keep vertical separation
                   }}

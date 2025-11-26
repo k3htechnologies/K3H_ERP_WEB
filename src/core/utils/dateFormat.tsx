@@ -11,7 +11,7 @@ export const formatDate_dd_MonthName_yy_hh_mm = (dateString: string, timeString?
 
   try {
     let date: Date
-    
+
     // If timeString is provided, combine date and time
     if (timeString && timeString.trim() !== '') {
       const combinedDateTime = `${dateString}T${timeString}`
@@ -19,7 +19,7 @@ export const formatDate_dd_MonthName_yy_hh_mm = (dateString: string, timeString?
     } else {
       date = new Date(dateString)
     }
-    
+
     // Check if date is valid
     if (isNaN(date.getTime())) {
       return ''
@@ -37,11 +37,11 @@ export const formatDate_dd_MonthName_yy_hh_mm = (dateString: string, timeString?
     let hours = date.getHours()
     const minutes = date.getMinutes()
     const ampm = hours >= 12 ? 'PM' : 'AM'
-    
+
     // Convert to 12-hour format
     hours = hours % 12
     hours = hours ? hours : 12 // 0 should be 12
-    
+
     const formattedTime = `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`
 
     return `${day} ${month} ${year} ${formattedTime}`
@@ -64,7 +64,7 @@ export const formatDate_dd_MonthName_yy = (dateString: string): string => {
 
   try {
     const date = new Date(dateString)
-    
+
     // Check if date is valid
     if (isNaN(date.getTime())) {
       return ''
@@ -84,3 +84,55 @@ export const formatDate_dd_MonthName_yy = (dateString: string): string => {
     return ''
   }
 }
+
+/**
+ * CONVERT "YYYY-MM-DD" → "DD-MM-YYYY"
+ * Handles null, undefined, empty and invalid date safely.
+ */
+export const formatDate_dd_mm_yyyy = (dateString?: string | null): string => {
+
+  if (!dateString || typeof dateString !== 'string' || dateString.trim() === '') {
+    return '';
+  }
+
+  try {
+
+    const date = new Date(dateString);
+
+    // Invalid date check
+    if (isNaN(date.getTime())) return '';
+
+    const day = date.getUTCDate().toString().padStart(2, '0');
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+    const year = date.getUTCFullYear();
+
+    return `${day}-${month}-${year}`;
+
+  }
+  catch {
+    return '';
+  }
+
+};
+
+export const convert_dd_mm_yyyy_To_Yyyy_mm_dd = (
+  value?: string | null
+): string | null => {
+  if (!value) return null;
+
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(trimmed);
+  if (!match) return null;
+
+  const [, dd, mm, yyyy] = match;
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+
+export const convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd = (date?: string | null) => {
+  if (!date) return "";
+  return date.split("T")[0];
+};
+

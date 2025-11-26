@@ -26,6 +26,8 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Edit, Trash2 } from 'lucide-react';
+import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
+import { BranchMasterService } from '@/features/branchMaster/services/BranchMasteService';
 
 
 export const EarningMaster: React.FC = () => {
@@ -201,17 +203,17 @@ export const EarningMaster: React.FC = () => {
   }, [])
 
   const handleEditEarningMaster = useCallback((row: EarningMasterData) => {
-      setEditingEarningMasterData({
-        ...row,
-        Name: row.Name || ''
-      })
-      setIsAddUpdateModalOpen(true);
-  
-    }, [])
-   const handleConfirmationDialogBoxOpen = useCallback((row: EarningMasterData) => {
-      setDeleteEarningMasterDetailsData(row)
-      setIsConfirmationDialogBoxOpen(true)
-    }, [])
+    setEditingEarningMasterData({
+      ...row,
+      Name: row.Name || ''
+    })
+    setIsAddUpdateModalOpen(true);
+
+  }, [])
+  const handleConfirmationDialogBoxOpen = useCallback((row: EarningMasterData) => {
+    setDeleteEarningMasterDetailsData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
   const earningMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -456,7 +458,6 @@ export const EarningMaster: React.FC = () => {
     loadEarnings(1, {})
     setShowFilterPopup(false)
   }
-
   const handleFilterChange = (key: string, value: string) => {
     const newFilters = { ...tempFilters }
     if (value.trim()) {
@@ -467,7 +468,7 @@ export const EarningMaster: React.FC = () => {
     setTempFilters(newFilters)
   }
 
-  //ADD UPDATE WEEK OFF MASTER
+  //ADD UPDATE Earning MASTER
   const handleAddEarningModal = () => {
     setEditingEarningMasterData(null);
     setIsAddUpdateModalOpen(true);
@@ -510,7 +511,11 @@ export const EarningMaster: React.FC = () => {
             Name: data.Name || "",
             Type: data.Type || "",
             Value: data.Value || 0,
-            BranchMasterId: data.BranchMasterId || 0
+            BranchMasterId: data.BranchMasterId || 0,
+
+          });
+          setDropdownLabels({
+            branchName: data.BranchName || "",
           });
         } else {
           // Add Earning
@@ -535,19 +540,22 @@ export const EarningMaster: React.FC = () => {
       setFormData((prev) => ({ ...prev, [field]: value }));
       setErrors((prev) => ({ ...prev, [field]: "" }));
     };
-    const handleSubmitAddWeekOff = (e: React.FormEvent) => {
+    const handleSubmitAddEarning = (e: React.FormEvent) => {
+      debugger
       e.preventDefault();
       const requiredFields = [
         "Name",
         "Type",
-        "Value"
+        "Value",
+        "BranchMasterId"
       ];
 
       const newErrors: any = {};
 
       requiredFields.forEach((field) => {
         const value = formData[field as keyof AddUpdateEarningMasterRequest];
-        if (value === null || value === undefined || value.toString().trim() === "") {
+        if (value === null || value === undefined ||
+        value === 0 || value.toString().trim() === "") {
           const label = field.replace(/([A-Z])/g, " $1");
           newErrors[field] = `${label} is required`;
         }
@@ -559,6 +567,31 @@ export const EarningMaster: React.FC = () => {
 
       onSubmit(formData);
     };
+    const fetchBranchOptions = async (pageNumber: number, params?: { value?: string }) => {
+      const responseEither = await BranchMasterService.apiCallPullBranchMaster({
+        PageSize: 10,
+        PageNumber: pageNumber,
+        BranchName: params?.value || "",
+        IsCheckPermission: true,
+      });
+      if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
+      const apiResponse = responseEither.right;
+      const branchList = apiResponse?.Data?.map((item: any) => ({ label: item.BranchName, value: String(item.BranchMasterId) })) || [];
+      return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? branchList.length, itemList: branchList };
+    };
+    const toDropdownInitialValue = (
+      id?: number,
+      label?: string
+    ): { label: string; value: string | number } | null => {
+      if (!id) return null;
+      return {
+        label: label || String(id),
+        value: String(id),
+      };
+    };
+    const [dropdownLabels, setDropdownLabels] = useState<{
+      branchName?: string;
+    }>({});
 
     return (
       <Modal
@@ -566,7 +599,7 @@ export const EarningMaster: React.FC = () => {
         onClose={onClose}
         onCancel={onClose}
         title={formData.EarningMasterId === 0 ? "Add Earning" : "Update Earning"}
-        onSubmit={handleSubmitAddWeekOff}
+        onSubmit={handleSubmitAddEarning}
         saveText={formData.EarningMasterId === 0 ? "Save" : "Update"}
         cancelText='Cancel'
         loading={loading}
@@ -578,7 +611,7 @@ export const EarningMaster: React.FC = () => {
             {/*Earning Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-              Earning Name <span className="text-red-500">*</span>
+                Earning Name <span className="text-red-500">*</span>
               </label>
               <Input
                 value={formData.Name ?? ""}
@@ -626,6 +659,16 @@ export const EarningMaster: React.FC = () => {
               {errors.Value && (
                 <p className="text-red-500 text-xs mt-1">{errors.Value}</p>
               )}
+            </div>
+            <div>
+              <SingleSelectDropdownWithPagination
+                label="Branch"
+                title="Select..."
+                size="lg"
+                dataFetchCallBack={fetchBranchOptions}
+                onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
+                initialValue={toDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
+              />
             </div>
           </div>
         </div>

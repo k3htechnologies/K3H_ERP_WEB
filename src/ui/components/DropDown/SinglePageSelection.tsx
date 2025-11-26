@@ -1,18 +1,15 @@
 import { useState, useEffect, useRef, forwardRef } from "react";
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
 import type { SinglePageSelectionProps } from "@/core/types/dropDownSelectionType";
+import { THEME } from "@/core/constants/theme";
 
-export interface DropdownOption {
-  DepartmentName: string | "";
-  value: string | number;
-  DepartmentCode?: string;
-  LastModifiedBy?: string;
-  LastModifiedDate?: string | null;
+export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectionProps & {
+  labelKey?: string;
+  valueKey?: string;
+  searchable?: boolean;
+  error?: string;
+  required?: boolean;
 }
-
-export const SinglePageSelection = forwardRef<
-  HTMLDivElement,
-  SinglePageSelectionProps
 >(
   (
     {
@@ -22,168 +19,240 @@ export const SinglePageSelection = forwardRef<
       onChange,
       disabled = false,
       placeholder = "Select...",
+      labelKey = "label",
+      valueKey = "value",
+      searchable = true,
       size = "md",
-      theme = {
-        spacing: { sm: "4px", md: "8px", lg: "12px", xl: "16px", xxl: "20px" },
-        fontSize: { sm: "12px", md: "14px", lg: "16px" },
-      },
+      required = false,
+      error,
     },
-    ref //  Added this to fix the forwardRef warning
+    ref
   ) => {
+    const theme = THEME;
+
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredOptions, setFilteredOptions] = useState(options);
+    const [openUpward, setOpenUpward] = useState(false);
+
     const containerRef = useRef<HTMLDivElement>(null);
 
     const sizeConfig = {
-      sm: { height: "36px", padding: `${theme.spacing.sm} ${theme.spacing.lg}`, fontSize: theme.fontSize.sm, iconSize: 16 },
-      md: { height: "44px", padding: `${theme.spacing.md} ${theme.spacing.xl}`, fontSize: theme.fontSize.md, iconSize: 20 },
-      lg: { height: "52px", padding: `${theme.spacing.lg} ${theme.spacing.xxl}`, fontSize: theme.fontSize.lg, iconSize: 24 },
+      sm: { height: "36px", padding: "6px 12px", fontSize: theme.fontSize.sm },
+      md: { height: "44px", padding: "8px 16px", fontSize: theme.fontSize.md },
+      lg: { height: "52px", padding: "10px 20px", fontSize: theme.fontSize.lg },
     };
 
     const currentSize = sizeConfig[size];
 
-    //  Filter options by DepartmentName
+    // FILTER LOGIC
     useEffect(() => {
-      if (searchTerm.trim() === "") {
+      if (!searchable) {
+        setFilteredOptions(options);
+        return;
+      }
+
+      if (!searchTerm.trim()) {
         setFilteredOptions(options);
       } else {
-        const filtered = options.filter((opt) =>
-          opt.DepartmentName.toLowerCase().includes(searchTerm.toLowerCase())
+        setFilteredOptions(
+          options.filter((opt: any) =>
+            String(opt[labelKey])
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())
+          )
         );
-        setFilteredOptions(filtered);
       }
-    }, [searchTerm, options]);
+    }, [searchTerm, options, searchable, labelKey]);
 
-    //  Close dropdown on outside click
+    // CLICK OUTSIDE
     useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const handleClick = (e: MouseEvent) => {
+        if (
+          containerRef.current &&
+          !containerRef.current.contains(e.target as Node)
+        ) {
           setIsOpen(false);
         }
       };
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      document.addEventListener("mousedown", handleClick);
+      return () => document.removeEventListener("mousedown", handleClick);
     }, []);
 
-    const handleSelect = (option: DropdownOption) => {
-      onChange(option.value);
-      setIsOpen(false);
-      setSearchTerm("");
+    // SELECTED LABEL
+    const selectedLabel =
+      options.find((opt: any) => opt[valueKey] === value)?.[labelKey] ||
+      placeholder;
+
+    // DETECT SPACE FOR UPWARD OPEN
+    const handleToggle = () => {
+      if (disabled) return;
+
+      const rect = containerRef.current?.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      if (rect) {
+        const dropdownHeight = 300; // approx height
+
+        if (rect.bottom + dropdownHeight > windowHeight) {
+          setOpenUpward(true);
+        } else {
+          setOpenUpward(false);
+        }
+      }
+
+      setIsOpen(!isOpen);
     };
 
-    const selectedLabel =
-      options.find((opt) => opt.value === value)?.DepartmentName || placeholder;
-
     return (
-      <div ref={ref || containerRef} style={{ position: "relative", width: "100%" }}>
+      <div
+        ref={ref || containerRef}
+        style={{ width: "100%", position: "relative" }}
+      >
+        {/* Label */}
         {label && (
           <label
             style={{
               display: "block",
-              marginBottom: "6px",
-              fontWeight: 600,
+              marginBottom: "4px",
+              fontWeight: 500,
               fontSize: theme.fontSize.md,
-              color: "#333",
+              color: theme.colors.text,
             }}
           >
             {label}
+            {required && <span style={{ color: theme.colors.error, marginLeft: '4px' }}>*</span>}
           </label>
         )}
 
-         {/* Select Box  */}
+        {/* Select box */}
         <div
-          onClick={() => !disabled && setIsOpen((prev) => !prev)}
+          onClick={handleToggle}
           style={{
             height: currentSize.height,
-            padding: currentSize.padding,
             fontSize: currentSize.fontSize,
-            border: "1px solid #ccc",
+            padding: currentSize.padding,
             borderRadius: "6px",
-            backgroundColor: disabled ? "#f5f5f5" : "#fff",
+            backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
             cursor: disabled ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
+
           }}
         >
           <span style={{ color: value ? "#000" : "#888" }}>{selectedLabel}</span>
           {isOpen ? (
-            <ChevronUp color="#007BFF" size={currentSize.iconSize} />
+            <ChevronUp size={20} color="#888" />
           ) : (
-            <ChevronDown color="#007BFF" size={currentSize.iconSize} />
+            <ChevronDown size={20} color="#888" />
           )}
         </div>
-
-        {/* Dropdown Menu */}
+        {/* Dropdown */}
         {isOpen && !disabled && (
           <div
             style={{
               position: "absolute",
-              top: "100%",
+              top: openUpward ? "auto" : "102%",
+              bottom: openUpward ? "102%" : "auto",
               left: 0,
               right: 0,
-              backgroundColor: "#fff",
+              backgroundColor: theme.colors.background,
               border: "1px solid #ccc",
               borderRadius: "6px",
-              marginTop: "4px",
-              zIndex: 10,
+              marginTop: openUpward ? "0" : "4px",
+              marginBottom: openUpward ? "4px" : "0",
+              zIndex: 20,
               boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-              overflow: "hidden",
+              maxHeight: "260px",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
-            {/* Search Box */}
-            <div style={{ position: "relative", borderBottom: "1px solid #eee" }}>
-              <Search
-                size={16}
-                color="#999"
-                style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }}
-              />
-              <input
-                type="text"
-                placeholder="Search department..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                autoFocus
+            {/* Search input (sticky) */}
+            {searchable && (
+              <div
                 style={{
-                  width: "100%",
-                  padding: "8px 12px 8px 32px",
-                  border: "none",
-                  outline: "none",
-                  fontSize: theme.fontSize.md,
+                  position: "sticky",
+                  top: 0,
+                  backgroundColor: theme.colors.background,
+                  zIndex: 30,
+                  borderBottom: "1px solid #eee",
+                  padding: "8px 12px",
+                  display: "flex",
+                  alignItems: "center",
+                  borderRadius: "6px",
                 }}
-              />
-            </div>
+              >
+                <Search size={16} color="#888" style={{ marginRight: "8px" }} />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  autoFocus
+                  style={{
+                    width: "100%",
+                    fontSize: theme.fontSize.md,
+                    border: "none",
+                    outline: "none",
+                  }}
+                />
+              </div>
+            )}
 
-            {/* Options */}
-            <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+            {/* Scrollable options */}
+            <div className="thin-scroll" style={{ overflowY: "auto", flex: 1 }}>
               {filteredOptions.length > 0 ? (
-                filteredOptions.map((opt) => (
+                filteredOptions.map((opt: any, idx: number) => (
                   <div
-                    key={opt.value}
-                    onClick={() => handleSelect(opt)}
-                    style={{
-                      padding: "8px 12px",
-                      borderBottom: "1px solid #f0f0f0",
-                      backgroundColor: value === opt.value ? "#e6f0ff" : "#fff",
-                      cursor: "pointer",
+                    key={idx}
+                    onClick={() => {
+                      onChange(opt[valueKey]);
+                      setIsOpen(false);
+                      setSearchTerm("");
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f5f9ff")}
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.backgroundColor =
-                        value === opt.value ? "#e6f0ff" : "#fff")
-                    }
+                    style={{
+                      padding: "10px 14px",
+                      borderBottom: "1px solid #f3f3f3",
+                      cursor: "pointer",
+                      backgroundColor:
+                        opt[valueKey] === value
+                          ? "#e6f0ff"
+                          : theme.colors.background,
+                    }}
                   >
-                    {opt.DepartmentName}
+                    {opt[labelKey]}
                   </div>
                 ))
               ) : (
-                <div style={{ padding: "10px", textAlign: "center", color: "#888" }}>
+                <div
+                  style={{
+                    padding: "12px",
+                    textAlign: "center",
+                    color: "#999",
+                  }}
+                >
                   No results found
                 </div>
               )}
             </div>
           </div>
+        )}
+        {/* Error message */}
+        {error && (
+          <p
+            style={{
+              color: theme.colors.error,
+              fontSize: theme.fontSize.sm,
+              marginTop: '4px',
+              marginLeft: '0',
+              marginBottom: '0',
+            }}
+          >
+            {error}
+          </p>
         )}
       </div>
     );

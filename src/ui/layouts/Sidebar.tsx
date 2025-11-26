@@ -50,16 +50,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
   const normalizedLocationPath = normalizePath(location.pathname);
-  
+
   const findActiveMenuItem = (currentPath: string) => {
-    const normalizedCurrent = normalizePath(currentPath)
+    const normalizedCurrent = normalizePath(currentPath.split("/").filter(Boolean)[0])
     if (!modules || modules.length === 0) return null
 
     for (const module of modules) {
       if (!module.SubModuleData || module.SubModuleData.length === 0) continue
 
       for (const subModule of module.SubModuleData) {
-        
+
         const subModuleRoute = normalizePath(mapPathToRoute(subModule.Path))
         if (subModuleRoute && subModuleRoute === normalizedCurrent) {
           return { module, subModule, subSubModule: null }
@@ -82,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const activeMenuItem = findActiveMenuItem(location.pathname)
     if (activeMenuItem) {
       const newExpanded = new Set<string>()
-      
+
       if (activeMenuItem.module) {
         newExpanded.add(`module-${activeMenuItem.module.ModulesMasterId}`)
       }
@@ -95,12 +95,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [location.pathname, modules])
 
-  
+
   const handleImageError = useCallback((iconPath: string) => {
     setImageErrors(prev => new Set(prev).add(iconPath))
   }, [])
 
-  
+
   const renderIcon = (iconPath: string | undefined, fallbackIcon: React.ReactNode, size: string = "h-5 w-5") => {
     if (iconPath && iconPath.startsWith('assets/') && !imageErrors.has(iconPath)) {
       return (
@@ -116,14 +116,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }
 
   const menuItems: MenuItem[] = [
-    
+
     {
       id: 'dashboard',
       label: 'Dashboard',
       icon: <Home className="h-5 w-5" />,
       path: '/dashboard'
     },
-    
+
     ...(modules || []).map(module => ({
       id: `module-${module.ModulesMasterId}`,
       label: module.ModuleName,
@@ -132,7 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         id: `submodule-${subModule.SubModulesMasterId}`,
         label: subModule.SubModuleName,
         icon: renderIcon(subModule.Icon, <Home className="h-4 w-4" />, "h-4 w-4"),
-       
+
         path: normalizePath(mapPathToRoute(subModule.Path)),
         children: (subModule.SubSubModuleData || [])
           .filter(subSubModule => subSubModule?.IsDisplay)
@@ -161,9 +161,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       toggleExpanded(item.id)
     } else {
       if (item.path) {
-        
+
         const route = mapPathToRoute(item.path)
-        
+
         const navigateTo = route || item.path;
 
         navigate(navigateTo)
@@ -284,8 +284,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       } else {
         return {
           container: `${item.path?.toUpperCase() === '/DASHBOARD'
-              ? 'relative'
-              : 'relative ml-8 pl-4'
+            ? 'relative'
+            : 'relative ml-8 pl-4'
             }`,
           button: `
             w-full flex items-center space-x-3 px-4 py-2 rounded-md transition-all duration-200
@@ -377,6 +377,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ${isOpen ? 'w-[18rem]' : 'w-16'}
         h-screen lg:h-full overflow-hidden flex flex-col z-50
       `}>
+
         {/* Fixed Header with Logo and User Details */}
         <div className="flex-shrink-0 border-b border-gray-200 bg-white">
           <div className="flex items-center justify-between h-16 px-4">
@@ -392,7 +393,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 />
                 <div className="flex-1 min-w-0">
                   {(() => {
-                    
+
                     return (
                       <>
                         <div className="text-sm font-medium text-gray-800 truncate">{LocalStorageHelper.getStoredEmployeeData()?.FullName}</div>
@@ -428,7 +429,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
         </div>
-
+        
+        <div className="w-full h-2 bg-[#f1f1f1]" />
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto min-h-0 flex flex-col thin-scroll">
@@ -436,7 +438,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="space-y-0">
               {menuItems.map(item => renderMenuItem(item))}
             </div>
-
             {/* Flexible spacer to push footer down when content is minimal */}
             <div className="flex-1"></div>
           </nav>

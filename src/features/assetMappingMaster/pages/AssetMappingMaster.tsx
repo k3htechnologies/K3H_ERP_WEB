@@ -27,6 +27,8 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { Edit, Trash2 } from 'lucide-react';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
+import { assetMasterService } from '@/features/assetMaster/services/AssetMasterService';
+import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
 
 
 export const AssetMappingMaster: React.FC = () => {
@@ -67,19 +69,19 @@ export const AssetMappingMaster: React.FC = () => {
   //#endregion
 
   //#region MENU PERMISSIONS
-  const { canAction,canExport } = useMenuPermissions();
+  const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
   //#region INITIALIZATION
   const hasFetchedInitialAssetMappings = useRef(false)
 
-   // EDIT ASSET Mapping MASTER STATES
-   const[editingAssetMappingMasterData,setEditingAssetMappingMasterData]=useState<AssetMappingMasterData|null>(null)
-   const[isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-  
-    //DELETE ASSET Mapping MASTER STATES
-   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-   const[deleteAssetMappingMasterDetailsData,setDeleteAssetMappingMasterDetailsData]=useState<AssetMappingMasterData|null>(null)
+  // EDIT ASSET Mapping MASTER STATES
+  const [editingAssetMappingMasterData, setEditingAssetMappingMasterData] = useState<AssetMappingMasterData | null>(null)
+  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+
+  //DELETE ASSET Mapping MASTER STATES
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+  const [deleteAssetMappingMasterDetailsData, setDeleteAssetMappingMasterDetailsData] = useState<AssetMappingMasterData | null>(null)
 
   useEffect(() => {
 
@@ -278,18 +280,18 @@ export const AssetMappingMaster: React.FC = () => {
     setIsViewModalOpen(true)
   }, [])
 
-  const handleEditAssetMappingMaster=useCallback((row:AssetMappingMasterData)=>{
-      setEditingAssetMappingMasterData({
-        ...row,
-  
-      })
-      setIsAddUpdateModalOpen(true);
-  
-    },[])
-   const handleConfirmationDialogBoxOpen=useCallback((row:AssetMappingMasterData)=>{
-      setDeleteAssetMappingMasterDetailsData(row)
-      setIsConfirmationDialogBoxOpen(true)
-  },[])
+  const handleEditAssetMappingMaster = useCallback((row: AssetMappingMasterData) => {
+    setEditingAssetMappingMasterData({
+      ...row,
+
+    })
+    setIsAddUpdateModalOpen(true);
+
+  }, [])
+  const handleConfirmationDialogBoxOpen = useCallback((row: AssetMappingMasterData) => {
+    setDeleteAssetMappingMasterDetailsData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
 
   const assetMappingMasterColumns = useMemo<TableColumn[]>(
     () => [
@@ -308,7 +310,7 @@ export const AssetMappingMaster: React.FC = () => {
               tooltipThreshold={25}
               onClick={() => handleViewAssetMappingDetails(row)}
             />
-              {canAction && (
+            {canAction && (
               <div className="flex items-center justify-end ml-2 w-20">
                 <>
                   <Button
@@ -408,11 +410,10 @@ export const AssetMappingMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value) => (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            value === 'Active' ? 'bg-green-100 text-green-800' : 
-            value === 'Inactive' ? 'bg-red-100 text-red-800' : 
-            'bg-gray-100 text-gray-800'
-          }`}>
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${value === 'Active' ? 'bg-green-100 text-green-800' :
+              value === 'Inactive' ? 'bg-red-100 text-red-800' :
+                'bg-gray-100 text-gray-800'
+            }`}>
             {value || 'N/A'}
           </span>
         )
@@ -642,11 +643,10 @@ export const AssetMappingMaster: React.FC = () => {
             <div className="flex justify-between items-center py-2 border-b border-gray-200">
               <span className="text-sm font-medium text-gray-700">Status</span>
               <span className="text-sm text-blue-600 font-medium">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  data.Status === 'Active' ? 'bg-green-100 text-green-800' : 
-                  data.Status === 'Inactive' ? 'bg-red-100 text-red-800' : 
-                  'bg-gray-100 text-gray-800'
-                }`}>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${data.Status === 'Active' ? 'bg-green-100 text-green-800' :
+                    data.Status === 'Inactive' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                  }`}>
                   {data.Status || 'N/A'}
                 </span>
               </span>
@@ -725,12 +725,12 @@ export const AssetMappingMaster: React.FC = () => {
   }
   //#endregion
 
-   //#region ADD UPDATE EDIT ASSET Mapping MASTER
+  //#region ADD UPDATE EDIT ASSET Mapping MASTER
   const handleAddAssetModal = () => {
     setEditingAssetMappingMasterData(null);
     setIsAddUpdateModalOpen(true);
   };
-  
+
   interface AddUpdateAssetMappingModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -738,320 +738,374 @@ export const AssetMappingMaster: React.FC = () => {
     data?: AssetMappingMasterData | null;
     loading?: boolean;
   }
-  
-const AddUpdateAssetMappingModel:React.FC<AddUpdateAssetMappingModalProps> = ({
-  isOpen,
-  onClose,
-  onSubmit,
-  data,
-  loading=false
-})=>{
-  const [formData, setFormData] = useState<AddUpdateAssetMappingMasterRequest>({
-  AssetMasterMappingId: 0,
-  Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  AssetMasterId: 0,
-  AssignedDate: "2025-11-19T08:51:55.991Z",
-  EmployeeId: 0,
-  ReturnDate: "2025-11-19T08:51:55.991Z",
-  ConditionOnIssue:"",
-  ConditionOnReturn: "",
-  Remarks: ""
-});
- // Single error object for all fields
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  useEffect(()=>{
-    if(isOpen){
-      if(data){
-        //Edit Asset Mapping
-        setFormData({
-          AssetMasterMappingId:data.AssetMasterMappingId ?? 0,
-          Uniquekey:data.Uniquekey ?? "",
-          AssetMasterId:data.AssetMasterId ?? 0,
-          AssignedDate:data.AssignedDate ?? "",
-          EmployeeId:data.EmployeeId ?? 0,
-          ReturnDate:data.ReturnDate ?? "",
-          ConditionOnIssue:data.ConditionOnIssue ??"",
-          ConditionOnReturn:data.ConditionOnReturn ?? "",
-          Remarks:data.Remarks ?? ""
-        });
-      }else{
-        //Add Asset Mapping
-         setFormData({
-          AssetMasterMappingId: 0,
-          Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-          AssetMasterId: 0,
-          AssignedDate: "",
-          EmployeeId: 0,
-          ReturnDate: "",
-          ConditionOnIssue:"",
-          ConditionOnReturn: "",
-          Remarks: ""
-         });
-      }setErrors({});
-    }
-  },[isOpen,data]);
-
-//handle input change
-const handleFieldChange = (
-    field: keyof AddUpdateAssetMappingMasterRequest,
-    value: any
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: "" }));
-  };
-
-// Submit handler
-  const handleSubmitAddUpdateAsset = (e: React.FormEvent) => {
-    e.preventDefault();
-    const requiredFields = [
-      "AssignedDate",
-      "ReturnDate",
-      "ConditionOnIssue",
-      "ConditionOnReturn",
-      "Remarks"
-    ];
-
-    const newErrors: any = {};
-    requiredFields.forEach((field) => {
-      const value = formData[field as keyof AddUpdateAssetMappingMasterRequest];
-      if (value === null || value === undefined || value.toString().trim() === "") {
-        const label = field.replace(/([A-Z])/g, " $1");
-        newErrors[field] = `${label} is required`;
-      }
+  const AddUpdateAssetMappingModel: React.FC<AddUpdateAssetMappingModalProps> = ({
+    isOpen,
+    onClose,
+    onSubmit,
+    data,
+    loading = false
+  }) => {
+    const [formData, setFormData] = useState<AddUpdateAssetMappingMasterRequest>({
+      AssetMasterMappingId: 0,
+      Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      AssetMasterId: 0,
+      AssignedDate: "",
+      EmployeeId: 0,
+      ReturnDate: "",
+      ConditionOnIssue: "",
+      ConditionOnReturn: "",
+      Remarks: ""
     });
-    setErrors(newErrors);
+    // Single error object for all fields
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+     const [dropdownLabels, setDropdownLabels] = useState<{
+          assetName?:string;
+          employees?:string;
+        }>({});
+    useEffect(() => {
+      if (isOpen) {
+        if (data) {
+          //Edit Asset Mapping
+          setFormData({
+            AssetMasterMappingId: data.AssetMasterMappingId ?? 0,
+            Uniquekey: data.Uniquekey ?? "",
+            AssetMasterId: data.AssetMasterId ?? 0,
+            AssignedDate: data.AssignedDate ?? "",
+            EmployeeId: data.EmployeeId ?? 0,
+            ReturnDate: data.ReturnDate ?? "",
+            ConditionOnIssue: data.ConditionOnIssue ?? "",
+            ConditionOnReturn: data.ConditionOnReturn ?? "",
+            Remarks: data.Remarks ?? ""
+          });
+           setDropdownLabels({
+          assetName: data.AssetName ?? "",
+          employees:data.EmployeeName ?? ""
 
-    // STOP submit if any error
-    if (Object.keys(newErrors).length > 0) return;
+        });
+        } else {
+          //Add Asset Mapping
+          setFormData({
+            AssetMasterMappingId: 0,
+            Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            AssetMasterId: 0,
+            AssignedDate: "",
+            EmployeeId: 0,
+            ReturnDate: "",
+            ConditionOnIssue: "",
+            ConditionOnReturn: "",
+            Remarks: ""
+          });
+        } setErrors({});
+      }
+    }, [isOpen, data]);
 
-    onSubmit(formData);
-  };
+    //handle input change
+    const handleFieldChange = (
+      field: keyof AddUpdateAssetMappingMasterRequest,
+      value: any
+    ) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    };
 
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      onCancel={onClose}
-      title={formData.AssetMasterMappingId === 0 ? "Add Asset" : "Update Asset"}
-      onSubmit={handleSubmitAddUpdateAsset}
-      saveText={formData.AssetMasterMappingId === 0 ? "Save" : "Update"}
-      cancelText="Cancel"
-      loading={loading}
-    >
-      <div className="space-y-6">
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            {/* <SingleSelectDropdownWithPagination
-            title='Select'
-            size='lg'
-            dataFetchCallBack={fetchAssets}
-            onSelected={(item)=>handleFieldChange("AssetMasterId",Number(item.value))}
-            /> */}
-          </div>
-         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Condition On Issue <span className="text-red-500">*</span></label>
-            <Input
-              value={formData.ConditionOnIssue ?? ""}
-              onChange={(e) => handleFieldChange("ConditionOnIssue", e.target.value)}
-              className={`w-full p-2 rounded border ${
-                errors.ConditionOnIssue ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder=""
+    // Submit handler
+    const handleSubmitAddUpdateAsset = (e: React.FormEvent) => {
+      e.preventDefault();
+      const requiredFields = [
+        "AssignedDate",
+        "ReturnDate",
+        "ConditionOnIssue",
+        "ConditionOnReturn",
+        "Remarks",
+        "AssetMasterId",
+        "EmployeeId"
+      ];
+
+      const newErrors: any = {};
+      requiredFields.forEach((field) => {
+        const value = formData[field as keyof AddUpdateAssetMappingMasterRequest];
+        if (value === null || value === undefined ||value === "" ||
+        value === 0 || value.toString().trim() === "") {
+          const label = field.replace(/([A-Z])/g, " $1");
+          newErrors[field] = `${label} is required`;
+        }
+      });
+      setErrors(newErrors);
+
+      // STOP submit if any error
+      if (Object.keys(newErrors).length > 0) return;
+
+      onSubmit(formData);
+    };
+
+
+     const fetchEmployeeOptions = async (pageNumber: number, params?: { value?: string }) => {
+          const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
+            PageSize: 10,
+            PageNumber: pageNumber,
+            EmployeeName: params?.value || "",
+          });
+          if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
+          const apiResponse = responseEither.right;
+          const employeeList = apiResponse?.Data?.map((item: any) => ({ label: item.EmployeeName, value: String(item.EmployeeId) })) || [];
+          return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? employeeList.length, itemList: employeeList };
+        };
+
+    const fetchAssetNameOptions = async (pageNumber: number, params?: { value?: string }) => {
+          const responseEither = await assetMasterService.apiCallPullAssetMaster({
+            PageSize: 10,
+            PageNumber: pageNumber,
+            AssetName: params?.value || "",
+          });
+          if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
+          const apiResponse = responseEither.right;
+          const assetList = apiResponse?.Data?.map((item: any) => ({ label: item.AssetName, value: String(item.AssetMasterId) })) || [];
+          return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? assetList.length, itemList: assetList };
+        };
+        const toDropdownInitialValue = (
+          id?: number | null,
+          label?: string
+        ): { label: string; value: string | number } | null => {
+          if (!id) return null;
+          return {
+            label: label || String(id),
+            value: String(id),
+          };
+        };
+       
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        onCancel={onClose}
+        title={formData.AssetMasterMappingId === 0 ? "Add Asset" : "Update Asset"}
+        onSubmit={handleSubmitAddUpdateAsset}
+        saveText={formData.AssetMasterMappingId === 0 ? "Save" : "Update"}
+        cancelText="Cancel"
+        loading={loading}
+      >
+        <div className="space-y-6">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+            <SingleSelectDropdownWithPagination
+              label="Assets"
+              title="Select..."
+              size="lg"
+              dataFetchCallBack={fetchAssetNameOptions}
+              onSelected={(item) => handleFieldChange("AssetMasterId", Number(item.value))}
+              initialValue={toDropdownInitialValue(formData.AssetMasterId, dropdownLabels.assetName)}
             />
-            {errors.ConditionOnIssue && (
-              <p className="text-red-500 text-xs mt-1">{errors.ConditionOnIssue}</p>
-            )}
-          </div>
-
-          {/* Condition On Return */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Condition On Return <span className="text-red-500">*</span></label>
-            <Input
-              value={formData.ConditionOnReturn ?? ""}
-              onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)}
-              className={`w-full p-2 rounded border ${
-                errors.ConditionOnReturn ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder=""
+            </div>
+            <div>
+            <SingleSelectDropdownWithPagination
+              label="Employees"
+              title="Select..."
+              size="lg"
+              dataFetchCallBack={fetchEmployeeOptions}
+              onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
+              initialValue={toDropdownInitialValue(formData.EmployeeId, dropdownLabels.employees)}
             />
-            {errors.ConditionOnReturn && (
-              <p className="text-red-500 text-xs mt-1">{errors.ConditionOnReturn}</p>
-            )}
+            </div>
           </div>
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Condition On Issue <span className="text-red-500">*</span></label>
+              <Input
+                value={formData.ConditionOnIssue ?? ""}
+                onChange={(e) => handleFieldChange("ConditionOnIssue", e.target.value)}
+                className={`w-full p-2 rounded border ${errors.ConditionOnIssue ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder=""
+              />
+              {errors.ConditionOnIssue && (
+                <p className="text-red-500 text-xs mt-1">{errors.ConditionOnIssue}</p>
+              )}
+            </div>
+
+            {/* Condition On Return */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Condition On Return <span className="text-red-500">*</span></label>
+              <Input
+                value={formData.ConditionOnReturn ?? ""}
+                onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)}
+                className={`w-full p-2 rounded border ${errors.ConditionOnReturn ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder=""
+              />
+              {errors.ConditionOnReturn && (
+                <p className="text-red-500 text-xs mt-1">{errors.ConditionOnReturn}</p>
+              )}
+            </div>
+          </div>
 
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          {/*  Assigned Date */}
+            {/*  Assigned Date */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Assigned Date <span className="text-red-500">*</span></label>
+              <Input
+                type="date"
+                value={formData.AssignedDate?.substring(0, 10)}
+                onChange={(e) => handleFieldChange("AssignedDate", e.target.value)}
+                className={`w-full p-2 rounded border ${errors.AssignedDate ? "border-red-500" : "border-gray-300"
+                  }`}
+              />
+              {errors.AssignedDate && (
+                <p className="text-red-500 text-xs mt-1">{errors.AssignedDate}</p>
+              )}
+            </div>
+
+            {/*  Return Date */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Return Date<span className="text-red-500">*</span></label>
+              <Input
+                type="date"
+                value={formData.ReturnDate?.substring(0, 10)}
+                onChange={(e) =>
+                  handleFieldChange("ReturnDate", e.target.value)
+                }
+                className={`w-full p-2 rounded border ${errors.ReturnDate ? "border-red-500" : "border-gray-300"
+                  }`}
+              />
+              {errors.ReturnDate && (
+                <p className="text-red-500 text-xs mt-1">{errors.ReturnDate}</p>
+              )}
+            </div>
+            {/* Remarks */}
+
+          </div>
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Assigned Date <span className="text-red-500">*</span></label>
-            <Input
-              type="date"
-              value={formData.AssignedDate?.substring(0, 10)}
-              onChange={(e) => handleFieldChange("AssignedDate", e.target.value)}
-              className={`w-full p-2 rounded border ${
-                errors.AssignedDate ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.AssignedDate && (
-              <p className="text-red-500 text-xs mt-1">{errors.AssignedDate}</p>
-            )}
-          </div>
-
-          {/*  Return Date */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Return Date<span className="text-red-500">*</span></label>
-            <Input
-              type="date"
-              value={formData.ReturnDate?.substring(0, 10)}
-              onChange={(e) =>
-                handleFieldChange("ReturnDate", e.target.value)
-              }
-              className={`w-full p-2 rounded border ${
-                errors.ReturnDate ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.ReturnDate && (
-              <p className="text-red-500 text-xs mt-1">{errors.ReturnDate}</p>
-            )}
-          </div>
-          {/* Remarks */}
-          
-        </div>
-        <div>
             <label className="block text-sm font-medium mb-1">
               Remarks <span className="text-red-500">*</span></label>
             <Input
               value={formData.Remarks as any}
               onChange={(e) => handleFieldChange("Remarks", e.target.value)}
-              className={`w-full p-2 rounded border ${
-                errors.Remarks ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`w-full p-2 rounded border ${errors.Remarks ? "border-red-500" : "border-gray-300"
+                }`}
               placeholder=""
             />
             {errors.Remarks && (
               <p className="text-red-500 text-xs mt-1">{errors.Remarks}</p>
             )}
           </div>
-      </div>
-    </Modal>
-  );
-}
+        </div>
+      </Modal>
+    );
+  }
 
-const handleAddUpdateAssetMappingMaster=async (formData:AddUpdateAssetMappingMasterRequest)=>{
+  const handleAddUpdateAssetMappingMaster = async (formData: AddUpdateAssetMappingMasterRequest) => {
 
-   setIsAddUpdateModalOpen(false);
-   await runApiWithLoader(
-    setIsLoading,
-    setIsLoadingMessage,
-    async ()=>{
-      const response=await assetMappingMasterService.apiCallAddUpdateAssetMappingMaster(formData);
-           if (E.isRight(response)){
-            setIsAddUpdateModalOpen(false);
-            const isAdd=formData.AssetMasterMappingId===0
-            if(isAdd){
-              const newRecord=response.right.Data[0] as AssetMappingMasterData
-              
-                setAssetMappingMasterList(prevData => [newRecord, ...prevData]);
-          
-                      setPagination({
-                        currentPage: pagination.currentPage,
-                        totalRecords: pagination.totalRecords + 1,
-                        totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-                      });
-          
-          
-                      addToast({ type: 'success', title: 'Asset added successfully' })
-                    } else {
-          
-                      const updatedRecord = response.right.Data[0] as AssetMappingMasterData;
-          
-                      setAssetMappingMasterList(prevData =>
-                        prevData.map(item =>
-                          item.AssetMasterMappingId === formData.AssetMasterMappingId
-                            ? updatedRecord
-                            : item
-                        )
-                      )
-          
-                      addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    }
-          
-                    setIsAddUpdateModalOpen(false);
-          
-                    setEditingAssetMappingMasterData(null);
-          
-                  } else {
-          
-                    addToast({ type: 'error', title: response.left.message });
-                  }
-          
-                  return response
-                },
-                undefined,
-                (error: any) => {
-                  addToast({ type: 'error', title: error.message || 'Operation failed' })
-                },
-                undefined,
-                formData.AssetMasterMappingId === 0 ? 'Add Asset' : 'Update Asset...'
-              )
-            }
+    setIsAddUpdateModalOpen(false);
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+        const response = await assetMappingMasterService.apiCallAddUpdateAssetMappingMaster(formData);
+        if (E.isRight(response)) {
+          setIsAddUpdateModalOpen(false);
+          const isAdd = formData.AssetMasterMappingId === 0
+          if (isAdd) {
+            const newRecord = response.right.Data[0] as AssetMappingMasterData
 
-  //#region DELETE Asset Mapping MASTER
-    const handleDeleteAssetMappingMaster=async()=>{
-       setIsConfirmationDialogBoxOpen(false);
-  
-       if(!deleteAssetMappingMasterDetailsData) return
-  
-       await runApiWithLoader(
-        setIsLoading,
-        setIsLoadingMessage,
-  
-        async()=>{
-         
-          const params:DeleteAssetMappingMasterRequest={
-            AssetMasterMappingId:deleteAssetMappingMasterDetailsData.AssetMasterMappingId ?? 0,
-            UniqueKey:deleteAssetMappingMasterDetailsData.Uniquekey ?? ""
-          }
-          const response= await  assetMappingMasterService.apiCallDeleteAssetMappingMaster(params);
-  
-          if(E.isRight(response)){
-            setAssetMappingMasterList(prevData=>prevData.filter(item=>item.AssetMasterMappingId !==deleteAssetMappingMasterDetailsData.AssetMasterMappingId));
-  
+            setAssetMappingMasterList(prevData => [newRecord, ...prevData]);
+
             setPagination({
               currentPage: pagination.currentPage,
-              totalRecords: pagination.totalRecords - 1,
-              totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+              totalRecords: pagination.totalRecords + 1,
+              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
             });
-  
-            addToast({type:"success",title:response.right.SuccessMessage[0]})
-  
-            setIsConfirmationDialogBoxOpen(false);
-            setDeleteAssetMappingMasterDetailsData(null);
-            }else{
-              addToast({ type: 'error', title: response.left.message });
-  
-            setIsConfirmationDialogBoxOpen(false);
-            }
-              return response
-          },
-          undefined,
-          (error:any)=>{
-            addToast({ type: 'error', title: error.message })
-          },
-          undefined,
-           'Delete Asset Mapping Master data...'
-          )
+
+
+            addToast({ type: 'success', title: 'Asset added successfully' })
+          } else {
+
+            const updatedRecord = response.right.Data[0] as AssetMappingMasterData;
+
+            setAssetMappingMasterList(prevData =>
+              prevData.map(item =>
+                item.AssetMasterMappingId === formData.AssetMasterMappingId
+                  ? updatedRecord
+                  : item
+              )
+            )
+
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
-           
+
+          setIsAddUpdateModalOpen(false);
+
+          setEditingAssetMappingMasterData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+        }
+
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Operation failed' })
+      },
+      undefined,
+      formData.AssetMasterMappingId === 0 ? 'Add Asset' : 'Update Asset...'
+    )
+  }
+
+  //#region DELETE Asset Mapping MASTER
+  const handleDeleteAssetMappingMaster = async () => {
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteAssetMappingMasterDetailsData) return
+
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+
+      async () => {
+
+        const params: DeleteAssetMappingMasterRequest = {
+          AssetMasterMappingId: deleteAssetMappingMasterDetailsData.AssetMasterMappingId ?? 0,
+          UniqueKey: deleteAssetMappingMasterDetailsData.Uniquekey ?? ""
+        }
+        const response = await assetMappingMasterService.apiCallDeleteAssetMappingMaster(params);
+
+        if (E.isRight(response)) {
+          setAssetMappingMasterList(prevData => prevData.filter(item => item.AssetMasterMappingId !== deleteAssetMappingMasterDetailsData.AssetMasterMappingId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+
+          addToast({ type: "success", title: response.right.SuccessMessage[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+          setDeleteAssetMappingMasterDetailsData(null);
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+        }
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message })
+      },
+      undefined,
+      'Delete Asset Mapping Master data...'
+    )
+  }
+
   //#endregion
   return (
     <>
@@ -1119,7 +1173,7 @@ const handleAddUpdateAssetMappingMaster=async (formData:AddUpdateAssetMappingMas
           data={viewAssetMappingMasterDetailsData}
         />
 
-        {/*  ADD EDIT UPDATE TNC MODAL */}
+        {/*  ADD EDIT UPDATE Asset Mapping MODAL */}
         <AddUpdateAssetMappingModel
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
@@ -1197,21 +1251,21 @@ const handleAddUpdateAssetMappingMaster=async (formData:AddUpdateAssetMappingMas
           </div>
         </Modal>
 
-         {/* DELETE CONFIRMATION ASSET MODAL */}
-               <ConfirmationDialogBox
-                isOpen={isConfirmationDialogBoxOpen}
-                onClose={() => {
-                setIsConfirmationDialogBoxOpen(false)
-                setDeleteAssetMappingMasterDetailsData(null)
-                }}
-               onConfirm={handleDeleteAssetMappingMaster}
-               title="You are about to delete a asset mapping?"
-               message="Deleting this Asset Mapping Data will permanently remove its contents."
-               confirmText="Delete"
-               cancelText="Cancel"
-               loading={isLoading}
-               variant="danger"
-            />
+        {/* DELETE CONFIRMATION ASSET MODAL */}
+        <ConfirmationDialogBox
+          isOpen={isConfirmationDialogBoxOpen}
+          onClose={() => {
+            setIsConfirmationDialogBoxOpen(false)
+            setDeleteAssetMappingMasterDetailsData(null)
+          }}
+          onConfirm={handleDeleteAssetMappingMaster}
+          title="You are about to delete a asset mapping?"
+          message="Deleting this Asset Mapping Data will permanently remove its contents."
+          confirmText="Delete"
+          cancelText="Cancel"
+          loading={isLoading}
+          variant="danger"
+        />
       </div>
     </>
   );

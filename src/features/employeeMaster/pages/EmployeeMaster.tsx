@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -15,20 +15,23 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { useNavigate } from 'react-router-dom';
+import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
+import { technicalService } from '@/features/technical/services/TechnicalService';
+import { Input } from '@/ui/components/forms';
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
   const [employeeList, setEmployeeList] = useState<EmployeeMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
+  const navigate = useNavigate();
 
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
@@ -40,16 +43,13 @@ export const EmployeeMaster: React.FC = () => {
     searchEmployees(value);
   }, 350);
 
-  const [viewEmployeeData, setViewEmployeeData] = useState<EmployeeMasterData | null>(null);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   const [isShowCustomizeEmployeeColumnsModal, setIsShowCustomizeEmployeeColumnsModal] = useState(false);
 
-  const { canExport } = useMenuPermissions();
+  const { canAction, canExport } = useMenuPermissions();
   const hasFetchedInitialEmployees = useRef(false);
   //#endregion
 
@@ -192,6 +192,7 @@ export const EmployeeMaster: React.FC = () => {
   const handleExportEmployeeExcel = () => handleExportEmployees('Excel');
   const handleExportEmployeePdf = () => handleExportEmployees('PDF');
 
+
   const getEmployees = async (filterParams: FilterWithPaginationEmployeeMasterRequest) => {
     return await employeeMasterService.apiCallPullEmployeeMaster(filterParams);
   };
@@ -220,10 +221,18 @@ export const EmployeeMaster: React.FC = () => {
 
   const employeesForTable = useMemo(() => employeeList, [employeeList]);
 
-  const handleViewEmployeeDetails = useCallback((row: EmployeeMasterData) => {
-    setViewEmployeeData(row);
-    setIsViewModalOpen(true);
-  }, []);
+  const handleViewEmployeeDetails = (row: EmployeeMasterData) => {
+    navigate('/employeeMaster/view', {
+      state: {
+        editEmployeeMasterData: row,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+        },
+      },
+    });
+  }
 
   const employeeColumns = useMemo<TableColumn[]>(
     () => [
@@ -235,7 +244,7 @@ export const EmployeeMaster: React.FC = () => {
         fixed: 'left',
         align: 'left',
         render: (value, row) => (
-          <div className="flex items-center justify-start">
+          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
             <TooltipText
               text={value || row.FirstName || 'N/A'}
               maxWidth="260px"
@@ -243,6 +252,7 @@ export const EmployeeMaster: React.FC = () => {
               onClick={() => handleViewEmployeeDetails(row)}
             />
           </div>
+
         )
       },
       {
@@ -426,25 +436,10 @@ export const EmployeeMaster: React.FC = () => {
         sortable: true,
         align: 'center',
         render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '16',
-        sortable: true,
-        align: 'center',
-        render: value => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '16',
-        sortable: true,
-        align: 'center',
-        render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       }
     ],
-    [handleViewEmployeeDetails]
+    [canAction, handleViewEmployeeDetails]
+
   );
   //#endregion
 
@@ -482,156 +477,6 @@ export const EmployeeMaster: React.FC = () => {
   );
   //#endregion
 
-  //#region VIEW MODAL
-  interface ViewEmployeeDetailsModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    data: EmployeeMasterData | null;
-  }
-
-  const ViewEmployeeDetailsModal: React.FC<ViewEmployeeDetailsModalProps> = ({
-    isOpen,
-    onClose,
-    data
-  }) => {
-    if (!data) return null;
-
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Settings - Company setup (Employee Details)"
-        onSubmit={e => {
-          e.preventDefault();
-          onClose();
-        }}
-        cancelText="Close"
-        loading={false}
-      >
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
-              Basic Details
-            </h4>
-
-            <div className="space-y-3">
-              <FieldItem label="First Name" value={data.FirstName} isRow />
-              <FieldItem label="Middle Name" value={data.MiddleName} isRow />
-              <FieldItem label="Last Name" value={data.LastName} isRow />
-              <FieldItem label="Gender" value={data.Gender} isRow />
-              <FieldItem label="Marital Status" value={data.MaritalStatus} isRow />
-              <FieldItem label="Blood Group" value={data.BloodGroup} isRow />
-            </div>
-
-            <div className="space-y-3">
-              <FieldItem
-                label="DOB"
-                value={data.DateOfBirth ? formatDate_dd_MonthName_yy(data.DateOfBirth) : ''}
-                isRow
-              />
-              <FieldItem label="Office Email ID" value={data.OfficeEmailId} isRow />
-              <FieldItem label="Email ID" value={data.EmailId} isRow />
-              <FieldItem label="Personal Mobile Number" value={data.PersonalMobileNumber} isRow />
-              <FieldItem label="Office Mobile Number" value={data.OfficeMobileNumber} isRow />
-              <FieldItem label="Employment Type" value={data.EmployeeType} isRow />
-            </div>
-          </div>
-
-          {/* Employee Info Sheet Section */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
-              Employee Info Sheet
-            </h4>
-
-            <div className="space-y-3">
-              <FieldItem label="Company Name" value={data.CompanyName} isRow />
-              <FieldItem label="Branch" value={data.Branch} isRow />
-              <FieldItem label="Department" value={data.Department} isRow />
-            </div>
-
-            <div className="space-y-3">
-              <FieldItem label="Designation" value={data.Designation} isRow />
-              <FieldItem
-                label="Joining Date"
-                value={data.JoiningDate ? formatDate_dd_MonthName_yy(data.JoiningDate) : ''}
-                isRow
-              />
-              <FieldItem label="Reporting Person" value={data.ReportPersonName} isRow />
-            </div>
-          </div>
-
-          {/* Address Section */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
-              Address
-            </h4>
-
-            <div className="space-y-3">
-              {/* Communication Address as label + multi-line value */}
-              <FieldItem
-                label="Communication Address"
-                value={data.CommunicationAddress}
-                isRow={false}
-              />
-
-              {/* Permanent Address */}
-              <FieldItem
-                label="Permanent Address"
-                value={data.PermanentAddress}
-                isRow={false}
-              />
-
-              <FieldItem label="Country" value={data.CountryName} isRow />
-              <FieldItem label="State" value={data.StateName} isRow />
-              <FieldItem label="District" value={data.DistrictName} isRow />
-              <FieldItem label="City" value={data.CityName} isRow />
-            </div>
-          </div>
-
-          {/* Bank Details Section */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
-              Bank Details
-            </h4>
-
-            <div className="space-y-3">
-              <FieldItem label="Bank Name" value={data.BankName} isRow />
-              <FieldItem label="Account Number" value={data.AccountNo} isRow />
-            </div>
-
-            <div className="space-y-3">
-              <FieldItem label="Bank Branch Name" value={data.BankBranchName} isRow />
-              <FieldItem label="IFSC Code" value={data.IFSCCode} isRow />
-            </div>
-          </div>
-
-
-
-          {/* Action Details Header */}
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <FieldItem label="Created By" isRow={true} value={data.CreatedBy} withBorder={false} />
-                <FieldItem label="Created Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={false} />
-
-              </div>
-              <div className="space-y-2">
-                {data.ModifiedBy && (
-                  <>
-                    <FieldItem label="Modified By" isRow={true} value={data.ModifiedBy} withBorder={false} />
-                    <FieldItem label="Modified Date" isRow={true} value={formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </Modal>
-    );
-  };
-  //#endregion
-
   //#region FILTER HELPERS
   const applyFilters = () => {
     setFilters(tempFilters);
@@ -645,6 +490,10 @@ export const EmployeeMaster: React.FC = () => {
     loadEmployees(1, {});
     setShowFilterPopup(false);
   };
+  const handleAddEmployeeModal = () => {
+    navigate('/employeeMaster/add');
+  };
+
 
   const handleFilterChange = (key: string, value: string) => {
     const newFilters: FilterInfo = { ...tempFilters };
@@ -657,17 +506,75 @@ export const EmployeeMaster: React.FC = () => {
   };
   //#endregion
 
+  //#region IMPORT EXCEL | DOWNLOAD
+
+  const excelImportEmployeeMaster = async () => {
+
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setIsLoadingMessage,
+
+      async () => {
+
+
+        return null;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Import failed' })
+      },
+      undefined,
+      'Preparing Import...'
+    )
+  }
+
+
+  const downloadExcelSampleEmployeeMaster = async () => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+        // Find the column label for sorting
+
+        const params: FilterPullExcelSample = {
+          TableName: 'EMPLOYEE MASTER'
+        }
+
+        const response = await technicalService.apiCallPullExcelSample(params);
+
+        handleExportFile(response, 'Excel', 'Employee Master', addToast, 'Sample file download successfully')
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Export failed' })
+      },
+      undefined,
+      'Preparing Downloading...'
+    )
+  }
+
+  const handleExcelImportEmployeeMaster = () => excelImportEmployeeMaster()
+  const handleDownloadExcelSampleEmployeeMaster = () => downloadExcelSampleEmployeeMaster()
+
+
+
+  //#endregion
+
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <Loader loading={isLoading} title={loadingMessage}>
           <div></div>
         </Loader>
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by employee name..."
+          searchPlaceholder="Search By Employee Name"
           onSearchChange={v => {
             setSearchTerm(v);
             debouncedSearch(v);
@@ -681,8 +588,17 @@ export const EmployeeMaster: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeEmployeeColumnsModal(true)}
-          isShowAddButton={false}
-          isShowImportButton={false}
+          // ADD
+          isShowAddButton={canAction}
+          addTitle="Add Employee"
+          onAdd={handleAddEmployeeModal}
+
+          // IMPORT
+          isShowImportButton={canAction}
+          onUploadExcel={handleExcelImportEmployeeMaster}
+          onDownloadSampleExcel={handleDownloadExcelSampleEmployeeMaster}
+
+          // EXPORT
           isShowExportButton={canExport}
           onExportExcel={handleExportEmployeeExcel}
           onExportPdf={handleExportEmployeePdf}
@@ -694,20 +610,13 @@ export const EmployeeMaster: React.FC = () => {
           pagination={employeePaginationInfo}
           emptyMessage="No employees found"
           fixedHeight
-          maxHeight="calc(100vh - 200px)"
+          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
           onSort={handleSortColumn}
         />
-        <ViewEmployeeDetailsModal
-          isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false);
-            setViewEmployeeData(null);
-          }}
-          data={viewEmployeeData}
-        />
+
         <CustomizeColumnsModal
           isOpen={isShowCustomizeEmployeeColumnsModal}
           onClose={() => setIsShowCustomizeEmployeeColumnsModal(false)}
@@ -723,7 +632,7 @@ export const EmployeeMaster: React.FC = () => {
           columns={employeeColumns}
           selectedKeys={selectedEmployeeColumnKeys}
           requiredKeys={requiredEmployeeColumnKeys}
-          title="Customize Employee Master Table Columns"
+          title="Customize Table Columns"
         />
         <Modal
           isOpen={showFilterPopup}
@@ -736,7 +645,8 @@ export const EmployeeMaster: React.FC = () => {
           saveText="Apply Filter"
           cancelText="Clear Filter"
           onCancel={() => clearFilters()}
-          size="half-screen"
+          resetText=''
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">
@@ -749,46 +659,45 @@ export const EmployeeMaster: React.FC = () => {
                   placeholder="Enter employee name"
                 />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
-                  <Input
-                    type="text"
-                    value={tempFilters.BranchName || ''}
-                    onChange={e => handleFilterChange('BranchName', e.target.value)}
-                    placeholder="Enter branch name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                  <Input
-                    type="text"
-                    value={tempFilters.DepartmentName || ''}
-                    onChange={e => handleFilterChange('DepartmentName', e.target.value)}
-                    placeholder="Enter department name"
-                  />
-                </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+                <Input
+                  type="text"
+                  value={tempFilters.BranchName || ''}
+                  onChange={e => handleFilterChange('BranchName', e.target.value)}
+                  placeholder="Enter branch name"
+                />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
-                  <Input
-                    type="text"
-                    value={tempFilters.DesignationName || ''}
-                    onChange={e => handleFilterChange('DesignationName', e.target.value)}
-                    placeholder="Enter designation"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-                  <Input
-                    type="text"
-                    value={tempFilters.MobileNumber || ''}
-                    onChange={e => handleFilterChange('MobileNumber', e.target.value)}
-                    placeholder="Enter mobile number"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                <Input
+                  type="text"
+                  value={tempFilters.DepartmentName || ''}
+                  onChange={e => handleFilterChange('DepartmentName', e.target.value)}
+                  placeholder="Enter department name"
+                />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+                <Input
+                  type="text"
+                  value={tempFilters.DesignationName || ''}
+                  onChange={e => handleFilterChange('DesignationName', e.target.value)}
+                  placeholder="Enter designation"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                <Input
+                  type="text"
+                  value={tempFilters.MobileNumber || ''}
+                  onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+                  placeholder="Enter mobile number"
+                />
+              </div>
+
             </div>
           </div>
         </Modal>

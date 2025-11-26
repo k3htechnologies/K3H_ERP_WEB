@@ -24,4 +24,5 @@ export const LOCAL_STORAGE_KEYS = {
     WEEK_OFF_MASTER_SELECTED_COLUMNS: 'weekOffMaster.selectedColumns',
     TNC_MASTER_SELECTED_COLUMNS: 'tncMaster.selectedColumns',
     MENU_MODULE: 'menuModule',
+    COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER: 'country_state_district_city_village_data',
 } as const

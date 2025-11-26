@@ -7,6 +7,7 @@ import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   CompanyMasterData,
+  DeleteCompanyMasterRequest,
   FilterWithPaginationCompanyMasterRequest
 } from '@/features/companyMaster/models/CompanyMasterModel';
 
@@ -17,7 +18,7 @@ import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -25,41 +26,98 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { CollapseCard } from '@/ui/components/Card/CollapseCard';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { Edit, Trash2 } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
+import { technicalService } from '@/features/technical/services/TechnicalService';
 
 
 export const CompanyMaster: React.FC = () => {
 
+  //#region STATE
   const [companyMasterList, setCompanyMasterList] = useState<CompanyMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
+
+  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
+
+  //TABLE SORT INFO
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
+  
+  // TOAST
   const { toasts, removeToast, addToast } = useToast()
+
+  // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchCompanies(value)
   }, 350)
+
+  //VIEW COMPANY MASTER MODAL STATES
   const [viewCompanyMasterDetailsData, setViewCompanyMasterDetailsData] = useState<CompanyMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
+  //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
+  //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeCompanyMasterColumnsModal, setIsShowCustomizeCompanyMasterColumnsModal] = useState(false);
-  const { canExport } = useMenuPermissions();
+
+  //#region MENU PERMISSIONS
+  const { canAction, canExport } = useMenuPermissions();
   const hasFetchedInitialCompanies = useRef(false)
 
+  //DELETE TNC MASTER STATES
+
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+
+  const [deleteCompanyMasterDetailsData, setDeleteCompanyMasterDetailsData] = useState<CompanyMasterData | null>(null)
+
+
+
+  // NAVIGATE
+  const navigate = useNavigate()
+  const location = useLocation() as {
+    state?: {
+      listState?: {
+        page: number;
+        filters: FilterInfo;
+      };
+    };
+  };
+  //#endregion
+
+  //#region INIT
   useEffect(() => {
-    if (hasFetchedInitialCompanies.current) return
+    if (hasFetchedInitialCompanies.current) return;
     hasFetchedInitialCompanies.current = true;
-    fetchCompanyList()
-  }, [])
+
+    // 🔥 If coming back from AddCompany with saved state
+    const savedListState = location.state?.listState;
+
+    const initialPage = savedListState?.page ?? pagination.currentPage;
+    const initialFilters: FilterInfo = savedListState?.filters ?? {};
+
+    setFilters(initialFilters);
+    setTempFilters(initialFilters);
+
+    // load with same page + filters as before
+    loadCompanies(initialPage, initialFilters);
+  }, []);
 
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
+  //#endregion
 
+  //#region DATA LOAD
   const fetchCompanyList = async (page: number = pagination.currentPage) => {
     return await loadCompanies(page, filters);
   }
@@ -110,13 +168,21 @@ export const CompanyMaster: React.FC = () => {
   const searchCompanies = async (searchValue: string) => {
     setSearchTerm(searchValue);
     if (searchValue.trim() === '') {
-      fetchCompanyList();
-      return
+
+      const emptyFilters: FilterInfo = { ...filters };
+      delete emptyFilters.CompanyName;
+
+      setFilters(emptyFilters);
+      await loadCompanies(1, emptyFilters);
+      return;
+
     }
-    const filterParams: FilterInfo = {
+    const newFilters: FilterInfo = {
+      ...filters,
       CompanyName: searchValue.trim(),
     };
-    await loadCompanies(1, filterParams)
+    setFilters(newFilters);
+    await loadCompanies(1, newFilters);
   }
 
   const clearsearchCompanies = () => {
@@ -165,7 +231,9 @@ export const CompanyMaster: React.FC = () => {
   const getCompanies = async (filterParams: FilterWithPaginationCompanyMasterRequest) => {
     return await CompanyMasterService.apiCallPullCompanyMaster(filterParams);
   }
+  //#endregion
 
+  //#region TABLE CONFIG
   const handlePageChange = (page: number) => {
     fetchCompanyList(page);
   };
@@ -193,6 +261,11 @@ export const CompanyMaster: React.FC = () => {
     setIsViewModalOpen(true)
   }, [])
 
+  const handleConfirmationDialogBoxOpen = useCallback((row: CompanyMasterData) => {
+    setDeleteCompanyMasterDetailsData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
+
   const companyMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -210,6 +283,53 @@ export const CompanyMaster: React.FC = () => {
               tooltipThreshold={25}
               onClick={() => handleViewCompanyDetails(row)}
             />
+
+            {canAction && (
+              <div className="flex items-center justify-end ml-2 w-20">
+                <>
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleEditCompanyMasterData(row);
+                    }}
+                    color='transparent'
+                    fullWidth
+                    isborderRadius
+                    size='sm'
+                    title="Edit Tnc"
+                    style={{
+                      color: '#0B3251',
+                      padding: '0px 8px'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleConfirmationDialogBoxOpen(row)
+                    }}
+                    color='transparent'
+                    fullWidth
+                    isborderRadius
+                    size='sm'
+                    style={{
+                      color: 'red',
+                      padding: '0px 8px'
+                    }}
+                    title="Delete Tnc"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+
+              </div>
+            )}
           </div>
         )
       },
@@ -250,7 +370,7 @@ export const CompanyMaster: React.FC = () => {
         render: (value) => value || '-'
       },
       {
-        key: 'LandLineNumber',
+        key: 'LandLineNumbereee',
         label: 'Land Line Number',
         width: '15',
         sortable: false,
@@ -271,14 +391,7 @@ export const CompanyMaster: React.FC = () => {
           />
         )
       },
-      {
-        key: 'MobileNumber',
-        label: 'Mobile Number',
-        width: '15',
-        sortable: false,
-        align: 'center',
-        render: (value) => value || '-'
-      },
+
       {
         key: 'GSTNumber',
         label: 'GST Number',
@@ -286,18 +399,9 @@ export const CompanyMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value: string, row: any) => {
-          const images: string[] = (row.GSTCertificateURL || '')
-            .split(',')
-            .map((x: string) => x.trim())
-            .filter((x: string) => x.length > 0);
-
-          if (!images.length) {
-            return value || '-';
-          }
-
           return (
             <MultiImageViewer
-              images={images}
+              images={parseDocumentUrls(row.GSTCertificateURL)}
               title="GST Document"
               triggerLabel={value || '-'}
             />
@@ -311,18 +415,10 @@ export const CompanyMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value: string, row: any) => {
-          const images: string[] = (row.PanCardURL || '')
-            .split(',')
-            .map((x: string) => x.trim())
-            .filter((x: string) => x.length > 0);
-
-          if (!images.length) {
-            return value || '-';
-          }
 
           return (
             <MultiImageViewer
-              images={images}
+              images={parseDocumentUrls(row.PanCardURL)}
               title="Pan Card Document"
               triggerLabel={value || '-'}
             />
@@ -337,18 +433,9 @@ export const CompanyMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value: string, row: any) => {
-          const images: string[] = (row.CINURL || '')
-            .split(',')
-            .map((x: string) => x.trim())
-            .filter((x: string) => x.length > 0);
-
-          if (!images.length) {
-            return value || '-';
-          }
-
           return (
             <MultiImageViewer
-              images={images}
+              images={parseDocumentUrls(row.CINURL)}
               title="CIN Document"
               triggerLabel={value || '-'}
             />
@@ -388,52 +475,66 @@ export const CompanyMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value) => value || '-'
-      },
-
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       }
     ],
-    [handleViewCompanyDetails]
+    [handleViewCompanyDetails, handleConfirmationDialogBoxOpen]
   )
+  //#endregion
 
+  //#region CUSTOMIZE COLUMNS
   const requiredCompanyMasterColumnKeys: string[] = ['CompanyName'];
-  const allCompanyMasterColumnKeys: string[] = companyMasterColumns.map(c => c.key)
-  const [selectedCompanyMasterColumnKeys, setSelectedCompanyMasterColumnKeys] = useState<string[]>(() => {
+
+
+  const [selectedCompanyMasterColumnKeys, setSelectedCompanyMasterColumnKeys] = useState<string[]>([]);
+
+
+  useEffect(() => {
+    if (companyMasterColumns.length === 0) return;
+
     try {
       const saved = LocalStorageHelper.getCompanyMasterTableColumns();
       if (saved) {
-        const parsed = JSON.parse(saved) as string[]
-        const withRequired = Array.from(new Set([...parsed, ...requiredCompanyMasterColumnKeys]));
-        return withRequired.filter(k => allCompanyMasterColumnKeys.includes(k));
+        const parsed: string[] = JSON.parse(saved);
+
+        // keep only keys that still exist in current columns
+        const filtered = parsed.filter(k =>
+          companyMasterColumns.some(col => col.key === k)
+        );
+
+        const final = Array.from(
+          new Set([
+            ...filtered,
+            ...requiredCompanyMasterColumnKeys,
+          ])
+        );
+
+        setSelectedCompanyMasterColumnKeys(final);
+        return;
       }
-    } catch { }
-    return allCompanyMasterColumnKeys
-  })
+    } catch {
 
-  useEffect(() => {
-    setSelectedCompanyMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredCompanyMasterColumnKeys])).filter(k => allCompanyMasterColumnKeys.includes(k)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [companyMasterColumns.length])
+    }
 
+
+    const allKeys = companyMasterColumns.map(c => c.key);
+    const final = Array.from(
+      new Set([...allKeys, ...requiredCompanyMasterColumnKeys])
+    );
+    setSelectedCompanyMasterColumnKeys(final);
+  }, [companyMasterColumns]);
+
+  // 3) Compute visible columns
   const visibleCompanyMasterColumns = useMemo(
-    () => companyMasterColumns.filter(col => selectedCompanyMasterColumnKeys.includes(col.key)),
+    () => companyMasterColumns.filter(col =>
+      selectedCompanyMasterColumnKeys.includes(col.key)
+    ),
     [companyMasterColumns, selectedCompanyMasterColumnKeys]
-  )
+  );
 
+
+  //#endregion
+
+  //#region VIEW MODAL
   interface ViewCompanyDetailsModalProps {
     isOpen: boolean
     onClose: () => void
@@ -465,7 +566,6 @@ export const CompanyMaster: React.FC = () => {
             </h4>
 
             <div className="space-y-3">
-
               <FieldItem label="Company Name" value={data.CompanyName} isRow />
               <FieldItem label="Company Type" value={data.CompanyType} isRow />
               <FieldItem label="Contact Person" value={data.ContactPerson} isRow />
@@ -478,16 +578,17 @@ export const CompanyMaster: React.FC = () => {
             <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
               Government Identifiers
             </h4>
-            <FieldItem label="GST Number" value={data.GSTNumber} isRow />
-            <FieldItem label="PAN Number" value={data.PANNumber} isRow />
-            <FieldItem label="CIN Number" value={data.CINNumber} isRow />
+            <FieldItem label="GST Number" value={data.GSTNumber} urls={data.GSTCertificateURL} isRow />
+            <FieldItem label="PAN Number" value={data.PANNumber} urls={data.PanCardURL} isRow />
+            <FieldItem label="CIN Number" value={data.CINNumber} urls={data.CINURL} isRow />
             <FieldItem label="RERA Number" value={data.RERANumber} isRow />
           </div>
           <div className="space-y-4">
             <h4 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
               Address
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <FieldItem label="Country" value={data.CountryName} isRow={false} />
               <FieldItem label="State" value={data.StateName} isRow={false} />
               <FieldItem label="District" value={data.DistrictName} isRow={false} />
               <FieldItem label="City" value={data.CityName} isRow={false} />
@@ -546,6 +647,9 @@ export const CompanyMaster: React.FC = () => {
     )
   }
 
+  //#endregion
+
+  //#region FILTER HELPERS
   const applyFilters = () => {
     setFilters(tempFilters)
     loadCompanies(1, tempFilters)
@@ -569,15 +673,164 @@ export const CompanyMaster: React.FC = () => {
     setTempFilters(newFilters)
   }
 
+  //#endregion
+
+  //#region DELETE COMPANY MASTER
+
+  //#region EDIT COMPANY MASTER DATA
+  const handleEditCompanyMasterData = (row: CompanyMasterData) => {
+    navigate('/companyMaster/addCompany', {
+      state: {
+        editCompanyMasterData: row,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+        },
+      },
+    });
+  }
+  //#endregion
+
+
+  //#region ADD COMPANY MASTER DATA
+  const handleAddCompanyMaster = () => {
+    navigate('/companyMaster/addCompany', {
+      state: {
+        editCompanyMasterData: null,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+        },
+      },
+    });
+  }
+
+  //#endregion
+
+  const handleDeleteCompanyMaster = async () => {
+
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteCompanyMasterDetailsData) return
+
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+
+      async () => {
+
+        const params: DeleteCompanyMasterRequest = {
+          CompanyId: deleteCompanyMasterDetailsData.CompanyId ?? 0,
+          UniqueKey: deleteCompanyMasterDetailsData.Uniquekey ?? ""
+        }
+
+        const response = await CompanyMasterService.apiCallDeleteCompanyMaster(params);
+
+        if (E.isRight(response)) {
+
+          setCompanyMasterList(prevData => prevData.filter(item => item.CompanyId !== deleteCompanyMasterDetailsData.CompanyId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+
+          addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteCompanyMasterDetailsData(null);
+
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+        }
+
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message })
+      },
+      undefined,
+      'Delete comapany master data...'
+    )
+  }
+
+  //#endregion
+
+//#region IMPORT EXCEL | DOWNLOAD
+  
+    const excelImportCompanyMaster = async () => {
+  
+      await runApiWithLoader(
+  
+        setIsLoading,
+  
+        setIsLoadingMessage,
+  
+        async () => {
+  
+  
+          return null;
+        },
+        undefined,
+        (error: any) => {
+          addToast({ type: 'error', title: error.message || 'Import failed' })
+        },
+        undefined,
+        'Preparing Import...'
+      )
+    }
+  
+  
+    const downloadExcelSampleCompanyMaster = async () => {
+      await runApiWithLoader(
+        setIsLoading,
+        setIsLoadingMessage,
+        async () => {
+          // Find the column label for sorting
+  
+          const params: FilterPullExcelSample = {
+            TableName: 'COMPANY MASTER'
+          }
+  
+          const response = await technicalService.apiCallPullExcelSample(params);
+  
+          handleExportFile(response, 'Excel', 'Company Master', addToast, 'Sample file download successfully')
+  
+          return response;
+        },
+        undefined,
+        (error: any) => {
+          addToast({ type: 'error', title: error.message || 'Export failed' })
+        },
+        undefined,
+        'Preparing Downloading...'
+      )
+    }
+  
+    const handleExcelImportCompanyMaster = () => excelImportCompanyMaster()
+    
+    const handleDownloadExcelSampleCompanyMaster = () => downloadExcelSampleCompanyMaster()
+  
+  
+  
+    //#endregion
+  
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by company name..."
+          searchPlaceholder="Search By Company Name"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
@@ -591,8 +844,18 @@ export const CompanyMaster: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeCompanyMasterColumnsModal(true)}
-          isShowAddButton={false}
-          isShowImportButton={false}
+
+          // ADD
+          isShowAddButton={canAction}
+          addTitle="Add Company"
+          onAdd={handleAddCompanyMaster}
+
+          // IMPORT
+          isShowImportButton={canAction}
+          onUploadExcel={handleExcelImportCompanyMaster}
+          onDownloadSampleExcel={handleDownloadExcelSampleCompanyMaster}
+
+          // EXPORT
           isShowExportButton={canExport}
           onExportExcel={handleExportCompanyExcel}
           onExportPdf={handleExportCompanyPdf}
@@ -604,7 +867,7 @@ export const CompanyMaster: React.FC = () => {
           pagination={companyMasterPaginationInfo}
           emptyMessage="No companies found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
+          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -617,14 +880,20 @@ export const CompanyMaster: React.FC = () => {
           }}
           data={viewCompanyMasterDetailsData}
         />
+
+
         <CustomizeColumnsModal
           isOpen={isShowCustomizeCompanyMasterColumnsModal}
           onClose={() => setIsShowCustomizeCompanyMasterColumnsModal(false)}
           onApply={(keys) => {
-            const withRequired = Array.from(new Set([...keys, ...requiredCompanyMasterColumnKeys]))
-            setSelectedCompanyMasterColumnKeys(withRequired)
+            const withRequired = Array.from(
+              new Set([...keys, ...requiredCompanyMasterColumnKeys])
+            );
+            setSelectedCompanyMasterColumnKeys(withRequired);
             try {
-              LocalStorageHelper.storeCompanyMasterTableColumns(JSON.stringify(withRequired))
+              LocalStorageHelper.storeCompanyMasterTableColumns(
+                JSON.stringify(withRequired)
+              );
             } catch { }
           }}
           columns={companyMasterColumns}
@@ -632,6 +901,7 @@ export const CompanyMaster: React.FC = () => {
           requiredKeys={requiredCompanyMasterColumnKeys}
           title="Customize Company Master Table Columns"
         />
+
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}
@@ -642,23 +912,27 @@ export const CompanyMaster: React.FC = () => {
           }}
           saveText="Apply Filter"
           cancelText="Clear Filter"
+          resetText=''
           onCancel={() => clearFilters()}
-          size="half-screen"
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+
                 <Input
+                  label='Company Name'
                   type="text"
                   value={tempFilters.CompanyName || ''}
                   onChange={(e) => handleFilterChange('CompanyName', e.target.value)}
                   placeholder="Enter company name"
+
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company Type</label>
+
                 <Input
+                  label='Company Type'
                   type="text"
                   value={tempFilters.CompanyType || ''}
                   onChange={(e) => handleFilterChange('CompanyType', e.target.value)}
@@ -668,6 +942,22 @@ export const CompanyMaster: React.FC = () => {
             </div>
           </div>
         </Modal>
+
+        {/* DELETE CONFIRMATION TNC MODAL */}
+        <ConfirmationDialogBox
+          isOpen={isConfirmationDialogBoxOpen}
+          onClose={() => {
+            setIsConfirmationDialogBoxOpen(false)
+            setDeleteCompanyMasterDetailsData(null)
+          }}
+          onConfirm={handleDeleteCompanyMaster}
+          title="You are about to delete a company?"
+          message="Deleting this company will permanently remove its contents."
+          confirmText="Delete"
+          cancelText="Cancel"
+          loading={isLoading}
+          variant="danger"
+        />
       </div>
     </>
   )

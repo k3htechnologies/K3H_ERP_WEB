@@ -36,6 +36,7 @@
             '/profile': '/profile',
             '/tnc': '/tnc',
             '/banklistmaster': '/bankListMaster',
+            '/projectmaster':'/projectMaster',
         }
 
         // If a mapped route exists, return it (normalized)

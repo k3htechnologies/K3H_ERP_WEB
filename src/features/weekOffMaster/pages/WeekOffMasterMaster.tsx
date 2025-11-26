@@ -583,7 +583,7 @@ export const WeekOffMasterMaster: React.FC = () => {
 
       requiredFields.forEach((field) => {
         const value = formData[field as keyof AddUpdateWeekOffMasterRequest];
-        if (value === null || value === undefined || value.toString().trim() === "") {
+        if (value === null || value === undefined ||value===0 || value.toString().trim() === "") {
           const label = field.replace(/([A-Z])/g, " $1");
           newErrors[field] = `${label} is required`;
         }

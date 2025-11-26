@@ -25,8 +25,9 @@ const TooltipText: React.FC<TooltipTextProps> = ({
 
     const getBgColor = (): React.CSSProperties => {
         return {
-            backgroundColor: COLORS.primary,
-            borderColor: COLORS.primary
+            backgroundColor: COLORS.primary1,
+            borderColor: COLORS.primary1
+            
         };
     };
 
@@ -42,7 +43,7 @@ const TooltipText: React.FC<TooltipTextProps> = ({
         <>
             <div className="relative w-full inline-block" onMouseEnter={onEnter} onMouseLeave={() => setShow(false)} title="">
                 {onClick ? (
-                    <button onClick={onClick} className="text-left text-blue-600 hover:text-blue-800 hover:underline cursor-pointer block truncate" style={{ maxWidth }} title="">
+                    <button onClick={onClick} className="text-left hover:underline cursor-pointer block truncate" style={{ maxWidth,color:COLORS.primary1,fontWeight:500 }} title="">
                         {displayText}
                     </button>
                 ) : (

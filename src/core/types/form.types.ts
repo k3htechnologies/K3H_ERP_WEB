@@ -15,6 +15,7 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   className?: string
   style?: CSSProperties
   autoResize?: boolean
+  required?: boolean
 }
 export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string
@@ -32,9 +33,9 @@ export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextArea
   autoResize?: boolean
 }
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size' | 'color'> {
-  variant?: 'solid' | 'outline' | 'ghost' | 'link' | 'dark' | 'transparent_border'
+  variant?: 'solid' | 'outline' | 'ghost' | 'link' | 'dark' | 'transparent_border' | 'light'
   colorMode?: string
-  size?: 'xs' | 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'mxs'
   color?: | 'primary'
   | 'secondary'
   | 'success'
@@ -85,3 +86,19 @@ export interface RichTextEditorProps {
   className?: string;
 }
 
+export interface DatePickerProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    'size' | 'value' | 'onChange'
+  > {
+  label?: string;
+  value?: string | null;              // DD-MM-YYYY or null
+  onChange: (value: string | null) => void;
+
+  required?: boolean;
+  error?: string;
+  minYear?: number;
+  maxYear?: number;
+  disabled?: boolean;
+  helperText?: string;
+}

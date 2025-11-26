@@ -3,7 +3,6 @@ import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { CompanyMasterApi } from '@/features/companyMaster/api/CompanyMasterApi'
 import type {
     FilterWithPaginationCompanyMasterRequest,
-    AddUpdateCompanyMasterRequest,
     DeleteCompanyMasterRequest,
     CompanyMasterListResponse,
     CompanyMasterSaveResponse,
@@ -13,7 +12,7 @@ import type {
 export abstract class CompanyMasterDatasource {
 
     abstract pullCompanyMaster(params: FilterWithPaginationCompanyMasterRequest, signal?: AbortSignal): Promise<CompanyMasterListResponse>;
-    abstract addUpdateCompanyMaster(data: AddUpdateCompanyMasterRequest): Promise<CompanyMasterSaveResponse>;
+    abstract addUpdateCompanyMaster(formData: FormData): Promise<CompanyMasterSaveResponse>;
     abstract deleteCompanyMaster(params: DeleteCompanyMasterRequest): Promise<CompanyMasterDeleteResponse>;
 }
 
@@ -53,52 +52,13 @@ export class CompanyMasterDatasourceImpl implements CompanyMasterDatasource {
         }
     }
 
-    async addUpdateCompanyMaster(params: AddUpdateCompanyMasterRequest): Promise<CompanyMasterSaveResponse> {
+    async addUpdateCompanyMaster(formData: FormData): Promise<CompanyMasterSaveResponse> {
 
         try {
 
-            const payLoad: AddUpdateCompanyMasterRequest = {
-                
-                CompanyId: params.CompanyId ?? 0,
-                Uniquekey: params.Uniquekey ?? null,
-
-                CompanyName: params.CompanyName?.trim() ?? '',
-                CompanyType: params.CompanyType?.trim() ?? '',
-                ContactPerson: params.ContactPerson?.trim() ?? '',
-                MobileNumber: params.MobileNumber?.trim() ?? '',
-                EmailId: params.EmailId?.trim() ?? '',
-                LandLineNumber: params.LandLineNumber?.trim() ?? '',
-                GSTNumber: params.GSTNumber?.trim() ?? '',
-
-                GSTCertificateURL: params.GSTCertificateURL ?? null,
-                RemoveGSTCertificateURL: params.RemoveGSTCertificateURL?.trim() ?? '',
-
-                CINNumber: params.CINNumber?.trim() ?? '',
-                CINURL: params.CINURL ?? null,
-                RemoveCINURL: params.RemoveCINURL?.trim() ?? '',
-
-                PanNumber: params.PanNumber?.trim() ?? '',
-                PanCardURL: params.PanCardURL ?? null,
-                RemovePanCardURL: params.RemovePanCardURL?.trim() ?? '',
-
-                RERANumber: params.RERANumber?.trim() ?? '',
-
-                CountryMasterId: params.CountryMasterId ?? 0,
-                StateMasterId: params.StateMasterId ?? 0,
-                DistrictMasterId: params.DistrictMasterId ?? 0,
-                CityMasterId: params.CityMasterId ?? 0,
-
-                CompanyLetterheadHeaderURL: params.CompanyLetterheadHeaderURL ?? null,
-                RemoveCompanyLetterheadHeaderURL: params.RemoveCompanyLetterheadHeaderURL?.trim() ?? '',
-
-                CompanyLetterheadFooterURL: params.CompanyLetterheadFooterURL ?? null,
-                RemoveCompanyLetterheadFooterURL: params.RemoveCompanyLetterheadFooterURL?.trim() ?? ''
-            }
-
-
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
                 CompanyMasterApi.ADD_UPDATE,
-                payLoad
+                formData
             )
 
             return response
@@ -107,7 +67,7 @@ export class CompanyMasterDatasourceImpl implements CompanyMasterDatasource {
             console.error('ERROR: ADD UPDATE COMPANY MASTER :', error)
 
             if (error === TokenExpiredException) {
-                await this.addUpdateCompanyMaster(params);
+                await this.addUpdateCompanyMaster(formData);
             }
             throw error
         }

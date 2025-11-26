@@ -24,7 +24,6 @@ export const Profile: React.FC = () => {
 
     //#endregion
 
-
     //#region NAVIGATE PREVIOUS PAGE
     const navigate = useNavigate() // ✅ initialize router navigate
 
@@ -97,7 +96,7 @@ export const Profile: React.FC = () => {
             <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
             {/* Main Scrollable Container with Bottom Padding */}
-            <div className="relative h-full flex flex-col bg-gray-50 p-2 rounded-lg overflow-y-auto pb-1">
+            <div className="relative h-full flex flex-col bg-gray-50 p-2 rounded-lg overflow-y-auto thin-scroll pb-1">
 
                 {/* Loader */}
 

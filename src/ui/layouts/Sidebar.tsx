@@ -10,7 +10,6 @@ import {
 import type { ModuleData, SubModuleData, SubSubModuleData } from '@/features/menu/models/MenuModel'
 import { normalizePath, mapPathToRoute } from '@/core/utils/pathMapper';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import appLogo from '@/assets/images/appLogo.png'
 
 interface SidebarProps {
   isOpen: boolean
@@ -383,14 +382,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex items-center justify-between h-16 px-4">
             {isOpen ? (
               <div className="flex items-center space-x-3 flex-1">
-                <img
-                  src={appLogo}
-                  alt="K3H ERP"
-                  className="h-8 w-8 flex-shrink-0"
-                  onError={(e) => {
-                    e.currentTarget.src = appLogo
-                  }}
-                />
+
+
+                <div className="w-10 h-10
+                                                                        rounded-full 
+                                                                        bg-gradient-to-br from-blue-200 to-gray-300 
+                                                                        flex items-center justify-center 
+                                                                        text-gray-700 font-bold text-sm
+                                                                        border border-gray-300">
+                  {LocalStorageHelper.getStoredEmployeeData()?.FullName.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
+                </div>
                 <div className="flex-1 min-w-0">
                   {(() => {
 
@@ -406,14 +407,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
             ) : (
               <div className="flex items-center justify-center w-full">
-                <img
-                  src={appLogo}
-                  alt="K3H"
-                  className="h-8 w-8"
-                  onError={(e) => {
-                    e.currentTarget.src = appLogo
-                  }}
-                />
+                <div className="w-8 h-8
+                                                                        rounded-full 
+                                                                        bg-gradient-to-br from-gray-200 to-gray-300 
+                                                                        flex items-center justify-center 
+                                                                        text-gray-700 font-bold text-sm
+                                                                        border border-gray-300">
+                  AB
+                </div>
               </div>
             )}
 
@@ -429,8 +430,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
         </div>
-        
-        <div className="w-full h-2 bg-[#f1f1f1]" />
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto min-h-0 flex flex-col thin-scroll">

@@ -76,7 +76,7 @@ export const DepartmentMaster: React.FC = () => {
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeDepartmentMasterColumnsModal, setIsShowCustomizeDepartmentMasterColumnsModal] = useState(false);
 
-
+  
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -624,7 +624,7 @@ export const DepartmentMaster: React.FC = () => {
         saveText={data ? 'Update Department' : 'Save Department'}
         resetText='Reset'
         loading={loading}
-        size='small-half'
+        size='xl'
       >
         <div className="space-y-10 p-6 bg-blue-100">
           <div className="space-y-4" >
@@ -658,6 +658,7 @@ export const DepartmentMaster: React.FC = () => {
             </div>
           </div>
         </div>
+        
       </Modal>
     )
   }
@@ -898,13 +899,14 @@ export const DepartmentMaster: React.FC = () => {
           data={departmentListForTable}
           columns={visibleDepartmentMasterColumns}
           pagination={departmentMasterPaginationInfo}
-          emptyMessage="No departments found"
+          emptyMessage="No Departments Data Found"
           fixedHeight={true}
           maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
           onSort={handleSortColumn}
+          loading={isLoading}
         />
 
         {/* VIEW DEPARTMENT MODAL */}

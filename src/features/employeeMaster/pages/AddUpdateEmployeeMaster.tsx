@@ -146,6 +146,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
   //#endregion
 
+  //#region HANDLE FILED CHNAGE EVENT
   const handleFieldChange = (field: keyof AddUpdateEmployeeMasterRequest, value: any) => {
 
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -154,6 +155,7 @@ const AddUpdateEmployeePage: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
+  //#endregion
 
   //#region INITIALIZATION
   useEffect(() => {
@@ -169,6 +171,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
   //#endregion
 
+  //#region FETCH EMPLOYEE MASTER DETAILS
   const fetchEmployeeMasterDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -256,10 +259,9 @@ const AddUpdateEmployeePage: React.FC = () => {
       'Loading Employee Data'
     )
   }
+  //#endregion
 
-
-
-
+  //#region EMPLOYEE MASTER VALIDATION | ADD | UPDATE ACTION
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddEmployeeMasterForm = (): {
 
@@ -521,7 +523,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
   };
 
-
+  //#endregion
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
@@ -873,8 +875,8 @@ const AddUpdateEmployeePage: React.FC = () => {
           </form>
         </div>
         <div
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}
+          className="fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "301px", right: '14px' }}
         >
           <Button
             color="transparent"

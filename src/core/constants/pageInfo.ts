@@ -1,4 +1,6 @@
 export const getPageInfo = (path: string) => {
+    path=path.split("/").filter(Boolean)[0] 
+    path="/" +path
     switch (path) {
         case '/dashboard':
             return {
@@ -118,6 +120,7 @@ export const getPageInfo = (path: string) => {
                 title: 'Employee Master',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
+            
         case '/profile':
             return {
                 title: 'Employee Profile',

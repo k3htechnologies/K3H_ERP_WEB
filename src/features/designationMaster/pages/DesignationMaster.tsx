@@ -663,7 +663,7 @@ export const DesignationMaster: React.FC = () => {
         saveText={data ? 'Update Designation' : 'Save Designation'}
         resetText='Reset'
         loading={loading}
-        size='small-half'
+        size='xl'
       >
         <div className="space-y-6 p-6 bg-blue-100">
           <div className="space-y-4">
@@ -892,7 +892,7 @@ export const DesignationMaster: React.FC = () => {
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+        <Loader loading={isLoading} title={loadingMessage}><div></div> </Loader>
 
         {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
@@ -939,7 +939,7 @@ export const DesignationMaster: React.FC = () => {
           data={designationMasterListForTable}
           columns={visibleDesignationMasterColumns}
           pagination={designationMasterPaginationInfo}
-          emptyMessage="No designation found"
+          emptyMessage="No Designation Data Found"
           fixedHeight={true}
           maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
@@ -970,7 +970,6 @@ export const DesignationMaster: React.FC = () => {
         />
 
         {/* CUSTOMIZE COLUMNS MODAL */}
-
         <CustomizeColumnsModal
           isOpen={isShowCustomizeDesignationMasterColumnsModal}
           onClose={() => setIsShowCustomizeDesignationMasterColumnsModal(false)}

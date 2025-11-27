@@ -38,10 +38,11 @@ export const ViewEmployeeMaster: React.FC = () => {
         };
     };
 
-    // Get EMPLOYEE DATA FROM LOCATION STATE
+    //#endregion
+    //#region Get EMPLOYEE DATA FROM LOCATION STATE
     const editEmployeeData = (location.state?.editEmployeeMasterData ?? null) as EmployeeMasterData | null;
-
-    //TAB ACTIVITY
+    //#endregion
+    //#region TAB ACTIVITY
     const TabList = [
         { id: "Project", label: "Project" },
         { id: "Assets", label: "Assets" },
@@ -50,7 +51,6 @@ export const ViewEmployeeMaster: React.FC = () => {
     const [activeTab, setActiveTab] = useState<string>(TabList[0].id);
 
     //#endregion
-
     //#region INIT
     useEffect(() => {
         if (activeTab === 'Assets') {
@@ -64,7 +64,6 @@ export const ViewEmployeeMaster: React.FC = () => {
     }, [activeTab]);
 
     //#endregion
-
     //#region DATA LOAD
 
     const loadAssetMasterMapping = async (FullName: string) => {
@@ -76,7 +75,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                 const params: FilterWithPaginationAssetMappingMasterRequest = {
                     PageNumber: 1,
                     PageSize: 100,
-                    EmployeeName: 'Devika Pitroda'
+                    EmployeeName: FullName
                 };
 
                 const response = await assetMappingMasterService.apiCallPullAssetMappingMaster(params);
@@ -86,6 +85,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     setAssetMappingMasterList(response.right.Data);
 
                 } else {
+
                     addToast({ type: 'error', title: response.left.message });
                 }
 
@@ -101,7 +101,6 @@ export const ViewEmployeeMaster: React.FC = () => {
     };
 
     //#endregion 
-
     //#region EDIT EMPLOYEE
 
     const handleEditEmployee = (row: EmployeeMasterData) => {
@@ -121,7 +120,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
 
 
-                        <div className="pt-10 px-6 pb-6">
+                        <div className="pt-10 px-2 pb-2">
                             <div className="text-center">
                                 <h3 className="text-lg font-semibold text-gray-900">{editEmployeeData?.FullName} <span className="inline-block ml-2 text-green-500">●</span></h3>
                                 <div className="mt-2 flex justify-center gap-2">
@@ -132,24 +131,32 @@ export const ViewEmployeeMaster: React.FC = () => {
 
 
                             {/* Basic Info box */}
-                            <div className="mt-6 rounded">
-                                <h4 className="font-semibold text-sm text-gray-800 mb-3">Basic information</h4>
-                                <FieldItem label="Mobile Number" value={editEmployeeData!.PersonalMobileNumber} isRow />
-                                <FieldItem label="Email ID" value={editEmployeeData!.EmailId} isRow />
-                                <FieldItem label="Gender" value={editEmployeeData!.Gender} isRow />
-                                <FieldItem label="DOB"
-                                    value={editEmployeeData!.DateOfBirth ? formatDate_dd_MonthName_yy(editEmployeeData!.DateOfBirth) : ''}
-                                    isRow
-                                />
+                            <div className="mt-6 rounded border border-gray-200">
 
-                                <FieldItem
-                                    label="Joining Date"
-                                    value={editEmployeeData!.JoiningDate ? formatDate_dd_MonthName_yy(editEmployeeData!.JoiningDate) : ''}
-                                    isRow
-                                />
-                                <FieldItem label="Reporting Person" value={editEmployeeData!.ReportPersonName} isRow />
+                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
+                                    <h4 className="font-semibold text-sm text-gray-800">
+                                        Basic information
+                                    </h4>
+                                </div>
 
 
+                                <div className="p-4">
+                                    <FieldItem label="Mobile Number" value={editEmployeeData!.PersonalMobileNumber} isRow />
+                                    <FieldItem label="Email ID" value={editEmployeeData!.EmailId} isRow />
+                                    <FieldItem label="Gender" value={editEmployeeData!.Gender} isRow />
+                                    <FieldItem label="DOB"
+                                        value={editEmployeeData!.DateOfBirth ? formatDate_dd_MonthName_yy(editEmployeeData!.DateOfBirth) : ''}
+                                        isRow
+                                    />
+
+                                    <FieldItem
+                                        label="Joining Date"
+                                        value={editEmployeeData!.JoiningDate ? formatDate_dd_MonthName_yy(editEmployeeData!.JoiningDate) : ''}
+                                        isRow
+                                    />
+                                    <FieldItem label="Reporting Person" value={editEmployeeData!.ReportPersonName} isRow />
+
+                                </div>
                             </div>
 
                             <div className="mt-4 flex gap-3">
@@ -180,57 +187,86 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 </Button>
                             </div>
                             {/* Personal Information */}
-                            <div className="mt-6 rounded">
-                                <h4 className="font-semibold text-sm text-gray-800 mb-3">Personal Information</h4>
-                                <FieldItem label="Marital Status" value={editEmployeeData!.MaritalStatus} isRow />
-                                <FieldItem label="Blood Group" value={editEmployeeData!.BloodGroup} isRow />
-                                <FieldItem label="Office Email ID" value={editEmployeeData!.OfficeEmailId} isRow />
-                                <FieldItem label="Office Mobile Number" value={editEmployeeData!.OfficeMobileNumber} isRow />
-                                <FieldItem label="Employment Type" value={editEmployeeData!.EmployeeType} isRow />
+                            <div className="mt-6 rounded border border-gray-200">
+
+                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
+                                    <h4 className="font-semibold text-sm text-gray-800">
+                                        Personal Information
+                                    </h4>
+                                </div>
+
+
+                                <div className="p-4">
+                                    <FieldItem label="Marital Status" value={editEmployeeData!.MaritalStatus} isRow />
+                                    <FieldItem label="Blood Group" value={editEmployeeData!.BloodGroup} isRow />
+                                    <FieldItem label="Office Email ID" value={editEmployeeData!.OfficeEmailId} isRow />
+                                    <FieldItem label="Office Mobile Number" value={editEmployeeData!.OfficeMobileNumber} isRow />
+                                    <FieldItem label="Employment Type" value={editEmployeeData!.EmployeeType} isRow />
+
+                                </div>
                             </div>
 
                             {/* Emergency contact */}
-                            <div className="mt-6 rounded">
-                                <h4 className="font-semibold text-sm text-gray-800 mb-3">Emergency Contact Details</h4>
-                                <FieldItem label="Relationship" value={editEmployeeData!.EmergencyContactPersonRelationship} isRow />
-                                <FieldItem label="Contact Number" value={editEmployeeData!.EmergencyMobileNumber} isRow />
-                            </div>
-                            {/* ADDRESS */}
-                            <div className="mt-6 rounded">
-                                <h4 className="font-semibold text-sm text-gray-800 mb-3">Address Details</h4>
-                                <FieldItem
-                                    label="Communication Address"
-                                    value={editEmployeeData!.CommunicationAddress}
-                                    isRow={false}
-                                />
-                                <FieldItem
-                                    label="Permanent Address"
-                                    value={editEmployeeData!.PermanentAddress}
-                                    isRow={false}
-                                />
+                            <div className="mt-6 rounded border border-gray-200">
 
-                                <FieldItem label="Country" value={editEmployeeData!.CountryName} isRow />
-                                <FieldItem label="State" value={editEmployeeData!.StateName} isRow />
-                                <FieldItem label="District" value={editEmployeeData!.DistrictName} isRow />
-                                <FieldItem label="City" value={editEmployeeData!.CityName} isRow />
+                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
+                                    <h4 className="font-semibold text-sm text-gray-800">
+                                        Emergency Contact Details
+                                    </h4>
+                                </div>
+
+
+                                <div className="p-4">
+                                    <FieldItem label="Relationship" value={editEmployeeData!.EmergencyContactPersonRelationship} isRow />
+                                    <FieldItem label="Contact Number" value={editEmployeeData!.EmergencyMobileNumber} isRow />
+                                </div>
                             </div>
+
+                            {/* ADDRESS */}
+                            <div className="mt-6 rounded border border-gray-200">
+
+                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
+                                    <h4 className="font-semibold text-sm text-gray-800">
+                                        Address Details
+                                    </h4>
+                                </div>
+
+
+                                <div className="p-4">
+                                    <FieldItem
+                                        label="Communication Address"
+                                        value={editEmployeeData!.CommunicationAddress}
+                                        isRow={false}
+                                    />
+                                    <FieldItem
+                                        label="Permanent Address"
+                                        value={editEmployeeData!.PermanentAddress}
+                                        isRow={false}
+                                    />
+
+                                    <FieldItem label="Country" value={editEmployeeData!.CountryName} isRow />
+                                    <FieldItem label="State" value={editEmployeeData!.StateName} isRow />
+                                    <FieldItem label="District" value={editEmployeeData!.DistrictName} isRow />
+                                    <FieldItem label="City" value={editEmployeeData!.CityName} isRow />
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
 
                 {/* Right column: details and accordions */}
                 <div className="col-span-7 space-y-4">
-                    {/* top-right quick panels */}
-                    <div className="grid grid-cols-1 gap-4">
 
+                    <div className="grid grid-cols-1 gap-4">
 
                         <div className="bg-white border border-gray-200 rounded p-4 shadow-sm">
                             <h4 className="font-semibold mb-3">Bank Information</h4>
 
-                            <FieldItem label="Bank Name" value={editEmployeeData!.BankName} isRow />
-                            <FieldItem label="Branch" value={editEmployeeData!.Branch} isRow />
-                            <FieldItem label="Account No" value={editEmployeeData!.AccountNo} isRow />
-                            <FieldItem label="IFSC Code" value={editEmployeeData!.IFSCCode} isRow />
+                            <FieldItem label="Bank Name" value={editEmployeeData!.BankName} isRow withBorder />
+                            <FieldItem label="Branch" value={editEmployeeData!.Branch} isRow withBorder />
+                            <FieldItem label="Account No" value={editEmployeeData!.AccountNo} isRow withBorder />
+                            <FieldItem label="IFSC Code" value={editEmployeeData!.IFSCCode} isRow withBorder />
                         </div>
                     </div>
 
@@ -301,7 +337,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                             }}
                         />
 
-                        <div className="mt-4">
+                        <div className="mt-1">
                             {activeTab === 'Assets' && (
                                 <div className="space-y-4">
                                     {assetMappingMasterList.length === 0 ? (

@@ -518,17 +518,6 @@ const EmployeeModuleAccess: React.FC = () => {
 
     modules.forEach((module) => {
       const moduleId = module.ModulesMasterId ?? 0
-      // const moduleKey = buildKey(moduleId, 0, 0)
-      // const moduleFlags = ensureFlags(moduleKey)
-
-      // payload.push({
-      //   ModulesMasterId: moduleId,
-      //   SubModuleMasterId: 0,
-      //   SubSubModuleMasterId: 0,
-      //   IsAction: moduleFlags.isAction,
-      //   IsView: moduleFlags.isView,
-      //   IsExport: moduleFlags.isExport
-      // })
 
       module.SubModuleData.forEach((subModule) => {
         const subModuleId = subModule.SubModulesMasterId ?? 0
@@ -787,119 +776,119 @@ const EmployeeModuleAccess: React.FC = () => {
                           </div>
 
                           {hasChildren && subExpanded && (
-  <div className="relative ml-10 mt-1">
-    {/* Vertical tree line (push it left so checkbox never overlaps) */}
-    <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-300" />
+                            <div className="relative ml-10 mt-1">
+                              {/* Vertical tree line (push it left so checkbox never overlaps) */}
+                              <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-300" />
 
-    <div className="space-y-2">
-      {subModule.SubSubModuleData.map((child) => {
-        const childKey = buildKey(
-          moduleId,
-          subModuleId,
-          child.SubSubModulesMasterId ?? 0
-        )
-        const childFlags = permissions[childKey] ?? createDefaultFlags()
-        const childChecked =
-          childFlags.isAction && childFlags.isExport && childFlags.isView
-        const childIndeterminate =
-          !childChecked &&
-          (childFlags.isAction ||
-            childFlags.isExport ||
-            childFlags.isView)
+                              <div className="space-y-2">
+                                {subModule.SubSubModuleData.map((child) => {
+                                  const childKey = buildKey(
+                                    moduleId,
+                                    subModuleId,
+                                    child.SubSubModulesMasterId ?? 0
+                                  )
+                                  const childFlags = permissions[childKey] ?? createDefaultFlags()
+                                  const childChecked =
+                                    childFlags.isAction && childFlags.isExport && childFlags.isView
+                                  const childIndeterminate =
+                                    !childChecked &&
+                                    (childFlags.isAction ||
+                                      childFlags.isExport ||
+                                      childFlags.isView)
 
-        return (
-          <div key={child.SubSubModulesMasterId ?? 0} className="relative pl-4">
-            
-            {/* horizontal connector */}
-            <div className="absolute left-0 top-4 w-4 h-px bg-gray-300" />
+                                  return (
+                                    <div key={child.SubSubModulesMasterId ?? 0} className="relative pl-4">
 
-            <div className="grid grid-cols-[minmax(0,1fr)_repeat(3,120px)] items-center gap-4">
-              <Checkbox
-                checked={childChecked}
-                indeterminate={childIndeterminate}
-                onChange={(event) =>
-                  handleToggleLeaf(
-                    module,
-                    subModule,
-                    child,
-                    'select',
-                    event.target.checked
-                  )
-                }
-                label={
-                  <span className="text-sm text-gray-800 pl-[6px]">
-                    {child.SubSubModuleName}
-                  </span>
-                }
-              />
+                                      {/* horizontal connector */}
+                                      <div className="absolute left-0 top-4 w-4 h-px bg-gray-300" />
 
-              <div className="flex items-center justify-center">
-                <label className="flex items-center justify-between px-3 py-1">
-                  <Checkbox
-                    checked={childFlags.isAction}
-                    onChange={(event) =>
-                      handleToggleLeaf(
-                        module,
-                        subModule,
-                        child,
-                        'action',
-                        event.target.checked
-                      )
-                    }
-                  />
-                  <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                    Action
-                  </span>
-                </label>
-              </div>
+                                      <div className="grid grid-cols-[minmax(0,1fr)_repeat(3,120px)] items-center gap-4">
+                                        <Checkbox
+                                          checked={childChecked}
+                                          indeterminate={childIndeterminate}
+                                          onChange={(event) =>
+                                            handleToggleLeaf(
+                                              module,
+                                              subModule,
+                                              child,
+                                              'select',
+                                              event.target.checked
+                                            )
+                                          }
+                                          label={
+                                            <span className="text-sm text-gray-800 pl-[6px]">
+                                              {child.SubSubModuleName}
+                                            </span>
+                                          }
+                                        />
 
-              <div className="flex items-center justify-center">
-                <label className="flex items-center justify-between px-3 py-1">
-                  <Checkbox
-                    checked={childFlags.isExport}
-                    onChange={(event) =>
-                      handleToggleLeaf(
-                        module,
-                        subModule,
-                        child,
-                        'export',
-                        event.target.checked
-                      )
-                    }
-                  />
-                  <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                    Export
-                  </span>
-                </label>
-              </div>
+                                        <div className="flex items-center justify-center">
+                                          <label className="flex items-center justify-between px-3 py-1">
+                                            <Checkbox
+                                              checked={childFlags.isAction}
+                                              onChange={(event) =>
+                                                handleToggleLeaf(
+                                                  module,
+                                                  subModule,
+                                                  child,
+                                                  'action',
+                                                  event.target.checked
+                                                )
+                                              }
+                                            />
+                                            <span className="text-sm text-gray-800 flex-1 pl-[6px]">
+                                              Action
+                                            </span>
+                                          </label>
+                                        </div>
 
-              <div className="flex items-center justify-center">
-                <label className="flex items-center justify-between px-3 py-1">
-                  <Checkbox
-                    checked={childFlags.isView}
-                    onChange={(event) =>
-                      handleToggleLeaf(
-                        module,
-                        subModule,
-                        child,
-                        'view',
-                        event.target.checked
-                      )
-                    }
-                  />
-                  <span className="text-sm text-gray-800 flex-1 pl-[6px]">
-                    View
-                  </span>
-                </label>
-              </div>
+                                        <div className="flex items-center justify-center">
+                                          <label className="flex items-center justify-between px-3 py-1">
+                                            <Checkbox
+                                              checked={childFlags.isExport}
+                                              onChange={(event) =>
+                                                handleToggleLeaf(
+                                                  module,
+                                                  subModule,
+                                                  child,
+                                                  'export',
+                                                  event.target.checked
+                                                )
+                                              }
+                                            />
+                                            <span className="text-sm text-gray-800 flex-1 pl-[6px]">
+                                              Export
+                                            </span>
+                                          </label>
+                                        </div>
 
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  </div>
-)}
+                                        <div className="flex items-center justify-center">
+                                          <label className="flex items-center justify-between px-3 py-1">
+                                            <Checkbox
+                                              checked={childFlags.isView}
+                                              onChange={(event) =>
+                                                handleToggleLeaf(
+                                                  module,
+                                                  subModule,
+                                                  child,
+                                                  'view',
+                                                  event.target.checked
+                                                )
+                                              }
+                                            />
+                                            <span className="text-sm text-gray-800 flex-1 pl-[6px]">
+                                              View
+                                            </span>
+                                          </label>
+                                        </div>
+
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )}
 
                         </div>
                       )

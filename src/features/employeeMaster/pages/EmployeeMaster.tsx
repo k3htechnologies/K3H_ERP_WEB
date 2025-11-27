@@ -25,6 +25,7 @@ import { useNavigate } from 'react-router-dom';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { Input } from '@/ui/components/forms';
+import { updateFilter } from '@/core/utils/filterHelper';
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -39,6 +40,7 @@ export const EmployeeMaster: React.FC = () => {
   const { toasts, removeToast, addToast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState('');
+
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchEmployees(value);
   }, 350);
@@ -198,6 +200,7 @@ export const EmployeeMaster: React.FC = () => {
   const handleExportEmployeePdf = () => handleExportEmployees('PDF');
 
   //#endregion
+
   //#region PULL EMPLOYEE MASTER
   const getEmployees = async (filterParams: FilterWithPaginationEmployeeMasterRequest) => {
     return await employeeMasterService.apiCallPullEmployeeMaster(filterParams);
@@ -226,6 +229,9 @@ export const EmployeeMaster: React.FC = () => {
   );
 
   const employeesForTable = useMemo(() => employeeList, [employeeList]);
+  //#endregion
+
+  //#region VIEW EMPLOYEE MASTER
 
   const handleViewEmployeeDetails = (row: EmployeeMasterData) => {
     navigate('/employeeMaster/view', {
@@ -239,7 +245,9 @@ export const EmployeeMaster: React.FC = () => {
       },
     });
   }
+  //#endregion
 
+  //#region TABLE COLUMN
   const employeeColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -496,20 +504,20 @@ export const EmployeeMaster: React.FC = () => {
     loadEmployees(1, {});
     setShowFilterPopup(false);
   };
+  //#endregion
+
+  //#region ADD NEW EMPLOYEE
   const handleAddEmployeeModal = () => {
     navigate('/employeeMaster/add');
   };
+  //#endregion
 
+  //#region  HANDLE CHANGE EVENT
 
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters: FilterInfo = { ...tempFilters };
-    if (value.trim()) {
-      newFilters[key] = value.trim();
-    } else {
-      delete newFilters[key];
-    }
-    setTempFilters(newFilters);
+    setTempFilters(prev => updateFilter(prev, key, value));
   };
+
   //#endregion
 
   //#region IMPORT EXCEL | DOWNLOAD
@@ -523,8 +531,6 @@ export const EmployeeMaster: React.FC = () => {
       setIsLoadingMessage,
 
       async () => {
-
-
         return null;
       },
       undefined,

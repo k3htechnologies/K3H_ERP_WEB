@@ -4,6 +4,9 @@ import type {
     FilterWithPaginationProjectMasterRequest,
     ProjectMasterListResponse,
     ProjectMasterSaveResponse,
+    ProjectMasterWithBankDetailsResponse,
+    ProjectMasterWithCompanyResponse,
+    ProjectMasterWithEmployeeResponse,
 } from '@/features/projectMaster/models/ProjectMasterModel';
 
 import * as E from 'fp-ts/Either';
@@ -35,5 +38,37 @@ export const ProjectMasterService = {
 
         }
     },
+    apiCallPullProjectMasterWithEmployee: async (ProjectId: number, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectMasterWithEmployeeResponse>> => {
+        try {
 
+            return E.right(await projectMasterDatasource.pullProjectMasterWithEmployee(ProjectId, options?.signal));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+    apiCallPullProjectMasterWithCompany: async (ProjectId: number, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectMasterWithCompanyResponse>> => {
+        try {
+
+            return E.right(await projectMasterDatasource.pullProjectMasterWithCompany(ProjectId, options?.signal));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+    apiCallPullProjectMasterWithBankDetails: async (ProjectId: number, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectMasterWithBankDetailsResponse>> => {
+        try {
+
+            return E.right(await projectMasterDatasource.pullProjectMasterWithBankDetails(ProjectId, options?.signal));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
 }

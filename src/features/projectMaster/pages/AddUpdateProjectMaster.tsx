@@ -426,7 +426,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         value={projectPhotoFiles}
                                         onChange={setProjectPhotoFiles}
                                         availableFilesURL={projectPhotoURL ?? ""}
-                                        allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                                        allowedTypes={["image/jpeg", "image/png","image/jpg"]}
                                         maxFiles={5}
                                         maxSizeMB={10}
                                     />

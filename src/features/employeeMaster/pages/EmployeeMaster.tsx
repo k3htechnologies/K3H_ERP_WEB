@@ -532,7 +532,7 @@ export const EmployeeMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Import failed' })
       },
       undefined,
-      'Preparing Import...'
+      'Preparing Import'
     )
   }
 
@@ -559,7 +559,7 @@ export const EmployeeMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' })
       },
       undefined,
-      'Preparing Downloading...'
+      'Preparing Downloading'
     )
   }
 

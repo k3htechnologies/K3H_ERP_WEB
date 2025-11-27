@@ -5,13 +5,18 @@ import type {
     FilterWithPaginationProjectMasterRequest,
     ProjectMasterListResponse,
     ProjectMasterSaveResponse,
+    ProjectMasterWithBankDetailsResponse,
+    ProjectMasterWithCompanyResponse,
+    ProjectMasterWithEmployeeResponse,
 } from '@/features/projectMaster/models/ProjectMasterModel'
 
 export abstract class ProjectMasterDatasource {
 
     abstract pullProjectMaster(params: FilterWithPaginationProjectMasterRequest, signal?: AbortSignal): Promise<ProjectMasterListResponse>;
     abstract addUpdateProjectMaster(formData: FormData): Promise<ProjectMasterSaveResponse>;
-
+    abstract pullProjectMasterWithEmployee(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithEmployeeResponse>;
+    abstract pullProjectMasterWithCompany(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithCompanyResponse>;
+    abstract pullProjectMasterWithBankDetails(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithBankDetailsResponse>;
 }
 
 export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
@@ -70,6 +75,71 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
             throw error
         }
     }
+    async pullProjectMasterWithEmployee(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithEmployeeResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                ProjectId: (ProjectId ?? 0).toString()
+            })
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${ProjectMasterApi.PULL_PROJECT_WITH_EMPLOYEE}?${queryParams.toString()}`, { signal }
+            )
+            return response;
+        } catch (error: any) {
 
+            console.error('ERROR: PULL PROJECT MASTER WITH EMPLOYEE:', error);
+
+            if (error === TokenExpiredException) {
+
+                await this.pullProjectMasterWithEmployee(Number(ProjectId));
+            }
+
+            throw error
+        }
+    }
+
+    async pullProjectMasterWithCompany(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithCompanyResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                ProjectId: (ProjectId ?? 0).toString()
+            })
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${ProjectMasterApi.PULL_PROJECT_WITH_COMPANY}?${queryParams.toString()}`, { signal }
+            )
+            return response;
+        } catch (error: any) {
+
+            console.error('ERROR: PULL PROJECT MASTER WITH COMPANY:', error);
+
+            if (error === TokenExpiredException) {
+
+                await this.pullProjectMasterWithCompany(Number(ProjectId));
+            }
+
+            throw error
+        }
+    }
+
+    async pullProjectMasterWithBankDetails(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithBankDetailsResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                ProjectId: (ProjectId ?? 0).toString()
+            })
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${ProjectMasterApi.PULL_PROJECT_WITH_BANK_DETAILS}?${queryParams.toString()}`, { signal }
+            )
+            return response;
+
+        } catch (error: any) {
+
+            console.error('ERROR: PULL PROJECT MASTER WITH BANK DETAILS:', error);
+
+            if (error === TokenExpiredException) {
+
+                await this.pullProjectMasterWithBankDetails(Number(ProjectId));
+            }
+
+            throw error
+        }
+    }
 
 }

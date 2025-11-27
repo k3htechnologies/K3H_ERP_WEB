@@ -1,5 +1,6 @@
 import React from 'react'
-import { ChevronLeft, ChevronRight, ArrowUpDown, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react'
+import { useViewportHeight } from '@/core/utils/useViewportHeight'
 
 export interface TableColumn {
   key: string
@@ -53,7 +54,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   emptyMessage = 'No data available',
   className = '',
   fixedHeight = false,
-  maxHeight = 'calc(100vh - 200px)',
+  maxHeight = useViewportHeight(255, 350, 900),
   recordsPerPage = 10,
   sortInfo,
   onSort
@@ -132,6 +133,7 @@ export const DataTable: React.FC<DataTableProps> = ({
 
 
   return (
+
 
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col ${fixedHeight ? 'h-full' : ''} ${className}`}>
 

@@ -575,7 +575,7 @@ export const TncMaster: React.FC = () => {
         onSubmit={handleSubmitAddUpdateTnc}
         saveText={data ? 'Update T&C' : 'Save T&C'}
         loading={loading}
-        size='small45'
+        size='xl'
       >
         <div className="space-y-6 p-6  bg-blue-100">
           <div className="space-y-4">

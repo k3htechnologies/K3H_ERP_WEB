@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -21,7 +21,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, type Location, useNavigate } from 'react-router-dom';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { Input } from '@/ui/components/forms';
@@ -52,15 +52,56 @@ export const EmployeeMaster: React.FC = () => {
   const [isShowCustomizeEmployeeColumnsModal, setIsShowCustomizeEmployeeColumnsModal] = useState(false);
 
   const { canAction, canExport } = useMenuPermissions();
-  const hasFetchedInitialEmployees = useRef(false);
+
+  const location = useLocation() as Location & {
+    state?: {
+      listState?: {
+        page?: number;
+        filters?: FilterInfo;
+        sortInfo?: SortInfo;
+        searchTerm?: string;
+      };
+    };
+  };
+
+
   //#endregion
 
   //#region INIT
   useEffect(() => {
-    if (hasFetchedInitialEmployees.current) return;
-    hasFetchedInitialEmployees.current = true;
-    fetchEmployeeList();
-  }, []);
+
+    const incoming = location.state?.listState as
+      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string }
+      | undefined;
+
+    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '' };
+
+
+    setPagination({ currentPage: listState.page ?? pagination.currentPage });
+
+    setSortInfo(listState.sortInfo);
+
+    setFilters(listState.filters ?? {});
+    
+    setTempFilters(listState.filters ?? {});
+
+    setSearchTerm(listState.searchTerm ?? '');
+
+    if (listState.searchTerm && String(listState.searchTerm).trim()) {
+      
+      setSearchTerm(String(listState.searchTerm));
+
+      loadEmployees(listState.page ?? 1, { EmployeeName: String(listState.searchTerm).trim() });
+      
+      return;
+    }
+
+
+    loadEmployees(listState.page ?? 1, listState.filters ?? {});
+
+  }, [location.state]);
+
+
 
   useEffect(() => {
     return () => {
@@ -208,14 +249,14 @@ export const EmployeeMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE CONFIG
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     fetchEmployeeList(page);
-  };
+  }, []);
 
-  const handleSortColumn = (sort: SortInfo) => {
+  const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     fetchEmployeeList(1);
-  };
+  }, []);
 
   const employeePaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -233,7 +274,7 @@ export const EmployeeMaster: React.FC = () => {
 
   //#region VIEW EMPLOYEE MASTER
 
-  const handleViewEmployeeDetails = (row: EmployeeMasterData) => {
+  const handleViewEmployeeDetails = useCallback((row: EmployeeMasterData) => {
     navigate('/employeeMaster/view', {
       state: {
         editEmployeeMasterData: row,
@@ -241,10 +282,12 @@ export const EmployeeMaster: React.FC = () => {
         listState: {
           page: pagination.currentPage,
           filters,
+          sortInfo,
+          searchTerm,
         },
       },
     });
-  }
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
   //#endregion
 
   //#region TABLE COLUMN
@@ -581,6 +624,7 @@ export const EmployeeMaster: React.FC = () => {
         <Loader loading={isLoading} title={loadingMessage}>
           <div></div>
         </Loader>
+
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
@@ -614,13 +658,13 @@ export const EmployeeMaster: React.FC = () => {
           onExportPdf={handleExportEmployeePdf}
           exportLoading={isLoading}
         />
+
         <DataTable
           data={employeesForTable}
           columns={visibleEmployeeColumns}
           pagination={employeePaginationInfo}
           emptyMessage="No employees found"
           fixedHeight
-          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -644,6 +688,7 @@ export const EmployeeMaster: React.FC = () => {
           requiredKeys={requiredEmployeeColumnKeys}
           title="Customize Table Columns"
         />
+
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}
@@ -707,7 +752,6 @@ export const EmployeeMaster: React.FC = () => {
                   placeholder="Enter mobile number"
                 />
               </div>
-
             </div>
           </div>
         </Modal>

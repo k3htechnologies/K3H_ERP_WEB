@@ -164,10 +164,10 @@ const AddUpdateEmployeePage: React.FC = () => {
       fetchEmployeeMasterDetails();
       return;
     }
-    // create mode defaults
+    
     setSelectedCountryId(1);
     handleFieldChange('CountryMasterId', 1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [employeeId]);
 
 
@@ -517,11 +517,9 @@ const AddUpdateEmployeePage: React.FC = () => {
             searchTerm: '',
           };
 
-          setTimeout(() => {
-            navigate("/employeeMaster", {
-              state: { listState }
-            });
-          }, 500);
+          navigate("/employeeMaster", {
+            state: { listState }
+          });
 
         } else {
 

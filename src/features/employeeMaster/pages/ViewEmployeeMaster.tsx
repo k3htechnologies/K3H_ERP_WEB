@@ -27,6 +27,7 @@ export const ViewEmployeeMaster: React.FC = () => {
 
     //LOCATION
     const navigate = useNavigate();
+
     const location = useLocation() as {
         state?: {
             editEmployeeMasterData?: EmployeeMasterData | null;
@@ -34,9 +35,12 @@ export const ViewEmployeeMaster: React.FC = () => {
             listState?: {
                 page: number;
                 filters: any;
+                sortInfo?: any;
+                searchTerm?: string;
             };
         };
     };
+    const preservedListState = location.state?.listState;
 
     //#endregion
     //#region Get EMPLOYEE DATA FROM LOCATION STATE
@@ -104,8 +108,24 @@ export const ViewEmployeeMaster: React.FC = () => {
     //#region EDIT EMPLOYEE
 
     const handleEditEmployee = (row: EmployeeMasterData) => {
-        navigate(`/employeeMaster/add/${row.EmployeeId}`); // assuming EmployeeId is the identifier
+        if (!row?.EmployeeId) return;
+        navigate(`/employeeMaster/add/${row.EmployeeId}`, {
+            state: {
+                editEmployeeMasterData: row,
+                fromList: true,
+                listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
+            }
+        });
+    };
 
+
+    //#endregion
+
+    //#region BACK EMPLOYE EMASTER PAGE
+    const handleBackToListEmployeeMaster = () => {
+        navigate('/employeeMaster', {
+            state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' } }
+        });
     };
     //#endregion
     return (
@@ -172,12 +192,13 @@ export const ViewEmployeeMaster: React.FC = () => {
                                     title="Edit Info">
                                     <Edit className="w-4 h-4" /> Edit Info
                                 </Button>
-                                <Button onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    navigate(-1);
+                                <Button
 
-                                }}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleBackToListEmployeeMaster()
+                                    }}
                                     color='transparent'
                                     variant='transparent_border'
                                     fullWidth

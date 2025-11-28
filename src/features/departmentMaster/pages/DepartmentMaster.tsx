@@ -281,11 +281,7 @@ export const DepartmentMaster: React.FC = () => {
   const departmentListForTable = useMemo(() => departmentMasterList, [departmentMasterList]);
 
 
-  // STABLE HANDLER VIEW EDIT CONFIRMATION DIALOG BOX
-  const handleViewDepartmentDetails = useCallback((row: DepartmentMasterData) => {
-    setViewDepartmentMasterDetailsData(row)
-    setIsViewModalOpen(true)
-  }, [])
+ 
 
   const handleEditDepartmentMaster = useCallback((row: DepartmentMasterData) => {
     setEditingDepartmentMasterData({
@@ -300,6 +296,12 @@ export const DepartmentMaster: React.FC = () => {
   const handleConfirmationDialogBoxOpen = useCallback((row: DepartmentMasterData) => {
     setDeleteDepartmentMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
+  }, [])
+
+   // STABLE HANDLER VIEW EDIT CONFIRMATION DIALOG BOX
+   const handleViewDepartmentDetails = useCallback((row: DepartmentMasterData) => {
+    setViewDepartmentMasterDetailsData(row)
+    setIsViewModalOpen(true)
   }, [])
 
   const departmentMasterColumns = useMemo<TableColumn[]>(
@@ -667,9 +669,9 @@ export const DepartmentMaster: React.FC = () => {
     )
   }
 
-  const handleAddUpdateDepartmentMaster = async (formData: AddUpdateDepartmentMasterRequest) => {
+  const handleAddUpdateDepartmentMaster = async (formData: AddUpdateDepartmentMasterRequest,) => {
 
-    setIsAddUpdateModalOpen(false);
+    // setIsAddUpdateModalOpen(false);
 
     await runApiWithLoader(
       setIsLoading,
@@ -931,6 +933,7 @@ export const DepartmentMaster: React.FC = () => {
           onSubmit={handleAddUpdateDepartmentMaster}
           data={editingDepartmentMasterData}
           loading={isLoading}
+          
         />
 
         {/* CUSTOMIZE COLUMNS MODAL */}

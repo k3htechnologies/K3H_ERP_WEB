@@ -73,7 +73,6 @@ export const Modal: React.FC<ModalProps> = ({
     if (size === 'half-screen' || size === 'small-half' || size === 'large-half' || size === 'large75' || size === 'large80' || size === 'large90' || size === 'large100' || size === 'small25' || size === 'small30' || size === 'small35' || size === 'small40' || size === 'small45' || size === 'small50') {
 
         return (
-            // <div className="fixed inset-0  bg-opacity-50 z-50">
             <div className="fixed inset-0 bg-black/30 z-50">
 
                 {/* Half-screen modal on the right */}
@@ -163,7 +162,6 @@ export const Modal: React.FC<ModalProps> = ({
 
     // Regular centered modal layout
     return (
-        // <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
 
             <div className={`bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} ${className} max-h-[90vh] flex flex-col`}>

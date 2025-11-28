@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -21,10 +21,11 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, type Location, useNavigate } from 'react-router-dom';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { Input } from '@/ui/components/forms';
+import { updateFilter } from '@/core/utils/filterHelper';
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -39,6 +40,7 @@ export const EmployeeMaster: React.FC = () => {
   const { toasts, removeToast, addToast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState('');
+
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchEmployees(value);
   }, 350);
@@ -50,15 +52,56 @@ export const EmployeeMaster: React.FC = () => {
   const [isShowCustomizeEmployeeColumnsModal, setIsShowCustomizeEmployeeColumnsModal] = useState(false);
 
   const { canAction, canExport } = useMenuPermissions();
-  const hasFetchedInitialEmployees = useRef(false);
+
+  const location = useLocation() as Location & {
+    state?: {
+      listState?: {
+        page?: number;
+        filters?: FilterInfo;
+        sortInfo?: SortInfo;
+        searchTerm?: string;
+      };
+    };
+  };
+
+
   //#endregion
 
   //#region INIT
   useEffect(() => {
-    if (hasFetchedInitialEmployees.current) return;
-    hasFetchedInitialEmployees.current = true;
-    fetchEmployeeList();
-  }, []);
+
+    const incoming = location.state?.listState as
+      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string }
+      | undefined;
+
+    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '' };
+
+
+    setPagination({ currentPage: listState.page ?? pagination.currentPage });
+
+    setSortInfo(listState.sortInfo);
+
+    setFilters(listState.filters ?? {});
+
+    setTempFilters(listState.filters ?? {});
+
+    setSearchTerm(listState.searchTerm ?? '');
+
+    if (listState.searchTerm && String(listState.searchTerm).trim()) {
+
+      setSearchTerm(String(listState.searchTerm));
+
+      loadEmployees(listState.page ?? 1, { EmployeeName: String(listState.searchTerm).trim() });
+
+      return;
+    }
+
+
+    loadEmployees(listState.page ?? 1, listState.filters ?? {});
+
+  }, [location.state]);
+
+
 
   useEffect(() => {
     return () => {
@@ -122,10 +165,13 @@ export const EmployeeMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Employee Data...'
+      'Loading Employee Data'
     );
   };
 
+  //#endregion
+
+  //#region SEARCH EMPLOYEE FILTER
   const searchEmployees = async (searchValue: string) => {
     setSearchTerm(searchValue);
 
@@ -141,12 +187,28 @@ export const EmployeeMaster: React.FC = () => {
     await loadEmployees(1, filterParams);
   };
 
+
+  //#endregion
+
+  //#region CLAER SERACH EMPLOYEE
   const clearSearchEmployees = () => {
     setSearchTerm('');
+
     debouncedSearch.cancel?.();
-    fetchEmployeeList();
+
+    setFilters({});
+    setTempFilters({});
+    setPagination({ currentPage: 1 });
+    loadEmployees(1, {});
+    try {
+      navigate(location.pathname, { replace: true, state: {} });
+    } catch {
+    }
   };
 
+  //#endregion
+
+  //#region  EXCEL EXPORT TO EXCEL | PDF
   const handleExportEmployees = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -192,21 +254,23 @@ export const EmployeeMaster: React.FC = () => {
   const handleExportEmployeeExcel = () => handleExportEmployees('Excel');
   const handleExportEmployeePdf = () => handleExportEmployees('PDF');
 
+  //#endregion
 
+  //#region PULL EMPLOYEE MASTER
   const getEmployees = async (filterParams: FilterWithPaginationEmployeeMasterRequest) => {
     return await employeeMasterService.apiCallPullEmployeeMaster(filterParams);
   };
   //#endregion
 
   //#region TABLE CONFIG
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     fetchEmployeeList(page);
-  };
+  }, []);
 
-  const handleSortColumn = (sort: SortInfo) => {
+  const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     fetchEmployeeList(1);
-  };
+  }, []);
 
   const employeePaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -220,8 +284,11 @@ export const EmployeeMaster: React.FC = () => {
   );
 
   const employeesForTable = useMemo(() => employeeList, [employeeList]);
+  //#endregion
 
-  const handleViewEmployeeDetails = (row: EmployeeMasterData) => {
+  //#region VIEW EMPLOYEE MASTER
+
+  const handleViewEmployeeDetails = useCallback((row: EmployeeMasterData) => {
     navigate('/employeeMaster/view', {
       state: {
         editEmployeeMasterData: row,
@@ -229,32 +296,17 @@ export const EmployeeMaster: React.FC = () => {
         listState: {
           page: pagination.currentPage,
           filters,
+          sortInfo,
+          searchTerm,
         },
       },
     });
-  }
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  //#endregion
 
+  //#region TABLE COLUMN
   const employeeColumns = useMemo<TableColumn[]>(
     () => [
-      {
-        key: 'FullName',
-        label: 'Full Name',
-        width: '22',
-        sortable: true,
-        fixed: 'left',
-        align: 'left',
-        render: (value, row) => (
-          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
-            <TooltipText
-              text={value || row.FirstName || 'N/A'}
-              maxWidth="260px"
-              tooltipThreshold={26}
-              onClick={() => handleViewEmployeeDetails(row)}
-            />
-          </div>
-
-        )
-      },
       {
         key: 'EmployeeCode',
         label: 'Employee Code',
@@ -270,6 +322,61 @@ export const EmployeeMaster: React.FC = () => {
           />
         )
       },
+      {
+        key: 'FullName',
+        label: 'Full Name',
+        width: '22',
+        sortable: true,
+        fixed: 'left',
+        align: 'left',
+        render: (value, row) => {
+          const fullName = (row?.FullName ?? '').trim();
+          const initials = fullName
+            ? fullName
+              .split(/\s+/)
+              .map((w: string) => (w && w.length ? w[0] : ''))
+              .join('')
+              .toUpperCase()
+              .slice(0, 2)
+            : 'NA';
+
+          return (
+            <div className={`flex items-center justify-between gap-3`}>
+              {/* left: avatar + name */}
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-7 h-7 rounded-full
+                       bg-blue-200 
+                       flex items-center justify-center
+                       text-gray-800 font-medium text-xs
+                       border border-gray-300"
+                  title={fullName || 'N/A'}
+                >
+                  {initials}
+                </div>
+
+                <div className="min-w-0">
+                  <TooltipText
+                    text={value || row.FirstName || 'N/A'}
+                    maxWidth="260px"
+                    tooltipThreshold={26}
+                    onClick={() => handleViewEmployeeDetails(row)}
+                  />
+                </div>
+              </div>
+
+              {/* right: optional action area (kept if canAction true) */}
+              {canAction && (
+                <div className="flex items-center gap-2">
+                  {/* put any action buttons/icons here, e.g. edit/view */}
+                </div>
+              )}
+            </div>
+          );
+        }
+      },
+
+
       {
         key: 'Gender',
         label: 'Gender',
@@ -468,7 +575,7 @@ export const EmployeeMaster: React.FC = () => {
         allEmployeeColumnKeys.includes(k)
       )
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [employeeColumns.length]);
 
   const visibleEmployeeColumns = useMemo(
@@ -487,23 +594,32 @@ export const EmployeeMaster: React.FC = () => {
   const clearFilters = () => {
     setTempFilters({});
     setFilters({});
+
+    // reset page
+    setPagination({ currentPage: 1 });
+
+    // load empty filters
     loadEmployees(1, {});
+
     setShowFilterPopup(false);
+
+    // clear router state (very important)
+    navigate(location.pathname, { replace: true, state: {} });
   };
+  //#endregion
+
+  //#region ADD NEW EMPLOYEE
   const handleAddEmployeeModal = () => {
     navigate('/employeeMaster/add');
   };
+  //#endregion
 
+  //#region  HANDLE CHANGE EVENT
 
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters: FilterInfo = { ...tempFilters };
-    if (value.trim()) {
-      newFilters[key] = value.trim();
-    } else {
-      delete newFilters[key];
-    }
-    setTempFilters(newFilters);
+    setTempFilters(prev => updateFilter(prev, key, value));
   };
+
   //#endregion
 
   //#region IMPORT EXCEL | DOWNLOAD
@@ -517,8 +633,6 @@ export const EmployeeMaster: React.FC = () => {
       setIsLoadingMessage,
 
       async () => {
-
-
         return null;
       },
       undefined,
@@ -526,7 +640,7 @@ export const EmployeeMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Import failed' })
       },
       undefined,
-      'Preparing Import...'
+      'Preparing Import'
     )
   }
 
@@ -553,14 +667,12 @@ export const EmployeeMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' })
       },
       undefined,
-      'Preparing Downloading...'
+      'Preparing Downloading'
     )
   }
 
   const handleExcelImportEmployeeMaster = () => excelImportEmployeeMaster()
   const handleDownloadExcelSampleEmployeeMaster = () => downloadExcelSampleEmployeeMaster()
-
-
 
   //#endregion
 
@@ -571,6 +683,7 @@ export const EmployeeMaster: React.FC = () => {
         <Loader loading={isLoading} title={loadingMessage}>
           <div></div>
         </Loader>
+
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
@@ -604,13 +717,13 @@ export const EmployeeMaster: React.FC = () => {
           onExportPdf={handleExportEmployeePdf}
           exportLoading={isLoading}
         />
+
         <DataTable
           data={employeesForTable}
           columns={visibleEmployeeColumns}
           pagination={employeePaginationInfo}
           emptyMessage="No employees found"
           fixedHeight
-          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -634,6 +747,7 @@ export const EmployeeMaster: React.FC = () => {
           requiredKeys={requiredEmployeeColumnKeys}
           title="Customize Table Columns"
         />
+
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}
@@ -697,7 +811,6 @@ export const EmployeeMaster: React.FC = () => {
                   placeholder="Enter mobile number"
                 />
               </div>
-
             </div>
           </div>
         </Modal>

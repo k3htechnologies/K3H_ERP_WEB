@@ -185,34 +185,57 @@ export const Modal: React.FC<ModalProps> = ({
 
                 {/* Form Content */}
                 <form onSubmit={onSubmit} className="flex-1 flex flex-col min-h-0">
-                   <div className="flex-1 min-h-0 overflow-y-auto thin-scroll p-6 space-y-6">
+                    <div className="flex-1 min-h-0 overflow-y-auto thin-scroll p-6 space-y-6">
                         {children}
                     </div>
                     {/* Footer inside form */}
                     {saveText !== '' ?
-                        < div className="flex justify-end pt-6 mt-6 border-t border-gray-200 space-x-3 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] z-50">
-                            {cancelText && onCancel && (
-                                <Button
-                                    type="button"
-                                    onClick={onCancel}
-                                    disabled={loading}
-                                    color="transparent"
-                                    variant='transparent_border'
-                                    size="sm"
-                                >
-                                    {cancelText}
-                                </Button>
-                            )}
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                                color="green"
-                                size="sm"
 
-                            >
-                                <Save className="h-4 w-4" />
-                                <span>{loading ? 'Saving...' : saveText}</span>
-                            </Button>
+                        <div className="flex justify-between items-center h-16 px-6 border-t border-gray-200 bg-white flex-shrink-0 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] z-50">
+
+                            {/* LEFT SIDE — Reset + Cancel */}
+                            <div className="flex items-center space-x-3">
+                                {resetText && (
+                                    <Button
+                                        type="button"
+                                        color="gray"
+                                        variant="solid"
+                                        colorMode="light"
+                                        size="sm"
+                                        onClick={onreset}
+                                        disabled={loading}
+                                    >
+                                        {resetText}
+                                    </Button>
+                                )}
+
+                                {cancelText && onCancel && (
+                                    <Button
+                                        type="button"
+                                        color="transparent"
+                                        variant="transparent_border"
+                                        size="sm"
+                                        onClick={onCancel}
+                                        disabled={loading}
+                                    >
+                                        {cancelText}
+                                    </Button>
+                                )}
+                            </div>
+
+                            {/* RIGHT SIDE — Save */}
+                            <div>
+                                <Button
+                                    type="submit"
+                                    color="blue"
+                                    size="sm"
+                                    disabled={loading}
+                                >
+                                    <Save className="h-4 w-4 gap-2" />
+                                    <span>{loading ? 'Saving...' : saveText}</span>
+                                </Button>
+                            </div>
+
                         </div>
 
                         : ''}

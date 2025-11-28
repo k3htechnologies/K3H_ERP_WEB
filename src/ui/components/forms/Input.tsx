@@ -1,6 +1,7 @@
 import { forwardRef } from 'react'
 import { THEME } from '@/core/constants/theme'
 import type { InputProps } from '@/core/types/form.types'
+import { Info, InfoIcon } from 'lucide-react'
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({
@@ -51,9 +52,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       const baseStyles = {
         width: fullWidth ? '100%' : 'auto',
         height: currentSize.height,
-        padding: leftIcon ? `${currentSize.padding.split(' ')[0]} ${currentSize.padding.split(' ')[1]} ${currentSize.padding.split(' ')[0]} 40px` : 
-                 rightIcon ? `${currentSize.padding.split(' ')[0]} 40px ${currentSize.padding.split(' ')[0]} ${currentSize.padding.split(' ')[1]}` : 
-                 currentSize.padding,
+        padding: leftIcon ? `${currentSize.padding.split(' ')[0]} ${currentSize.padding.split(' ')[1]} ${currentSize.padding.split(' ')[0]} 40px` :
+          rightIcon ? `${currentSize.padding.split(' ')[0]} 40px ${currentSize.padding.split(' ')[0]} ${currentSize.padding.split(' ')[1]}` :
+            currentSize.padding,
         fontSize: currentSize.fontSize,
         fontWeight: theme.fontWeight.normal,
         borderRadius: theme.borderRadius.lg,
@@ -113,15 +114,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             display: 'block',
             fontSize: theme.fontSize.sm,
             fontWeight: theme.fontWeight.medium,
-            color:  theme.colors.text,
+            color: theme.colors.text,
             marginBottom: theme.spacing.sm,
           }}>
             {label}
             {required && <span style={{ color: theme.colors.error, marginLeft: '4px' }}>*</span>}
           </label>
-          
+
         )}
-        
+
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           {leftIcon && (
             <div style={{
@@ -138,7 +139,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               {leftIcon}
             </div>
           )}
-          
+
           <input
             ref={ref}
             {...props}
@@ -146,10 +147,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             style={{
               ...inputStyles,
               ...style
-              
+
             }}
 
-           
+
             className={className}
             onFocus={(e) => {
               Object.assign(e.target.style, focusStyles)
@@ -160,33 +161,47 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               props.onBlur?.(e)
             }}
           />
-          
-            {rightIcon && (
-              <div style={{
-                position: 'absolute',
-                right: theme.spacing.xl,
-                zIndex: 1,
-                color: theme.colors.textSecondary,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: currentSize.iconSize,
-                height: currentSize.iconSize,
-              }}>
-                {rightIcon}
-              </div>
-            )}
+
+          {rightIcon && (
+            <div style={{
+              position: 'absolute',
+              right: theme.spacing.xl,
+              zIndex: 1,
+              color: theme.colors.textSecondary,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: currentSize.iconSize,
+              height: currentSize.iconSize,
+            }}>
+              {rightIcon}
+            </div>
+          )}
         </div>
-        
+
         {(error || helperText) && (
-          <div style={{
-            marginTop: theme.spacing.sm,
-            fontSize: theme.fontSize.sm,
-            color: error ? theme.colors.error : theme.colors.textSecondary,
-          }}>
+          <div
+            style={{
+              marginTop: theme.spacing.sm,
+              fontSize: theme.fontSize.sm,
+              color: error ? theme.colors.error : theme.colors.textSecondary,
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",       // spacing between icon & text
+            }}
+          >
+            <InfoIcon
+              style={{
+                fontSize: theme.fontSize.xs,
+                color: error ? theme.colors.error : theme.colors.textSecondary,
+                height:14
+              }}
+            />
+
             {error || helperText}
           </div>
         )}
+
       </div>
     )
   }

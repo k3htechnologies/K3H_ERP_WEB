@@ -26,7 +26,7 @@ export const Tabs: React.FC<TabsProps> = ({
     };
 
     return (
-        <div className="w-full pb-5">
+        <div className="w-full pb-2">
             <div
                 className="flex border-b border-blue-300"
                 style={{ gap: 8 }}
@@ -52,13 +52,13 @@ export const Tabs: React.FC<TabsProps> = ({
 
                                 // ✅ border
                                 border: isActive
-                                    ? `2px solid ${COLORS.primary1}`
+                                    ? `1px solid ${COLORS.primary1}`
                                     : "2px solid transparent",
 
 
                                 // ✅ text color
                                 color: isActive
-                                    ? COLORS.primary1
+                                    ? COLORS.black
                                     : isHovered
                                         ? COLORS.primary1
                                         : "#4B5563",

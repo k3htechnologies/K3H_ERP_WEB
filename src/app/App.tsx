@@ -35,6 +35,8 @@ import ProjectMaster from '@/features/projectMaster/pages/ProjectMaster';
 import AddUpdateEmployeeMaster from '@/features/employeeMaster/pages/AddUpdateEmployeeMaster';
 import { MaterialMaster } from '@/features/materialMaster/pages/MaterialMaster';
 import ViewEmployeeMaster from '@/features/employeeMaster/pages/ViewEmployeeMaster';
+import ViewProjectMaster from '@/features/projectMaster/pages/ViewProjectMaster';
+import AddUpdateProjectMaster from '@/features/projectMaster/pages/AddUpdateProjectMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -79,10 +81,10 @@ function App() {
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           {/* Public Routes */}
-          <Route path="/sign-in" element={<SignIn />} />
+          <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
           <Route path="profile" element={<Profile />} />
-          <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
+          
           <Route path="companyMaster/addCompany" element={<AddCompany />} />
           
 
@@ -99,9 +101,10 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="departmentMaster" element={<DepartmentMaster />} />
             <Route path="designationMaster" element={<DesignationMaster />} />
+            <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
             <Route path="employeeMaster" element={<EmployeeMaster />} />
             <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />
-            <Route path="/employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
+            <Route path="employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
             <Route path="companyMaster" element={<CompanyMaster />} />
             <Route path="tnc" element={<TncMaster />} />
             <Route path="bankListMaster" element={<BankListMaster />} />
@@ -121,6 +124,8 @@ function App() {
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
             <Route path="vendor" element={<Vendor />} />
             <Route path="projectMaster" element={<ProjectMaster />} />
+            <Route path="projectMaster/view" element={<ViewProjectMaster />} />
+            <Route path="/projectMaster/add/:projectId??" element={<AddUpdateProjectMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
             <Route path="materialMaster" element={<MaterialMaster/>} />
 

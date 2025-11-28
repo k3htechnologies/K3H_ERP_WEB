@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Menu, Bell } from 'lucide-react'
+import { Menu, Bell, Edit, User } from 'lucide-react'
 import appLogo from '@/assets/images/appLogo.png'
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
 import { Modal } from '@/ui/components/Modal/Modal'
@@ -15,6 +15,7 @@ import useToast from '@/core/hooks/useToast'
 import { ToastContainer } from '@/ui/components/Toast';
 import { Loader } from '@/core/utils/loader'
 import { COLORS } from '@/core/constants'
+import Profile from '@/features/profile/page/profile'
 
 interface HeaderProps {
     isSidebarOpen: boolean
@@ -174,9 +175,9 @@ export const Header: React.FC<HeaderProps> = ({
                         onClick={onToggleSidebar}
                         className="p-2 rounded-md  transition-colors duration-200 touch-manipulation flex-shrink-0"
                         aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
-                        style={{ background: COLORS.menu_toggleColor,cursor: "pointer"}}
+                        style={{ background: COLORS.menu_toggleColor, cursor: "pointer" }}
                     >
-                        <Menu  style={{color:COLORS.primary1 }} className="h-5 w-5" />
+                        <Menu style={{ color: COLORS.primary1 }} className="h-5 w-5" />
                     </button>
 
                     <div className="flex flex-col min-w-0 flex-1">
@@ -193,24 +194,16 @@ export const Header: React.FC<HeaderProps> = ({
                     <button
                         onClick={handleNotificationModal}
 
-                        className="hidden sm:block p-2 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 relative touch-manipulation">
-                        <Bell className="h-5 w-5 text-gray-600" />
+                        className="hidden sm:block p-1 bg-blue-50 rounded-md hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200 relative touch-manipulation">
+                        <Bell className="h-5 w-6 text-blue-800" />
                         <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
                             4
                         </span>
                     </button>
                     <button
                         onClick={handleEmployeeProfileClick}
-                        className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 touch-manipulation"
-                        aria-label="Select Project"
-                    >
-                        <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
-                            <img
-                                src={appLogo}
-                                alt={fullName}
-                                className="h-8 w-8 rounded-full object-cover"
-                            />
-                        </div>
+                        className="flex items-center bg-blue-50 space-x-2 p-1 rounded-md hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200 touch-manipulation">
+                        <User className="h-5 w-6 text-blue-800" />
 
                     </button>
                 </div>
@@ -274,12 +267,15 @@ export const Header: React.FC<HeaderProps> = ({
                     <div className="p-4">
                         <div className="flex items-center space-x-4 mb-6">
                             <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-                                <img
-                                    src={appLogo} // appLogo must be imported where used
-                                    alt={fullName}
-                                    className="h-full w-full object-cover"
-                                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = appLogo }}
-                                />
+
+                                <div className="w-14 h-14 
+                                                                        rounded-full 
+                                                                        bg-gradient-to-br from-gray-200 to-gray-300 
+                                                                        flex items-center justify-center 
+                                                                        text-gray-700 font-bold text-lg
+                                                                        border border-gray-300">
+                                    {fullName.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
+                                </div>
                             </div>
                             <div className="min-w-0">
                                 <h2 className="text-lg font-semibold text-gray-900 truncate">{fullName}</h2>

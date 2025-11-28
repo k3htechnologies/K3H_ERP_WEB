@@ -19,7 +19,8 @@
     white: '#FFFFFF',
     hover: '#f1e5e5ff',
     menu_toggleColor: '#DBEAFE',
-    primary1: '#135BEC'
+    primary1: '#135BEC',
+    green:'#8d99ba1f'
   } as const
 
   export type ColorType = keyof typeof COLORS
@@ -27,26 +28,26 @@
   export const COLOR_MAP = {
     primary: {
       solid: {
-        backgroundColor: COLORS.primary,
+        backgroundColor: COLORS.primary1,
         color: 'white',
         border: `1px solid ${COLORS.border}`,
         hover: { backgroundColor: COLORS.primaryHover },
       },
       outline: {
         backgroundColor: 'transparent',
-        color: COLORS.primary,
-        border: `1px solid ${COLORS.primary}`,
+        color: COLORS.primary1,
+        border: `1px solid ${COLORS.primary1}`,
         hover: { backgroundColor: COLORS.primaryLight },
       },
       ghost: {
         backgroundColor: 'transparent',
-        color: COLORS.primary,
+        color: COLORS.primary1,
         border: 'none',
         hover: { backgroundColor: COLORS.primaryLight },
       },
       link: {
         backgroundColor: 'transparent',
-        color: COLORS.primary,
+        color: COLORS.primary1,
         border: 'none',
         textDecoration: 'underline',
         hover: { color: COLORS.primaryHover },
@@ -234,6 +235,7 @@
           border: '1px solid #991b1b',
           hover: { backgroundColor: '#991b1b' },
         },
+        
       },
     },
 
@@ -352,10 +354,10 @@
     switch (type) {
       case 'success':
         return {
-          background: '#ECFDF5',
+          background: '#16A34A',
           border: '#10B981',
-          title: '#065F46',
-          message: '#047857'
+          title: COLORS.white,
+          message:COLORS.white
         }
       case 'error':
         return {

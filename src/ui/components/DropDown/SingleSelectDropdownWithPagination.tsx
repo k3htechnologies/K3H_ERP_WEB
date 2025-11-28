@@ -7,7 +7,7 @@ import React, {
   forwardRef,
 } from "react";
 import { THEME } from "@/core/constants/theme";
-import { Search, X } from "lucide-react";
+import { InfoIcon, Search, X } from "lucide-react";
 import type { SingleSelectWithPaginationProps } from "@/core/types/dropDownSelectionType";
 
 export const SingleSelectDropdownWithPagination = forwardRef<
@@ -486,18 +486,27 @@ export const SingleSelectDropdownWithPagination = forwardRef<
         )}
 
         {/* Error message */}
-        {displayError && (
-          <p
+        {(error ) && (
+          <div
             style={{
-              color: theme.colors.error,
+              marginTop: theme.spacing.sm,
               fontSize: theme.fontSize.sm,
-              marginTop: "4px",
-              marginLeft: "0",
-              marginBottom: "0",
+              color: error ? theme.colors.error : theme.colors.textSecondary,
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",       // spacing between icon & text
             }}
           >
-            {displayError}
-          </p>
+            <InfoIcon
+              style={{
+                fontSize: theme.fontSize.xs,
+                color: error ? theme.colors.error : theme.colors.textSecondary,
+                height:14
+              }}
+            />
+
+            {error }
+          </div>
         )}
       </div>
     );

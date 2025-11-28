@@ -1,6 +1,7 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 import type { EmployeeData } from "@/features/authentication/models/AuthenticationModel"
 import type { CompanyMasterData } from "@/features/companyMaster/models/CompanyMasterModel"
+import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel"
 
 export interface FilterWithPaginationProjectMasterRequest {
     PageSize: number
@@ -146,7 +147,10 @@ export interface AddUpdateProjectMasterRequest {
     GoogleLocation: string | '';
 }
 
-
-
 export type ProjectMasterListResponse = ApiResponse<ProjectMasterData[]>;
 export type ProjectMasterSaveResponse = ApiResponse<ProjectMasterData[]>;
+
+
+export type ProjectMasterWithEmployeeResponse = ApiResponse<EmployeeMasterData[]>;
+export type ProjectMasterWithCompanyResponse = ApiResponse<CompanyMasterData[]>;
+export type ProjectMasterWithBankDetailsResponse = ApiResponse<ProjectWithBankDetails[]>;

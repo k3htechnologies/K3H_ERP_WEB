@@ -26,6 +26,8 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { BranchMasterService } from '@/features/branchMaster/services/BranchMasteService';
 import { Edit } from 'lucide-react';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
 
 
 export const BranchAssociationsMaster: React.FC = () => {
@@ -62,6 +64,18 @@ export const BranchAssociationsMaster: React.FC = () => {
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeBranchAssociationsMasterColumnsModal, setIsShowCustomizeBranchAssociationsMasterColumnsModal] = useState(false);
 
+  // EDIT BranchAssociation MASTER
+  const [editingBranchAssociationMasterData, setEditingBranchAssociationMasterData] = useState<BranchAssociationsMasterData | null>(null);
+  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+
+  const [BranchAssociationMasterFormData, setBranchAssociationMasterFormData] = useState<AddUpdateBranchAssociationsMasterRequest>({
+    BranchAssociationsId: 0,
+    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    BranchMasterId: "",
+    EmployeeId: 0
+  });
+
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   //#endregion
 
@@ -71,9 +85,6 @@ export const BranchAssociationsMaster: React.FC = () => {
 
   //#region INITIALIZATION
   const hasFetchedInitialBranchAssociations = useRef(false)
-  // Edit BranchAssociation MASTER
-  const [editingBranchAssociationMasterData, setEditingBranchAssociationMasterData] = useState<BranchAssociationsMasterData | null>(null);
-  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
 
   useEffect(() => {
@@ -94,8 +105,6 @@ export const BranchAssociationsMaster: React.FC = () => {
   }, [debouncedSearch])
   //#endregion
 
-
-  //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
@@ -125,7 +134,7 @@ export const BranchAssociationsMaster: React.FC = () => {
           PageSize: pagination.pageSize,
           BranchAssociationsId: filterParams.BranchAssociationsId ? Number(filterParams.BranchAssociationsId) : undefined,
           EmployeeName: filterParams.EmployeeName?.trim() || undefined,
-         BranchMasterId: String(filterParams.BranchMasterId ?? "").trim() || undefined,
+          BranchMasterId: String(filterParams.BranchMasterId ?? "").trim() || undefined,
           SortBy: sortByParam
         }
 
@@ -236,8 +245,6 @@ export const BranchAssociationsMaster: React.FC = () => {
     return await branchAssociationsService.apiCallPullBranchAssociations(filterParams);
   }
 
-  //END API | SERVICES CALL TO GET BRANCH ASSOCIATIONS
-
   //#endregion
 
   //#region TABLE CONFIGURATION
@@ -268,20 +275,13 @@ export const BranchAssociationsMaster: React.FC = () => {
   const branchAssociationsListForTable = useMemo(() => branchAssociationsMasterList, [branchAssociationsMasterList]);
 
 
-  // STABLE HANDLER VIEW
+  // STABLE HANDLER VIEW EDIT CONFIRMATION DIALOG BOX
   const handleViewBranchAssociationsDetails = useCallback((row: BranchAssociationsMasterData) => {
     setViewBranchAssociationsMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
 
-  const handleEditBranchAssociationMaster = useCallback((row: BranchAssociationsMasterData) => {
-    setEditingBranchAssociationMasterData({
-      ...row,
-      EmployeeName: row.EmployeeName || ''
-    })
-    setIsAddUpdateModalOpen(true);
 
-  }, [])
   const branchAssociationsMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -292,39 +292,14 @@ export const BranchAssociationsMaster: React.FC = () => {
         fixed: 'left',
         align: 'left',
         render: (value, row) => (
-          <div className="flex items-center justify-start">
+          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
             <TooltipText
               text={value || 'N/A'}
               maxWidth="250px"
               tooltipThreshold={25}
               onClick={() => handleViewBranchAssociationsDetails(row)}
             />
-            {canAction && (
-              <div className="flex items-center justify-end ml-2 w-20">
-                <>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEditBranchAssociationMaster(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    title="Edit Earning"
-                    style={{
-                      color: '#0B3251',
-                      padding: '0px 8px'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </>
-              </div>
-            )}
+
           </div>
         )
       },
@@ -427,79 +402,54 @@ export const BranchAssociationsMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Settings - Company setup (Branch Associations Details)"
+        title="Branch Associations Details"
         onSubmit={(e) => {
           e.preventDefault()
           onClose()
         }}
         cancelText="Close"
         loading={false}
+        size='xl'
       >
         <div className="space-y-6">
-          {/* Branch Associations Information */}
+
           <div className="space-y-4">
+            <FieldItem label="Branch Name" value={data.BranchName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Employee Name" value={data.EmployeeName} isRow withBorder={true} />
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold pb-2">
+                Action Details
+              </h4>
 
-            {/* Employee Name */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Employee Name
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.EmployeeName || 'N/A'}
-              </span>
+              <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
+
+              {data.ModifiedBy !== '' ?
+                <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
+
+                :
+                ''}
             </div>
+            <div className="flex justify-between items-center pt-4">
 
-            {/* Branch Name */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Branch Name
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.BranchName || 'N/A'}
-              </span>
-            </div>
-
-
-          </div>
-          {/* Action Details Header */}
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created By</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {data.CreatedBy || 'N/A'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created Date</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {data.ModifiedBy && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified By</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {data.ModifiedBy}
-                    </span>
-                  </div>
-                )}
-                {data.ModifiedDate && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified Date</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
-                    </span>
-                  </div>
-                )}
-              </div>
+              {canAction && (
+                <>
+                  <Button
+                    color='blue'
+                    size='md'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsViewModalOpen(false)
+                      handleEditBranchAssociationMasterData(data)
+                    }}
+                  >
+                    <Edit className="h-5 w-5" />
+                    Edit
+                  </Button>
+                </>
+              )}
             </div>
           </div>
-
         </div>
       </Modal>
     )
@@ -534,167 +484,142 @@ export const BranchAssociationsMaster: React.FC = () => {
   //#endregion
 
   //ADD UPDATE Branch Association MASTER
-  const handleAddBranchAssociationModal = () => {
+  const handleAddBranchAssociationsMaster = () => {
     setEditingBranchAssociationMasterData(null);
-    setIsAddUpdateModalOpen(true);
-  };
-
-  interface AddUpdateBranchAssociationModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSubmit: (data: AddUpdateBranchAssociationsMasterRequest) => void;
-    data?: BranchAssociationsMasterData | null;
-    loading?: boolean;
-  }
-
-  const AddUpdateBranchAssociationModal: React.FC<AddUpdateBranchAssociationModalProps> = ({
-    isOpen,
-    onClose,
-    onSubmit,
-    data,
-    loading = false
-  }) => {
-    const [formData, setFormData] = useState<AddUpdateBranchAssociationsMasterRequest>({
-
+    setBranchAssociationMasterFormData({
       BranchAssociationsId: 0,
       Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
       BranchMasterId: "",
       EmployeeId: 0
     });
-    // Single error object for all fields
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-    useEffect(() => {
-      if (isOpen) {
-        if (data) {
-          //Edit Branch Association 
-          setFormData({
-            BranchAssociationsId: data.BranchAssociationsId || 0,
-            Uniquekey: data.Uniquekey,
-            BranchMasterId: data.BranchMasterId || "",
-            EmployeeId: data.EmployeeId || 0
-          });
-          setDropdownLabels({
-            branchName: data.BranchName || "",
-          });
-        } else {
-          // Add Branch Association
-          setFormData({
-            BranchAssociationsId: 0,
-            Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            BranchMasterId: "",
-            EmployeeId: 0
-          })
-        }
-        setErrors({});
-      }
-    }, [isOpen, data]);
-
-    // Handle input change
-    const handleFieldChange = (
-      field: keyof AddUpdateBranchAssociationsMasterRequest,
-      value: any
-    ) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    };
-    const handleSubmitAddBranchAssociation = (e: React.FormEvent) => {
-      debugger
-      e.preventDefault();
-      const requiredFields = [
-        "BranchMasterId"
-      ];
-
-      const newErrors: any = {};
-
-      requiredFields.forEach((field) => {
-        const value = formData[field as keyof AddUpdateBranchAssociationsMasterRequest];
-        if (value === null || value === undefined ||
-          value === 0 || value.toString().trim() === "") {
-          const label = field.replace(/([A-Z])/g, " $1");
-          newErrors[field] = `${label} is required`;
-        }
-      });
-      setErrors(newErrors);
-
-      // STOP submit if any error
-      if (Object.keys(newErrors).length > 0) return;
-
-      onSubmit(formData);
-    };
-    const fetchBranchOptions = async (pageNumber: number, params?: { value?: string }) => {
-      const responseEither = await BranchMasterService.apiCallPullBranchMaster({
-        PageSize: 10,
-        PageNumber: pageNumber,
-        BranchName: params?.value || "",
-        IsCheckPermission: true,
-      });
-      if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
-      const apiResponse = responseEither.right;
-      const branchList = apiResponse?.Data?.map((item: any) => ({ label: item.BranchName, value: String(item.BranchMasterId) })) || [];
-      return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? branchList.length, itemList: branchList };
-    };
-    const toDropdownInitialValue = (
-      id?: string | null,
-      label?: string
-    ): { label: string; value: string } | null => {
-      if (!id) return null;
-      return {
-        label: label || id,
-        value: id
-      };
-    };
-
-    const [dropdownLabels, setDropdownLabels] = useState<{
-      branchName?: string;
-    }>({});
-
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        onCancel={onClose}
-        title={formData.BranchAssociationsId === 0 ? "Add Branch Association" : "Update Branch Association"}
-        onSubmit={handleSubmitAddBranchAssociation}
-        saveText={formData.BranchAssociationsId === 0 ? "Save" : "Update"}
-        cancelText='Cancel'
-        loading={loading}
-      >
-        <div className="space-y-6">
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <SingleSelectDropdownWithPagination
-                label="Branch"
-                title="Select..."
-                size="lg"
-                dataFetchCallBack={fetchBranchOptions}
-                onSelected={(item) => handleFieldChange("BranchMasterId", String(item.value))}
-                initialValue={toDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
-              />
-            </div>
-          </div>
-        </div>
-      </Modal>
-    )
+    setFormErrors({});
+    setIsAddUpdateModalOpen(true);
   };
 
-  const handleAddUpdateBranchAssociationMaster = async (formData: AddUpdateBranchAssociationsMasterRequest) => {
+  const handleEditBranchAssociationMasterData = (row: BranchAssociationsMasterData) => {
+    setEditingBranchAssociationMasterData(row);
+    setBranchAssociationMasterFormData({
+      BranchAssociationsId: row.BranchAssociationsId || 0,
+      Uniquekey: row.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      BranchMasterId: row.BranchMasterId || "",
+      EmployeeId: row.EmployeeId || 0
+    });
+    setDropdownLabels({
+      branchName: row.BranchName ?? "",
+      employeeName: row.EmployeeName ?? ""
+    });
+    setFormErrors({});
+    setIsAddUpdateModalOpen(true);
+  };
 
-    setIsAddUpdateModalOpen(false);
+
+  const handleFieldChange = (field: keyof AddUpdateBranchAssociationsMasterRequest, value: string | number | null | boolean) => {
+    setBranchAssociationMasterFormData(prev => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  }
+
+  const validateBranchAssociationMasterForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!BranchAssociationMasterFormData.BranchMasterId) {
+      newErrors.BranchMasterId = "Branch  Name is required.";
+    }
+
+    if (!BranchAssociationMasterFormData.EmployeeId) {
+      newErrors.EmployeeId = "Employee Name is required.";
+    }
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors,
+    };
+  }
+
+  const PushBranchAssociationFormData = (): AddUpdateBranchAssociationsMasterRequest => {
+    return {
+      BranchAssociationsId: BranchAssociationMasterFormData.BranchAssociationsId || 0,
+      Uniquekey: BranchAssociationMasterFormData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      BranchMasterId: BranchAssociationMasterFormData.BranchMasterId || "",
+      EmployeeId: BranchAssociationMasterFormData.EmployeeId || 0
+    };
+  };
+
+  const fetchEmployeeOptions = async (pageNumber: number, params?: { value?: string }) => {
+    const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
+      PageSize: 10,
+      PageNumber: pageNumber,
+      EmployeeName: params?.value || "",
+    });
+
+    if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
+
+    const apiResponse = responseEither.right;
+    const employeeList = apiResponse?.Data?.map((item: any) => ({
+      label: `${item.FirstName} ${item.MiddleName || ""} ${item.LastName || ""}`.trim(),
+      value: String(item.EmployeeId),
+    })) || [];
+
+    return {
+      totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? employeeList.length,
+      itemList: employeeList,
+    };
+  };
+
+  const fetchBranchOptions = async (pageNumber: number, params?: { value?: string }) => {
+    const responseEither = await BranchMasterService.apiCallPullBranchMaster({
+      PageSize: 10,
+      PageNumber: pageNumber,
+      BranchName: params?.value || "",
+      IsCheckPermission: true,
+    });
+    if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
+    const apiResponse = responseEither.right;
+    const branchList = apiResponse?.Data?.map((item: any) => ({ label: item.BranchName, value: String(item.BranchMasterId) })) || [];
+    return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? branchList.length, itemList: branchList };
+  };
+  const toDropdownInitialValue = (
+    id?: string | null,
+    label?: string
+  ): { label: string; value: string } | null => {
+    if (!id) return null;
+    return {
+      label: label || id,
+      value: id
+    };
+  };
+
+  const [dropdownLabels, setDropdownLabels] = useState<{
+    branchName?: string;
+    employeeName?: string;
+  }>({});
+
+
+  const handleAddUpdateBranchAssociationMaster = async () => {
+
+    setFormErrors({});
+
+    const validation = validateBranchAssociationMasterForm();
+
+    if (!validation.isValid) {
+      setFormErrors(validation.errors);
+      return;
+    }
 
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
 
-        const response = await branchAssociationsService.apiCallAddUpdateBranchAssociations(formData);
+        const payload = PushBranchAssociationFormData();
+        const response = await branchAssociationsService.apiCallAddUpdateBranchAssociations(payload);
 
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = formData.BranchAssociationsId === 0
+          const isAdd = BranchAssociationMasterFormData.BranchAssociationsId === 0
 
           if (isAdd) {
 
@@ -716,7 +641,7 @@ export const BranchAssociationsMaster: React.FC = () => {
 
             setBranchAssociationsMasterList(prevData =>
               prevData.map(item =>
-                item.BranchAssociationsId === formData.BranchAssociationsId
+                item.BranchAssociationsId === BranchAssociationMasterFormData.BranchAssociationsId
                   ? updatedRecord
                   : item
               )
@@ -741,7 +666,7 @@ export const BranchAssociationsMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
-      formData.BranchAssociationsId === 0 ? 'Add Branch Association' : 'Update Branch Association...'
+      BranchAssociationMasterFormData.BranchAssociationsId === 0 ? 'Add Branch Association' : 'Update Branch Association...'
     )
   }
 
@@ -780,7 +705,7 @@ export const BranchAssociationsMaster: React.FC = () => {
           onCustomize={() => setIsShowCustomizeBranchAssociationsMasterColumnsModal(true)}
           isShowAddButton={canAction}
           addTitle='Add BranchAssociation'
-          onAdd={handleAddBranchAssociationModal}
+          onAdd={handleAddBranchAssociationsMaster}
           isShowImportButton={false}
           isShowExportButton={canExport}
           onExportExcel={handleExportBranchAssociationsExcel}
@@ -812,9 +737,65 @@ export const BranchAssociationsMaster: React.FC = () => {
           data={viewBranchAssociationsMasterDetailsData}
         />
 
+        <Modal
+          isOpen={isAddUpdateModalOpen}
+          onClose={() => {
+            setIsAddUpdateModalOpen(false)
+            setEditingBranchAssociationMasterData(null)
+            setFormErrors({})
+          }}
+          onCancel={() => {
+            setIsAddUpdateModalOpen(false)
+            setEditingBranchAssociationMasterData(null)
+            setFormErrors({})
+          }}
+          title={editingBranchAssociationMasterData ? 'Update Branch Associations Master Details' : 'Add Branch AssociationsMaster Details'}
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleAddUpdateBranchAssociationMaster()
+          }}
+          saveText="Save"
+          cancelText="Cancel"
+          loading={isLoading}
+          size="large75"
+        >
+          <div className="space-y-6 p-6 bg-blue-50">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Branch"
+                  title="Select..."
+                  size="lg"
+                  required
+                  dataFetchCallBack={fetchBranchOptions}
+                  onSelected={(item) => handleFieldChange("BranchMasterId", String(item.value))}
+                  initialValue={toDropdownInitialValue(BranchAssociationMasterFormData.BranchMasterId, dropdownLabels.branchName)}
+                  error={formErrors.BranchMasterId}
+                />
+              </div>
+              <SingleSelectDropdownWithPagination
+                label="Employees"
+                title="Select..."
+                size="lg"
+                required
+                dataFetchCallBack={fetchEmployeeOptions}
+                onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
+                initialValue={toDropdownInitialValue(
+                  BranchAssociationMasterFormData.EmployeeId
+                    ? String(BranchAssociationMasterFormData.EmployeeId)
+                    : "",
+                  dropdownLabels.employeeName
+                )}
+                error={formErrors.EmployeeId}
+              />
+            </div>
+          </div>
+
+        </Modal>
+
+
         {/* CUSTOMIZE COLUMNS MODAL */}
-
-
         <CustomizeColumnsModal
           isOpen={isShowCustomizeBranchAssociationsMasterColumnsModal}
           onClose={() => setIsShowCustomizeBranchAssociationsMasterColumnsModal(false)}
@@ -878,16 +859,6 @@ export const BranchAssociationsMaster: React.FC = () => {
             </div>
           </div>
         </Modal>
-        <AddUpdateBranchAssociationModal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingBranchAssociationMasterData(null)
-          }}
-          onSubmit={handleAddUpdateBranchAssociationMaster}
-          data={editingBranchAssociationMasterData}
-          loading={isLoading}
-        />
       </div>
     </>
 

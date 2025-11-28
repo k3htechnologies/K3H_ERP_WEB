@@ -315,7 +315,7 @@ export const AssetMaster: React.FC = () => {
               tooltipThreshold={25}
               onClick={() => handleViewAssetDetails(row)}
             />
-
+            
           </div>
         )
       },
@@ -674,7 +674,10 @@ export const AssetMaster: React.FC = () => {
     if (!assetMasterFormData.SupplierName?.trim()) {
       newErrors.SupplierName = "Supplier Name is required.";
     }
-
+   
+      if (!assetMasterFormData.WarrantyExpiryDate) {
+      newErrors.WarrantyExpiryDate = "Warranty Expiry Date is required.";
+    }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -700,8 +703,6 @@ export const AssetMaster: React.FC = () => {
     };
 
   };
-
-
 
   const handleAddUpdateAssetMaster = async () => {
 
@@ -1044,7 +1045,7 @@ export const AssetMaster: React.FC = () => {
 
               <div>
                 <DatePickerInput
-                  label="DOB"
+                  label="Warranty Expiry Date"
                   value={formatDate_dd_mm_yyyy(assetMasterFormData.WarrantyExpiryDate)}
                   onChange={(val) => handleFieldChange('WarrantyExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                   required

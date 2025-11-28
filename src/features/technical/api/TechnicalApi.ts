@@ -5,6 +5,7 @@ export const TechnicalApi = {
     PULL_COUNTRY_STATE_CITY_DISTRICT_VILLAGE: '/Static/PullCountryStateCityDistrictVillage',
     EXCEL_IMPORT: '/ExcelImport/ExcelImport',
     PULL_EXCEL_SAMPLE: '/ExcelImport/PullExcelSample',
+    PULL_MATERIAL_SUBMATERIALUOM:'/Static/PullMaterialMasterSubMaterialMasterUOMMaster'
 } as const
 
 export type TechnicalApiKeys = keyof typeof TechnicalApi

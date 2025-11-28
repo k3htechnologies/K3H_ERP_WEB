@@ -13,7 +13,7 @@ import type {
 export abstract class VendorDatasource {
 
     abstract pullVendor(params: FilterWithPaginationVendorRequest, signal?: AbortSignal): Promise<VendorListResponse>;
-    abstract addUpdateVendor(data: AddUpdateVendorRequest): Promise<VendorSaveResponse>;
+    abstract addUpdateVendor(data: FormData): Promise<VendorSaveResponse>;
     abstract deleteVendor(params: DeleteVendorRequest): Promise<VendorDeleteResponse>;
 }
 
@@ -55,49 +55,13 @@ export class VendorDatasourceImpl implements VendorDatasource {
         }
     }
 
-    async addUpdateVendor(params: AddUpdateVendorRequest): Promise<VendorSaveResponse> {
+    async addUpdateVendor(formData: FormData): Promise<VendorSaveResponse> {
 
         try {
 
-            const payLoad: AddUpdateVendorRequest = {
-                VendorId: params.VendorId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-
-                CompanyName: params.CompanyName?.trim() ?? '',
-                CompanyType: params.CompanyType?.trim() ?? '',
-                VendorName: params.VendorName?.trim() ?? '',
-                MobileNumber: params.MobileNumber?.trim() ?? '',
-                EmailId: params.EmailId?.trim() ?? '',
-                AadharCardNumber: params.AadharCardNumber?.trim() ?? '',
-
-                AadharCardURL: params.AadharCardURL ?? null,
-                RemoveAadharCardURL: params.RemoveAadharCardURL ?? '',
-
-                PanCardNumber: params.PanCardNumber?.trim() ?? '',
-                PanCardURL: params.PanCardURL ?? null,
-                RemovePanCardURL: params.RemovePanCardURL ?? '',
-
-                GSTNumber: params.GSTNumber?.trim() ?? '',
-                GSTCertificateURL: params.GSTCertificateURL ?? null,
-                RemoveGSTCertificateURL: params.RemoveGSTCertificateURL ?? '',
-
-                Address: params.Address?.trim() ?? '',
-
-                CountryMasterId: params.CountryMasterId ?? 0,
-                StateMasterId: params.StateMasterId ?? 0,
-                DistrictMasterId: params.DistrictMasterId ?? 0,
-                CityMasterId: params.CityMasterId ?? 0,
-
-                AvailableMaterialList: params.AvailableMaterialList ?? '',
-                AvailableContractList: params.AvailableContractList ?? '',
-
-                MagicLinkUniquekey: params.MagicLinkUniquekey ?? '',
-                ClientRegistrationId: params.ClientRegistrationId ?? 0,
-            }
-
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
                 VendorApi.ADD_UPDATE,
-                payLoad
+                formData
             )
 
             return response
@@ -106,7 +70,7 @@ export class VendorDatasourceImpl implements VendorDatasource {
             console.error('ERROR: ADD UPDATE VENDOR :', error)
 
             if (error === TokenExpiredException) {
-                await this.addUpdateVendor(params);
+                await this.addUpdateVendor(formData);
             }
             throw error
         }

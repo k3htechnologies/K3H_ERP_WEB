@@ -15,8 +15,7 @@ export interface FilterWithPaginationVendorRequest {
 
 export interface VendorData {
     VendorId: number | 0
-    Uniquekey: string | null
-
+    Uniquekey: string
     CompanyName: string | ''
     CompanyType: string | ''
     VendorName: string | ''
@@ -69,7 +68,7 @@ export interface VendorData {
 
 export interface AddUpdateVendorRequest {
     VendorId: number | 0
-    Uniquekey: string | null
+    Uniquekey: string
 
     CompanyName: string | ''
     CompanyType: string | ''
@@ -78,15 +77,15 @@ export interface AddUpdateVendorRequest {
     EmailId: string | ''
     AadharCardNumber: string | ''
 
-    AadharCardURL: File[] | null
+    AadharCardURL: string|''
     RemoveAadharCardURL: string | ''
 
     PanCardNumber: string | ''
-    PanCardURL: File[] | null
+    PanCardURL: string|''
     RemovePanCardURL: string | ''
 
     GSTNumber: string | ''
-    GSTCertificateURL: File[] | null
+    GSTCertificateURL: string|''
     RemoveGSTCertificateURL: string | ''
 
     Address: string | ''

@@ -51,14 +51,29 @@ export interface CountryStateCityDistrictVillageData {
     VillageName: string
     CityMasterIdRef: number
 }
-
 export interface CountryStateCityDistrictVillageDataWrapper {
   CountryStateCityDistrictVillageData: CountryStateCityDistrictVillageData[];
 }
+export interface MaterialSubMaterialUOM{
+    MaterialMasterId:number
+    MaterialName:string
+    SubMaterialMasterId:number
+    StockQuantity:number
+    SubMaterialName:string
+    MaterialMasterIdRef:number
+    UomMasterId:number
+    UomCode:string
+}
 
+export interface MateriaLSubMaterialMasterUOMWrapper{
+MaterialMasterSubMaterialMasterData:MaterialSubMaterialUOM[]
+}
 
-//#endregion END  NOTIFICATION
-
+export interface FilterWithPaginationMaterialSubMaterialMasterUOM{
+    ProjectId:number
+    ClientRegistrationId :number
+    
+}
 //#region EXCEL IMPORT & SAMPLE EXCEL DOWNLOAD 
 export interface FilterPullExcelSample {
     TableName: string | ''
@@ -69,3 +84,4 @@ export interface FilterPullExcelSample {
 export type TechnicalListResponse = ApiResponse<TechnicalData[]>;
 export type NotificationListResponse = ApiResponse<NotificationData[]>;
 export type CountryStateCityDistrictVillageListResponse = ApiResponse<CountryStateCityDistrictVillageDataWrapper[]>;
+export type MaterialSubMaterialMasterUOMListResponse =ApiResponse<{ MaterialMasterSubMaterialMasterData : MaterialSubMaterialUOM[]}>

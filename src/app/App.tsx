@@ -35,6 +35,7 @@ import ProjectMaster from '@/features/projectMaster/pages/ProjectMaster';
 import AddUpdateEmployeeMaster from '@/features/employeeMaster/pages/AddUpdateEmployeeMaster';
 import { MaterialMaster } from '@/features/materialMaster/pages/MaterialMaster';
 import ViewEmployeeMaster from '@/features/employeeMaster/pages/ViewEmployeeMaster';
+import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -84,7 +85,6 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
           <Route path="companyMaster/addCompany" element={<AddCompany />} />
-          
 
           {/* Protected Routes with Layout */}
           <Route
@@ -98,6 +98,7 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="departmentMaster" element={<DepartmentMaster />} />
+            <Route path="/vendor/add/:vendorId?" element={<AddUpdateVendor />} />
             <Route path="designationMaster" element={<DesignationMaster />} />
             <Route path="employeeMaster" element={<EmployeeMaster />} />
             <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />

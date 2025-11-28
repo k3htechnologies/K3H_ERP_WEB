@@ -27,10 +27,10 @@ export const VendorService = {
         }
     },
 
-    apiCallAddUpdateVendor: async (params: AddUpdateVendorRequest): Promise<E.Either<Failure, VendorSaveResponse>> => {
+    apiCallAddUpdateVendor: async (formData: FormData): Promise<E.Either<Failure, VendorSaveResponse>> => {
         try {
 
-            return E.right(await vendorDatasource.addUpdateVendor(params));
+            return E.right(await vendorDatasource.addUpdateVendor(formData));
 
         } catch (error: any) {
 

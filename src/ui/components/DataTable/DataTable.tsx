@@ -243,8 +243,8 @@ export const DataTable: React.FC<DataTableProps> = ({
                         key={column.key}
                         className={`px-4 py-2 text-gray-900 border-r border-gray-200 ${column.align === 'center' ? 'text-center' :
                           column.align === 'right' ? 'text-right' : 'text-left'
-                          } ${column.fixed === 'left' ? 'sticky left-0 bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-400' :
-                            column.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-400' : ''
+                          } ${column.fixed === 'left' ? 'sticky left-0 bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-100' :
+                            column.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-100' : ''
                           }`}
                         style={{
                           ...(column.width ? { width: column.width } : {}),

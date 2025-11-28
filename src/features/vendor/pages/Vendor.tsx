@@ -22,6 +22,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
+import { useNavigate } from 'react-router-dom';
 
 
 export const Vendor: React.FC = () => {
@@ -33,16 +34,18 @@ export const Vendor: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
   const { toasts, removeToast, addToast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
+  const navigate = useNavigate();
+
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchVendors(value)
   }, 350)
   const [viewVendorDetailsData, setViewVendorDetailsData] = useState<VendorData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const { canAction, canExport } = useMenuPermissions();
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
   const [isShowCustomizeVendorColumnsModal, setIsShowCustomizeVendorColumnsModal] = useState(false);
-  const { canExport } = useMenuPermissions();
   const hasFetchedInitialVendors = useRef(false)
 
   useEffect(() => {
@@ -194,6 +197,10 @@ export const Vendor: React.FC = () => {
     setIsViewModalOpen(true)
   }, [])
 
+  const handleEditVendor = useCallback((row: VendorData) => {
+    navigate(`/Vendor/add/${row.VendorId}`)
+  }, [navigate])
+
   const vendorColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -204,13 +211,14 @@ export const Vendor: React.FC = () => {
         fixed: 'left',
         align: 'left',
         render: (value, row) => (
-          <div className="flex items-center justify-start">
+          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
             <TooltipText
               text={value || 'N/A'}
               maxWidth="250px"
               tooltipThreshold={25}
-              onClick={() => handleViewVendorDetails(row)}
+              onClick={() => canAction ? handleEditVendor(row) : handleViewVendorDetails(row)}
             />
+            
           </div>
         )
       },
@@ -293,7 +301,7 @@ export const Vendor: React.FC = () => {
         render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       }
     ],
-    [handleViewVendorDetails]
+    [canAction, handleViewVendorDetails, handleEditVendor]
   )
 
   const requiredVendorColumnKeys: string[] = ['VendorName'];
@@ -447,7 +455,9 @@ export const Vendor: React.FC = () => {
     loadVendors(1, {})
     setShowFilterPopup(false)
   }
-
+  const handleAddEmployeeModal = () => {
+    navigate('/Vendor/add'); 
+};
   const handleFilterChange = (key: string, value: string) => {
     const newFilters = { ...tempFilters }
     if (value.trim()) {
@@ -480,8 +490,9 @@ export const Vendor: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeVendorColumnsModal(true)}
-          isShowAddButton={false}
-          isShowImportButton={false}
+          isShowAddButton={canAction}
+          onAdd={handleAddEmployeeModal} 
+          isShowImportButton={canAction}
           isShowExportButton={canExport}
           onExportExcel={handleExportVendorExcel}
           onExportPdf={handleExportVendorPdf}
@@ -514,7 +525,7 @@ export const Vendor: React.FC = () => {
             setSelectedVendorColumnKeys(withRequired)
             try {
               LocalStorageHelper.storeVendorTableColumns(JSON.stringify(withRequired))
-            } catch { }
+            } catch { /* empty */ }
           }}
           columns={vendorColumns}
           selectedKeys={selectedVendorColumnKeys}

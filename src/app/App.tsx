@@ -81,10 +81,10 @@ function App() {
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           {/* Public Routes */}
-          <Route path="/sign-in" element={<SignIn />} />
+          <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
           <Route path="profile" element={<Profile />} />
-          <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
+          
           <Route path="companyMaster/addCompany" element={<AddCompany />} />
           
 
@@ -101,6 +101,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="departmentMaster" element={<DepartmentMaster />} />
             <Route path="designationMaster" element={<DesignationMaster />} />
+            <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
             <Route path="employeeMaster" element={<EmployeeMaster />} />
             <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />
             <Route path="employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />

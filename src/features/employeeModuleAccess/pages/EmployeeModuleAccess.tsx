@@ -605,25 +605,20 @@ const EmployeeModuleAccess: React.FC = () => {
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <Loader loading={isLoading} title={loadingMessage}>
-        <div />
-      </Loader>
-
-      <div className="flex h-full flex-col space-y-6">
-        <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-md h-16 flex items-center justify-between px-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <Loader loading={isLoading} title={loadingMessage}>
+          <div />
+        </Loader>
+        <div className="z-50 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-gray-900">
-              Module Access Form
-            </h1>
-
             {designationName && (
-              <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-0.5 text-xs font-medium text-blue-700">
-                {designationName}
+              <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-0.5 text-md font-medium text-blue-700">
+                Designation : {designationName}
               </span>
             )}
           </div>
 
-          <label className="flex items-center justify-between px-10 py-2">
+          <label className="flex items-center justify-between px-12 py-2">
             <span className="text-sm text-gray-800 flex-1 pr-[6px]">
               Select All
             </span>
@@ -637,7 +632,7 @@ const EmployeeModuleAccess: React.FC = () => {
         </div>
 
 
-        <div className="space-y-2 px-6 py-3 pt-20 pb-20 overflow-y-auto">
+        <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
           {modules.map((module) => {
             const moduleId = module.ModulesMasterId ?? 0
             const moduleKeys = getModuleLeafKeys(module)
@@ -659,7 +654,7 @@ const EmployeeModuleAccess: React.FC = () => {
                         <ChevronRight className="h-4 w-4" />
                       )}
                     </button>
-                    <span className="text-base text-[#666]">
+                    <span className="text-base font-medium text-[#00000]">
                       {module.ModuleName}
                     </span>
                   </div>
@@ -714,7 +709,7 @@ const EmployeeModuleAccess: React.FC = () => {
                                 disabled={subModuleKeys.length === 0}
                                 onChange={(event) => handleToggleSubModuleSelect(module, subModule, event.target.checked)}
                                 label={
-                                  <span className="font-medium text-[#666] pl-[6px]">
+                                  <span className={hasChildren ? "font-medium text-[#000000] pl-[6px]" : "font-sm text-[#666] pl-[6px]"}>
                                     {subModule.SubModuleName}
                                   </span>
                                 }
@@ -901,23 +896,21 @@ const EmployeeModuleAccess: React.FC = () => {
         </div>
 
         {/* ✅ Fixed Bottom SAVE Button */}
-        <div
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-        >
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
           <Button
             color="transparent"
             variant='transparent_border'
             size="sm"
             onClick={() => {
-              navigate(-1);
+              navigate('/designationMaster');
             }}
             className="px-6"
           >
             Cancel
           </Button>
           <Button
-            color="green"
+            color="blue"
             size="sm"
             disabled={isSaveDisabled}
             onClick={() => handleSavePermissions()}

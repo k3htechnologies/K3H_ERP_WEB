@@ -304,8 +304,6 @@ export const DesignationMaster: React.FC = () => {
         fixed: 'left',
         align: 'left',
         render: (value, row) => {
-          const showEdit = true
-          const showDelete = (row.NumberOfEmployee || 0) === 0
           const showKey = true
 
           return (

@@ -29,6 +29,7 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
+import { updateFilter } from '@/core/utils/filterHelper';
 
 
 export const DepartmentMaster: React.FC = () => {
@@ -76,7 +77,7 @@ export const DepartmentMaster: React.FC = () => {
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeDepartmentMasterColumnsModal, setIsShowCustomizeDepartmentMasterColumnsModal] = useState(false);
 
-  
+
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -441,10 +442,10 @@ export const DepartmentMaster: React.FC = () => {
                 {(data.NumberOfEmployee || 0) === 0 ? (
 
                   <Button
-                    color='gray'
+                    color='red'
                     variant='solid'
                     colorMode="light"
-                    size='md'
+                    size='sm'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
@@ -460,7 +461,7 @@ export const DepartmentMaster: React.FC = () => {
 
                 <Button
                   color='blue'
-                  size='md'
+                  size='sm'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
@@ -497,14 +498,9 @@ export const DepartmentMaster: React.FC = () => {
   }
 
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...tempFilters }
-    if (value.trim()) {
-      newFilters[key] = value.trim()
-    } else {
-      delete newFilters[key]
-    }
-    setTempFilters(newFilters)
-  }
+    setTempFilters(prev => updateFilter(prev, key, value));
+  };
+
   //#endregion
 
   //#region ADD UPDATE EDIT DEPARTMENT MASTER
@@ -629,16 +625,15 @@ export const DepartmentMaster: React.FC = () => {
         <div className="space-y-10 p-6 bg-blue-100">
           <div className="space-y-4" >
             <div>
-
               <Input
                 label='Department Code'
                 required
                 error={departmentCodeError}
                 type="text"
-                value={formData.DepartmentCode}
+                value={formData.DepartmentCode.toUpperCase()}
                 maxLength={4}
                 onChange={(e) => handleFieldChange('DepartmentCode', e.target.value)}
-                placeholder="Enter department code"
+                placeholder="Enter Department Code"
               />
 
             </div>
@@ -652,20 +647,18 @@ export const DepartmentMaster: React.FC = () => {
                 value={formData.DepartmentName}
                 maxLength={100}
                 onChange={(e) => handleFieldChange('DepartmentName', e.target.value)}
-                placeholder="Enter department name"
+                placeholder="Enter Department Name"
               />
 
             </div>
           </div>
         </div>
-        
+
       </Modal>
     )
   }
 
   const handleAddUpdateDepartmentMaster = async (formData: AddUpdateDepartmentMasterRequest) => {
-
-    setIsAddUpdateModalOpen(false);
 
     await runApiWithLoader(
       setIsLoading,
@@ -693,7 +686,8 @@ export const DepartmentMaster: React.FC = () => {
             });
 
 
-            addToast({ type: 'success', title: 'Department added successfully' })
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
           } else {
 
             const updatedRecord = response.right.Data[0] as DepartmentMasterData;
@@ -709,13 +703,12 @@ export const DepartmentMaster: React.FC = () => {
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
-          setIsAddUpdateModalOpen(false);
-
           setEditingDepartmentMasterData(null);
 
         } else {
 
           addToast({ type: 'error', title: response.left.message });
+
         }
 
         return response
@@ -725,7 +718,7 @@ export const DepartmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
-      formData.DepartmentMasterId === 0 ? 'Add Department' : 'Update Department...'
+      formData.DepartmentMasterId === 0 ? 'Add Department' : 'Update Department'
     )
   }
 

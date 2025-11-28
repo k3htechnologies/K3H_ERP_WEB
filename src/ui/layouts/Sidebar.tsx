@@ -287,7 +287,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             : 'relative ml-8 pl-4'
             }`,
           button: `
-            w-full flex items-center space-x-3 px-4 py-2 rounded-md transition-all duration-200
+            w-full flex items-center space-x-3  py-2 rounded-md transition-all duration-200
+            ${!isOpen ? 'px-2' : 'px-4'}
             ${isCurrentPage
               ? 'text-blue-800 font-semibold'
               : isInActivePath
@@ -413,7 +414,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                                                         flex items-center justify-center 
                                                                         text-gray-700 font-bold text-sm
                                                                         border border-gray-300">
-                  AB
+                  {LocalStorageHelper.getStoredEmployeeData()?.FullName.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
                 </div>
               </div>
             )}

@@ -51,7 +51,7 @@ export const EmployeeMaster: React.FC = () => {
 
   const [isShowCustomizeEmployeeColumnsModal, setIsShowCustomizeEmployeeColumnsModal] = useState(false);
 
-  const {canAction, canExport } = useMenuPermissions();
+  const { canAction, canExport } = useMenuPermissions();
 
   const location = useLocation() as Location & {
     state?: {
@@ -82,17 +82,17 @@ export const EmployeeMaster: React.FC = () => {
     setSortInfo(listState.sortInfo);
 
     setFilters(listState.filters ?? {});
-    
+
     setTempFilters(listState.filters ?? {});
 
     setSearchTerm(listState.searchTerm ?? '');
 
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      
+
       setSearchTerm(String(listState.searchTerm));
 
       loadEmployees(listState.page ?? 1, { EmployeeName: String(listState.searchTerm).trim() });
-      
+
       return;
     }
 
@@ -189,7 +189,7 @@ export const EmployeeMaster: React.FC = () => {
 
 
   //#endregion
-  
+
   //#region CLAER SERACH EMPLOYEE
   const clearSearchEmployees = () => {
     setSearchTerm('');
@@ -308,25 +308,6 @@ export const EmployeeMaster: React.FC = () => {
   const employeeColumns = useMemo<TableColumn[]>(
     () => [
       {
-        key: 'FullName',
-        label: 'Full Name',
-        width: '22',
-        sortable: true,
-        fixed: 'left',
-        align: 'left',
-        render: (value, row) => (
-          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
-            <TooltipText
-              text={value || row.FirstName || 'N/A'}
-              maxWidth="260px"
-              tooltipThreshold={26}
-              onClick={() => handleViewEmployeeDetails(row)}
-            />
-          </div>
-
-        )
-      },
-      {
         key: 'EmployeeCode',
         label: 'Employee Code',
         width: '14',
@@ -341,6 +322,61 @@ export const EmployeeMaster: React.FC = () => {
           />
         )
       },
+      {
+        key: 'FullName',
+        label: 'Full Name',
+        width: '22',
+        sortable: true,
+        fixed: 'left',
+        align: 'left',
+        render: (value, row) => {
+          const fullName = (row?.FullName ?? '').trim();
+          const initials = fullName
+            ? fullName
+              .split(/\s+/)
+              .map((w: string) => (w && w.length ? w[0] : ''))
+              .join('')
+              .toUpperCase()
+              .slice(0, 2)
+            : 'NA';
+
+          return (
+            <div className={`flex items-center justify-between gap-3`}>
+              {/* left: avatar + name */}
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-7 h-7 rounded-full
+                       bg-blue-200 
+                       flex items-center justify-center
+                       text-gray-800 font-medium text-xs
+                       border border-gray-300"
+                  title={fullName || 'N/A'}
+                >
+                  {initials}
+                </div>
+
+                <div className="min-w-0">
+                  <TooltipText
+                    text={value || row.FirstName || 'N/A'}
+                    maxWidth="260px"
+                    tooltipThreshold={26}
+                    onClick={() => handleViewEmployeeDetails(row)}
+                  />
+                </div>
+              </div>
+
+              {/* right: optional action area (kept if canAction true) */}
+              {canAction && (
+                <div className="flex items-center gap-2">
+                  {/* put any action buttons/icons here, e.g. edit/view */}
+                </div>
+              )}
+            </div>
+          );
+        }
+      },
+
+
       {
         key: 'Gender',
         label: 'Gender',
@@ -539,7 +575,7 @@ export const EmployeeMaster: React.FC = () => {
         allEmployeeColumnKeys.includes(k)
       )
     );
-   
+
   }, [employeeColumns.length]);
 
   const visibleEmployeeColumns = useMemo(
@@ -556,20 +592,20 @@ export const EmployeeMaster: React.FC = () => {
   };
 
   const clearFilters = () => {
-  setTempFilters({});
-  setFilters({});
+    setTempFilters({});
+    setFilters({});
 
-  // reset page
-  setPagination({ currentPage: 1 });
+    // reset page
+    setPagination({ currentPage: 1 });
 
-  // load empty filters
-  loadEmployees(1, {});
+    // load empty filters
+    loadEmployees(1, {});
 
-  setShowFilterPopup(false);
+    setShowFilterPopup(false);
 
-  // clear router state (very important)
-  navigate(location.pathname, { replace: true, state: {} });
-};
+    // clear router state (very important)
+    navigate(location.pathname, { replace: true, state: {} });
+  };
   //#endregion
 
   //#region ADD NEW EMPLOYEE

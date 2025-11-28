@@ -891,10 +891,8 @@ const AddUpdateEmployeePage: React.FC = () => {
             </div>
           </form>
         </div>
-        <div
-          className="fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "301px", right: '14px' }}
-        >
+         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+                    style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
           <Button
             color="transparent"
             variant='transparent_border'

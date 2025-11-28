@@ -314,7 +314,7 @@ export const DepartmentMaster: React.FC = () => {
   const departmentListForTable = useMemo(() => departmentMasterList, [departmentMasterList]);
   //#endregion
 
-  //#region VIEW EDIT CONFIRMATION DIALOG BOX
+  //#region VIEW EDIT
   const handleViewDepartmentDetails = useCallback((row: DepartmentMasterData) => {
     setViewDepartmentMasterDetailsData(row)
     setIsViewModalOpen(true)

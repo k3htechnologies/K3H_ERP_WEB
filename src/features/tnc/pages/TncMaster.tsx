@@ -29,6 +29,15 @@ import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { Edit, Trash2 } from 'lucide-react';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import RichTextEditor from '@/ui/components/forms/RichTextEditor';
+import { updateFilter } from '@/core/utils/filterHelper';
+
+const initialFormState = (): AddUpdateTncMasterRequest => ({
+  TermsAndConditionsMasterId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  ModuleName: '',
+  Title: '',
+  Description: ''
+});
 
 export const TncMaster: React.FC = () => {
 
@@ -61,17 +70,21 @@ export const TncMaster: React.FC = () => {
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
+  //ERROR SET UP
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeTncColumnsModal, setIsShowCustomizeTncColumnsModal] = useState(false);
 
-  //#region MENU PERMISSIONS
-  const { canAction, canExport } = useMenuPermissions();
+
   const hasFetchedInitialTnc = useRef(false);
 
   // EDIT TNC MASTER
   const [editingTncMasterData, setEditingTncMasterData] = useState<TncMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+
+  //ADD UPDATE T&C MASTER
+  const [formData, setFormData] = useState<AddUpdateTncMasterRequest>(() => initialFormState());
 
   //DELETE TNC MASTER STATES
 
@@ -79,8 +92,14 @@ export const TncMaster: React.FC = () => {
 
   const [deleteTncMasterDetailsData, setDeleteTncMasterDetailsData] = useState<TncMasterData | null>(null)
 
+  //#endregion
 
-  //TAB ACTIVITY
+  //#region MENU PERMISSIONS
+  const { canAction, canExport } = useMenuPermissions();
+
+  //#endregion
+
+  //#regionTAB ACTIVITY
   const tncTabList = [
     { id: "Material Requisition", label: "Material Requisition" },
     { id: "Booking", label: "Booking" },
@@ -102,6 +121,24 @@ export const TncMaster: React.FC = () => {
       debouncedSearch.cancel?.();
     };
   }, [debouncedSearch]);
+
+  useEffect(() => {
+    if (isAddUpdateModalOpen) {
+      if (editingTncMasterData) {
+        setFormData({
+          TermsAndConditionsMasterId: editingTncMasterData.TermsAndConditionsMasterId || 0,
+          Uniquekey: editingTncMasterData.Uniquekey || initialFormState().Uniquekey,
+          ModuleName: editingTncMasterData.ModuleName || '',
+          Title: editingTncMasterData.Title || '',
+          Description: editingTncMasterData.Description || ''
+        });
+      } else {
+        setFormData(initialFormState());
+      }
+      setErrors({});
+    }
+  }, [isAddUpdateModalOpen, editingTncMasterData]);
+
   //#endregion
 
   //#region DATA LOAD
@@ -160,10 +197,12 @@ export const TncMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Terms & Conditions...'
+      'Loading Terms & Conditions'
     );
   };
+  //#endregion
 
+  //#region SERACH T&C 
   const searchTnc = async (searchValue: string) => {
     setSearchTerm(searchValue);
 
@@ -186,12 +225,19 @@ export const TncMaster: React.FC = () => {
     await loadTnc(1, filterParams);
   };
 
+  //#endregion
+
+  //#region CLEAR SERACH T&C
+
   const clearSearchTnc = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
     fetchTncList();
   };
 
+  //#endregion
+
+  //#region EXPORT EXCEL | PDF
   const handleExportTnc = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -226,28 +272,36 @@ export const TncMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' });
       },
       undefined,
-      'Preparing Export...'
+      'Preparing Export'
     );
   };
 
   const handleExportTncExcel = () => handleExportTnc('Excel');
   const handleExportTncPdf = () => handleExportTnc('PDF');
 
+  //#endregion
+
+  //#region API | SERVICES CALL TO GET T&C
   const getTnc = async (filterParams: FilterWithPaginationTncMasterRequest) => {
     return await TncMasterService.apiCallPullTncMaster(filterParams);
   };
   //#endregion
 
-  //#region TABLE CONFIG
+  //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = (page: number) => {
     fetchTncList(page);
   };
+  //#endregion
+
+  //#region TABLE SORT COLUMN
 
   const handleSortColumn = (sort: SortInfo) => {
     setSortInfo(sort);
     fetchTncList(1);
   };
+  //#endregion
 
+  //#region TABLE PAGINATION INFO
   const tncPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
@@ -261,10 +315,17 @@ export const TncMaster: React.FC = () => {
 
   const tncListForTable = useMemo(() => tncList, [tncList]);
 
+  //#endregion
+
+  //#region VIEW EDIT
   const handleViewTncDetails = useCallback((row: TncMasterData) => {
     setViewTncData(row);
     setIsViewModalOpen(true);
   }, []);
+
+  //#endregion
+
+  //#region EDIT T&C MASTER
 
   const handleEditTncMaster = useCallback((row: TncMasterData) => {
     setEditingTncMasterData({
@@ -277,10 +338,18 @@ export const TncMaster: React.FC = () => {
 
   }, [])
 
+  //#endregion
+
+  //#region CONFIRMATION DIALOG BOX
+
   const handleConfirmationDialogBoxOpen = useCallback((row: TncMasterData) => {
     setDeleteTncMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
+
+  //#endregion
+
+  //#region TABLE COLUMN
 
   const tncColumns = useMemo<TableColumn[]>(
     () => [
@@ -445,192 +514,108 @@ export const TncMaster: React.FC = () => {
     setShowFilterPopup(false);
   };
 
+  //#endregion
+
+  //#region CLEAR FILTER 
+
   const clearFilters = () => {
     setTempFilters({});
     setFilters({});
     loadTnc(1, {});
     setShowFilterPopup(false);
   };
+  //#endregion
+
+  //#region HANDLE FILTER CHNAGE
 
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters: FilterInfo = { ...tempFilters };
-    if (value.trim()) {
-      newFilters[key] = value.trim();
-    } else {
-      delete newFilters[key];
-    }
-    setTempFilters(newFilters);
+    setTempFilters(prev => updateFilter(prev, key, value));
   };
   //#endregion
 
-  //#region ADD UPDATE EDIT TNC MASTER
+  //#region ADD UPDATE EDIT T&C MASTER
+
+  const handleFieldChange = (field: keyof AddUpdateTncMasterRequest, value: any) => {
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
   const handleAddTncModal = () => {
-    setEditingTncMasterData(null)
-    setIsAddUpdateModalOpen(true)
+    setEditingTncMasterData(null);
+    setFormData(initialFormState());
+    setErrors({});
+    setIsAddUpdateModalOpen(true);
   }
 
-  interface AddUpdateTncModalProps {
-    isOpen: boolean
-    onClose: () => void
-    onSubmit: (data: AddUpdateTncMasterRequest) => void
-    data?: TncMasterData | null
-    loading?: boolean
-  }
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateAddTncMasterForm = (): {
 
-  const AddUpdateTncModal: React.FC<AddUpdateTncModalProps> = ({
-    isOpen,
-    onClose,
-    onSubmit,
-    data,
-    loading = false
-  }) => {
-    const [formData, setFormData] = useState<AddUpdateTncMasterRequest>({
-      TermsAndConditionsMasterId: 0,
-      Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-      ModuleName: '',
-      Title: '',
-      Description: ''
-    })
-    const [titleError, setTitleError] = useState('')
-    const [descriptionError, setDescriptionError] = useState('')
+    isValid: boolean
 
-    useEffect(() => {
-      if (isOpen) {
-        if (data) {
-          setFormData({
-            TermsAndConditionsMasterId: data.TermsAndConditionsMasterId ?? 0,
-            Uniquekey: data.Uniquekey,
-            ModuleName: activeTab?.trim() || "",
-            Title: data.Title || '',
-            Description: data.Description || ''
-          })
-        } else {
-          setFormData({
-            TermsAndConditionsMasterId: 0,
-            Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-            ModuleName: '',
-            Title: '',
-            Description: ''
-          })
-        }
-        setTitleError('')
-        setDescriptionError('')
-      }
-    }, [isOpen, data])
+    errors: { [key: string]: string }
 
-    const handleSubmitAddUpdateTnc = (e: React.FormEvent) => {
+  } => {
 
-      e.preventDefault()
+    const newErrors: { [key: string]: string } = {}
 
-      // Clear previous errors
-      setTitleError('')
-      setDescriptionError('')
-
-      let hasErrors = false;
-
-      // TITLE  validation
-      const title = formData.Title || ''
-      if (title.trim() === "") {
-        setTitleError("Title is required.")
-        hasErrors = true
-      }
-
-      // DESCRIPTION validation
-      const description = formData.Description || ''
-      if (description.trim() === "") {
-        setDescriptionError("Description is required.")
-        hasErrors = true
-      }
-
-      if (hasErrors) {
-        return
-      }
-
-      onSubmit({
-        TermsAndConditionsMasterId: data?.TermsAndConditionsMasterId || 0,
-        Uniquekey: data?.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-        ModuleName: activeTab?.trim() || "",
-        Title: title,
-        Description: description
-      })
+    if (formData.Title.trim() === "") {
+      newErrors.Title = "Title is required"
     }
 
-    const handleFieldChange = (field: keyof AddUpdateTncMasterRequest, value: string) => {
-
-      setFormData(prev => ({ ...prev, [field]: value }))
-
-      if (field === 'Title') {
-        setTitleError('')
-      } else if (field === 'Description') {
-        setDescriptionError('')
-      }
+    if (formData.Description.trim() === "") {
+      newErrors.Description = "Description is required";
     }
 
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        onCancel={onClose}
-        title={data ? 'Update Terms & Condtion' : 'Add Terms & Condtion'}
-        onSubmit={handleSubmitAddUpdateTnc}
-        saveText={data ? 'Update T&C' : 'Save T&C'}
-        loading={loading}
-        size='xl'
-      >
-        <div className="space-y-6 p-6  bg-blue-100">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Title <span className="text-red-500">*</span>
-              </label>
-              <Input
-                type="text"
-                value={formData.Title}
-                onChange={(e) => handleFieldChange('Title', e.target.value)}
-                placeholder="Enter title"
-              />
-              {titleError && (
-                <p className="text-red-500 text-sm mt-1">{titleError}</p>
-              )}
-            </div>
-
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description <span className="text-red-500">*</span>
-              </label>
-              <RichTextEditor
-                value={formData.Description}
-                onChange={(html) => handleFieldChange('Description', html)}
-                placeholder="Enter description"
-              />
-              {descriptionError && (
-                <p className="text-red-500 text-sm mt-1">{descriptionError}</p>
-              )}
-            </div>
-
-          </div>
-        </div>
-      </Modal>
-    )
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors
+    }
   }
 
-  const handleAddUpdateTncMaster = async (formData: AddUpdateTncMasterRequest) => {
+  const PushTncMasterFormData = (): AddUpdateTncMasterRequest => {
+    return {
+      TermsAndConditionsMasterId: formData.TermsAndConditionsMasterId,
+      Uniquekey: formData.Uniquekey,
+      Title: formData.Title,
+      ModuleName: activeTab?.trim() || "",
+      Description: formData.Description
+    };
 
-    setIsAddUpdateModalOpen(false);
+  };
+
+  const handleAddUpdateTncMaster = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setErrors({})
+
+    const validation = validateAddTncMasterForm()
+
+    if (!validation.isValid) {
+
+      setErrors(validation.errors)
+
+      return
+    }
 
     await runApiWithLoader(
       setIsLoading,
+
       setIsLoadingMessage,
       async () => {
 
-        const response = await TncMasterService.apiCallAddUpdateTncMaster(formData);
+        const payload = PushTncMasterFormData();
+
+        const response = await TncMasterService.apiCallAddUpdateTncMaster(payload);
 
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = formData.TermsAndConditionsMasterId === 0
+          const isAdd = formData.TermsAndConditionsMasterId === 0;
 
           if (isAdd) {
 
@@ -645,7 +630,8 @@ export const TncMaster: React.FC = () => {
             });
 
 
-            addToast({ type: 'success', title: 'Tnc added successfully' })
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
           } else {
 
             const updatedRecord = response.right.Data[0] as TncMasterData;
@@ -661,26 +647,27 @@ export const TncMaster: React.FC = () => {
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
-          setIsAddUpdateModalOpen(false);
-
           setEditingTncMasterData(null);
-
         } else {
 
-          addToast({ type: 'error', title: response.left.message });
-        }
+          addToast({ type: "error", title: response.left?.message });
 
-        return response
+        }
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Operation failed' })
+
+        addToast({ type: 'error', title: error.message })
       },
       undefined,
-      formData.TermsAndConditionsMasterId === 0 ? 'Add Tnc' : 'Update Tnc...'
+
+      Number(formData.TermsAndConditionsMasterId) === 0 ? 'Add T&C' : 'Update T&C'
     )
-  }
-  //#endregion 
+
+  };
+
+  //#endregion
 
   //#region DELETE TNC MASTER
 
@@ -732,7 +719,7 @@ export const TncMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete tnc master data...'
+      'Delete T&C'
     )
   }
 
@@ -748,7 +735,7 @@ export const TncMaster: React.FC = () => {
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search By Title..."
+          searchPlaceholder="Search By Title"
           onSearchChange={v => {
             setSearchTerm(v);
             debouncedSearch(v);
@@ -808,16 +795,60 @@ export const TncMaster: React.FC = () => {
           data={viewTncData}
         />
         {/*  ADD EDIT UPDATE TNC MODAL */}
-        <AddUpdateTncModal
+
+        <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingTncMasterData(null)
+            setIsAddUpdateModalOpen(false);
+            setEditingTncMasterData(null);
+            setFormData(initialFormState());
+            setErrors({});
           }}
+          onCancel={() => {
+            setIsAddUpdateModalOpen(false);
+            setEditingTncMasterData(null);
+            setFormData(initialFormState());
+            setErrors({});
+          }}
+          title={editingTncMasterData ? 'Update Terms & Condtion' : 'Add Terms & Condtion'}
           onSubmit={handleAddUpdateTncMaster}
-          data={editingTncMasterData}
+          saveText={editingTncMasterData ? 'Update T&C' : 'Save T&C'}
           loading={isLoading}
-        />
+          size='xl'
+        >
+          <div className="space-y-6 p-6  bg-blue-100">
+            <div className="space-y-4">
+              <div>
+
+                <Input
+                  label='Title'
+                  type="text"
+                  required
+                  value={formData.Title}
+                  error={errors.Title}
+                  onChange={(e) => handleFieldChange('Title', e.target.value)}
+                  placeholder="Enter title"
+                />
+              </div>
+
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description <span className="text-red-500">*</span>
+                </label>
+                <RichTextEditor
+                  value={formData.Description}
+                  onChange={(html) => handleFieldChange('Description', html)}
+                  placeholder="Enter description"
+                />
+                {errors.Description && (
+                  <p className="text-red-500 text-sm mt-1">{errors.Description}</p>
+                )}
+              </div>
+
+            </div>
+          </div>
+        </Modal>
 
         <CustomizeColumnsModal
           isOpen={isShowCustomizeTncColumnsModal}

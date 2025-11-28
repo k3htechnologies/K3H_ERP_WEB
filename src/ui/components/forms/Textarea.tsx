@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useRef } from 'react'
 import { THEME } from '@/core/constants/theme'
 import type { TextAreaProps } from '@/core/types/form.types'
+import { InfoIcon } from 'lucide-react'
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
   (
@@ -193,8 +194,19 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
               marginTop: theme.spacing.sm,
               fontSize: theme.fontSize.sm,
               color: error ? theme.colors.error : theme.colors.textSecondary,
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",       // spacing between icon & text
             }}
           >
+            <InfoIcon
+              style={{
+                fontSize: theme.fontSize.xs,
+                color: error ? theme.colors.error : theme.colors.textSecondary,
+                height:14
+              }}
+            />
+
             {error || helperText}
           </div>
         )}

@@ -195,7 +195,7 @@ export const DesignationMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Designation Master Data...'
+      'Loading Designation Master Data'
     )
   }
 
@@ -262,7 +262,7 @@ export const DesignationMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' })
       },
       undefined,
-      'Preparing Export...'
+      'Preparing Export'
     )
   }
 
@@ -762,7 +762,7 @@ export const DesignationMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Import failed' })
       },
       undefined,
-      'Preparing Import...'
+      'Preparing Import'
     )
   }
 
@@ -789,7 +789,7 @@ export const DesignationMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' })
       },
       undefined,
-      'Preparing Downloading...'
+      'Preparing Downloading'
     )
   }
 
@@ -845,13 +845,11 @@ export const DesignationMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete designation master data...'
+      'Delete designation'
     )
   }
 
   //#endregion
-
-
 
   return (
     <>

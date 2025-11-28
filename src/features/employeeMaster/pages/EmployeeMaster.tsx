@@ -51,7 +51,7 @@ export const EmployeeMaster: React.FC = () => {
 
   const [isShowCustomizeEmployeeColumnsModal, setIsShowCustomizeEmployeeColumnsModal] = useState(false);
 
-  const { canAction, canExport } = useMenuPermissions();
+  const {canAction, canExport } = useMenuPermissions();
 
   const location = useLocation() as Location & {
     state?: {
@@ -165,7 +165,7 @@ export const EmployeeMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Employee Data...'
+      'Loading Employee Data'
     );
   };
 
@@ -187,11 +187,25 @@ export const EmployeeMaster: React.FC = () => {
     await loadEmployees(1, filterParams);
   };
 
+
+  //#endregion
+  
+  //#region CLAER SERACH EMPLOYEE
   const clearSearchEmployees = () => {
     setSearchTerm('');
+
     debouncedSearch.cancel?.();
-    fetchEmployeeList();
+
+    setFilters({});
+    setTempFilters({});
+    setPagination({ currentPage: 1 });
+    loadEmployees(1, {});
+    try {
+      navigate(location.pathname, { replace: true, state: {} });
+    } catch {
+    }
   };
+
   //#endregion
 
   //#region  EXCEL EXPORT TO EXCEL | PDF
@@ -525,7 +539,7 @@ export const EmployeeMaster: React.FC = () => {
         allEmployeeColumnKeys.includes(k)
       )
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [employeeColumns.length]);
 
   const visibleEmployeeColumns = useMemo(
@@ -542,11 +556,20 @@ export const EmployeeMaster: React.FC = () => {
   };
 
   const clearFilters = () => {
-    setTempFilters({});
-    setFilters({});
-    loadEmployees(1, {});
-    setShowFilterPopup(false);
-  };
+  setTempFilters({});
+  setFilters({});
+
+  // reset page
+  setPagination({ currentPage: 1 });
+
+  // load empty filters
+  loadEmployees(1, {});
+
+  setShowFilterPopup(false);
+
+  // clear router state (very important)
+  navigate(location.pathname, { replace: true, state: {} });
+};
   //#endregion
 
   //#region ADD NEW EMPLOYEE

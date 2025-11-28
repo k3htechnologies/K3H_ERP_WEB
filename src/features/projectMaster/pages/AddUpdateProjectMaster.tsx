@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
 import * as E from "fp-ts/Either";
@@ -8,9 +8,7 @@ import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelectio
 import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
 import ToastContainer from "@/ui/components/Toast/ToastContainer";
-import {
-    PROJECT_STATUS_OPTIONS,
-} from "@/core/constants/staticData";
+import { PROJECT_STATUS_OPTIONS } from "@/core/constants/staticData";
 import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
@@ -67,7 +65,8 @@ const AddUpdateProjectMaster: React.FC = () => {
     const [projectPhotoURL, setProjectPhotoURL] = useState<string>();
     // NAVIGATE
     const navigate = useNavigate();
-
+    const location = useLocation();
+    
     //GET VALUE FROM URL :PROJECTID
     const { projectId } = useParams<{ projectId?: string }>();
 
@@ -356,11 +355,28 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                     addToast({ type: "success", title: formData.ProjectId ? "Project details updated successfully" : "New Project added successfully" });
 
-                    setTimeout(() => {
 
-                        navigate("/projectMaster");
+                    // Get list state from navigation if available, otherwise use defaults
+                    const locationState = location.state as {
+                        listState?: {
+                            page?: number;
+                            filters?: any;
+                            sortInfo?: any;
+                            searchTerm?: string;
+                        };
+                    } | null;
 
-                    }, 500);
+                    const listState = locationState?.listState || {
+                        page: 1,
+                        filters: {},
+                        sortInfo: undefined,
+                        searchTerm: '',
+                    };
+
+                    navigate("/projectMaster", {
+                        state: { listState }
+                    });
+
 
                 } else {
 
@@ -426,7 +442,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         value={projectPhotoFiles}
                                         onChange={setProjectPhotoFiles}
                                         availableFilesURL={projectPhotoURL ?? ""}
-                                        allowedTypes={["image/jpeg", "image/png","image/jpg"]}
+                                        allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                                         maxFiles={5}
                                         maxSizeMB={10}
                                     />

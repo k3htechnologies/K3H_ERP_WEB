@@ -29,6 +29,7 @@ export const ViewProjectMaster: React.FC = () => {
 
     //LOCATION
     const navigate = useNavigate();
+
     const location = useLocation() as {
         state?: {
             editProjectMasterData?: ProjectMasterData | null;
@@ -36,21 +37,26 @@ export const ViewProjectMaster: React.FC = () => {
             listState?: {
                 page: number;
                 filters: any;
+                sortInfo?: any;
+                searchTerm?: string;
             };
         };
     };
+    const preservedListState = location.state?.listState;
+
     //#endregion
+
     //#region Get PROJECT MASTER DATA FROM LOCATION STATE
-    //#region DATA FETCH FROM STAE 
-    const editProjectMasterData = (location.state?.editProjectMasterData ?? null) as ProjectMasterData | null;
+    const editProjectData = (location.state?.editProjectMasterData ?? null) as ProjectMasterData | null;
     //#endregion
+
     //#region TAB ACTIVITY
     const TabList = [
-    { id: "Employee", label: `Employee (${employeeMasterList.length})` },
-    { id: "Bank Details", label: `Bank Details (${projectWithBankDetailsList.length})` },
-    { id: "Company", label: `Company (${compantMasterList.length})` },
-    { id: "Set Approval", label: "Set Approval (0)" },
-];
+        { id: "Employee", label: `Employee (${employeeMasterList.length})` },
+        { id: "Bank Details", label: `Bank Details (${projectWithBankDetailsList.length})` },
+        { id: "Company", label: `Company (${compantMasterList.length})` },
+        { id: "Set Approval", label: "Set Approval (0)" },
+    ];
 
 
     const [activeTab, setActiveTab] = useState<string>(TabList[0].id);
@@ -59,13 +65,13 @@ export const ViewProjectMaster: React.FC = () => {
     //#region INIT
     useEffect(() => {
         if (activeTab === 'Employee') {
-            loadProjectMasterWithEmployee(editProjectMasterData!.ProjectId);
+            loadProjectMasterWithEmployee(editProjectData!.ProjectId);
         }
         else if (activeTab === 'Bank Details') {
-            loadProjectMasterWithBankDetails(editProjectMasterData!.ProjectId);
+            loadProjectMasterWithBankDetails(editProjectData!.ProjectId);
         }
         else if (activeTab === 'Company') {
-            loadProjectMasterWithCompany(editProjectMasterData!.ProjectId);
+            loadProjectMasterWithCompany(editProjectData!.ProjectId);
         }
 
     }, [activeTab]);
@@ -155,14 +161,28 @@ export const ViewProjectMaster: React.FC = () => {
     };
 
     //#endregion 
-    //#region EDIT PROJECT 
 
+
+    //#region EDIT PROJECT
     const handleEditProjectMaster = (row: ProjectMasterData) => {
-        navigate(`/projectMaster/add/${row.ProjectId}`);
-
+        if (!row?.ProjectId) return;
+        navigate(`/projectMaster/add/${row.ProjectId}`, {
+            state: {
+                editProjectMasterData: row,
+                fromList: true,
+                listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
+            }
+        });
     };
     //#endregion
 
+    //#region BACK PROJECT PAGE
+    const handleBackToListProjectMaster = () => {
+        navigate('/projectMaster', {
+            state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' } }
+        });
+    };
+    //#endregion
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -179,7 +199,7 @@ export const ViewProjectMaster: React.FC = () => {
                             <div className="px-4 pt-4">
                                 <div className="w-full max-w-[400px] mx-auto bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
                                     <ImageCarousel
-                                        images={editProjectMasterData?.ProjectPhotoURL ?? ""}
+                                        images={editProjectData?.ProjectPhotoURL ?? ""}
                                         thumbHeight="h-50"
                                         containerStyle={{ width: 400 }}
                                     />
@@ -189,7 +209,7 @@ export const ViewProjectMaster: React.FC = () => {
 
                             <div className="mt-4 px-6 text-center">
                                 <h3 className="text-lg font-semibold text-gray-900 flex justify-center items-center gap-2">
-                                    {editProjectMasterData?.ProjectName ?? "—"}
+                                    {editProjectData?.ProjectName ?? "—"}
                                     <span className="text-green-500">●</span>
                                 </h3>
                             </div>
@@ -201,10 +221,10 @@ export const ViewProjectMaster: React.FC = () => {
                             <div className="text-center">
                                 <div className="mt-2 flex justify-center gap-2">
                                     <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">
-                                        {editProjectMasterData?.CTSNumber ?? "-"}
+                                        {editProjectData?.CTSNumber ?? "-"}
                                     </span>
                                     <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">
-                                        {editProjectMasterData?.CityName ?? "-"}
+                                        {editProjectData?.CityName ?? "-"}
                                     </span>
                                 </div>
                             </div>
@@ -219,10 +239,10 @@ export const ViewProjectMaster: React.FC = () => {
 
 
                                 <div className="p-4">
-                                    <FieldItem label="Project Location" value={editProjectMasterData?.ProjectLocation ?? '-'} isRow />
-                                    <FieldItem label="Business Category" value={editProjectMasterData?.BussinessCategory ?? '-'} isRow />
-                                    <FieldItem label="Project Status" value={editProjectMasterData?.ProjectStatus ?? '-'} isRow />
-                                    <FieldItem label="Is Redevelopment" value={editProjectMasterData?.IsRedevelopment ? 'Yes' : 'No'} isRow />
+                                    <FieldItem label="Project Location" value={editProjectData?.ProjectLocation ?? '-'} isRow />
+                                    <FieldItem label="Business Category" value={editProjectData?.BussinessCategory ?? '-'} isRow />
+                                    <FieldItem label="Project Status" value={editProjectData?.ProjectStatus ?? '-'} isRow />
+                                    <FieldItem label="Is Redevelopment" value={editProjectData?.IsRedevelopment ? 'Yes' : 'No'} isRow />
                                 </div>
                             </div>
 
@@ -230,8 +250,9 @@ export const ViewProjectMaster: React.FC = () => {
                             <div className="mt-4 flex gap-3">
                                 <Button
                                     onClick={(e) => {
-                                        e.preventDefault(); e.stopPropagation();
-                                        handleEditProjectMaster(editProjectMasterData!);
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleEditProjectMaster(editProjectData!);
                                     }}
                                     color='blue'
                                     fullWidth
@@ -242,7 +263,11 @@ export const ViewProjectMaster: React.FC = () => {
                                 </Button>
 
                                 <Button
-                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(-1); }}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleBackToListProjectMaster();
+                                    }}
                                     color='transparent'
                                     variant='transparent_border'
                                     fullWidth
@@ -264,11 +289,11 @@ export const ViewProjectMaster: React.FC = () => {
 
 
                                 <div className="p-4">
-                                    <FieldItem label="Country" value={editProjectMasterData?.CountryName ?? '-'} isRow />
-                                    <FieldItem label="State" value={editProjectMasterData?.StateName ?? '-'} isRow />
-                                    <FieldItem label="District" value={editProjectMasterData?.DistrictName ?? '-'} isRow />
-                                    <FieldItem label="City" value={editProjectMasterData?.CityName ?? '-'} isRow />
-                                    <FieldItem label="PIN Code" value={editProjectMasterData?.ZipCode ?? '-'} isRow />
+                                    <FieldItem label="Country" value={editProjectData?.CountryName ?? '-'} isRow />
+                                    <FieldItem label="State" value={editProjectData?.StateName ?? '-'} isRow />
+                                    <FieldItem label="District" value={editProjectData?.DistrictName ?? '-'} isRow />
+                                    <FieldItem label="City" value={editProjectData?.CityName ?? '-'} isRow />
+                                    <FieldItem label="PIN Code" value={editProjectData?.ZipCode ?? '-'} isRow />
                                 </div>
                             </div>
 
@@ -284,9 +309,9 @@ export const ViewProjectMaster: React.FC = () => {
 
 
                                 <div className="p-4">
-                                    <FieldItem label="RERA Number" value={editProjectMasterData?.RERANumber ?? '-'} isRow />
-                                    <FieldItem label="RERA Certificate Date" value={editProjectMasterData?.RERACertificateDate ? formatDate_dd_MonthName_yy(editProjectMasterData!.RERACertificateDate) : '-'} isRow />
-                                    <FieldItem label="RERA Completion Date" value={editProjectMasterData?.RERAComplitionDate ? formatDate_dd_MonthName_yy(editProjectMasterData!.RERAComplitionDate) : '-'} isRow />
+                                    <FieldItem label="RERA Number" value={editProjectData?.RERANumber ?? '-'} isRow />
+                                    <FieldItem label="RERA Certificate Date" value={editProjectData?.RERACertificateDate ? formatDate_dd_MonthName_yy(editProjectData!.RERACertificateDate) : '-'} isRow />
+                                    <FieldItem label="RERA Completion Date" value={editProjectData?.RERAComplitionDate ? formatDate_dd_MonthName_yy(editProjectData!.RERAComplitionDate) : '-'} isRow />
                                 </div>
                             </div>
 
@@ -303,9 +328,9 @@ export const ViewProjectMaster: React.FC = () => {
 
 
                                 <div className="p-4">
-                                    <FieldItem label="Project Estimate Cost" value={editProjectMasterData?.ProjectEstimateCost?.toString() ?? '-'} isRow />
-                                    <FieldItem label="On Going Budget Cost" value={editProjectMasterData?.OnGoingBudgetCost?.toString() ?? '-'} isRow />
-                                    <FieldItem label="Project Area in Sqft" value={editProjectMasterData?.ProjectAreaInSqft?.toString() ?? '-'} isRow />
+                                    <FieldItem label="Project Estimate Cost" value={editProjectData?.ProjectEstimateCost?.toString() ?? '-'} isRow />
+                                    <FieldItem label="On Going Budget Cost" value={editProjectData?.OnGoingBudgetCost?.toString() ?? '-'} isRow />
+                                    <FieldItem label="Project Area in Sqft" value={editProjectData?.ProjectAreaInSqft?.toString() ?? '-'} isRow />
                                 </div>
                             </div>
 
@@ -322,9 +347,9 @@ export const ViewProjectMaster: React.FC = () => {
 
 
                                 <div className="p-4">
-                                    <FieldItem label="Survey Date" value={editProjectMasterData?.SurveyDate ? formatDate_dd_MonthName_yy(editProjectMasterData!.SurveyDate) : '-'} isRow />
-                                    <FieldItem label="Expected Start Date" value={editProjectMasterData?.ExpectedStartDate ? formatDate_dd_MonthName_yy(editProjectMasterData!.ExpectedStartDate) : '-'} isRow />
-                                    <FieldItem label="Execution Start Date" value={editProjectMasterData?.ExecutionStartDate ? formatDate_dd_MonthName_yy(editProjectMasterData!.ExecutionStartDate) : '-'} isRow />
+                                    <FieldItem label="Survey Date" value={editProjectData?.SurveyDate ? formatDate_dd_MonthName_yy(editProjectData!.SurveyDate) : '-'} isRow />
+                                    <FieldItem label="Expected Start Date" value={editProjectData?.ExpectedStartDate ? formatDate_dd_MonthName_yy(editProjectData!.ExpectedStartDate) : '-'} isRow />
+                                    <FieldItem label="Execution Start Date" value={editProjectData?.ExecutionStartDate ? formatDate_dd_MonthName_yy(editProjectData!.ExecutionStartDate) : '-'} isRow />
                                 </div>
                             </div>
 
@@ -340,8 +365,8 @@ export const ViewProjectMaster: React.FC = () => {
 
 
                                 <div className="p-4">
-                                    <FieldItem label="Site Contact Name" value={editProjectMasterData?.SiteContactName ?? '-'} isRow />
-                                    <FieldItem label="Site Contact Mobile Number" value={editProjectMasterData?.SiteContactMobileNumber ?? '-'} isRow />
+                                    <FieldItem label="Site Contact Name" value={editProjectData?.SiteContactName ?? '-'} isRow />
+                                    <FieldItem label="Site Contact Mobile Number" value={editProjectData?.SiteContactMobileNumber ?? '-'} isRow />
                                 </div>
                             </div>
 
@@ -361,13 +386,13 @@ export const ViewProjectMaster: React.FC = () => {
                             onTabChange={(t) => {
                                 setActiveTab(t.id);
                                 if (t.id === 'Employee') {
-                                    loadProjectMasterWithEmployee(editProjectMasterData!.ProjectId);
+                                    loadProjectMasterWithEmployee(editProjectData!.ProjectId);
                                 }
                                 else if (t.id === 'Bank Details') {
-                                    loadProjectMasterWithBankDetails(editProjectMasterData!.ProjectId);
+                                    loadProjectMasterWithBankDetails(editProjectData!.ProjectId);
                                 }
                                 else if (t.id === 'Company') {
-                                    loadProjectMasterWithCompany(editProjectMasterData!.ProjectId);
+                                    loadProjectMasterWithCompany(editProjectData!.ProjectId);
                                 }
                             }}
                         />

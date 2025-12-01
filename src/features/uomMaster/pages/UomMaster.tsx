@@ -6,13 +6,13 @@ import * as E from 'fp-ts/Either';
 import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
-  AddUpdateMaterialMasterRequest,
-  DeleteMaterialMasterRequest,
-  MaterialMasterData,
-  FilterWithPaginationMaterialMaster
-} from '@/features/materialMaster/models/MaterialMasterModel';
+  AddUpdateUomMasterRequest,
+  DeleteUomMasterRequest,
+  UomMasterData,
+  FilterWithPaginationUomMaster
+} from '@/features/uomMaster/models/UOMMasterModel';
 
-import { materialMasterService } from '@/features/materialMaster/services/MaterialMasterService'
+import { uomMasterService } from '@/features/uomMaster/services/UOMMasterService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
@@ -32,17 +32,17 @@ import { technicalService } from '@/features/technical/services/TechnicalService
 import { updateFilter } from '@/core/utils/filterHelper';
 
 
-const initialFormState = (): AddUpdateMaterialMasterRequest => ({
-  MaterialMasterId: 0,
-  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-  MaterialCode: '',
-  MaterialName: ''
+const initialFormState = (): AddUpdateUomMasterRequest => ({
+  UomMasterId: 0,
+  Uniquekey: null,
+  UomCode: '',
+  UomName: ''
 });
 
-export const MaterialMaster: React.FC = () => {
+export const UomMaster: React.FC = () => {
 
   //#region STATE MANAGEMENT
-  const [materialMasterList, setMaterialMasterList] = useState<MaterialMasterData[]>([]);
+  const [uomMasterList, setUomMasterList] = useState<UomMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
 
@@ -59,11 +59,11 @@ export const MaterialMaster: React.FC = () => {
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchMaterials(value)
+    searchUoms(value)
   }, 350)
 
-  //VIEW MATERIAL MASTER MODAL STATES
-  const [viewMaterialMasterDetailsData, setViewMaterialMasterDetailsData] = useState<MaterialMasterData | null>(null)
+  //VIEW UOM MASTER MODAL STATES
+  const [viewUomMasterDetailsData, setViewUomMasterDetailsData] = useState<UomMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   //FILTER STATES
@@ -74,22 +74,22 @@ export const MaterialMaster: React.FC = () => {
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  // EDIT MATERIAL MASTER
-  const [editingMaterialMasterData, setEditingMaterialMasterData] = useState<MaterialMasterData | null>(null);
+  // EDIT UOM MASTER
+  const [editingUomMasterData, setEditingUomMasterData] = useState<UomMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
   
-  //ADD UPDATE MATERIAL MASTER
-    const [formData, setFormData] = useState<AddUpdateMaterialMasterRequest>(() => initialFormState());
+  //ADD UPDATE UOM MASTER
+    const [formData, setFormData] = useState<AddUpdateUomMasterRequest>(() => initialFormState());
   
-  //DELETE MATERIAL MASTER STATES
+  //DELETE UOM MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
-  const [deleteMaterialMasterDetailsData, setDeleteMaterialMasterDetailsData] = useState<MaterialMasterData | null>(null)
+  const [deleteUomMasterDetailsData, setDeleteUomMasterDetailsData] = useState<UomMasterData | null>(null)
 
   //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeMaterialMasterColumnsModal, setIsShowCustomizeMaterialMasterColumnsModal] = useState(false);
+  const [isShowCustomizeUomMasterColumnsModal, setIsShowCustomizeUomMasterColumnsModal] = useState(false);
 
 
   //#endregion
@@ -100,15 +100,15 @@ export const MaterialMaster: React.FC = () => {
 
   //#region INITIALIZATION
 
-  const hasFetchedInitialMaterials = useRef(false)
+  const hasFetchedInitialUoms = useRef(false)
 
   useEffect(() => {
 
-    if (hasFetchedInitialMaterials.current) return
+    if (hasFetchedInitialUoms.current) return
 
-    hasFetchedInitialMaterials.current = true;
+    hasFetchedInitialUoms.current = true;
 
-    fetchMaterialList()
+    fetchUomList()
   }, [])
 
 
@@ -121,29 +121,29 @@ export const MaterialMaster: React.FC = () => {
 
   useEffect(() => {
     if (isAddUpdateModalOpen) {
-      if (editingMaterialMasterData) {
+      if (editingUomMasterData) {
         setFormData({
-          MaterialMasterId: editingMaterialMasterData.MaterialMasterId,
-          Uniquekey: editingMaterialMasterData.Uniquekey || initialFormState().Uniquekey,
-          MaterialCode: editingMaterialMasterData.MaterialCode?.toString() || '',
-          MaterialName: editingMaterialMasterData.MaterialName || ''
+          UomMasterId: editingUomMasterData.UomMasterId,
+          Uniquekey: editingUomMasterData.UniqueKey || null,
+          UomCode: editingUomMasterData.UomCode?.toString() || '',
+          UomName: editingUomMasterData.UomName || ''
         });
       } else {
         setFormData(initialFormState());
       }
       setErrors({});
     }
-  }, [isAddUpdateModalOpen, editingMaterialMasterData]);
+  }, [isAddUpdateModalOpen, editingUomMasterData]);
 
   //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchMaterialList = async (page: number = pagination.currentPage) => {
-    return await loadMaterials(page, filters);
+  const fetchUomList = async (page: number = pagination.currentPage) => {
+    return await loadUoms(page, filters);
   }
 
-  const loadMaterials = async (page: number, filterParams: FilterInfo) => {
+  const loadUoms = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -153,27 +153,27 @@ export const MaterialMaster: React.FC = () => {
 
         if (sortInfo) {
 
-          const column = materialMasterColumns.find(col => col.key === sortInfo.column)
+          const column = uomMasterColumns.find(col => col.key === sortInfo.column)
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
 
         }
 
-        const params: FilterWithPaginationMaterialMaster = {
+        const params: FilterWithPaginationUomMaster = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
-          MaterialMasterId: filterParams.MaterialMasterId ? Number(filterParams.MaterialMasterId) : 0,
-          MaterialName: filterParams.MaterialName?.trim() || undefined,
+          UomMasterId: filterParams.UomMasterId ? Number(filterParams.UomMasterId) : 0,
+          UomName: filterParams.UomName?.trim() || undefined,
           SortBy: sortByParam
         }
 
-        const response = await getMaterials(params);
+        const response = await getUoms(params);
 
         if (E.isRight(response)) {
 
-          setMaterialMasterList(response.right.Data);
+          setUomMasterList(response.right.Data);
 
           setPagination({
             currentPage: page,
@@ -194,43 +194,43 @@ export const MaterialMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Material'
+      'Loading UOM'
     )
   }
   //#endregion
 
-  //#region SERACH MATERIAL 
-  const searchMaterials = async (searchValue: string) => {
+  //#region SERACH UOM 
+  const searchUoms = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
 
-      fetchMaterialList();
+      fetchUomList();
 
       return
     }
 
     const filterParams: FilterInfo = {
-      MaterialName: searchValue.trim(),
+      UomName: searchValue.trim(),
     };
 
-    await loadMaterials(1, filterParams)
+    await loadUoms(1, filterParams)
 
   }
   //#endregion
 
-  //#region CLEAR SERACH MATERIAL 
-  const clearsearchMaterials = () => {
+  //#region CLEAR SERACH UOM 
+  const clearsearchUoms = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
-    fetchMaterialList();
+    fetchUomList();
   }
 
   //#endregion
 
   //#region EXPORT EXCEL | PDF
-  const handleExportMaterials = async (exportType: 'Excel' | 'PDF') => {
+  const handleExportUoms = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -238,24 +238,24 @@ export const MaterialMaster: React.FC = () => {
         // Find the column label for sorting
         let sortByParam = undefined
         if (sortInfo) {
-          const column = materialMasterColumns.find(col => col.key === sortInfo.column)
+          const column = uomMasterColumns.find(col => col.key === sortInfo.column)
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
         }
 
-        const params: FilterWithPaginationMaterialMaster = {
+        const params: FilterWithPaginationUomMaster = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
-          MaterialName: filters.MaterialName?.trim() || undefined,
+          UomName: filters.UomName?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         }
 
-        const response = await getMaterials(params);
+        const response = await getUoms(params);
 
-        handleExportFile(response, exportType, 'Material Master', addToast)
+        handleExportFile(response, exportType, 'UOM Master', addToast)
 
         return response;
       },
@@ -268,23 +268,23 @@ export const MaterialMaster: React.FC = () => {
     )
   }
 
-  const handleExportMaterialExcel = () => handleExportMaterials('Excel')
-  const handleExportMaterialPdf = () => handleExportMaterials('PDF')
+  const handleExportUomExcel = () => handleExportUoms('Excel')
+  const handleExportUomPdf = () => handleExportUoms('PDF')
 
   //#endregion
 
-  //#region API | SERVICES CALL TO GET MATERIAL 
+  //#region API | SERVICES CALL TO GET UOM 
 
-  const getMaterials = async (filterParams: FilterWithPaginationMaterialMaster) => {
+  const getUoms = async (filterParams: FilterWithPaginationUomMaster) => {
 
-    return await materialMasterService.apiCallPullMaterialMaster(filterParams);
+    return await uomMasterService.apiCallPullUomMaster(filterParams);
   }
   //#endregion
 
   //#region HANDLE PAGE CHNAGE EVENT
 
   const handlePageChange = (page: number) => {
-    fetchMaterialList(page);
+    fetchUomList(page);
   };
 
   //#endregion
@@ -294,14 +294,14 @@ export const MaterialMaster: React.FC = () => {
 
     setSortInfo(sortInfo);
 
-    fetchMaterialList(1);
+    fetchUomList(1);
 
   }
   //#endregion
 
   //#region TABLE PAGINATION INFO
 
-  const materialMasterPaginationInfo: PaginationInfo = useMemo(
+  const uomMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
       totalPages: pagination.totalPages,
@@ -312,24 +312,24 @@ export const MaterialMaster: React.FC = () => {
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
   )
 
-  const materialListForTable = useMemo(() => materialMasterList, [materialMasterList]);
+  const uomListForTable = useMemo(() => uomMasterList, [uomMasterList]);
   //#endregion
 
   //#region VIEW EDIT
-  const handleViewMaterialDetails = useCallback((row: MaterialMasterData) => {
-    setViewMaterialMasterDetailsData(row)
+  const handleViewUomDetails = useCallback((row: UomMasterData) => {
+    setViewUomMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
 
   //#endregion
 
-  //#region EDIT MATERIAL MASTER
+  //#region EDIT UOM MASTER
 
-  const handleEditMaterialMaster = useCallback((row: MaterialMasterData) => {
-    setEditingMaterialMasterData({
+  const handleEditUomMaster = useCallback((row: UomMasterData) => {
+    setEditingUomMasterData({
       ...row,
-      MaterialCode: row.MaterialCode || '',
-      MaterialName: row.MaterialName || ''
+      UomCode: row.UomCode?.toString() || '',
+      UomName: row.UomName || ''
     })
     setIsAddUpdateModalOpen(true);
 
@@ -340,8 +340,8 @@ export const MaterialMaster: React.FC = () => {
 
   //#region CONFIRMATION DIALOG BOX
 
-  const handleConfirmationDialogBoxOpen = useCallback((row: MaterialMasterData) => {
-    setDeleteMaterialMasterDetailsData(row)
+  const handleConfirmationDialogBoxOpen = useCallback((row: UomMasterData) => {
+    setDeleteUomMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
 
@@ -349,11 +349,11 @@ export const MaterialMaster: React.FC = () => {
 
   //#region TABLE COLUMN
 
-  const materialMasterColumns = useMemo<TableColumn[]>(
+  const uomMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
-        key: 'MaterialName',
-        label: 'Material Name',
+        key: 'Uom',
+        label: 'UOM Name',
         width: '33',
         sortable: true,
         fixed: 'left',
@@ -365,15 +365,15 @@ export const MaterialMaster: React.FC = () => {
               text={value || 'N/A'}
               maxWidth="250px"
               tooltipThreshold={30}
-              onClick={() => handleViewMaterialDetails(row)} // just pass a function, no need for e.preventDefault here
+              onClick={() => handleViewUomDetails(row)} // just pass a function, no need for e.preventDefault here
             />
 
           </div>
         )
       },
       {
-        key: 'MaterialCode',
-        label: 'Material Code',
+        key: 'UomCode',
+        label: 'UOM Code',
         width: '30',
         sortable: false,
         align: 'center',
@@ -381,62 +381,62 @@ export const MaterialMaster: React.FC = () => {
       }
     ],
     // dependencies: include everything used inside that might change
-    [canAction, handleViewMaterialDetails, handleEditMaterialMaster, handleConfirmationDialogBoxOpen]
+    [canAction, handleViewUomDetails, handleEditUomMaster, handleConfirmationDialogBoxOpen]
   )
 
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
 
-  const requiredMaterialMasterColumnKeys: string[] = ['MaterialName'];
+  const requiredUomMasterColumnKeys: string[] = ['UomName'];
 
-  const allMaterialMasterColumnKeys: string[] = materialMasterColumns.map(c => c.key)
+  const allUomMasterColumnKeys: string[] = uomMasterColumns.map(c => c.key)
 
-  const [selectedMaterialMasterColumnKeys, setSelectedMaterialMasterColumnKeys] = useState<string[]>(() => {
+  const [selectedUomMasterColumnKeys, setSelectedUomMasterColumnKeys] = useState<string[]>(() => {
 
     try {
 
-      const saved = LocalStorageHelper.getMaterialMasterTableColumns();
+      const saved = LocalStorageHelper.getUomMasterTableColumns();
 
       if (saved) {
 
         const parsed = JSON.parse(saved) as string[]
         // Ensure required columns are always present
 
-        const withRequired = Array.from(new Set([...parsed, ...requiredMaterialMasterColumnKeys]));
+        const withRequired = Array.from(new Set([...parsed, ...requiredUomMasterColumnKeys]));
 
         // Filter out any keys that no longer exist
-        return withRequired.filter(k => allMaterialMasterColumnKeys.includes(k));
+        return withRequired.filter(k => allUomMasterColumnKeys.includes(k));
 
       }
     } catch { }
-    return allMaterialMasterColumnKeys
+    return allUomMasterColumnKeys
   })
 
   useEffect(() => {
     // Guarantee required columns remain selected if state changes elsewhere
 
-    setSelectedMaterialMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredMaterialMasterColumnKeys])).filter(k => allMaterialMasterColumnKeys.includes(k)));
+    setSelectedUomMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredUomMasterColumnKeys])).filter(k => allUomMasterColumnKeys.includes(k)));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [materialMasterColumns.length])
+  }, [uomMasterColumns.length])
 
-  const visibleMaterialMasterColumns = useMemo(
-    () => materialMasterColumns.filter(col => selectedMaterialMasterColumnKeys.includes(col.key)),
-    [materialMasterColumns, selectedMaterialMasterColumnKeys]
+  const visibleUomMasterColumns = useMemo(
+    () => uomMasterColumns.filter(col => selectedUomMasterColumnKeys.includes(col.key)),
+    [uomMasterColumns, selectedUomMasterColumnKeys]
   )
 
   //#endregion
 
-  //#region VIEW MATERIAL DETAILS MODAL COMPONENT
+  //#region VIEW UOM DETAILS MODAL COMPONENT
 
-  interface ViewMaterialDetailsModalProps {
+  interface ViewUomDetailsModalProps {
     isOpen: boolean
     onClose: () => void
-    data: MaterialMasterData | null
+    data: UomMasterData | null
   }
 
-  const ViewMaterialDetailsModal: React.FC<ViewMaterialDetailsModalProps> = ({
+  const ViewUomDetailsModal: React.FC<ViewUomDetailsModalProps> = ({
     isOpen,
     onClose,
     data
@@ -447,7 +447,7 @@ export const MaterialMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Material Master Details"
+        title="UOM Master Details"
         onSubmit={(e) => {
           e.preventDefault()
           onClose()
@@ -459,60 +459,11 @@ export const MaterialMaster: React.FC = () => {
         <div className="space-y-6">
 
           <div className="space-y-4">
-            <FieldItem label="Material Code" value={data.MaterialCode?.toString()} isRow withBorder={true} />
-            <FieldItem label="Material Name" value={data.MaterialName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="UOM Code" value={data.UomCode?.toString()} isRow withBorder={true} />
+            <FieldItem label="UOM Name" value={data.Uom} isRow withBorder={true} className='font-medium text-blue-900 ' />
           </div>
 
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold pb-2">
-              Action Details
-            </h4>
-
-            <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
-
-            {data.ModifiedBy !== '' ?
-              <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
-
-              :
-              ''}
-          </div>
-          <div className="flex justify-between items-center pt-4">
-
-            {canAction && (
-              <>
-                <Button
-                  color='red'
-                  variant='solid'
-                  colorMode="light"
-                  size='sm'
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    setIsViewModalOpen(false)
-                    handleConfirmationDialogBoxOpen(data)
-                  }}
-                >
-                  <Trash2 className="h-5 w-5" />
-                  Delete
-                </Button>
-
-
-                <Button
-                  color='blue'
-                  size='sm'
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    setIsViewModalOpen(false)
-                    handleEditMaterialMaster(data)
-                  }}
-                >
-                  <Edit className="h-5 w-5" />
-                  Edit
-                </Button>
-              </>
-            )}
-          </div>
+          
         </div>
       </Modal>
     )
@@ -524,7 +475,7 @@ export const MaterialMaster: React.FC = () => {
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
     setFilters(tempFilters)
-    loadMaterials(1, tempFilters)
+    loadUoms(1, tempFilters)
     setShowFilterPopup(false)
   }
 
@@ -535,7 +486,7 @@ export const MaterialMaster: React.FC = () => {
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
-    loadMaterials(1, {})
+    loadUoms(1, {})
     setShowFilterPopup(false)
   }
 
@@ -549,9 +500,9 @@ export const MaterialMaster: React.FC = () => {
 
   //#endregion
 
-  //#region ADD UPDATE EDIT MATERIAL MASTER
+  //#region ADD UPDATE EDIT UOM MASTER
 
-  const handleFieldChange = (field: keyof AddUpdateMaterialMasterRequest, value: any) => {
+  const handleFieldChange = (field: keyof AddUpdateUomMasterRequest, value: any) => {
 
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -560,15 +511,15 @@ export const MaterialMaster: React.FC = () => {
     }
   };
 
-  const handleAddMaterialModal = () => {
-    setEditingMaterialMasterData(null);
+  const handleAddUomModal = () => {
+    setEditingUomMasterData(null);
     setFormData(initialFormState());
     setErrors({});
     setIsAddUpdateModalOpen(true);
   }
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
-  const validateAddMaterialMasterForm = (): {
+  const validateAddUomMasterForm = (): {
 
     isValid: boolean
 
@@ -578,16 +529,16 @@ export const MaterialMaster: React.FC = () => {
 
     const newErrors: { [key: string]: string } = {}
 
-    if (formData.MaterialName.trim() === "") {
+    if (formData.UomName.trim() === "") {
 
-      newErrors.MaterialName = "Material Name is required"
+      newErrors.UomName = "UOM Name is required"
     }
-    else if (formData.MaterialName.length < 3) {
-      newErrors.MaterialName = "Material Name must be at least 3 characters long"
+    else if (formData.UomName.length < 3) {
+      newErrors.UomName = "UOM Name must be at least 3 characters long"
     }
 
-    if (formData.MaterialCode.trim() === "") {
-      newErrors.MaterialCode = "Material Code is required";
+    if (formData.UomCode.trim() === "") {
+      newErrors.UomCode = "UOM Code is required";
     }
 
     return {
@@ -596,22 +547,22 @@ export const MaterialMaster: React.FC = () => {
     }
   }
 
-  const PushMaterialMasterFormData = (): AddUpdateMaterialMasterRequest => {
+  const PushUomMasterFormData = (): AddUpdateUomMasterRequest => {
     return {
-      MaterialMasterId: formData.MaterialMasterId,
+      UomMasterId: formData.UomMasterId,
       Uniquekey: formData.Uniquekey,
-      MaterialCode: formData.MaterialCode,
-      MaterialName: formData.MaterialName
+      UomCode: formData.UomCode,
+      UomName: formData.UomName
     };
 
   };
 
-  const handleAddUpdateMaterialMaster = async (e: React.FormEvent) => {
+  const handleAddUpdateUomMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
     setErrors({})
 
-    const validation = validateAddMaterialMasterForm()
+    const validation = validateAddUomMasterForm()
 
     if (!validation.isValid) {
 
@@ -626,21 +577,21 @@ export const MaterialMaster: React.FC = () => {
       setIsLoadingMessage,
       async () => {
 
-        const payload = PushMaterialMasterFormData();
+        const payload = PushUomMasterFormData();
 
-        const response = await materialMasterService.apiCallToAddUpdateMaterialMaster(payload);
+        const response = await uomMasterService.apiCallAddUpdateUomMaster(payload);
 
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = formData.MaterialMasterId === 0;
+          const isAdd = formData.UomMasterId === 0;
 
           if (isAdd) {
 
-            const newRecord = response.right.Data[0] as MaterialMasterData
+            const newRecord = response.right.Data[0] as UomMasterData
 
-            setMaterialMasterList(prevData => [newRecord, ...prevData]);
+            setUomMasterList(prevData => [newRecord, ...prevData]);
 
             setPagination({
               currentPage: pagination.currentPage,
@@ -653,11 +604,11 @@ export const MaterialMaster: React.FC = () => {
 
           } else {
 
-            const updatedRecord = response.right.Data[0] as MaterialMasterData;
+            const updatedRecord = response.right.Data[0] as UomMasterData;
 
-            setMaterialMasterList(prevData =>
+            setUomMasterList(prevData =>
               prevData.map(item =>
-                item.MaterialMasterId === formData.MaterialMasterId
+                item.UomMasterId === formData.UomMasterId
                   ? updatedRecord
                   : item
               )
@@ -666,7 +617,7 @@ export const MaterialMaster: React.FC = () => {
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
-          setEditingMaterialMasterData(null);
+          setEditingUomMasterData(null);
         } else {
 
           addToast({ type: "error", title: response.left?.message });
@@ -681,7 +632,7 @@ export const MaterialMaster: React.FC = () => {
       },
       undefined,
 
-      Number(formData.MaterialMasterId) === 0 ? 'Add Material' : 'Update Material'
+      Number(formData.UomMasterId) === 0 ? 'Add UOM' : 'Update UOM'
     )
 
   };
@@ -690,7 +641,7 @@ export const MaterialMaster: React.FC = () => {
 
   //#region IMPORT EXCEL | DOWNLOAD
 
-  const excelImportMaterialMaster = async () => {
+  const excelImportUomMaster = async () => {
 
     await runApiWithLoader(
 
@@ -713,7 +664,7 @@ export const MaterialMaster: React.FC = () => {
   }
 
 
-  const downloadExcelSampleMaterialMaster = async () => {
+  const downloadExcelSampleUomMaster = async () => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -721,12 +672,12 @@ export const MaterialMaster: React.FC = () => {
         // Find the column label for sorting
 
         const params: FilterPullExcelSample = {
-          TableName: 'MATERIAL MASTER'
+          TableName: 'UOM MASTER'
         }
 
         const response = await technicalService.apiCallPullExcelSample(params);
 
-        handleExportFile(response, 'Excel', 'Material Master', addToast, 'Sample file download successfully')
+        handleExportFile(response, 'Excel', 'UOM Master', addToast, 'Sample file download successfully')
 
         return response;
       },
@@ -739,19 +690,19 @@ export const MaterialMaster: React.FC = () => {
     )
   }
 
-  const handleExcelImportMaterialMaster = () => excelImportMaterialMaster()
-  const handleDownloadExcelSampleMaterialMaster = () => downloadExcelSampleMaterialMaster()
+  const handleExcelImportUomMaster = () => excelImportUomMaster()
+  const handleDownloadExcelSampleUomMaster = () => downloadExcelSampleUomMaster()
 
 
 
   //#endregion
 
-  //#region DELETE MATERIAL MASTER
-  const handleDeleteMaterialMaster = async () => {
+  //#region DELETE UOM MASTER
+  const handleDeleteUomMaster = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
 
-    if (!deleteMaterialMasterDetailsData) return
+    if (!deleteUomMasterDetailsData) return
 
     await runApiWithLoader(
       setIsLoading,
@@ -759,16 +710,16 @@ export const MaterialMaster: React.FC = () => {
 
       async () => {
 
-        const params: DeleteMaterialMasterRequest = {
-          MaterialMasterId: deleteMaterialMasterDetailsData.MaterialMasterId,
-          Uniquekey: deleteMaterialMasterDetailsData.Uniquekey
+        const params: DeleteUomMasterRequest = {
+          UomMasterId: deleteUomMasterDetailsData.UomMasterId,
+          Uniquekey: deleteUomMasterDetailsData.UniqueKey
         }
 
-        const response = await materialMasterService.apiCallDeleteMaterialMaster(params);
+        const response = await uomMasterService.apiCallDeleteUomMaster(params);
 
         if (E.isRight(response)) {
 
-          setMaterialMasterList(prevData => prevData.filter(item => item.MaterialMasterId !== deleteMaterialMasterDetailsData.MaterialMasterId));
+          setUomMasterList(prevData => prevData.filter(item => item.UomMasterId !== deleteUomMasterDetailsData.UomMasterId));
 
           setPagination({
             currentPage: pagination.currentPage,
@@ -780,7 +731,7 @@ export const MaterialMaster: React.FC = () => {
 
           setIsConfirmationDialogBoxOpen(false);
 
-          setDeleteMaterialMasterDetailsData(null);
+          setDeleteUomMasterDetailsData(null);
 
         } else {
           addToast({ type: 'error', title: response.left.message });
@@ -795,7 +746,7 @@ export const MaterialMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Material'
+      'Delete UOM'
     )
   }
 
@@ -818,44 +769,44 @@ export const MaterialMaster: React.FC = () => {
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search By Material Name"
+          searchPlaceholder="Search By UOM Name"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
           }}
-          onClearSearch={clearsearchMaterials}
+          onClearSearch={clearsearchUoms}
           isShowFilterButton={false}
           filters={filters}
           onOpenFilter={() => {
             setTempFilters(filters)
             setShowFilterPopup(true)
           }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeMaterialMasterColumnsModal(true)}
+          isShowCustomizeButton={false}
+          onCustomize={() => setIsShowCustomizeUomMasterColumnsModal(true)}
           // ADD
-          isShowAddButton={canAction}
-          addTitle="Add Material"
-          onAdd={handleAddMaterialModal}
+          isShowAddButton={false}
+          addTitle="Add UOM"
+          onAdd={handleAddUomModal}
 
           // IMPORT
-          isShowImportButton={canAction}
-          onUploadExcel={handleExcelImportMaterialMaster}
-          onDownloadSampleExcel={handleDownloadExcelSampleMaterialMaster}
+          isShowImportButton={false}
+          onUploadExcel={handleExcelImportUomMaster}
+          onDownloadSampleExcel={handleDownloadExcelSampleUomMaster}
 
           // EXPORT
           isShowExportButton={canExport}
-          onExportExcel={handleExportMaterialExcel}
-          onExportPdf={handleExportMaterialPdf}
+          onExportExcel={handleExportUomExcel}
+          onExportPdf={handleExportUomPdf}
           exportLoading={isLoading}
         />
 
 
-        {/* DATA TABLE MATERIAL */}
+        {/* DATA TABLE UOM */}
         <DataTable
-          data={materialListForTable}
-          columns={visibleMaterialMasterColumns}
-          pagination={materialMasterPaginationInfo}
-          emptyMessage="No Materials Data Found"
+          data={uomListForTable}
+          columns={visibleUomMasterColumns}
+          pagination={uomMasterPaginationInfo}
+          emptyMessage="No UOMs Data Found"
           fixedHeight={true}
           maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
@@ -865,33 +816,33 @@ export const MaterialMaster: React.FC = () => {
           loading={isLoading}
         />
 
-        {/* VIEW MATERIAL MODAL */}
-        <ViewMaterialDetailsModal isOpen={isViewModalOpen}
+        {/* VIEW UOM MODAL */}
+        <ViewUomDetailsModal isOpen={isViewModalOpen}
           onClose={() => {
             setIsViewModalOpen(false)
-            setViewMaterialMasterDetailsData(null)
+            setViewUomMasterDetailsData(null)
           }}
-          data={viewMaterialMasterDetailsData}
+          data={viewUomMasterDetailsData}
         />
 
-        {/*  ADD EDIT UPDATE MATERIAL MODAL */}
+        {/*  ADD EDIT UPDATE UOM MODAL */}
         <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
             setIsAddUpdateModalOpen(false);
-            setEditingMaterialMasterData(null);
+            setEditingUomMasterData(null);
             setFormData(initialFormState());
             setErrors({});
           }}
           onCancel={() => {
             setIsAddUpdateModalOpen(false);
-            setEditingMaterialMasterData(null);
+            setEditingUomMasterData(null);
             setFormData(initialFormState());
             setErrors({});
           }}
-          title={editingMaterialMasterData ? 'Update Material' : 'Add Material'}
-          onSubmit={handleAddUpdateMaterialMaster}
-          saveText={editingMaterialMasterData ? 'Update Material' : 'Save Material'}
+          title={editingUomMasterData ? 'Update UOM' : 'Add UOM'}
+          onSubmit={handleAddUpdateUomMaster}
+          saveText={editingUomMasterData ? 'Update UOM' : 'Save UOM'}
           resetText='Reset'
           loading={isLoading}
           size='xl'
@@ -900,28 +851,28 @@ export const MaterialMaster: React.FC = () => {
             <div className="space-y-4" >
               <div>
                 <Input
-                  label='Material Code'
+                  label='UOM Code'
                   required
-                  error={errors.MaterialCode}
+                  error={errors.UomCode}
                   type="text"
-                  value={formData.MaterialCode.toUpperCase()}
-                  maxLength={4}
-                  onChange={(e) => handleFieldChange('MaterialCode', e.target.value)}
-                  placeholder="Enter Material Code"
+                  value={formData.UomCode}
+                  maxLength={10}
+                  onChange={(e) => handleFieldChange('UomCode', e.target.value)}
+                  placeholder="Enter UOM Code"
                 />
 
               </div>
 
               <div>
                 <Input
-                  label='Material Name'
+                  label='UOM Name'
                   required
-                  error={errors.MaterialName}
+                  error={errors.UomName}
                   type="text"
-                  value={formData.MaterialName}
-                  maxLength={500}
-                  onChange={(e) => handleFieldChange('MaterialName', e.target.value)}
-                  placeholder="Enter Material Name"
+                  value={formData.UomName}
+                  maxLength={100}
+                  onChange={(e) => handleFieldChange('UomName', e.target.value)}
+                  placeholder="Enter UOM Name"
                 />
 
               </div>
@@ -933,32 +884,32 @@ export const MaterialMaster: React.FC = () => {
 
 
         <CustomizeColumnsModal
-          isOpen={isShowCustomizeMaterialMasterColumnsModal}
-          onClose={() => setIsShowCustomizeMaterialMasterColumnsModal(false)}
+          isOpen={isShowCustomizeUomMasterColumnsModal}
+          onClose={() => setIsShowCustomizeUomMasterColumnsModal(false)}
           onApply={(keys) => {
             const withRequired = Array.from(
-              new Set([...keys, ...requiredMaterialMasterColumnKeys]),
+              new Set([...keys, ...requiredUomMasterColumnKeys]),
             )
 
-            setSelectedMaterialMasterColumnKeys(withRequired)
+            setSelectedUomMasterColumnKeys(withRequired)
 
             try {
-              LocalStorageHelper.storeMaterialMasterTableColumns(
+              LocalStorageHelper.storeUomMasterTableColumns(
                 JSON.stringify(withRequired),
               )
             } catch { }
           }}
-          columns={materialMasterColumns}
-          selectedKeys={selectedMaterialMasterColumnKeys}
-          requiredKeys={requiredMaterialMasterColumnKeys}
+          columns={uomMasterColumns}
+          selectedKeys={selectedUomMasterColumnKeys}
+          requiredKeys={requiredUomMasterColumnKeys}
           title="Customize Table Columns"
         />
 
-        {/* FILTER MATERIAL MODAL */}
+        {/* FILTER UOM MODAL */}
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}
-          title="Filter - Material Master"
+          title="Filter - UOM Master"
           onSubmit={(e) => {
             e.preventDefault()
             applyFilters()
@@ -971,27 +922,27 @@ export const MaterialMaster: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <Input
-                  label='Material Name'
+                  label='UOM Name'
                   type="text"
-                  value={tempFilters.MaterialName || ''}
-                  onChange={(e) => handleFilterChange('MaterialName', e.target.value)}
-                  placeholder="Enter material name"
+                  value={tempFilters.UomName || ''}
+                  onChange={(e) => handleFilterChange('UomName', e.target.value)}
+                  placeholder="Enter UOM name"
                 />
               </div>
             </div>
           </div>
         </Modal>
 
-        {/* DELETE CONFIRMATION MATERIAL MODAL */}
+        {/* DELETE CONFIRMATION UOM MODAL */}
         <ConfirmationDialogBox
           isOpen={isConfirmationDialogBoxOpen}
           onClose={() => {
             setIsConfirmationDialogBoxOpen(false)
-            setDeleteMaterialMasterDetailsData(null)
+            setDeleteUomMasterDetailsData(null)
           }}
-          onConfirm={handleDeleteMaterialMaster}
-          title="You are about to delete a material?"
-          message="Deleting this material will permanently remove its contents."
+          onConfirm={handleDeleteUomMaster}
+          title="You are about to delete a UOM?"
+          message="Deleting this UOM will permanently remove its contents."
           confirmText="Delete"
           cancelText="Cancel"
           loading={isLoading}
@@ -1005,4 +956,4 @@ export const MaterialMaster: React.FC = () => {
   )
 }
 
-export default MaterialMaster
+export default UomMaster

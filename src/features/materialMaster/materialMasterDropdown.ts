@@ -1,12 +1,13 @@
 import * as E from 'fp-ts/Either';
-import { departmentMasterService } from '@/features/departmentMaster/services/DepartmentMasterService';
+import { materialMasterService } from '@/features/materialMaster/services/MaterialMasterService';
 
-export const fetchDepartmentMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
+export const fetchMaterialMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
-        const responseEither = await departmentMasterService.apiCallPullDepartmentMaster({
+
+        const responseEither = await materialMasterService.apiCallPullMaterialMaster({
             PageSize: 10,
             PageNumber: pageNumber,
-            DepartmentName: params?.value || '',
+            MaterialName: params?.value || '',
             IsCheckPermission: false
         });
 
@@ -17,8 +18,8 @@ export const fetchDepartmentMasterDropdown = async (pageNumber: number, params?:
         const apiResponse = responseEither.right;
 
         const itemList = (apiResponse?.Data || []).map((d: any) => ({
-            label: d.DepartmentName,
-            value: String(d.DepartmentMasterId)
+            label: d.MaterialName,
+            value: String(d.MaterialMasterId)
         }));
 
 
@@ -26,9 +27,9 @@ export const fetchDepartmentMasterDropdown = async (pageNumber: number, params?:
             totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? itemList.length,
             itemList
         };
-        
+
     } catch (err) {
-        console.error('FETCH DEPARTMENT DROPDOWN ERROR', err);
+        console.error('FETCH MAYERIAL MASTER DROPDOWN ERROR', err);
         return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
     }
 };

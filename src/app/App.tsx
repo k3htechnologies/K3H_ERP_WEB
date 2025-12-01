@@ -37,6 +37,9 @@ import { MaterialMaster } from '@/features/materialMaster/pages/MaterialMaster';
 import ViewEmployeeMaster from '@/features/employeeMaster/pages/ViewEmployeeMaster';
 import ViewProjectMaster from '@/features/projectMaster/pages/ViewProjectMaster';
 import AddUpdateProjectMaster from '@/features/projectMaster/pages/AddUpdateProjectMaster';
+import SubMaterialMaster from '@/features/subMaterialMaster/pages/SubMaterialMaster';
+import { UomMaster } from '@/features/uomMaster/pages/UOMMaster';
+import ProjectDocumentCategoryMaster from '@/features/projectDocumentCategory/pages/ProjectDocumentCategoryMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -84,9 +87,9 @@ function App() {
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
           <Route path="profile" element={<Profile />} />
-          
+
           <Route path="companyMaster/addCompany" element={<AddCompany />} />
-          
+
 
           {/* Protected Routes with Layout */}
           <Route
@@ -127,7 +130,10 @@ function App() {
             <Route path="projectMaster/view" element={<ViewProjectMaster />} />
             <Route path="/projectMaster/add/:projectId??" element={<AddUpdateProjectMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
-            <Route path="materialMaster" element={<MaterialMaster/>} />
+            <Route path="materialMaster" element={<MaterialMaster />} />
+            <Route path="subMaterialMaster" element={<SubMaterialMaster />} />
+            <Route path="uomMaster" element={<UomMaster />} />
+            <Route path="category" element={<ProjectDocumentCategoryMaster />} />
 
 
           </Route>

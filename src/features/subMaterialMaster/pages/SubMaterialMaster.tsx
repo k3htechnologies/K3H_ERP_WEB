@@ -6,13 +6,13 @@ import * as E from 'fp-ts/Either';
 import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
-  AddUpdateMaterialMasterRequest,
-  DeleteMaterialMasterRequest,
-  MaterialMasterData,
-  FilterWithPaginationMaterialMaster
-} from '@/features/materialMaster/models/MaterialMasterModel';
+  AddUpdateSubMaterialMasterRequest,
+  DeleteSubMaterialMasterRequest,
+  SubMaterialMasterData,
+  FilterWithPaginationSubMaterialMaster
+} from '@/features/subMaterialMaster/models/SubMaterialMasterModel';
 
-import { materialMasterService } from '@/features/materialMaster/services/MaterialMasterService'
+import { subMaterialMasterService } from '@/features/subMaterialMaster/services/SubMaterialMasterService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
@@ -30,19 +30,24 @@ import { FieldItem } from '@/ui/components/forms/FieldItem';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { updateFilter } from '@/core/utils/filterHelper';
+import { fetchMaterialMasterDropdown } from '@/features/materialMaster/materialMasterDropdown';
+import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
+import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
+import { fetchUOMMasterDropdown } from '@/features/uomMaster/uomMasterDropdown';
 
 
-const initialFormState = (): AddUpdateMaterialMasterRequest => ({
-  MaterialMasterId: 0,
+const initialFormState = (): AddUpdateSubMaterialMasterRequest => ({
+  SubMaterialMasterId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-  MaterialCode: '',
-  MaterialName: ''
+  MaterialMasterId: 0,
+  SubMaterialName: '',
+  UomMasterId: 0
 });
 
-export const MaterialMaster: React.FC = () => {
+export const SubMaterialMaster: React.FC = () => {
 
   //#region STATE MANAGEMENT
-  const [materialMasterList, setMaterialMasterList] = useState<MaterialMasterData[]>([]);
+  const [subMaterialMasterList, setSubMaterialMasterList] = useState<SubMaterialMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
 
@@ -59,11 +64,11 @@ export const MaterialMaster: React.FC = () => {
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchMaterials(value)
+    searchSubMaterials(value)
   }, 350)
 
-  //VIEW MATERIAL MASTER MODAL STATES
-  const [viewMaterialMasterDetailsData, setViewMaterialMasterDetailsData] = useState<MaterialMasterData | null>(null)
+  //VIEW SUB MATERIAL MASTER MODAL STATES
+  const [viewSubMaterialMasterDetailsData, setViewSubMaterialMasterDetailsData] = useState<SubMaterialMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   //FILTER STATES
@@ -74,23 +79,27 @@ export const MaterialMaster: React.FC = () => {
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  // EDIT MATERIAL MASTER
-  const [editingMaterialMasterData, setEditingMaterialMasterData] = useState<MaterialMasterData | null>(null);
+  // EDIT SUB MATERIAL MASTER
+  const [editingSubMaterialMasterData, setEditingSubMaterialMasterData] = useState<SubMaterialMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  
-  //ADD UPDATE MATERIAL MASTER
-    const [formData, setFormData] = useState<AddUpdateMaterialMasterRequest>(() => initialFormState());
-  
-  //DELETE MATERIAL MASTER STATES
+
+  //ADD UPDATE SUB MATERIAL MASTER
+  const [formData, setFormData] = useState<AddUpdateSubMaterialMasterRequest>(() => initialFormState());
+
+  //DELETE SUB MATERIAL MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
-  const [deleteMaterialMasterDetailsData, setDeleteMaterialMasterDetailsData] = useState<MaterialMasterData | null>(null)
+  const [deleteSubMaterialMasterDetailsData, setDeleteSubMaterialMasterDetailsData] = useState<SubMaterialMasterData | null>(null)
 
   //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeMaterialMasterColumnsModal, setIsShowCustomizeMaterialMasterColumnsModal] = useState(false);
+  const [isShowCustomizeSubMaterialMasterColumnsModal, setIsShowCustomizeSubMaterialMasterColumnsModal] = useState(false);
 
+  const [dropdownLabels, setDropdownLabels] = useState<{
+    materialName?: string;
+    uom?: string;
+  }>({});
 
   //#endregion
 
@@ -100,15 +109,15 @@ export const MaterialMaster: React.FC = () => {
 
   //#region INITIALIZATION
 
-  const hasFetchedInitialMaterials = useRef(false)
+  const hasFetchedInitialSubMaterials = useRef(false)
 
   useEffect(() => {
 
-    if (hasFetchedInitialMaterials.current) return
+    if (hasFetchedInitialSubMaterials.current) return
 
-    hasFetchedInitialMaterials.current = true;
+    hasFetchedInitialSubMaterials.current = true;
 
-    fetchMaterialList()
+    fetchSubMaterialList()
   }, [])
 
 
@@ -121,29 +130,36 @@ export const MaterialMaster: React.FC = () => {
 
   useEffect(() => {
     if (isAddUpdateModalOpen) {
-      if (editingMaterialMasterData) {
+      if (editingSubMaterialMasterData) {
         setFormData({
-          MaterialMasterId: editingMaterialMasterData.MaterialMasterId,
-          Uniquekey: editingMaterialMasterData.Uniquekey || initialFormState().Uniquekey,
-          MaterialCode: editingMaterialMasterData.MaterialCode?.toString() || '',
-          MaterialName: editingMaterialMasterData.MaterialName || ''
+          SubMaterialMasterId: editingSubMaterialMasterData.SubMaterialMasterId,
+          Uniquekey: editingSubMaterialMasterData.Uniquekey || initialFormState().Uniquekey,
+          MaterialMasterId: editingSubMaterialMasterData.MaterialMasterId || 0,
+          SubMaterialName: editingSubMaterialMasterData.SubMaterialName || '',
+          UomMasterId: editingSubMaterialMasterData.UomMasterId || 0
         });
+
+        setDropdownLabels({
+          materialName: editingSubMaterialMasterData.MaterialName || "",
+          uom: editingSubMaterialMasterData.UomCode || ""
+        });
+
       } else {
         setFormData(initialFormState());
       }
       setErrors({});
     }
-  }, [isAddUpdateModalOpen, editingMaterialMasterData]);
+  }, [isAddUpdateModalOpen, editingSubMaterialMasterData]);
 
   //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchMaterialList = async (page: number = pagination.currentPage) => {
-    return await loadMaterials(page, filters);
+  const fetchSubMaterialList = async (page: number = pagination.currentPage) => {
+    return await loadSubMaterials(page, filters);
   }
 
-  const loadMaterials = async (page: number, filterParams: FilterInfo) => {
+  const loadSubMaterials = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -153,27 +169,28 @@ export const MaterialMaster: React.FC = () => {
 
         if (sortInfo) {
 
-          const column = materialMasterColumns.find(col => col.key === sortInfo.column)
+          const column = subMaterialMasterColumns.find(col => col.key === sortInfo.column)
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
 
         }
 
-        const params: FilterWithPaginationMaterialMaster = {
+        const params: FilterWithPaginationSubMaterialMaster = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
-          MaterialMasterId: filterParams.MaterialMasterId ? Number(filterParams.MaterialMasterId) : 0,
+          SubMaterialMasterId: filterParams.SubMaterialMasterId ? Number(filterParams.SubMaterialMasterId) : 0,
+          SubMaterialName: filterParams.SubMaterialName?.trim() || undefined,
           MaterialName: filterParams.MaterialName?.trim() || undefined,
           SortBy: sortByParam
         }
 
-        const response = await getMaterials(params);
+        const response = await getSubMaterials(params);
 
         if (E.isRight(response)) {
 
-          setMaterialMasterList(response.right.Data);
+          setSubMaterialMasterList(response.right.Data);
 
           setPagination({
             currentPage: page,
@@ -194,43 +211,43 @@ export const MaterialMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Material'
+      'Loading Sub Material'
     )
   }
   //#endregion
 
-  //#region SERACH MATERIAL 
-  const searchMaterials = async (searchValue: string) => {
+  //#region SERACH SUB MATERIAL 
+  const searchSubMaterials = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
 
-      fetchMaterialList();
+      fetchSubMaterialList();
 
       return
     }
 
     const filterParams: FilterInfo = {
-      MaterialName: searchValue.trim(),
+      SubMaterialName: searchValue.trim(),
     };
 
-    await loadMaterials(1, filterParams)
+    await loadSubMaterials(1, filterParams)
 
   }
   //#endregion
 
-  //#region CLEAR SERACH MATERIAL 
-  const clearsearchMaterials = () => {
+  //#region CLEAR SERACH SUB MATERIAL 
+  const clearsearchSubMaterials = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
-    fetchMaterialList();
+    fetchSubMaterialList();
   }
 
   //#endregion
 
   //#region EXPORT EXCEL | PDF
-  const handleExportMaterials = async (exportType: 'Excel' | 'PDF') => {
+  const handleExportSubMaterials = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -238,24 +255,25 @@ export const MaterialMaster: React.FC = () => {
         // Find the column label for sorting
         let sortByParam = undefined
         if (sortInfo) {
-          const column = materialMasterColumns.find(col => col.key === sortInfo.column)
+          const column = subMaterialMasterColumns.find(col => col.key === sortInfo.column)
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
         }
 
-        const params: FilterWithPaginationMaterialMaster = {
+        const params: FilterWithPaginationSubMaterialMaster = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
+          SubMaterialName: filters.SubMaterialName?.trim() || undefined,
           MaterialName: filters.MaterialName?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         }
 
-        const response = await getMaterials(params);
+        const response = await getSubMaterials(params);
 
-        handleExportFile(response, exportType, 'Material Master', addToast)
+        handleExportFile(response, exportType, 'Sub Material Master', addToast)
 
         return response;
       },
@@ -268,23 +286,23 @@ export const MaterialMaster: React.FC = () => {
     )
   }
 
-  const handleExportMaterialExcel = () => handleExportMaterials('Excel')
-  const handleExportMaterialPdf = () => handleExportMaterials('PDF')
+  const handleExportSubMaterialExcel = () => handleExportSubMaterials('Excel')
+  const handleExportSubMaterialPdf = () => handleExportSubMaterials('PDF')
 
   //#endregion
 
-  //#region API | SERVICES CALL TO GET MATERIAL 
+  //#region API | SERVICES CALL TO GET SUB MATERIAL 
 
-  const getMaterials = async (filterParams: FilterWithPaginationMaterialMaster) => {
+  const getSubMaterials = async (filterParams: FilterWithPaginationSubMaterialMaster) => {
 
-    return await materialMasterService.apiCallPullMaterialMaster(filterParams);
+    return await subMaterialMasterService.apiCallPullSubMaterialMaster(filterParams);
   }
   //#endregion
 
   //#region HANDLE PAGE CHNAGE EVENT
 
   const handlePageChange = (page: number) => {
-    fetchMaterialList(page);
+    fetchSubMaterialList(page);
   };
 
   //#endregion
@@ -294,14 +312,14 @@ export const MaterialMaster: React.FC = () => {
 
     setSortInfo(sortInfo);
 
-    fetchMaterialList(1);
+    fetchSubMaterialList(1);
 
   }
   //#endregion
 
   //#region TABLE PAGINATION INFO
 
-  const materialMasterPaginationInfo: PaginationInfo = useMemo(
+  const subMaterialMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
       totalPages: pagination.totalPages,
@@ -312,24 +330,25 @@ export const MaterialMaster: React.FC = () => {
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
   )
 
-  const materialListForTable = useMemo(() => materialMasterList, [materialMasterList]);
+  const subMaterialListForTable = useMemo(() => subMaterialMasterList, [subMaterialMasterList]);
   //#endregion
 
   //#region VIEW EDIT
-  const handleViewMaterialDetails = useCallback((row: MaterialMasterData) => {
-    setViewMaterialMasterDetailsData(row)
+  const handleViewSubMaterialDetails = useCallback((row: SubMaterialMasterData) => {
+    setViewSubMaterialMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
 
   //#endregion
 
-  //#region EDIT MATERIAL MASTER
+  //#region EDIT SUB MATERIAL MASTER
 
-  const handleEditMaterialMaster = useCallback((row: MaterialMasterData) => {
-    setEditingMaterialMasterData({
+  const handleEditSubMaterialMaster = useCallback((row: SubMaterialMasterData) => {
+    setEditingSubMaterialMasterData({
       ...row,
-      MaterialCode: row.MaterialCode || '',
-      MaterialName: row.MaterialName || ''
+      MaterialMasterId: row.MaterialMasterId || 0,
+      SubMaterialName: row.SubMaterialName || '',
+      UomMasterId: row.UomMasterId || 0
     })
     setIsAddUpdateModalOpen(true);
 
@@ -340,8 +359,8 @@ export const MaterialMaster: React.FC = () => {
 
   //#region CONFIRMATION DIALOG BOX
 
-  const handleConfirmationDialogBoxOpen = useCallback((row: MaterialMasterData) => {
-    setDeleteMaterialMasterDetailsData(row)
+  const handleConfirmationDialogBoxOpen = useCallback((row: SubMaterialMasterData) => {
+    setDeleteSubMaterialMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
 
@@ -349,11 +368,11 @@ export const MaterialMaster: React.FC = () => {
 
   //#region TABLE COLUMN
 
-  const materialMasterColumns = useMemo<TableColumn[]>(
+  const subMaterialMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
-        key: 'MaterialName',
-        label: 'Material Name',
+        key: 'SubMaterialName',
+        label: 'Sub Material Name',
         width: '33',
         sortable: true,
         fixed: 'left',
@@ -365,78 +384,87 @@ export const MaterialMaster: React.FC = () => {
               text={value || 'N/A'}
               maxWidth="250px"
               tooltipThreshold={30}
-              onClick={() => handleViewMaterialDetails(row)} // just pass a function, no need for e.preventDefault here
+              onClick={() => handleViewSubMaterialDetails(row)} // just pass a function, no need for e.preventDefault here
             />
 
           </div>
         )
       },
       {
-        key: 'MaterialCode',
-        label: 'Material Code',
+        key: 'MaterialName',
+        label: 'Material Name',
         width: '30',
         sortable: false,
         align: 'center',
         render: (value) => value || ''
+      },
+      {
+        key: 'Uom',
+        label: 'UOM',
+        width: '20',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '0'
+
       }
     ],
     // dependencies: include everything used inside that might change
-    [canAction, handleViewMaterialDetails, handleEditMaterialMaster, handleConfirmationDialogBoxOpen]
+    [canAction, handleViewSubMaterialDetails, handleEditSubMaterialMaster, handleConfirmationDialogBoxOpen]
   )
 
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
 
-  const requiredMaterialMasterColumnKeys: string[] = ['MaterialName'];
+  const requiredSubMaterialMasterColumnKeys: string[] = ['SubMaterialName'];
 
-  const allMaterialMasterColumnKeys: string[] = materialMasterColumns.map(c => c.key)
+  const allSubMaterialMasterColumnKeys: string[] = subMaterialMasterColumns.map(c => c.key)
 
-  const [selectedMaterialMasterColumnKeys, setSelectedMaterialMasterColumnKeys] = useState<string[]>(() => {
+  const [selectedSubMaterialMasterColumnKeys, setSelectedSubMaterialMasterColumnKeys] = useState<string[]>(() => {
 
     try {
 
-      const saved = LocalStorageHelper.getMaterialMasterTableColumns();
+      const saved = LocalStorageHelper.getSubMaterialMasterTableColumns();
 
       if (saved) {
 
         const parsed = JSON.parse(saved) as string[]
         // Ensure required columns are always present
 
-        const withRequired = Array.from(new Set([...parsed, ...requiredMaterialMasterColumnKeys]));
+        const withRequired = Array.from(new Set([...parsed, ...requiredSubMaterialMasterColumnKeys]));
 
         // Filter out any keys that no longer exist
-        return withRequired.filter(k => allMaterialMasterColumnKeys.includes(k));
+        return withRequired.filter(k => allSubMaterialMasterColumnKeys.includes(k));
 
       }
     } catch { }
-    return allMaterialMasterColumnKeys
+    return allSubMaterialMasterColumnKeys
   })
 
   useEffect(() => {
     // Guarantee required columns remain selected if state changes elsewhere
 
-    setSelectedMaterialMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredMaterialMasterColumnKeys])).filter(k => allMaterialMasterColumnKeys.includes(k)));
+    setSelectedSubMaterialMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredSubMaterialMasterColumnKeys])).filter(k => allSubMaterialMasterColumnKeys.includes(k)));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [materialMasterColumns.length])
+  }, [subMaterialMasterColumns.length])
 
-  const visibleMaterialMasterColumns = useMemo(
-    () => materialMasterColumns.filter(col => selectedMaterialMasterColumnKeys.includes(col.key)),
-    [materialMasterColumns, selectedMaterialMasterColumnKeys]
+  const visibleSubMaterialMasterColumns = useMemo(
+    () => subMaterialMasterColumns.filter(col => selectedSubMaterialMasterColumnKeys.includes(col.key)),
+    [subMaterialMasterColumns, selectedSubMaterialMasterColumnKeys]
   )
 
   //#endregion
 
-  //#region VIEW MATERIAL DETAILS MODAL COMPONENT
+  //#region VIEW SUB MATERIAL DETAILS MODAL COMPONENT
 
-  interface ViewMaterialDetailsModalProps {
+  interface ViewSubMaterialDetailsModalProps {
     isOpen: boolean
     onClose: () => void
-    data: MaterialMasterData | null
+    data: SubMaterialMasterData | null
   }
 
-  const ViewMaterialDetailsModal: React.FC<ViewMaterialDetailsModalProps> = ({
+  const ViewSubMaterialDetailsModal: React.FC<ViewSubMaterialDetailsModalProps> = ({
     isOpen,
     onClose,
     data
@@ -447,7 +475,7 @@ export const MaterialMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Material Master Details"
+        title="Sub Material Master Details"
         onSubmit={(e) => {
           e.preventDefault()
           onClose()
@@ -459,8 +487,9 @@ export const MaterialMaster: React.FC = () => {
         <div className="space-y-6">
 
           <div className="space-y-4">
-            <FieldItem label="Material Code" value={data.MaterialCode?.toString()} isRow withBorder={true} />
-            <FieldItem label="Material Name" value={data.MaterialName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Material Name" value={data.MaterialName} isRow withBorder={true} />
+            <FieldItem label="Sub Material Name" value={data.SubMaterialName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="UOM" value={data.Uom} isRow withBorder={true} />
           </div>
 
           <div className="space-y-4">
@@ -504,7 +533,7 @@ export const MaterialMaster: React.FC = () => {
                     e.preventDefault()
                     e.stopPropagation()
                     setIsViewModalOpen(false)
-                    handleEditMaterialMaster(data)
+                    handleEditSubMaterialMaster(data)
                   }}
                 >
                   <Edit className="h-5 w-5" />
@@ -524,7 +553,7 @@ export const MaterialMaster: React.FC = () => {
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
     setFilters(tempFilters)
-    loadMaterials(1, tempFilters)
+    loadSubMaterials(1, tempFilters)
     setShowFilterPopup(false)
   }
 
@@ -535,7 +564,7 @@ export const MaterialMaster: React.FC = () => {
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
-    loadMaterials(1, {})
+    loadSubMaterials(1, {})
     setShowFilterPopup(false)
   }
 
@@ -549,9 +578,9 @@ export const MaterialMaster: React.FC = () => {
 
   //#endregion
 
-  //#region ADD UPDATE EDIT MATERIAL MASTER
+  //#region ADD UPDATE EDIT SUB MATERIAL MASTER
 
-  const handleFieldChange = (field: keyof AddUpdateMaterialMasterRequest, value: any) => {
+  const handleFieldChange = (field: keyof AddUpdateSubMaterialMasterRequest, value: any) => {
 
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -560,15 +589,15 @@ export const MaterialMaster: React.FC = () => {
     }
   };
 
-  const handleAddMaterialModal = () => {
-    setEditingMaterialMasterData(null);
+  const handleAddSubMaterialModal = () => {
+    setEditingSubMaterialMasterData(null);
     setFormData(initialFormState());
     setErrors({});
     setIsAddUpdateModalOpen(true);
   }
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
-  const validateAddMaterialMasterForm = (): {
+  const validateAddSubMaterialMasterForm = (): {
 
     isValid: boolean
 
@@ -578,16 +607,20 @@ export const MaterialMaster: React.FC = () => {
 
     const newErrors: { [key: string]: string } = {}
 
-    if (formData.MaterialName.trim() === "") {
+    if (formData.SubMaterialName.trim() === "") {
 
-      newErrors.MaterialName = "Material Name is required"
+      newErrors.SubMaterialName = "Sub Material Name is required"
     }
-    else if (formData.MaterialName.length < 3) {
-      newErrors.MaterialName = "Material Name must be at least 3 characters long"
+    else if (formData.SubMaterialName.length < 3) {
+      newErrors.SubMaterialName = "Sub Material Name must be at least 3 characters long"
     }
 
-    if (formData.MaterialCode.trim() === "") {
-      newErrors.MaterialCode = "Material Code is required";
+    if (formData.MaterialMasterId === 0) {
+      newErrors.MaterialMasterId = "Material is required";
+    }
+
+    if (formData.UomMasterId === 0) {
+      newErrors.UomMasterId = "UOM is required";
     }
 
     return {
@@ -596,22 +629,23 @@ export const MaterialMaster: React.FC = () => {
     }
   }
 
-  const PushMaterialMasterFormData = (): AddUpdateMaterialMasterRequest => {
+  const PushSubMaterialMasterFormData = (): AddUpdateSubMaterialMasterRequest => {
     return {
-      MaterialMasterId: formData.MaterialMasterId,
+      SubMaterialMasterId: formData.SubMaterialMasterId,
       Uniquekey: formData.Uniquekey,
-      MaterialCode: formData.MaterialCode,
-      MaterialName: formData.MaterialName
+      MaterialMasterId: formData.MaterialMasterId,
+      SubMaterialName: formData.SubMaterialName,
+      UomMasterId: formData.UomMasterId
     };
 
   };
 
-  const handleAddUpdateMaterialMaster = async (e: React.FormEvent) => {
+  const handleAddUpdateSubMaterialMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
     setErrors({})
 
-    const validation = validateAddMaterialMasterForm()
+    const validation = validateAddSubMaterialMasterForm()
 
     if (!validation.isValid) {
 
@@ -626,21 +660,21 @@ export const MaterialMaster: React.FC = () => {
       setIsLoadingMessage,
       async () => {
 
-        const payload = PushMaterialMasterFormData();
+        const payload = PushSubMaterialMasterFormData();
 
-        const response = await materialMasterService.apiCallToAddUpdateMaterialMaster(payload);
+        const response = await subMaterialMasterService.apiCallAddUpdateSubMaterialMaster(payload);
 
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = formData.MaterialMasterId === 0;
+          const isAdd = formData.SubMaterialMasterId === 0;
 
           if (isAdd) {
 
-            const newRecord = response.right.Data[0] as MaterialMasterData
+            const newRecord = response.right.Data[0] as SubMaterialMasterData
 
-            setMaterialMasterList(prevData => [newRecord, ...prevData]);
+            setSubMaterialMasterList(prevData => [newRecord, ...prevData]);
 
             setPagination({
               currentPage: pagination.currentPage,
@@ -653,11 +687,11 @@ export const MaterialMaster: React.FC = () => {
 
           } else {
 
-            const updatedRecord = response.right.Data[0] as MaterialMasterData;
+            const updatedRecord = response.right.Data[0] as SubMaterialMasterData;
 
-            setMaterialMasterList(prevData =>
+            setSubMaterialMasterList(prevData =>
               prevData.map(item =>
-                item.MaterialMasterId === formData.MaterialMasterId
+                item.SubMaterialMasterId === formData.SubMaterialMasterId
                   ? updatedRecord
                   : item
               )
@@ -666,7 +700,7 @@ export const MaterialMaster: React.FC = () => {
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
-          setEditingMaterialMasterData(null);
+          setEditingSubMaterialMasterData(null);
         } else {
 
           addToast({ type: "error", title: response.left?.message });
@@ -681,7 +715,7 @@ export const MaterialMaster: React.FC = () => {
       },
       undefined,
 
-      Number(formData.MaterialMasterId) === 0 ? 'Add Material' : 'Update Material'
+      Number(formData.SubMaterialMasterId) === 0 ? 'Add Sub Material' : 'Update Sub Material'
     )
 
   };
@@ -690,7 +724,7 @@ export const MaterialMaster: React.FC = () => {
 
   //#region IMPORT EXCEL | DOWNLOAD
 
-  const excelImportMaterialMaster = async () => {
+  const excelImportSubMaterialMaster = async () => {
 
     await runApiWithLoader(
 
@@ -713,7 +747,7 @@ export const MaterialMaster: React.FC = () => {
   }
 
 
-  const downloadExcelSampleMaterialMaster = async () => {
+  const downloadExcelSampleSubMaterialMaster = async () => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -721,12 +755,12 @@ export const MaterialMaster: React.FC = () => {
         // Find the column label for sorting
 
         const params: FilterPullExcelSample = {
-          TableName: 'MATERIAL MASTER'
+          TableName: 'SUB MATERIAL MASTER'
         }
 
         const response = await technicalService.apiCallPullExcelSample(params);
 
-        handleExportFile(response, 'Excel', 'Material Master', addToast, 'Sample file download successfully')
+        handleExportFile(response, 'Excel', 'Sub Material Master', addToast, 'Sample file download successfully')
 
         return response;
       },
@@ -739,19 +773,19 @@ export const MaterialMaster: React.FC = () => {
     )
   }
 
-  const handleExcelImportMaterialMaster = () => excelImportMaterialMaster()
-  const handleDownloadExcelSampleMaterialMaster = () => downloadExcelSampleMaterialMaster()
+  const handleExcelImportSubMaterialMaster = () => excelImportSubMaterialMaster()
+  const handleDownloadExcelSampleSubMaterialMaster = () => downloadExcelSampleSubMaterialMaster()
 
 
 
   //#endregion
 
-  //#region DELETE MATERIAL MASTER
-  const handleDeleteMaterialMaster = async () => {
+  //#region DELETE SUB MATERIAL MASTER
+  const handleDeleteSubMaterialMaster = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
 
-    if (!deleteMaterialMasterDetailsData) return
+    if (!deleteSubMaterialMasterDetailsData) return
 
     await runApiWithLoader(
       setIsLoading,
@@ -759,16 +793,16 @@ export const MaterialMaster: React.FC = () => {
 
       async () => {
 
-        const params: DeleteMaterialMasterRequest = {
-          MaterialMasterId: deleteMaterialMasterDetailsData.MaterialMasterId,
-          Uniquekey: deleteMaterialMasterDetailsData.Uniquekey
+        const params: DeleteSubMaterialMasterRequest = {
+          SubMaterialMasterId: deleteSubMaterialMasterDetailsData.SubMaterialMasterId,
+          Uniquekey: deleteSubMaterialMasterDetailsData.Uniquekey
         }
 
-        const response = await materialMasterService.apiCallDeleteMaterialMaster(params);
+        const response = await subMaterialMasterService.apiCallDeleteSubMaterialMaster(params);
 
         if (E.isRight(response)) {
 
-          setMaterialMasterList(prevData => prevData.filter(item => item.MaterialMasterId !== deleteMaterialMasterDetailsData.MaterialMasterId));
+          setSubMaterialMasterList(prevData => prevData.filter(item => item.SubMaterialMasterId !== deleteSubMaterialMasterDetailsData.SubMaterialMasterId));
 
           setPagination({
             currentPage: pagination.currentPage,
@@ -780,7 +814,7 @@ export const MaterialMaster: React.FC = () => {
 
           setIsConfirmationDialogBoxOpen(false);
 
-          setDeleteMaterialMasterDetailsData(null);
+          setDeleteSubMaterialMasterDetailsData(null);
 
         } else {
           addToast({ type: 'error', title: response.left.message });
@@ -795,7 +829,7 @@ export const MaterialMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Material'
+      'Delete Sub Material'
     )
   }
 
@@ -818,12 +852,12 @@ export const MaterialMaster: React.FC = () => {
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search By Material Name"
+          searchPlaceholder="Search By Sub Material Name"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
           }}
-          onClearSearch={clearsearchMaterials}
+          onClearSearch={clearsearchSubMaterials}
           isShowFilterButton={false}
           filters={filters}
           onOpenFilter={() => {
@@ -831,33 +865,32 @@ export const MaterialMaster: React.FC = () => {
             setShowFilterPopup(true)
           }}
           isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeMaterialMasterColumnsModal(true)}
+          onCustomize={() => setIsShowCustomizeSubMaterialMasterColumnsModal(true)}
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Material"
-          onAdd={handleAddMaterialModal}
+          addTitle="Add Sub Material"
+          onAdd={handleAddSubMaterialModal}
 
           // IMPORT
           isShowImportButton={canAction}
-          onUploadExcel={handleExcelImportMaterialMaster}
-          onDownloadSampleExcel={handleDownloadExcelSampleMaterialMaster}
+          onUploadExcel={handleExcelImportSubMaterialMaster}
+          onDownloadSampleExcel={handleDownloadExcelSampleSubMaterialMaster}
 
           // EXPORT
           isShowExportButton={canExport}
-          onExportExcel={handleExportMaterialExcel}
-          onExportPdf={handleExportMaterialPdf}
+          onExportExcel={handleExportSubMaterialExcel}
+          onExportPdf={handleExportSubMaterialPdf}
           exportLoading={isLoading}
         />
 
 
-        {/* DATA TABLE MATERIAL */}
+        {/* DATA TABLE SUB MATERIAL */}
         <DataTable
-          data={materialListForTable}
-          columns={visibleMaterialMasterColumns}
-          pagination={materialMasterPaginationInfo}
-          emptyMessage="No Materials Data Found"
+          data={subMaterialListForTable}
+          columns={visibleSubMaterialMasterColumns}
+          pagination={subMaterialMasterPaginationInfo}
+          emptyMessage="No Sub Materials Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -865,33 +898,33 @@ export const MaterialMaster: React.FC = () => {
           loading={isLoading}
         />
 
-        {/* VIEW MATERIAL MODAL */}
-        <ViewMaterialDetailsModal isOpen={isViewModalOpen}
+        {/* VIEW SUB MATERIAL MODAL */}
+        <ViewSubMaterialDetailsModal isOpen={isViewModalOpen}
           onClose={() => {
             setIsViewModalOpen(false)
-            setViewMaterialMasterDetailsData(null)
+            setViewSubMaterialMasterDetailsData(null)
           }}
-          data={viewMaterialMasterDetailsData}
+          data={viewSubMaterialMasterDetailsData}
         />
 
-        {/*  ADD EDIT UPDATE MATERIAL MODAL */}
+        {/*  ADD EDIT UPDATE SUB MATERIAL MODAL */}
         <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
             setIsAddUpdateModalOpen(false);
-            setEditingMaterialMasterData(null);
+            setEditingSubMaterialMasterData(null);
             setFormData(initialFormState());
             setErrors({});
           }}
           onCancel={() => {
             setIsAddUpdateModalOpen(false);
-            setEditingMaterialMasterData(null);
+            setEditingSubMaterialMasterData(null);
             setFormData(initialFormState());
             setErrors({});
           }}
-          title={editingMaterialMasterData ? 'Update Material' : 'Add Material'}
-          onSubmit={handleAddUpdateMaterialMaster}
-          saveText={editingMaterialMasterData ? 'Update Material' : 'Save Material'}
+          title={editingSubMaterialMasterData ? 'Update Sub Material' : 'Add Sub Material'}
+          onSubmit={handleAddUpdateSubMaterialMaster}
+          saveText={editingSubMaterialMasterData ? 'Update Sub Material' : 'Save Sub Material'}
           resetText='Reset'
           loading={isLoading}
           size='xl'
@@ -900,30 +933,44 @@ export const MaterialMaster: React.FC = () => {
             <div className="space-y-4" >
               <div>
                 <Input
-                  label='Material Code'
+                  label='Sub Material Name'
                   required
-                  error={errors.MaterialCode}
+                  error={errors.SubMaterialName}
                   type="text"
-                  value={formData.MaterialCode.toUpperCase()}
-                  maxLength={4}
-                  onChange={(e) => handleFieldChange('MaterialCode', e.target.value)}
-                  placeholder="Enter Material Code"
+                  value={formData.SubMaterialName}
+                  maxLength={100}
+                  onChange={(e) => handleFieldChange('SubMaterialName', e.target.value)}
+                  placeholder="Enter Sub Material Name"
                 />
 
               </div>
 
               <div>
-                <Input
-                  label='Material Name'
+
+                <SingleSelectDropdownWithPagination
                   required
-                  error={errors.MaterialName}
-                  type="text"
-                  value={formData.MaterialName}
-                  maxLength={500}
-                  onChange={(e) => handleFieldChange('MaterialName', e.target.value)}
-                  placeholder="Enter Material Name"
+                  label="Material"
+                  title="Select Material"
+                  size="lg"
+                  dataFetchCallBack={fetchMaterialMasterDropdown}
+                  onSelected={(item) => handleFieldChange("MaterialMasterId", Number(item.value))}
+                  initialValue={createDropdownInitialValue(formData.MaterialMasterId, dropdownLabels.materialName)}
+                  error={errors.MaterialMasterId}
                 />
 
+              </div>
+
+              <div>
+                <SingleSelectDropdownWithPagination
+                  required
+                  label="UOM"
+                  title="Select UOM"
+                  size="lg"
+                  dataFetchCallBack={fetchUOMMasterDropdown}
+                  onSelected={(item) => handleFieldChange("UomMasterId", Number(item.value))}
+                  initialValue={createDropdownInitialValue(formData.UomMasterId, dropdownLabels.uom)}
+                  error={errors.UomMasterId}
+                />
               </div>
             </div>
           </div>
@@ -933,32 +980,32 @@ export const MaterialMaster: React.FC = () => {
 
 
         <CustomizeColumnsModal
-          isOpen={isShowCustomizeMaterialMasterColumnsModal}
-          onClose={() => setIsShowCustomizeMaterialMasterColumnsModal(false)}
+          isOpen={isShowCustomizeSubMaterialMasterColumnsModal}
+          onClose={() => setIsShowCustomizeSubMaterialMasterColumnsModal(false)}
           onApply={(keys) => {
             const withRequired = Array.from(
-              new Set([...keys, ...requiredMaterialMasterColumnKeys]),
+              new Set([...keys, ...requiredSubMaterialMasterColumnKeys]),
             )
 
-            setSelectedMaterialMasterColumnKeys(withRequired)
+            setSelectedSubMaterialMasterColumnKeys(withRequired)
 
             try {
-              LocalStorageHelper.storeMaterialMasterTableColumns(
+              LocalStorageHelper.storeSubMaterialMasterTableColumns(
                 JSON.stringify(withRequired),
               )
             } catch { }
           }}
-          columns={materialMasterColumns}
-          selectedKeys={selectedMaterialMasterColumnKeys}
-          requiredKeys={requiredMaterialMasterColumnKeys}
+          columns={subMaterialMasterColumns}
+          selectedKeys={selectedSubMaterialMasterColumnKeys}
+          requiredKeys={requiredSubMaterialMasterColumnKeys}
           title="Customize Table Columns"
         />
 
-        {/* FILTER MATERIAL MODAL */}
+        {/* FILTER SUB MATERIAL MODAL */}
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}
-          title="Filter - Material Master"
+          title="Filter - Sub Material Master"
           onSubmit={(e) => {
             e.preventDefault()
             applyFilters()
@@ -971,27 +1018,27 @@ export const MaterialMaster: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <Input
-                  label='Material Name'
+                  label='Sub Material Name'
                   type="text"
-                  value={tempFilters.MaterialName || ''}
-                  onChange={(e) => handleFilterChange('MaterialName', e.target.value)}
-                  placeholder="Enter material name"
+                  value={tempFilters.SubMaterialName || ''}
+                  onChange={(e) => handleFilterChange('SubMaterialName', e.target.value)}
+                  placeholder="Enter sub material name"
                 />
               </div>
             </div>
           </div>
         </Modal>
 
-        {/* DELETE CONFIRMATION MATERIAL MODAL */}
+        {/* DELETE CONFIRMATION SUB MATERIAL MODAL */}
         <ConfirmationDialogBox
           isOpen={isConfirmationDialogBoxOpen}
           onClose={() => {
             setIsConfirmationDialogBoxOpen(false)
-            setDeleteMaterialMasterDetailsData(null)
+            setDeleteSubMaterialMasterDetailsData(null)
           }}
-          onConfirm={handleDeleteMaterialMaster}
-          title="You are about to delete a material?"
-          message="Deleting this material will permanently remove its contents."
+          onConfirm={handleDeleteSubMaterialMaster}
+          title="You are about to delete a sub material?"
+          message="Deleting this sub material will permanently remove its contents."
           confirmText="Delete"
           cancelText="Cancel"
           loading={isLoading}
@@ -1005,4 +1052,4 @@ export const MaterialMaster: React.FC = () => {
   )
 }
 
-export default MaterialMaster
+export default SubMaterialMaster

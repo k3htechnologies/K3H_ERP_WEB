@@ -5,15 +5,15 @@ export interface FilterWithPaginationMaterialMaster {
     PageNumber : number
     MaterialMasterId? : number
     MaterialName : string
-    sortBy : string
-    exportType : "PDF" | "Excel"
+    sortBy? : string
+    exportType? : "PDF" | "Excel"
 }
 
 export interface MaterialMasterData {
     MaterialMasterId : number,
-    UniqueKey : string,
+    Uniquekey : string,
 
-    MaterialCode : number,
+    MaterialCode : string,
     MaterialName : string,
 
     CreatedById : number | 0,

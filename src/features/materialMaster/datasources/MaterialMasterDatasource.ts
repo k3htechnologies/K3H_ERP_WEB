@@ -23,6 +23,8 @@ export class MaterialMasterDatasourceImpl implements MaterialMasterDatasource {
             })
 
             if(params.MaterialName?.trim())queryParams.append("MaterialName", params.MaterialName.trim())
+            if (params.sortBy?.trim()) queryParams.append('SortBy', params.sortBy.trim());
+            if (params.exportType) queryParams.append('ExportType', params.exportType);
 
             console.log(`${MaterialMasterApi.PULL}?${queryParams.toString()}`)
 
@@ -51,7 +53,16 @@ export class MaterialMasterDatasourceImpl implements MaterialMasterDatasource {
     }
      
     async deleteMaterialMaster(params: DeleteMaterialMasterRequest): Promise<MaterialMasterDeleteResponse> {
-        throw new Error("Method not implemented.");
+        try{
+            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(`${MaterialMasterApi.DELETE}?MaterialMasterId=${params.MaterialMasterId}&Uniquekey=${params.Uniquekey}`)
+            return response;
+        }catch(error){
+            console.log("Error occured while delete material ", error);
+            if(error === TokenExpiredException){
+                await this.deleteMaterialMaster(params)
+            }
+            throw error;
+        }
     }
 
 }

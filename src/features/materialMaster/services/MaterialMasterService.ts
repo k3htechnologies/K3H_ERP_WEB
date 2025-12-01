@@ -1,6 +1,6 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import { MaterialMasterDatasourceImpl } from "../datasources/MaterialMasterDatasource";
-import type { AddUpdateMaterialMasterRequest, FilterWithPaginationMaterialMaster, MaterialMasterListResponse } from "../models/MaterialMasterModel";
+import type { AddUpdateMaterialMasterRequest, DeleteMaterialMasterRequest, FilterWithPaginationMaterialMaster, MaterialMasterDeleteResponse, MaterialMasterListResponse } from "../models/MaterialMasterModel";
 import * as E from 'fp-ts/Either';
 
 
@@ -22,7 +22,16 @@ export const MaterialMasterService = {
             return E.left({
                 message : error.message, code : error.code
             })
-
         }
+    },
+
+    apiCallToDeleteMaterialMaster : async (params : DeleteMaterialMasterRequest ) : Promise<E.Either<Failure,MaterialMasterDeleteResponse>> => {
+        try{
+            return E.right(await materialMasterDatasource.deleteMaterialMaster(params))
+        }catch(error : any){
+            return E.left({
+                message : error.message , code : error.code
+            })
+        }   
     }
 }

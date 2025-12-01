@@ -41,6 +41,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/submaterialmaster': '/subMaterialMaster',
         '/uommaster': '/uomMaster',
         '/category': '/category',
+        '/document': '/document',
     }
 
     // If a mapped route exists, return it (normalized)

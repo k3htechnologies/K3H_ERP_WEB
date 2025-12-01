@@ -146,9 +146,14 @@ export const getPageInfo = (path: string) => {
                 title: 'UOM Master',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
-       case 'category':
+        case 'category':
             return {
                 title: 'Project Document Category Master',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+        case 'document':
+            return {
+                title: 'Project Document',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
         case 'profile':

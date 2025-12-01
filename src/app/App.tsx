@@ -40,6 +40,7 @@ import AddUpdateProjectMaster from '@/features/projectMaster/pages/AddUpdateProj
 import SubMaterialMaster from '@/features/subMaterialMaster/pages/SubMaterialMaster';
 import { UomMaster } from '@/features/uomMaster/pages/UOMMaster';
 import ProjectDocumentCategoryMaster from '@/features/projectDocumentCategory/pages/ProjectDocumentCategoryMaster';
+import ProjectDocument from '@/features/projectDocument/pages/ProjectDocument';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -134,8 +135,7 @@ function App() {
             <Route path="subMaterialMaster" element={<SubMaterialMaster />} />
             <Route path="uomMaster" element={<UomMaster />} />
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />
-
-
+            <Route path="document" element={<ProjectDocument />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

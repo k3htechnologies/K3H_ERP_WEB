@@ -445,6 +445,9 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                                         maxFiles={5}
                                         maxSizeMB={10}
+                                        onRemoveExisting={(url) =>{
+                                            setRemovedProjectPhotoUrls((prev) => [...prev,url])
+                                        }}
                                     />
                                 </div>
                                 <div>

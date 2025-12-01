@@ -18,7 +18,7 @@ import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
@@ -28,7 +28,17 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import Checkbox from '@/ui/components/forms/Checkbox';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { updateFilter } from '@/core/utils/filterHelper';
 
+
+const initialFormState = (): AddUpdateBranchMasterRequest => ({
+  BranchMasterId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  BranchCode: '',
+  BranchName: '',
+  IsHeadOffice: false,
+  Location: ''
+});
 
 export const BranchMaster: React.FC = () => {
 
@@ -62,27 +72,24 @@ export const BranchMaster: React.FC = () => {
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeBranchMasterColumnsModal, setIsShowCustomizeBranchMasterColumnsModal] = useState(false);
+  //ERROR SET UP
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
   // EDIT BRANCH MASTER
   const [editingBranchMasterData, setEditingBranchMasterData] = useState<BranchMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  const [branchMasterFormData, setBranchMasterFormData] = useState<AddUpdateBranchMasterRequest>({
-    BranchMasterId: 0,
-    Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-    BranchCode: '',
-    BranchName: '',
-    IsHeadOffice: false,
-    Location: ''
-  });
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+  //ADD UPDATE DEPARTMENT MASTER
+  const [formData, setFormData] = useState<AddUpdateBranchMasterRequest>(() => initialFormState());
 
   //DELETE BRANCH MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteBranchMasterDetailsData, setDeleteBranchMasterDetailsData] = useState<BranchMasterData | null>(null)
+
+  //CUSTOMIZE COLUMN MODAL
+  const [isShowCustomizeBranchMasterColumnsModal, setIsShowCustomizeBranchMasterColumnsModal] = useState(false);
 
   //#endregion
 
@@ -109,6 +116,26 @@ export const BranchMaster: React.FC = () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
+
+  useEffect(() => {
+    if (isAddUpdateModalOpen) {
+      if (editingBranchMasterData) {
+        setFormData({
+          BranchMasterId: editingBranchMasterData.BranchMasterId,
+          Uniquekey: editingBranchMasterData.Uniquekey || initialFormState().Uniquekey,
+          BranchCode: editingBranchMasterData.BranchCode || '',
+          BranchName: editingBranchMasterData.BranchName || '',
+          Location: editingBranchMasterData.Location || '',
+          IsHeadOffice: editingBranchMasterData.IsHeadOffice || false,
+
+        });
+      } else {
+        setFormData(initialFormState());
+      }
+      setErrors({});
+    }
+  }, [isAddUpdateModalOpen, editingBranchMasterData]);
+
   //#endregion
 
 
@@ -171,11 +198,12 @@ export const BranchMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Branch Data...'
+      'Loading Branch'
     )
   }
+  //#endregion
 
-  // SERACH BRANCH 
+  //#region SERACH BRANCH 
   const searchBranches = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -194,7 +222,9 @@ export const BranchMaster: React.FC = () => {
     await loadBranches(1, filterParams)
 
   }
+  //#endregion
 
+  //#region CLEAR SERACH BRANCH 
   const clearsearchBranches = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
@@ -237,7 +267,7 @@ export const BranchMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' })
       },
       undefined,
-      'Preparing Export...'
+      'Preparing Export'
     )
   }
 
@@ -255,12 +285,14 @@ export const BranchMaster: React.FC = () => {
 
   //#endregion
 
-  //#region TABLE CONFIGURATION
+  //#region HANDLE PAGE CHNAGE EVENT
 
   const handlePageChange = (page: number) => {
     fetchBranchList(page);
   };
+  //#endregion
 
+  //#region TABLE SORT COLUMN
   const handleSortColumn = (sortInfo: SortInfo) => {
 
     setSortInfo(sortInfo);
@@ -268,7 +300,9 @@ export const BranchMaster: React.FC = () => {
     fetchBranchList(1);
 
   }
+  //#endregion
 
+  //#region TABLE PAGINATION INFO
   const branchMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
@@ -282,19 +316,41 @@ export const BranchMaster: React.FC = () => {
 
   const branchListForTable = useMemo(() => branchMasterList, [branchMasterList]);
 
+  //#endregion
 
-  // STABLE HANDLER VIEW EDIT CONFIRMATION DIALOG BOX
+  //#region VIEW EDIT
   const handleViewBranchDetails = useCallback((row: BranchMasterData) => {
     setViewBranchMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
 
 
+  //#endregion
+
+  //#region EDIT BRANCH MASTER
+
+  const handleEditBranchMaster = useCallback((row: BranchMasterData) => {
+    setEditingBranchMasterData({
+      ...row,
+      BranchCode: row.BranchCode || '',
+      BranchName: row.BranchName || '',
+      Location: row.Location || '',
+      IsHeadOffice: row.IsHeadOffice || false
+    })
+    setIsAddUpdateModalOpen(true);
+
+  }, [])
+
+  //#endregion
+
+  //#region CONFIRMATION DIALOG BOX
   const handleConfirmationDialogBoxOpen = useCallback((row: BranchMasterData) => {
     setDeleteBranchMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
+  //#endregion
 
+  //#region TABLE COLUMN
   const branchMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -354,7 +410,7 @@ export const BranchMaster: React.FC = () => {
         render: (value) => (
           <TooltipText
             text={value || 'N/A'}
-            maxWidth="200px"
+            maxWidth="150px"
             tooltipThreshold={20}
           />
         )
@@ -370,22 +426,6 @@ export const BranchMaster: React.FC = () => {
             {value}
           </span>
         )
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '25',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '25',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       }
     ],
 
@@ -491,30 +531,32 @@ export const BranchMaster: React.FC = () => {
 
             {canAction && (
               <>
-                <Button
-                  color='gray'
-                  variant='solid'
-                  colorMode="light"
-                  size='md'
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    setIsViewModalOpen(false)
-                    handleConfirmationDialogBoxOpen(data)
-                  }}
-                >
-                  <Trash2 className="h-5 w-5" />
-                  Delete
-                </Button>
+                {(data.NumberOfEmployee || 0) === 0 ? (
+                  <Button
+                    color='gray'
+                    variant='solid'
+                    colorMode="light"
+                    size='sm'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsViewModalOpen(false)
+                      handleConfirmationDialogBoxOpen(data)
+                    }}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    Delete
+                  </Button>
+                ) : <div style={{ width: "120px", height: "44px" }}></div>}
 
                 <Button
                   color='blue'
-                  size='md'
+                  size='sm'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
                     setIsViewModalOpen(false)
-                    handleEditBranchMasterData(data)
+                    handleEditBranchMaster(data)
                   }}
                 >
                   <Edit className="h-5 w-5" />
@@ -538,118 +580,120 @@ export const BranchMaster: React.FC = () => {
     setShowFilterPopup(false)
   }
 
+  //#endregion
+
+  //#region CLEAR FILTER 
+
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
     loadBranches(1, {})
     setShowFilterPopup(false)
   }
-
-  const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...tempFilters }
-    if (value.trim()) {
-      newFilters[key] = value.trim()
-    } else {
-      delete newFilters[key]
-    }
-    setTempFilters(newFilters)
-  }
   //#endregion
 
-  //#region ADD UPDATE EDIT BRANCH MASTER
-  const handleAddBranchMaster = () => {
+  //#region HANDLE FILTER CHNAGE
+
+  const handleFilterChange = (key: string, value: string) => {
+    setTempFilters(prev => updateFilter(prev, key, value));
+  };
+
+  //#endregion
+
+  //#region ADD UPDATE EDIT BRAMCH MASTER
+
+  const handleFieldChange = (field: keyof AddUpdateBranchMasterRequest, value: any) => {
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleAddBranchMasterModal = () => {
     setEditingBranchMasterData(null);
-    setBranchMasterFormData({
-      BranchMasterId: 0,
-      Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-      BranchCode: '',
-      BranchName: '',
-      IsHeadOffice: false,
-      Location: ''
-    });
-
-    setFormErrors({});
+    setFormData(initialFormState());
+    setErrors({});
     setIsAddUpdateModalOpen(true);
   }
 
-  const handleEditBranchMasterData = (row: BranchMasterData) => {
-    setEditingBranchMasterData(row);
-    setBranchMasterFormData({
-      BranchMasterId: row.BranchMasterId || 0,
-      Uniquekey: row.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-      BranchCode: row.BranchCode || '',
-      BranchName: row.BranchName || '',
-      IsHeadOffice: row.IsHeadOffice || false,
-      Location: row.Location || ''
-    });
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateAddBranchMasterForm = (): {
 
-    setFormErrors({});
-    setIsAddUpdateModalOpen(true);
-  }
+    isValid: boolean
 
+    errors: { [key: string]: string }
 
-  const handleFieldChange = (field: keyof AddUpdateBranchMasterRequest, value: string | number | null | boolean) => {
-    setBranchMasterFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
+  } => {
+
+    const newErrors: { [key: string]: string } = {}
+
+    if (formData.BranchName.trim() === "") {
+
+      newErrors.BranchName = "Branch Name is required"
     }
-  }
-
-  const validateBranchMasterForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!branchMasterFormData.BranchName?.trim()) {
-      newErrors.BranchName = "Branch Name is required.";
+    else if (formData.BranchName.length < 3) {
+      newErrors.BranchName = "Branch Name must be at least 3 characters long"
     }
 
-    if (!branchMasterFormData.BranchCode?.trim()) {
-      newErrors.BranchCode = "Branch Code is required.";
+    if (formData.BranchCode.trim() === "") {
+      newErrors.BranchCode = "Branch Code is required";
+    } else if (formData.BranchCode.trim().length >= 5) {
+      newErrors.BranchCode = "Branch Code must be at least 4 characters long";
     }
 
-    if (!branchMasterFormData.Location?.trim()) {
-      newErrors.Location = "Location is required.";
-    }
+    if (formData.Location.trim() === "") {
+      newErrors.Location = "Location is required";
+    } 
 
     return {
       isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors,
-    };
+      errors: newErrors
+    }
   }
 
   const PushBranchMasterFormData = (): AddUpdateBranchMasterRequest => {
     return {
-      BranchMasterId: branchMasterFormData.BranchMasterId || 0,
-      Uniquekey: branchMasterFormData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-      BranchCode: branchMasterFormData.BranchCode || '',
-      BranchName: branchMasterFormData.BranchName || '',
-      IsHeadOffice: branchMasterFormData.IsHeadOffice || false,
-      Location: branchMasterFormData.Location || ''
+      BranchMasterId: formData.BranchMasterId,
+      Uniquekey: formData.Uniquekey,
+      BranchCode: formData.BranchCode,
+      BranchName: formData.BranchName,
+      Location: formData.Location,
+      IsHeadOffice: formData.IsHeadOffice
     };
+
   };
-  const handleAddUpdateBranchMaster = async () => {
 
-    setFormErrors({});
+  const handleAddUpdateBranchMaster = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    const validation = validateBranchMasterForm();
+    setErrors({})
+
+    const validation = validateAddBranchMasterForm()
 
     if (!validation.isValid) {
-      setFormErrors(validation.errors);
-      return;
+
+      setErrors(validation.errors)
+
+      return
     }
 
     await runApiWithLoader(
       setIsLoading,
+
       setIsLoadingMessage,
       async () => {
 
         const payload = PushBranchMasterFormData();
+
         const response = await BranchMasterService.apiCallAddUpdateBranchMaster(payload);
 
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = branchMasterFormData.BranchMasterId === 0
+          const isAdd = formData.BranchMasterId === 0;
 
           if (isAdd) {
 
@@ -664,14 +708,15 @@ export const BranchMaster: React.FC = () => {
             });
 
 
-            addToast({ type: 'success', title: 'Branch added successfully' })
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
           } else {
 
             const updatedRecord = response.right.Data[0] as BranchMasterData;
 
             setBranchMasterList(prevData =>
               prevData.map(item =>
-                item.BranchMasterId === branchMasterFormData.BranchMasterId
+                item.BranchMasterId === formData.BranchMasterId
                   ? updatedRecord
                   : item
               )
@@ -680,26 +725,27 @@ export const BranchMaster: React.FC = () => {
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
-          setIsAddUpdateModalOpen(false);
-
           setEditingBranchMasterData(null);
-
         } else {
 
-          addToast({ type: 'error', title: response.left.message });
-        }
+          addToast({ type: "error", title: response.left?.message });
 
-        return response
+        }
+        return response;
       },
       undefined,
       (error: any) => {
+
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      branchMasterFormData.BranchMasterId === 0 ? 'Add Branch' : 'Update Branch...'
+
+      Number(formData.BranchMasterId) === 0 ? 'Add Branch' : 'Update Branch'
     )
-  }
-  //#endregion 
+
+  };
+
+  //#endregion
 
   //#region DELETE BRANCH MASTER
 
@@ -751,7 +797,7 @@ export const BranchMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete branch master data...'
+      'Delete Branch'
     )
   }
   //#endregion
@@ -759,7 +805,7 @@ export const BranchMaster: React.FC = () => {
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
@@ -773,13 +819,13 @@ export const BranchMaster: React.FC = () => {
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search By branch name..."
+          searchPlaceholder="Search By Branch Name"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
           }}
           onClearSearch={clearsearchBranches}
-          isShowFilterButton
+          isShowFilterButton={false}
           filters={filters}
           onOpenFilter={() => {
             setTempFilters(filters)
@@ -787,10 +833,16 @@ export const BranchMaster: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeBranchMasterColumnsModal(true)}
+
+          // ADD
           isShowAddButton={canAction}
           addTitle="Add Branch"
-          onAdd={handleAddBranchMaster}
+          onAdd={handleAddBranchMasterModal}
+
+          // IMPORT
           isShowImportButton={canAction}
+
+          // EXPORT
           isShowExportButton={canExport}
           onExportExcel={handleExportBranchExcel}
           onExportPdf={handleExportBranchPdf}
@@ -803,9 +855,8 @@ export const BranchMaster: React.FC = () => {
           data={branchListForTable}
           columns={visibleBranchMasterColumns}
           pagination={branchMasterPaginationInfo}
-          emptyMessage="No branches found"
+          emptyMessage="No Branch Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -825,38 +876,35 @@ export const BranchMaster: React.FC = () => {
         <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingBranchMasterData(null)
-            setFormErrors({})
+            setIsAddUpdateModalOpen(false);
+            setEditingBranchMasterData(null);
+            setFormData(initialFormState());
+            setErrors({});
           }}
           onCancel={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingBranchMasterData(null)
-            setFormErrors({})
+            setIsAddUpdateModalOpen(false);
+            setEditingBranchMasterData(null);
+            setFormData(initialFormState());
           }}
-          title={editingBranchMasterData ? 'Update Branch Master Details' : 'Add Branch Master Details'}
-          onSubmit={(e) => {
-            e.preventDefault()
-            handleAddUpdateBranchMaster()
-          }}
-          saveText="Save"
-          cancelText="Cancel"
+          title={editingBranchMasterData ? 'Update Branch' : 'Add Branch'}
+          onSubmit={handleAddUpdateBranchMaster}
+          saveText={editingBranchMasterData ? 'Update Branch' : 'Save Branch'}
+          resetText='Reset'
           loading={isLoading}
-          size="large75"
+          size='xl'
         >
-          <div className="space-y-6 p-6 bg-blue-50">
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-10 p-6 bg-blue-100">
+            <div className="space-y-4" >
               <div>
                 <Input
                   type="text"
                   required
                   label='Branch Name'
-                  value={branchMasterFormData.BranchName ?? ""}
+                  value={formData.BranchName ?? ""}
                   onChange={(e) => handleFieldChange("BranchName", e.target.value)}
                   placeholder="Enter Branch Name"
                   maxLength={250}
-                  error={formErrors.BranchName}
+                  error={errors.BranchName}
                 />
               </div>
 
@@ -864,41 +912,38 @@ export const BranchMaster: React.FC = () => {
                 <Input
                   type="text"
                   label='Branch Code'
-                  value={branchMasterFormData.BranchCode ?? ""}
+                  value={formData.BranchCode.toUpperCase() ?? ""}
                   onChange={(e) => handleFieldChange("BranchCode", e.target.value)}
                   required
-                  maxLength={20}
+                  maxLength={4}
                   placeholder="Enter Branch Code"
-                  error={formErrors.BranchCode}
+                  error={errors.BranchCode}
                 />
 
               </div>
-            </div>
-
-            <div >
               <div>
                 <Input
                   type="text"
                   label='Location'
-                  value={branchMasterFormData.Location ?? ""}
+                  value={formData.Location ?? ""}
                   onChange={(e) => handleFieldChange("Location", e.target.value)}
                   required
                   placeholder="Enter Location"
                   maxLength={250}
-                  error={formErrors.Location}
+                  error={errors.Location}
+                />
+              </div>
+
+              <div>
+                <Checkbox
+                  label="Head Office"
+                  checked={formData.IsHeadOffice ?? false}
+                  onChange={(e) => handleFieldChange("IsHeadOffice", e.target.checked)}
                 />
               </div>
             </div>
-            <div>
-              <Checkbox
-                label="Head Office"
-                checked={branchMasterFormData.IsHeadOffice ?? false}
-                onChange={(e) => handleFieldChange("IsHeadOffice", e.target.checked)}
-              />
-
-            </div>
-
           </div>
+
         </Modal>
 
         {/* CUSTOMIZE COLUMNS MODAL */}

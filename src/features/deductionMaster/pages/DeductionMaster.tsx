@@ -418,22 +418,6 @@ export const DeductionMaster: React.FC = () => {
             tooltipThreshold={12}
           />
         )
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       }
     ],
     // dependencies: include everything used inside that might change
@@ -861,7 +845,7 @@ export const DeductionMaster: React.FC = () => {
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="h-full flex flex-col">
+       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
@@ -874,7 +858,7 @@ export const DeductionMaster: React.FC = () => {
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by Deduction name..."
+          searchPlaceholder="Search By Deduction Name"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
@@ -901,9 +885,8 @@ export const DeductionMaster: React.FC = () => {
           data={DeductionListForTable}
           columns={visibleDeductionMasterColumns}
           pagination={DeductionMasterPaginationInfo}
-          emptyMessage="No Deductions found"
+          emptyMessage="No Deductions Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}

@@ -17,7 +17,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
@@ -27,9 +27,19 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Edit, Trash2 } from 'lucide-react';
 import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
-import { BranchMasterService } from '@/features/branchMaster/services/BranchMasteService';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { updateFilter } from '@/core/utils/filterHelper';
+import { fetchBranchMasterDropdown } from '@/features/branchMaster/branchMasterDropDown';
+import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 
+const initialFormState = (): AddUpdateEarningMasterRequest => ({
+  EarningMasterId: 0,
+  Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  Name: "",
+  Type: "",
+  Value: 0,
+  BranchMasterId: 0
+});
 
 export const EarningMaster: React.FC = () => {
 
@@ -63,28 +73,29 @@ export const EarningMaster: React.FC = () => {
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeEarningMasterColumnsModal, setIsShowCustomizeEarningMasterColumnsModal] = useState(false);
+  //ERROR SET UP
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
   // EDIT EARNING MASTER
   const [editingEarningMasterData, setEditingEarningMasterData] = useState<EarningMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  const [EarningMasterFormData, setEarningMasterFormData] = useState<AddUpdateEarningMasterRequest>({
-    EarningMasterId: 0,
-    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    Name: "",
-    Type: "",
-    Value: 0,
-    BranchMasterId: 0
-  });
 
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  //ADD UPDATE DEPARTMENT MASTER
+  const [formData, setFormData] = useState<AddUpdateEarningMasterRequest>(() => initialFormState());
+
 
   //DELETE EARNING MASTER
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteEarningMasterDetailsData, setDeleteEarningMasterDetailsData] = useState<EarningMasterData | null>(null)
 
+
+  //CUSTOMIZE COLUMN MODAL
+  const [isShowCustomizeEarningMasterColumnsModal, setIsShowCustomizeEarningMasterColumnsModal] = useState(false);
+
+  const [dropdownLabels, setDropdownLabels] = useState<{
+    branchName?: string;
+  }>({});
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -106,6 +117,30 @@ export const EarningMaster: React.FC = () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
+
+
+  useEffect(() => {
+    if (isAddUpdateModalOpen) {
+      if (editingEarningMasterData) {
+        setFormData({
+          EarningMasterId: editingEarningMasterData.EarningMasterId,
+          Uniquekey: editingEarningMasterData.Uniquekey || initialFormState().Uniquekey,
+          Name: editingEarningMasterData.Name || '',
+          Type: editingEarningMasterData.Type || '',
+          Value: editingEarningMasterData.Value || 0,
+          BranchMasterId: editingEarningMasterData.BranchMasterId || 0
+        });
+
+        setDropdownLabels({
+          branchName: editingEarningMasterData.BranchName || ""
+        });
+
+      } else {
+        setFormData(initialFormState());
+      }
+      setErrors({});
+    }
+  }, [isAddUpdateModalOpen, editingEarningMasterData]);
 
   //#endregion
 
@@ -160,11 +195,12 @@ export const EarningMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Earning Data...'
+      'Loading Earning'
     )
   }
+  //#endregion
 
-  // SEARCH ASSET MAPPING 
+  //#region SEARCH ASSET MAPPING 
   const searchEarnings = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -183,6 +219,9 @@ export const EarningMaster: React.FC = () => {
     await loadEarnings(1, filterParams)
   }
 
+  //#endregion
+
+  //#region CLEAR EARNING MASTER 
   const clearsearchEarnings = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
@@ -190,6 +229,7 @@ export const EarningMaster: React.FC = () => {
   }
   //#endregion 
 
+  //#region EXPORT EXCEL | PDF
   const handleExportEarnings = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -225,7 +265,7 @@ export const EarningMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' })
       },
       undefined,
-      'Preparing Export...'
+      'Preparing Export'
     )
   }
 
@@ -240,13 +280,17 @@ export const EarningMaster: React.FC = () => {
     return await EarningMasterService.apiCallPullEarningMaster(filterParams);
   }
 
-  //END API | SERVICES CALL TO GET EARNING  MAPPING
+  //#endregion
 
-  //#region TABLE CONFIGURATION
+  //#region HANDLE PAGE CHNAGE EVENT
 
   const handlePageChange = (page: number) => {
     fetchEarningList(page);
   };
+
+  //#endregion
+
+  //#region TABLE SORT COLUMN
 
   const handleSortColumn = (sortInfo: SortInfo) => {
 
@@ -255,6 +299,9 @@ export const EarningMaster: React.FC = () => {
     fetchEarningList(1);
 
   }
+  //#endregion
+
+  //#region TABLE PAGINATION INFO
 
   const earningMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -268,18 +315,42 @@ export const EarningMaster: React.FC = () => {
   )
 
   const earningListForTable = useMemo(() => earningMasterList, [earningMasterList]);
+  //#endregion
 
-  // STABLE HANDLER VIEW EDIT CONFIRMATION DIALOG BOX
+  //#region VIEW EDIT
   const handleViewEarningDetails = useCallback((row: EarningMasterData) => {
     setViewEarningMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
+
+  //#region EDIT EARNING MASTER
+
+  const handleEditEarningMaster = useCallback((row: EarningMasterData) => {
+    setEditingEarningMasterData({
+      ...row,
+      Name: row.Name || '',
+      Type: row.Type || '',
+      Value: row.Value || 0,
+      BranchMasterId: row.BranchMasterId || 0
+    })
+    setIsAddUpdateModalOpen(true);
+
+  }, [])
+
+
+  //#endregion
+
+  //#region CONFIRMATION DIALOG BOX
 
 
   const handleConfirmationDialogBoxOpen = useCallback((row: EarningMasterData) => {
     setDeleteEarningMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
+
+  //#endregion
+
+  //#region TABLE COLUMN
 
   const earningMasterColumns = useMemo<TableColumn[]>(
     () => [
@@ -341,22 +412,6 @@ export const EarningMaster: React.FC = () => {
             tooltipThreshold={20}
           />
         )
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       }
     ],
     // dependencies: include everything used inside that might change
@@ -478,7 +533,7 @@ export const EarningMaster: React.FC = () => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
-                      handleEditEarningMasterData(data)
+                      handleEditEarningMaster(data)
                     }}
                   >
                     <Edit className="h-5 w-5" />
@@ -502,153 +557,115 @@ export const EarningMaster: React.FC = () => {
     loadEarnings(1, tempFilters)
     setShowFilterPopup(false)
   }
+  //#endregion
 
+  //#region CLEAR FILTER 
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
     loadEarnings(1, {})
     setShowFilterPopup(false)
   }
-  const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...tempFilters }
-    if (value.trim()) {
-      newFilters[key] = value.trim()
-    } else {
-      delete newFilters[key]
-    }
-    setTempFilters(newFilters)
-  }
   //#endregion
 
-  //ADD UPDATE Earning MASTER
-  const handleAddEarningMaster = () => {
-    setEditingEarningMasterData(null);
-    setEarningMasterFormData({
-      EarningMasterId: 0,
-      Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      Name: "",
-      Type: "",
-      Value: 0,
-      BranchMasterId: 0
-    });
+  //#region HANDLE FILTER CHNAGE
 
-    setFormErrors({});
-    setIsAddUpdateModalOpen(true);
+  const handleFilterChange = (key: string, value: string) => {
+    setTempFilters(prev => updateFilter(prev, key, value));
   };
 
-  const handleEditEarningMasterData = (row: EarningMasterData) => {
-    setEditingEarningMasterData(row);
-    setEarningMasterFormData({
-      EarningMasterId: row.EarningMasterId || 0,
-      Uniquekey: row.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      Name: row.Name || "",
-      Type: row.Type || "",
-      Value: row.Value || 0,
-      BranchMasterId: row.BranchMasterId || 0
-    });
-    setDropdownLabels({
-      branchName: row.BranchName ?? ""
+  //#endregion
 
-    });
-    setFormErrors({});
+
+  //#region ADD UPDATE EDIT EARNING MASTER
+
+  const handleFieldChange = (field: keyof AddUpdateEarningMasterRequest, value: any) => {
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleAddEarningModal = () => {
+    setEditingEarningMasterData(null);
+    setFormData(initialFormState());
+    setErrors({});
     setIsAddUpdateModalOpen(true);
   }
 
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateAddEarningMasterForm = (): {
 
-  const handleFieldChange = (field: keyof AddUpdateEarningMasterRequest, value: string | number | null | boolean) => {
-    setEarningMasterFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    isValid: boolean
+
+    errors: { [key: string]: string }
+
+  } => {
+
+    const newErrors: { [key: string]: string } = {}
+
+    if (formData.Name.trim() === "") {
+
+      newErrors.Name = "Name is required"
     }
-  }
-
-  const validateEarningMasterForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!EarningMasterFormData.Name) {
-      newErrors.Name = "Earning Name is required.";
-    }
-
-    if (!EarningMasterFormData.Type) {
-      newErrors.Type = "Type is required.";
-    }
-
-    if (!EarningMasterFormData.Value) {
-      newErrors.Value = "Value is required.";
-    }
-    if (!EarningMasterFormData.BranchMasterId) {
-      newErrors.BranchMasterId = "Branch Name is required.";
+    
+    if (formData.Type.trim() === "") {
+      newErrors.Type = "Type is required";
     }
 
+    if (formData.Value === 0) {
+      newErrors.Value = "Value is required";
+    }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors,
-    };
+      errors: newErrors
+    }
   }
 
-  const PushEarningFormData = (): AddUpdateEarningMasterRequest => {
+  const PushEarningMasterFormData = (): AddUpdateEarningMasterRequest => {
     return {
-      EarningMasterId: EarningMasterFormData.EarningMasterId || 0,
-      Uniquekey: EarningMasterFormData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      Name: EarningMasterFormData.Name || "",
-      Type: EarningMasterFormData.Type || "",
-      Value: EarningMasterFormData.Value || 0,
-      BranchMasterId: EarningMasterFormData.BranchMasterId || 0
+      EarningMasterId: formData.EarningMasterId,
+      Uniquekey: formData.Uniquekey,
+      Name: formData.Name,
+      Type: formData.Type,
+      Value: formData.Value,
+      BranchMasterId: formData.BranchMasterId
     };
+
   };
 
-  const fetchBranchOptions = async (pageNumber: number, params?: { value?: string }) => {
-    const responseEither = await BranchMasterService.apiCallPullBranchMaster({
-      PageSize: 10,
-      PageNumber: pageNumber,
-      BranchName: params?.value || "",
-      IsCheckPermission: true,
-    });
-    if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
-    const apiResponse = responseEither.right;
-    const branchList = apiResponse?.Data?.map((item: any) => ({ label: item.BranchName, value: String(item.BranchMasterId) })) || [];
-    return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? branchList.length, itemList: branchList };
-  };
-  const toDropdownInitialValue = (
-    id?: number,
-    label?: string
-  ): { label: string; value: string | number } | null => {
-    if (!id) return null;
-    return {
-      label: label || String(id),
-      value: String(id),
-    };
-  };
-  const [dropdownLabels, setDropdownLabels] = useState<{
-    branchName?: string;
-  }>({});
+  const handleAddUpdateEarningMaster = async (e: React.FormEvent) => {
+    e.preventDefault();
 
+    setErrors({})
 
-  const handleAddUpdateEarningMaster = async () => {
-
-    setFormErrors({});
-
-    const validation = validateEarningMasterForm();
+    const validation = validateAddEarningMasterForm()
 
     if (!validation.isValid) {
-      setFormErrors(validation.errors);
-      return;
+
+      setErrors(validation.errors)
+
+      return
     }
 
     await runApiWithLoader(
       setIsLoading,
+
       setIsLoadingMessage,
       async () => {
 
-        const payload = PushEarningFormData();
+        const payload = PushEarningMasterFormData();
+
         const response = await EarningMasterService.apiCallAddUpdateEarningMaster(payload);
 
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = EarningMasterFormData.EarningMasterId === 0
+          const isAdd = formData.EarningMasterId === 0;
 
           if (isAdd) {
 
@@ -663,14 +680,15 @@ export const EarningMaster: React.FC = () => {
             });
 
 
-            addToast({ type: 'success', title: 'Earning added successfully' })
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
           } else {
 
             const updatedRecord = response.right.Data[0] as EarningMasterData;
 
             setEarningMasterList(prevData =>
               prevData.map(item =>
-                item.EarningMasterId === EarningMasterFormData.EarningMasterId
+                item.EarningMasterId === formData.EarningMasterId
                   ? updatedRecord
                   : item
               )
@@ -679,25 +697,28 @@ export const EarningMaster: React.FC = () => {
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
-          setIsAddUpdateModalOpen(false);
-
           setEditingEarningMasterData(null);
-
         } else {
 
-          addToast({ type: 'error', title: response.left.message });
-        }
+          addToast({ type: "error", title: response.left?.message });
 
-        return response
+        }
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Operation failed' })
+
+        addToast({ type: 'error', title: error.message })
       },
       undefined,
-      EarningMasterFormData.EarningMasterId === 0 ? 'Add Earning' : 'Update Earning...'
+
+      Number(formData.EarningMasterId) === 0 ? 'Add Earning' : 'Update Earning'
     )
-  }
+
+  };
+
+  //#endregion
+
 
   //#region DELETE EARNING MASTER
   const handleDeleteEarningMaster = async () => {
@@ -745,16 +766,16 @@ export const EarningMaster: React.FC = () => {
       'Delete Earning master data...'
     )
   }
-
+  //#endregion
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by earning name..."
+          searchPlaceholder="Search By Earning Name"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
@@ -770,7 +791,7 @@ export const EarningMaster: React.FC = () => {
           onCustomize={() => setIsShowCustomizeEarningMasterColumnsModal(true)}
           isShowAddButton={canAction}
           addTitle='Add Earning'
-          onAdd={handleAddEarningMaster}
+          onAdd={handleAddEarningModal}
           isShowImportButton={false}
           isShowExportButton={canExport}
           onExportExcel={handleExportEarningExcel}
@@ -781,9 +802,8 @@ export const EarningMaster: React.FC = () => {
           data={earningListForTable}
           columns={visibleEarningMasterColumns}
           pagination={earningMasterPaginationInfo}
-          emptyMessage="No earnings found"
+          emptyMessage="No Earnings Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -799,84 +819,82 @@ export const EarningMaster: React.FC = () => {
 
         {/*  ADD EDIT UPDATE EARNING MASTER */}
 
+
+        {/*  ADD EDIT UPDATE DEPARTMENT MODAL */}
         <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingEarningMasterData(null)
-            setFormErrors({})
+            setIsAddUpdateModalOpen(false);
+            setEditingEarningMasterData(null);
+            setFormData(initialFormState());
+            setErrors({});
           }}
           onCancel={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingEarningMasterData(null)
-            setFormErrors({})
+            setIsAddUpdateModalOpen(false);
+            setEditingEarningMasterData(null);
+            setFormData(initialFormState());
+            setErrors({});
           }}
-          title={editingEarningMasterData ? 'Update Asset Mapping Master Details' : 'Add Asset Mapping Master Details'}
-          onSubmit={(e) => {
-            e.preventDefault()
-            handleAddUpdateEarningMaster()
-          }}
-          saveText="Save"
-          cancelText="Cancel"
+          title={editingEarningMasterData ? 'Update Earning' : 'Add Earning'}
+          onSubmit={handleAddUpdateEarningMaster}
+          saveText={editingEarningMasterData ? 'Update Earning' : 'Save Earning'}
+          resetText='Reset'
           loading={isLoading}
-          size="large75"
+          size='xl'
         >
-          <div className="space-y-6 p-6 bg-blue-50">
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-10 p-6 bg-blue-100">
+            <div className="space-y-4" >
               <div>
                 <Input
                   type="text"
                   required
                   label='Earning Name'
-                  value={EarningMasterFormData.Name ?? ""}
+                  value={formData.Name ?? ""}
                   onChange={(e) => handleFieldChange("Name", e.target.value)}
                   placeholder="Enter Earning Name"
                   maxLength={250}
-                  error={formErrors.Name}
-                />
+                  error={errors.Name} />
+
               </div>
 
               <div>
                 <Input
                   type="text"
                   label='Type'
-                  value={EarningMasterFormData.Type ?? ""}
+                  value={formData.Type ?? ""}
                   onChange={(e) => handleFieldChange("Type", e.target.value)}
                   required
                   maxLength={20}
                   placeholder="Enter Type"
-                  error={formErrors.Type}
-                />
-
+                  error={errors.Type} />
               </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Input
                   type="text"
                   label='Value'
-                  value={EarningMasterFormData.Value ?? ""}
+                  value={formData.Value ?? ""}
                   onChange={(e) => handleFieldChange("Value", e.target.value)}
                   required
                   maxLength={20}
                   placeholder="Enter Value"
-                  error={formErrors.Value}
+                  error={errors.Value}
+                />
+              </div>
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Branch"
+                  title="Select Branch"
+                  size="lg"
+                  dataFetchCallBack={fetchBranchMasterDropdown}
+                  onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
+                  initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
+                  error={errors.BranchMasterId}
                 />
 
               </div>
-              <SingleSelectDropdownWithPagination
-                label="Branch"
-                title="Select..."
-                size="lg"
-                required
-                dataFetchCallBack={fetchBranchOptions}
-                onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
-                initialValue={toDropdownInitialValue(EarningMasterFormData.BranchMasterId, dropdownLabels.branchName)}
-                error={formErrors.BranchMasterId}
-              />
             </div>
           </div>
+
         </Modal>
 
         {/* CUSTOMIZE COLUMNS MODAL */}
@@ -893,7 +911,7 @@ export const EarningMaster: React.FC = () => {
           columns={earningMasterColumns}
           selectedKeys={selectedEarningMasterColumnKeys}
           requiredKeys={requiredEarningMasterColumnKeys}
-          title="Customize Earning Master Table Columns"
+          title="Customize Table Columns"
         />
         <Modal
           isOpen={showFilterPopup}
@@ -906,7 +924,7 @@ export const EarningMaster: React.FC = () => {
           saveText="Apply Filter"
           cancelText="Clear Filter"
           onCancel={() => clearFilters()}
-          size="half-screen"
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">
@@ -916,7 +934,7 @@ export const EarningMaster: React.FC = () => {
                   type="text"
                   value={tempFilters.Name || ''}
                   onChange={(e) => handleFilterChange('Name', e.target.value)}
-                  placeholder="Enter earning name"
+                  placeholder="Enter Earning Name"
                 />
               </div>
             </div>

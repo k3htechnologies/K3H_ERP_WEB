@@ -78,9 +78,10 @@ export const DepartmentMaster: React.FC = () => {
   const [editingDepartmentMasterData, setEditingDepartmentMasterData] = useState<DepartmentMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
+  
   //ADD UPDATE DEPARTMENT MASTER
-  const [formData, setFormData] = useState<AddUpdateDepartmentMasterRequest>(() => initialFormState());
-
+    const [formData, setFormData] = useState<AddUpdateDepartmentMasterRequest>(() => initialFormState());
+  
   //DELETE DEPARTMENT MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)

@@ -16,7 +16,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
@@ -24,10 +24,19 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
-import { BranchMasterService } from '@/features/branchMaster/services/BranchMasteService';
 import { Edit } from 'lucide-react';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
+import { updateFilter } from '@/core/utils/filterHelper';
+import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
+import { fetchBranchMasterDropdown } from "@/features/branchMaster/branchMasterDropDown";
+import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
+
+const initialFormState = (): AddUpdateBranchAssociationsMasterRequest => ({
+  BranchAssociationsId: 0,
+  Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  BranchMasterId: "",
+  EmployeeId: 0
+});
 
 
 export const BranchAssociationsMaster: React.FC = () => {
@@ -61,22 +70,24 @@ export const BranchAssociationsMaster: React.FC = () => {
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeBranchAssociationsMasterColumnsModal, setIsShowCustomizeBranchAssociationsMasterColumnsModal] = useState(false);
+  //ERROR SET UP
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  // EDIT BranchAssociation MASTER
+  // EDIT BRANCH ASSOCIATION  MASTER
   const [editingBranchAssociationMasterData, setEditingBranchAssociationMasterData] = useState<BranchAssociationsMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  const [BranchAssociationMasterFormData, setBranchAssociationMasterFormData] = useState<AddUpdateBranchAssociationsMasterRequest>({
-    BranchAssociationsId: 0,
-    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    BranchMasterId: "",
-    EmployeeId: 0
-  });
+  //ADD UPDATE DEPARTMENT MASTER
+  const [formData, setFormData] = useState<AddUpdateBranchAssociationsMasterRequest>(() => initialFormState());
 
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
+  //CUSTOMIZE COLUMN MODAL
+  const [isShowCustomizeBranchAssociationsMasterColumnsModal, setIsShowCustomizeBranchAssociationsMasterColumnsModal] = useState(false);
+
+  const [dropdownLabels, setDropdownLabels] = useState<{
+    branchName?: string;
+    employeeName?: string;
+  }>({});
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -103,6 +114,28 @@ export const BranchAssociationsMaster: React.FC = () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
+
+  useEffect(() => {
+    if (isAddUpdateModalOpen) {
+      if (editingBranchAssociationMasterData) {
+        setFormData({
+          BranchAssociationsId: editingBranchAssociationMasterData.BranchAssociationsId,
+          Uniquekey: editingBranchAssociationMasterData.Uniquekey || initialFormState().Uniquekey,
+          BranchMasterId: editingBranchAssociationMasterData.BranchMasterId || '',
+          EmployeeId: editingBranchAssociationMasterData.EmployeeId || 0
+        });
+
+        setDropdownLabels({
+          branchName: editingBranchAssociationMasterData.BranchName || "",
+          employeeName: editingBranchAssociationMasterData.EmployeeName || ""
+        });
+      } else {
+        setFormData(initialFormState());
+      }
+      setErrors({});
+    }
+  }, [isAddUpdateModalOpen, editingBranchAssociationMasterData]);
+
   //#endregion
 
 
@@ -163,11 +196,12 @@ export const BranchAssociationsMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Branch Associations Data...'
+      'Loading Branch Associations.'
     )
   }
+  //#endregion
 
-  // SEARCH BRANCH ASSOCIATIONS 
+  //#region SEARCH BRANCH ASSOCIATIONS 
   const searchBranchAssociations = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -186,15 +220,17 @@ export const BranchAssociationsMaster: React.FC = () => {
     await loadBranchAssociations(1, filterParams)
 
   }
+  //#endregion
 
+  //#region CLEAR BRANCH ASSOCIATIONS 
   const clearsearchBranchAssociations = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
     fetchBranchAssociationsList();
   }
-  // END SEARCH BRANCH ASSOCIATIONS 
+  //#endregion
 
-  // EXPORT EXCEL | PDF
+  //#region EXPORT EXCEL | PDF
   const handleExportBranchAssociations = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -229,16 +265,16 @@ export const BranchAssociationsMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' })
       },
       undefined,
-      'Preparing Export...'
+      'Preparing Export'
     )
   }
 
   const handleExportBranchAssociationsExcel = () => handleExportBranchAssociations('Excel')
   const handleExportBranchAssociationsPdf = () => handleExportBranchAssociations('PDF')
 
-  //END EXPORT EXCEL | PDF
+  //#endregion
 
-  //API | SERVICES CALL TO GET BRANCH ASSOCIATIONS 
+  //#region API | SERVICES CALL TO GET BRANCH ASSOCIATIONS 
 
   const getBranchAssociations = async (filterParams: FilterWithPaginationBranchAssociationsMasterRequest) => {
 
@@ -247,12 +283,15 @@ export const BranchAssociationsMaster: React.FC = () => {
 
   //#endregion
 
-  //#region TABLE CONFIGURATION
+  //#region HANDLE PAGE CHNAGE EVENT
 
   const handlePageChange = (page: number) => {
     fetchBranchAssociationsList(page);
   };
 
+  //#endregion
+
+  //#region TABLE SORT COLUMN
   const handleSortColumn = (sortInfo: SortInfo) => {
 
     setSortInfo(sortInfo);
@@ -260,6 +299,9 @@ export const BranchAssociationsMaster: React.FC = () => {
     fetchBranchAssociationsList(1);
 
   }
+  //#endregion
+
+  //#region TABLE PAGINATION INFO
 
   const branchAssociationsMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -274,14 +316,33 @@ export const BranchAssociationsMaster: React.FC = () => {
 
   const branchAssociationsListForTable = useMemo(() => branchAssociationsMasterList, [branchAssociationsMasterList]);
 
+  //#endregion
 
-  // STABLE HANDLER VIEW EDIT CONFIRMATION DIALOG BOX
+  //#region VIEW EDIT
   const handleViewBranchAssociationsDetails = useCallback((row: BranchAssociationsMasterData) => {
     setViewBranchAssociationsMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
 
+  //#endregion
 
+  //#region EDIT BRANCH ASSOCIATIONS  MASTER
+
+  const handleEditBranchAssociationsMaster = useCallback((row: BranchAssociationsMasterData) => {
+    setEditingBranchAssociationMasterData({
+      ...row,
+      BranchMasterId: row.BranchMasterId || '',
+      EmployeeId: row.EmployeeId || 0
+
+    })
+    setIsAddUpdateModalOpen(true);
+
+  }, [])
+
+
+  //#endregion
+
+  //#region TABLE COLUMN
   const branchAssociationsMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -316,23 +377,6 @@ export const BranchAssociationsMaster: React.FC = () => {
             tooltipThreshold={20}
           />
         )
-      },
-
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '25',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '25',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       }
     ],
     // dependencies: include everything used inside that might change
@@ -435,12 +479,12 @@ export const BranchAssociationsMaster: React.FC = () => {
                 <>
                   <Button
                     color='blue'
-                    size='md'
+                    size='sm'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
-                      handleEditBranchAssociationMasterData(data)
+                      handleEditBranchAssociationsMaster(data)
                     }}
                   >
                     <Edit className="h-5 w-5" />
@@ -464,7 +508,9 @@ export const BranchAssociationsMaster: React.FC = () => {
     loadBranchAssociations(1, tempFilters)
     setShowFilterPopup(false)
   }
+  //#endregion
 
+  //#region CLEAR FILTER 
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
@@ -472,154 +518,99 @@ export const BranchAssociationsMaster: React.FC = () => {
     setShowFilterPopup(false)
   }
 
+  //#endregion
+
+  //#region HANDLE FILTER CHNAGE
+
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...tempFilters }
-    if (value.trim()) {
-      newFilters[key] = value.trim()
-    } else {
-      delete newFilters[key]
-    }
-    setTempFilters(newFilters)
-  }
+    setTempFilters(prev => updateFilter(prev, key, value));
+  };
+
   //#endregion
 
   //ADD UPDATE Branch Association MASTER
+
+  const handleFieldChange = (field: keyof AddUpdateBranchAssociationsMasterRequest, value: any) => {
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
   const handleAddBranchAssociationsMaster = () => {
     setEditingBranchAssociationMasterData(null);
-    setBranchAssociationMasterFormData({
-      BranchAssociationsId: 0,
-      Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      BranchMasterId: "",
-      EmployeeId: 0
-    });
-
-    setFormErrors({});
+    setFormData(initialFormState());
+    setErrors({});
     setIsAddUpdateModalOpen(true);
-  };
-
-  const handleEditBranchAssociationMasterData = (row: BranchAssociationsMasterData) => {
-    setEditingBranchAssociationMasterData(row);
-    setBranchAssociationMasterFormData({
-      BranchAssociationsId: row.BranchAssociationsId || 0,
-      Uniquekey: row.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      BranchMasterId: row.BranchMasterId || "",
-      EmployeeId: row.EmployeeId || 0
-    });
-    setDropdownLabels({
-      branchName: row.BranchName ?? "",
-      employeeName: row.EmployeeName ?? ""
-    });
-    setFormErrors({});
-    setIsAddUpdateModalOpen(true);
-  };
-
-
-  const handleFieldChange = (field: keyof AddUpdateBranchAssociationsMasterRequest, value: string | number | null | boolean) => {
-    setBranchAssociationMasterFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
-    }
   }
 
-  const validateBranchAssociationMasterForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
-    const newErrors: { [key: string]: string } = {};
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateAddBranchAssociationsMasterForm = (): {
 
-    if (!BranchAssociationMasterFormData.BranchMasterId) {
-      newErrors.BranchMasterId = "Branch  Name is required.";
+    isValid: boolean
+
+    errors: { [key: string]: string }
+
+  } => {
+
+    const newErrors: { [key: string]: string } = {}
+
+    if (formData.BranchMasterId === "") {
+
+      newErrors.BranchMasterId = "Branch is required"
     }
 
-    if (!BranchAssociationMasterFormData.EmployeeId) {
-      newErrors.EmployeeId = "Employee Name is required.";
+    if (formData.EmployeeId === 0) {
+      newErrors.EmployeeId = "Employee is required";
     }
+
     return {
       isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors,
-    };
+      errors: newErrors
+    }
   }
 
-  const PushBranchAssociationFormData = (): AddUpdateBranchAssociationsMasterRequest => {
+  const PushBranchAssociationsMasterFormData = (): AddUpdateBranchAssociationsMasterRequest => {
     return {
-      BranchAssociationsId: BranchAssociationMasterFormData.BranchAssociationsId || 0,
-      Uniquekey: BranchAssociationMasterFormData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      BranchMasterId: BranchAssociationMasterFormData.BranchMasterId || "",
-      EmployeeId: BranchAssociationMasterFormData.EmployeeId || 0
+      BranchAssociationsId: formData.BranchAssociationsId,
+      Uniquekey: formData.Uniquekey,
+      BranchMasterId: formData.BranchMasterId,
+      EmployeeId: formData.EmployeeId
     };
+
   };
 
-  const fetchEmployeeOptions = async (pageNumber: number, params?: { value?: string }) => {
-    const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
-      PageSize: 10,
-      PageNumber: pageNumber,
-      EmployeeName: params?.value || "",
-    });
+  const handleAddUpdateBranchAssociationsMaster = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
+    setErrors({})
 
-    const apiResponse = responseEither.right;
-    const employeeList = apiResponse?.Data?.map((item: any) => ({
-      label: `${item.FirstName} ${item.MiddleName || ""} ${item.LastName || ""}`.trim(),
-      value: String(item.EmployeeId),
-    })) || [];
-
-    return {
-      totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? employeeList.length,
-      itemList: employeeList,
-    };
-  };
-
-  const fetchBranchOptions = async (pageNumber: number, params?: { value?: string }) => {
-    const responseEither = await BranchMasterService.apiCallPullBranchMaster({
-      PageSize: 10,
-      PageNumber: pageNumber,
-      BranchName: params?.value || "",
-      IsCheckPermission: true,
-    });
-    if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
-    const apiResponse = responseEither.right;
-    const branchList = apiResponse?.Data?.map((item: any) => ({ label: item.BranchName, value: String(item.BranchMasterId) })) || [];
-    return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? branchList.length, itemList: branchList };
-  };
-  const toDropdownInitialValue = (
-    id?: string | null,
-    label?: string
-  ): { label: string; value: string } | null => {
-    if (!id) return null;
-    return {
-      label: label || id,
-      value: id
-    };
-  };
-
-  const [dropdownLabels, setDropdownLabels] = useState<{
-    branchName?: string;
-    employeeName?: string;
-  }>({});
-
-
-  const handleAddUpdateBranchAssociationMaster = async () => {
-
-    setFormErrors({});
-
-    const validation = validateBranchAssociationMasterForm();
+    const validation = validateAddBranchAssociationsMasterForm()
 
     if (!validation.isValid) {
-      setFormErrors(validation.errors);
-      return;
+
+      setErrors(validation.errors)
+
+      return
     }
 
     await runApiWithLoader(
       setIsLoading,
+
       setIsLoadingMessage,
       async () => {
 
-        const payload = PushBranchAssociationFormData();
+        const payload = PushBranchAssociationsMasterFormData();
+
         const response = await branchAssociationsService.apiCallAddUpdateBranchAssociations(payload);
 
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = BranchAssociationMasterFormData.BranchAssociationsId === 0
+          const isAdd = formData.BranchAssociationsId === 0;
 
           if (isAdd) {
 
@@ -634,14 +625,15 @@ export const BranchAssociationsMaster: React.FC = () => {
             });
 
 
-            addToast({ type: 'success', title: 'Branch Association added successfully' })
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
           } else {
 
             const updatedRecord = response.right.Data[0] as BranchAssociationsMasterData;
 
             setBranchAssociationsMasterList(prevData =>
               prevData.map(item =>
-                item.BranchAssociationsId === BranchAssociationMasterFormData.BranchAssociationsId
+                item.BranchAssociationsId === formData.BranchAssociationsId
                   ? updatedRecord
                   : item
               )
@@ -650,32 +642,33 @@ export const BranchAssociationsMaster: React.FC = () => {
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
-          setIsAddUpdateModalOpen(false);
-
           setEditingBranchAssociationMasterData(null);
-
         } else {
 
-          addToast({ type: 'error', title: response.left.message });
-        }
+          addToast({ type: "error", title: response.left?.message });
 
-        return response
+        }
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Operation failed' })
+
+        addToast({ type: 'error', title: error.message })
       },
       undefined,
-      BranchAssociationMasterFormData.BranchAssociationsId === 0 ? 'Add Branch Association' : 'Update Branch Association...'
+
+      Number(formData.BranchAssociationsId) === 0 ? 'Add Branch Association' : 'Update Branch Association'
     )
-  }
+
+  };
 
   //#endregion
+
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
@@ -689,7 +682,7 @@ export const BranchAssociationsMaster: React.FC = () => {
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by employee name..."
+          searchPlaceholder="Search By Employee Name"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
@@ -719,9 +712,8 @@ export const BranchAssociationsMaster: React.FC = () => {
           data={branchAssociationsListForTable}
           columns={visibleBranchAssociationsMasterColumns}
           pagination={branchAssociationsMasterPaginationInfo}
-          emptyMessage="No branch associations found"
+          emptyMessage="No Branch Associations Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -742,52 +734,45 @@ export const BranchAssociationsMaster: React.FC = () => {
           onClose={() => {
             setIsAddUpdateModalOpen(false)
             setEditingBranchAssociationMasterData(null)
-            setFormErrors({})
+            setFormData(initialFormState());
+            setErrors({})
           }}
           onCancel={() => {
             setIsAddUpdateModalOpen(false)
             setEditingBranchAssociationMasterData(null)
-            setFormErrors({})
+            setFormData(initialFormState());
+            setErrors({})
           }}
-          title={editingBranchAssociationMasterData ? 'Update Branch Associations Master Details' : 'Add Branch AssociationsMaster Details'}
-          onSubmit={(e) => {
-            e.preventDefault()
-            handleAddUpdateBranchAssociationMaster()
-          }}
-          saveText="Save"
-          cancelText="Cancel"
+          title={editingBranchAssociationMasterData ? 'Update Branch Associations' : 'Add Branch Associations'}
+          onSubmit={handleAddUpdateBranchAssociationsMaster}
+          saveText={editingBranchAssociationMasterData ? 'Update Branch Associations' : 'Save Branch Associations'}
+          resetText='Reset'
           loading={isLoading}
-          size="large75"
+          size='xl'
         >
-          <div className="space-y-6 p-6 bg-blue-50">
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-10 p-6 bg-blue-100">
+            <div className="space-y-4" >
               <div>
                 <SingleSelectDropdownWithPagination
                   label="Branch"
-                  title="Select..."
+                  title="Select Branch"
                   size="lg"
                   required
-                  dataFetchCallBack={fetchBranchOptions}
-                  onSelected={(item) => handleFieldChange("BranchMasterId", String(item.value))}
-                  initialValue={toDropdownInitialValue(BranchAssociationMasterFormData.BranchMasterId, dropdownLabels.branchName)}
-                  error={formErrors.BranchMasterId}
+                  dataFetchCallBack={fetchBranchMasterDropdown}
+                  onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
+                  initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
+                  error={errors.BranchMasterId}
                 />
               </div>
               <SingleSelectDropdownWithPagination
-                label="Employees"
-                title="Select..."
+                label="Employee"
+                title="Select Employee"
                 size="lg"
                 required
-                dataFetchCallBack={fetchEmployeeOptions}
+                dataFetchCallBack={fetchEmployeeMasterDropdown}
                 onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
-                initialValue={toDropdownInitialValue(
-                  BranchAssociationMasterFormData.EmployeeId
-                    ? String(BranchAssociationMasterFormData.EmployeeId)
-                    : "",
-                  dropdownLabels.employeeName
-                )}
-                error={formErrors.EmployeeId}
+                initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
+                error={errors.EmployeeId}
               />
             </div>
           </div>
@@ -830,7 +815,7 @@ export const BranchAssociationsMaster: React.FC = () => {
           saveText="Apply Filter"
           cancelText="Clear Filter"
           onCancel={() => clearFilters()}
-          size="half-screen"
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">
@@ -842,18 +827,18 @@ export const BranchAssociationsMaster: React.FC = () => {
                   type="text"
                   value={tempFilters.EmployeeName || ''}
                   onChange={(e) => handleFilterChange('EmployeeName', e.target.value)}
-                  placeholder="Enter employee name"
+                  placeholder="Enter Employee Name"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Branch Master ID
+                  Branch Master
                 </label>
                 <Input
                   type="text"
                   value={tempFilters.BranchMasterId || ''}
                   onChange={(e) => handleFilterChange('BranchMasterId', e.target.value)}
-                  placeholder="Enter branch master ID"
+                  placeholder="Enter Branch Name"
                 />
               </div>
             </div>

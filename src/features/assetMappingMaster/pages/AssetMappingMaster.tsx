@@ -27,11 +27,11 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { Edit, Trash2 } from 'lucide-react';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
-import { assetMasterService } from '@/features/assetMaster/services/AssetMasterService';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
-import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
-
+import { fetchAssetMasterDropdown } from '@/features/assetMaster/assetMasterDropDown';
+import { fetchEmployeeMasterDropdown } from '@/features/employeeMaster/employeeMasterDropDown';
+import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 
 
 export const AssetMappingMaster: React.FC = () => {
@@ -669,49 +669,6 @@ export const AssetMappingMaster: React.FC = () => {
     };
   };
 
-  const fetchEmployeeOptions = async (pageNumber: number, params?: { value?: string }) => {
-    const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
-      PageSize: 10,
-      PageNumber: pageNumber,
-      EmployeeName: params?.value || "",
-    });
-
-    if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
-
-    const apiResponse = responseEither.right;
-    const employeeList = apiResponse?.Data?.map((item: any) => ({
-      label: `${item.FirstName} ${item.MiddleName || ""} ${item.LastName || ""}`.trim(),
-      value: String(item.EmployeeId),
-    })) || [];
-
-    return {
-      totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? employeeList.length,
-      itemList: employeeList,
-    };
-  };
-
-  const fetchAssetNameOptions = async (pageNumber: number, params?: { value?: string }) => {
-    const responseEither = await assetMasterService.apiCallPullAssetMaster({
-      PageSize: 10,
-      PageNumber: pageNumber,
-      AssetName: params?.value || "",
-    });
-    if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
-    const apiResponse = responseEither.right;
-    const assetList = apiResponse?.Data?.map((item: any) => ({ label: item.AssetName, value: String(item.AssetMasterId) })) || [];
-    return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? assetList.length, itemList: assetList };
-  };
-  const toDropdownInitialValue = (
-    id?: number | null,
-    label?: string
-  ): { label: string; value: string | number } | null => {
-    if (!id) return null;
-    return {
-      label: label || String(id),
-      value: String(id),
-    };
-  };
-
   const [dropdownLabels, setDropdownLabels] = useState<{
     assetName?: string;
     employeeName?: string;
@@ -938,9 +895,9 @@ export const AssetMappingMaster: React.FC = () => {
                   label="Asset"
                   title="Select..."
                   size="lg"
-                  dataFetchCallBack={fetchAssetNameOptions}
+                  dataFetchCallBack={fetchAssetMasterDropdown}
                   onSelected={(item) => handleFieldChange("AssetMasterId", Number(item.value))}
-                  initialValue={toDropdownInitialValue(AssetMappingMasterFormData.AssetMasterId, dropdownLabels.assetName)}
+                  initialValue={createDropdownInitialValue(AssetMappingMasterFormData.AssetMasterId, dropdownLabels.assetName)}
                   error={formErrors.AssetMasterId}
                 />
               </div>
@@ -949,9 +906,9 @@ export const AssetMappingMaster: React.FC = () => {
                 title="Select..."
                 size="lg"
                 required
-                dataFetchCallBack={fetchEmployeeOptions}
+                dataFetchCallBack={fetchEmployeeMasterDropdown}
                 onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
-                initialValue={toDropdownInitialValue(AssetMappingMasterFormData.EmployeeId, dropdownLabels.employeeName)}
+                initialValue={createDropdownInitialValue(AssetMappingMasterFormData.EmployeeId, dropdownLabels.employeeName)}
                 error={formErrors.EmployeeId}
               />
             </div>

@@ -144,7 +144,6 @@ export const EarningMaster: React.FC = () => {
 
   //#endregion
 
-
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchEarningList = async (page: number = pagination.currentPage) => {
@@ -322,8 +321,9 @@ export const EarningMaster: React.FC = () => {
     setViewEarningMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
-
-  //#region EDIT EARNING MASTER
+//#endregion
+ 
+//#region EDIT EARNING MASTER
 
   const handleEditEarningMaster = useCallback((row: EarningMasterData) => {
     setEditingEarningMasterData({
@@ -576,7 +576,6 @@ export const EarningMaster: React.FC = () => {
 
   //#endregion
 
-
   //#region ADD UPDATE EDIT EARNING MASTER
 
   const handleFieldChange = (field: keyof AddUpdateEarningMasterRequest, value: any) => {
@@ -718,7 +717,6 @@ export const EarningMaster: React.FC = () => {
   };
 
   //#endregion
-
 
   //#region DELETE EARNING MASTER
   const handleDeleteEarningMaster = async () => {

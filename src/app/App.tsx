@@ -38,7 +38,7 @@ import ViewEmployeeMaster from '@/features/employeeMaster/pages/ViewEmployeeMast
 import ViewProjectMaster from '@/features/projectMaster/pages/ViewProjectMaster';
 import AddUpdateProjectMaster from '@/features/projectMaster/pages/AddUpdateProjectMaster';
 import SubMaterialMaster from '@/features/subMaterialMaster/pages/SubMaterialMaster';
-import { UomMaster } from '@/features/uomMaster/pages/UOMMaster';
+import { UomMaster } from '@/features/uomMaster/pages/UomMaster';
 import ProjectDocumentCategoryMaster from '@/features/projectDocumentCategory/pages/ProjectDocumentCategoryMaster';
 import ProjectDocument from '@/features/projectDocument/pages/ProjectDocument';
 

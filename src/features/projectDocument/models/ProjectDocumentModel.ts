@@ -14,36 +14,45 @@ export interface FilterWithPaginationProjectDocument {
 }
 
 export interface ProjectDocumentData {
-    projectDocumentId: number;
-    uniqueKey: string;
-    projectId: number;
-    projectDocumentName: string;
-    projectDocumentCategoryId: number;
-    projectDocumentCategory: string;
-    projectDocumentExpiryDate: string | null;
-    projectDocumentRemark: string;
-    projectDocumentStatus: string;
-    projectDocumentURL: string;
-    projectDocumentApprovalStatus: string;
-    isApproval: boolean;
-    uploadedProjectDocumentCount: number;
-    approvalPendingProjectDocumentCount: number;
-    rejectedProjectDocumentCount: number;
-    expiredProjectDocumentCount: number;
+    ProjectDocumentId: number;
+    Uniquekey: string;
+    ProjectId: number;
+    ProjectDocumentName: string;
+    ProjectDocumentCategoryId: number;
+    ProjectDocumentCategory: string;
+    ProjectDocumentExpiryDate: string | null;
+    ProjectDocumentRemark: string;
+    ProjectDocumentStatus: string;
+    ProjectDocumentURL: string;
+    ProjectDocumentApprovalStatus: string;
+    IsApproval: boolean;
+    UploadedProjectDocumentCount: number;
+    ApprovalPendingProjectDocumentCount: number;
+    RejectedProjectDocumentCount: number;
+    ExpiredProjectDocumentCount: number;
+
+    CreatedById: number | 0
+    CreatedBy: string | ''
+    CreatedDate: string | null
+    ModifiedById: number | 0
+    ModifiedBy: string | ''
+    ModifiedDate: string | null
+    LastModifiedBy: string | ''
+    LastModifiedDate: string | null
 }
 
 export interface AddUpdateProjectDocumentRequest {
-    projectDocumentId: number;
-    uniqueKey: string;
-    projectId: number;
-    projectDocumentCategoryId: number | null;
-    projectDocumentName: string;
-    projectDocumentExpiryDate: string | null; 
-    projectDocumentStatus: string;
-    isMaster: number | null;
-    projectDocumentURL: File[] | null; 
-    removeProjectDocumentURL: string;
-    projectDocumentRemark: string;
+    ProjectDocumentId?: number | 0;
+    Uniquekey?: string | '';
+    ProjectId?: number | '';
+    ProjectDocumentCategoryId?: number | 0;
+    ProjectDocumentName?: string | '';
+    ProjectDocumentExpiryDate?: string | ''; 
+    ProjectDocumentStatus?: string|'';
+    IsMaster?: number | 0;
+    ProjectDocumentURL?: File[] | null; 
+    RemoveProjectDocumentURL?: string| '';
+    ProjectDocumentRemark?: string | '';
 }
 
 export interface DeleteProjectDocumentRequest {

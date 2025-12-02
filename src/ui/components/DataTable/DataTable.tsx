@@ -213,7 +213,7 @@ export const DataTable: React.FC<DataTableProps> = ({
             </tr>
           </thead>
 
-          <tbody className="bg-white">
+          <tbody className="bg-white" >
             {data.length === 0 ? (
               <tr>
                 <td

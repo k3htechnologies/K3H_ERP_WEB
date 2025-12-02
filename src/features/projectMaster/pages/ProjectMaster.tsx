@@ -22,7 +22,6 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, type Location, useNavigate } from 'react-router-dom';
 import { updateFilter } from '@/core/utils/filterHelper';
-import ImageCarousel from '@/ui/components/ImageViewer/ImageCarousel';
 
 export const ProjectMaster: React.FC = () => {
 

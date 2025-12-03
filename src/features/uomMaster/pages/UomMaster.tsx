@@ -10,18 +10,15 @@ import type {
   DeleteUomMasterRequest,
   UomMasterData,
   FilterWithPaginationUomMaster
-} from '@/features/uomMaster/models/UOMMasterModel';
+} from '@/features/uomMaster/models/UomMasterModel';
 
 import { uomMasterService } from '@/features/uomMaster/services/UOMMasterService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
-import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -30,6 +27,7 @@ import { FieldItem } from '@/ui/components/forms/FieldItem';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { updateFilter } from '@/core/utils/filterHelper';
+import { Input } from '@/ui/components/forms';
 
 
 const initialFormState = (): AddUpdateUomMasterRequest => ({
@@ -126,7 +124,7 @@ export const UomMaster: React.FC = () => {
           UomMasterId: editingUomMasterData.UomMasterId,
           Uniquekey: editingUomMasterData.UniqueKey || null,
           UomCode: editingUomMasterData.UomCode?.toString() || '',
-          UomName: editingUomMasterData.UomName || ''
+          Uom: editingUomMasterData.Uom || ''
         });
       } else {
         setFormData(initialFormState());
@@ -329,7 +327,7 @@ export const UomMaster: React.FC = () => {
     setEditingUomMasterData({
       ...row,
       UomCode: row.UomCode?.toString() || '',
-      UomName: row.UomName || ''
+      Uom: row.Uom || ''
     })
     setIsAddUpdateModalOpen(true);
 

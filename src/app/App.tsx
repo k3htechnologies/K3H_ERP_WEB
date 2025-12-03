@@ -41,6 +41,7 @@ import SubMaterialMaster from '@/features/subMaterialMaster/pages/SubMaterialMas
 import { UomMaster } from '@/features/uomMaster/pages/UomMaster';
 import ProjectDocumentCategoryMaster from '@/features/projectDocumentCategory/pages/ProjectDocumentCategoryMaster';
 import ProjectDocument from '@/features/projectDocument/pages/ProjectDocument';
+import ProjectRERADocumentCategoryMaster from '@/features/projectRERADocumentCategory/pages/ProjectRERADocumentCategoryMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -136,6 +137,7 @@ function App() {
             <Route path="uomMaster" element={<UomMaster />} />
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />
             <Route path="document" element={<ProjectDocument />} />
+            <Route path="reraCategory" element={<ProjectRERADocumentCategoryMaster />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

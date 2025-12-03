@@ -7,7 +7,7 @@ import type {
     UomMasterDeleteResponse,
     FilterWithPaginationUomMaster,
     UomMasterSaveReponse
-} from '@/features/uomMaster/models/UomMasterModel';
+} from '@/features/uomMaster/models/UOMMasterModel';
 
 import * as E from 'fp-ts/Either';
 

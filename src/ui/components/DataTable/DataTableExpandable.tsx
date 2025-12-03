@@ -268,7 +268,7 @@ export const DataTableExpandable= forwardRef<DataTableExpandableRef, DataTablePr
           </thead>
 
           <tbody className="bg-white">
-            {data.length === 0 ? (
+            {!loading && data.length === 0 ? (
               <tr>
                 <td colSpan={effectiveColumns.length} className="py-10">
                   <div className="flex flex-col items-center justify-center text-center">

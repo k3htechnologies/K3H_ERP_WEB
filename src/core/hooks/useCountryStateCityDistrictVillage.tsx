@@ -6,7 +6,7 @@ import React, {
   type ReactNode,
 } from 'react'
 import * as E from 'fp-ts/Either'
-import type { CountryStateCityDistrictVillageData } from '@/features/technical/models/TechnicalModel'
+import type { CountryStateCityDistrictVillageData, CountryStateCityDistrictVillageDataWrapper } from '@/features/technical/models/TechnicalModel'
 import { technicalService } from '@/features/technical/services/TechnicalService'
 import { LocalStorageHelper } from '../utils/localStorageHelper'
 
@@ -51,33 +51,33 @@ export const CountryStateCityDistrictVillage: React.FC<{ children: ReactNode }> 
 
     const loadLocations = async () => {
       try {
-        
-        // 1️⃣ FIRST: try from localStorage
-        // const stored = LocalStorageHelper.getCountry_State_District_City_VillageData?.()
 
-        // if (stored && stored.length > 0) {
-        //   const {
-        //     countries,
-        //     statesByCountryId,
-        //     districtsByStateId,
-        //     citiesByDistrictId,
-        //     villagesByCityId,
-        //   } = buildLocationMaps(stored)
+        //1️⃣ FIRST: try from localStorage
+        const stored = LocalStorageHelper.getCountry_State_District_City_VillageData?.()
 
-        //   if (!isMounted) return
-        //   setValue({
-        //     isLoading: false,
-        //     error: null,
-        //     countries,
-        //     statesByCountryId,
-        //     districtsByStateId,
-        //     citiesByDistrictId,
-        //     villagesByCityId,
-        //   })
+        if (stored && stored.length > 0) {
+          const {
+            countries,
+            statesByCountryId,
+            districtsByStateId,
+            citiesByDistrictId,
+            villagesByCityId,
+          } = buildLocationMaps(stored)
 
-        //   // ✅ We already have data, no API call
-        //   return
-        // }
+          if (!isMounted) return
+          setValue({
+            isLoading: false,
+            error: null,
+            countries,
+            statesByCountryId,
+            districtsByStateId,
+            citiesByDistrictId,
+            villagesByCityId,
+          })
+
+          // ✅ We already have data, no API call
+          return
+        }
 
         // 2️⃣ If no local data, call API
         const result = await technicalService.apiCallCountryStateDistrictCityVillage()
@@ -93,8 +93,19 @@ export const CountryStateCityDistrictVillage: React.FC<{ children: ReactNode }> 
           return
         }
 
+        const raw = result.right.Data as unknown;
+
         const list: CountryStateCityDistrictVillageData[] =
-          result.right.Data?.CountryStateCityDistrictVillageData || []
+          Array.isArray(raw)
+
+            ? ((raw[0] && Array.isArray((raw[0] as any).CountryStateCityDistrictVillageData))
+              ? (raw as CountryStateCityDistrictVillageDataWrapper[]).flatMap(w => w.CountryStateCityDistrictVillageData ?? [])
+
+              : (raw as CountryStateCityDistrictVillageData[]))
+
+            : ((raw && (raw as any).CountryStateCityDistrictVillageData)
+              ? (raw as CountryStateCityDistrictVillageDataWrapper).CountryStateCityDistrictVillageData
+              : []);
 
         const {
           countries,

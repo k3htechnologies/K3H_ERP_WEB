@@ -1,5 +1,5 @@
 import baseClient from "@/core/config/baseClient";
-import type { AddUpdateUomMasterRequest, DeleteUomMasterRequest, FilterWithPaginationUomMaster, UomMasterDeleteResponse, UomMasterListResponse, UomMasterSaveReponse } from "../models/UomMasterModel";
+import type { AddUpdateUomMasterRequest, DeleteUomMasterRequest, FilterWithPaginationUomMaster, UomMasterDeleteResponse, UomMasterListResponse, UomMasterSaveReponse } from "@/features/uomMaster/models/UOMMasterModel";
 import { UomMasterApi } from "@/features/uomMaster/api/UOMMasterApi";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 

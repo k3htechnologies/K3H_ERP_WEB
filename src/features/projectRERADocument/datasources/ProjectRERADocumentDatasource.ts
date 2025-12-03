@@ -1,5 +1,5 @@
 import baseClient from "@/core/config/baseClient";
-import type { DeleteProjectRERADocumentRequest, FilterWithPaginationProjectRERADocument, ProjectRERADocumentDeleteResponse, ProjectRERADocumentListResponse, ProjectRERADocumentSaveReponse } from "@/features/projectDocument/models/ProjectRERADocumentModel";
+import type { DeleteProjectRERADocumentRequest, FilterWithPaginationProjectRERADocument, ProjectRERADocumentDeleteResponse, ProjectRERADocumentListResponse, ProjectRERADocumentSaveReponse } from "@/features/projectRERADocument/models/ProjectRERADocumentModel";
 import { ProjectRERADocumentApi } from "@/features/projectRERADocument/api/ProjectRERADocumentApi";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 

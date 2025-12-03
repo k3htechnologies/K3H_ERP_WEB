@@ -10,7 +10,7 @@ import type {
   DeleteUomMasterRequest,
   UomMasterData,
   FilterWithPaginationUomMaster
-} from '@/features/uomMaster/models/UomMasterModel';
+} from '@/features/uomMaster/models/UOMMasterModel';
 
 import { uomMasterService } from '@/features/uomMaster/services/UOMMasterService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';

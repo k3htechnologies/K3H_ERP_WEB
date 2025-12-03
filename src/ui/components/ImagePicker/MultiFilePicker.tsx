@@ -355,7 +355,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
                   </span>
 
                   <MultiImageViewer
-                    images={[{ url, mimeType: mime }]}
+                    images={[url]}
                     title={label || "Document"}
                     size="sm"
                     triggerLabel={<Eye size={18} style={{ cursor: "pointer" }} />}

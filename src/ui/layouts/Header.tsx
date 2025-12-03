@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Menu, Bell, Edit, User } from 'lucide-react'
-import appLogo from '@/assets/images/appLogo.png'
+import { Menu, Bell, User } from 'lucide-react'
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
 import { Modal } from '@/ui/components/Modal/Modal'
 import { useNavigate } from 'react-router-dom'
@@ -15,7 +14,6 @@ import useToast from '@/core/hooks/useToast'
 import { ToastContainer } from '@/ui/components/Toast';
 import { Loader } from '@/core/utils/loader'
 import { COLORS } from '@/core/constants'
-import Profile from '@/features/profile/page/profile'
 
 interface HeaderProps {
     isSidebarOpen: boolean

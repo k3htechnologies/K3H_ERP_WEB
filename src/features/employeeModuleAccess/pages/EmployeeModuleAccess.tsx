@@ -524,28 +524,32 @@ const EmployeeModuleAccess: React.FC = () => {
         const subModuleKey = buildKey(moduleId, subModuleId, 0)
         const subModuleFlags = ensureFlags(subModuleKey)
 
-        payload.push({
-          ModulesMasterId: moduleId,
-          SubModuleMasterId: subModuleId,
-          SubSubModuleMasterId: 0,
-          IsAction: subModuleFlags.isAction,
-          IsView: subModuleFlags.isView,
-          IsExport: subModuleFlags.isExport
-        })
-
+        if (subModuleFlags.isAction || subModuleFlags.isView || subModuleFlags.isExport) {
+          payload.push({
+            ModulesMasterId: moduleId,
+            SubModuleMasterId: subModuleId,
+            SubSubModuleMasterId: 0,
+            IsAction: subModuleFlags.isAction,
+            IsView: subModuleFlags.isView,
+            IsExport: subModuleFlags.isExport
+          })
+        }
         subModule.SubSubModuleData.forEach((child) => {
           const childKey = buildKey(moduleId, subModuleId, child.SubSubModulesMasterId ?? 0)
           const childFlags = ensureFlags(childKey)
 
-          payload.push({
-            ModulesMasterId: moduleId,
-            SubModuleMasterId: subModuleId,
-            SubSubModuleMasterId: child.SubSubModulesMasterId ?? 0,
-            IsAction: childFlags.isAction,
-            IsView: childFlags.isView,
-            IsExport: childFlags.isExport
-          })
+          if (childFlags.isAction || childFlags.isView || childFlags.isExport) {
+            payload.push({
+              ModulesMasterId: moduleId,
+              SubModuleMasterId: subModuleId,
+              SubSubModuleMasterId: child.SubSubModulesMasterId ?? 0,
+              IsAction: childFlags.isAction,
+              IsView: childFlags.isView,
+              IsExport: childFlags.isExport
+            })
+          }
         })
+
       })
     })
 
@@ -896,7 +900,7 @@ const EmployeeModuleAccess: React.FC = () => {
         </div>
 
         {/* ✅ Fixed Bottom SAVE Button */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+        <div className="fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
           <Button
             color="transparent"

@@ -213,8 +213,8 @@ export const DataTable: React.FC<DataTableProps> = ({
             </tr>
           </thead>
 
-          <tbody className="bg-white" >
-            {data.length === 0 ? (
+          <tbody className="bg-white">
+            {!loading && data.length === 0 ? (
               <tr>
                 <td
                   colSpan={columns.length}
@@ -232,7 +232,9 @@ export const DataTable: React.FC<DataTableProps> = ({
                   </div>
                 </td>
               </tr>
-            ) : (
+            )
+            :
+            (
               data.map((row, index) => (
                 <tr key={index} className="hover:bg-gray-50 h-10 border-b border-gray-200">
                   {columns.map((column) => {

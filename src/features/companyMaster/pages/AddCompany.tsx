@@ -555,7 +555,7 @@ const AddCompany: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value: string, row: any) => {
-          
+
           return (
             <MultiImageViewer
               images={parseDocumentUrls(row.AadharCardURL)}
@@ -582,11 +582,6 @@ const AddCompany: React.FC = () => {
 
   const handleAddCompanyPartnerModal = () => {
     setEditingCompanyPartnerMasterData(null)
-    setIsAddUpdateCompanyPartnerModalOpen(true)
-  }
-
-  const handleEditCompanyPartner = (row: CompanyPartnerData) => {
-    setEditingCompanyPartnerMasterData(row)
     setIsAddUpdateCompanyPartnerModalOpen(true)
   }
 
@@ -775,23 +770,6 @@ const AddCompany: React.FC = () => {
         setCompanyPartnerFormData(prev => ({
           ...prev,
           [field]: value
-        }))
-
-        setErrors(prev => ({
-          ...prev,
-          [field]: ''
-        }))
-      }
-
-      const handleFileChange = (
-        field: 'PanCardURL' | 'AadharCardURL' | 'PhotoURL',
-        files: FileList | null
-      ) => {
-        const fileArray = files ? Array.from(files) : null
-
-        setCompanyPartnerFormData(prev => ({
-          ...prev,
-          [field]: fileArray
         }))
 
         setErrors(prev => ({
@@ -1037,6 +1015,9 @@ const AddCompany: React.FC = () => {
                   ]}
                   maxFiles={5}
                   maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedCompanyPartnerPANURLs((prev) => [...prev, url])
+                  }}
                 />
 
               </div>
@@ -1059,6 +1040,9 @@ const AddCompany: React.FC = () => {
                   ]}
                   maxFiles={5}
                   maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedCompanyPartnerAadhaarCardURLs((prev) => [...prev, url])
+                  }}
                 />
 
               </div>
@@ -1080,6 +1064,9 @@ const AddCompany: React.FC = () => {
                   ]}
                   maxFiles={1}
                   maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedCompanyPartnerPhotoURLs((prev) => [...prev, url])
+                  }}
 
                 />
               </div>
@@ -1324,6 +1311,9 @@ const AddCompany: React.FC = () => {
                   ]}
                   maxFiles={5}
                   maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedGSTCertificateUrls((prev) => [...prev, url])
+                  }}
 
                 />
               </div>
@@ -1361,6 +1351,9 @@ const AddCompany: React.FC = () => {
                   ]}
                   maxFiles={2}
                   maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedPANURLs((prev) => [...prev, url])
+                  }}
                 />
 
               </div>
@@ -1398,6 +1391,9 @@ const AddCompany: React.FC = () => {
                   ]}
                   maxFiles={5}
                   maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedCINURLs((prev) => [...prev, url])
+                  }}
                 />
 
               </div>
@@ -1537,6 +1533,9 @@ const AddCompany: React.FC = () => {
                   ]}
                   maxFiles={5}
                   maxSizeMB={10}
+                   onRemoveExisting={(url) => {
+                    setRemovedCompanyLetterHeadHeaderUrls((prev) => [...prev, url])
+                  }}
                 />
 
               </div>
@@ -1559,6 +1558,9 @@ const AddCompany: React.FC = () => {
                   ]}
                   maxFiles={5}
                   maxSizeMB={10}
+                   onRemoveExisting={(url) => {
+                    setRemovedCompanyLetterHeadFooterUrls((prev) => [...prev, url])
+                  }}
                 />
 
               </div>

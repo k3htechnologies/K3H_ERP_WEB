@@ -9,6 +9,7 @@ import * as E from 'fp-ts/Either';
 import { runApiWithLoader } from '@/core/utils';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
 import { Loader } from '@/core/utils/loader';
+import { useNavigate } from 'react-router-dom';
 
 export function SignIn() {
 
@@ -19,7 +20,8 @@ export function SignIn() {
     const [loadingMessage, setIsLoadingMessage] = useState('');
     const [isVerified, setIsVerified] = useState(false)
     const { toasts, removeToast, showSuccess, showError, addToast } = useToast()
-
+    const navigate = useNavigate();
+    
     //#region  SEND OTP
     const handleSendOTP = async () => {
         await runApiWithLoader(
@@ -90,9 +92,7 @@ export function SignIn() {
 
                     setIsVerified(true)
 
-                    setTimeout(() => {
-                        window.location.href = '/dashboard'
-                    }, 1500)
+                    navigate('/dashboard');
                 } else {
                     showError('Invalid OTP', response.left.message)
                 }

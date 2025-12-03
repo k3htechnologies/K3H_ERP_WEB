@@ -3,58 +3,62 @@ import { Loader } from '@/core/utils/loader';
 import { Tabs, type TabItem } from '@/ui/components/Tab/Tab';
 import { ToastContainer } from '@/ui/components/Toast';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { fetchProjectDocumentCategoryDropdown } from '@/features/projectDocumentCategory/projectDocumentCategoryDropDown';
+import { fetchProjectRERADocumentCategoryDropdown } from '@/features/projectRERADocumentCategory/projectRERADocumentCategoryDropDown';
 import { runApiWithLoader } from '@/core/utils';
-import type { AddUpdateProjectDocumentRequest, DeleteProjectDocumentRequest, FilterWithPaginationProjectDocument, ProjectDocumentData } from '@/features/projectDocument/models/ProjectDocumentModel';
+import type { AddUpdateProjectRERADocumentRequest, FilterWithPaginationProjectRERADocument, ProjectRERADocumentData } from '@/features/projectRERADocument/models/ProjectRERADocumentModel';
 import usePagination from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import * as E from 'fp-ts/Either';
-import { ProjectDocumentService } from '../services/ProjectDocumentService';
+import { ProjectRERADocumentService } from '../services/ProjectRERADocumentService';
 import DataTableExpandable, { type DataTableExpandableRef } from '@/ui/components/DataTable/DataTableExpandable';
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Button, Input } from '@/ui/components/forms';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Edit, Plus } from 'lucide-react';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { PROJECT_DOCUMENT_STATUS } from '@/core/constants';
 
 
-const initialFormState = (): AddUpdateProjectDocumentRequest => ({
-  ProjectDocumentId: 0,
+const initialFormState = (): AddUpdateProjectRERADocumentRequest => ({
+  ProjectRERADocumentId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   ProjectId: 0,
-  ProjectDocumentCategoryId: 0,
-  ProjectDocumentName: '',
-  ProjectDocumentExpiryDate: '',
-  ProjectDocumentStatus: '',
+  ProjectRERADocumentCategoryId: 0,
+  ProjectRERADocumentName: '',
+  ProjectRERADocumentStatus: '',
+  ProjectRERADocumentRemark: '',
   IsMaster: 0,
-  ProjectDocumentURL: null,
-  RemoveProjectDocumentURL: '',
-  ProjectDocumentRemark: ''
+  ProjectRERADocumentURL: null,
+  RemoveProjectRERADocumentURL: '',
+  RERAPortalScreenShotURL: null,
+  RemoveRERAPortalScreenShotURL: '',
 });
-var projectId = 2;
-const ProjectDocument: React.FC = () => {
+var projectId = 5;
+const ProjectRERADocument: React.FC = () => {
 
   //#region STATE
-  const [projectDocumentList, setProjectDocumentList] = useState<ProjectDocumentData[]>([]);
+  const [projectRERADocumentList, setProjectRERADocumentList] = useState<ProjectRERADocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
-  const [expandHeaderProjectDocumentName, setExpandHeaderProjectDocumentName] = useState<string>('');
-  const [expandHeaderProjectDocumentId, setExpandHeaderProjectDocumentId] = useState<number>(0);
+  const [expandHeaderProjectRERADocumentName, setExpandHeaderProjectRERADocumentName] = useState<string>('');
+  const [expandHeaderProjectRERADocumentId, setExpandHeaderProjectRERADocumentId] = useState<number>(0);
 
   //SET AND REMOVE URL FILE
-  const [projectDocumentFiles, setProjectDocumentFiles] = useState<(File | string)[]>([]);
-  const [RemoveProjectDocumentUrls, setRemoveProjectDocumentUrls] = useState<string[]>([]);
-  const [projectDocumentURL, setProjectDocumentURL] = useState<string>();
+  const [projectRERADocumentFiles, setProjectRERADocumentFiles] = useState<(File | string)[]>([]);
+  const [RemoveProjectRERADocumentUrls, setRemoveProjectRERADocumentUrls] = useState<string[]>([]);
+  const [projectRERADocumentURL, setProjectRERADocumentURL] = useState<string>();
+
+  //SET AND REMOVE URL FILE
+  const [rERAPortalScreenShotFiles, setRERAPortalScreenShotFiles] = useState<(File | string)[]>([]);
+  const [RemoveRERAPortalScreenShotUrls, setRemoveRERAPortalScreenShotUrls] = useState<string[]>([]);
+  const [rERAPortalScreenShotURL, setRERAPortalScreenShotURL] = useState<string>();
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
@@ -75,7 +79,7 @@ const ProjectDocument: React.FC = () => {
   }, 350)
 
   // TAB LIST
-  const [projectDocumentTabList, setProjectDocumentTabList] = useState<TabItem[]>([]);
+  const [projectRERADocumentTabList, setProjectRERADocumentTabList] = useState<TabItem[]>([]);
   const [activeTab, setActiveTab] = useState<string>('');
 
   //DATATABLE EXPANDABLE REF
@@ -86,21 +90,14 @@ const ProjectDocument: React.FC = () => {
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
   // ADD EDIT UPDATE DOCUMENT
-  const [editingDocumentData, setEditingDocumentData] = useState<ProjectDocumentData | null>(null);
-
-  const [isAddUpdateDocumentModalOpen, setIsAddUpdateDocumentModalOpen] = useState(false);
+  const [editingDocumentData, setEditingDocumentData] = useState<ProjectRERADocumentData | null>(null);
 
   // ADD EDIT UPDATE DOCUMENT DETAILS
   const [isAddUpdateDocumentDetailsModalOpen, setIsAddUpdateDocumentDetailsModalOpen] = useState(false);
 
-  //DELETE DEPARTMENT MASTER STATES
-
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-
-  const [deleteProjectDocumentDetailsData, setDeleteProjectDocumentDetailsData] = useState<ProjectDocumentData | null>(null)
 
   //ADD UPDATE DEPARTMENT MASTER
-  const [formData, setFormData] = useState<AddUpdateProjectDocumentRequest>(() => initialFormState());
+  const [formData, setFormData] = useState<AddUpdateProjectRERADocumentRequest>(() => initialFormState());
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -110,7 +107,7 @@ const ProjectDocument: React.FC = () => {
   //#region INIT
 
   useEffect(() => {
-    loadProjectDocumentTabs()
+    loadProjectRERADocumentTabs()
 
   }, [])
 
@@ -123,24 +120,27 @@ const ProjectDocument: React.FC = () => {
   }, [debouncedSearch])
 
   useEffect(() => {
-    if (isAddUpdateDocumentModalOpen || isAddUpdateDocumentDetailsModalOpen) {
+    if (isAddUpdateDocumentDetailsModalOpen) {
       if (editingDocumentData) {
         setFormData({
-          ProjectDocumentId: editingDocumentData.ProjectDocumentId,
+          ProjectRERADocumentId: editingDocumentData.ProjectRERADocumentId ?? 0,
           Uniquekey: editingDocumentData.Uniquekey || initialFormState().Uniquekey,
-          ProjectDocumentName: editingDocumentData.ProjectDocumentName || '',
-          ProjectId: editingDocumentData.ProjectId,
-          ProjectDocumentCategoryId: editingDocumentData.ProjectDocumentCategoryId,
-          ProjectDocumentExpiryDate: editingDocumentData.ProjectDocumentExpiryDate || undefined,
-          ProjectDocumentStatus: editingDocumentData.ProjectDocumentStatus,
+          ProjectRERADocumentName: editingDocumentData.ProjectRERADocumentName || '',
+          ProjectId: editingDocumentData.ProjectId ?? 0,
+          ProjectRERADocumentCategoryId: editingDocumentData.ProjectRERADocumentCategoryId ?? 0,
+          ProjectRERADocumentStatus: editingDocumentData.ProjectRERADocumentStatus ?? '',
           IsMaster: 0,
-          ProjectDocumentRemark: editingDocumentData.ProjectDocumentRemark,
+          ProjectRERADocumentRemark: editingDocumentData.ProjectRERADocumentRemark ?? '',
 
         });
 
-        setProjectDocumentFiles([]);
-        setProjectDocumentURL(editingDocumentData.ProjectDocumentURL || '')
-        setRemoveProjectDocumentUrls([]);
+        setProjectRERADocumentFiles([]);
+        setProjectRERADocumentURL(editingDocumentData.ProjectRERADocumentURL || '')
+        setRemoveProjectRERADocumentUrls([]);
+
+        setRERAPortalScreenShotFiles([]);
+        setRERAPortalScreenShotURL(editingDocumentData.ProjectRERADocumentURL || '')
+        setRemoveRERAPortalScreenShotUrls([]);
 
 
       } else {
@@ -148,34 +148,33 @@ const ProjectDocument: React.FC = () => {
       }
       setErrors({});
     }
-  }, [isAddUpdateDocumentModalOpen, isAddUpdateDocumentDetailsModalOpen, editingDocumentData]);
+  }, [isAddUpdateDocumentDetailsModalOpen, editingDocumentData]);
 
   //#endregion
+
   //#region ACTIVE TAB IF FIND OUT
   const getActiveTabId = (filterParams?: FilterInfo): number => {
-    if (filterParams && filterParams.ProjectDocumentCategoryId != null) {
-      const raw = filterParams.ProjectDocumentCategoryId;
+
+    if (filterParams && filterParams.ProjectRERADocumentCategoryId != null) {
+      const raw = filterParams.ProjectRERADocumentCategoryId;
       const num = typeof raw === 'number' ? raw : Number(raw);
       if (!Number.isNaN(num)) return num;
     }
-
-
     if (activeTab !== '' && !Number.isNaN(Number(activeTab))) {
       return Number(activeTab);
     }
-
-
     return 0;
   };
   //#endregion
+
   //#region LOAD TAB PROJECT DOCUMENT CATEGORY
-  const loadProjectDocumentTabs = async () => {
+  const loadProjectRERADocumentTabs = async () => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
 
-        const response = await fetchProjectDocumentCategoryDropdown(1, projectId);
+        const response = await fetchProjectRERADocumentCategoryDropdown(1, projectId);
 
         const items = Array.isArray(response?.itemList) ? response.itemList : [];
 
@@ -184,7 +183,7 @@ const ProjectDocument: React.FC = () => {
           label: x.label,
         }))
 
-        setProjectDocumentTabList(tabs);
+        setProjectRERADocumentTabList(tabs);
 
         if (tabs.length > 0) {
 
@@ -192,10 +191,10 @@ const ProjectDocument: React.FC = () => {
 
           const newFilters: FilterInfo = {
             ...filters,
-            ProjectDocumentCategoryId: tabs[0].id,
+            ProjectRERADocumentCategoryId: tabs[0].id,
           };
 
-          await loadProjectDocument(1, newFilters);
+          await loadProjectRERADocument(1, newFilters);
         }
         else {
 
@@ -216,11 +215,11 @@ const ProjectDocument: React.FC = () => {
   //#endregion
 
   //#region DATA LOAD
-  const fetchProjectDocumentList = async (page: number = pagination.currentPage) => {
-    return await loadProjectDocument(page, filters);
+  const fetchProjectRERADocumentList = async (page: number = pagination.currentPage) => {
+    return await loadProjectRERADocument(page, filters);
   };
 
-  const loadProjectDocument = async (page: number, filterParams: FilterInfo) => {
+  const loadProjectRERADocument = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -228,28 +227,29 @@ const ProjectDocument: React.FC = () => {
         let sortByParam: string | undefined;
 
         if (sortInfo) {
-          const column = projectDocumentColumns.find(col => col.key === sortInfo.column);
+          const column = projectRERADocumentColumns.find(col => col.key === sortInfo.column);
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
-        const params: FilterWithPaginationProjectDocument = {
+        const params: FilterWithPaginationProjectRERADocument = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           ProjectId: projectId,
-          ProjectDocumentId: Number(filterParams.ProjectDocumentId) ?? undefined,
-          ProjectDocumentName: filterParams.ProjectDocumentName,
-          ProjectDocumentStatus: filterParams.ProjectDocumentStatus,
-          ProjectDocumentCategory: filterParams.ProjectDocumentCategory,
-          ProjectDocumentCategoryId: Number(getActiveTabId(filterParams)),
+          ProjectRERADocumentId: Number(filterParams.ProjectRERADocumentId) ?? undefined,
+          ProjectRERADocumentName: filterParams.ProjectRERADocumentName,
+          ProjectRERADocumentStatus: filterParams.ProjectRERADocumentStatus,
+          ProjectRERADocumentCategory: filterParams.ProjectRERADocumentCategory,
+          ProjectRERADocumentCategoryId: Number(getActiveTabId(filterParams)),
           SortBy: sortByParam
         };
 
-        const response = await ProjectDocumentService.apiCallPullProjectDocument(params);
+        const response = await ProjectRERADocumentService.apiCallPullProjectRERADocument(params);
 
         if (E.isRight(response)) {
 
-          setProjectDocumentList(response.right.Data);
+          setProjectRERADocumentList(response.right.Data);
+
           setPagination({
             currentPage: page,
             totalRecords: response.right.TotalNumberOfRecord,
@@ -269,7 +269,7 @@ const ProjectDocument: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Project Document'
+      'Loading Project RERA Document'
     );
   };
   //#endregion
@@ -281,16 +281,16 @@ const ProjectDocument: React.FC = () => {
 
     if (searchValue.trim() === '') {
 
-      fetchProjectDocumentList();
+      fetchProjectRERADocumentList();
 
       return
     }
 
     const filterParams: FilterInfo = {
-      ProjectDocumentName: searchValue.trim(),
+      ProjectRERADocumentName: searchValue.trim(),
     };
 
-    await loadProjectDocument(1, filterParams)
+    await loadProjectRERADocument(1, filterParams)
 
   }
   //#endregion
@@ -299,7 +299,7 @@ const ProjectDocument: React.FC = () => {
   const clearsearchDocumnets = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
-    fetchProjectDocumentList();
+    fetchProjectRERADocumentList();
   }
 
   //#endregion
@@ -307,8 +307,8 @@ const ProjectDocument: React.FC = () => {
   //#region HANDLE PAGE CHNAGE EVENT
 
   const handlePageChange = useCallback((page: number) => {
-    fetchProjectDocumentList(page);
-  }, [fetchProjectDocumentList]);
+    fetchProjectRERADocumentList(page);
+  }, [fetchProjectRERADocumentList]);
 
   //#endregion
 
@@ -317,14 +317,14 @@ const ProjectDocument: React.FC = () => {
 
     setSortInfo(sortInfo);
 
-    fetchProjectDocumentList(1);
+    fetchProjectRERADocumentList(1);
 
   }
   //#endregion
 
   //#region TABLE PAGINATION INFO
 
-  const projectDocumentPaginationInfo: PaginationInfo = useMemo(
+  const projectRERADocumentPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
       totalPages: pagination.totalPages,
@@ -335,30 +335,20 @@ const ProjectDocument: React.FC = () => {
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
   )
 
-  const projectDocumentListForTable = useMemo(() => projectDocumentList, [projectDocumentList]);
+  const projectRERADocumentListForTable = useMemo(() => projectRERADocumentList, [projectRERADocumentList]);
 
   //#endregion
 
-  //#region EDIT PROJECT DOCUMENT
-  const handleEditProjectDocument = useCallback((row: ProjectDocumentData) => {
-    setEditingDocumentData({
-      ...row,
-      ProjectDocumentName: row.ProjectDocumentName || ''
-    })
-    setIsAddUpdateDocumentModalOpen(true);
-
-  }, [])
-
-  //#endregion
+ 
 
   //#region EDIT PROJECT DOCUMENT DETAILS
-  const handleEditProjectDocumentDetails = useCallback((row: ProjectDocumentData) => {
+  const handleEditProjectRERADocumentDetails = useCallback((row: ProjectRERADocumentData) => {
     setEditingDocumentData({
       ...row,
-      ProjectDocumentName: row.ProjectDocumentName || '',
-      ProjectDocumentExpiryDate: row.ProjectDocumentExpiryDate || null,
-      ProjectDocumentStatus: row.ProjectDocumentStatus || '',
-      ProjectDocumentRemark: row.ProjectDocumentRemark || '',
+      ProjectRERADocumentName: row.ProjectRERADocumentName || '',
+      ProjectRERADocumentStatus: row.ProjectRERADocumentStatus || '',
+      ProjectRERADocumentRemark: row.ProjectRERADocumentRemark || '',
+      
     })
     setIsAddUpdateDocumentDetailsModalOpen(true);
 
@@ -366,31 +356,20 @@ const ProjectDocument: React.FC = () => {
 
   //#endregion
 
-  //#region CONFIRMATION DIALOG BOX
-
-  const handleConfirmationDialogBoxOpen = useCallback((row: ProjectDocumentData) => {
-    setDeleteProjectDocumentDetailsData(row)
-    setIsConfirmationDialogBoxOpen(true)
-  }, [])
-
-  //#endregion
-
   //#region TABLE COLUMN
 
-  const projectDocumentColumns = useMemo<TableColumn[]>(
+  const projectRERADocumentColumns = useMemo<TableColumn[]>(
     () => [
 
       {
-        key: 'ProjectDocumentName',
-        label: 'Project Document Name',
+        key: 'ProjectRERADocumentName',
+        label: 'Project RERA Document Name',
         width: '33',
         sortable: true,
         fixed: 'left',
         align: 'left',
         render: (value, row) => {
-          const showEdit = canAction ? true : false;
-          const showDelete = canAction ? (row.UploadedProjectDocumentCount || 0) === 0 : false;
-
+          const showEdit = canAction && row.IsMultiple ? true : false;
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
 
@@ -424,56 +403,14 @@ const ProjectDocument: React.FC = () => {
                 )}
               </div>
 
-              <div className="w-[34px] flex justify-center">
-
-                {showEdit ? (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEditProjectDocument(row)
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Edit"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
-              </div>
-
-              {/* SLOT 3: DELETE */}
-              <div className="w-[34px] flex justify-center">
-                {showDelete ? (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleConfirmationDialogBoxOpen(row)
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    style={{ color: 'red' }}
-                    title="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
-              </div>
 
               <TooltipText
-                text={`${row.UploadedProjectDocumentCount ?? 0} Uploaded`}
+                text={`${row.UploadedProjectRERADocumentCount ?? 0} Uploaded`}
                 tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 overflow-hidden text-ellipsis whitespace-nowrap'
               />
 
               <TooltipText
-                text={`${row.UploadedProjectDocumentCount ?? 0} Approval Pending`}
+                text={`${row.ApprovalPendingProjectRERADocumentCount ?? 0} Approval Pending`}
                 tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
               />
             </div>
@@ -485,7 +422,7 @@ const ProjectDocument: React.FC = () => {
 
     ],
     // dependencies: include everything used inside that might change
-    [canAction, handleEditProjectDocument, handleConfirmationDialogBoxOpen]
+    [canAction]
   )
   //#endregion
 
@@ -509,10 +446,10 @@ const ProjectDocument: React.FC = () => {
 
   //#region TABLE COLUMN DOCUMENT DETAILS
 
-  const projectDocumentDetailsColumns = useMemo<TableColumn[]>(
+  const projectRERADocumentDetailsColumns = useMemo<TableColumn[]>(
     () => [
       {
-        key: 'ProjectDocumentName',
+        key: 'ProjectRERADocumentName',
         label: 'Document',
         width: '15',
         sortable: false,
@@ -525,7 +462,7 @@ const ProjectDocument: React.FC = () => {
 
               <div className="truncate max-w-[400px]">
                 <MultiImageViewer
-                  images={parseDocumentUrls(row.ProjectDocumentURL)}
+                  images={parseDocumentUrls(row.ProjectRERADocumentURL)}
                   title="Document"
                   triggerLabel={value || '-'}
                 />
@@ -539,7 +476,7 @@ const ProjectDocument: React.FC = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      handleEditProjectDocumentDetails(row);
+                      handleEditProjectRERADocumentDetails(row);
                     }}
                     color="transparent"
                     isborderRadius
@@ -557,15 +494,26 @@ const ProjectDocument: React.FC = () => {
         }
       },
       {
-        key: 'ProjectDocumentExpiryDate',
-        label: 'Expiry Date',
-        width: '18',
+        key: 'RERAPortalScreenShotURL',
+        label: 'Screenshot',
+        width: '15',
         sortable: false,
         align: 'left',
-        render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
+        render: (value: string,row: any) => {
+          return (
+            <div className="flex items-center justify-between w-full">
+              <MultiImageViewer
+                images={parseDocumentUrls(row.RERAPortalScreenShotURL)}
+                title="Screenshot Document"
+                triggerLabel={value===''  || 'Screenshot'}
+              />
+
+            </div>
+          );
+        }
       },
       {
-        key: 'ProjectDocumentStatus',
+        key: 'ProjectRERADocumentStatus',
         label: 'Status',
         width: '18',
         sortable: false,
@@ -584,7 +532,7 @@ const ProjectDocument: React.FC = () => {
         }
       },
       {
-        key: 'ProjectDocumentRemark',
+        key: 'ProjectRERADocumentRemark',
         label: 'Remark',
         width: '18',
         sortable: false,
@@ -616,20 +564,24 @@ const ProjectDocument: React.FC = () => {
 
     ],
     // dependencies: include everything used inside that might change
-    [canAction, handleEditProjectDocument]
+    [canAction]
   )
   //#endregion
 
   //#region ADD UPDATE EDIT DOCUMENT
 
-  const handleAddDocumentDetailsModal = useCallback((row: ProjectDocumentData) => {
-    setExpandHeaderProjectDocumentName(row.ProjectDocumentName);
-    setExpandHeaderProjectDocumentId(row.ProjectDocumentId);
+  const handleAddDocumentDetailsModal = useCallback((row: ProjectRERADocumentData) => {
+    setExpandHeaderProjectRERADocumentName(row.ProjectRERADocumentName ?? '');
+    setExpandHeaderProjectRERADocumentId(row.ProjectRERADocumentId ?? 0);
 
-    setProjectDocumentFiles([]);
-    setProjectDocumentURL('')
-    setRemoveProjectDocumentUrls([]);
-    
+    setProjectRERADocumentFiles([]);
+    setProjectRERADocumentURL('')
+    setRemoveProjectRERADocumentUrls([]);
+
+    setRERAPortalScreenShotFiles([]);
+    setRERAPortalScreenShotURL('')
+    setRemoveRERAPortalScreenShotUrls([]);
+
     setEditingDocumentData(null);
     setFormData(initialFormState());
     setErrors({});
@@ -638,7 +590,7 @@ const ProjectDocument: React.FC = () => {
 
   }, [])
 
-  const handleFieldChange = (field: keyof AddUpdateProjectDocumentRequest, value: any) => {
+  const handleFieldChange = (field: keyof AddUpdateProjectRERADocumentRequest, value: any) => {
 
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -647,34 +599,8 @@ const ProjectDocument: React.FC = () => {
     }
   };
 
-  const handleAddDocumentModal = useCallback(() => {
-    setEditingDocumentData(null);
-    setFormData(initialFormState());
-    setErrors({});
-    setIsAddUpdateDocumentModalOpen(true);
-  }, [])
-
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
-  const validateAddDocumentForm = (): {
 
-    isValid: boolean
-
-    errors: { [key: string]: string }
-
-  } => {
-
-    const newErrors: { [key: string]: string } = {}
-
-    if (formData.ProjectDocumentName?.trim() === '') {
-
-      newErrors.ProjectDocumentName = "Document Name is required"
-    }
-
-    return {
-      isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors
-    }
-  }
 
   const validateAddDocumentDetailsForm = (): {
 
@@ -686,9 +612,9 @@ const ProjectDocument: React.FC = () => {
 
     const newErrors: { [key: string]: string } = {}
 
-    if (formData.ProjectDocumentStatus?.trim() === '') {
+    if (formData.ProjectRERADocumentStatus?.trim() === '') {
 
-      newErrors.ProjectDocumentStatus = "Status is required"
+      newErrors.ProjectRERADocumentStatus = "Status is required"
     }
 
 
@@ -698,44 +624,43 @@ const ProjectDocument: React.FC = () => {
     }
   }
 
-  const PushDocumentFormData = (): FormData => {
-
-
-    const fd = new FormData();
-
-    fd.append('ProjectDocumentId', String(formData.ProjectDocumentId ?? 0)),
-      fd.append('Uniquekey', formData.Uniquekey ?? ''),
-      fd.append('ProjectDocumentName', formData.ProjectDocumentName ?? ''),
-      fd.append('ProjectId', String(projectId)),
-      fd.append('ProjectDocumentCategoryId', String(getActiveTabId() ?? 0)),
-      fd.append('IsMaster', String(1))
-
-    return fd;
-
-  };
 
   const PushDocumentDetailsFormData = (): FormData => {
 
 
     const fd = new FormData();
 
-    fd.append('ProjectDocumentId', editingDocumentData ? String(formData.ProjectDocumentId) : String(expandHeaderProjectDocumentId ?? 0)),
-      fd.append('Uniquekey', formData.Uniquekey ?? ''),
-      fd.append('ProjectDocumentName', expandHeaderProjectDocumentName ?? ""),
-      fd.append('ProjectId', String(projectId)),
-      fd.append('ProjectDocumentCategoryId', String(getActiveTabId() ?? 0)),
-      fd.append('ProjectDocumentExpiryDate', formData.ProjectDocumentExpiryDate ?? ""),
-      fd.append('ProjectDocumentStatus', formData.ProjectDocumentStatus ?? ''),
-      fd.append('ProjectDocumentRemark', formData.ProjectDocumentRemark ?? ''),
+      fd.append('ProjectRERADocumentId', editingDocumentData ? String(formData.ProjectRERADocumentId) : String(expandHeaderProjectRERADocumentId ?? 0));
+      
+      fd.append('Uniquekey', formData.Uniquekey ?? '');
+      
+      fd.append('ProjectRERADocumentName', expandHeaderProjectRERADocumentName ?? "");
+      
+      fd.append('ProjectId', String(projectId));
+      
+      fd.append('ProjectRERADocumentCategoryId', String(getActiveTabId() ?? 0));
+      
+      fd.append('ProjectRERADocumentStatus', formData.ProjectRERADocumentStatus ?? '');
+      
+      fd.append('ProjectRERADocumentRemark', formData.ProjectRERADocumentRemark ?? '');
+      
       fd.append('IsMaster', String(0)),
 
-      projectDocumentFiles.forEach(file => {
+      projectRERADocumentFiles.forEach(file => {
         if (file instanceof File) {
-          fd.append('ProjectDocumentURL', file);
+          fd.append('ProjectRERADocumentURL', file);
         }
       });
 
-    fd.append('RemoveProjectDocumentURL', RemoveProjectDocumentUrls.join(','));
+    fd.append('RemoveProjectRERADocumentURL', RemoveProjectRERADocumentUrls.join(','));
+
+    rERAPortalScreenShotFiles.forEach(file => {
+      if (file instanceof File) {
+        fd.append('RERAPortalScreenShotURL', file);
+      }
+    });
+
+    fd.append('RemoveRERAPortalScreenShotURL', RemoveRERAPortalScreenShotUrls.join(','));
 
 
     return fd;
@@ -748,28 +673,17 @@ const ProjectDocument: React.FC = () => {
 
     setErrors({})
 
-    if (ismaster === 1) {
 
-      const validation = validateAddDocumentForm()
 
-      if (!validation.isValid) {
+    const validation = validateAddDocumentDetailsForm()
 
-        setErrors(validation.errors)
+    if (!validation.isValid) {
 
-        return
-      }
+      setErrors(validation.errors)
+
+      return
     }
-    else {
 
-      const validation = validateAddDocumentDetailsForm()
-
-      if (!validation.isValid) {
-
-        setErrors(validation.errors)
-
-        return
-      }
-    }
 
     await runApiWithLoader(
       setIsLoading,
@@ -778,23 +692,23 @@ const ProjectDocument: React.FC = () => {
 
       async () => {
 
-        const payload = ismaster === 1 ? PushDocumentFormData() : PushDocumentDetailsFormData();
+        const payload = PushDocumentDetailsFormData();
 
-        const response = await ProjectDocumentService.apiCallAddUpdateProjectDocument(payload);
+        const response = await ProjectRERADocumentService.apiCallAddUpdateProjectRERADocument(payload);
 
         if (E.isRight(response)) {
 
-          ismaster === 1 ? setIsAddUpdateDocumentModalOpen(false) : setIsAddUpdateDocumentDetailsModalOpen(false);
+          setIsAddUpdateDocumentDetailsModalOpen(false);
 
-          const isAdd = formData.ProjectDocumentId === 0;
+          const isAdd = formData.ProjectRERADocumentId === 0;
 
           if (isAdd) {
 
-            const newRecord = response.right.Data[0] as ProjectDocumentData
+            const newRecord = response.right.Data[0] as ProjectRERADocumentData
 
             if (ismaster === 1) {
 
-              setProjectDocumentList(prevData => [newRecord, ...prevData]);
+              setProjectRERADocumentList(prevData => [newRecord, ...prevData]);
 
               setPagination({
                 currentPage: pagination.currentPage,
@@ -807,13 +721,13 @@ const ProjectDocument: React.FC = () => {
 
           } else {
 
-            const updatedRecord = response.right.Data[0] as ProjectDocumentData;
+            const updatedRecord = response.right.Data[0] as ProjectRERADocumentData;
 
             if (ismaster === 1) {
 
-              setProjectDocumentList(prevData =>
+              setProjectRERADocumentList(prevData =>
                 prevData.map(item =>
-                  item.ProjectDocumentId === formData.ProjectDocumentId
+                  item.ProjectRERADocumentId === formData.ProjectRERADocumentId
                     ? updatedRecord
                     : item
                 )
@@ -839,68 +753,13 @@ const ProjectDocument: React.FC = () => {
       },
       undefined,
 
-      Number(formData.ProjectDocumentId) === 0 ? 'Add Document' : 'Update Document'
+      Number(formData.ProjectRERADocumentId) === 0 ? 'Add Document' : 'Update Document'
     )
 
   };
 
   //#endregion
 
-  //#region DELETE DOCUMENT
-  const handleDeleteDocument = async () => {
-
-    setIsConfirmationDialogBoxOpen(false);
-
-    if (!deleteProjectDocumentDetailsData) return
-
-    await runApiWithLoader(
-      setIsLoading,
-      setIsLoadingMessage,
-
-      async () => {
-
-        const params: DeleteProjectDocumentRequest = {
-          ProjectDocumentId: deleteProjectDocumentDetailsData.ProjectDocumentId,
-          projectId: deleteProjectDocumentDetailsData.ProjectId,
-          Uniquekey: deleteProjectDocumentDetailsData.Uniquekey ?? '',
-          ProjectDocumentCategoryId: deleteProjectDocumentDetailsData.ProjectDocumentCategoryId
-        }
-
-        const response = await ProjectDocumentService.apiCallDeleteProjectDocument(params);
-
-        if (E.isRight(response)) {
-
-          setProjectDocumentList(prevData => prevData.filter(item => item.ProjectDocumentId !== deleteProjectDocumentDetailsData.ProjectDocumentId));
-
-          setPagination({
-            currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords - 1,
-            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
-          });
-
-          addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-
-          setIsConfirmationDialogBoxOpen(false);
-
-          setDeleteProjectDocumentDetailsData(null);
-
-        } else {
-          addToast({ type: 'error', title: response.left.message });
-
-          setIsConfirmationDialogBoxOpen(false);
-        }
-
-        return response
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message })
-      },
-      undefined,
-      'Delete Document'
-    )
-  }
-  //#endregion
 
   return (
     <>
@@ -923,9 +782,7 @@ const ProjectDocument: React.FC = () => {
           isShowFilterButton={false}
           isShowCustomizeButton={false}
           // ADD
-          isShowAddButton={projectDocumentTabList.length > 0 ? true : false}
-          addTitle="Add Document"
-          onAdd={handleAddDocumentModal}
+          isShowAddButton={false}
 
           // IMPORT
           isShowImportButton={false}
@@ -935,19 +792,19 @@ const ProjectDocument: React.FC = () => {
         />
 
 
-        {projectDocumentTabList.length > 0 && (
+        {projectRERADocumentTabList.length > 0 && (
           <Tabs
-            tabs={projectDocumentTabList}
+            tabs={projectRERADocumentTabList}
             defaultActive={activeTab}
             onTabChange={(t) => {
               setActiveTab(t.id);
 
               const newFilters: FilterInfo = {
                 ...filters,
-                ProjectDocumentCategoryId: t.id,
+                ProjectRERADocumentCategoryId: t.id,
               };
 
-              loadProjectDocument(1, newFilters);
+              loadProjectRERADocument(1, newFilters);
             }}
 
           />
@@ -956,9 +813,9 @@ const ProjectDocument: React.FC = () => {
 
         <DataTableExpandable
           ref={dtRef}
-          data={projectDocumentListForTable}
-          columns={projectDocumentColumns}
-          pagination={projectDocumentPaginationInfo}
+          data={projectRERADocumentListForTable}
+          columns={projectRERADocumentColumns}
+          pagination={projectRERADocumentPaginationInfo}
           sortInfo={sortInfo}
           onSort={handleSortColumn}
           emptyMessage='No Document Data Found'
@@ -967,23 +824,20 @@ const ProjectDocument: React.FC = () => {
           recordsPerPage={20}
           expandable={{
 
-            keyField: 'ProjectDocumentId',
+            keyField: 'ProjectRERADocumentId',
             alwaysFetchOnOpen: true,
             fetchRow: async (row) => {
 
-              const params: FilterWithPaginationProjectDocument = {
+              const params: FilterWithPaginationProjectRERADocument = {
                 PageNumber: 1,
                 PageSize: pagination.pageSize,
                 ProjectId: projectId,
-                ProjectDocumentId: Number(row.ProjectDocumentId),
-                ProjectDocumentName: row.ProjectDocumentName,
-                ProjectDocumentStatus: row.ProjectDocumentStatus,
-                ProjectDocumentCategory: row.ProjectDocumentCategory,
-                ProjectDocumentCategoryId: row.ProjectDocumentCategoryId
+                ProjectRERADocumentId: Number(row.ProjectRERADocumentId),
+                ProjectRERADocumentCategoryId: row.ProjectRERADocumentCategoryId
               };
 
 
-              const response = await ProjectDocumentService.apiCallPullProjectDocument(params);
+              const response = await ProjectRERADocumentService.apiCallPullProjectRERADocument(params);
 
               if (E.isRight(response)) {
 
@@ -996,7 +850,7 @@ const ProjectDocument: React.FC = () => {
 
             renderRow: (fetchedData) => {
 
-              const details: ProjectDocumentData[] = Array.isArray(fetchedData) ? fetchedData : (fetchedData ? [fetchedData] : []);
+              const details: ProjectRERADocumentData[] = Array.isArray(fetchedData) ? fetchedData : (fetchedData ? [fetchedData] : []);
               if (!details || details.length === 0) {
 
                 return (
@@ -1009,7 +863,7 @@ const ProjectDocument: React.FC = () => {
               return (
                 <DataTable
                   data={details}
-                  columns={projectDocumentDetailsColumns}
+                  columns={projectRERADocumentDetailsColumns}
                   emptyMessage="No Departments Data Found"
                   fixedHeight={true}
                   maxHeight="calc(100vh - 255px)"
@@ -1026,49 +880,6 @@ const ProjectDocument: React.FC = () => {
           }}
         />
 
-
-        {/*  ADD EDIT UPDATE DOCUMENT */}
-        <Modal
-          isOpen={isAddUpdateDocumentModalOpen}
-          onClose={() => {
-            setIsAddUpdateDocumentModalOpen(false);
-            setEditingDocumentData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateDocumentModalOpen(false);
-            setEditingDocumentData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          title={editingDocumentData ? 'Update Document' : 'Add Document'}
-          onSubmit={(e) => handleAddUpdateDocument(1, e)}
-          saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
-          resetText='Reset'
-          loading={isLoading}
-          size='xl'
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4" >
-              <div>
-                <Input
-                  label='Document'
-                  required
-                  error={errors.ProjectDocumentName}
-                  type="text"
-                  value={formData.ProjectDocumentName}
-                  maxLength={250}
-                  onChange={(e) => handleFieldChange('ProjectDocumentName', e.target.value)}
-                  placeholder="Enter Document"
-                />
-
-              </div>
-
-            </div>
-          </div>
-
-        </Modal>
 
         {/*  ADD EDIT UPDATE DOCUMENT DETAILS */}
         <Modal
@@ -1101,52 +912,59 @@ const ProjectDocument: React.FC = () => {
                     required
                     readOnly
                     type="text"
-                    value={formData.ProjectDocumentName}
+                    value={formData.ProjectRERADocumentName}
                     maxLength={250}
                     placeholder="Enter Document"
                   />
                   : ""}
 
               </div>
-              <div>
-                <DatePickerInput
-                  label="Expiry Date"
-                  value={formatDate_dd_mm_yyyy(formData.ProjectDocumentExpiryDate)}
-                  onChange={(val) => handleFieldChange('ProjectDocumentExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                />
-              </div>
+
               <div>
                 <SinglePageSelection
                   label="Status"
                   required
-                  value={formData.ProjectDocumentStatus}
-                  onChange={(e) => handleFieldChange('ProjectDocumentStatus', String(e))}
+                  value={formData.ProjectRERADocumentStatus}
+                  onChange={(e) => handleFieldChange('ProjectRERADocumentStatus', String(e))}
                   options={PROJECT_DOCUMENT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={errors.ProjectDocumentStatus}
+                  error={errors.ProjectRERADocumentStatus}
                 />
               </div>
               <div>
                 <MultiFilePicker
                   label="Documents"
-                  value={projectDocumentFiles}
-                  onChange={setProjectDocumentFiles}
-                  availableFilesURL={projectDocumentURL ?? ""}
+                  value={projectRERADocumentFiles}
+                  onChange={setProjectRERADocumentFiles}
+                  availableFilesURL={projectRERADocumentURL ?? ""}
                   allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                   maxFiles={5}
                   maxSizeMB={10}
                   onRemoveExisting={(url) => {
-                    setRemoveProjectDocumentUrls((prev) => [...prev, url])
+                    setRemoveProjectRERADocumentUrls((prev) => [...prev, url])
+                  }}
+                />
+              </div>
+              <div>
+                <MultiFilePicker
+                  label="Screenshot"
+                  value={rERAPortalScreenShotFiles}
+                  onChange={setRERAPortalScreenShotFiles}
+                  availableFilesURL={rERAPortalScreenShotURL ?? ""}
+                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                  maxFiles={5}
+                  maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemoveRERAPortalScreenShotUrls((prev) => [...prev, url])
                   }}
                 />
               </div>
               <div>
                 <Input
                   label='Remark'
-
                   type="text"
-                  value={formData.ProjectDocumentRemark}
+                  value={formData.ProjectRERADocumentRemark}
                   maxLength={250}
-                  onChange={(e) => handleFieldChange('ProjectDocumentRemark', e.target.value)}
+                  onChange={(e) => handleFieldChange('ProjectRERADocumentRemark', e.target.value)}
                   placeholder="Enter Remarks"
                 />
 
@@ -1157,23 +975,9 @@ const ProjectDocument: React.FC = () => {
 
         </Modal>
 
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteProjectDocumentDetailsData(null)
-          }}
-          onConfirm={handleDeleteDocument}
-          title="You are about to delete a document?"
-          message="Deleting this document will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
       </div>
     </>
   );
 };
 
-export default ProjectDocument;
+export default ProjectRERADocument;

@@ -124,7 +124,7 @@ export const UomMaster: React.FC = () => {
           UomMasterId: editingUomMasterData.UomMasterId,
           Uniquekey: editingUomMasterData.UniqueKey || null,
           UomCode: editingUomMasterData.UomCode?.toString() || '',
-          Uom: editingUomMasterData.Uom || ''
+          UomName: editingUomMasterData.Uom || ''
         });
       } else {
         setFormData(initialFormState());

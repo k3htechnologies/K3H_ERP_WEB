@@ -27,6 +27,7 @@ export const LOCAL_STORAGE_KEYS = {
     UOM_MASTER_SELECTED_COLUMNS: 'uomMaster.selectedColumns',
     MATERIAL_MASTER_SELECTED_COLUMNS: 'materialMaster.selectedColumns',
     PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectDocumentCategoryMaster.selectedColumns',
+    PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectRERADocumentCategoryMaster.selectedColumns',
     MENU_MODULE: 'menuModule',
     COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER: 'country_state_district_city_village_data',
 } as const

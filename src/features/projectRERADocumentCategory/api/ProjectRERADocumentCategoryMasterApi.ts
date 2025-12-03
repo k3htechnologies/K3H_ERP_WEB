@@ -1,5 +1,5 @@
 export const ProjectRERADocumentCategoryMasterApi = {
-    PULL : "/ProjectRERADocumentCategory/PullRERAProjectDocumentCategory",
+    PULL : "/ProjectRERADocumentCategory/PullProjectRERADocumentCategory",
     ADD_UPDATE : "/ProjectRERADocumentCategory/AddUpdateProjectRERADocumentCategory",
     DELETE : "/ProjectRERADocumentCategory/DeleteProjectRERADocumentCategory",
 } as const

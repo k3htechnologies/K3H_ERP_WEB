@@ -665,6 +665,29 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE PROJECT RERA DOCUMENT CATEGORY MASTER COLUMNS
+    storeProjectRERADocumentCategoryMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Project RERA Document Category Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET PROJECT RERA DOCUMENT CATEGORY MASTER COLUMNS
+    getProjectRERADocumentCategoryMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Project RERA Document Category Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
     //#region STORE MENU DATA
     storeMenuData: (menuData: ModuleData[] | ModuleData): void => {
         try {
@@ -750,6 +773,7 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.UOM_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER);
         } catch (error) {

@@ -156,6 +156,11 @@ export const getPageInfo = (path: string) => {
                 title: 'RERA Document Category Master',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
+        case 'rera':
+            return {
+                title: 'RERA Document',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
         case 'document':
             return {
                 title: 'Project Document',

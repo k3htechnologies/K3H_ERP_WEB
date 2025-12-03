@@ -2,7 +2,7 @@ import useToast from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import { Tabs, type TabItem } from '@/ui/components/Tab/Tab';
 import { ToastContainer } from '@/ui/components/Toast';
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { fetchProjectDocumentCategoryDropdown } from '@/features/projectDocumentCategory/projectDocumentCategoryDropDown';
 import { runApiWithLoader } from '@/core/utils';
 import type { AddUpdateProjectDocumentRequest, DeleteProjectDocumentRequest, FilterWithPaginationProjectDocument, ProjectDocumentData } from '@/features/projectDocument/models/ProjectDocumentModel';
@@ -10,7 +10,7 @@ import usePagination from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import * as E from 'fp-ts/Either';
 import { ProjectDocumentService } from '../services/ProjectDocumentService';
-import DataTableExpandable from '@/ui/components/DataTable/DataTableExpandable';
+import DataTableExpandable, { type DataTableExpandableRef } from '@/ui/components/DataTable/DataTableExpandable';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
@@ -41,7 +41,7 @@ const initialFormState = (): AddUpdateProjectDocumentRequest => ({
   RemoveProjectDocumentURL: '',
   ProjectDocumentRemark: ''
 });
-
+var projectId=2;
 const ProjectDocument: React.FC = () => {
 
   //#region STATE
@@ -77,6 +77,10 @@ const ProjectDocument: React.FC = () => {
   // TAB LIST
   const [projectDocumentTabList, setProjectDocumentTabList] = useState<TabItem[]>([]);
   const [activeTab, setActiveTab] = useState<string>('');
+
+  //DATATABLE EXPANDABLE REF
+  const dtRef = useRef<DataTableExpandableRef | null>(null)
+
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -147,7 +151,7 @@ const ProjectDocument: React.FC = () => {
   }, [isAddUpdateDocumentModalOpen, isAddUpdateDocumentDetailsModalOpen, editingDocumentData]);
 
   //#endregion
-
+  //#region ACTIVE TAB IF FIND OUT
   const getActiveTabId = (filterParams?: FilterInfo): number => {
     if (filterParams && filterParams.ProjectDocumentCategoryId != null) {
       const raw = filterParams.ProjectDocumentCategoryId;
@@ -163,7 +167,7 @@ const ProjectDocument: React.FC = () => {
 
     return 0;
   };
-
+  //#endregion
   //#region LOAD TAB PROJECT DOCUMENT CATEGORY
   const loadProjectDocumentTabs = async () => {
     await runApiWithLoader(
@@ -171,7 +175,7 @@ const ProjectDocument: React.FC = () => {
       setIsLoadingMessage,
       async () => {
 
-        const response = await fetchProjectDocumentCategoryDropdown(1, 2);
+        const response = await fetchProjectDocumentCategoryDropdown(1, projectId);
 
         const items = Array.isArray(response?.itemList) ? response.itemList : [];
 
@@ -232,7 +236,7 @@ const ProjectDocument: React.FC = () => {
         const params: FilterWithPaginationProjectDocument = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          ProjectId: 2,
+          ProjectId: projectId,
           ProjectDocumentId: Number(filterParams.ProjectDocumentId) ?? undefined,
           ProjectDocumentName: filterParams.ProjectDocumentName,
           ProjectDocumentStatus: filterParams.ProjectDocumentStatus,
@@ -391,7 +395,7 @@ const ProjectDocument: React.FC = () => {
             <div className="flex items-center justify-end ml-2 gap-1">
 
               <TooltipText
-                text={value || 'N/A'}
+                text={value || ''}
                 maxWidth="250px"
                 tooltipThreshold={40}
               />
@@ -406,7 +410,7 @@ const ProjectDocument: React.FC = () => {
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
-                      handleAddDocumentDetailsModal()
+                      handleAddDocumentDetailsModal(row)
                     }}
                     color="transparent"
                     isborderRadius
@@ -485,6 +489,24 @@ const ProjectDocument: React.FC = () => {
   )
   //#endregion
 
+  // #region STATUS COLOR 
+  const getStatusColor = (status: string = "") => {
+    const map: Record<string, { bg: string; text: string }> = {
+      "Applied": { bg: "bg-green-100", text: "text-green-800" },
+      "Doc Missing": { bg: "bg-red-100", text: "text-red-800" },
+      "In Process": { bg: "bg-yellow-100", text: "text-yellow-800" },
+      "Issued": { bg: "bg-blue-100", text: "text-blue-800" },
+      "Not Applied": { bg: "bg-gray-100", text: "text-gray-800" },
+      "Not Applicable": { bg: "bg-gray-200", text: "text-gray-900" },
+      "Paid": { bg: "bg-emerald-100", text: "text-emerald-800" },
+      "Payment Due": { bg: "bg-orange-100", text: "text-orange-800" },
+      "Rejected": { bg: "bg-red-200", text: "text-red-900" },
+    };
+
+    return map[status] || { bg: "bg-gray-100", text: "text-gray-800" };
+  };
+  //#endregion
+
   //#region TABLE COLUMN DOCUMENT DETAILS
 
   const projectDocumentDetailsColumns = useMemo<TableColumn[]>(
@@ -540,7 +562,7 @@ const ProjectDocument: React.FC = () => {
         width: '18',
         sortable: false,
         align: 'left',
-        render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
+        render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       },
       {
         key: 'ProjectDocumentStatus',
@@ -548,14 +570,18 @@ const ProjectDocument: React.FC = () => {
         width: '18',
         sortable: false,
         align: 'left',
-        render: (value) => (
-          <TooltipText
-            text={value || '-'}
-            maxWidth="180px"
-            tooltipThreshold={18}
-            tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
-          />
-        )
+        render: (value) => {
+          const { bg, text } = getStatusColor(value);
+
+          return (
+            <TooltipText
+              text={value || "-"}
+              maxWidth="180px"
+              tooltipThreshold={18}
+              tooltipClassName={`inline-block px-2 py-1 rounded-full text-xs font-medium ${bg} ${text} overflow-hidden text-ellipsis whitespace-nowrap`}
+            />
+          );
+        }
       },
       {
         key: 'ProjectDocumentRemark',
@@ -595,14 +621,17 @@ const ProjectDocument: React.FC = () => {
   //#endregion
 
   //#region ADD UPDATE EDIT DOCUMENT
-  const handleAddDocumentDetailsModal = useCallback(() => {
+
+  const handleAddDocumentDetailsModal = useCallback((row: ProjectDocumentData) => {
+    setExpandHeaderProjectDocumentName(row.ProjectDocumentName);
+    setExpandHeaderProjectDocumentId(row.ProjectDocumentId);
     setEditingDocumentData(null);
     setFormData(initialFormState());
     setErrors({});
     setIsAddUpdateDocumentDetailsModalOpen(true);
 
-  }, [])
 
+  }, [])
 
   const handleFieldChange = (field: keyof AddUpdateProjectDocumentRequest, value: any) => {
 
@@ -672,7 +701,7 @@ const ProjectDocument: React.FC = () => {
     fd.append('ProjectDocumentId', String(formData.ProjectDocumentId ?? 0)),
       fd.append('Uniquekey', formData.Uniquekey ?? ''),
       fd.append('ProjectDocumentName', formData.ProjectDocumentName ?? ''),
-      fd.append('ProjectId', String(2)),
+      fd.append('ProjectId', String(projectId)),
       fd.append('ProjectDocumentCategoryId', String(getActiveTabId() ?? 0)),
       fd.append('IsMaster', String(1))
 
@@ -685,10 +714,10 @@ const ProjectDocument: React.FC = () => {
 
     const fd = new FormData();
 
-      fd.append('ProjectDocumentId', String(expandHeaderProjectDocumentId ?? 0)),
+    fd.append('ProjectDocumentId', editingDocumentData ? String(formData.ProjectDocumentId) : String(expandHeaderProjectDocumentId ?? 0)),
       fd.append('Uniquekey', formData.Uniquekey ?? ''),
       fd.append('ProjectDocumentName', expandHeaderProjectDocumentName ?? ""),
-      fd.append('ProjectId', String(2)),
+      fd.append('ProjectId', String(projectId)),
       fd.append('ProjectDocumentCategoryId', String(getActiveTabId() ?? 0)),
       fd.append('ProjectDocumentExpiryDate', formData.ProjectDocumentExpiryDate ?? ""),
       fd.append('ProjectDocumentStatus', formData.ProjectDocumentStatus ?? ''),
@@ -709,6 +738,7 @@ const ProjectDocument: React.FC = () => {
   };
 
   const handleAddUpdateDocument = async (ismaster: number, e: React.FormEvent) => {
+
     e.preventDefault();
 
     setErrors({})
@@ -757,14 +787,16 @@ const ProjectDocument: React.FC = () => {
 
             const newRecord = response.right.Data[0] as ProjectDocumentData
 
-            setProjectDocumentList(prevData => [newRecord, ...prevData]);
+            if (ismaster === 1) {
 
-            setPagination({
-              currentPage: pagination.currentPage,
-              totalRecords: pagination.totalRecords + 1,
-              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-            });
+              setProjectDocumentList(prevData => [newRecord, ...prevData]);
 
+              setPagination({
+                currentPage: pagination.currentPage,
+                totalRecords: pagination.totalRecords + 1,
+                totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
+              });
+            }
 
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
@@ -772,18 +804,21 @@ const ProjectDocument: React.FC = () => {
 
             const updatedRecord = response.right.Data[0] as ProjectDocumentData;
 
-            setProjectDocumentList(prevData =>
-              prevData.map(item =>
-                item.ProjectDocumentId === formData.ProjectDocumentId
-                  ? updatedRecord
-                  : item
-              )
-            )
+            if (ismaster === 1) {
 
+              setProjectDocumentList(prevData =>
+                prevData.map(item =>
+                  item.ProjectDocumentId === formData.ProjectDocumentId
+                    ? updatedRecord
+                    : item
+                )
+              )
+            }
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
           setEditingDocumentData(null);
+          dtRef.current?.collapseAll?.();
 
         } else {
 
@@ -866,7 +901,7 @@ const ProjectDocument: React.FC = () => {
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
         <Loader loading={isLoading} title={loadingMessage}>
           <div></div>
         </Loader>
@@ -883,7 +918,7 @@ const ProjectDocument: React.FC = () => {
           isShowFilterButton={false}
           isShowCustomizeButton={false}
           // ADD
-          isShowAddButton={true}
+          isShowAddButton={projectDocumentTabList.length > 0 ? true : false}
           addTitle="Add Document"
           onAdd={handleAddDocumentModal}
 
@@ -915,6 +950,7 @@ const ProjectDocument: React.FC = () => {
 
 
         <DataTableExpandable
+          ref={dtRef}
           data={projectDocumentListForTable}
           columns={projectDocumentColumns}
           pagination={projectDocumentPaginationInfo}
@@ -940,8 +976,7 @@ const ProjectDocument: React.FC = () => {
                 ProjectDocumentCategory: row.ProjectDocumentCategory,
                 ProjectDocumentCategoryId: row.ProjectDocumentCategoryId
               };
-              setExpandHeaderProjectDocumentName(row.ProjectDocumentName);
-              setExpandHeaderProjectDocumentId(row.ProjectDocumentId);
+
 
               const response = await ProjectDocumentService.apiCallPullProjectDocument(params);
 
@@ -1102,7 +1137,7 @@ const ProjectDocument: React.FC = () => {
               <div>
                 <Input
                   label='Remark'
-                  
+
                   type="text"
                   value={formData.ProjectDocumentRemark}
                   maxLength={250}

@@ -39,6 +39,8 @@ const initialFormState = (): AddUpdateProjectDocumentCategoryMasterRequest => ({
   OrderBy: 0
 });
 
+var projectId=2;
+
 export const ProjectDocumentCategoryMaster: React.FC = () => {
   //#region STATE MANAGEMENT
   const [projectDocumentCategoryMasterList, setProjectDocumentCategoryMasterList] = useState<ProjectDocumentCategoryMasterData[]>([]);
@@ -157,7 +159,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
           ProjectDocumentCategoryId: filterParams.ProjectDocumentCategoryId ? Number(filterParams.ProjectDocumentCategoryId) : 0,
           ProjectDocumentCategory: filterParams.ProjectDocumentCategory?.trim() || undefined,
           // ProjectId: filterParams.ProjectId ? Number(filterParams.ProjectId) : undefined,
-          ProjectId: 1,
+          ProjectId: projectId,
           SortBy: sortByParam
         };
 
@@ -802,7 +804,6 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
           pagination={projectDocumentCategoryMasterPaginationInfo}
           emptyMessage="No Project Document Category Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}

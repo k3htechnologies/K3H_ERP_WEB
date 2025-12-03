@@ -262,7 +262,7 @@ export const Header: React.FC<HeaderProps> = ({
                     isOpen={isEmployeeProfileModalOpen}
                     onClose={() => setIsEmployeeProfileModalOpen(false)}
                     title="Profile"
-                    size="small-half"
+                    size="small25"
                 >
                     <div className="p-4">
                         <div className="flex items-center space-x-4 mb-6">

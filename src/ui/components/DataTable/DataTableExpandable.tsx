@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, ArrowUpDown, ChevronDown } from 'lucide-react'
 import { useViewportHeight } from '@/core/utils/useViewportHeight'
 import type { PaginationInfo, SortInfo, TableColumn } from './DataTable'
@@ -28,7 +28,12 @@ interface DataTableProps {
   alwaysFetchOnOpen?: boolean
 }
 
-export const DataTableExpandable: React.FC<DataTableProps> = ({
+export interface DataTableExpandableRef {
+  collapseRow: (id: string) => void
+  collapseAll: () => void
+}
+
+export const DataTableExpandable= forwardRef<DataTableExpandableRef, DataTableProps>(({
   data,
   columns,
   pagination,
@@ -42,7 +47,7 @@ export const DataTableExpandable: React.FC<DataTableProps> = ({
   onSort,
   expandable,
   alwaysFetchOnOpen
-}) => {
+}, ref) => {
 
   const [expandedMap, setExpandedMap] = useState<Record<string, { open: boolean; loading: boolean; data?: any; error?: string }>>({})
 
@@ -129,6 +134,25 @@ export const DataTableExpandable: React.FC<DataTableProps> = ({
     }
   }
 
+    // expose imperative API to parent
+  useImperativeHandle(ref, () => ({
+    collapseRow: (id: string) => {
+      setExpandedMap(prev => {
+        if (!prev[id]) return prev
+        return { ...prev, [id]: { ...prev[id], open: false } }
+      })
+    },
+    collapseAll: () => {
+      setExpandedMap(prev => {
+        const next: typeof prev = {}
+        Object.keys(prev).forEach(k => {
+          next[k] = { ...prev[k], open: false }
+        })
+        return next
+      })
+    }
+  }), [])
+
   const renderPagination = () => {
     if (!pagination) return null
 
@@ -200,7 +224,7 @@ export const DataTableExpandable: React.FC<DataTableProps> = ({
             backgroundColor: '#E5E5E5',
             position: fixedHeight ? 'sticky' : 'static',
             top: 0,
-            zIndex: 30,
+            zIndex: 50,
           }}>
             <tr className="h-10" style={{
               fontSize: '14px',
@@ -323,6 +347,6 @@ export const DataTableExpandable: React.FC<DataTableProps> = ({
       )}
     </div>
   )
-}
+})
 
 export default DataTableExpandable

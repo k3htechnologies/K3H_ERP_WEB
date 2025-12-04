@@ -53,31 +53,31 @@ export const CountryStateCityDistrictVillage: React.FC<{ children: ReactNode }> 
       try {
 
         //1️⃣ FIRST: try from localStorage
-        const stored = LocalStorageHelper.getCountry_State_District_City_VillageData?.()
+        // const stored = LocalStorageHelper.getCountry_State_District_City_VillageData?.()
 
-        if (stored && stored.length > 0) {
-          const {
-            countries,
-            statesByCountryId,
-            districtsByStateId,
-            citiesByDistrictId,
-            villagesByCityId,
-          } = buildLocationMaps(stored)
+        // if (stored && stored.length > 0) {
+        //   const {
+        //     countries,
+        //     statesByCountryId,
+        //     districtsByStateId,
+        //     citiesByDistrictId,
+        //     villagesByCityId,
+        //   } = buildLocationMaps(stored)
 
-          if (!isMounted) return
-          setValue({
-            isLoading: false,
-            error: null,
-            countries,
-            statesByCountryId,
-            districtsByStateId,
-            citiesByDistrictId,
-            villagesByCityId,
-          })
+        //   if (!isMounted) return
+        //   setValue({
+        //     isLoading: false,
+        //     error: null,
+        //     countries,
+        //     statesByCountryId,
+        //     districtsByStateId,
+        //     citiesByDistrictId,
+        //     villagesByCityId,
+        //   })
 
-          // ✅ We already have data, no API call
-          return
-        }
+        //   // ✅ We already have data, no API call
+        //   return
+        // }
 
         // 2️⃣ If no local data, call API
         const result = await technicalService.apiCallCountryStateDistrictCityVillage()

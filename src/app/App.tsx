@@ -43,6 +43,7 @@ import ProjectDocumentCategoryMaster from '@/features/projectDocumentCategory/pa
 import ProjectDocument from '@/features/projectDocument/pages/ProjectDocument';
 import ProjectRERADocumentCategoryMaster from '@/features/projectRERADocumentCategory/pages/ProjectRERADocumentCategoryMaster';
 import ProjectRERADocument from '@/features/projectRERADocument/pages/ProjectRERADocument';
+import ViewCompantMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -91,7 +92,7 @@ function App() {
           <Route path="error" element={<ErrorFallbackPage />} />
           <Route path="profile" element={<Profile />} />
 
-          <Route path="companyMaster/addCompany" element={<AddCompany />} />
+          
 
 
           {/* Protected Routes with Layout */}
@@ -112,6 +113,8 @@ function App() {
             <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />
             <Route path="employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
             <Route path="companyMaster" element={<CompanyMaster />} />
+            <Route path="companyMaster/view" element={<ViewCompantMaster />} />
+            <Route path="companyMaster/add/:companyId?" element={<AddCompany />} />
             <Route path="tnc" element={<TncMaster />} />
             <Route path="bankListMaster" element={<BankListMaster />} />
             <Route path="branchMaster" element={<BranchMaster />} />

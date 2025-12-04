@@ -1,6 +1,7 @@
 import React from 'react';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import { COLORS } from '@/core/constants';
 
 export const FieldItem: React.FC<{
   label: string;
@@ -58,8 +59,8 @@ export const FieldItem: React.FC<{
                   // inline button — make it able to wrap with min-w-0 + whitespace-normal
                   <button
                     type="button"
-                    className="text-sm text-[#1D1D1D] font-medium text-left break-words whitespace-normal max-w-[400px] cursor-pointer p-0 min-w-0"
-                    style={{ background: 'transparent', border: 'none' }}
+                    className="text-sm text-[#1D1D1D] font-medium text-left break-words whitespace-normal max-w-[400px] cursor-pointer p-0 min-w-0 underline"
+                    style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
                   >
                     {displayValue}
                   </button>

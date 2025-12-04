@@ -138,8 +138,6 @@ export const ViewEmployeeMaster: React.FC = () => {
                 {/* Left column: profile card */}
                 <div className="col-span-5">
                     <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-
-
                         <div className="pt-10 px-2 pb-2">
                             <div className="text-center">
                                 <h3 className="text-lg font-semibold text-gray-900">{editEmployeeData?.FullName} <span className="inline-block ml-2 text-green-500">●</span></h3>

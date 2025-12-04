@@ -719,7 +719,7 @@ export const LocalStorageHelper = {
     storeCountry_State_District_City_Village_Data: (locationData: CountryStateCityDistrictVillageData[] | ModuleData): void => {
         try {
 
-            localStorage.setItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS, JSON.stringify(locationData));
+            localStorage.setItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER, JSON.stringify(locationData));
 
         } catch (error) {
             console.error('ERROR : STORING MENU DATA :', error)
@@ -728,7 +728,7 @@ export const LocalStorageHelper = {
     //#endregion
     //#region GET COUNTRY_STATE_DISTRICT_CITY_VILLAGE DATA 
     getCountry_State_District_City_VillageData: (): CountryStateCityDistrictVillageData[] | null => {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS)
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER)
         if (stored) {
             try {
 

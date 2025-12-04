@@ -203,7 +203,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          background: "#fff",
+          backgroundColor: theme.colors.backgroundSecondary,
         }}
       >
         <span

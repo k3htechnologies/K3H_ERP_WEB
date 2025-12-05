@@ -6,10 +6,10 @@ import * as E from 'fp-ts/Either';
 import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
-  DeductionMasterData,
-  FilterWithPaginationDeductionMasterRequest
-} from '@/features/deductionMaster/models/DeductionMasterModel';
-import { DeductionMasterService } from '@/features/deductionMaster/services/DeductionMasterService'
+  WeekOffMasterData,
+  FilterWithPaginationWeekOffMasterRequest,
+} from '@/features/weekOffMaster/models/WeekOffMasterModel'
+
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -21,13 +21,14 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { WeekOffMasterService } from '../services/WeekOffMasterService';
 import { updateFilter } from '@/core/utils/filterHelper';
 
 
-export const DeductionMaster: React.FC = () => {
+export const WeekOffOffMasterMaster: React.FC = () => {
 
   //#region STATE MANAGEMENT
-  const [DeductionMasterList, setDeductionMasterList] = useState<DeductionMasterData[]>([]);
+  const [WeekOffOffMasterList, setWeekOffOffMasterList] = useState<WeekOffMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
 
@@ -46,7 +47,7 @@ export const DeductionMaster: React.FC = () => {
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchDeductions(value)
+    searchWeekOff(value)
   }, 350);
 
   //FILTER STATES
@@ -55,7 +56,7 @@ export const DeductionMaster: React.FC = () => {
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeDeductionColumnsModal, setIsShowCustomizeDeductionColumnsModal] = useState(false);
+  const [isShowCustomizeWeekOffColumnsModal, setIsShowCustomizeWeekOffOffColumnsModal] = useState(false);
 
   //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
@@ -83,11 +84,11 @@ export const DeductionMaster: React.FC = () => {
     setSearchTerm(listState.searchTerm ?? '');
 
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadDeductions(listState.page ?? 1, { Name: String(listState.searchTerm).trim() });
+      loadWeekOff(listState.page ?? 1, { WeekOffOffName: String(listState.searchTerm).trim() });
       return;
     }
 
-    loadDeductions(listState.page ?? 1, listState.filters ?? {});
+    loadWeekOff(listState.page ?? 1, listState.filters ?? {});
   }, [location.state]);
 
   //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
@@ -100,11 +101,11 @@ export const DeductionMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchDeductionMasterList = async (page: number = pagination.currentPage) => {
-    return await loadDeductions(page, filters);
+  const fetchWeekOffMasterList = async (page: number = pagination.currentPage) => {
+    return await loadWeekOff(page, filters);
   }
 
-  const loadDeductions = async (page: number, filterParams: FilterInfo) => {
+  const loadWeekOff = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -113,23 +114,24 @@ export const DeductionMaster: React.FC = () => {
 
         if (sortInfo) {
 
-          const column = DeductionMasterColumns.find(col => col.key === sortInfo.column);
+          const column = WeekOffMasterColumns.find(col => col.key === sortInfo.column);
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
-        const params: FilterWithPaginationDeductionMasterRequest = {
+        const params: FilterWithPaginationWeekOffMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          DeductionMasterId: filterParams.DeductionMasterId ? Number(filterParams.DeductionMasterId) : undefined,
-          Name: filterParams.Name?.trim() || undefined,
+          WeekOffPolicyMasterId: filterParams.WeekOffPolicyMasterId ? Number(filterParams.WeekOffPolicyMasterId) : undefined,
+          WeekOffPolicyName: filterParams.WeekOffPolicyName?.trim() || undefined,
           SortBy: sortByParam
         };
 
-        const response = await DeductionMasterService.apiCallPullDeductionMaster(params);
+        const response = await WeekOffMasterService.apiCallPullWeekOffMaster(params);
+
         if (E.isRight(response)) {
 
-          setDeductionMasterList(response.right.Data);
+          setWeekOffOffMasterList(response.right.Data);
 
           setPagination({
             currentPage: page,
@@ -145,34 +147,34 @@ export const DeductionMaster: React.FC = () => {
       undefined,
       (error: any) => addToast({ type: 'error', title: error.message }),
       undefined,
-      'Loading Deduction Data'
+      'Loading WeekOff Data'
     );
   };
   //#endregion
 
   //#region SEARCH & CLEAR
-  const searchDeductions = async (searchValue: string) => {
+  const searchWeekOff = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
 
-      fetchDeductionMasterList();
+      fetchWeekOffMasterList();
 
       return
     }
 
     const filterParams: FilterInfo = {
-      Name: searchValue.trim(),
+      searchValueWeekOffPolicyName: searchValue.trim(),
     };
 
-    await loadDeductions(1, filterParams);
+    await loadWeekOff(1, filterParams);
   };
 
   //#endregion
 
-  //#region CLEAR DEDUCTION MASTER 
-  const clearSearchDeductions = () => {
+  //#region CLEAR WEEK OFF MASTER 
+  const clearSearchWeekOff = () => {
     setSearchTerm('');
 
     debouncedSearch.cancel?.();
@@ -180,7 +182,7 @@ export const DeductionMaster: React.FC = () => {
     setFilters({});
     setTempFilters({});
     setPagination({ currentPage: 1 });
-    loadDeductions(1, {});
+    loadWeekOff(1, {});
     try {
       navigate(location.pathname, { replace: true, state: {} });
     } catch {
@@ -189,30 +191,34 @@ export const DeductionMaster: React.FC = () => {
   //#endregion
 
   //#region EXPORT / IMPORT EXCEL AND PDF
-  const handleExportDeductions = async (exportType: 'Excel' | 'PDF') => {
+  const handleExportWeekOffs = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
         // Find the column label for sorting
         let sortByParam = undefined
+
         if (sortInfo) {
-          const column = DeductionMasterColumns.find(col => col.key === sortInfo.column);
+
+          const column = WeekOffMasterColumns.find(col => col.key === sortInfo.column);
+
           if (column) {
+
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
-        const params: FilterWithPaginationDeductionMasterRequest = {
+        const params: FilterWithPaginationWeekOffMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
-          Name: filters.Name?.trim() || undefined,
+          WeekOffPolicyName: filters.WeekOffPolicyName?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         };
 
-        const response = await getDeductions(params);
+        const response = await getWeekOff(params);
 
-        handleExportFile(response, exportType, 'Deduction Master', addToast);
+        handleExportFile(response, exportType, 'WeekOff Master', addToast);
 
         return response;
       },
@@ -223,23 +229,22 @@ export const DeductionMaster: React.FC = () => {
     );
   };
 
-  const handleExportDeductionExcel = () => handleExportDeductions('Excel')
-  const handleExportDeductionPdf = () => handleExportDeductions('PDF')
+  const handleExportWeekOffExcel = () => handleExportWeekOffs('Excel')
+  const handleExportWeekOffPdf = () => handleExportWeekOffs('PDF')
   //#endregion
 
 
-  //#region API | SERVICES CALL TO GET DEDUCTION
-  const getDeductions = async (filterParams: FilterWithPaginationDeductionMasterRequest) => {
+  //#region API | SERVICES CALL TO GET WEEK OFF
+  const getWeekOff = async (filterParams: FilterWithPaginationWeekOffMasterRequest) => {
 
-    return await DeductionMasterService.apiCallPullDeductionMaster(filterParams);
+    return await WeekOffMasterService.apiCallPullWeekOffMaster(filterParams);
   }
   //#endregion
 
 
   //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = useCallback((page: number) => {
-
-    fetchDeductionMasterList(page);
+    fetchWeekOffMasterList(page);
   }, []);
 
   //#region TABLE SORT COLUMN
@@ -247,13 +252,13 @@ export const DeductionMaster: React.FC = () => {
 
     setSortInfo(sortInfo);
 
-    fetchDeductionMasterList(1);
+    fetchWeekOffMasterList(1);
 
   }, []);
   //#endregion
 
   //#region TABLE PAGINATION INFO
-  const DeductionPaginationInfo: PaginationInfo = useMemo(
+  const WeekOffPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
       totalPages: pagination.totalPages,
@@ -264,14 +269,14 @@ export const DeductionMaster: React.FC = () => {
     [pagination, handlePageChange]
   );
 
-  const DeductionsForTable = useMemo(() => DeductionMasterList, [DeductionMasterList]);
+  const WeekOffsForTable = useMemo(() => WeekOffOffMasterList, [WeekOffOffMasterList]);
   //#endregion
 
-  //#region NAVIGATE TO  VIEW DEDUCTION
-  const handleNavigateToView = (row: DeductionMasterData) => {
-    navigate('/deductionMaster/view', {
+  //#region NAVIGATE TO  VIEW WEEK OFF
+  const handleNavigateToView = (row: WeekOffMasterData) => {
+    navigate('/WeekOffMaster/view', {
       state: {
-        deductionData: row,
+        WeekOffData: row,
         listState: {
           page: pagination.currentPage,
           filters,
@@ -282,9 +287,9 @@ export const DeductionMaster: React.FC = () => {
     });
   };
 
-  //#region NAVIGATE TO ADD DEDUCTION
-  const handleAddDeductionModal = useCallback(() => {
-    navigate('/deductionMaster/add', {
+  //#region NAVIGATE TO ADD WEEK OFF
+  const handleAddWeekOffModal = useCallback(() => {
+    navigate('/WeekOffMaster/add', {
       state: {
         fromList: true,
         listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
@@ -295,10 +300,10 @@ export const DeductionMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE COLUMNS
-  const DeductionMasterColumns = useMemo<TableColumn[]>(() => [
+  const WeekOffMasterColumns = useMemo<TableColumn[]>(() => [
     {
-      key: 'Name',
-      label: 'Deduction Name',
+      key: 'WeekOffPolicyName',
+      label: 'WeekOff Name',
       width: '20',
       sortable: true,
       fixed: 'left',
@@ -313,133 +318,149 @@ export const DeductionMaster: React.FC = () => {
       )
     },
     {
-      key: 'Type',
-      label: 'Deduction Type',
+      key: 'WeekOffPolicyCode',
+      label: 'WeekOff Code',
       width: '15',
       sortable: false,
       align: 'center',
       render: (value) => (
         <TooltipText
           text={value || 'N/A'}
-          maxWidth="150px"
+          maxWidth="170px"
           tooltipThreshold={15}
         />
       )
     },
     {
-      key: 'Value',
-      label: 'Deduction Value',
+      key: 'WeekDays',
+      label: 'Week Days',
       width: '15',
       sortable: false,
       align: 'center',
       render: (value) => (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          {value || 0}
-        </span>
-      )
-    },
-    {
-      key: 'BranchName',
-      label: 'Branch Name',
-      width: '12',
-      sortable: false,
-      align: 'left',
-      render: (value) => (
         <TooltipText
           text={value || 'N/A'}
-          maxWidth="120px"
-          tooltipThreshold={12}
+          maxWidth="170px"
+          tooltipThreshold={15}
         />
       )
     },
     {
-      key: 'MinSalary',
-      label: 'Min Salary',
-      width: '12',
-      sortable: false,
-      align: 'left',
-      render: (value) =>
-        value ? `₹${value.toLocaleString('en-IN')}` : 'N/A'
-    },
-
-    {
-      key: 'MaxSalary',
-      label: 'Max Salary',
-      width: '12',
-      sortable: false,
-      align: 'left',
-      render: (value) =>
-        value ? `₹${value.toLocaleString('en-IN')}` : 'N/A'
-    },
-
-    {
-      key: 'Gender',
-      label: 'Gender',
-      width: '10',
+      key: 'WeekDaysStartsOn',
+      label: 'Week Days Starts On',
+      width: '15',
       sortable: false,
       align: 'center',
       render: (value) => (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          {value || 'N/A'}
-        </span>
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="170px"
+          tooltipThreshold={15}
+        />
       )
     },
     {
-      key: 'StateName',
-      label: 'StateName',
-      width: '12',
+      key: 'WeeklyOff',
+      label: 'Weekly Off',
+      width: '15',
       sortable: false,
-      align: 'left',
+      align: 'center',
       render: (value) => (
         <TooltipText
           text={value || 'N/A'}
-          maxWidth="120px"
-          tooltipThreshold={12}
+          maxWidth="170px"
+          tooltipThreshold={15}
+        />
+      )
+    },
+    {
+      key: 'WeeklyOff2',
+      label: 'Weekly Off2',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="170px"
+          tooltipThreshold={15}
+        />
+      )
+    },
+    {
+      key: 'WeeklyOff2Type',
+      label: 'Weekly Off2 Type',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="170px"
+          tooltipThreshold={15}
+        />
+      )
+    },
+    {
+      key: 'NotApplicableForMonths',
+      label: 'Not Applicable For Months',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="170px"
+          tooltipThreshold={15}
         />
       )
     },
   ], [handleNavigateToView]);
+
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
-  const requiredDeductionColumnKeys: string[] = ['Name'];
+  const requiredWeekOffColumnKeys: string[] = ['WeekOffName'];
 
-  const allDeductionColumnKeys: string[] = DeductionMasterColumns.map(c => c.key);
+  const allWeekOffColumnKeys: string[] = WeekOffMasterColumns.map(c => c.key);
 
-  const [selectedDeductionColumnKeys, setSelectedDeductionColumnKeys] = useState<string[]>(() => {
+  const [selectedWeekOffColumnKeys, setSelectedWeekOffColumnKeys] = useState<string[]>(() => {
     try {
 
-      const saved = LocalStorageHelper.getDeductionMasterTableColumns?.();
+      const saved = LocalStorageHelper.getWeekOffMasterTableColumns?.();
 
       if (saved) {
 
         const parsed = JSON.parse(saved) as string[]
         // Ensure required columns are always present
 
-        const withRequired = Array.from(new Set([...parsed, ...requiredDeductionColumnKeys]));
+        const withRequired = Array.from(new Set([...parsed, ...requiredWeekOffColumnKeys]));
 
         // Filter out any keys that no longer exist
-        return withRequired.filter(k => allDeductionColumnKeys.includes(k));
+        return withRequired.filter(k => allWeekOffColumnKeys.includes(k));
       }
     } catch { }
-    return allDeductionColumnKeys;
+    return allWeekOffColumnKeys;
   });
 
   useEffect(() => {
-    setSelectedDeductionColumnKeys(prev => Array.from(new Set([...prev, ...requiredDeductionColumnKeys])).filter(k => allDeductionColumnKeys.includes(k)));
+    setSelectedWeekOffColumnKeys(prev => Array.from(new Set([...prev, ...requiredWeekOffColumnKeys])).filter(k => allWeekOffColumnKeys.includes(k)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [DeductionMasterColumns.length])
 
-  const visibleDeductionColumns = useMemo(
-    () => DeductionMasterColumns.filter(col => selectedDeductionColumnKeys.includes(col.key)),
-    [DeductionMasterColumns, selectedDeductionColumnKeys]
+  }, [WeekOffMasterColumns.length])
+
+  const visibleWeekOffColumns = useMemo(
+
+    () => WeekOffMasterColumns.filter(col => selectedWeekOffColumnKeys.includes(col.key)),
+    
+    [WeekOffMasterColumns, selectedWeekOffColumnKeys]
   );
   //#endregion
 
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
     setFilters(tempFilters);
-    loadDeductions(1, tempFilters);
+    loadWeekOff(1, tempFilters);
     setShowFilterPopup(false);
   };
   //#endregion
@@ -453,7 +474,7 @@ export const DeductionMaster: React.FC = () => {
     setPagination({ currentPage: 1 });
 
     // load empty filters
-    loadDeductions(1, {});
+    loadWeekOff(1, {});
 
     setShowFilterPopup(false);
     // clear router state (very important)
@@ -472,19 +493,17 @@ export const DeductionMaster: React.FC = () => {
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-
         <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search By Deduction Name"
+          searchPlaceholder="Search By WeekOff Name"
           onSearchChange={v => {
             setSearchTerm(v);
             debouncedSearch(v);
           }}
-          onClearSearch={clearSearchDeductions}
+          onClearSearch={clearSearchWeekOff}
           isShowFilterButton
           filters={filters}
           onOpenFilter={() => {
@@ -492,28 +511,28 @@ export const DeductionMaster: React.FC = () => {
             setShowFilterPopup(true);
           }}
           isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeDeductionColumnsModal(true)}
+          onCustomize={() => setIsShowCustomizeWeekOffOffColumnsModal(true)}
 
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Deduction"
-          onAdd={handleAddDeductionModal}
+          addTitle="Add WeekOff"
+          onAdd={handleAddWeekOffModal}
 
 
           // EXPORT
           isShowExportButton={canExport}
-          onExportExcel={handleExportDeductionExcel}
-          onExportPdf={handleExportDeductionPdf}
+          onExportExcel={handleExportWeekOffExcel}
+          onExportPdf={handleExportWeekOffPdf}
           exportLoading={isLoading}
         />
 
-        {/* DATA TABLE DEDUCTION*/}
+        {/* DATA TABLE WeekOff*/}
 
         <DataTable
-          data={DeductionsForTable}
-          columns={visibleDeductionColumns}
-          pagination={DeductionPaginationInfo}
-          emptyMessage="No Deduction found"
+          data={WeekOffsForTable}
+          columns={visibleWeekOffColumns}
+          pagination={WeekOffPaginationInfo}
+          emptyMessage="No WeekOff found"
           fixedHeight
           recordsPerPage={20}
           className="flex-1"
@@ -524,33 +543,34 @@ export const DeductionMaster: React.FC = () => {
         {/* CUSTOMIZE COLUMNS MODAL */}
 
         <CustomizeColumnsModal
-          isOpen={isShowCustomizeDeductionColumnsModal}
-          onClose={() => setIsShowCustomizeDeductionColumnsModal(false)}
+          isOpen={isShowCustomizeWeekOffColumnsModal}
+          onClose={() => setIsShowCustomizeWeekOffOffColumnsModal(false)}
           onApply={keys => {
             const withRequired = Array.from(
 
-              new Set([...keys, ...requiredDeductionColumnKeys])
+              new Set([...keys, ...requiredWeekOffColumnKeys])
             );
-            setSelectedDeductionColumnKeys(withRequired);
+            setSelectedWeekOffColumnKeys(withRequired);
 
             try {
-              LocalStorageHelper.storeDeductionMasterTableColumns?.(
+              LocalStorageHelper.storeWeekOffMasterTableColumns?.(
 
                 JSON.stringify(withRequired)
               );
             } catch { }
           }}
-          columns={DeductionMasterColumns}
-          selectedKeys={selectedDeductionColumnKeys}
-          requiredKeys={requiredDeductionColumnKeys}
+          columns={WeekOffMasterColumns}
+          selectedKeys={selectedWeekOffColumnKeys}
+          requiredKeys={requiredWeekOffColumnKeys}
           title="Customize Table Columns"
         />
 
         {/* FILTER MODAL */}
+
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}
-          title="Filter - Deduction Master"
+          title="Filter - WeekOff Master"
           onSubmit={e => {
             e.preventDefault();
             applyFilters();
@@ -564,10 +584,10 @@ export const DeductionMaster: React.FC = () => {
           <div className="space-y-6">
             <div className="space-y-4">
               <Input type="text"
-                label='Deduction Name'
-                value={tempFilters?.Name ?? ''}
-                onChange={e => handleFilterChange('Name', e.target.value)}
-                placeholder="Enter Deduction Name" />
+                label='WeekOff Name'
+                value={tempFilters?.WeekOffPolicyName ?? ''}
+                onChange={e => handleFilterChange('WeekOffPolicyName', e.target.value)}
+                placeholder="Enter WeekOff name" />
             </div>
           </div>
         </Modal>
@@ -576,4 +596,4 @@ export const DeductionMaster: React.FC = () => {
   );
 };
 
-export default DeductionMaster;
+export default WeekOffOffMasterMaster;

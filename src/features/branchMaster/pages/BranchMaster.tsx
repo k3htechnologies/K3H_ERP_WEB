@@ -84,7 +84,6 @@ export const BranchMaster: React.FC = () => {
   const [formData, setFormData] = useState<AddUpdateBranchMasterRequest>(() => initialFormState());
 
   //DELETE BRANCH MASTER STATES
-
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteBranchMasterDetailsData, setDeleteBranchMasterDetailsData] = useState<BranchMasterData | null>(null)
 
@@ -161,7 +160,6 @@ export const BranchMaster: React.FC = () => {
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
-
         }
 
         const params: FilterWithPaginationBranchMasterRequest = {
@@ -367,9 +365,9 @@ export const BranchMaster: React.FC = () => {
               text={value || 'N/A'}
               maxWidth="250px"
               tooltipThreshold={25}
-              onClick={() => handleViewBranchDetails(row)} // just pass a function, no need for e.preventDefault here
-            />
-
+              onClick={() => handleViewBranchDetails(row)} 
+             />
+             
           </div>
         )
       },

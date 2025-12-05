@@ -23,7 +23,7 @@ import LeaveEncashmentMaster from '@/features/leaveEncashmentMaster/pages/LeaveE
 import LeaveTypeMaster from '@/features/leaveTypeMaster/pages/LeaveTypeMaster';
 import ShiftMaster from '@/features/shiftMaster/pages/ShiftMaster';
 import ShiftMappingMaster from '@/features/shiftMappingMaster/pages/ShiftMappingMaster';
-import WeekOffMasterMaster from '@/features/weekOffMaster/pages/WeekOffMasterMaster';
+import WeekOffMasterMaster from '@/features/weekOffMaster/pages/WeekOffMaster';
 import WeekOffMappingMaster from '@/features/weekOffMappingMaster/pages/WeekOffMappingMaster';
 import Vendor from '@/features/vendor/pages/Vendor';
 import CompanyMaster from '@/features/companyMaster/pages/CompanyMaster';
@@ -37,6 +37,16 @@ import { MaterialMaster } from '@/features/materialMaster/pages/MaterialMaster';
 import ViewEmployeeMaster from '@/features/employeeMaster/pages/ViewEmployeeMaster';
 import ViewProjectMaster from '@/features/projectMaster/pages/ViewProjectMaster';
 import AddUpdateProjectMaster from '@/features/projectMaster/pages/AddUpdateProjectMaster';
+import { AddUpdateAssetMaster } from '@/features/assetMaster/pages/AddUpdateAssetMaster';
+import ViewAssetMaster from '@/features/assetMaster/pages/ViewAssetMaster';
+import AddUpdateWeekOffPage from '@/features/weekOffMaster/pages/AddUpdateWeekOffMaster';
+import ViewWeekOffPage from '@/features/weekOffMaster/pages/ViewWeekOffPage';
+import ViewAssetMappingPage from '@/features/assetMappingMaster/pages/ViewAssetMappingMaster';
+import AddUpdateAssetMappingPage from '@/features/assetMappingMaster/pages/AddUpdateAssetMappingMaster';
+import ViewDeductionPage from '@/features/deductionMaster/pages/ViewDeductionMaster';
+import AddUpdateDeductionPage from '@/features/deductionMaster/pages/AddUpdateDeductionMaster';
+import AddUpdateShiftPage from '@/features/shiftMaster/pages/AddUpdateShiftMaster';
+import ViewShiftPage from '@/features/shiftMaster/pages/ViewShiftMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -84,9 +94,9 @@ function App() {
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
           <Route path="profile" element={<Profile />} />
-          
+
           <Route path="companyMaster/addCompany" element={<AddCompany />} />
-          
+
 
           {/* Protected Routes with Layout */}
           <Route
@@ -104,30 +114,40 @@ function App() {
             <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
             <Route path="employeeMaster" element={<EmployeeMaster />} />
             <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />
-            <Route path="employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
+            <Route path="employeeMaster/add/:employeeId??" element={<AddUpdateEmployeeMaster />} />
             <Route path="companyMaster" element={<CompanyMaster />} />
             <Route path="tnc" element={<TncMaster />} />
             <Route path="bankListMaster" element={<BankListMaster />} />
             <Route path="branchMaster" element={<BranchMaster />} />
             <Route path="branchAssociationsMaster" element={<BranchAssociationsMaster />} />
             <Route path="assetMaster" element={<AssetMaster />} />
+            <Route path="assetMaster/view" element={<ViewAssetMaster />} />
+            <Route path="assetMaster/add/:AssetMasterId??" element={<AddUpdateAssetMaster />} />
             <Route path="assetMappingMaster" element={<AssetMappingMaster />} />
+            <Route path="assetMappingMaster/view" element={< ViewAssetMappingPage/>} />
+            <Route path="assetMappingMaster/add/:AssetMasterMappingId?" element={<AddUpdateAssetMappingPage />} />
             <Route path="deductionMaster" element={<DeductionMaster />} />
+            <Route path="deductionMaster/view" element={< ViewDeductionPage/>} />
+            <Route path="deductionMaster/add/:DeductionMasterId?" element={<AddUpdateDeductionPage />} />
             <Route path="earningMaster" element={<EarningMaster />} />
             <Route path="holidayMaster" element={<HolidayMaster />} />
             <Route path="holidayMappingMaster" element={<HolidayMappingMaster />} />
             <Route path="leaveEncashmentMaster" element={<LeaveEncashmentMaster />} />
             <Route path="leaveTypeMaster" element={<LeaveTypeMaster />} />
             <Route path="shiftMaster" element={<ShiftMaster />} />
+            <Route path="shiftMaster/view" element={< ViewShiftPage/>} />
+            <Route path="shiftMaster/add/:ShiftManagementMasterId?" element={<AddUpdateShiftPage />} />
             <Route path="shiftMappingMaster" element={<ShiftMappingMaster />} />
             <Route path="weekOffMaster" element={<WeekOffMasterMaster />} />
+            <Route path="WeekOffMaster/view" element={<ViewWeekOffPage />} />
+            <Route path="WeekOffMaster/add/:WeekOffMasterId??" element={<AddUpdateWeekOffPage />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
             <Route path="vendor" element={<Vendor />} />
             <Route path="projectMaster" element={<ProjectMaster />} />
             <Route path="projectMaster/view" element={<ViewProjectMaster />} />
             <Route path="/projectMaster/add/:projectId??" element={<AddUpdateProjectMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
-            <Route path="materialMaster" element={<MaterialMaster/>} />
+            <Route path="materialMaster" element={<MaterialMaster />} />
 
 
           </Route>

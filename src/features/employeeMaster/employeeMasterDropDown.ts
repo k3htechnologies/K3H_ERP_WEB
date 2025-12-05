@@ -1,12 +1,13 @@
 import * as E from 'fp-ts/Either';
 import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
 
-export const fetchEmployeeMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
+export const fetchEmployeeMasterDropdown = async (pageNumber: number, params?: { value?: string; departmentName?: string }) => {
     try {
         const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
             PageSize: 10,
             PageNumber: pageNumber,
             EmployeeName: params?.value || "",
+            DepartmentName: params?.departmentName || "",
             IsCheckPermission: false,
         });
 

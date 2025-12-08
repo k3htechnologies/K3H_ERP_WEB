@@ -285,7 +285,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                             <FieldItem label="Bank Name" value={editEmployeeData!.BankName} isRow withBorder />
                             <FieldItem label="Branch" value={editEmployeeData!.Branch} isRow withBorder />
                             <FieldItem label="Account No" value={editEmployeeData!.AccountNo} isRow withBorder />
-                            <FieldItem label="IFSC Code" value={editEmployeeData!.IFSCCode} isRow withBorder />
+                            <FieldItem label="IFSC Code" value={editEmployeeData!.IFSCCode} isRow />
                         </div>
                     </div>
 

@@ -58,7 +58,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     //#region INIT
     useEffect(() => {
         if (activeTab === 'Assets') {
-            loadAssetMasterMapping(editEmployeeData!.FullName.trim());
+            loadAssetMasterMapping(`${editEmployeeData!.FirstName.trim()} ${editEmployeeData!.LastName.trim()}`);
         }
         else if (activeTab === 'Project') {
             const stored = LocalStorageHelper.getStoredEmployeeData();
@@ -68,7 +68,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     }, [activeTab]);
 
     //#endregion
-    //#region DATA LOAD
+    //#region DATA LOAD FOR ASSET MAPPING TO EACH EMPLOYEE
 
     const loadAssetMasterMapping = async (FullName: string) => {
         await runApiWithLoader(
@@ -79,7 +79,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                 const params: FilterWithPaginationAssetMappingMasterRequest = {
                     PageNumber: 1,
                     PageSize: 100,
-                    EmployeeName: FullName
+                    EmployeeName: FullName,
+                    
                 };
 
                 const response = await assetMappingMasterService.apiCallPullAssetMappingMaster(params);
@@ -344,10 +345,14 @@ export const ViewEmployeeMaster: React.FC = () => {
                             tabs={TabList}
                             defaultActive={activeTab}
                             onTabChange={(t) => {
+
                                 setActiveTab(t.id);
+
                                 if (t.id === "Assets") {
-                                    loadAssetMasterMapping(editEmployeeData!.FullName);
+
+                                    loadAssetMasterMapping(`${editEmployeeData!.FirstName.trim()} ${editEmployeeData!.LastName.trim()}`);
                                 }
+
                                 else if (t.id === "Project") {
 
                                     const stored = LocalStorageHelper.getStoredEmployeeData();

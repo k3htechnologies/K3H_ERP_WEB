@@ -36,6 +36,9 @@ import AddUpdateEmployeeMaster from '@/features/employeeMaster/pages/AddUpdateEm
 import { MaterialMaster } from '@/features/materialMaster/pages/MaterialMaster';
 import ViewEmployeeMaster from '@/features/employeeMaster/pages/ViewEmployeeMaster';
 import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
+import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor';
+import { OutDoor } from '@/features/outdoor/pages/OutDoor';
+import { ViewVendor } from '@/features/vendor/pages/ViewVendor';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -103,6 +106,8 @@ function App() {
             <Route path="employeeMaster" element={<EmployeeMaster />} />
             <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />
             <Route path="/employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
+            <Route path="/outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
+            <Route path="outdoor" element={<OutDoor />} />
             <Route path="companyMaster" element={<CompanyMaster />} />
             <Route path="tnc" element={<TncMaster />} />
             <Route path="bankListMaster" element={<BankListMaster />} />
@@ -121,6 +126,7 @@ function App() {
             <Route path="weekOffMaster" element={<WeekOffMasterMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
             <Route path="vendor" element={<Vendor />} />
+            <Route path="vendor/view" element={<ViewVendor/>} />
             <Route path="projectMaster" element={<ProjectMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
             <Route path="materialMaster" element={<MaterialMaster/>} />

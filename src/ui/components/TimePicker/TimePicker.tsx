@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { THEME } from "@/core/constants/theme";
 import { Clock } from "lucide-react";
 
 interface TimePickerProps {
   label?: string;
-  value?: string; // e.g. "14:30" or "02:30 PM"
+  value?: string; // "14:30" or "02:30 PM"
   onChange?: (val: string) => void;
   size?: "sm" | "md" | "lg";
   error?: string;
@@ -31,38 +31,33 @@ export const TimePicker: React.FC<TimePickerProps> = ({
 }) => {
   const theme = THEME;
 
-  const parseValue = useCallback((val?: string) => {
-    if (!val) {
-      const now = new Date();
-      const h = now.getHours();
-      const m = now.getMinutes();
+  // --- Parse value into hours, minutes, AM/PM ---
+  const parseValue = useCallback(
+    (val?: string) => {
+      if (!val) {
+        const now = new Date();
+        const h = now.getHours();
+        const m = now.getMinutes();
+        const ap = h >= 12 ? "PM" : "AM";
+        return format === 12 ? { h: h % 12 || 12, m, ap } : { h, m, ap };
+      }
+
+      const [timePart, ampmPart] = val.split(" ");
+      const [hStr, mStr] = timePart.split(":");
+      let h = parseInt(hStr, 10);
+      const m = parseInt(mStr, 10);
+
       if (format === 12) {
-        const hour12 = h % 12 || 12;
-        return { h: hour12, m, ap: h >= 12 ? "PM" : "AM" as "AM" | "PM" };
-      }
-      return { h, m, ap: "AM" as "AM" | "PM" };
-    }
-    const [timePart, ampmPart] = val.split(" ");
-    const [hStr, mStr] = timePart.split(":");
-    let h = parseInt(hStr, 10);
-    const m = parseInt(mStr, 10);
-    
-    if (format === 12) {
-      if (ampmPart) {
-        // Value already in 12-hour format with AM/PM
-        const ap = ampmPart as "AM" | "PM";
-        h = h % 12 || 12;
-        return { h, m, ap };
-      } else {
-        // Value in 24-hour format, convert to 12-hour
-        const ap: "AM" | "PM" = h >= 12 ? "PM" : "AM";
+        const ap = ampmPart ? (ampmPart as "AM" | "PM") : h >= 12 ? "PM" : "AM";
         h = h % 12 || 12;
         return { h, m, ap };
       }
-    }
-    // 24-hour format
-    return { h, m, ap: "AM" as "AM" | "PM" };
-  }, [format]);
+
+      // 24-hour
+      return { h, m, ap: "AM" };
+    },
+    [format]
+  );
 
   const initial = parseValue(value);
   const [hours, setHours] = useState(initial.h);
@@ -79,40 +74,21 @@ export const TimePicker: React.FC<TimePickerProps> = ({
 
   const sizeConfig = useMemo(
     () => ({
-      sm: {
-        height: "36px",
-        padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-        fontSize: theme.fontSize.sm,
-        iconSize: 16,
-      },
-      md: {
-        height: "44px",
-        padding: `${theme.spacing.md} ${theme.spacing.lg}`,
-        fontSize: theme.fontSize.md,
-        iconSize: 20,
-      },
-      lg: {
-        height: "52px",
-        padding: `${theme.spacing.lg} ${theme.spacing.xl}`,
-        fontSize: theme.fontSize.lg,
-        iconSize: 24,
-      },
+      sm: { height: "36px", padding: `${theme.spacing.sm} ${theme.spacing.md}`, fontSize: theme.fontSize.sm, iconSize: 16 },
+      md: { height: "44px", padding: `${theme.spacing.md} ${theme.spacing.lg}`, fontSize: theme.fontSize.md, iconSize: 20 },
+      lg: { height: "52px", padding: `${theme.spacing.lg} ${theme.spacing.xl}`, fontSize: theme.fontSize.lg, iconSize: 24 },
     }),
     [theme]
   );
 
   const currentSize = sizeConfig[size];
 
+  // --- Format time string for output ---
   const formatTime = (h: number, m: number, ap: "AM" | "PM") => {
     if (format === 24) {
-      const adjustedHours = ap === "PM" ? (h % 12) + 12 : h % 12;
-      return `${adjustedHours.toString().padStart(2, "0")}:${m
-        .toString()
-        .padStart(2, "0")}`;
+      return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
     }
-    return `${h.toString().padStart(2, "0")}:${m
-      .toString()
-      .padStart(2, "0")} ${ap}`;
+    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")} ${ap}`;
   };
 
   const handleChange = (h: number, m: number, ap: "AM" | "PM") => {
@@ -134,13 +110,12 @@ export const TimePicker: React.FC<TimePickerProps> = ({
     color: theme.colors.text,
     outline: "none",
     transition: theme.transitions.normal,
-    boxSizing: "border-box" as const,
+    boxSizing: "border-box",
     cursor: disabled ? "not-allowed" : "pointer",
     boxShadow: isFocused && !error ? theme.shadows.focus : theme.shadows.sm,
-    opacity: disabled ? 0.6 : 1,
-    appearance: "none" as const,
-    WebkitAppearance: "none" as const,
-    MozAppearance: "none" as const,
+    appearance: "none",
+    WebkitAppearance: "none",
+    MozAppearance: "none",
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
     backgroundRepeat: "no-repeat",
     backgroundPosition: "right 12px center",
@@ -149,77 +124,30 @@ export const TimePicker: React.FC<TimePickerProps> = ({
   });
 
   return (
-    <div
-      className={className}
-      style={{
-        position: "relative",
-        width: "100%",
-        ...style,
-      }}
-    >
+    <div className={className} style={{ position: "relative", width: "100%", ...style }}>
       {label && (
-        <div
-          style={{
-            marginBottom: "6px",
-            fontSize: currentSize.fontSize,
-            fontWeight: theme.fontWeight.medium,
-            color: theme.colors.black,
-          }}
-        >
+        <div style={{ marginBottom: "6px", fontSize: currentSize.fontSize, fontWeight: theme.fontWeight.medium, color: theme.colors.black }}>
           {label}
-          {required && (
-            <span style={{ color: theme.colors.error, marginLeft: "4px" }}>
-              *
-            </span>
-          )}
+          {required && <span style={{ color: theme.colors.error, marginLeft: "4px" }}>*</span>}
         </div>
       )}
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: theme.spacing.sm,
-          position: "relative",
-        }}
-      >
-        {/* Clock Icon */}
-        <div
-          style={{
-            position: "absolute",
-            left: "12px",
-            zIndex: 1,
-            pointerEvents: "none",
-            color: error ? theme.colors.error : theme.colors.textSecondary,
-          }}
-        >
+      <div style={{ display: "flex", alignItems: "center", gap: theme.spacing.sm, position: "relative" }}>
+        <div style={{ position: "absolute", left: "12px", zIndex: 1, pointerEvents: "none", color: error ? theme.colors.error : theme.colors.textSecondary }}>
           <Clock size={currentSize.iconSize} />
         </div>
 
-        {/* Hours Select */}
-        <div style={{ position: "relative", flex: 1 }}>
+        {/* Hours */}
+        <div style={{ flex: 1 }}>
           <select
-            value={format === 12 ? (hours > 12 ? hours - 12 : hours === 0 ? 12 : hours) : hours}
-            onChange={(e) => {
-              const newHour = Number(e.target.value);
-              if (format === 12) {
-                handleChange(newHour, minutes, ampm);
-              } else {
-                handleChange(newHour, minutes, ampm);
-              }
-            }}
+            value={hours}
+            onChange={(e) => handleChange(Number(e.target.value), minutes, ampm)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             disabled={disabled}
-            style={{
-              ...getSelectStyles(),
-              paddingLeft: "40px",
-            }}
+            style={{ ...getSelectStyles(), paddingLeft: "40px" }}
           >
-            {Array.from(
-              { length: format === 12 ? 12 : 24 },
-              (_, i) => i + (format === 12 ? 1 : 0)
-            ).map((h) => (
+            {Array.from({ length: format === 12 ? 12 : 24 }, (_, i) => i + (format === 12 ? 1 : 0)).map((h) => (
               <option key={h} value={h}>
                 {h.toString().padStart(2, "0")}
               </option>
@@ -228,19 +156,12 @@ export const TimePicker: React.FC<TimePickerProps> = ({
         </div>
 
         {/* Separator */}
-        <div
-          style={{
-            fontSize: currentSize.fontSize,
-            fontWeight: theme.fontWeight.bold,
-            color: theme.colors.textSecondary,
-            padding: `0 ${theme.spacing.xs}`,
-          }}
-        >
+        <div style={{ fontSize: currentSize.fontSize, fontWeight: theme.fontWeight.bold, color: theme.colors.textSecondary, padding: `0 ${theme.spacing.xs}` }}>
           :
         </div>
 
-        {/* Minutes Select */}
-        <div style={{ position: "relative", flex: 1 }}>
+        {/* Minutes */}
+        <div style={{ flex: 1 }}>
           <select
             value={minutes}
             onChange={(e) => handleChange(hours, Number(e.target.value), ampm)}
@@ -257,14 +178,12 @@ export const TimePicker: React.FC<TimePickerProps> = ({
           </select>
         </div>
 
-        {/* AM/PM Select (only for 12-hour format) */}
+        {/* AM/PM only for 12-hour */}
         {format === 12 && (
-          <div style={{ position: "relative", flex: "0 0 80px" }}>
+          <div style={{ flex: "0 0 80px" }}>
             <select
               value={ampm}
-              onChange={(e) =>
-                handleChange(hours, minutes, e.target.value as "AM" | "PM")
-              }
+              onChange={(e) => handleChange(hours, minutes, e.target.value as "AM" | "PM")}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               disabled={disabled}
@@ -277,35 +196,8 @@ export const TimePicker: React.FC<TimePickerProps> = ({
         )}
       </div>
 
-      {/* Error message */}
-      {error && (
-        <p
-          style={{
-            color: theme.colors.error,
-            fontSize: theme.fontSize.sm,
-            marginTop: "4px",
-            marginLeft: "0",
-            marginBottom: "0",
-          }}
-        >
-          {error}
-        </p>
-      )}
-
-      {/* Helper text */}
-      {helperText && !error && (
-        <p
-          style={{
-            color: theme.colors.textLight,
-            fontSize: theme.fontSize.sm,
-            marginTop: "4px",
-            marginLeft: "0",
-            marginBottom: "0",
-          }}
-        >
-          {helperText}
-        </p>
-      )}
+      {error && <p style={{ color: theme.colors.error, fontSize: theme.fontSize.sm, marginTop: "4px" }}>{error}</p>}
+      {helperText && !error && <p style={{ color: theme.colors.textLight, fontSize: theme.fontSize.sm, marginTop: "4px" }}>{helperText}</p>}
     </div>
   );
 };

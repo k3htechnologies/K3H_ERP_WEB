@@ -57,8 +57,6 @@ export interface SinglePageSelectionProps {
     spacing: Record<string, string>;
     fontSize: Record<string, string>;
   };
-  error?: string;
-  required?: boolean;
 }
 
 export interface MultiSelectPaginationProps {
@@ -66,4 +64,7 @@ export interface MultiSelectPaginationProps {
   options: DropdownOptions[];
   selectedValues: (string | number)[];
   onChange: (values: (string | number)[]) => void;
+  disabled?: boolean;
+  required?: boolean;
+
 }

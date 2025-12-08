@@ -5,7 +5,7 @@ export interface ExpandableCardProps {
   title?: string;
   showline: boolean;
   customizedIcon?: ReactNode;
-  child : ReactNode; 
+  child? : ReactNode; 
 }
 
 export const ExpandableCard: React.FC<ExpandableCardProps> = ({

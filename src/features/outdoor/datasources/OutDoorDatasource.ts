@@ -1,5 +1,5 @@
 import baseClient from "@/core/config/baseClient";
-import type { DeleteOutDoorRequest, FilterWithPaginationOutDoor, OutDoorDataListResponse, OutDoorDeleteResponse, OutDoorSaveResponse } from "../models/OutDoorModel";
+import type { DeleteOutDoorRequest, FilterWithPaginationOutDoor, OutDoorDataListResponse, OutDoorDeleteResponse, OutDoorSaveResponse, PunchInOutRequest, OutDoorPunchInOutResponse, AddUpdateConclusionRequest, OutDoorConclusionResponse } from "../models/OutDoorModel";
 import { OutDoorApi } from "../api/OutDoorApi";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 
@@ -7,6 +7,8 @@ export abstract class OutDoorDatasource {
     abstract pullOutDoor(params: FilterWithPaginationOutDoor, signal?: AbortSignal): Promise<OutDoorDataListResponse>;
     abstract addUpdateOutDoor(data: FormData): Promise<OutDoorSaveResponse>;
     abstract deleteOutDoor(data: DeleteOutDoorRequest): Promise<OutDoorDeleteResponse>;
+    abstract punchIn(data: PunchInOutRequest): Promise<OutDoorPunchInOutResponse>;
+    abstract addUpdateConclusion(data: AddUpdateConclusionRequest): Promise<OutDoorConclusionResponse>;
 }
 
 export class OutDoorDataSourceImpl implements OutDoorDatasource {
@@ -49,7 +51,7 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
         try {
             const response = await this.k3hHttpClient.multipartRequestWithAuthentication(`${OutDoorApi.ADD_UPDATE}`, payload);
             return response;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('ERROR: ADD UPDATE OUTDOOR:', error);
             if (error === TokenExpiredException) {
                 await this.addUpdateOutDoor(payload);
@@ -66,6 +68,45 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             console.error('ERROR: DELETE OUTDOOR:', error);
             if (error === TokenExpiredException) {
                 await this.deleteOutDoor(payload);
+            }
+            throw error;
+        }
+    }
+
+    async punchIn(payload: PunchInOutRequest): Promise<OutDoorPunchInOutResponse> {
+        try {
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(`${OutDoorApi.PUNCH_IN}`, payload);
+            return response;
+        } catch (error: unknown) {
+            console.error('ERROR: PUNCH IN OUTDOOR:', error);
+            if (error === TokenExpiredException) {
+                await this.punchIn(payload);
+            }
+            throw error;
+        }
+    }
+
+    async punchOut(payload: PunchInOutRequest): Promise<OutDoorPunchInOutResponse> {
+        try {
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(`${OutDoorApi.PUNCH_IN}`, payload);
+            return response;
+        } catch (error: unknown) {
+            console.error('ERROR: PUNCH OUT OUTDOOR:', error);
+            if (error === TokenExpiredException) {
+                await this.punchOut(payload);
+            }
+            throw error;
+        }
+    }
+
+    async addUpdateConclusion(payload: AddUpdateConclusionRequest): Promise<OutDoorConclusionResponse> {
+        try {
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(`${OutDoorApi.ADD_UPDATE_CONCLUSION}`, payload);
+            return response;
+        } catch (error: unknown) {
+            console.error('ERROR: ADD UPDATE CONCLUSION:', error);
+            if (error === TokenExpiredException) {
+                await this.addUpdateConclusion(payload);
             }
             throw error;
         }

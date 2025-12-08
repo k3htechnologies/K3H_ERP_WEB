@@ -5,13 +5,20 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import type { VendorData } from '../models/VendorModel';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
-import { ArrowLeft, Edit } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/ui/components/forms';
 import Accordion from '@/ui/components/Card/Accordion';
+import { useToast } from '@/core/hooks/useToast';
+import { ToastContainer } from '@/ui/components/Toast';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { VendorService } from '../services/VendorService';
+import * as E from 'fp-ts/Either';
+import { runApiWithLoader } from '@/core/utils';
 
 export const ViewVendor: React.FC = () => {
-  const [isLoading] = useState(false);
-  const [loadingMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   const navigate = useNavigate();
   const location = useLocation() as {
@@ -24,8 +31,16 @@ export const ViewVendor: React.FC = () => {
       };
     };
   };
-
+  const { toasts, removeToast, addToast } = useToast();
   const editVendorData = (location.state?.editVendorData ?? null) as VendorData | null;
+
+  const navigateBackToList = () => {
+    if (location.state?.listState) {
+      navigate('/vendor', { state: location.state.listState });
+      return;
+    }
+    navigate(-1);
+  };
 
   // Handle edit navigation
   const handleEditVendor = () => {
@@ -39,9 +54,35 @@ export const ViewVendor: React.FC = () => {
     }
   };
 
-  // Handle back navigation
-  const handleBack = () => {
-    navigate(-1);
+  const handleDeleteVendor = async () => {
+    if (!editVendorData) return;
+    setIsDeleteDialogOpen(false);
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const params = {
+          VendorId: editVendorData.VendorId ?? 0,
+          UniqueKey: editVendorData.Uniquekey ?? ''
+        };
+        const response = await VendorService.apiCallDeleteVendor(params);
+        if (E.isRight(response)) {
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] || 'Vendor deleted successfully' });
+          navigateBackToList();
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+        }
+        return response;
+      },
+      undefined,
+      (error: unknown) => {
+        const err = error as { message?: string };
+        addToast({ type: 'error', title: err.message || 'An error occurred while deleting' });
+      },
+      undefined,
+      'Delete vendor data...'
+    );
   };
 
   if (!editVendorData) {
@@ -52,7 +93,7 @@ export const ViewVendor: React.FC = () => {
           <Button
             color="blue"
             size="md"
-            onClick={handleBack}
+            onClick={navigateBackToList}
             className="mt-4"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
@@ -65,6 +106,7 @@ export const ViewVendor: React.FC = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>
@@ -113,11 +155,23 @@ export const ViewVendor: React.FC = () => {
                   title="Edit Info">
                   <Edit className="w-4 h-4" /> Edit Info
                 </Button>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDeleteDialogOpen(true);
+                  }}
+                  color='red'
+                  fullWidth
+                  size='sm'
+                  title="Delete Vendor">
+                  <Trash2 className="w-4 h-4" /> Delete
+                </Button>
                 <Button 
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
-                    handleBack()
+                    navigateBackToList()
                   }}
                   color='transparent'
                   variant='transparent_border'
@@ -263,6 +317,18 @@ export const ViewVendor: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmationDialogBox
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDeleteVendor}
+        title="You are about to delete this vendor?"
+        message="Deleting this vendor will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
     </div>
   );
 };

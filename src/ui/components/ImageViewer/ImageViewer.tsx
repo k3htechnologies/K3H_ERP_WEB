@@ -42,10 +42,6 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
   const [isOpen, setIsOpen] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  if (!normalizedFiles || normalizedFiles.length === 0) {
-    return triggerLabel ? <span>{triggerLabel}</span> : null
-  }
-
   // -------- helpers ----------
 
   const detectFileTypeFromUrl = (url: unknown): FileType => {
@@ -118,6 +114,10 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, showNext, showPrev])
+
+  if (!normalizedFiles || normalizedFiles.length === 0) {
+    return triggerLabel ? <span>{triggerLabel}</span> : null
+  }
 
   const currentFile = normalizedFiles[currentIndex]
   const currentUrl = currentFile.url
@@ -311,7 +311,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
             {/* Body */}
             <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
               <div
-                className="relative flex-1 bg-white flex items-center justify_center overflow-hidden"
+                className="relative flex-1 bg-white flex items-center justify-center overflow-hidden"
                 onWheel={handleWheel}
               >
                 {normalizedFiles.length > 1 && (

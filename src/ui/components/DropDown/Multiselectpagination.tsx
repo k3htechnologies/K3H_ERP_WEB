@@ -1,24 +1,92 @@
-import type { MultiSelectPaginationProps } from "@/core/types/dropDownSelectionType";
 import React, { useState, useEffect, useRef } from "react";
+import { THEME } from "@/core/constants/theme";
 
 export interface DropdownOptions {
   label: string;
   value: string | number;
 }
 
+interface MultiSelectPaginationProps {
+  label?: string;
+  options: DropdownOptions[];
+  selectedValues: (string | number)[];
+  required?: boolean;
+  onChange: (updatedSelectedValues: (string | number)[]) => void;
+  disabled?: boolean;
+  hasSubmitted?:boolean;
+
+}
 
 const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   label,
   options,
   selectedValues,
+  hasSubmitted = false,
+  required = false,
   onChange,
+  disabled = false,
 }) => {
+  const theme = THEME;
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<DropdownOptions[]>(options);
+  const [error, setError] = useState<string | undefined>(undefined);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // ✅ Close dropdown when clicking outside
+  const hasSelections = selectedValues.length > 0;
+
+  // Filter options based on search input
+  useEffect(() => {
+    const lowerSearch = searchTerm.toLowerCase();
+    const filtered = options.filter((opt) =>
+      opt.label.toLowerCase().includes(lowerSearch)
+    );
+    setFilteredOptions(filtered);
+  }, [searchTerm, options]);
+
+  // Validate required field on selection change
+  // useEffect(() => {
+  //   if (required && selectedValues.length === 0) {
+  //     setError(`${label || "This field"} is required`);
+  //   } else {
+  //     setError(undefined);
+  //   }
+  // }, [selectedValues, required, label]);
+useEffect(() => {
+  if (hasSubmitted) {
+    if (required && selectedValues.length === 0) {
+      setError(`${label || "This field"} is required`);
+    } else {
+      setError(undefined);
+    }
+  }
+}, [hasSubmitted, selectedValues, required, label]);
+
+  // Toggle selection of options
+  const toggleSelect = (value: string | number) => {
+    const updated = selectedValues.includes(value)
+      ? selectedValues.filter((v) => v !== value)
+      : [...selectedValues, value];
+
+    onChange(updated);
+
+    if (required && updated.length === 0) {
+      setError(`${label || "This field"} is required`);
+    } else {
+      setError(undefined);
+    }
+  };
+
+
+
+  // Handle search input changes
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+  };
+
+  // Close the dropdown when clicked outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -29,38 +97,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ✅ Filter options based on search
-  useEffect(() => {
-    const lowerSearch = searchTerm.toLowerCase();
-    const filtered = options.filter((opt) =>
-      opt.label.toLowerCase().includes(lowerSearch)
-    );
-    setFilteredOptions(filtered);
-  }, [searchTerm, options]);
-
-  // ✅ Toggle selection
-  const toggleSelect = (value: string | number) => {
-    const updated = selectedValues.includes(value)
-      ? selectedValues.filter((v) => v !== value)
-      : [...selectedValues, value];
-    onChange(updated);
-  };
-
-  // ✅ Select all options
-  const selectAll = () => {
-    onChange(options.map((opt) => opt.value));
-  };
-
-  // ✅ Deselect all options
-  const deselectAll = () => {
-    onChange([]);
-  };
-
-  // ✅ Remove single tag
-  const removeTag = (value: string | number) => {
-    onChange(selectedValues.filter((v) => v !== value));
-  };
-
+  // Selected labels and visible tags (up to 4)
   const selectedLabels = options
     .filter((opt) => selectedValues.includes(opt.value))
     .map((opt) => opt.label);
@@ -77,150 +114,147 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
         position: "relative",
       }}
     >
-      {/* Label */}
       {label && (
         <label
           style={{
-            fontSize: "15px",
-            fontWeight: 600,
-            color: "#333",
+            fontSize: theme.fontSize.md,
+            fontWeight: theme.fontWeight.medium,
+            color: theme.colors.text,
             marginBottom: "6px",
             display: "block",
           }}
         >
           {label}
+          {required && <span style={{ color: "red", marginLeft: "4px" }}>*</span>}
         </label>
       )}
 
-      {/* Search & Tag Container with Dropdown Arrow */}
       <div
-        onClick={() => setIsOpen(!isOpen)}
+        role="button"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
         style={{
           display: "flex",
           alignItems: "center",
           flexWrap: "wrap",
-          minHeight: "44px",
-          border: "1px solid #ccc",
-          borderRadius: "6px",
-          padding: "6px 10px",
-          background: "#fff",
-          cursor: "pointer",
+          justifyContent: "space-between",
+          fontWeight: theme.fontWeight.medium,
+          padding: "8px 12px",
+          fontSize: theme.fontSize.md,
+          borderRadius: theme.borderRadius.md,
+          backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
+          border: `1px solid ${theme.colors.border}`,
+          cursor: disabled ? "not-allowed" : "pointer",
+          color: theme.colors.text,
+          userSelect: "none",
+          boxSizing: "border-box",
+          minHeight: "38px",
+          transition: "all 0.2s ease-in-out",
+          boxShadow: isOpen ? theme.shadows.sm : "none",
+          opacity: disabled ? 0.6 : 1,
           position: "relative",
         }}
       >
-        {/* Selected Tags */}
-        {visibleTags.map((label, index) => (
-          <div
-            key={`${label}-${index}`}
-            style={{
-              backgroundColor: "#e0f2fe",
-              color: "#0369a1",
-              padding: "4px 8px",
-              borderRadius: "4px",
-              marginRight: "6px",
-              marginBottom: "4px",
-              display: "flex",
-              alignItems: "center",
-              fontSize: "13px",
-            }}
-          >
-            {label}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                const opt = options.find((o) => o.label === label);
-                if (opt) removeTag(opt.value);
-              }}
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" }}>
+          {visibleTags.map((tagLabel, index) => (
+            <div
+              key={`${tagLabel}-${index}`}
               style={{
-                background: "none",
-                border: "none",
-                marginLeft: "6px",
-                color: "#0369a1",
-                cursor: "pointer",
-                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                fontSize: theme.fontSize.sm,
+                color: theme.colors.text,
               }}
             >
-              ×
-            </button>
-          </div>
-        ))}
+              {tagLabel}
+              {index < visibleTags.length - 1 && (
+                <span style={{ margin: "0 4px", color: theme.colors.border }}>,</span>
+              )}
+            </div>
+          ))}
+          {remainingCount > 0 && (
+            <span
+              style={{
+                fontSize: theme.fontSize.sm,
+                color: theme.colors.text,
+                fontWeight: theme.fontWeight.medium,
+              }}
+            >
+              + {remainingCount} more
+            </span>
+          )}
 
-        {/* +X More Indicator */}
-        {remainingCount > 0 && (
-          <span
+          <input
+            type="text"
+            placeholder={hasSelections ? "" : "Search..."}
+            value={searchTerm}
+            onChange={handleSearch}
+            disabled={disabled}
             style={{
-              fontSize: "14px",
-              color: "#333",
-              fontWeight: 500,
-              marginBottom: "4px",
+              flex: 1,
+              border: "none",
+              outline: "none",
+              minWidth: "100px",
+              fontSize: theme.fontSize.md,
+              padding: "0",
+              background: "transparent",
+              cursor: disabled ? "not-allowed" : "text",
+              color: hasSelections ? theme.colors.text : "#888",
+              fontWeight: "normal",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
             }}
-          >
-            + {remainingCount} more
-          </span>
-        )}
+          />
+        </div>
 
-        {/* Search Input */}
-        <input
-          type="text"
-          placeholder={selectedValues.length > 0 ? "" : "Search departments..."}
-          value={searchTerm}
-          onFocus={() => setIsOpen(true)}
-          onChange={(e) => setSearchTerm(e.target.value)}
+        <svg
+          width={18}
+          height={18}
           style={{
-            flexGrow: 1,
-            border: "none",
-            outline: "none",
-            minWidth: "100px",
-            fontSize: "14px",
-            padding: "6px",
-          }}
-        />
-
-        {/* ▼ Arrow Icon */}
-        <span
-          style={{
-            position: "absolute",
-            right: "10px",
-            fontSize: "16px",
-            color: "#666",
+            transform: isOpen ? "rotate(180deg)" : "rotate(0)",
+            transition: theme.transitions.normal,
             pointerEvents: "none",
-            transition: "transform 0.2s ease",
-            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            flexShrink: 0,
+            marginLeft: "8px",
           }}
+          fill="none"
+          stroke={theme.colors.text}
+          strokeWidth="2"
+          viewBox="0 0 24 24"
         >
-          ▼
-        </span>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
       </div>
 
-      {/* Dropdown List */}
-      {isOpen && (
+      {isOpen && !disabled && (
         <div
           style={{
             position: "absolute",
-            top: "100%",
+            top: "calc(100% + 4px)",
             left: 0,
-            right: 0,
-            marginTop: "6px",
-            backgroundColor: "#fff",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            width: "100%",
+            maxHeight: "200px",
+            overflow: "hidden",
+            border: `1px solid ${theme.colors.border}`,
+            borderRadius: theme.borderRadius.sm,
+            boxShadow: theme.shadows.lg,
             zIndex: 999,
-            maxHeight: "300px",
-            overflowY: "auto",
-            padding: "8px 10px",
+            padding: 0,
+            background: theme.colors.background,
           }}
         >
-          {/* Select / Deselect All */}
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
-              marginBottom: "8px",
+              padding: "8px 10px",
+              borderBottom: `1px solid ${theme.colors.border}`,
             }}
           >
             <button
-              onClick={selectAll}
+              onClick={() => onChange(options.map((opt) => opt.value))}
               style={{
                 padding: "6px 10px",
                 backgroundColor: "#3b82f6",
@@ -234,7 +268,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
               Select All
             </button>
             <button
-              onClick={deselectAll}
+              onClick={() => onChange([])}
               style={{
                 padding: "6px 10px",
                 backgroundColor: "#ef4444",
@@ -245,50 +279,56 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
                 fontSize: "13px",
               }}
             >
-           Clear All
+              Clear All
             </button>
           </div>
 
-          {/* Options */}
-          {filteredOptions.length > 0 ? (
-            filteredOptions.map((opt) => (
+          <div style={{ maxHeight: "150px", overflowY: "auto", padding: "8px 10px" }}>
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => (
+                <div
+                  key={opt.value}
+                  style={{
+                    marginBottom: "6px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "8px 10px",
+                    borderRadius: theme.borderRadius.sm,
+                    backgroundColor: selectedValues.includes(opt.value)
+                      ? theme.colors.hover
+                      : theme.colors.background,
+                    cursor: disabled ? "not-allowed" : "pointer",
+                    color: theme.colors.text,
+                    fontSize: theme.fontSize.sm,
+                    transition: theme.transitions.normal,
+                  }}
+                  onClick={() => !disabled && toggleSelect(opt.value)}
+                >
+                  <span>{opt.label}</span>
+                  {selectedValues.includes(opt.value) && (
+                    <span style={{ color: theme.colors.primary }}>✓</span>
+                  )}
+                </div>
+              ))
+            ) : (
               <div
-                key={opt.value}
                 style={{
-                  marginBottom: "6px",
-                  display: "flex",
-                  alignItems: "center",
+                  padding: theme.spacing.sm,
+                  textAlign: "center",
+                  color: theme.colors.textLight,
                 }}
               >
-                <label style={{ cursor: "pointer", fontSize: "14px" }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedValues.includes(opt.value)}
-                    onChange={() => toggleSelect(opt.value)}
-                    style={{
-                      marginRight: "8px",
-                      cursor: "pointer",
-                      accentColor: "#007bff",
-                    }}
-                  />
-                  {opt.label}
-                </label>
+                No records found
               </div>
-            ))
-          ) : (
-            <p
-              style={{
-                textAlign: "center",
-                color: "#f59e0b",
-                fontSize: "14px",
-                fontWeight: 500,
-                margin: "10px 0",
-              }}
-            >
-              No departments found
-            </p>
-          )}
+            )}
+          </div>
         </div>
+      )}
+
+      {error && (
+        <p style={{ color: theme.colors.error, fontSize: theme.fontSize.sm, marginTop: "8px" }}>
+          {error}
+        </p>
       )}
     </div>
   );

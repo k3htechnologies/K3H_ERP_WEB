@@ -177,16 +177,6 @@ export const COLOR_MAP = {
         border: '1px solid #7e22ce',
         hover: { backgroundColor: '#7e22ce' },
       },
-      gradient: {
-        background: 'linear-gradient(90deg, #0BB4FD -19.07%, #135BEC 88.98%)',
-        color: '#fff',  // text must be white (or readable)
-        border: 'none',
-        textDecoration: 'underline',
-        hover: {
-          color: '#fff',
-          background: 'linear-gradient(90deg, #09A8E8 -19.07%, #0F4ECF 88.98%)' // slightly darker hover shade
-        },
-      },
     },
   },
 
@@ -204,7 +194,8 @@ export const COLOR_MAP = {
         border: '1px solid #1e40af',
         hover: { backgroundColor: '#1e40af' },
       },
-      gradient: {
+
+      gradient_dark: {
         background: 'linear-gradient(90deg, #135BEC -56.5%, #121258 140%)',
         color: '#fff',
         border: 'none',
@@ -214,6 +205,18 @@ export const COLOR_MAP = {
           background: 'linear-gradient(90deg, #135BEC -56.5%, #121258 140%)' // slightly darker hover shade
         },
       },
+      
+      gradient_light: {
+        background: 'linear-gradient(90deg, #0BB4FD -19.07%, #135BEC 88.98%)',
+        color: '#fff',  // text must be white (or readable)
+        border: 'none',
+        textDecoration: 'underline',
+        hover: {
+          color: '#fff',
+          background: 'linear-gradient(90deg, #09A8E8 -19.07%, #0F4ECF 88.98%)' // slightly darker hover shade
+        },
+      },
+
     },
   },
 

@@ -225,8 +225,8 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                     setIsExportOpen((s) => !s)
                     setIsImportOpen(false) 
                   }}
-                  color="purple"
-                  colorMode="gradient"
+                  color="blue"
+                  colorMode="gradient_light"
                   size="mxs"
                   defineWidth
                   title="Export"
@@ -377,7 +377,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                 color="blue"
                 size="mxs"
                 variant="solid"
-                colorMode="gradient"
+                colorMode="gradient_dark"
                 defineWidth
                 title={addTitle}
                 aria-label={addTitle}

@@ -81,7 +81,7 @@ export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
 
             LocalStorageHelper.storeMenuData(menu);
 
-                  window.dispatchEvent(new Event('menu-updated'));
+            window.dispatchEvent(new Event('menu-updated'));
 
         }
     };

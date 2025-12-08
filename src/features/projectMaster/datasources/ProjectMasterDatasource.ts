@@ -2,21 +2,40 @@ import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { ProjectMasterApi } from '@/features/projectMaster/api/ProjectMasterApi'
 import type {
+    AddUpdateProjectMasterWithBankDetailsRequest,
+    AddUpdateProjectMasterWithCompanyRequest,
+    AddUpdateProjectMasterWithEmployeeRequest,
+    DeleteProjectMasterWithBankDetailsRequest,
+    DeleteProjectMasterWithEmployeeRequest,
     FilterWithPaginationProjectMasterRequest,
     ProjectMasterListResponse,
     ProjectMasterSaveResponse,
+    ProjectMasterWithBankDetailsDeleteResponse,
     ProjectMasterWithBankDetailsResponse,
+    ProjectMasterWithBankDetailsSaveResponse,
     ProjectMasterWithCompanyResponse,
+    ProjectMasterWithCompanySaveResponse,
+    ProjectMasterWithEmployeeDeleteResponse,
     ProjectMasterWithEmployeeResponse,
+    ProjectMasterWithEmployeeSaveResponse,
 } from '@/features/projectMaster/models/ProjectMasterModel'
 
 export abstract class ProjectMasterDatasource {
 
     abstract pullProjectMaster(params: FilterWithPaginationProjectMasterRequest, signal?: AbortSignal): Promise<ProjectMasterListResponse>;
     abstract addUpdateProjectMaster(formData: FormData): Promise<ProjectMasterSaveResponse>;
+
     abstract pullProjectMasterWithEmployee(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithEmployeeResponse>;
+    abstract addUpdateProjectMasterWithEmployee(params: AddUpdateProjectMasterWithEmployeeRequest): Promise<ProjectMasterWithEmployeeSaveResponse>;
+    abstract deleteProjectMasterWithEmployee(params: DeleteProjectMasterWithEmployeeRequest): Promise<ProjectMasterWithEmployeeDeleteResponse>;
+
     abstract pullProjectMasterWithCompany(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithCompanyResponse>;
+    abstract addUpdateProjectMasterWithCompany(params: AddUpdateProjectMasterWithCompanyRequest): Promise<ProjectMasterWithCompanySaveResponse>
+
+
     abstract pullProjectMasterWithBankDetails(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithBankDetailsResponse>;
+    abstract addUpdateProjectMasterWithBankDetails(params: AddUpdateProjectMasterWithBankDetailsRequest): Promise<ProjectMasterWithBankDetailsSaveResponse>;
+    abstract deleteProjectMasterWithBankDetails(params: DeleteProjectMasterWithBankDetailsRequest): Promise<ProjectMasterWithBankDetailsDeleteResponse>
 }
 
 export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
@@ -75,6 +94,7 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
             throw error
         }
     }
+
     async pullProjectMasterWithEmployee(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithEmployeeResponse> {
         try {
             const queryParams = new URLSearchParams({
@@ -91,6 +111,55 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
             if (error === TokenExpiredException) {
 
                 await this.pullProjectMasterWithEmployee(Number(ProjectId));
+            }
+
+            throw error
+        }
+    }
+
+    async addUpdateProjectMasterWithEmployee(params: AddUpdateProjectMasterWithEmployeeRequest): Promise<ProjectMasterWithEmployeeSaveResponse> {
+
+        try {
+
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                ProjectMasterApi.ADD_UPDATE_PROJECT_WITH_EMPLOYEE,
+                params
+            )
+
+            return response
+        } catch (error) {
+
+            console.error('ERROR: ADD UPDATE PROJECT MASTER WITH EMPLOYEE:', error)
+
+            if (error === TokenExpiredException) {
+                await this.addUpdateProjectMasterWithEmployee(params);
+            }
+            throw error
+        }
+    }
+
+    async deleteProjectMasterWithEmployee(params: DeleteProjectMasterWithEmployeeRequest): Promise<ProjectMasterWithEmployeeDeleteResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                ProjectId: (params.ProjectId ?? 0).toString(),
+                Uniquekey: params.Uniquekey ?? '',
+                EmployeeId: params.EmployeeId ?? '',
+            })
+
+            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${ProjectMasterApi.DELETE_PROJECT_WITH_EMPLOYEE}?${queryParams.toString()}`
+            )
+
+            return response
+
+        } catch (error) {
+
+            console.error('ERROR: DELETE PROJECT MASTER WITH EMPLOYEE :', error)
+
+            if (error === TokenExpiredException) {
+
+                await this.deleteProjectMasterWithEmployee(params);
+
             }
 
             throw error
@@ -119,6 +188,27 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
         }
     }
 
+    async addUpdateProjectMasterWithCompany(params: AddUpdateProjectMasterWithCompanyRequest): Promise<ProjectMasterWithCompanySaveResponse> {
+
+        try {
+
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                ProjectMasterApi.ADD_UPDATE_PROJECT_WITH_COMPANY,
+                params
+            )
+
+            return response
+        } catch (error) {
+
+            console.error('ERROR: ADD UPDATE PROJECT MASTER WITH EMPLOYEE:', error)
+
+            if (error === TokenExpiredException) {
+                await this.addUpdateProjectMasterWithCompany(params);
+            }
+            throw error
+        }
+    }
+
     async pullProjectMasterWithBankDetails(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithBankDetailsResponse> {
         try {
             const queryParams = new URLSearchParams({
@@ -141,5 +231,55 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
             throw error
         }
     }
+
+    async addUpdateProjectMasterWithBankDetails(params: AddUpdateProjectMasterWithBankDetailsRequest): Promise<ProjectMasterWithBankDetailsSaveResponse> {
+
+        try {
+
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                ProjectMasterApi.ADD_UPDATE_PROJECT_WITH_BANK_DETAILS,
+                params
+            )
+
+            return response
+        } catch (error) {
+
+            console.error('ERROR: ADD UPDATE PROJECT MASTER WITH BANK DETAILS:', error)
+
+            if (error === TokenExpiredException) {
+                await this.addUpdateProjectMasterWithBankDetails(params);
+            }
+            throw error
+        }
+    }
+
+    async deleteProjectMasterWithBankDetails(params: DeleteProjectMasterWithBankDetailsRequest): Promise<ProjectMasterWithBankDetailsDeleteResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                ProjectWithBankDetailsId: (params.ProjectWithBankDetailsId ?? 0).toString(),
+                Uniquekey: params.Uniquekey ?? '',
+                ProjectId: (params.ProjectId ?? 0).toString(),
+            })
+
+            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${ProjectMasterApi.DELETE_PROJECT_WITH_BANK_DETAILS}?${queryParams.toString()}`
+            )
+
+            return response
+
+        } catch (error) {
+
+            console.error('ERROR: DELETE PROJECT MASTER WITH BANK DETAILS :', error)
+
+            if (error === TokenExpiredException) {
+
+                await this.deleteProjectMasterWithBankDetails(params);
+
+            }
+
+            throw error
+        }
+    }
+
 
 }

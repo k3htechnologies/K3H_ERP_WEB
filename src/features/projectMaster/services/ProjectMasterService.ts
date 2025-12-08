@@ -1,12 +1,22 @@
 import type { Failure } from '@/core/api/FailureResponse';
 import { ProjectMasterDatasourceImpl } from '@/features/projectMaster/datasources/ProjectMasterDatasource'
 import type {
+    AddUpdateProjectMasterWithBankDetailsRequest,
+    AddUpdateProjectMasterWithCompanyRequest,
+    AddUpdateProjectMasterWithEmployeeRequest,
+    DeleteProjectMasterWithBankDetailsRequest,
+    DeleteProjectMasterWithEmployeeRequest,
     FilterWithPaginationProjectMasterRequest,
     ProjectMasterListResponse,
     ProjectMasterSaveResponse,
+    ProjectMasterWithBankDetailsDeleteResponse,
     ProjectMasterWithBankDetailsResponse,
+    ProjectMasterWithBankDetailsSaveResponse,
     ProjectMasterWithCompanyResponse,
+    ProjectMasterWithCompanySaveResponse,
+    ProjectMasterWithEmployeeDeleteResponse,
     ProjectMasterWithEmployeeResponse,
+    ProjectMasterWithEmployeeSaveResponse,
 } from '@/features/projectMaster/models/ProjectMasterModel';
 
 import * as E from 'fp-ts/Either';
@@ -49,6 +59,31 @@ export const ProjectMasterService = {
 
         }
     },
+
+    apiCallAddUpdateProjectMasterWithEmployee: async (params: AddUpdateProjectMasterWithEmployeeRequest): Promise<E.Either<Failure, ProjectMasterWithEmployeeSaveResponse>> => {
+        try {
+
+            return E.right(await projectMasterDatasource.addUpdateProjectMasterWithEmployee(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallDeleteProjectMasterWithEmployee: async (params: DeleteProjectMasterWithEmployeeRequest): Promise<E.Either<Failure, ProjectMasterWithEmployeeDeleteResponse>> => {
+        try {
+
+            return E.right(await projectMasterDatasource.deleteProjectMasterWithEmployee(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
     apiCallPullProjectMasterWithCompany: async (ProjectId: number, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectMasterWithCompanyResponse>> => {
         try {
 
@@ -60,10 +95,47 @@ export const ProjectMasterService = {
 
         }
     },
+
+    apiCallAddUpdateProjectMasterWithCompany: async (params: AddUpdateProjectMasterWithCompanyRequest): Promise<E.Either<Failure, ProjectMasterWithCompanySaveResponse>> => {
+        try {
+
+            return E.right(await projectMasterDatasource.addUpdateProjectMasterWithCompany(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
     apiCallPullProjectMasterWithBankDetails: async (ProjectId: number, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectMasterWithBankDetailsResponse>> => {
         try {
 
             return E.right(await projectMasterDatasource.pullProjectMasterWithBankDetails(ProjectId, options?.signal));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallAddUpdateProjectMasterWithBankDetails: async (params: AddUpdateProjectMasterWithBankDetailsRequest): Promise<E.Either<Failure, ProjectMasterWithBankDetailsSaveResponse>> => {
+        try {
+
+            return E.right(await projectMasterDatasource.addUpdateProjectMasterWithBankDetails(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallDeleteProjectMasterWithBankDetails: async (params: DeleteProjectMasterWithBankDetailsRequest): Promise<E.Either<Failure, ProjectMasterWithBankDetailsDeleteResponse>> => {
+        try {
+
+            return E.right(await projectMasterDatasource.deleteProjectMasterWithBankDetails(params));
 
         } catch (error: any) {
 

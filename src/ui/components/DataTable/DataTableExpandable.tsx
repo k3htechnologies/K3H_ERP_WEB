@@ -2,6 +2,7 @@ import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react
 import { ChevronLeft, ChevronRight, ArrowUpDown, ChevronDown } from 'lucide-react'
 import { useViewportHeight } from '@/core/utils/useViewportHeight'
 import type { PaginationInfo, SortInfo, TableColumn } from './DataTable'
+import NoDataView from '@/ui/components/NoDataView/NoDataView'
 
 
 interface ExpandableConfig {
@@ -271,10 +272,9 @@ export const DataTableExpandable= forwardRef<DataTableExpandableRef, DataTablePr
             {!loading && data.length === 0 ? (
               <tr>
                 <td colSpan={effectiveColumns.length} className="py-10">
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" alt="No Data" className="w-32 h-32 opacity-80" />
-                    <p className="mt-4 text-gray-600 text-sm">{emptyMessage}</p>
-                  </div>
+                <NoDataView
+                    message={emptyMessage}
+                  />
                 </td>
               </tr>
             ) : (

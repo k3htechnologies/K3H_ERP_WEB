@@ -70,6 +70,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             border: colorStyles.border,
             backgroundColor: colorStyles.backgroundColor,
             color: colorStyles.color,
+            ...(colorStyles.background
+                ? { background: colorStyles.background }
+                : colorStyles.backgroundColor
+                    ? { backgroundColor: colorStyles.backgroundColor }
+                    : {}),
             cursor: disabled || loading ? 'not-allowed' : 'pointer',
             transition: theme.transitions.normal,
             fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',

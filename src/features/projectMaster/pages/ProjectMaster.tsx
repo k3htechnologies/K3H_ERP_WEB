@@ -139,7 +139,7 @@ export const ProjectMaster: React.FC = () => {
         const params: FilterWithPaginationProjectMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          IsProjectAccess: true,
+          IsProjectAccess: false,
           ProjectId: filterParams.ProjectId ? Number(filterParams.ProjectId) : undefined,
           ProjectName: filterParams.ProjectName?.trim() || undefined,
           ProjectLocation: filterParams.ProjectLocation?.trim() || undefined,

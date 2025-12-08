@@ -66,7 +66,7 @@ const AddUpdateProjectMaster: React.FC = () => {
     // NAVIGATE
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     //GET VALUE FROM URL :PROJECTID
     const { projectId } = useParams<{ projectId?: string }>();
 
@@ -398,6 +398,7 @@ const AddUpdateProjectMaster: React.FC = () => {
     };
 
     //#endregion
+    
     return (
         <>
             <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
@@ -445,8 +446,8 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                                         maxFiles={5}
                                         maxSizeMB={10}
-                                        onRemoveExisting={(url) =>{
-                                            setRemovedProjectPhotoUrls((prev) => [...prev,url])
+                                        onRemoveExisting={(url) => {
+                                            setRemovedProjectPhotoUrls((prev) => [...prev, url])
                                         }}
                                     />
                                 </div>

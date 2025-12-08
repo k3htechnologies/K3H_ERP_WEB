@@ -10,6 +10,7 @@ import { runApiWithLoader } from '@/core/utils';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
 import { Loader } from '@/core/utils/loader';
 import { useNavigate } from 'react-router-dom';
+import baseClient from '@/core/config/baseClient';
 
 export function SignIn() {
 
@@ -87,6 +88,8 @@ export function SignIn() {
                     // ============================================================================
 
                     LocalStorageHelper.storeEmployeeData(employeeData);
+
+                    baseClient.setToken(employeeData[0].Token);
 
                     showSuccess('Login Successful', `Welcome, ${employeeData[0].FullName}`);
 

@@ -1,6 +1,7 @@
 import React from 'react'
 import { ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react'
 import { useViewportHeight } from '@/core/utils/useViewportHeight'
+import NoDataView from '@/ui/components/NoDataView/NoDataView'
 
 export interface TableColumn {
   key: string
@@ -220,61 +221,54 @@ export const DataTable: React.FC<DataTableProps> = ({
                   colSpan={columns.length}
                   className="py-10"
                 >
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <img
-                      src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png"
-                      alt="No Data"
-                      className="w-32 h-32 opacity-80"
-                    />
-                    <p className="mt-4 text-gray-600 text-sm">
-                      {emptyMessage}
-                    </p>
-                  </div>
+                  <NoDataView
+                    message={emptyMessage}
+                  />
                 </td>
               </tr>
             )
-            :
-            (
-              data.map((row, index) => (
-                <tr key={index} className="hover:bg-gray-50 h-10 border-b border-gray-200">
-                  {columns.map((column) => {
-                    const cellValue = column.render ? column.render(row[column.key], row) : row[column.key]
+              :
+              (
+                data.map((row, index) => (
+                  <tr key={index} className="hover:bg-gray-50 h-10 border-b border-gray-200">
+                    {columns.map((column) => {
+                      const cellValue = column.render ? column.render(row[column.key], row) : row[column.key]
 
-                    return (
-                      <td
-                        key={column.key}
-                        className={`px-4 py-2 text-gray-900 border-r border-gray-200 ${column.align === 'center' ? 'text-center' :
-                          column.align === 'right' ? 'text-right' : 'text-left'
-                          } ${column.fixed === 'left' ? 'sticky left-0 bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-100' :
-                            column.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-100' : ''
-                          }`}
-                        style={{
-                          ...(column.width ? { width: column.width } : {}),
-                          fontSize: '14px',
-                          fontWeight: '400',
-                          lineHeight: '1.5',
-                          letterSpacing: '0%',
-                          minHeight: '40px',
-                          verticalAlign: 'middle'
-                        }}
-                        title=""
-                      >
-                        <div
-                          className={`${column.truncate !== false ? 'truncate whitespace-nowrap' : ''} max-w-full`}
+                      return (
+                        <td
+                          key={column.key}
+                          className={`px-4 py-2 text-gray-900 border-r border-gray-200 ${column.align === 'center' ? 'text-center' :
+                            column.align === 'right' ? 'text-right' : 'text-left'
+                            } ${column.fixed === 'left' ? 'sticky left-0 bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-100' :
+                              column.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-100' : ''
+                            }`}
                           style={{
-                            maxWidth: column.maxWidth || column.width || '200px',
-                            lineHeight: '1.5'
+                            ...(column.width ? { width: column.width } : {}),
+                            fontSize: '14px',
+                            fontWeight: '400',
+                            lineHeight: '1.5',
+                            letterSpacing: '0%',
+                            minHeight: '40px',
+                            verticalAlign: 'middle'
                           }}
+                          title=""
                         >
-                          {cellValue}
-                        </div>
-                      </td>
-                    )
-                  })}
+                          <div
+                            className={`${column.truncate !== false ? 'truncate whitespace-nowrap' : ''} max-w-full`}
+                            style={{
+                              maxWidth: column.maxWidth || column.width || '200px',
+                              lineHeight: '1.5'
+                            }}
+                          >
+                            {cellValue}
+                          </div>
+                        </td>
+                      )
+                    })}
 
-                </tr>
-              ))
-            )}
+                  </tr>
+                ))
+              )}
           </tbody>
         </table>
       </div>

@@ -136,11 +136,12 @@ export const Header: React.FC<HeaderProps> = ({
 
     //#region NOTIFICATION SCROLL HANDLER
     const handleNotificationScroll = (e: React.UIEvent<HTMLDivElement>) => {
+
         const el = e.currentTarget;
         const threshold = 60; // how close to bottom before loading next page
 
         if (el.scrollHeight - el.scrollTop <= el.clientHeight + threshold) {
-            // if more pages remain and not already fetching
+            
             if (pagination.currentPage < (pagination.totalPages || 0) && !isFetchingMoreNotification) {
                 const nextPage = pagination.currentPage + 1;
                 setIsFetchingMoreNotification(true);

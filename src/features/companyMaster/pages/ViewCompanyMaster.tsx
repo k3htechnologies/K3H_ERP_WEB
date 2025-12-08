@@ -6,6 +6,7 @@ import { Button } from "@/ui/components/forms";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { CollapseCard } from "@/ui/components/Card/CollapseCard";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 export const ViewCompantMaster: React.FC = () => {
     //#region STATE MANAGEMENT
@@ -77,7 +78,7 @@ export const ViewCompantMaster: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="text-sm text-gray-500">No company data provided.</div>
+                    <NoDataView />
                 </div>
             ) : (
                 <div className="space-y-6">

@@ -35,6 +35,7 @@ import ProjectMaster from '@/features/projectMaster/pages/ProjectMaster';
 import AddUpdateEmployeeMaster from '@/features/employeeMaster/pages/AddUpdateEmployeeMaster';
 import { MaterialMaster } from '@/features/materialMaster/pages/MaterialMaster';
 import ViewEmployeeMaster from '@/features/employeeMaster/pages/ViewEmployeeMaster';
+import Inventory from '@/features/inventory/pages/Inventory';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -123,6 +124,7 @@ function App() {
             <Route path="projectMaster" element={<ProjectMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
             <Route path="materialMaster" element={<MaterialMaster/>} />
+            <Route path="inventory" element={<Inventory></Inventory>}/>
 
 
           </Route>

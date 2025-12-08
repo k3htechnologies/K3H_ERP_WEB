@@ -52,15 +52,13 @@ const Inventory = () => {
         <div className="flex flex-col justify-evenly w-full h-[218px] rounded-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
             <div className="flex justify-between">
                 <div className="flex">
-                    <div className=" w-[300px] h-[45px] bg-[#F1F1F1] rounded-[6px] border-[0.3px] border-[rgba(0,0,0,0.5)]">
+                    <div className=" w-[250px] h-[40px] bg-[#F1F1F1] rounded-[6px] border-[0.3px] border-[rgba(0,0,0,0.5)]">
                         <div className="flex h-full justify-evenly items-center  p-1 ">
                             <div onClick={() => { setCurrentTab("Table") }} className={`flex cursor-pointer ${currentTab === "Table" ? "bg-[#FFFFFF]" : ""} ${currentTab === "Table" ? "text-[#135BEC]" : "text-black/50"} flex-1 justify-center h-[32px] items-center rounded-[2px] font-medium`}>Table</div>
                             <div onClick={() => { setCurrentTab("Grid") }} className={`flex cursor-pointer ${currentTab === "Grid" ? "bg-[#FFFFFF]" : ""} ${currentTab === "Grid" ? "text-[#135BEC]" : "text-black/50"} flex-1 justify-center h-[32px] items-center rounded-[2px] font-medium`}>Grid</div>
                         </div>
                     </div>
-                    <div className="w-5"></div>
-                    <SinglePageSelection options={[]} onChange={(value: string | number) => { }} placeholder="Select Site"></SinglePageSelection>
-                    <div className="w-5"></div>
+                   
                 </div>
                 <div className="flex gap-4">
                     <AddButton></AddButton>
@@ -132,7 +130,8 @@ const Inventory = () => {
         {
         selectedWing != undefined  ? 
             selectedWing.InventoryFloorData .map((floor, floorIndex) => (
-                <ExpandableCard key={floorIndex} title={floor.Floor} showline={true} customizedIcon={ <Plus className="p-1.5" size={28}/>  } child={
+                <ExpandableCard key={floorIndex} title={floor.Floor} showline={true} customizedIcon={ <Plus className="p-1.5" size={28}/>  } 
+                child={
                     <div className="flex flex-1 w-screen gap-5 overflow-y-auto scroll-smooth">
                         {floor.InventoryFlatData?.map((flat, flatIndex) => (
                             <FlatComponent 

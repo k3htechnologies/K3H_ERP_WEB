@@ -2,9 +2,9 @@ import useToast from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader'
 import { Button } from '@/ui/components/forms/Button';
 import ToastContainer from '@/ui/components/Toast/ToastContainer'
-import React, { useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom';
-import type { AddUpdateCompanyMasterRequest, AddUpdateCompanyPartnerRequest, CompanyMasterData, CompanyPartnerData } from '@/features/companyMaster/models/CompanyMasterModel';
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import type { AddUpdateCompanyMasterRequest, AddUpdateCompanyPartnerRequest, CompanyPartnerData, FilterWithPaginationCompanyMasterRequest } from '@/features/companyMaster/models/CompanyMasterModel';
 import { Input } from '@/ui/components/forms';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { COMPANY_TYPE_OPTIONS, GENDER_OPTIONS } from '@/core/constants';
@@ -14,7 +14,7 @@ import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
-import { Mail, Phone } from 'lucide-react';
+import { Edit, Mail, Phone } from 'lucide-react';
 import { filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterRERA, isValidAadhaar, isValidCIN, isValidEmail, isValidMobile, isValidPAN, isValidRERA } from '@/core/utils/fileValidation';
 import { runApiWithLoader } from '@/core/utils';
 import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
@@ -23,109 +23,119 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 
+const initialFormState = (): AddUpdateCompanyMasterRequest => ({
+  CompanyId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  CompanyName: '',
+  CompanyType: '',
+  ContactPerson: '',
+  MobileNumber: '',
+  EmailId: '',
+  LandLineNumber: '',
+  GSTNumber: '',
+  GSTCertificateURL: null,
+  RemoveGSTCertificateURL: '',
+  CINNumber: '',
+  CINURL: null,
+  RemoveCINURL: '',
+  PanNumber: '',
+  PanCardURL: null,
+  RemovePanCardURL: '',
+  RERANumber: '',
+  CountryMasterId: 0,
+  StateMasterId: 0,
+  DistrictMasterId: 0,
+  CityMasterId: 0,
+  CompanyLetterheadHeaderURL: null,
+  RemoveCompanyLetterheadHeaderURL: '',
+  CompanyLetterheadFooterURL: null,
+  RemoveCompanyLetterheadFooterURL: ''
+});
+
+const initialFormStateCompanyPartner = (): AddUpdateCompanyPartnerRequest => ({
+  CompanyPartnerId: 0,
+  FirstName: '',
+  LastName: '',
+  MiddleName: '',
+  DateOfBirth: null,
+  Gender: '',
+  MobileNumber: '',
+  EmailId: '',
+  PartnerPercentage: 0,
+  PanNumber: '',
+  PanCardURL: null,
+  RemovePanCardURL: '',
+  AadharCardNumber: '',
+  AadharCardURL: null,
+  RemoveAadharCardURL: '',
+  PhotoURL: null,
+  RemovePhotoURL: ''
+});
+
 const AddCompany: React.FC = () => {
 
   //#region STATE MANAGEMENT
+  const [formData, setFormData] = useState<AddUpdateCompanyMasterRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
-
-  // TOAST
-  const { toasts, removeToast, addToast } = useToast()
-
-  // NAVIGATE
-  const navigate = useNavigate();
-
-  //LOCATION
-  const location = useLocation() as {
-    state?: {
-      editCompanyMasterData?: CompanyMasterData | null;
-      fromList?: boolean;
-      listState?: {
-        page: number;
-        filters: any;
-      };
-    };
-  };
-
-  // ERROR SET
-  const [errors, setErrors] = useState<{ [key: string]: string }>({})
-
-  // Get COMPANY EDIT DATA FROM LOCATION STATE
-  const editCompanyData = (location.state?.editCompanyMasterData ?? null) as CompanyMasterData | null;
-  const isCompanyEdit = !!editCompanyData
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   //FILE PICKER
 
   const [gstGSTCertificateFiles, setGSTCertificateFiles] = useState<(File | string)[]>([]);
-  const [panURLFiles, setPANURLFiles] = useState<(File | string)[]>([]);
-  const [cinURLFiles, setCINURLFiles] = useState<(File | string)[]>([]);
-  const [companyLetterHeadHeaderFiles, setCompanyLetterHeadHeaderFiles] = useState<(File | string)[]>([]);
-  const [companyLetterHeadFooterFiles, setCompanyLetterHeadFooterFiles] = useState<(File | string)[]>([]);
-
-
-  // TRACK REMOVED URLS
   const [removedGSTCertificateUrls, setRemovedGSTCertificateUrls] = useState<string[]>([]);
-  const [removedPANURLs, setRemovedPANURLs] = useState<string[]>([]);
-  const [removedCINURLs, setRemovedCINURLs] = useState<string[]>([]);
-  const [removedCompanyLetterHeadHeaderUrls, setRemovedCompanyLetterHeadHeaderUrls] = useState<string[]>([]);
-  const [removedCompanyLetterHeadFooterUrls, setRemovedCompanyLetterHeadFooterUrls] = useState<string[]>([]);
+  const [gSTCertificateURL, setGSTCertificateURL] = useState<string>();
 
+  const [panURLFiles, setPANURLFiles] = useState<(File | string)[]>([]);
+  const [removedPanUrls, setRemovedPanUrls] = useState<string[]>([]);
+  const [panURL, setPanURL] = useState<string>();
+
+  const [cinURLFiles, setCINURLFiles] = useState<(File | string)[]>([]);
+  const [removedCinUrls, setRemovedCinUrls] = useState<string[]>([]);
+  const [cinURL, setCinURL] = useState<string>();
+
+  const [companyLetterHeadHeaderFiles, setCompanyLetterHeadHeaderFiles] = useState<(File | string)[]>([]);
+  const [removedCompanyLetterHeadHeaderUrls, setRemovedCompanyLetterHeadHeaderUrls] = useState<string[]>([]);
+  const [companyLetterHeadHeaderURL, setCompanyLetterHeadHeaderURL] = useState<string>();
+
+
+  const [companyLetterHeadFooterFiles, setCompanyLetterHeadFooterFiles] = useState<(File | string)[]>([]);
+  const [removedCompanyLetterHeadFooterUrls, setRemovedCompanyLetterHeadFooterUrls] = useState<string[]>([]);
+  const [companyLetterHeadFooterURL, setCompanyLetterHeadFooterURL] = useState<string>();
+
+  // NAVIGATE
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  //GET VALUE FROM URL :COMPANYID
+  const { companyId } = useParams<{ companyId?: string }>();
+  // TOAST
+  const { toasts, removeToast, addToast } = useToast()
+
+  //ERROR SET UP
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
   //COMPANY PARTNER LIST
   const [companyPartnerList, setCompanyPartnerList] = useState<CompanyPartnerData[]>([]);
+  const [formDataCompanyPartner, setFormDataCompanyPartner] = useState<AddUpdateCompanyPartnerRequest>(() => initialFormStateCompanyPartner());
 
-  //#endregion
+  const [editingCompanyPartnerMasterData, setEditingCompanyPartnerMasterData] = useState<CompanyPartnerData | null>(null)
+  const [isAddUpdateCompanyPartnerModalOpen, setIsAddUpdateCompanyPartnerModalOpen] = useState(false)
 
-  //#region INITIALIZATION
-  useEffect(() => {
-    if (!isCompanyEdit) {
-      setSelectedCountryId(1)
-      handleFieldChange('CountryMasterId', 1)
-    }
-  }, [isCompanyEdit])
+  const [companyPartnerAadhaarCardURLFiles, setCompanyPartnerAadhaarCardURLFiles] = useState<(File | string)[]>([]);
+  const [removedCompanyPartnerAadhaarCardURLs, setRemovedCompanyPartnerAadhaarCardURLs] = useState<string[]>([]);
+  const [companyPartnerAadhaarCardURL, setCompanyPartnerAadhaarCardURL] = useState<string>();
+
+  const [companyPartnerPANURLFiles, setCompanyPartnerPANURLFiles] = useState<(File | string)[]>([]);
+  const [removedCompanyPartnerPANURLs, setRemovedCompanyPartnerPANURLs] = useState<string[]>([]);
+  const [companyPartnerPANURL, setCompanyPartnerPANURL] = useState<string>();
 
 
-  useEffect(() => {
+  const [companyPartnerPhotoURLFiles, setCompanyPartnerPhotoURLFiles] = useState<(File | string)[]>([]);
+  const [removedCompanyPartnerPhotoURLs, setRemovedCompanyPartnerPhotoURLs] = useState<string[]>([]);
+  const [companyPartnerPhotoURL, setCompanyPartnerPhotoURL] = useState<string>();
 
-    if (isCompanyEdit && editCompanyData) {
-
-      setCompanyFormData({
-        CompanyId: editCompanyData.CompanyId || 0,
-        Uniquekey: editCompanyData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-        CompanyName: editCompanyData.CompanyName || '',
-        CompanyType: editCompanyData.CompanyType || '',
-        ContactPerson: editCompanyData.ContactPerson || '',
-        MobileNumber: editCompanyData.MobileNumber || '',
-        EmailId: editCompanyData.EmailId || '',
-        LandLineNumber: editCompanyData.LandLineNumber || '',
-        GSTNumber: editCompanyData.GSTNumber || '',
-        GSTCertificateURL: null,
-        RemoveGSTCertificateURL: '',
-        CINNumber: editCompanyData.CINNumber || '',
-        CINURL: null,
-        RemoveCINURL: '',
-        PanNumber: editCompanyData.PANNumber || '',
-        PanCardURL: null,
-        RemovePanCardURL: '',
-        RERANumber: editCompanyData.RERANumber || '',
-        CountryMasterId: editCompanyData.CountryMasterId || 0,
-        StateMasterId: editCompanyData.StateMasterId || 0,
-        DistrictMasterId: editCompanyData.DistrictMasterId || 0,
-        CityMasterId: editCompanyData.CityMasterId || 0,
-        CompanyLetterheadHeaderURL: null,
-        RemoveCompanyLetterheadHeaderURL: '',
-        CompanyLetterheadFooterURL: null,
-        RemoveCompanyLetterheadFooterURL: ''
-      })
-
-      // 🔥 Sync cascading dropdown selections
-      setSelectedCountryId(editCompanyData.CountryMasterId || null)
-      setSelectedStateId(editCompanyData.StateMasterId || null)
-      setSelectedDistrictId(editCompanyData.DistrictMasterId || null)
-      setSelectedCityId(editCompanyData.CityMasterId || null)
-      setCompanyPartnerList(editCompanyData.CompanyPartnerData);
-    }
-  }, [isCompanyEdit, editCompanyData])
+  //ERROR SET UP
+  const [errorsCompanyPartner, setErrorsCompanyPartner] = useState<{ [k: string]: string }>({});
 
   //#endregion
 
@@ -167,50 +177,232 @@ const AddCompany: React.FC = () => {
         label: c.name,
         value: c.id,
       }))
-      : []
+      : [];
+
+
 
   //#endregion
 
-  //#region ADD UPDATE COMPANY REQUEST
-  const [companyFormData, setCompanyFormData] = useState<AddUpdateCompanyMasterRequest>({
-    CompanyId: 0,
-    Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-    CompanyName: '',
-    CompanyType: '',
-    ContactPerson: '',
-    MobileNumber: '',
-    EmailId: '',
-    LandLineNumber: '',
-    GSTNumber: '',
-    GSTCertificateURL: null,
-    RemoveGSTCertificateURL: '',
-    CINNumber: '',
-    CINURL: null,
-    RemoveCINURL: '',
-    PanNumber: '',
-    PanCardURL: null,
-    RemovePanCardURL: '',
-    RERANumber: '',
-    CountryMasterId: 0,
-    StateMasterId: 0,
-    DistrictMasterId: 0,
-    CityMasterId: 0,
-    CompanyLetterheadHeaderURL: null,
-    RemoveCompanyLetterheadHeaderURL: '',
-    CompanyLetterheadFooterURL: null,
-    RemoveCompanyLetterheadFooterURL: ''
-  })
-  //#endregion
+  //#region HANDLE CHNAGE EVENT WHEN INPUT BOX ANY OTHER
+  const handleFieldChange = (field: keyof AddUpdateCompanyMasterRequest, value: any) => {
 
-  //#region HANDLE CHANGE EVENT
-  const handleFieldChange = (field: keyof AddUpdateCompanyMasterRequest, value: string | number | boolean) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
-    setCompanyFormData(prev => ({ ...prev, [field]: value }))
     if (errors[field]) {
-
-      setErrors(prev => ({ ...prev, [field]: '' }))
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
+  };
+
+  //#endregion 
+
+  //#region INITIALIZATION
+  useEffect(() => {
+
+    if (companyId) {
+
+      fetchCompanyMasterDetails();
+      return;
+    }
+
+    setSelectedCountryId(1);
+    handleFieldChange('CountryMasterId', 1);
+  }, [companyId]);
+
+  //#endregion
+
+  //#region LOAD COMPANY MASTER DATA
+  const fetchCompanyMasterDetails = async () => {
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const params: FilterWithPaginationCompanyMasterRequest = {
+          PageNumber: 1,
+          PageSize: 1,
+          IsCheckPermission: false,
+          CompanyId: Number(companyId)
+        }
+
+        const response = await CompanyMasterService.apiCallPullCompanyMaster(params);
+
+        if (E.isRight(response)) {
+
+          const row = response.right.Data?.[0];
+
+          if (row) {
+
+            setFormData(prev => ({
+              ...prev,
+              CompanyId: row.CompanyId ?? prev.CompanyId,
+              Uniquekey: row.Uniquekey ?? prev.Uniquekey,
+              CompanyName: row.CompanyName ?? prev.CompanyName ?? '',
+              CompanyType: row.CompanyType ?? prev.CompanyType ?? '',
+              ContactPerson: row.ContactPerson ?? prev.ContactPerson ?? '',
+              MobileNumber: row.MobileNumber ?? prev.MobileNumber ?? '',
+              EmailId: row.EmailId ?? prev.EmailId ?? '',
+              LandLineNumber: row.LandLineNumber ?? prev.LandLineNumber ?? '',
+              GSTNumber: row.GSTNumber ?? prev.GSTNumber ?? '',
+              GSTCertificateURL: null,
+              RemoveGSTCertificateURL: "",
+              CINNumber: row.CINNumber ?? prev.CINNumber ?? '',
+              CINURL: null,
+              RemoveCINURL: '',
+              PanNumber: row.PANNumber ?? prev.PanNumber ?? '',
+              PanCardURL: null,
+              RemovePanCardURL: '',
+              RERANumber: row.RERANumber ?? prev.RERANumber,
+              CountryMasterId: row.CountryMasterId ?? prev.CountryMasterId ?? 1,
+              DistrictMasterId: row.DistrictMasterId ?? prev.DistrictMasterId ?? 0,
+              StateMasterId: row.StateMasterId ?? prev.StateMasterId ?? 0,
+              CityMasterId: row.CityMasterId ?? prev.CityMasterId ?? 0,
+              CompanyLetterheadHeaderURL: null,
+              RemoveCompanyLetterheadHeaderURL: '',
+              CompanyLetterheadFooterURL: null,
+              RemoveCompanyLetterheadFooterURL: ''
+
+
+            }));
+
+            setCompanyPartnerList(row.CompanyPartnerData);
+
+            setGSTCertificateFiles([]);
+            setGSTCertificateURL(row.GSTCertificateURL)
+            setRemovedGSTCertificateUrls([]);
+
+            setPANURLFiles([]);
+            setPanURL(row.PanCardURL)
+            setRemovedPanUrls([]);
+
+            setCINURLFiles([]);
+            setCinURL(row.CINURL)
+            setRemovedCinUrls([]);
+
+
+            setCompanyLetterHeadHeaderFiles([]);
+            setCompanyLetterHeadHeaderURL(row.CompanyLetterheadHeaderURL)
+            setRemovedCompanyLetterHeadHeaderUrls([]);
+
+            setCompanyLetterHeadFooterFiles([]);
+            setCompanyLetterHeadFooterURL(row.CompanyLetterheadFooterURL)
+            setRemovedCompanyLetterHeadFooterUrls([]);
+
+            setSelectedCountryId(row.CountryMasterId ?? null);
+            setSelectedStateId(row.StateMasterId ?? null);
+            setSelectedDistrictId(row.DistrictMasterId ?? null);
+            setSelectedCityId(row.CityMasterId ?? null);
+
+          }
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+        }
+
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message })
+      },
+      undefined,
+      'Loading Project Data'
+    )
   }
+  //#endregion
+
+  //#region [VALIDATION FUNCTION]
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateCompanyMasterForm = (): {
+    isValid: boolean;
+    errors: { [key: string]: string };
+  } => {
+    const newErrors: { [key: string]: string } = {};
+
+    // Company Name
+    if (!formData.CompanyName?.trim()) {
+      newErrors.CompanyName = "Company Name is required.";
+    } else if (formData.CompanyName?.length > 50) {
+      newErrors.CompanyName = "Company Name must be at most 50 characters.";
+    }
+
+    // Company Type
+    if (!formData.CompanyType?.trim()) {
+      newErrors.CompanyType = "Company Type is required.";
+    }
+
+    // Contact Person
+    if (!formData.ContactPerson?.trim()) {
+      newErrors.ContactPerson = "Contact Person is required.";
+    }
+
+    // Mobile
+    if (!formData.MobileNumber?.trim()) {
+      newErrors.MobileNumber = "Mobile Number is required.";
+    } else if (!isValidMobile(formData.MobileNumber?.trim())) {
+      newErrors.MobileNumber = "Enter a valid 10-digit mobile number.";
+    }
+
+    // Email
+    if (!formData.EmailId?.trim()) {
+      newErrors.EmailId = "Email Id is required.";
+    } else if (!isValidEmail(formData.EmailId?.trim())) {
+      newErrors.EmailId = "Enter a valid email address.";
+    }
+
+    // Landline (if required)
+    if (!formData.LandLineNumber?.trim()) {
+      newErrors.LandLineNumber = "Land Line Number is required.";
+    }
+
+    // GST Number
+    if (!formData.GSTNumber?.trim()) {
+      newErrors.GSTNumber = "GST Number is required.";
+    }
+    // (You can add a GST regex if you want stricter)
+
+    // PAN
+    if (!formData.PanNumber?.trim()) {
+      newErrors.PanNumber = "PAN Number is required.";
+    } else if (!isValidPAN(formData.PanNumber?.trim())) {
+      newErrors.PanNumber = "Enter a valid PAN Number.";
+    }
+
+    // CIN
+    if (!formData.CINNumber?.trim()) {
+      newErrors.CINNumber = "CIN Number is required.";
+    } else if (!isValidCIN(formData.CINNumber?.trim())) {
+      newErrors.CINNumber = "Enter a valid CIN Number.";
+    }
+
+    // RERA
+    if (!formData.RERANumber?.trim()) {
+      newErrors.RERANumber = "RERA Number is required.";
+    } else if (!isValidRERA(formData.RERANumber?.trim())) {
+      newErrors.RERANumber = "Enter a valid RERA Number.";
+    }
+
+    // Location
+    if (!formData.CountryMasterId) {
+      newErrors.CountryMasterId = "Country is required.";
+    }
+    if (!formData.StateMasterId) {
+      newErrors.StateMasterId = "State is required.";
+    }
+    if (!formData.DistrictMasterId) {
+      newErrors.DistrictMasterId = "District is required.";
+    }
+
+    if (!formData.CityMasterId) {
+      newErrors.CityMasterId = "City is required.";
+    }
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors,
+    };
+  };
+
   //#endregion
 
   //#region ADD UPDATE COMPANY MASTER
@@ -219,23 +411,22 @@ const AddCompany: React.FC = () => {
 
     const fd = new FormData();
 
-    fd.append('CompanyId', String(companyFormData.CompanyId ?? 0));
-    fd.append('Uniquekey', companyFormData.Uniquekey ?? '');
-    fd.append('CompanyName', companyFormData.CompanyName ?? '');
-    fd.append('CompanyType', companyFormData.CompanyType ?? '');
-    fd.append('ContactPerson', companyFormData.ContactPerson ?? '');
-    fd.append('MobileNumber', companyFormData.MobileNumber ?? '');
-    fd.append('EmailId', companyFormData.EmailId ?? '');
-    fd.append('LandLineNumber', companyFormData.LandLineNumber ?? '');
-    fd.append('GSTNumber', companyFormData.GSTNumber ?? '');
-    fd.append('CINNumber', companyFormData.CINNumber ?? '');
-    fd.append('PanNumber', companyFormData.PanNumber ?? '');
-    fd.append('RERANumber', companyFormData.RERANumber ?? '');
-
-    fd.append('CountryMasterId', String(companyFormData.CountryMasterId ?? 0));
-    fd.append('StateMasterId', String(companyFormData.StateMasterId ?? 0));
-    fd.append('DistrictMasterId', String(companyFormData.DistrictMasterId ?? 0));
-    fd.append('CityMasterId', String(companyFormData.CityMasterId ?? 0));
+    fd.append('CompanyId', String(formData.CompanyId ?? 0));
+    fd.append('Uniquekey', formData.Uniquekey ?? '');
+    fd.append('CompanyName', formData.CompanyName ?? '');
+    fd.append('CompanyType', formData.CompanyType ?? '');
+    fd.append('ContactPerson', formData.ContactPerson ?? '');
+    fd.append('MobileNumber', formData.MobileNumber ?? '');
+    fd.append('EmailId', formData.EmailId ?? '');
+    fd.append('LandLineNumber', formData.LandLineNumber ?? '');
+    fd.append('GSTNumber', formData.GSTNumber ?? '');
+    fd.append('CINNumber', formData.CINNumber ?? '');
+    fd.append('PanNumber', formData.PanNumber ?? '');
+    fd.append('RERANumber', formData.RERANumber ?? '');
+    fd.append('CountryMasterId', String(formData.CountryMasterId ?? 0));
+    fd.append('StateMasterId', String(formData.StateMasterId ?? 0));
+    fd.append('DistrictMasterId', String(formData.DistrictMasterId ?? 0));
+    fd.append('CityMasterId', String(formData.CityMasterId ?? 0));
 
 
     gstGSTCertificateFiles.forEach(file => {
@@ -252,7 +443,7 @@ const AddCompany: React.FC = () => {
       }
     });
 
-    fd.append('RemovePanCardURL', removedPANURLs.join(','));
+    fd.append('RemovePanCardURL', removedPanUrls.join(','));
 
     cinURLFiles.forEach(file => {
       if (file instanceof File) {
@@ -260,7 +451,7 @@ const AddCompany: React.FC = () => {
       }
     });
 
-    fd.append('RemoveCINURL', removedCINURLs.join(','));
+    fd.append('RemoveCINURL', removedCinUrls.join(','));
 
     companyLetterHeadHeaderFiles.forEach(file => {
       if (file instanceof File) {
@@ -279,6 +470,8 @@ const AddCompany: React.FC = () => {
     fd.append('RemoveCompanyLetterheadFooterURL', removedCompanyLetterHeadFooterUrls.join(','));
     return fd;
   };
+
+
   const handleAddUpdateCompanyMaster = async () => {
 
     // Clear previous errors
@@ -294,7 +487,7 @@ const AddCompany: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
 
@@ -304,29 +497,28 @@ const AddCompany: React.FC = () => {
 
         if (E.isRight(response)) {
 
+          addToast({ type: "success", title: formData.CompanyId ? "Company details updated successfully" : "New Company added successfully" });
 
-          const isAdd = companyFormData.CompanyId === 0
+          // Get list state from navigation if available, otherwise use defaults
+          const locationState = location.state as {
+            listState?: {
+              page?: number;
+              filters?: any;
+              sortInfo?: any;
+              searchTerm?: string;
+            };
+          } | null;
 
-          if (isAdd) {
+          const listState = locationState?.listState || {
+            page: 1,
+            filters: {},
+            sortInfo: undefined,
+            searchTerm: '',
+          };
 
-            addToast({ type: 'success', title: 'Company master added successfully' });
-
-          } else {
-
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-          }
-
-          if (location.state?.fromList && location.state.listState) {
-            navigate('/companyMaster', {
-              state: {
-                listState: location.state.listState,
-              },
-              replace: true,
-            });
-          } else {
-
-            navigate('/companyMaster');
-          }
+          navigate("/companyMaster", {
+            state: { listState }
+          });
 
         } else {
 
@@ -340,105 +532,49 @@ const AddCompany: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
-      companyFormData.CompanyId === 0 ? 'Add Company Master' : 'Update Company Master...'
+      Number(companyId) === 0 ? 'Add Company Master' : 'Update Company Master...'
     )
   }
 
 
-  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
-  const validateCompanyMasterForm = (): {
-    isValid: boolean;
-    errors: { [key: string]: string };
-  } => {
-    const newErrors: { [key: string]: string } = {};
+  //#endregion
 
-    // Company Name
-    if (!companyFormData.CompanyName?.trim()) {
-      newErrors.CompanyName = "Company Name is required.";
-    } else if (companyFormData.CompanyName?.length > 50) {
-      newErrors.CompanyName = "Company Name must be at most 50 characters.";
-    }
 
-    // Company Type
-    if (!companyFormData.CompanyType?.trim()) {
-      newErrors.CompanyType = "Company Type is required.";
-    }
+  //#region EDIT DEPARTMENT MASTER
 
-    // Contact Person
-    if (!companyFormData.ContactPerson?.trim()) {
-      newErrors.ContactPerson = "Contact Person is required.";
-    }
-
-    // Mobile
-    if (!companyFormData.MobileNumber?.trim()) {
-      newErrors.MobileNumber = "Mobile Number is required.";
-    } else if (!isValidMobile(companyFormData.MobileNumber?.trim())) {
-      newErrors.MobileNumber = "Enter a valid 10-digit mobile number.";
-    }
-
-    // Email
-    if (!companyFormData.EmailId?.trim()) {
-      newErrors.EmailId = "Email Id is required.";
-    } else if (!isValidEmail(companyFormData.EmailId?.trim())) {
-      newErrors.EmailId = "Enter a valid email address.";
-    }
-
-    // Landline (if required)
-    if (!companyFormData.LandLineNumber?.trim()) {
-      newErrors.LandLineNumber = "Land Line Number is required.";
-    }
-
-    // GST Number
-    if (!companyFormData.GSTNumber?.trim()) {
-      newErrors.GSTNumber = "GST Number is required.";
-    }
-    // (You can add a GST regex if you want stricter)
-
-    // PAN
-    if (!companyFormData.PanNumber?.trim()) {
-      newErrors.PanNumber = "PAN Number is required.";
-    } else if (!isValidPAN(companyFormData.PanNumber?.trim())) {
-      newErrors.PanNumber = "Enter a valid PAN Number.";
-    }
-
-    // CIN
-    if (!companyFormData.CINNumber?.trim()) {
-      newErrors.CINNumber = "CIN Number is required.";
-    } else if (!isValidCIN(companyFormData.CINNumber?.trim())) {
-      newErrors.CINNumber = "Enter a valid CIN Number.";
-    }
-
-    // RERA
-    if (!companyFormData.RERANumber?.trim()) {
-      newErrors.RERANumber = "RERA Number is required.";
-    } else if (!isValidRERA(companyFormData.RERANumber?.trim())) {
-      newErrors.RERANumber = "Enter a valid RERA Number.";
-    }
-
-    // Location
-    if (!companyFormData.CountryMasterId) {
-      newErrors.CountryMasterId = "Country is required.";
-    }
-    if (!companyFormData.StateMasterId) {
-      newErrors.StateMasterId = "State is required.";
-    }
-    if (!companyFormData.DistrictMasterId) {
-      newErrors.DistrictMasterId = "District is required.";
-    }
-
-    if (!companyFormData.CityMasterId) {
-      newErrors.CityMasterId = "City is required.";
-    }
-
-    return {
-      isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors,
+  const handleEditCompanyPartner = useCallback((row: CompanyPartnerData) => {
+    const partnerData: AddUpdateCompanyPartnerRequest = {
+      CompanyPartnerId: row.CompanyPartnerId ?? 0,
+      FirstName: row.FirstName || '',
+      LastName: row.LastName || '',
+      MiddleName: row.MiddleName || '',
+      DateOfBirth: row.DateOfBirth ?? null,
+      Gender: row.Gender || '',
+      MobileNumber: row.MobileNumber || '',
+      EmailId: row.EmailId || '',
+      PartnerPercentage: row.PartnerPercentage ?? 0,
+      PanNumber: row.PanNumber || '',
+      RemovePanCardURL: '',
+      AadharCardNumber: row.AadharCardNumber || '',
+      RemoveAadharCardURL: '',
+      RemovePhotoURL: ''
     };
-  };
+
+
+    setEditingCompanyPartnerMasterData(row);
+    setFormDataCompanyPartner(partnerData);
+    setCompanyPartnerPANURLFiles(parseDocumentUrls(row.PanCardURL ?? '').slice());
+    setCompanyPartnerAadhaarCardURLFiles(parseDocumentUrls(row.AadharCardURL ?? '').slice());
+    setCompanyPartnerPhotoURLFiles(parseDocumentUrls(row.PhotoURL ?? '').slice());
+    setIsAddUpdateCompanyPartnerModalOpen(true);
+  }, []);
+
+
 
   //#endregion
 
   //#region VIEW PARTNER DATA
+
   const companyListForTable = useMemo(() => companyPartnerList, [companyPartnerList]);
 
   const companyPartnerColumns = useMemo<TableColumn[]>(
@@ -462,7 +598,6 @@ const AddCompany: React.FC = () => {
           return (
             <div className="flex items-center justify-start">
 
-              {/* Circle Avatar with Viewer */}
               <MultiImageViewer
                 images={images}
                 title={`Profile Photo – ${row.FullName}`}
@@ -479,12 +614,35 @@ const AddCompany: React.FC = () => {
                 }
               />
 
-              {/* Name */}
+
               <TooltipText
                 text={value || "-"}
                 maxWidth="250px"
                 tooltipThreshold={25}
               />
+
+              <>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleEditCompanyPartner(row)
+                  }}
+                  color='transparent'
+                  fullWidth
+                  isborderRadius
+                  size='sm'
+                  title="Edit Department"
+                  style={{
+                    color: '#0B3251',
+                    padding: '0px 8px'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </>
             </div>
           );
         }
@@ -555,7 +713,7 @@ const AddCompany: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value: string, row: any) => {
-          
+
           return (
             <MultiImageViewer
               images={parseDocumentUrls(row.AadharCardURL)}
@@ -567,613 +725,167 @@ const AddCompany: React.FC = () => {
 
       }
     ],
-    []
+    [handleEditCompanyPartner]
   )
   //#endregion
 
+  //#region HANDLE CHNAGE EVENT WHEN INPUT BOX ANY OTHER
+  const handleFieldChangeCompanyPartner = (field: keyof AddUpdateCompanyPartnerRequest, value: any) => {
+
+    setFormDataCompanyPartner((prev) => ({ ...prev, [field]: value }));
+
+    if (errorsCompanyPartner[field]) {
+      setErrorsCompanyPartner((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  //#endregion 
+
   //#region ADD UPDATE COMPANY PARTNER DATA
-
-
-  //FILE PICKER
-
-
-  const [editingCompanyPartnerMasterData, setEditingCompanyPartnerMasterData] = useState<CompanyPartnerData | null>(null)
-  const [isAddUpdateCompanyPartnerModalOpen, setIsAddUpdateCompanyPartnerModalOpen] = useState(false)
 
   const handleAddCompanyPartnerModal = () => {
     setEditingCompanyPartnerMasterData(null)
+    setFormDataCompanyPartner(initialFormStateCompanyPartner());
     setIsAddUpdateCompanyPartnerModalOpen(true)
+    setErrorsCompanyPartner({});
   }
 
-  const handleEditCompanyPartner = (row: CompanyPartnerData) => {
-    setEditingCompanyPartnerMasterData(row)
-    setIsAddUpdateCompanyPartnerModalOpen(true)
-  }
 
-  interface AddUpdateCompanyPartnerModalProps {
-    isOpen: boolean
-    onClose: () => void
-    onSubmit: (data: AddUpdateCompanyPartnerRequest) => void
-    data?: CompanyPartnerData | null
-    loading?: boolean
-  }
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateAddCompanyPartnerForm = (): {
 
-  const AddUpdateCompanyPartnerModal: React.FC<
-    AddUpdateCompanyPartnerModalProps
-  > = ({
-    isOpen,
-    onClose,
-    onSubmit,
-    data,
-    loading = false }) => {
+    isValid: boolean
 
-      const [companyPartnerformData, setCompanyPartnerFormData] = useState<AddUpdateCompanyPartnerRequest>({
+    errorsCompanyPartner: { [key: string]: string }
 
-        CompanyPartnerId: 0,
-        FirstName: '',
-        LastName: '',
-        MiddleName: '',
-        DateOfBirth: null,
-        Gender: '',
-        MobileNumber: '',
-        EmailId: '',
-        PartnerPercentage: 0,
+  } => {
+    const newErrorsCompanyPartner: { [key: string]: string } = {}
 
-        PanNumber: '',
-        PanCardURL: null,
-        RemovePanCardURL: '',
-
-        AadharCardNumber: '',
-        AadharCardURL: null,
-        RemoveAadharCardURL: '',
-
-        PhotoURL: null,
-        RemovePhotoURL: ''
-      })
-
-      const [errors, setErrors] = useState<{ [key: string]: string }>({})
-
-
-      const [companyPartnerAadhaarCardURLFiles, setCompanyPartnerAadhaarCardURLFiles] = useState<(File | string)[]>([]);
-      const [companyPartnerPANURLFiles, setCompanyPartnerPANURLFiles] = useState<(File | string)[]>([]);
-      const [companyPartnerPhotoURLFiles, setCompanyPartnerPhotoURLFiles] = useState<(File | string)[]>([]);
-
-
-      // TRACK REMOVED URLS
-      const [removedCompanyPartnerAadhaarCardURLs, setRemovedCompanyPartnerAadhaarCardURLs] = useState<string[]>([]);
-      const [removedCompanyPartnerPANURLs, setRemovedCompanyPartnerPANURLs] = useState<string[]>([]);
-      const [removedCompanyPartnerPhotoURLs, setRemovedCompanyPartnerPhotoURLs] = useState<string[]>([]);
-
-
-
-      useEffect(() => {
-        if (isOpen) {
-          if (data) {
-            setCompanyPartnerFormData({
-              CompanyPartnerId: data.CompanyPartnerId || 0,
-              FirstName: data.FirstName || '',
-              LastName: data.LastName || '',
-              MiddleName: data.MiddleName || '',
-              DateOfBirth: data.DateOfBirth || null,
-              Gender: data.Gender || '',
-              MobileNumber: data.MobileNumber || '',
-              EmailId: data.EmailId || '',
-              PartnerPercentage: data.PartnerPercentage || 0,
-
-              PanNumber: data.PanNumber || '',
-              PanCardURL: null,
-              RemovePanCardURL: '',
-
-              AadharCardNumber: data.AadharCardNumber || '',
-              AadharCardURL: null,
-              RemoveAadharCardURL: '',
-
-              PhotoURL: null,
-              RemovePhotoURL: ''
-            })
-          } else {
-            setCompanyPartnerFormData({
-              CompanyPartnerId: 0,
-              FirstName: '',
-              LastName: '',
-              MiddleName: '',
-              DateOfBirth: null,
-              Gender: '',
-              MobileNumber: '',
-              EmailId: '',
-              PartnerPercentage: 0,
-
-              PanNumber: '',
-              PanCardURL: null,
-              RemovePanCardURL: '',
-
-              AadharCardNumber: '',
-              AadharCardURL: null,
-              RemoveAadharCardURL: '',
-
-              PhotoURL: null,
-              RemovePhotoURL: ''
-            })
-          }
-
-          // clear previous errors when modal opens
-          setErrors({})
-        }
-      }, [isOpen, data])
-
-      // ============================================================= [VALIDATION FUNCTION - PARTNER] =============================================================================================
-      const validateCompanyPartnerForm = (): {
-
-        isValid: boolean
-
-        errors: { [key: string]: string }
-
-      } => {
-        const newErrors: { [key: string]: string } = {}
-
-        // First Name
-        if (!companyPartnerformData.FirstName?.trim()) {
-          newErrors.FirstName = 'First Name is required.'
-        } else if (companyPartnerformData.FirstName.trim().length > 50) {
-          newErrors.FirstName = 'First Name must be at most 50 characters.'
-        }
-
-        // Mobile
-        if (!companyPartnerformData.MobileNumber?.trim()) {
-          newErrors.MobileNumber = 'Mobile Number is required.'
-        } else if (!isValidMobile(companyPartnerformData.MobileNumber.trim())) {
-          newErrors.MobileNumber = 'Enter a valid 10-digit mobile number.'
-        }
-
-        // Email (optional but must be valid if present)
-        if (companyPartnerformData.EmailId?.trim() && !isValidEmail(companyPartnerformData.EmailId.trim())) {
-          newErrors.EmailId = 'Enter a valid email address.'
-        }
-
-        // Partner Percentage
-        const percentage = Number(companyPartnerformData.PartnerPercentage ?? 0)
-        if (isNaN(percentage)) {
-          newErrors.PartnerPercentage = 'Partner Percentage must be a number.'
-        } else if (percentage <= 0 || percentage > 100) {
-          newErrors.PartnerPercentage =
-            'Partner Percentage must be between 1 and 100.'
-        }
-
-        // PAN
-        if (!companyPartnerformData.PanNumber?.trim()) {
-          newErrors.PanNumber = 'PAN Number is required.'
-        } else if (!isValidPAN(companyPartnerformData.PanNumber.trim())) {
-          newErrors.PanNumber = 'Enter a valid PAN Number.'
-        }
-
-        // Aadhar
-        if (!companyPartnerformData.AadharCardNumber?.trim()) {
-          newErrors.AadharCardNumber = 'Aadhar Number is required.'
-        } else if (!isValidAadhaar(companyPartnerformData.AadharCardNumber.trim())) {
-          newErrors.AadharCardNumber = 'Enter a valid 12-digit Aadhar Number.'
-        }
-
-        // Date of Birth (optional future date check)
-        if (companyPartnerformData.DateOfBirth) {
-          const dob = new Date(companyPartnerformData.DateOfBirth as unknown as string)
-          const today = new Date()
-          if (dob > today) {
-            newErrors.DateOfBirth = 'Date of Birth cannot be in the future.'
-          }
-        }
-
-        return {
-          isValid: Object.keys(newErrors).length === 0,
-          errors: newErrors
-        }
-      }
-
-      const handleFieldChange = (
-        field: keyof AddUpdateCompanyPartnerRequest,
-        value: string | number | null
-      ) => {
-        setCompanyPartnerFormData(prev => ({
-          ...prev,
-          [field]: value
-        }))
-
-        setErrors(prev => ({
-          ...prev,
-          [field]: ''
-        }))
-      }
-
-      const handleFileChange = (
-        field: 'PanCardURL' | 'AadharCardURL' | 'PhotoURL',
-        files: FileList | null
-      ) => {
-        const fileArray = files ? Array.from(files) : null
-
-        setCompanyPartnerFormData(prev => ({
-          ...prev,
-          [field]: fileArray
-        }))
-
-        setErrors(prev => ({
-          ...prev,
-          [field]: ''
-        }))
-      }
-
-      const handleSubmitAddUpdateCompanyPartner = (e: React.FormEvent) => {
-        e.preventDefault()
-
-        // Clear previous errors
-        setErrors({})
-
-        // Validate form
-        const validation = validateCompanyPartnerForm();
-
-        if (!validation.isValid) {
-          setErrors(validation.errors)
-          return
-        }
-
-        const panFiles = companyPartnerPANURLFiles.filter(f => f instanceof File) as File[]
-        const aadhaarFiles = companyPartnerAadhaarCardURLFiles.filter(f => f instanceof File) as File[]
-        const photoFiles = companyPartnerPhotoURLFiles.filter(f => f instanceof File) as File[]
-
-        const payload: AddUpdateCompanyPartnerRequest = {
-          ...companyPartnerformData,
-          CompanyPartnerId: data?.CompanyPartnerId || 0,
-
-          PanCardURL: panFiles.length ? panFiles : null,
-          AadharCardURL: aadhaarFiles.length ? aadhaarFiles : null,
-          PhotoURL: photoFiles.length ? photoFiles : null,
-
-          RemovePanCardURL: removedCompanyPartnerPANURLs.join(','),
-          RemoveAadharCardURL: removedCompanyPartnerAadhaarCardURLs.join(','),
-          RemovePhotoURL: removedCompanyPartnerPhotoURLs.join(',')
-        }
-
-        onSubmit(payload)
-      }
-
-      return (
-        <Modal
-          isOpen={isOpen}
-          onClose={onClose}
-          onCancel={onClose}
-          title={data ? 'Update Company' : 'Add Company'}
-          onSubmit={handleSubmitAddUpdateCompanyPartner}
-          saveText={data ? 'Update' : 'Save'}
-          cancelText="Cancel"
-          loading={loading}
-          size='large-half'
-        >
-          <div className="space-y-6">
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-
-                <Input
-                  label='First Name'
-                  required
-                  error={errors.FirstName}
-                  type="text"
-                  value={companyPartnerformData.FirstName}
-                  maxLength={50}
-                  onChange={e =>
-                    handleFieldChange('FirstName', filterLetters(e.target.value))
-                  }
-                  placeholder="Enter first name"
-                />
-              </div>
-
-              <div>
-
-                <Input
-                  label='Last Name'
-                  required
-                  error={errors.LastName}
-                  type="text"
-                  value={companyPartnerformData.LastName}
-                  maxLength={50}
-                  onChange={e =>
-                    handleFieldChange('LastName', filterLetters(e.target.value))
-                  }
-                  placeholder="Enter last name"
-                />
-
-              </div>
-
-              <div>
-
-                <Input
-                  label='Middle Name'
-                  required
-                  error={errors.MiddleName}
-                  type="text"
-                  value={companyPartnerformData.MiddleName}
-                  maxLength={50}
-                  onChange={e =>
-                    handleFieldChange('MiddleName', filterLetters(e.target.value))
-                  }
-                  placeholder="Enter middle name"
-                />
-
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-
-                <DatePickerInput
-                  label='Date of Birth'
-                  required
-                  error={errors.DateOfBirth}
-                  value={companyPartnerformData.DateOfBirth || ''}
-                  onChange={(val) => handleFieldChange('DateOfBirth', val)}
-                />
-
-              </div>
-
-              <div>
-
-                <SinglePageSelection
-                  label='Gender'
-                  required
-                  error={errors.Gender}
-                  value={companyPartnerformData.Gender}
-                  onChange={(e) => {
-                    handleFieldChange('Gender', String(e))
-                  }}
-
-                  options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
-
-              </div>
-
-              <div>
-
-                <Input
-                  label='Share (%)'
-                  required
-                  error={errors.PartnerPercentage}
-                  type="text"
-                  value={companyPartnerformData.PartnerPercentage ?? 0}
-                  onChange={e =>
-                    handleFieldChange('PartnerPercentage', Number(e.target.value || 0))
-                  }
-                  placeholder="Enter share %"
-                />
-
-              </div>
-            </div>
-
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-
-                <Input
-                  label='Mobile Number'
-                  required
-                  error={errors.MobileNumber}
-                  type="text"
-                  value={companyPartnerformData.MobileNumber}
-                  maxLength={10}
-                  onChange={e =>
-                    handleFieldChange('MobileNumber', filterMobile(e.target.value))
-                  }
-                  placeholder="Enter mobile number"
-                />
-
-              </div>
-
-              <div>
-
-                <Input
-                  label='Email Id'
-                  required
-                  error={errors.EmailId}
-                  type="text"
-                  value={companyPartnerformData.EmailId}
-                  onChange={e =>
-                    handleFieldChange('EmailId', filterEmail(e.target.value))
-                  }
-                  placeholder="Enter email id"
-                />
-
-              </div>
-            </div>
-
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-
-                <Input
-                  label='PAN Number'
-                  required
-                  error={errors.PanNumber}
-                  type="text"
-                  value={companyPartnerformData.PanNumber}
-                  maxLength={10}
-                  onChange={e =>
-                    handleFieldChange('PanNumber', filterPAN(e.target.value).toUpperCase()
-                    )
-                  }
-                  placeholder="Enter PAN number"
-                />
-
-              </div>
-
-              <div>
-
-                <Input
-                  label='Aadhar Number'
-                  required
-                  error={errors.AadharCardNumber}
-                  type="text"
-                  value={companyPartnerformData.AadharCardNumber}
-                  maxLength={12}
-                  onChange={e => handleFieldChange('AadharCardNumber', e.target.value)
-                  }
-                  placeholder="Enter Aadhar number"
-                />
-
-              </div>
-            </div>
-
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <MultiFilePicker
-                  label='PAN Card'
-                  required
-                  error={errors.PanCardURL}
-                  value={companyPartnerPANURLFiles}
-                  onChange={setCompanyPartnerPANURLFiles}
-                  availableFilesURL={editingCompanyPartnerMasterData?.PanCardURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
-                    "image/png",
-                    "application/pdf",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  ]}
-                  maxFiles={5}
-                  maxSizeMB={10}
-                />
-
-              </div>
-
-              <div>
-
-                <MultiFilePicker
-                  label='Aadhaar Card'
-                  required
-                  error={errors.AadharCardURL}
-                  value={companyPartnerAadhaarCardURLFiles}
-                  onChange={setCompanyPartnerAadhaarCardURLFiles}
-                  availableFilesURL={editingCompanyPartnerMasterData?.AadharCardURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
-                    "image/png",
-                    "application/pdf",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  ]}
-                  maxFiles={5}
-                  maxSizeMB={10}
-                />
-
-              </div>
-
-              <div>
-                <MultiFilePicker
-                  label='Photo'
-                  required
-                  error={errors.PhotoURL}
-                  value={companyPartnerPhotoURLFiles}
-                  onChange={setCompanyPartnerPhotoURLFiles}
-                  availableFilesURL={editingCompanyPartnerMasterData?.PhotoURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
-                    "image/png",
-                    "application/pdf",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  ]}
-                  maxFiles={1}
-                  maxSizeMB={10}
-
-                />
-              </div>
-            </div>
-          </div>
-        </Modal>
-      )
+    // First Name
+    if (!formDataCompanyPartner.FirstName?.trim()) {
+      newErrorsCompanyPartner.FirstName = 'First Name is required.'
+    } else if (formDataCompanyPartner.FirstName.trim().length > 50) {
+      newErrorsCompanyPartner.FirstName = 'First Name must be at most 50 characters.'
     }
 
-  const handleAddUpdateCompanyPartner = (formData: AddUpdateCompanyPartnerRequest) => {
+    // Mobile
+    if (!formDataCompanyPartner.MobileNumber?.trim()) {
+      newErrorsCompanyPartner.MobileNumber = 'Mobile Number is required.'
+    } else if (!isValidMobile(formDataCompanyPartner.MobileNumber.trim())) {
+      newErrorsCompanyPartner.MobileNumber = 'Enter a valid 10-digit mobile number.'
+    }
 
-    setIsAddUpdateCompanyPartnerModalOpen(false)
-    setEditingCompanyPartnerMasterData(null)
+    // Email (optional but must be valid if present)
+    if (formDataCompanyPartner.EmailId?.trim() && !isValidEmail(formDataCompanyPartner.EmailId.trim())) {
+      newErrorsCompanyPartner.EmailId = 'Enter a valid email address.'
+    }
 
-    const fullName = [
-      formData.FirstName,
-      formData.MiddleName,
-      formData.LastName
-    ]
-      .filter(x => x && x.trim().length > 0)
-      .join(' ');
+    // Partner Percentage
+    const percentage = Number(formDataCompanyPartner.PartnerPercentage ?? 0)
+    if (isNaN(percentage)) {
+      newErrorsCompanyPartner.PartnerPercentage = 'Partner Percentage must be a number.'
+    } else if (percentage <= 0 || percentage > 100) {
+      newErrorsCompanyPartner.PartnerPercentage =
+        'Partner Percentage must be between 1 and 100.'
+    }
 
+    // PAN
+    if (!formDataCompanyPartner.PanNumber?.trim()) {
+      newErrorsCompanyPartner.PanNumber = 'PAN Number is required.'
+    } else if (!isValidPAN(formDataCompanyPartner.PanNumber.trim())) {
+      newErrorsCompanyPartner.PanNumber = 'Enter a valid PAN Number.'
+    }
 
-    const panUrls = (formData.PanCardURL ?? []).map(f =>
-      typeof f === 'string' ? f : URL.createObjectURL(f)
-    )
-    const aadhaarUrls = (formData.AadharCardURL ?? []).map(f =>
-      typeof f === 'string' ? f : URL.createObjectURL(f)
-    )
-    const photoUrls = (formData.PhotoURL ?? []).map(f =>
-      typeof f === 'string' ? f : URL.createObjectURL(f)
-    )
+    // Aadhar
+    if (!formDataCompanyPartner.AadharCardNumber?.trim()) {
+      newErrorsCompanyPartner.AadharCardNumber = 'Aadhar Number is required.'
+    } else if (!isValidAadhaar(formDataCompanyPartner.AadharCardNumber.trim())) {
+      newErrorsCompanyPartner.AadharCardNumber = 'Enter a valid 12-digit Aadhar Number.'
+    }
 
+    // Date of Birth (optional future date check)
+    if (formDataCompanyPartner.DateOfBirth) {
+      const dob = new Date(formDataCompanyPartner.DateOfBirth as unknown as string)
+      const today = new Date()
+      if (dob > today) {
+        newErrorsCompanyPartner.DateOfBirth = 'Date of Birth cannot be in the future.'
+      }
+    }
 
-    if (formData.CompanyPartnerId === 0) {
-
-      const newId = (companyPartnerList[0]?.CompanyPartnerId ?? 0) + 1
-
-      const newRecord: CompanyPartnerData = {
-        ...(formData as any),
-        CompanyPartnerId: newId,
-        FullName: fullName,
-        PanCardURL: panUrls.join(','),
-        AadharCardURL: aadhaarUrls.join(','),
-        PhotoURL: photoUrls.join(',')
-      } as CompanyPartnerData
-
-      setCompanyPartnerList(prev => [newRecord, ...prev]);
-
-      addToast({ type: 'success', title: 'Company partner added successfully' });
-
-    } else {
-
-      setCompanyPartnerList(prev =>
-
-        prev.map(item =>
-
-          item.CompanyPartnerId === formData.CompanyPartnerId
-            ? ({
-              ...(item as any),
-              ...(formData as any),
-              FullName: fullName,
-              PanCardURL: panUrls.join(','),
-              AadharCardURL: aadhaarUrls.join(','),
-              PhotoURL: photoUrls.join(',')
-            } as CompanyPartnerData)
-            : item
-        )
-      )
-      addToast({ type: 'success', title: 'Company partner updated successfully' })
+    return {
+      isValid: Object.keys(newErrorsCompanyPartner).length === 0,
+      errorsCompanyPartner: newErrorsCompanyPartner
     }
   }
+
+  const handleAddUpdateCompanyPartner = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // clear partner-specific errors
+    setErrorsCompanyPartner({})
+
+    const validation = validateAddCompanyPartnerForm()
+
+    if (!validation.isValid) {
+      setErrorsCompanyPartner(validation.errorsCompanyPartner)
+      return
+    }
+
+    const idToUse =
+      editingCompanyPartnerMasterData?.CompanyPartnerId ??
+      (formDataCompanyPartner.CompanyPartnerId && formDataCompanyPartner.CompanyPartnerId > 0
+        ? formDataCompanyPartner.CompanyPartnerId
+        : 0)
+
+    const partnerToSave: CompanyPartnerData = {
+      CompanyPartnerId: idToUse,
+      FirstName: formDataCompanyPartner.FirstName || '',
+      LastName: formDataCompanyPartner.LastName || '',
+      MiddleName: formDataCompanyPartner.MiddleName || '',
+      DateOfBirth: formDataCompanyPartner.DateOfBirth || null,
+      Gender: formDataCompanyPartner.Gender || '',
+      MobileNumber: formDataCompanyPartner.MobileNumber || '',
+      EmailId: formDataCompanyPartner.EmailId || '',
+      PartnerPercentage: formDataCompanyPartner.PartnerPercentage ?? 0,
+      PanNumber: formDataCompanyPartner.PanNumber || '',
+      PanCardURL: companyPartnerPANURLFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      AadharCardNumber: formDataCompanyPartner.AadharCardNumber || '',
+      AadharCardURL: companyPartnerAadhaarCardURLFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      PhotoURL: companyPartnerPhotoURLFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+    };
+
+    setCompanyPartnerList(prevList => {
+      if (editingCompanyPartnerMasterData && editingCompanyPartnerMasterData.CompanyPartnerId) {
+        // update existing partner
+        return prevList.map(p => (p.CompanyPartnerId === idToUse ? partnerToSave : p));
+      } else {
+        // add new partner
+        return [...prevList, partnerToSave];
+      }
+    });
+
+    // Cleanup and close modal — do this AFTER updating list
+    setIsAddUpdateCompanyPartnerModalOpen(false);
+    setEditingCompanyPartnerMasterData(null);
+    setFormDataCompanyPartner(initialFormStateCompanyPartner());
+    setCompanyPartnerPANURLFiles([]);
+    setCompanyPartnerAadhaarCardURLFiles([]);
+    setCompanyPartnerPhotoURLFiles([]);
+  };
+
+
 
   //#endregion
 
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="flex flex-col h-screen overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
         {/* ✅ Fixed HEADER */}
-        <div className="fixed top-0 left-0 right-0 z-20 bg-white border-b border-gray-200 shadow-md h-16 flex items-center justify-between px-6">
 
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-gray-900">
-              {companyFormData.CompanyId == 0 ? 'Add Company' : 'Update Company'}
-            </h1>
-
-          </div>
-
-        </div>
-
-        <div className="flex-1 space-y-2 px-6 py-3 pt-20 pb-20 overflow-y-auto thin-scroll">
+        <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
           {/* ============================================================= [BASIC COMPANY DETAILS] ============================================================================================= */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Company Details</h3>
@@ -1186,7 +898,7 @@ const AddCompany: React.FC = () => {
                   required
                   error={errors.CompanyName}
                   type="text"
-                  value={companyFormData.CompanyName}
+                  value={formData.CompanyName}
                   onChange={(e) => {
                     handleFieldChange('CompanyName', e.target.value)
                   }}
@@ -1202,7 +914,7 @@ const AddCompany: React.FC = () => {
                   label='Company Type'
                   required
                   error={errors.CompanyType}
-                  value={companyFormData.CompanyType}
+                  value={formData.CompanyType}
                   onChange={(e) => {
                     handleFieldChange('CompanyType', String(e))
                   }}
@@ -1218,7 +930,7 @@ const AddCompany: React.FC = () => {
                   required
                   error={errors.MobileNumber}
                   type="text"
-                  value={companyFormData.MobileNumber}
+                  value={formData.MobileNumber}
                   maxLength={10}
                   leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
                   onChange={(e) => {
@@ -1236,7 +948,7 @@ const AddCompany: React.FC = () => {
                   required
                   error={errors.ContactPerson}
                   type="text"
-                  value={companyFormData.ContactPerson}
+                  value={formData.ContactPerson}
                   leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
                   minLength={5}
                   maxLength={50}
@@ -1254,7 +966,7 @@ const AddCompany: React.FC = () => {
                   label='Email Id'
                   required
                   type="text"
-                  value={companyFormData.EmailId}
+                  value={formData.EmailId}
                   error={errors.EmailId}
                   leftIcon={<Mail className="h-4 w-4 text-gray-400" />}
                   onChange={(e) => {
@@ -1271,7 +983,7 @@ const AddCompany: React.FC = () => {
                   label='Land Line Number'
                   required
                   type="text"
-                  value={companyFormData.LandLineNumber}
+                  value={formData.LandLineNumber}
                   error={errors.LandLineNumber}
                   leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
                   onChange={(e) => {
@@ -1295,7 +1007,7 @@ const AddCompany: React.FC = () => {
                   label='GST Number'
                   required
                   type="text"
-                  value={companyFormData.GSTNumber}
+                  value={formData.GSTNumber}
                   error={errors.GSTNumber}
                   onChange={(e) => {
                     const gstNumber = filterGST(e.target.value);
@@ -1307,25 +1019,27 @@ const AddCompany: React.FC = () => {
               </div>
               <div>
 
-
                 <MultiFilePicker
-                  label='GST Certificate'
+                  label="GST Certificate"
                   required
                   error={errors.GSTCertificateURL}
                   value={gstGSTCertificateFiles}
                   onChange={setGSTCertificateFiles}
-                  availableFilesURL={editCompanyData?.GSTCertificateURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
+                  availableFilesURL={gSTCertificateURL ?? ""}
+                  allowedTypes={["image/jpeg",
                     "image/png",
+                    "image/jpg",
                     "application/pdf",
                     "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                   ]}
                   maxFiles={5}
                   maxSizeMB={10}
-
+                  onRemoveExisting={(url) => {
+                    setRemovedGSTCertificateUrls((prev) => [...prev, url])
+                  }}
                 />
+
               </div>
               <div>
 
@@ -1333,7 +1047,7 @@ const AddCompany: React.FC = () => {
                   label='PAN Number'
                   required
                   type="text"
-                  value={companyFormData.PanNumber}
+                  value={formData.PanNumber}
                   error={errors.PanNumber}
                   onChange={(e) => {
                     const panNumber = filterPAN(e.target.value);
@@ -1346,21 +1060,24 @@ const AddCompany: React.FC = () => {
               <div>
 
                 <MultiFilePicker
-                  label='PAN Card'
+                  label="PAN Card"
                   required
                   error={errors.PanCardURL}
                   value={panURLFiles}
                   onChange={setPANURLFiles}
-                  availableFilesURL={editCompanyData?.PanCardURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
+                  availableFilesURL={panURL ?? ""}
+                  allowedTypes={["image/jpeg",
                     "image/png",
+                    "image/jpg",
                     "application/pdf",
                     "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                   ]}
-                  maxFiles={2}
+                  maxFiles={5}
                   maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedPanUrls((prev) => [...prev, url])
+                  }}
                 />
 
               </div>
@@ -1370,7 +1087,7 @@ const AddCompany: React.FC = () => {
                   label='CIN Number'
                   required
                   type="text"
-                  value={companyFormData.CINNumber}
+                  value={formData.CINNumber}
                   error={errors.CINNumber}
                   maxLength={21}
                   onChange={(e) => {
@@ -1383,12 +1100,13 @@ const AddCompany: React.FC = () => {
               </div>
               <div>
 
+
                 <MultiFilePicker
                   label='CIN'
                   value={cinURLFiles}
                   error={errors.CINURL}
                   onChange={setCINURLFiles}
-                  availableFilesURL={editCompanyData?.CINURL ?? ""}
+                  availableFilesURL={cinURL ?? ""}
                   allowedTypes={[
                     "image/jpeg",
                     "image/png",
@@ -1398,6 +1116,9 @@ const AddCompany: React.FC = () => {
                   ]}
                   maxFiles={5}
                   maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedCinUrls((prev) => [...prev, url])
+                  }}
                 />
 
               </div>
@@ -1408,7 +1129,7 @@ const AddCompany: React.FC = () => {
                   label='RERA Number'
                   required
                   type="text"
-                  value={companyFormData.RERANumber}
+                  value={formData.RERANumber}
                   error={errors.RERANumber}
                   maxLength={20}
                   onChange={(e) => {
@@ -1527,7 +1248,7 @@ const AddCompany: React.FC = () => {
                   error={errors.CompanyLetterheadHeaderURL}
                   value={companyLetterHeadHeaderFiles}
                   onChange={setCompanyLetterHeadHeaderFiles}
-                  availableFilesURL={editCompanyData?.CompanyLetterheadHeaderURL ?? ""}
+                  availableFilesURL={companyLetterHeadHeaderURL ?? ""}
                   allowedTypes={[
                     "image/jpeg",
                     "image/png",
@@ -1537,7 +1258,11 @@ const AddCompany: React.FC = () => {
                   ]}
                   maxFiles={5}
                   maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedCompanyLetterHeadHeaderUrls((prev) => [...prev, url])
+                  }}
                 />
+
 
               </div>
 
@@ -1549,7 +1274,7 @@ const AddCompany: React.FC = () => {
                   value={companyLetterHeadFooterFiles}
                   error={errors.CompanyLetterheadFooterURL}
                   onChange={setCompanyLetterHeadFooterFiles}
-                  availableFilesURL={editCompanyData?.CompanyLetterheadFooterURL ?? ""}
+                  availableFilesURL={companyLetterHeadFooterURL ?? ""}
                   allowedTypes={[
                     "image/jpeg",
                     "image/png",
@@ -1559,6 +1284,9 @@ const AddCompany: React.FC = () => {
                   ]}
                   maxFiles={5}
                   maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedCompanyLetterHeadFooterUrls((prev) => [...prev, url])
+                  }}
                 />
 
               </div>
@@ -1593,45 +1321,307 @@ const AddCompany: React.FC = () => {
               className="flex-1"
             />
           </div>
-        </div>
-        {/* ✅ Fixed Bottom  */}
-        <div
-          className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-        >
-          <Button
-            color="transparent"
-            variant='transparent_border'
-            size="sm"
-            onClick={() => {
-              navigate(-1);
-            }}
-            className="px-6"
-          >
-            Cancel
-          </Button>
-          <Button
-            color="green"
-            size="sm"
-            onClick={handleAddUpdateCompanyMaster}
-            className="px-6"
-          >
-            Save
-          </Button>
+
+          {/* ✅ Fixed Bottom  */}
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
+            <Button
+              color="transparent"
+              variant='transparent_border'
+              size="sm"
+              onClick={() => {
+                navigate(-1);
+              }}
+              className="px-6"
+            >
+              Cancel
+            </Button>
+            <Button
+              color="green"
+              size="sm"
+              onClick={handleAddUpdateCompanyMaster}
+              className="px-6"
+            >
+              Save
+            </Button>
+          </div>
         </div>
 
+
         {/*  ADD EDIT UPDATE COMPANY PARTNER MODAL */}
-        <AddUpdateCompanyPartnerModal
+
+        <Modal
           isOpen={isAddUpdateCompanyPartnerModalOpen}
           onClose={() => {
             setIsAddUpdateCompanyPartnerModalOpen(false)
             setEditingCompanyPartnerMasterData(null)
+            setFormDataCompanyPartner(initialFormStateCompanyPartner());
+            setErrorsCompanyPartner({});
 
           }}
+          onCancel={() => {
+            setIsAddUpdateCompanyPartnerModalOpen(false)
+            setEditingCompanyPartnerMasterData(null)
+            setFormDataCompanyPartner(initialFormStateCompanyPartner());
+            setErrorsCompanyPartner({});
+
+          }}
+          title={editingCompanyPartnerMasterData ? 'Update Company Partner' : 'Add Company Partner'}
           onSubmit={handleAddUpdateCompanyPartner}
-          data={editingCompanyPartnerMasterData}
+          saveText={editingCompanyPartnerMasterData ? 'Update' : 'Save'}
+          cancelText="Cancel"
           loading={isLoading}
-        />
+          size='large-half'
+        >
+          <div className="space-y-6">
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+
+                <Input
+                  label='First Name'
+                  required
+                  error={errorsCompanyPartner.FirstName}
+                  type="text"
+                  value={formDataCompanyPartner.FirstName}
+                  maxLength={50}
+                  onChange={e =>
+                    handleFieldChangeCompanyPartner('FirstName', filterLetters(e.target.value))
+                  }
+                  placeholder="Enter first name"
+                />
+              </div>
+
+              <div>
+
+                <Input
+                  label='Last Name'
+                  required
+                  error={errorsCompanyPartner.LastName}
+                  type="text"
+                  value={formDataCompanyPartner.LastName}
+                  maxLength={50}
+                  onChange={e =>
+                    handleFieldChangeCompanyPartner('LastName', filterLetters(e.target.value))
+                  }
+                  placeholder="Enter last name"
+                />
+
+              </div>
+
+              <div>
+
+                <Input
+                  label='Middle Name'
+                  required
+                  error={errorsCompanyPartner.MiddleName}
+                  type="text"
+                  value={formDataCompanyPartner.MiddleName}
+                  maxLength={50}
+                  onChange={e =>
+                    handleFieldChangeCompanyPartner('MiddleName', filterLetters(e.target.value))
+                  }
+                  placeholder="Enter middle name"
+                />
+
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+
+                <DatePickerInput
+                  label='Date of Birth'
+                  required
+                  error={errorsCompanyPartner.DateOfBirth}
+                  value={formDataCompanyPartner.DateOfBirth || ''}
+                  onChange={(val) => handleFieldChangeCompanyPartner('DateOfBirth', val)}
+                />
+
+              </div>
+
+              <div>
+
+                <SinglePageSelection
+                  label='Gender'
+                  required
+                  error={errorsCompanyPartner.Gender}
+                  value={formDataCompanyPartner.Gender}
+                  onChange={(e) => {
+                    handleFieldChangeCompanyPartner('Gender', String(e))
+                  }}
+
+                  options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
+
+              </div>
+
+              <div>
+
+                <Input
+                  label='Share (%)'
+                  required
+                  error={errorsCompanyPartner.PartnerPercentage}
+                  type="text"
+                  value={formDataCompanyPartner.PartnerPercentage ?? 0}
+                  onChange={e =>
+                    handleFieldChangeCompanyPartner('PartnerPercentage', Number(e.target.value || 0))
+                  }
+                  placeholder="Enter share %"
+                />
+
+              </div>
+            </div>
+
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+
+                <Input
+                  label='Mobile Number'
+                  required
+                  error={errorsCompanyPartner.MobileNumber}
+                  type="text"
+                  value={formDataCompanyPartner.MobileNumber}
+                  maxLength={10}
+                  onChange={e =>
+                    handleFieldChangeCompanyPartner('MobileNumber', filterMobile(e.target.value))
+                  }
+                  placeholder="Enter mobile number"
+                />
+
+              </div>
+
+              <div>
+
+                <Input
+                  label='Email Id'
+                  required
+                  error={errorsCompanyPartner.EmailId}
+                  type="text"
+                  value={formDataCompanyPartner.EmailId}
+                  onChange={e =>
+                    handleFieldChangeCompanyPartner('EmailId', filterEmail(e.target.value))
+                  }
+                  placeholder="Enter email id"
+                />
+
+              </div>
+            </div>
+
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+
+                <Input
+                  label='PAN Number'
+                  required
+                  error={errorsCompanyPartner.PanNumber}
+                  type="text"
+                  value={formDataCompanyPartner.PanNumber}
+                  maxLength={10}
+                  onChange={e =>
+                    handleFieldChangeCompanyPartner('PanNumber', filterPAN(e.target.value).toUpperCase()
+                    )
+                  }
+                  placeholder="Enter PAN number"
+                />
+
+              </div>
+
+              <div>
+
+                <Input
+                  label='Aadhar Number'
+                  required
+                  error={errorsCompanyPartner.AadharCardNumber}
+                  type="text"
+                  value={formDataCompanyPartner.AadharCardNumber}
+                  maxLength={12}
+                  onChange={e => handleFieldChangeCompanyPartner('AadharCardNumber', e.target.value)
+                  }
+                  placeholder="Enter Aadhar number"
+                />
+
+              </div>
+            </div>
+
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <MultiFilePicker
+                  label='PAN Card'
+                  required
+                  error={errorsCompanyPartner.PanCardURL}
+                  value={companyPartnerPANURLFiles}
+                  onChange={setCompanyPartnerPANURLFiles}
+                  availableFilesURL={editingCompanyPartnerMasterData?.PanCardURL ?? ""}
+                  allowedTypes={[
+                    "image/jpeg",
+                    "image/png",
+                    "application/pdf",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  ]}
+                  maxFiles={5}
+                  maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedCompanyPartnerPANURLs((prev) => [...prev, url])
+                  }}
+                />
+
+              </div>
+
+              <div>
+
+                <MultiFilePicker
+                  label='Aadhaar Card'
+                  required
+                  error={errorsCompanyPartner.AadharCardURL}
+                  value={companyPartnerAadhaarCardURLFiles}
+                  onChange={setCompanyPartnerAadhaarCardURLFiles}
+                  availableFilesURL={editingCompanyPartnerMasterData?.AadharCardURL ?? ""}
+                  allowedTypes={[
+                    "image/jpeg",
+                    "image/png",
+                    "application/pdf",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  ]}
+                  maxFiles={5}
+                  maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedCompanyPartnerAadhaarCardURLs((prev) => [...prev, url])
+                  }}
+                />
+
+              </div>
+
+              <div>
+                <MultiFilePicker
+                  label='Photo'
+                  required
+                  error={errorsCompanyPartner.PhotoURL}
+                  value={companyPartnerPhotoURLFiles}
+                  onChange={setCompanyPartnerPhotoURLFiles}
+                  availableFilesURL={editingCompanyPartnerMasterData?.PhotoURL ?? ""}
+                  allowedTypes={[
+                    "image/jpeg",
+                    "image/png",
+                    "application/pdf",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  ]}
+                  maxFiles={1}
+                  maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedCompanyPartnerPhotoURLs((prev) => [...prev, url])
+                  }}
+
+                />
+              </div>
+            </div>
+          </div>
+        </Modal>
 
       </div >
     </>

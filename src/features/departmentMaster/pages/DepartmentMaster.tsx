@@ -29,7 +29,15 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
+import { updateFilter } from '@/core/utils/filterHelper';
 
+
+const initialFormState = (): AddUpdateDepartmentMasterRequest => ({
+  DepartmentMasterId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  DepartmentCode: '',
+  DepartmentName: ''
+});
 
 export const DepartmentMaster: React.FC = () => {
 
@@ -63,10 +71,17 @@ export const DepartmentMaster: React.FC = () => {
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
+  //ERROR SET UP
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+
   // EDIT DEPARTMENT MASTER
   const [editingDepartmentMasterData, setEditingDepartmentMasterData] = useState<DepartmentMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
+  
+  //ADD UPDATE DEPARTMENT MASTER
+    const [formData, setFormData] = useState<AddUpdateDepartmentMasterRequest>(() => initialFormState());
+  
   //DELETE DEPARTMENT MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
@@ -84,6 +99,7 @@ export const DepartmentMaster: React.FC = () => {
   //#endregion
 
   //#region INITIALIZATION
+
   const hasFetchedInitialDepartments = useRef(false)
 
   useEffect(() => {
@@ -103,7 +119,21 @@ export const DepartmentMaster: React.FC = () => {
     }
   }, [debouncedSearch])
 
-
+  useEffect(() => {
+    if (isAddUpdateModalOpen) {
+      if (editingDepartmentMasterData) {
+        setFormData({
+          DepartmentMasterId: editingDepartmentMasterData.DepartmentMasterId,
+          Uniquekey: editingDepartmentMasterData.Uniquekey || initialFormState().Uniquekey,
+          DepartmentCode: editingDepartmentMasterData.DepartmentCode || '',
+          DepartmentName: editingDepartmentMasterData.DepartmentName || ''
+        });
+      } else {
+        setFormData(initialFormState());
+      }
+      setErrors({});
+    }
+  }, [isAddUpdateModalOpen, editingDepartmentMasterData]);
 
   //#endregion
 
@@ -164,11 +194,12 @@ export const DepartmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Department Data...'
+      'Loading Department'
     )
   }
+  //#endregion
 
-  // SERACH DEPARTMENT 
+  //#region SERACH DEPARTMENT 
   const searchDepartments = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -187,13 +218,15 @@ export const DepartmentMaster: React.FC = () => {
     await loadDepartments(1, filterParams)
 
   }
+  //#endregion
 
+  //#region CLEAR SERACH DEPARTMENT 
   const clearsearchDepartments = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
     fetchDepartmentList();
   }
-  // END SERACH DEPARTMENT 
+
   //#endregion
 
   //#region EXPORT EXCEL | PDF
@@ -231,14 +264,12 @@ export const DepartmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' })
       },
       undefined,
-      'Preparing Export...'
+      'Preparing Export'
     )
   }
 
   const handleExportDepartmentExcel = () => handleExportDepartments('Excel')
   const handleExportDepartmentPdf = () => handleExportDepartments('PDF')
-
-  //END EXPORT EXCEL | PDF
 
   //#endregion
 
@@ -248,17 +279,17 @@ export const DepartmentMaster: React.FC = () => {
 
     return await departmentMasterService.apiCallPullDepartmentMaster(filterParams);
   }
-
-  //END API | SERVICES CALL TO GET DEPARTMENT
-
   //#endregion
 
-  //#region TABLE CONFIGURATION
+  //#region HANDLE PAGE CHNAGE EVENT
 
   const handlePageChange = (page: number) => {
     fetchDepartmentList(page);
   };
 
+  //#endregion
+
+  //#region TABLE SORT COLUMN
   const handleSortColumn = (sortInfo: SortInfo) => {
 
     setSortInfo(sortInfo);
@@ -266,6 +297,9 @@ export const DepartmentMaster: React.FC = () => {
     fetchDepartmentList(1);
 
   }
+  //#endregion
+
+  //#region TABLE PAGINATION INFO
 
   const departmentMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -279,9 +313,17 @@ export const DepartmentMaster: React.FC = () => {
   )
 
   const departmentListForTable = useMemo(() => departmentMasterList, [departmentMasterList]);
+  //#endregion
 
+  //#region VIEW EDIT
+  const handleViewDepartmentDetails = useCallback((row: DepartmentMasterData) => {
+    setViewDepartmentMasterDetailsData(row)
+    setIsViewModalOpen(true)
+  }, [])
 
- 
+  //#endregion
+
+  //#region EDIT DEPARTMENT MASTER
 
   const handleEditDepartmentMaster = useCallback((row: DepartmentMasterData) => {
     setEditingDepartmentMasterData({
@@ -293,16 +335,19 @@ export const DepartmentMaster: React.FC = () => {
 
   }, [])
 
+
+  //#endregion
+
+  //#region CONFIRMATION DIALOG BOX
+
   const handleConfirmationDialogBoxOpen = useCallback((row: DepartmentMasterData) => {
     setDeleteDepartmentMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
 
-   // STABLE HANDLER VIEW EDIT CONFIRMATION DIALOG BOX
-   const handleViewDepartmentDetails = useCallback((row: DepartmentMasterData) => {
-    setViewDepartmentMasterDetailsData(row)
-    setIsViewModalOpen(true)
-  }, [])
+  //#endregion
+
+  //#region TABLE COLUMN
 
   const departmentMasterColumns = useMemo<TableColumn[]>(
     () => [
@@ -448,10 +493,10 @@ export const DepartmentMaster: React.FC = () => {
                 {(data.NumberOfEmployee || 0) === 0 ? (
 
                   <Button
-                    color='gray'
+                    color='red'
                     variant='solid'
                     colorMode="light"
-                    size='md'
+                    size='sm'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
@@ -467,7 +512,7 @@ export const DepartmentMaster: React.FC = () => {
 
                 <Button
                   color='blue'
-                  size='md'
+                  size='sm'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
@@ -496,6 +541,10 @@ export const DepartmentMaster: React.FC = () => {
     setShowFilterPopup(false)
   }
 
+  //#endregion
+
+  //#region CLEAR FILTER 
+
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
@@ -503,188 +552,104 @@ export const DepartmentMaster: React.FC = () => {
     setShowFilterPopup(false)
   }
 
+  //#endregion
+
+  //#region HANDLE FILTER CHNAGE
+
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...tempFilters }
-    if (value.trim()) {
-      newFilters[key] = value.trim()
-    } else {
-      delete newFilters[key]
-    }
-    setTempFilters(newFilters)
-  }
+    setTempFilters(prev => updateFilter(prev, key, value));
+  };
+
   //#endregion
 
   //#region ADD UPDATE EDIT DEPARTMENT MASTER
+
+  const handleFieldChange = (field: keyof AddUpdateDepartmentMasterRequest, value: any) => {
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
   const handleAddDepartmentModal = () => {
-    setEditingDepartmentMasterData(null)
-    setIsAddUpdateModalOpen(true)
+    setEditingDepartmentMasterData(null);
+    setFormData(initialFormState());
+    setErrors({});
+    setIsAddUpdateModalOpen(true);
   }
 
-  interface AddUpdateDepartmentModalProps {
-    isOpen: boolean
-    onClose: () => void
-    onSubmit: (data: AddUpdateDepartmentMasterRequest) => void
-    data?: DepartmentMasterData | null
-    loading?: boolean
-  }
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateAddDepartmentMasterForm = (): {
 
-  const AddUpdateDepartmentModal: React.FC<AddUpdateDepartmentModalProps> = ({
-    isOpen,
-    onClose,
-    onSubmit,
-    data,
-    loading = false
-  }) => {
-    const [formData, setFormData] = useState<AddUpdateDepartmentMasterRequest>({
-      DepartmentMasterId: 0,
-      Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-      DepartmentCode: '',
-      DepartmentName: ''
-    })
-    const [departmentCodeError, setDepartmentCodeError] = useState('')
-    const [departmentNameError, setDepartmentNameError] = useState('')
+    isValid: boolean
 
+    errors: { [key: string]: string }
 
-    useEffect(() => {
-      if (isOpen) {
-        if (data) {
-          setFormData({
-            DepartmentMasterId: data.DepartmentMasterId,
-            Uniquekey: data.Uniquekey,
-            DepartmentCode: data.DepartmentCode || '',
-            DepartmentName: data.DepartmentName || ''
-          })
-        } else {
-          setFormData({
-            DepartmentMasterId: 0,
-            Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-            DepartmentCode: '',
-            DepartmentName: ''
-          })
-        }
-        setDepartmentCodeError('')
-        setDepartmentNameError('')
-      }
-    }, [isOpen, data])
+  } => {
 
-    const handleSubmitAddUpdateDepartment = (e: React.FormEvent) => {
+    const newErrors: { [key: string]: string } = {}
 
-      e.preventDefault()
+    if (formData.DepartmentName.trim() === "") {
 
-      // Clear previous errors
-      setDepartmentCodeError('')
-      setDepartmentNameError('')
-
-      let hasErrors = false;
-
-      // Department Name validation
-      const departmentName = formData.DepartmentName || ''
-      if (departmentName.trim() === "") {
-        setDepartmentNameError("Department Name is required.")
-        hasErrors = true
-      }
-      else if (departmentName.length < 3) {
-        setDepartmentNameError("Department Name must be at least 3 characters long.")
-        hasErrors = true
-      }
-
-      // Department Code validation
-      const departmentCode = formData.DepartmentCode || ''
-      if (departmentCode.trim() === "") {
-        setDepartmentCodeError("Department Code is required.")
-        hasErrors = true
-      } else if (departmentCode.length >= 5) {
-        setDepartmentCodeError("Department Code must be at least 4 characters long.")
-        hasErrors = true
-      }
-
-      if (hasErrors) {
-        return
-      }
-
-      onSubmit({
-        DepartmentMasterId: data?.DepartmentMasterId || 0,
-        Uniquekey: data?.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-        DepartmentCode: departmentCode,
-        DepartmentName: departmentName
-      })
+      newErrors.DepartmentName = "Department Name is required"
+    }
+    else if (formData.DepartmentName.length < 3) {
+      newErrors.DepartmentName = "Department Name must be at least 3 characters long"
     }
 
-    const handleFieldChange = (field: keyof AddUpdateDepartmentMasterRequest, value: string) => {
-
-      setFormData(prev => ({ ...prev, [field]: value }))
-
-      if (field === 'DepartmentName') {
-        setDepartmentNameError('')
-      } else if (field === 'DepartmentCode') {
-        setDepartmentCodeError('')
-      }
+    if (formData.DepartmentCode.trim() === "") {
+      newErrors.DepartmentCode = "Department Code is required";
+    } else if (formData.DepartmentCode.trim().length  >= 5) {
+      newErrors.DepartmentCode = "Department Code must be at least 4 characters long";
     }
 
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        onCancel={onClose}
-        title={data ? 'Update Department' : 'Add Department'}
-        onSubmit={handleSubmitAddUpdateDepartment}
-        saveText={data ? 'Update Department' : 'Save Department'}
-        resetText='Reset'
-        loading={loading}
-        size='small-half'
-      >
-        <div className="space-y-10 p-6 bg-blue-100">
-          <div className="space-y-4" >
-            <div>
-
-              <Input
-                label='Department Code'
-                required
-                error={departmentCodeError}
-                type="text"
-                value={formData.DepartmentCode}
-                maxLength={4}
-                onChange={(e) => handleFieldChange('DepartmentCode', e.target.value)}
-                placeholder="Enter department code"
-              />
-
-            </div>
-
-            <div>
-              <Input
-                label='Department Name'
-                required
-                error={departmentNameError}
-                type="text"
-                value={formData.DepartmentName}
-                maxLength={100}
-                onChange={(e) => handleFieldChange('DepartmentName', e.target.value)}
-                placeholder="Enter department name"
-              />
-
-            </div>
-          </div>
-        </div>
-      </Modal>
-    )
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors
+    }
   }
 
-  const handleAddUpdateDepartmentMaster = async (formData: AddUpdateDepartmentMasterRequest,) => {
+  const PushDepartmentMasterFormData = (): AddUpdateDepartmentMasterRequest => {
+    return {
+      DepartmentMasterId: formData.DepartmentMasterId,
+      Uniquekey: formData.Uniquekey,
+      DepartmentCode: formData.DepartmentCode,
+      DepartmentName: formData.DepartmentName
+    };
 
-    // setIsAddUpdateModalOpen(false);
+  };
+
+  const handleAddUpdateDepartmentMaster = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setErrors({})
+
+    const validation = validateAddDepartmentMasterForm()
+
+    if (!validation.isValid) {
+
+      setErrors(validation.errors)
+
+      return
+    }
 
     await runApiWithLoader(
       setIsLoading,
+
       setIsLoadingMessage,
       async () => {
 
-        const response = await departmentMasterService.apiCallAddUpdateDepartmentMaster(formData);
+        const payload = PushDepartmentMasterFormData();
+
+        const response = await departmentMasterService.apiCallAddUpdateDepartmentMaster(payload);
 
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = formData.DepartmentMasterId === 0
+          const isAdd = formData.DepartmentMasterId === 0;
 
           if (isAdd) {
 
@@ -699,7 +664,8 @@ export const DepartmentMaster: React.FC = () => {
             });
 
 
-            addToast({ type: 'success', title: 'Department added successfully' })
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
           } else {
 
             const updatedRecord = response.right.Data[0] as DepartmentMasterData;
@@ -715,28 +681,27 @@ export const DepartmentMaster: React.FC = () => {
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
-          setIsAddUpdateModalOpen(false);
-
           setEditingDepartmentMasterData(null);
-
         } else {
 
-          addToast({ type: 'error', title: response.left.message });
-        }
+          addToast({ type: "error", title: response.left?.message });
 
-        return response
+        }
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Operation failed' })
+
+        addToast({ type: 'error', title: error.message })
       },
       undefined,
-      formData.DepartmentMasterId === 0 ? 'Add Department' : 'Update Department...'
+
+      Number(formData.DepartmentMasterId) === 0 ? 'Add Department' : 'Update Department'
     )
-  }
 
+  };
 
-  //#endregion 
+  //#endregion
 
   //#region IMPORT EXCEL | DOWNLOAD
 
@@ -758,7 +723,7 @@ export const DepartmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Import failed' })
       },
       undefined,
-      'Preparing Import...'
+      'Preparing Import'
     )
   }
 
@@ -785,7 +750,7 @@ export const DepartmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' })
       },
       undefined,
-      'Preparing Downloading...'
+      'Preparing Downloading'
     )
   }
 
@@ -845,7 +810,7 @@ export const DepartmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete department master data...'
+      'Delete Department'
     )
   }
 
@@ -905,13 +870,14 @@ export const DepartmentMaster: React.FC = () => {
           data={departmentListForTable}
           columns={visibleDepartmentMasterColumns}
           pagination={departmentMasterPaginationInfo}
-          emptyMessage="No departments found"
+          emptyMessage="No Departments Data Found"
           fixedHeight={true}
           maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
           onSort={handleSortColumn}
+          loading={isLoading}
         />
 
         {/* VIEW DEPARTMENT MODAL */}
@@ -924,18 +890,60 @@ export const DepartmentMaster: React.FC = () => {
         />
 
         {/*  ADD EDIT UPDATE DEPARTMENT MODAL */}
-        <AddUpdateDepartmentModal
+        <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingDepartmentMasterData(null)
+            setIsAddUpdateModalOpen(false);
+            setEditingDepartmentMasterData(null);
+            setFormData(initialFormState());
+            setErrors({});
           }}
+          onCancel={() => {
+            setIsAddUpdateModalOpen(false);
+            setEditingDepartmentMasterData(null);
+            setFormData(initialFormState());
+            setErrors({});
+          }}
+          title={editingDepartmentMasterData ? 'Update Department' : 'Add Department'}
           onSubmit={handleAddUpdateDepartmentMaster}
-          data={editingDepartmentMasterData}
+          saveText={editingDepartmentMasterData ? 'Update Department' : 'Save Department'}
+          resetText='Reset'
           loading={isLoading}
-          
-        />
+          size='xl'
+        >
+          <div className="space-y-10 p-6 bg-blue-100">
+            <div className="space-y-4" >
+              <div>
+                <Input
+                  label='Department Code'
+                  required
+                  error={errors.DepartmentCode}
+                  type="text"
+                  value={formData.DepartmentCode.toUpperCase()}
+                  maxLength={4}
+                  onChange={(e) => handleFieldChange('DepartmentCode', e.target.value)}
+                  placeholder="Enter Department Code"
+                />
 
+              </div>
+
+              <div>
+                <Input
+                  label='Department Name'
+                  required
+                  error={errors.DepartmentName}
+                  type="text"
+                  value={formData.DepartmentName}
+                  maxLength={100}
+                  onChange={(e) => handleFieldChange('DepartmentName', e.target.value)}
+                  placeholder="Enter Department Name"
+                />
+
+              </div>
+            </div>
+          </div>
+
+        </Modal>
         {/* CUSTOMIZE COLUMNS MODAL */}
 
 

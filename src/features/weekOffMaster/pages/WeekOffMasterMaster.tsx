@@ -26,38 +26,72 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Edit, Trash2 } from 'lucide-react';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
 
 
 export const WeekOffMasterMaster: React.FC = () => {
 
+  //#region STATE MANAGEMENT
   const [weekOffMasterList, setWeekOffMasterList] = useState<WeekOffMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
+
+  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
+
+  //TABLE SORT INFO
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
+
+  // TOAST
   const { toasts, removeToast, addToast } = useToast()
+
+  // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchWeekOffs(value)
   }, 350)
+
+  //VIEW BRANCH MASTER MODAL STATES
   const [viewWeekOffMasterDetailsData, setViewWeekOffMasterDetailsData] = useState<WeekOffMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
+  //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-  const [isShowCustomizeWeekOffMasterColumnsModal, setIsShowCustomizeWeekOffMasterColumnsModal] = useState(false);
-  const { canAction, canExport } = useMenuPermissions();
-  const hasFetchedInitialWeekOffs = useRef(false)
 
+  //CUSTOMIZE COLUMN MODAL
+  const [isShowCustomizeWeekOffMasterColumnsModal, setIsShowCustomizeWeekOffMasterColumnsModal] = useState(false);
 
   // Edit WEEK OFF MASTER
   const [editingWeekOffMasterData, setEditingWeekOffMasterData] = useState<WeekOffMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
+  const [WeekOffMasterFormData, setWeekOffMasterFormData] = useState<AddUpdateWeekOffMasterRequest>({
+    WeekOffPolicyMasterId: 0,
+    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    WeekOffPolicyCode: "",
+    WeekOffPolicyName: "",
+    WeekDays: 0,
+    WeekDaysStartsOn: "",
+    WeeklyOff: "",
+    WeeklyOff2: "",
+    WeeklyOff2Type: "",
+    NotApplicableForMonths: ""
+  });
+
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
   //DELETE WEEK OFF MASTER
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteWeekOffMasterDetailsData, setDeleteWeekOffMasterDetailsData] = useState<WeekOffMasterData | null>(null)
 
+  //#region MENU PERMISSIONS
+  const { canAction, canExport } = useMenuPermissions();
+  //#endregion
+
+  //#region INITIALIZATION
+  const hasFetchedInitialWeekOffs = useRef(false)
 
   useEffect(() => {
     if (hasFetchedInitialWeekOffs.current) return
@@ -65,11 +99,16 @@ export const WeekOffMasterMaster: React.FC = () => {
     fetchWeekOffList()
   }, [])
 
+  //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
+
+  //#endregion
+
+  //#region DATA LOADING | FETCH |  LOAD | SEARCH
 
   const fetchWeekOffList = async (page: number = pagination.currentPage) => {
     return await loadWeekOffs(page, filters);
@@ -81,11 +120,14 @@ export const WeekOffMasterMaster: React.FC = () => {
       setIsLoadingMessage,
       async () => {
         let sortByParam = undefined;
+
         if (sortInfo) {
+
           const column = weekOffMasterColumns.find(col => col.key === sortInfo.column)
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
+
         }
         const params: FilterWithPaginationWeekOffMasterRequest = {
           PageNumber: page,
@@ -102,7 +144,9 @@ export const WeekOffMasterMaster: React.FC = () => {
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
           });
+
         } else {
+
           addToast({ type: 'error', title: response.left.message });
         }
         return response
@@ -116,15 +160,20 @@ export const WeekOffMasterMaster: React.FC = () => {
     )
   }
 
+  // SERACH LEAVE TYPE
   const searchWeekOffs = async (searchValue: string) => {
     setSearchTerm(searchValue);
+
     if (searchValue.trim() === '') {
+
       fetchWeekOffList();
+
       return
     }
     const filterParams: FilterInfo = {
       WeekOffPolicyName: searchValue.trim(),
     };
+
     await loadWeekOffs(1, filterParams)
   }
 
@@ -133,12 +182,16 @@ export const WeekOffMasterMaster: React.FC = () => {
     debouncedSearch.cancel?.();
     fetchWeekOffList();
   }
+  //#endregion
 
+  //#region EXPORT EXCEL | PDF
   const handleExportWeekOffs = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
+
+        // Find the column label for sorting
         let sortByParam = undefined
         if (sortInfo) {
           const column = weekOffMasterColumns.find(col => col.key === sortInfo.column)
@@ -146,6 +199,7 @@ export const WeekOffMasterMaster: React.FC = () => {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
         }
+
         const params: FilterWithPaginationWeekOffMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -153,8 +207,11 @@ export const WeekOffMasterMaster: React.FC = () => {
           SortBy: sortByParam,
           ExportType: exportType
         }
+
         const response = await getWeekOffs(params);
+
         handleExportFile(response, exportType, 'Week Off Master', addToast)
+
         return response;
       },
       undefined,
@@ -169,16 +226,27 @@ export const WeekOffMasterMaster: React.FC = () => {
   const handleExportWeekOffExcel = () => handleExportWeekOffs('Excel')
   const handleExportWeekOffPdf = () => handleExportWeekOffs('PDF')
 
+  //#endregion
+
+  //#region API | SERVICES CALL TO GET BRANCH
   const getWeekOffs = async (filterParams: FilterWithPaginationWeekOffMasterRequest) => {
+
     return await WeekOffMasterService.apiCallPullWeekOffMaster(filterParams);
   }
+
+  //#endregion
+
+  //#region TABLE CONFIGURATION
 
   const handlePageChange = (page: number) => {
     fetchWeekOffList(page);
   };
 
+
   const handleSortColumn = (sortInfo: SortInfo) => {
+
     setSortInfo(sortInfo);
+
     fetchWeekOffList(1);
   }
 
@@ -195,24 +263,17 @@ export const WeekOffMasterMaster: React.FC = () => {
 
   const weekOffListForTable = useMemo(() => weekOffMasterList, [weekOffMasterList]);
 
+  // STABLE HANDLER VIEW EDIT CONFIRMATION DIALOG BOX
   const handleViewWeekOffDetails = useCallback((row: WeekOffMasterData) => {
     setViewWeekOffMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
 
-   const handleEditLeaveEncashmentMaster = useCallback((row: WeekOffMasterData) => {
-      setEditingWeekOffMasterData({
-        ...row,
-  
-      })
-      setIsAddUpdateModalOpen(true);
-  
-    }, [])
-  
-    const handleConfirmationDialogBoxOpen = useCallback((row: WeekOffMasterData) => {
-      setDeleteWeekOffMasterDetailsData(row)
-      setIsConfirmationDialogBoxOpen(true)
-    }, [])
+
+  const handleConfirmationDialogBoxOpen = useCallback((row: WeekOffMasterData) => {
+    setDeleteWeekOffMasterDetailsData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
   const weekOffMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -223,58 +284,14 @@ export const WeekOffMasterMaster: React.FC = () => {
         fixed: 'left',
         align: 'left',
         render: (value, row) => (
-          <div className="flex items-center justify-start">
+          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
             <TooltipText
               text={value || 'N/A'}
               maxWidth="300px"
               tooltipThreshold={30}
               onClick={() => handleViewWeekOffDetails(row)}
             />
-            {canAction && (
-              <div className="flex items-center justify-end ml-2 w-20">
-                <>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEditLeaveEncashmentMaster(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    title="Edit Week Off"
-                    style={{
-                      color: '#0B3251',
-                      padding: '0px 8px'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
 
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleConfirmationDialogBoxOpen(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    style={{
-                      color: 'red',
-                      padding: '0px 8px'
-                    }}
-                    title="Delete Week Off"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </>
-              </div>
-            )}
           </div>
         )
       },
@@ -283,7 +300,8 @@ export const WeekOffMasterMaster: React.FC = () => {
         label: 'Week Off Policy Code',
         width: '20',
         sortable: false,
-        align: 'center',
+        fixed: 'left',
+        align: 'left',
         render: (value) => (
           <TooltipText
             text={value || 'N/A'}
@@ -320,7 +338,7 @@ export const WeekOffMasterMaster: React.FC = () => {
       {
         key: 'CreatedBy',
         label: 'Last Modified By',
-        width: '10',
+        width: '15',
         sortable: true,
         align: 'center',
         render: (value) => value || 'N/A'
@@ -328,23 +346,37 @@ export const WeekOffMasterMaster: React.FC = () => {
       {
         key: 'CreatedDate',
         label: 'Last Modified Date',
-        width: '10',
+        width: '15',
         sortable: true,
         align: 'center',
         render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       }
     ],
+    // dependencies: include everything used inside that might change
     [handleViewWeekOffDetails]
   )
 
+  //#endregion
+
+  //#region CUSTOMIZE TABLE COLUMNS
   const requiredWeekOffMasterColumnKeys: string[] = ['WeekOffPolicyName'];
+
   const allWeekOffMasterColumnKeys: string[] = weekOffMasterColumns.map(c => c.key)
+
   const [selectedWeekOffMasterColumnKeys, setSelectedWeekOffMasterColumnKeys] = useState<string[]>(() => {
+
     try {
+
       const saved = LocalStorageHelper.getWeekOffMasterTableColumns();
+
       if (saved) {
+
         const parsed = JSON.parse(saved) as string[]
+        // Ensure required columns are always present
+
         const withRequired = Array.from(new Set([...parsed, ...requiredWeekOffMasterColumnKeys]));
+
+        // Filter out any keys that no longer exist
         return withRequired.filter(k => allWeekOffMasterColumnKeys.includes(k));
       }
     } catch { }
@@ -354,6 +386,7 @@ export const WeekOffMasterMaster: React.FC = () => {
 
   useEffect(() => {
     setSelectedWeekOffMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredWeekOffMasterColumnKeys])).filter(k => allWeekOffMasterColumnKeys.includes(k)));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weekOffMasterColumns.length])
 
@@ -362,6 +395,9 @@ export const WeekOffMasterMaster: React.FC = () => {
     [weekOffMasterColumns, selectedWeekOffMasterColumnKeys]
   )
 
+  //#endregion
+
+  //#region VIEW LEAVE TYPE DETAILS MODAL COMPONENT
   interface ViewWeekOffDetailsModalProps {
     isOpen: boolean
     onClose: () => void
@@ -378,84 +414,76 @@ export const WeekOffMasterMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Settings - Company setup (Week Off Details)"
+        title="Week Off Details"
         onSubmit={(e) => {
           e.preventDefault()
           onClose()
         }}
         cancelText="Close"
         loading={false}
+        size='xl'
       >
         <div className="space-y-6">
+
           <div className="space-y-4">
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Week Off Policy Code</span>
-              <span className="text-sm text-blue-600 font-medium">{data.WeekOffPolicyCode || 'N/A'}</span>
+
+            <FieldItem label="Week Off Policy Name" value={data.WeekOffPolicyName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Week Off Policy Code" value={data.WeekOffPolicyCode} isRow withBorder={true} />
+            <FieldItem label="Week Days" value={data.WeekDays} isRow withBorder={true} />
+            <FieldItem label="Week Days Starts On" value={data.WeekDaysStartsOn} isRow withBorder={true} />
+            <FieldItem label="Weekly Off" value={data.WeeklyOff} isRow withBorder={true} />
+            <FieldItem label="Weekly Off2" value={data.WeeklyOff2} isRow withBorder={true} />
+            <FieldItem label="Weekly Off2 Type" value={data.WeeklyOff2Type} isRow withBorder={true} />
+            <FieldItem label="Not Applicable For Months" value={data.NotApplicableForMonths} isRow withBorder={true} />
+
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold pb-2">
+                Action Details
+              </h4>
+
+              <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
+
+              {data.ModifiedBy !== '' ?
+                <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
+
+                :
+                ''}
             </div>
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Week Off Policy Name</span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.WeekOffPolicyName || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Week Days</span>
-              <span className="text-sm text-blue-600 font-medium">{data.WeekDays || 0}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Week Days Starts On</span>
-              <span className="text-sm text-blue-600 font-medium">{data.WeekDaysStartsOn || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Weekly Off</span>
-              <span className="text-sm text-blue-600 font-medium">{data.WeeklyOff || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Weekly Off 2</span>
-              <span className="text-sm text-blue-600 font-medium">{data.WeeklyOff2 || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Weekly Off 2 Type</span>
-              <span className="text-sm text-blue-600 font-medium">{data.WeeklyOff2Type || 'N/A'}</span>
-            </div>
-            {data.NotApplicableForMonths && (
-              <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Not Applicable For Months</span>
-                <span className="text-sm text-blue-600 font-medium">{data.NotApplicableForMonths}</span>
-              </div>
-            )}
-          </div>
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created By</span>
-                  <span className="text-sm text-blue-600 font-medium">{data.CreatedBy || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created Date</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {data.ModifiedBy && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified By</span>
-                    <span className="text-sm text-blue-600 font-medium">{data.ModifiedBy}</span>
-                  </div>
-                )}
-                {data.ModifiedDate && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified Date</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
-                    </span>
-                  </div>
-                )}
-              </div>
+            <div className="flex justify-between items-center pt-4">
+
+              {canAction && (
+                <>
+                  <Button
+                    color='gray'
+                    variant='solid'
+                    colorMode="light"
+                    size='md'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsViewModalOpen(false)
+                      handleConfirmationDialogBoxOpen(data)
+                    }}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    Delete
+                  </Button>
+
+                  <Button
+                    color='blue'
+                    size='md'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsViewModalOpen(false)
+                      handleEditWeekOffMasterData(data)
+                    }}
+                  >
+                    <Edit className="h-5 w-5" />
+                    Edit
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -463,6 +491,9 @@ export const WeekOffMasterMaster: React.FC = () => {
     )
   }
 
+  //#endregion
+ 
+  //#region FILTER MODAL HELPERS
   const applyFilters = () => {
     setFilters(tempFilters)
     loadWeekOffs(1, tempFilters)
@@ -485,30 +516,12 @@ export const WeekOffMasterMaster: React.FC = () => {
     }
     setTempFilters(newFilters)
   }
+  //#endregion
 
-  //ADD UPDATE WEEK OFF MASTER
-  const handleAddWeekOffModal = () => {
+  //#region ADD UPDATE WEEK OFF MASTER
+  const handleAddWeekOffMaster = () => {
     setEditingWeekOffMasterData(null);
-    setIsAddUpdateModalOpen(true);
-  };
-
-  interface AddUpdateWeekOffModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSubmit: (data: AddUpdateWeekOffMasterRequest) => void;
-    data?: WeekOffMasterData | null;
-    loading?: boolean;
-  }
-
-  const AddUpdateWeekOffModal: React.FC<AddUpdateWeekOffModalProps> = ({
-    isOpen,
-    onClose,
-    onSubmit,
-    data,
-    loading = false
-  }) => {
-    const [formData, setFormData] = useState<AddUpdateWeekOffMasterRequest>({
-
+    setWeekOffMasterFormData({
       WeekOffPolicyMasterId: 0,
       Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
       WeekOffPolicyCode: "",
@@ -520,260 +533,113 @@ export const WeekOffMasterMaster: React.FC = () => {
       WeeklyOff2Type: "",
       NotApplicableForMonths: ""
     });
-    // Single error object for all fields
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-    useEffect(() => {
-      if (isOpen) {
-        if (data) {
-          //Edit Week Off
-          setFormData({
-            WeekOffPolicyMasterId: data.WeekOffPolicyMasterId,
-            Uniquekey: data.Uniquekey,
-            WeekOffPolicyCode: data.WeekOffPolicyCode || "",
-            WeekOffPolicyName: data.WeekOffPolicyName || "",
-            WeekDays: data.WeekDays || 0,
-            WeekDaysStartsOn: data.WeekDaysStartsOn || "",
-            WeeklyOff: data.WeeklyOff || "",
-            WeeklyOff2: data.WeeklyOff2 || "",
-            WeeklyOff2Type: data.WeeklyOff2Type || "",
-            NotApplicableForMonths: data.NotApplicableForMonths || ""
-          });
-        } else {
-          // Add Week Off
-          setFormData({
-            WeekOffPolicyMasterId: 0,
-            Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            WeekOffPolicyCode: "",
-            WeekOffPolicyName: "",
-            WeekDays: 0,
-            WeekDaysStartsOn: "",
-            WeeklyOff: "",
-            WeeklyOff2: "",
-            WeeklyOff2Type: "",
-            NotApplicableForMonths: ""
-          })
-        }
-        setErrors({});
-      }
-    }, [isOpen, data]);
-
-    // Handle input change
-    const handleFieldChange = (
-      field: keyof AddUpdateWeekOffMasterRequest,
-      value: any
-    ) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    };
-    const handleSubmitAddWeekOff = (e: React.FormEvent) => {
-      e.preventDefault();
-      const requiredFields = [
-        "WeekOffPolicyCode",
-        "WeekOffPolicyName",
-        "WeekDays",
-        "WeekDaysStartsOn",
-        "WeeklyOff",
-        "WeeklyOff2",
-        "WeeklyOff2Type",
-        "NotApplicableForMonths"
-      ];
-
-      const newErrors: any = {};
-
-      requiredFields.forEach((field) => {
-        const value = formData[field as keyof AddUpdateWeekOffMasterRequest];
-        if (value === null || value === undefined ||value===0 || value.toString().trim() === "") {
-          const label = field.replace(/([A-Z])/g, " $1");
-          newErrors[field] = `${label} is required`;
-        }
-      });
-      setErrors(newErrors);
-
-      // STOP submit if any error
-      if (Object.keys(newErrors).length > 0) return;
-
-      onSubmit(formData);
-    };
-
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        onCancel={onClose}
-        title={formData.WeekOffPolicyMasterId === 0 ? "Add Week Off" : "Update Week Off"}
-        onSubmit={handleSubmitAddWeekOff}
-        saveText={formData.WeekOffPolicyMasterId === 0 ? "Save" : "Update"}
-        cancelText='Cancel'
-        loading={loading}
-      >
-        <div className="space-y-6">
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/*Week Off Policy Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Week Off Policy Name <span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={formData.WeekOffPolicyName ?? ""}
-                onChange={(e) => handleFieldChange("WeekOffPolicyName", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.WeekOffPolicyName ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.WeekOffPolicyName && (
-                <p className="text-red-500 text-xs mt-1">{errors.WeekOffPolicyName}</p>
-              )}
-            </div>
-
-            {/* Week Off Policy Code */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Week Off Policy Code<span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={formData.WeekOffPolicyCode ?? ""}
-                onChange={(e) => handleFieldChange("WeekOffPolicyCode", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.WeekOffPolicyCode ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.WeekOffPolicyCode && (
-                <p className="text-red-500 text-xs mt-1">{errors.WeekOffPolicyCode}</p>
-              )}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/*Week Days */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Week Days<span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={formData.WeekDays ?? ""}
-                onChange={(e) => handleFieldChange("WeekDays", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.WeekDays ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.WeekDays && (
-                <p className="text-red-500 text-xs mt-1">{errors.WeekDays}</p>
-              )}
-            </div>
-
-            {/* Week Days Starts On */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Week Days Starts On<span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={formData.WeekDaysStartsOn ?? ""}
-                onChange={(e) => handleFieldChange("WeekDaysStartsOn", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.WeekDaysStartsOn ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.WeekDaysStartsOn && (
-                <p className="text-red-500 text-xs mt-1">{errors.WeekDaysStartsOn}</p>
-              )}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/*Weekly Off*/}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Weekly Off <span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={formData.WeeklyOff ?? ""}
-                onChange={(e) => handleFieldChange("WeeklyOff", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.WeeklyOff ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.WeeklyOff && (
-                <p className="text-red-500 text-xs mt-1">{errors.WeeklyOff}</p>
-              )}
-            </div>
-
-            {/* Weekly Off2 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Weekly Off2<span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={formData.WeeklyOff2 ?? ""}
-                onChange={(e) => handleFieldChange("WeeklyOff2", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.WeeklyOff2 ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.WeeklyOff2 && (
-                <p className="text-red-500 text-xs mt-1">{errors.WeeklyOff2}</p>
-              )}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/*Weekly Off2 Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Weekly Off2 Type <span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={formData.WeeklyOff2Type ?? ""}
-                onChange={(e) => handleFieldChange("WeeklyOff2Type", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.WeeklyOff2Type ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.WeeklyOff2Type && (
-                <p className="text-red-500 text-xs mt-1">{errors.WeeklyOff2Type}</p>
-              )}
-            </div>
-
-            {/* Not Applicable For Months */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Not Applicable For Months<span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={formData.NotApplicableForMonths ?? ""}
-                onChange={(e) => handleFieldChange("NotApplicableForMonths", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.NotApplicableForMonths ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.NotApplicableForMonths && (
-                <p className="text-red-500 text-xs mt-1">{errors.NotApplicableForMonths}</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </Modal>
-    )
+    setFormErrors({});
+    setIsAddUpdateModalOpen(true);
   };
 
-  const handleAddUpdateWeekOffMaster = async (formData: AddUpdateWeekOffMasterRequest) => {
+  const handleEditWeekOffMasterData = (row: WeekOffMasterData) => {
+    setEditingWeekOffMasterData(row);
+    setWeekOffMasterFormData({
+      WeekOffPolicyMasterId:row.WeekOffPolicyMasterId || 0,
+      Uniquekey:row.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      WeekOffPolicyCode:row.WeekOffPolicyCode || "",
+      WeekOffPolicyName:row.WeekOffPolicyName || "",
+      WeekDays: row.WeekDays || 0,
+      WeekDaysStartsOn:row.WeekDaysStartsOn || "",
+      WeeklyOff:row.WeeklyOff || "",
+      WeeklyOff2:row.WeeklyOff2 || "",
+      WeeklyOff2Type:row.WeeklyOff2Type || "",
+      NotApplicableForMonths:row.NotApplicableForMonths || ""
+    });
 
-    setIsAddUpdateModalOpen(false);
+    setFormErrors({});
+    setIsAddUpdateModalOpen(true);
+  }
+
+
+  const handleFieldChange = (field: keyof AddUpdateWeekOffMasterRequest, value: string | number | null | boolean) => {
+    setWeekOffMasterFormData(prev => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  }
+
+  const validateWeekOffMasterForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!WeekOffMasterFormData.WeekOffPolicyName?.trim()) {
+      newErrors.WeekOffPolicyName = "Week Off Policy Name is required.";
+    }
+
+    if (!WeekOffMasterFormData.WeekOffPolicyCode?.trim()) {
+      newErrors.WeekOffPolicyCode = "Week Off Policy Code is required.";
+    }
+
+    if (!WeekOffMasterFormData.WeekDays) {
+      newErrors.WeekDays = "Week Days is required.";
+    }
+    if (!WeekOffMasterFormData.WeekDaysStartsOn?.trim()) {
+      newErrors.WeekDaysStartsOn = "Week Days Starts On is required.";
+    }
+    if (!WeekOffMasterFormData.WeeklyOff?.trim()) {
+      newErrors.WeeklyOff = "Weekly Off is required.";
+    }
+    if (!WeekOffMasterFormData.WeeklyOff2?.trim()) {
+      newErrors.WeeklyOff2 = "Weekly Off2 is required.";
+    }
+    if (!WeekOffMasterFormData.WeeklyOff2Type?.trim()) {
+      newErrors.WeeklyOff2Type = "Weekly Off2 Type is required.";
+    }
+    if (!WeekOffMasterFormData.NotApplicableForMonths?.trim()) {
+      newErrors.NotApplicableForMonths = "Not Applicable For Months is required.";
+    }
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors,
+    };
+  }
+
+  const PushWeekOffMasterFormData = (): AddUpdateWeekOffMasterRequest => {
+    return {
+      WeekOffPolicyMasterId: WeekOffMasterFormData.WeekOffPolicyMasterId || 0,
+      Uniquekey: WeekOffMasterFormData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      WeekOffPolicyCode: WeekOffMasterFormData.WeekOffPolicyCode || "",
+      WeekOffPolicyName: WeekOffMasterFormData.WeekOffPolicyName || "",
+      WeekDays: WeekOffMasterFormData.WeekDays || 0,
+      WeekDaysStartsOn: WeekOffMasterFormData.WeekDaysStartsOn || "",
+      WeeklyOff: WeekOffMasterFormData.WeeklyOff || "",
+      WeeklyOff2: WeekOffMasterFormData.WeeklyOff2 || "",
+      WeeklyOff2Type: WeekOffMasterFormData.WeeklyOff2Type || "",
+      NotApplicableForMonths: WeekOffMasterFormData.NotApplicableForMonths || ""
+    };
+  };
+
+  const handleAddUpdateWeekOffMaster = async () => {
+
+    setFormErrors({});
+
+    const validation = validateWeekOffMasterForm();
+
+    if (!validation.isValid) {
+      setFormErrors(validation.errors);
+      return;
+    }
 
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
 
-        const response = await WeekOffMasterService.apiCallAddUpdateWeekOffMaster(formData);
+        const payload = PushWeekOffMasterFormData();
+        const response = await WeekOffMasterService.apiCallAddUpdateWeekOffMaster(payload);
 
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = formData.WeekOffPolicyMasterId === 0
+          const isAdd = WeekOffMasterFormData.WeekOffPolicyMasterId === 0
 
           if (isAdd) {
 
@@ -795,7 +661,7 @@ export const WeekOffMasterMaster: React.FC = () => {
 
             setWeekOffMasterList(prevData =>
               prevData.map(item =>
-                item.WeekOffPolicyMasterId === formData.WeekOffPolicyMasterId
+                item.WeekOffPolicyMasterId === WeekOffMasterFormData.WeekOffPolicyMasterId
                   ? updatedRecord
                   : item
               )
@@ -820,7 +686,7 @@ export const WeekOffMasterMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
-      formData.WeekOffPolicyMasterId === 0 ? 'Add Week Off' : 'Update Week Off...'
+      WeekOffMasterFormData.WeekOffPolicyMasterId === 0 ? 'Add Week Off' : 'Update Week Off...'
     )
   }
 
@@ -837,8 +703,8 @@ export const WeekOffMasterMaster: React.FC = () => {
       async () => {
 
         const params: DeleteWeekOffMasterRequest = {
-          WeekOffPolicyMasterId: deleteWeekOffMasterDetailsData.WeekOffPolicyMasterId ?? 0,
-          UniqueKey: deleteWeekOffMasterDetailsData.Uniquekey ?? ""
+          WeekOffPolicyMasterId: deleteWeekOffMasterDetailsData.WeekOffPolicyMasterId || 0,
+          UniqueKey: deleteWeekOffMasterDetailsData.Uniquekey || ""
         }
         const response = await WeekOffMasterService.apiCallDeleteWeekOffMaster(params);
 
@@ -854,6 +720,7 @@ export const WeekOffMasterMaster: React.FC = () => {
           addToast({ type: "success", title: response.right.SuccessMessage[0] })
 
           setIsConfirmationDialogBoxOpen(false);
+
           setDeleteWeekOffMasterDetailsData(null);
         } else {
           addToast({ type: 'error', title: response.left.message });
@@ -874,12 +741,23 @@ export const WeekOffMasterMaster: React.FC = () => {
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+
       <div className="h-full flex flex-col">
+
+        {/* ============================================================================
+          COMMAN LOADER FOR PAGE
+           ============================================================================ */}
+
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+
+        {/* ============================================================================
+          COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
+           ============================================================================ */}
+
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by week off policy name..."
+          searchPlaceholder="Search By week off policy name..."
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
@@ -897,7 +775,7 @@ export const WeekOffMasterMaster: React.FC = () => {
           isShowImportButton={false}
           isShowExportButton={canExport}
           addTitle='Add Week Off'
-          onAdd={handleAddWeekOffModal}
+          onAdd={handleAddWeekOffMaster}
           onExportExcel={handleExportWeekOffExcel}
           onExportPdf={handleExportWeekOffPdf}
           exportLoading={isLoading}
@@ -921,16 +799,149 @@ export const WeekOffMasterMaster: React.FC = () => {
           }}
           data={viewWeekOffMasterDetailsData}
         />
-        <AddUpdateWeekOffModal
+
+        {/*  ADD EDIT UPDATE WEEK OFF MODAL */}
+        <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
             setIsAddUpdateModalOpen(false)
             setEditingWeekOffMasterData(null)
+            setFormErrors({})
           }}
-          onSubmit={handleAddUpdateWeekOffMaster}
-          data={editingWeekOffMasterData}
+          onCancel={() => {
+            setIsAddUpdateModalOpen(false)
+            setEditingWeekOffMasterData(null)
+            setFormErrors({})
+          }}
+          title={editingWeekOffMasterData ? 'Update Week Off Master Details' : 'Add Week Off Master Details'}
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleAddUpdateWeekOffMaster()
+          }}
+          saveText="Save"
+          cancelText="Cancel"
           loading={isLoading}
-        />
+          size="large75"
+        >
+          <div className="space-y-6 p-6 bg-blue-50">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Week Off Policy Name'
+                  value={WeekOffMasterFormData.WeekOffPolicyName ?? ""}
+                  onChange={(e) => handleFieldChange("WeekOffPolicyName", e.target.value)}
+                  placeholder="Enter Week Off Policy Name"
+                  maxLength={250}
+                  error={formErrors.WeekOffPolicyName}
+                />
+              </div>
+
+              <div>
+                <Input
+                  type="text"
+                  label='Week Off Policy Code'
+                  value={WeekOffMasterFormData.WeekOffPolicyCode ?? ""}
+                  onChange={(e) => handleFieldChange("WeekOffPolicyCode", e.target.value)}
+                  required
+                  maxLength={20}
+                  placeholder="Enter Week Off Policy Code"
+                  error={formErrors.WeekOffPolicyCode}
+                />
+
+              </div>
+            </div>
+           
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Week Days'
+                  value={WeekOffMasterFormData.WeekDays ?? ""}
+                  onChange={(e) => handleFieldChange("WeekDays", e.target.value)}
+                  placeholder="Enter Week Days"
+                  maxLength={250}
+                  error={formErrors.WeekDays}
+                />
+              </div>
+
+              <div>
+                <Input
+                  type="text"
+                  label='Week Days Starts On'
+                  value={WeekOffMasterFormData.WeekDaysStartsOn ?? ""}
+                  onChange={(e) => handleFieldChange("WeekDaysStartsOn", e.target.value)}
+                  required
+                  maxLength={20}
+                  placeholder="Enter Week Days StartsOn"
+                  error={formErrors.WeekDaysStartsOn}
+                />
+
+              </div>
+            </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Week Off '
+                  value={WeekOffMasterFormData.WeeklyOff ?? ""}
+                  onChange={(e) => handleFieldChange("WeeklyOff", e.target.value)}
+                  placeholder="Enter Weekly Off"
+                  maxLength={250}
+                  error={formErrors.WeeklyOff}
+                />
+              </div>
+
+              <div>
+                <Input
+                  type="text"
+                  label='Weekly Off2'
+                  value={WeekOffMasterFormData.WeeklyOff2 ?? ""}
+                  onChange={(e) => handleFieldChange("WeeklyOff2", e.target.value)}
+                  required
+                  maxLength={20}
+                  placeholder="Enter Weekly Off2"
+                  error={formErrors.WeeklyOff2}
+                />
+
+              </div>
+            </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Weekly Off2 Type'
+                  value={WeekOffMasterFormData.WeeklyOff2Type ?? ""}
+                  onChange={(e) => handleFieldChange("WeeklyOff2Type", e.target.value)}
+                  placeholder="Enter Weekly Off2 Type"
+                  maxLength={250}
+                  error={formErrors.WeeklyOff2Type}
+                />
+              </div>
+
+              <div>
+                <Input
+                  type="text"
+                  label='Not Applicable For Months'
+                  value={WeekOffMasterFormData.NotApplicableForMonths ?? ""}
+                  onChange={(e) => handleFieldChange("NotApplicableForMonths", e.target.value)}
+                  required
+                  maxLength={20}
+                  placeholder="Enter Not Applicable For Months"
+                  error={formErrors.NotApplicableForMonths}
+                />
+
+              </div>
+            </div>
+          </div>
+        </Modal>
+
+        {/* CUSTOMIZE COLUMNS MODAL */}
         <CustomizeColumnsModal
           isOpen={isShowCustomizeWeekOffMasterColumnsModal}
           onClose={() => setIsShowCustomizeWeekOffMasterColumnsModal(false)}

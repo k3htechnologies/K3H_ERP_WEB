@@ -4,9 +4,9 @@ import { MaterialMasterApi } from "../api/MaterialMasterApi";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 
 export abstract class MaterialMasterDatasource {
-    abstract pullMaterialMaster(params : FilterWithPaginationMaterialMaster,signal? : AbortSignal) : Promise<MaterialMasterListResponse>;
-    abstract addUpdateMaterialMaster(payload : AddUpdateMaterialMasterRequest) : Promise<MaterialMasterSaveReponse>;
-    abstract deleteMaterialMaster(params : DeleteMaterialMasterRequest) : Promise<MaterialMasterDeleteResponse>;
+    abstract pullMaterialMaster(params: FilterWithPaginationMaterialMaster, signal?: AbortSignal): Promise<MaterialMasterListResponse>;
+    abstract addUpdateMaterialMaster(payload: AddUpdateMaterialMasterRequest): Promise<MaterialMasterSaveReponse>;
+    abstract deleteMaterialMaster(params: DeleteMaterialMasterRequest): Promise<MaterialMasterDeleteResponse>;
 }
 
 export class MaterialMasterDatasourceImpl implements MaterialMasterDatasource {
@@ -16,52 +16,77 @@ export class MaterialMasterDatasourceImpl implements MaterialMasterDatasource {
     }
 
     async pullMaterialMaster(params: FilterWithPaginationMaterialMaster, signal?: AbortSignal): Promise<MaterialMasterListResponse> {
-        try{
+        try {
             const queryParams = new URLSearchParams({
-                PageSize : (params.PageSize ?? 10).toString(),
-                PageNumber : (params.PageNumber ?? 1).toString(),
+                PageSize: (params.PageSize ?? 10).toString(),
+                PageNumber: (params.PageNumber ?? 1).toString(),
+                IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
             })
 
-            if(params.MaterialName?.trim())queryParams.append("MaterialName", params.MaterialName.trim())
-            if (params.sortBy?.trim()) queryParams.append('SortBy', params.sortBy.trim());
-            if (params.exportType) queryParams.append('ExportType', params.exportType);
+            if (params.MaterialMasterId) queryParams.append('MaterialMasterId', params.MaterialMasterId.toString());
+            if (params.MaterialName?.trim()) queryParams.append('MaterialName', params.MaterialName.trim());
+            if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
-            console.log(`${MaterialMasterApi.PULL}?${queryParams.toString()}`)
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${MaterialMasterApi.PULL}?${queryParams.toString()}`, { signal }
+            )
+            return response;
+        } catch (error: any) {
 
-        const response = await this.k3hHttpClient.getRequestWithAuthentication(`${MaterialMasterApi.PULL}?${queryParams.toString()}`,{signal});
-        
-        return response;
-        } catch(error : any){
-            console.log("Error occured while material fetching ", error);
-            if(error === TokenExpiredException){
-                await this.pullMaterialMaster(params)
+            console.error('ERROR: PULL MATERIAL MASTER :', error);
+
+            if (error === TokenExpiredException) {
+                await this.pullMaterialMaster(params);
             }
-            throw error;
+
+            throw error
         }
     }
-    async addUpdateMaterialMaster(payload: AddUpdateMaterialMasterRequest): Promise<MaterialMasterSaveReponse> {
+    async addUpdateMaterialMaster(params: AddUpdateMaterialMasterRequest): Promise<MaterialMasterSaveReponse> {
         try {
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(`${MaterialMasterApi.ADD_UPDATE}`,payload)
-            return response;
-        } catch(error : any){
-            console.log("Error occured while material fetching ", error);
-            if(error === TokenExpiredException){
-                await this.addUpdateMaterialMaster(payload)
+            
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                MaterialMasterApi.ADD_UPDATE,
+                params
+            )
+
+            return response
+        } catch (error) {
+
+            console.error('ERROR: ADD UPDATE MATERIAL MASTER :', error)
+
+            if (error === TokenExpiredException) {
+                await this.addUpdateMaterialMaster(params);
             }
-            throw error;
+            throw error
         }
     }
-     
+
     async deleteMaterialMaster(params: DeleteMaterialMasterRequest): Promise<MaterialMasterDeleteResponse> {
-        try{
-            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(`${MaterialMasterApi.DELETE}?MaterialMasterId=${params.MaterialMasterId}&Uniquekey=${params.Uniquekey}`)
-            return response;
-        }catch(error){
-            console.log("Error occured while delete material ", error);
-            if(error === TokenExpiredException){
-                await this.deleteMaterialMaster(params)
+        try {
+            const queryParams = new URLSearchParams({
+                MaterialMasterId: (params.MaterialMasterId ?? 0).toString(),
+                Uniquekey: params.Uniquekey ?? '',
+            })
+
+            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${MaterialMasterApi.DELETE}?${queryParams.toString()}`
+            )
+
+            return response
+
+        } catch (error) {
+
+            console.error('ERROR: DELETE MATERIAL MASTER :', error)
+
+            if (error === TokenExpiredException) {
+
+                await this.deleteMaterialMaster(params);
+
             }
-            throw error;
+
+            throw error
         }
     }
 

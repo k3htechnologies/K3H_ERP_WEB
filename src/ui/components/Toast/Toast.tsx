@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getToastColors } from '../../../core/constants'
+import { COLORS, getToastColors } from '../../../core/constants'
 
 export interface ToastProps {
     id: string
@@ -20,7 +20,7 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
 
         // Auto close timer
         const autoCloseTimer = setTimeout(() => {
-            handleClose()
+           handleClose()
         }, duration)
 
         return () => {
@@ -41,19 +41,19 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
             case 'success':
                 return (
                     <div style={{
-                        width: '20px',
-                        height: '20px',
+                        width: '32px',
+                        height: '32px',
                         borderRadius: '50%',
-                        backgroundColor: '#10B981',
+                        backgroundColor: COLORS.white,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0
                     }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
                             <path
                                 d="M9 12L11 14L15 10"
-                                stroke="white"
+                                stroke="#16A34A"
                                 strokeWidth="3"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -64,8 +64,8 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
             case 'error':
                 return (
                     <div style={{
-                        width: '20px',
-                        height: '20px',
+                        width: '32px',
+                        height: '32px',
                         borderRadius: '50%',
                         backgroundColor: '#EF4444',
                         display: 'flex',
@@ -77,7 +77,7 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
                             <path
                                 d="M18 6L6 18M6 6L18 18"
                                 stroke="white"
-                                strokeWidth="2"
+                                strokeWidth="3"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                             />
@@ -135,7 +135,7 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
         }
     }
 
-    const colors = getToastColors()
+    const colors = getToastColors(type)
 
     return (
         <div
@@ -143,13 +143,14 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: '12px',
-                padding: '16px',
+                padding: '5px',
                 backgroundColor: colors.background,
                 border: `1px solid ${colors.border}`,
                 borderRadius: '8px',
                 boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                maxWidth: '400px',
-                minWidth: '300px',
+                width: 'auto',
+                maxWidth: '90vw',
+                minWidth: 'fit-content',
                 transform: isVisible && !isLeaving ? 'translateX(0)' : 'translateX(100%)',
                 opacity: isVisible && !isLeaving ? 1 : 0,
                 transition: 'all 0.3s ease-in-out',
@@ -165,7 +166,7 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
                     fontWeight: '600',
                     color: colors.title,
                     margin: '0 0 4px 0',
-                    lineHeight: '1.4'
+                    lineHeight: '2.4'
                 }}>
                     {title}
                 </h4>
@@ -187,12 +188,12 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    padding: '4px',
+                    padding: '9px',
                     borderRadius: '4px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#6B7280',
+                    color: colors.message,
                     transition: 'color 0.2s ease',
                     flexShrink: 0
                 }}

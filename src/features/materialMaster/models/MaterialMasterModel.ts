@@ -3,10 +3,11 @@ import type { ApiResponse } from "@/core/api/ApiResponse"
 export interface FilterWithPaginationMaterialMaster {
     PageSize : number
     PageNumber : number
+    IsCheckPermission?:boolean
     MaterialMasterId? : number
-    MaterialName : string
-    sortBy? : string
-    exportType? : "PDF" | "Excel"
+    MaterialName? : string
+    SortBy? : string
+    ExportType? : "PDF" | "Excel"
 }
 
 export interface MaterialMasterData {
@@ -35,7 +36,7 @@ export interface AddUpdateMaterialMasterRequest {
 
 export interface DeleteMaterialMasterRequest {
     MaterialMasterId : number,
-    Uniquekey : string,
+    Uniquekey : string | null,
 }
 
 export type MaterialMasterListResponse = ApiResponse<MaterialMasterData[]>;

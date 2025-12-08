@@ -33,7 +33,13 @@ export const MASTER_DATA = {
     
     projectStatus: ['On-Going', 'Completed', 'On-Hold', 'Cancelled', 'Planning'],
     
-    businessCategory: ['Real Estate', 'Construction', 'Infrastructure', 'Residential', 'Commercial', 'Mixed Use']
+    businessCategory: ['Real Estate', 'Construction', 'Infrastructure', 'Residential', 'Commercial', 'Mixed Use'],
+
+    documentStatus: [
+        'Applied','Doc Misssing', 'In Process', 'Issued','Not Applied','Not Applicable',
+        'Paid','Payment Due', 'Rejected',
+    ],
+
 } as const
 
 // ============================================================================
@@ -67,4 +73,5 @@ export const BLOOD_GROUP_OPTIONS = toOptions(MASTER_DATA.bloodGroups)
 export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType)
 export const PROJECT_STATUS_OPTIONS = toOptions(MASTER_DATA.projectStatus)
 export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory)
-export const COUNTRY = toOptions(MASTER_DATA.companyType)
+export const COMPANY_TYPE = toOptions(MASTER_DATA.companyType)
+export const PROJECT_DOCUMENT_STATUS = toOptions(MASTER_DATA.documentStatus)

@@ -40,6 +40,8 @@ export const MASTER_DATA = {
         'Paid','Payment Due', 'Rejected',
     ],
 
+    bankAccountType: ['Current','DEMAT','Fixed','Salary','Saving'],
+
 } as const
 
 // ============================================================================
@@ -75,3 +77,4 @@ export const PROJECT_STATUS_OPTIONS = toOptions(MASTER_DATA.projectStatus)
 export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory)
 export const COMPANY_TYPE = toOptions(MASTER_DATA.companyType)
 export const PROJECT_DOCUMENT_STATUS = toOptions(MASTER_DATA.documentStatus)
+export const BANK_ACCOUNT_TYPE = toOptions(MASTER_DATA.bankAccountType)

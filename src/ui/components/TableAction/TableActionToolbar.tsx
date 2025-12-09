@@ -259,6 +259,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Export as Excel"
+                          style={{justifyContent:"left"}}
                         >
 
                           Export as Excel
@@ -279,6 +280,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Export as PDF"
+                          style={{justifyContent:"left"}}
                         >
 
                           Export as PDF
@@ -300,7 +302,6 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                     setIsImportOpen((s) => !s)
                     setIsExportOpen(false) // close export when opening import
                   }}
-                  className="text-black gap-2"
                   color="green"
                   colorMode="gradient"
                   size="mxs"
@@ -335,6 +336,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Upload Excel"
+                          style={{justifyContent:"left"}}
                         >
 
                           Upload Excel
@@ -355,9 +357,9 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Download Sample Excel"
+                          style={{justifyContent:"left"}}
                         >
-
-                          Sample Excel
+                          Sample Download
                         </Button>
                       )}
                     </div>

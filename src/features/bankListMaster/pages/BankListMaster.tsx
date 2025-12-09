@@ -187,7 +187,7 @@ const BankListMaster: React.FC = () => {
         key: 'BankNameWithCode',
         label: 'Bank Name',
         width: '100',
-        sortable: true,
+        sortable: false,
         fixed: 'left',
         align: 'left',
         render: value => (

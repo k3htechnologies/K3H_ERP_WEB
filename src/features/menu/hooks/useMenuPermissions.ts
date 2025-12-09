@@ -82,6 +82,8 @@ const derivePermissions = (
 }
 
 export const useMenuPermissions = (explicitPath?: string): MenuPermissions => {
+
+  
   const location = useLocation()
   const targetPath = normalizePath(explicitPath ?? location.pathname)
   const { menu } = useMenuContext()

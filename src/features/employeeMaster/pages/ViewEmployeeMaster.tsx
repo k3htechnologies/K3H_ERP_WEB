@@ -160,7 +160,7 @@ export const ViewEmployeeMaster: React.FC = () => {
 
 
                                 <div className="p-4">
-                                    <FieldItem label="Mobile Number" value={editEmployeeData!.PersonalMobileNumber} isRow />
+                                    <FieldItem label="Mobile Number" value={`+91 ${editEmployeeData?.PersonalMobileNumber ?? ''}`} isRow />
                                     <FieldItem label="Email ID" value={editEmployeeData!.EmailId} isRow />
                                     <FieldItem label="Gender" value={editEmployeeData!.Gender} isRow />
                                     <FieldItem label="DOB"
@@ -220,7 +220,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                     <FieldItem label="Marital Status" value={editEmployeeData!.MaritalStatus} isRow />
                                     <FieldItem label="Blood Group" value={editEmployeeData!.BloodGroup} isRow />
                                     <FieldItem label="Office Email ID" value={editEmployeeData!.OfficeEmailId} isRow />
-                                    <FieldItem label="Office Mobile Number" value={editEmployeeData!.OfficeMobileNumber} isRow />
+                                    <FieldItem label="Office Mobile Number" value={`+91 ${editEmployeeData?.OfficeMobileNumber ?? ''}`} isRow />
                                     <FieldItem label="Employment Type" value={editEmployeeData!.EmployeeType} isRow />
 
                                 </div>
@@ -238,7 +238,7 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                 <div className="p-4">
                                     <FieldItem label="Relationship" value={editEmployeeData!.EmergencyContactPersonRelationship} isRow />
-                                    <FieldItem label="Contact Number" value={editEmployeeData!.EmergencyMobileNumber} isRow />
+                                    <FieldItem label="Contact Number" value={`+91 ${editEmployeeData?.EmergencyMobileNumber ?? ''}`} isRow />
                                 </div>
                             </div>
 

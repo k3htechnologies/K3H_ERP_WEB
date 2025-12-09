@@ -29,6 +29,9 @@ import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleS
 import { fetchBankListMasterDropdown } from '@/features/bankListMaster/bankListMasterDropDown';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import { filterIFSC, filterNumbers, isValidIFSC } from '@/core/utils/fileValidation';
+import { BANK_ACCOUNT_TYPE } from '@/core/constants';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 
 const initialFormState = (): AddUpdateProjectMasterWithBankDetailsRequest => ({
 
@@ -74,6 +77,10 @@ export const ViewProjectMaster: React.FC = () => {
 
     //FILTER STATES
     const [filters, setFilters] = useState<FilterInfo>({});
+
+    //#region MENU PERMISSIONS
+    const { canAction } = useMenuPermissions('/projectMaster');
+    //#endregion
 
     //#region PROJECT MASTER WITH EMPLOYEE MODULE
     const [isOpenAddProjectMasterWithEmployee, setIsOpenAddProjectMasterWithEmployee] = useState(false);
@@ -242,6 +249,34 @@ export const ViewProjectMaster: React.FC = () => {
         }
     }, [debouncedEmployeeSearch, debouncedCompanySearch])
 
+
+    useEffect(() => {
+        if (isAddUpdateModalOpenForBankDetails) {
+            if (editingProjectMasterWithBankDetailsData) {
+
+                setFormDataForBankDetails({
+                    ProjectWithBankDetailsId: editingProjectMasterWithBankDetailsData.ProjectWithBankDetailsId,
+                    Uniquekey: editingProjectMasterWithBankDetailsData.Uniquekey || initialFormState().Uniquekey,
+                    BeneficiaryAccountHolderName: editingProjectMasterWithBankDetailsData.BeneficiaryAccountHolderName || "",
+                    ProjectId: editingProjectMasterWithBankDetailsData.ProjectId,
+                    BankListMasterId: editingProjectMasterWithBankDetailsData.BankListMasterId || 0,
+                    AccountNumber: editingProjectMasterWithBankDetailsData.AccountNumber || "",
+                    Branch: editingProjectMasterWithBankDetailsData.Branch || "",
+                    IFSCCode: editingProjectMasterWithBankDetailsData.IFSCCode || "",
+                    AcType: editingProjectMasterWithBankDetailsData.AcType || ""
+                });
+
+                setDropdownLabels({
+                    bankName: editingProjectMasterWithBankDetailsData.BankName || ""
+                });
+
+            } else {
+                setFormDataForBankDetails(initialFormState());
+            }
+            setErrorsForBankDetails({});
+        }
+    }, [isAddUpdateModalOpenForBankDetails, editingProjectMasterWithBankDetailsData]);
+
     //#endregion
 
     //#region DATA LOAD PROJECT WITH EMPLOYEE | COMPANY | BANK DETAILS
@@ -373,6 +408,169 @@ export const ViewProjectMaster: React.FC = () => {
     //#endregion
 
     //#region PROJECT WITH EMPLOYEE 
+
+    //#region TABLE COLUMN
+    const projectMasterWithEmployeeColumns = useMemo<TableColumn[]>(
+        () => [
+            {
+                key: 'EmployeeCode',
+                label: 'Employee Code',
+                width: '14',
+                sortable: false,
+                align: 'center',
+                render: value => (
+                    <TooltipText
+                        text={value || 'N/A'}
+                        maxWidth="140px"
+                        tooltipThreshold={14}
+                        tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                    />
+                )
+            },
+            {
+                key: 'FullName',
+                label: 'Full Name',
+                width: '22',
+                sortable: false,
+                fixed: 'left',
+                align: 'left',
+                render: (value, row) => {
+                    const fullName = (row?.FullName ?? '').trim();
+                    const initials = fullName
+                        ? fullName
+                            .split(/\s+/)
+                            .map((w: string) => (w && w.length ? w[0] : ''))
+                            .join('')
+                            .toUpperCase()
+                            .slice(0, 2)
+                        : 'NA';
+
+                    return (
+                        <div className={`flex items-center justify-between gap-3`}>
+                            {/* left: avatar + name */}
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="w-7 h-7 rounded-full
+                       bg-blue-200 
+                       flex items-center justify-center
+                       text-gray-800 font-medium text-xs
+                       border border-gray-300"
+                                    title={fullName || 'N/A'}
+                                >
+                                    {initials}
+                                </div>
+                                <div className="min-w-0">
+                                    <TooltipText
+                                        text={value || row.FirstName || 'N/A'}
+                                        maxWidth="260px"
+                                        tooltipThreshold={26}
+
+                                    />
+                                </div>
+
+                            </div>
+
+                            <div className="flex items-center justify-end ml-2 w-20">
+                                {canAction ?
+                                    <Button
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            setIsOpenAddProjectMasterWithEmployee(false)
+                                            handleConfirmationDialogBoxOpenForEmployee(row)
+                                        }}
+                                        color='transparent'
+                                        fullWidth
+                                        isborderRadius
+                                        size='sm'
+                                        style={{
+                                            color: 'red',
+                                            padding: '0px 8px'
+                                        }}
+                                        title="Delete Employee"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                    : ""}
+                            </div>
+                        </div>
+
+                    );
+                }
+            },
+
+
+            {
+                key: 'PersonalMobileNumber',
+                label: 'Personal Mobile Number',
+                width: '14',
+                sortable: false,
+                align: 'left',
+                render: value => value ? `+91 ${value}` : '-'
+
+            },
+            {
+                key: 'EmailId',
+                label: 'Email Id',
+                width: '14',
+                sortable: false,
+                align: 'left',
+                render: value => value || 'N/A'
+            },
+            {
+                key: 'Department',
+                label: 'Department',
+                width: '14',
+                sortable: true,
+                align: 'left',
+                render: value => (
+                    <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+                )
+            },
+            {
+                key: 'Designation',
+                label: 'Designation',
+                width: '14',
+                sortable: true,
+                align: 'left',
+                render: value => (
+                    <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+                )
+            },
+
+            {
+                key: 'ReportPersonName',
+                label: 'Report Person Name',
+                width: '14',
+                sortable: true,
+                align: 'left',
+                render: value => (
+                    <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+                )
+            },
+            {
+                key: 'JoiningDate',
+                label: 'Joining Date',
+                width: '14',
+                sortable: true,
+                align: 'center',
+                render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
+            },
+
+            {
+                key: 'LastLogin',
+                label: 'Last Login',
+                width: '16',
+                sortable: true,
+                align: 'center',
+                render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
+            }
+        ],
+        []
+
+    );
+    //#endregion
+
     //#region PROJECT MASTER WITH EMPLOYEE LIST SCROLL EVENT
     const handleEmployeeListScrollInProjectMasterWithEmployee = (e: React.UIEvent<HTMLDivElement>) => {
 
@@ -862,6 +1060,7 @@ export const ViewProjectMaster: React.FC = () => {
     };
 
     //#endregion
+
     //#endregion
 
     //#region PROJECT MASTER WITH BANK DETAILS
@@ -904,48 +1103,49 @@ export const ViewProjectMaster: React.FC = () => {
                             tooltipThreshold={25}
                         />
                         <div className="flex items-center justify-end ml-2 w-20">
+                            {canAction ?
+                                <>
+                                    <Button
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            handleEditProjectMasterBankDetails(row)
+                                        }}
+                                        color='transparent'
+                                        fullWidth
+                                        isborderRadius
+                                        size='sm'
+                                        title="Edit Bank Account"
+                                        style={{
+                                            color: '#0B3251',
+                                            padding: '0px 8px'
+                                        }}
+                                        onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
+                                        onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
 
-                            <>
-                                <Button
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        handleEditProjectMasterBankDetails(row)
-                                    }}
-                                    color='transparent'
-                                    fullWidth
-                                    isborderRadius
-                                    size='sm'
-                                    title="Edit Department"
-                                    style={{
-                                        color: '#0B3251',
-                                        padding: '0px 8px'
-                                    }}
-                                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                                >
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-
-                                <Button
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        handleConfirmationDialogBoxOpenForProjectMasterBankDetails(row)
-                                    }}
-                                    color='transparent'
-                                    fullWidth
-                                    isborderRadius
-                                    size='sm'
-                                    style={{
-                                        color: 'red',
-                                        padding: '0px 8px'
-                                    }}
-                                    title="Delete Department"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </>
+                                    <Button
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            handleConfirmationDialogBoxOpenForProjectMasterBankDetails(row)
+                                        }}
+                                        color='transparent'
+                                        fullWidth
+                                        isborderRadius
+                                        size='sm'
+                                        style={{
+                                            color: 'red',
+                                            padding: '0px 8px'
+                                        }}
+                                        title="Delete Bank Account"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </>
+                                : ""}
                         </div>
                     </div>
                 )
@@ -1047,9 +1247,9 @@ export const ViewProjectMaster: React.FC = () => {
         }
 
         if (!formDataForBankDetails.AccountNumber?.trim()) {
-            newErrors.AccountNo = 'Account Number is required.'
+            newErrors.AccountNumber = 'Account Number is required.'
         } else if (formDataForBankDetails.AccountNumber.trim().length > 18) {
-            newErrors.AccountNo = 'Account Number must be at most 50 characters'
+            newErrors.AccountNumber = 'Account Number must be at most 50 characters'
         }
 
         if (!formDataForBankDetails.IFSCCode?.trim()) {
@@ -1247,15 +1447,16 @@ export const ViewProjectMaster: React.FC = () => {
                                 >
                                     Back
                                 </Button>
-
-                                <Button
-                                    type="button"
-                                    color="blue"
-                                    size="sm"
-                                    onClick={() => handleEditProjectMaster(editProjectData!)}
-                                >
-                                    Edit
-                                </Button>
+                                {canAction ?
+                                    <Button
+                                        type="button"
+                                        color="blue"
+                                        size="sm"
+                                        onClick={() => handleEditProjectMaster(editProjectData!)}
+                                    >
+                                        Edit
+                                    </Button> : ""
+                                }
                             </div>
                         </div>
 
@@ -1417,7 +1618,8 @@ export const ViewProjectMaster: React.FC = () => {
 
                                 }}
                             />
-                            {activeTab == 'Set Approval' ? "" :
+
+                            {canAction && activeTab !== 'Set Approval' && (
                                 <Button
                                     color='blue'
                                     size='sm'
@@ -1440,58 +1642,22 @@ export const ViewProjectMaster: React.FC = () => {
                                 >
                                     Add
                                 </Button>
-                            }
+                            )}
                         </div>
                         <div className="mt-1">
                             {activeTab === 'Employee' && (
-                                <div className="space-y-4">
+                                <div className="space-y-4 p-4">
 
-
-                                    {employeeMasterList.length === 0 ? (
-                                        <NoDataView />
-                                    ) : (
-                                        <div className="space-y-3 p-4">
-                                            {employeeMasterList.map((employee) => {
-
-                                                return (
-                                                    <div key={employee!.EmployeeId} className="flex items-center justify-between border border-gray-200 rounded p-3 bg-white">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-14 h-14 
-                                                                        rounded-full 
-                                                                        bg-gradient-to-br from-gray-200 to-gray-300 
-                                                                        flex items-center justify-center 
-                                                                        text-gray-700 font-bold text-lg
-                                                                        border border-gray-300">
-                                                                {((employee.FirstName[0] ?? "") + (employee.LastName[0] ?? "")).toUpperCase()}
-                                                            </div>
-
-                                                            <div>
-                                                                <div className="font-medium text-gray-800">{employee.FullName}</div>
-                                                                <div className="text-xs text-gray-500   ">{employee.Designation} | {employee.PersonalMobileNumber}</div>
-
-
-                                                            </div>
-                                                        </div>
-                                                        <Button
-                                                            color='transparent'
-                                                            variant='solid'
-                                                            colorMode="dark"
-                                                            size='sm'
-                                                            onClick={(e) => {
-                                                                e.preventDefault()
-                                                                e.stopPropagation()
-                                                                setIsOpenAddProjectMasterWithEmployee(false)
-                                                                handleConfirmationDialogBoxOpenForEmployee(employee)
-                                                            }}
-                                                        >
-                                                            <Trash2 className="h-5 w-5" />
-
-                                                        </Button>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
+                                    <DataTable
+                                        data={employeeMasterList}
+                                        columns={projectMasterWithEmployeeColumns}
+                                        emptyMessage="No Employee Data Found"
+                                        fixedHeight={true}
+                                        maxHeight="calc(100vh - 255px)"
+                                        recordsPerPage={20}
+                                        className="flex-1"
+                                        loading={isLoading}
+                                    />
                                 </div>
                             )}
 
@@ -1513,7 +1679,7 @@ export const ViewProjectMaster: React.FC = () => {
                             )}
 
                             {activeTab === "Company" && (
-                                <div className="space-y-4">
+                                <div className="space-y-4 p-4">
 
 
                                     <DataTable
@@ -1786,7 +1952,7 @@ export const ViewProjectMaster: React.FC = () => {
                     saveText={editingProjectMasterWithBankDetailsData ? 'Update Bank Details' : 'Save Bank Details'}
                     resetText='Reset'
                     loading={isLoading}
-                    size='xl'
+                    size='half-screen'
                 >
                     <div className="space-y-10 p-6 bg-blue-100">
                         <div className="space-y-4" >
@@ -1803,17 +1969,29 @@ export const ViewProjectMaster: React.FC = () => {
                                 />
 
                             </div>
+                            <div>
+                                <SingleSelectDropdownWithPagination
+                                    label="Bank"
+                                    required
+                                    title="Select Bank"
+                                    size="lg"
+                                    dataFetchCallBack={fetchBankListMasterDropdown}
+                                    onSelected={(item) => { handleFieldChange("BankListMasterId", Number(item?.value || 0)); }}
+                                    initialValue={createDropdownInitialValue(formDataForBankDetails.BankListMasterId, dropdownLabels.bankName)}
+                                    error={errorsForBankDetails.BankListMasterId}
+                                />
+                            </div>
+                        </div>
+                        <div className=" grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
 
                             <div>
-                                <Input
-                                    label='Account Type'
+                                <SinglePageSelection
+                                    label="Account Type"
                                     required
-                                    error={errorsForBankDetails.AcType}
-                                    type="text"
                                     value={formDataForBankDetails.AcType}
-                                    maxLength={100}
-                                    onChange={(e) => handleFieldChange('AcType', e.target.value)}
-                                    placeholder="Enter Account Type"
+                                    onChange={(e) => handleFieldChange('AcType', String(e))}
+                                    options={BANK_ACCOUNT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                    error={errorsForBankDetails.AcType}
                                 />
 
                             </div>
@@ -1831,24 +2009,11 @@ export const ViewProjectMaster: React.FC = () => {
                                 />
 
                             </div>
-
-                            <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Bank"
-                                    required
-                                    title="Select Bank"
-                                    size="lg"
-                                    dataFetchCallBack={fetchBankListMasterDropdown}
-                                    onSelected={(item) => { handleFieldChange("BankListMasterId", Number(item?.value || 0)); }}
-                                    initialValue={createDropdownInitialValue(formDataForBankDetails.BankListMasterId, dropdownLabels.bankName)}
-                                    error={errorsForBankDetails.BankListMasterId}
-                                />
-                            </div>
-
                             <div>
                                 <Input
                                     label="Account Number"
                                     required value={formDataForBankDetails.AccountNumber}
+                                    maxLength={18}
                                     onChange={(e) => handleFieldChange("AccountNumber", filterNumbers(e.target.value))}
                                     error={errorsForBankDetails.AccountNumber} />
                             </div>
@@ -1856,6 +2021,7 @@ export const ViewProjectMaster: React.FC = () => {
                                 <Input label="IFSC Code"
                                     required
                                     value={formDataForBankDetails.IFSCCode}
+                                    maxLength={10}
                                     onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
                                     error={errorsForBankDetails.IFSCCode} />
                             </div>

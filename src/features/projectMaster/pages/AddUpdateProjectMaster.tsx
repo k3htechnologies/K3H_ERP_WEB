@@ -18,6 +18,7 @@ import type { AddUpdateProjectMasterRequest, FilterWithPaginationProjectMasterRe
 import { ProjectMasterService } from "../services/ProjectMasterService";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ProjectId: 0,
@@ -76,6 +77,10 @@ const AddUpdateProjectMaster: React.FC = () => {
     //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
+    //#endregion
+
+    //#region MENU PERMISSIONS
+    const { canAction } = useMenuPermissions('/projectMaster');
     //#endregion
 
     //#region COUNTRY STATE CITY DISTRICT 
@@ -398,7 +403,7 @@ const AddUpdateProjectMaster: React.FC = () => {
     };
 
     //#endregion
-    
+
     return (
         <>
             <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
@@ -744,18 +749,21 @@ const AddUpdateProjectMaster: React.FC = () => {
                     >
                         Cancel
                     </Button>
-                    <Button
-                        color="green"
-                        size="sm"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            handleSubmit();
-                        }}
-                        className="px-6"
-                        disabled={isLoading}
-                    >
-                        {formData.ProjectId ? "Update Project" : "Add Project"}
-                    </Button>
+                    
+                    {canAction ?
+                        <Button
+                            color="green"
+                            size="sm"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleSubmit();
+                            }}
+                            className="px-6"
+                            disabled={isLoading}
+                        >
+                            {formData.ProjectId ? "Update Project" : "Add Project"}
+                        </Button>
+                        : ""}
                 </div>
 
             </div>

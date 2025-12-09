@@ -390,15 +390,16 @@ export const EmployeeMaster: React.FC = () => {
         label: 'Personal Mobile Number',
         width: '14',
         sortable: false,
-        align: 'center',
-        render: value => value || 'N/A'
+        align: 'left',
+        render: value => value ? `+91 ${value}` : '-'
+
       },
       {
         key: 'EmailId',
         label: 'Email Id',
         width: '14',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: value => value || 'N/A'
       },
       {

@@ -878,6 +878,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                   <Input
                     label="Account Number"
                     required value={formData.AccountNo}
+                    maxLength={18}
                     onChange={(e) => handleFieldChange("AccountNo", filterNumbers(e.target.value))}
                     error={errors.AccountNo} />
                 </div>

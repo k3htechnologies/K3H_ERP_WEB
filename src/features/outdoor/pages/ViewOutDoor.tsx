@@ -127,7 +127,7 @@ export const ViewOutDoor: React.FC = () => {
               <div className="mt-6 rounded">
                 <h4 className="font-semibold text-sm text-gray-800 mb-3">Team Details</h4>
                 <FieldItem label="Department" value={editOutDoorData .DepartmentName|| 'N/A'} isRow />
-                <FieldItem label="Accompanied By" value={editOutDoorData.AccompaniedByName || 'N/A'} isRow />
+                <FieldItem label="Accompanied By" value={editOutDoorData.AccompaniedById || 'N/A'} isRow />
               </div>
 
               <div className="mt-6 rounded">

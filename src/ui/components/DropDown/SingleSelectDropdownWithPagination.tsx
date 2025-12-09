@@ -251,8 +251,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
     return (
       <div
         ref={(node) => {
-          // forward ref + local containerRef
-          // @ts-ignore
+          // forward ref + local containerRef@ts-ignore
           if (ref) {
             if (typeof ref === "function") ref(node);
             else (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;

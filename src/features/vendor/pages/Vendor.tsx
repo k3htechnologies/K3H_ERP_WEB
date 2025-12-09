@@ -24,7 +24,7 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useNavigate } from 'react-router-dom';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import { Edit } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 
 
 export const Vendor: React.FC = () => {
@@ -51,33 +51,33 @@ export const Vendor: React.FC = () => {
   const hasFetchedInitialVendors = useRef(false)
 
   useEffect(() => {
-    if (hasFetchedInitialVendors.current) return
-    hasFetchedInitialVendors.current = true;
-    fetchVendorList()
-  }, [])
-
-  useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
 
-  const fetchVendorList = async (page: number = pagination.currentPage) => {
-    return await loadVendors(page, filters);
-  }
+  const getVendors = useCallback(async (filterParams: FilterWithPaginationVendorRequest) => {
+    return await VendorService.apiCallPullVendor(filterParams);
+  }, [])
 
-  const loadVendors = async (page: number, filterParams: FilterInfo) => {
+  const getSortByParam = (currentSort?: SortInfo) => {
+    if (!currentSort) return undefined;
+    const labelMap: Record<string, string> = {
+      VendorName: 'Vendor Name',
+      CompanyName: 'Company Name',
+      CreatedBy: 'Last Modified By',
+      CreatedDate: 'Last Modified Date',
+    };
+    const label = labelMap[currentSort.column];
+    return label ? `${label} ${currentSort.direction.toUpperCase()}` : undefined;
+  };
+
+  const loadVendors = useCallback(async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        let sortByParam = undefined;
-        if (sortInfo) {
-          const column = vendorColumns.find(col => col.key === sortInfo.column)
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
-          }
-        }
+        const sortByParam = getSortByParam(sortInfo);
         const params: FilterWithPaginationVendorRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
@@ -103,13 +103,24 @@ export const Vendor: React.FC = () => {
         return response
       },
       undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message })
+      (error: unknown) => {
+        const err = error as { message?: string }
+        addToast({ type: 'error', title: err?.message || 'Failed to load vendors' })
       },
       undefined,
       'Loading Vendor Data...'
     )
-  }
+  }, [addToast, getVendors, pagination.pageSize, setPagination, sortInfo])
+
+  const fetchVendorList = useCallback(async (page: number = pagination.currentPage) => {
+    return await loadVendors(page, filters);
+  }, [filters, loadVendors, pagination.currentPage])
+
+  useEffect(() => {
+    if (hasFetchedInitialVendors.current) return
+    hasFetchedInitialVendors.current = true;
+    fetchVendorList()
+  }, [fetchVendorList])
 
   const searchVendors = async (searchValue: string) => {
     setSearchTerm(searchValue);
@@ -157,8 +168,9 @@ export const Vendor: React.FC = () => {
         return response;
       },
       undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Export failed' })
+      (error: unknown) => {
+        const err = error as { message?: string }
+        addToast({ type: 'error', title: err?.message || 'Export failed' })
       },
       undefined,
       'Preparing Export...'
@@ -168,13 +180,9 @@ export const Vendor: React.FC = () => {
   const handleExportVendorExcel = () => handleExportVendors('Excel')
   const handleExportVendorPdf = () => handleExportVendors('PDF')
 
-  const getVendors = async (filterParams: FilterWithPaginationVendorRequest) => {
-    return await VendorService.apiCallPullVendor(filterParams);
-  }
-
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     fetchVendorList(page);
-  };
+  }, [fetchVendorList]);
 
   const handleSortColumn = (sortInfo: SortInfo) => {
     setSortInfo(sortInfo);
@@ -199,18 +207,26 @@ export const Vendor: React.FC = () => {
       state: {
         editVendorData: row,
         fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+        },
       },
     })
-  }, [navigate])
+  }, [filters, navigate, pagination.currentPage])
 
   const handleEditVendor = useCallback((row: VendorData) => {
     navigate(`/vendor/add/${row.VendorId}`, {
       state: {
         editVendorData: row,
         fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+        },
       },
     })
-  }, [navigate])
+  }, [filters, navigate, pagination.currentPage])
 
   const handleConfirmationDialogBoxOpen = useCallback((row: VendorData) => {
     setDeleteVendorDetailsData(row)
@@ -449,9 +465,9 @@ export const Vendor: React.FC = () => {
     loadVendors(1, {})
     setShowFilterPopup(false)
   }
-  const handleAddEmployeeModal = () => {
-    navigate('/Vendor/add'); 
-};
+  const handleAddVendor = () => {
+    navigate('/vendor/add');
+  };
   const handleFilterChange = (key: string, value: string) => {
     const newFilters = { ...tempFilters }
     if (value.trim()) {
@@ -465,12 +481,12 @@ export const Vendor: React.FC = () => {
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-full flex flex-col">
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by vendor name..."
+          searchPlaceholder="Search by vendor name"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
@@ -485,7 +501,8 @@ export const Vendor: React.FC = () => {
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeVendorColumnsModal(true)}
           isShowAddButton={canAction}
-          onAdd={handleAddEmployeeModal} 
+          addTitle="Add Vendor"
+          onAdd={handleAddVendor}
           isShowImportButton={canAction}
           isShowExportButton={canExport}
           onExportExcel={handleExportVendorExcel}
@@ -498,7 +515,7 @@ export const Vendor: React.FC = () => {
           pagination={vendorPaginationInfo}
           emptyMessage="No vendors found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
+          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -565,6 +582,24 @@ export const Vendor: React.FC = () => {
                   value={tempFilters.CompanyName || ''}
                   onChange={(e) => handleFilterChange('CompanyName', e.target.value)}
                   placeholder="Enter company name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Company Type</label>
+                <Input
+                  type="text"
+                  value={tempFilters.CompanyType || ''}
+                  onChange={(e) => handleFilterChange('CompanyType', e.target.value)}
+                  placeholder="Enter company type"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                <Input
+                  type="text"
+                  value={tempFilters.MobileNumber || ''}
+                  onChange={(e) => handleFilterChange('MobileNumber', e.target.value)}
+                  placeholder="Enter mobile number"
                 />
               </div>
             </div>

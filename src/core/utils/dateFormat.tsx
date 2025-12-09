@@ -136,3 +136,56 @@ export const convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd = (date?: string | null) => {
   return date.split("T")[0];
 };
 
+/**
+ * Extract time from datetime string and format to "HH:MM AM/PM" format
+ * @param dateTimeString - DateTime string in ISO format (e.g., "2025-12-03T15:26:50.513" or "2025-12-03T15:26:50.513Z")
+ * @returns Formatted time string (e.g., "3:26 PM") or empty string if invalid
+ */
+export const formatTimeFromDateTime = (dateTimeString?: string | null): string => {
+  if (!dateTimeString || typeof dateTimeString !== 'string' || dateTimeString.trim() === '') {
+    return '';
+  }
+
+  try {
+    const trimmed = dateTimeString.trim();
+    
+    // If already in HH:MM format, return as is
+    if (/^\d{2}:\d{2}$/.test(trimmed)) {
+      return trimmed;
+    }
+    
+    // Extract time from ISO format directly to avoid timezone conversion
+    // Formats: "2025-12-03T15:26:50.513", "2025-12-03T15:26:50", "2025-12-03T15:26:50Z"
+    const timeMatch = trimmed.match(/T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?/);
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1], 10);
+      const minutes = parseInt(timeMatch[2], 10);
+      
+      // Format to 12-hour format with AM/PM
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      let displayHours = hours % 12;
+      displayHours = displayHours ? displayHours : 12; // 0 should be 12
+      
+      return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+    }
+    
+    // Fallback: try parsing as Date and use UTC methods
+    const date = new Date(trimmed);
+    if (!isNaN(date.getTime())) {
+      let hours = date.getUTCHours();
+      const minutes = date.getUTCMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+
+      return `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+    }
+    
+    return '';
+  } catch (error) {
+    console.error('Error formatting time from datetime:', error);
+    return '';
+  }
+};
+

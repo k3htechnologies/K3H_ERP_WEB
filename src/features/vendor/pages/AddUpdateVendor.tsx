@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { Button } from "@/ui/components/forms/Button";
@@ -93,6 +93,14 @@ export const AddUpdateVendor: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate();
+  const location = useLocation() as {
+    state?: {
+      listState?: {
+        page: number;
+        filters: Record<string, unknown>;
+      };
+    };
+  };
 
   // GET VALUE FROM URL :VENDORID
   const { vendorId } = useParams<{ vendorId?: string }>();
@@ -411,7 +419,6 @@ export const AddUpdateVendor: React.FC = () => {
 
 
   const PushVendorFormData = useCallback((): FormData => {
-    debugger
     // Convert selected materials set to comma-separated string
     const materialIds = Array.from(selectedMaterials).join(",");
     
@@ -494,9 +501,7 @@ export const AddUpdateVendor: React.FC = () => {
             type: "success",
             title: formData.VendorId ? "Vendor updated successfully" : "Vendor added successfully",
           });
-          setTimeout(() => {
-            navigate("/Vendor");
-          }, 500);
+          navigate("/vendor", location.state?.listState ? { state: location.state.listState } : undefined);
         } else {
           // Check if API returned validation errors
           const errorMessage = response.left?.message || "Operation failed";
@@ -552,6 +557,14 @@ export const AddUpdateVendor: React.FC = () => {
       undefined,
       formData.VendorId ? "Updating vendor..." : "Adding vendor..."
     );
+  };
+
+  const handleCancel = () => {
+    if (location.state?.listState) {
+      navigate("/vendor", { state: location.state.listState });
+      return;
+    }
+    navigate(-1);
   };
 
   return (
@@ -915,15 +928,15 @@ export const AddUpdateVendor: React.FC = () => {
           </form>
         </div>
         <div
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}
+          className="sticky bottom-0 z-40 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <Button
             color="transparent"
             variant='transparent_border'
             size="sm"
             onClick={() => {
-              navigate(-1);
+              handleCancel();
             }}
             className="px-6"
           >

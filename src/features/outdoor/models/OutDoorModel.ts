@@ -57,6 +57,19 @@ export interface DeleteOutDoorRequest {
   UniqueKey: string;
 }
 
+export interface PunchInOutRequest {
+  OutdoorId: number;
+  Punch: string;
+  Address: string;
+}
+
+export interface AddUpdateConclusionRequest {
+  OutdoorId: number;
+  Conclusion: string;
+}
+
 export type OutDoorDataListResponse = ApiResponse<OutDoorMasterData[]>;
 export type OutDoorSaveResponse = ApiResponse<OutDoorMasterData[]>;
 export type OutDoorDeleteResponse = ApiResponse<OutDoorMasterData[]>;
+export type OutDoorPunchInOutResponse = ApiResponse<OutDoorMasterData[]>;
+export type OutDoorConclusionResponse = ApiResponse<OutDoorMasterData[]>;

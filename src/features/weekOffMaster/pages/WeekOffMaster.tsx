@@ -152,7 +152,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   };
   //#endregion
 
-  //#region SEARCH & CLEAR
+  //#region SEARCH & CLEAR WEEK OFF MASTER
   const searchWeekOff = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -272,7 +272,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   const WeekOffsForTable = useMemo(() => WeekOffOffMasterList, [WeekOffOffMasterList]);
   //#endregion
 
-  //#region NAVIGATE TO  VIEW WEEK OFF
+  //#region NAVIGATE TO  VIEW WEEK OFF VIEW PAGE
   const handleNavigateToView = (row: WeekOffMasterData) => {
     navigate('/WeekOffMaster/view', {
       state: {
@@ -452,7 +452,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   const visibleWeekOffColumns = useMemo(
 
     () => WeekOffMasterColumns.filter(col => selectedWeekOffColumnKeys.includes(col.key)),
-    
+
     [WeekOffMasterColumns, selectedWeekOffColumnKeys]
   );
   //#endregion
@@ -493,8 +493,17 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+
+        {/* LOADER */}
+        
         <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+
+        {/* ============================================================================
+          COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
+           ============================================================================ */}
+
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
@@ -526,7 +535,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
           exportLoading={isLoading}
         />
 
-        {/* DATA TABLE WeekOff*/}
+        {/* DATA TABLE WEEK OFF */}
 
         <DataTable
           data={WeekOffsForTable}
@@ -565,7 +574,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
           title="Customize Table Columns"
         />
 
-        {/* FILTER MODAL */}
+        {/* FILTER WEEK OFF MODAL */}
 
         <Modal
           isOpen={showFilterPopup}
@@ -587,7 +596,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
                 label='WeekOff Name'
                 value={tempFilters?.WeekOffPolicyName ?? ''}
                 onChange={e => handleFilterChange('WeekOffPolicyName', e.target.value)}
-                placeholder="Enter WeekOff name" />
+                placeholder="Enter WeekOff Name" />
             </div>
           </div>
         </Modal>

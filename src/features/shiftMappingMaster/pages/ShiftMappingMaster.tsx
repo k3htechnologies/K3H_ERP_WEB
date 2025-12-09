@@ -222,7 +222,7 @@ export const ShiftMappingMaster: React.FC = () => {
   }
   //#endregion
 
-  //#region CLEAR SERACH BRANCH 
+  //#region CLEAR SERACH SHIFT MAPPING
   const clearsearchShiftMappings = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
@@ -315,7 +315,7 @@ export const ShiftMappingMaster: React.FC = () => {
 
   //#endregion
 
-  //#region VIEW EDIT
+  //#region VIEW EDIT SHIFT MAPPING  MASTER
   const handleViewShiftMappingDetails = useCallback((row: ShiftMappingMasterData) => {
     setViewShiftMappingMasterDetailsData(row)
     setIsViewModalOpen(true)
@@ -833,7 +833,7 @@ export const ShiftMappingMaster: React.FC = () => {
           exportLoading={isLoading}
         />
 
-        {/* DATA TABLE BRANCH */}
+        {/* DATA TABLE SHIFT MAPPING  MASTER */}
 
         <DataTable
           data={shiftMappingListForTable}
@@ -848,7 +848,7 @@ export const ShiftMappingMaster: React.FC = () => {
           onSort={handleSortColumn}
         />
 
-        {/* VIEW WEEK OFF MAPPING MODAL */}
+        {/* VIEW SHIFT MAPPING  MASTER MODAL */}
 
         <ViewShiftMappingDetailsModal isOpen={isViewModalOpen}
           onClose={() => {
@@ -858,7 +858,7 @@ export const ShiftMappingMaster: React.FC = () => {
           data={viewShiftMappingMasterDetailsData}
         />
 
-        {/*  ADD EDIT UPDATE sHIFT MAPPING MODAL */}
+        {/*  ADD EDIT UPDATE SHIFT MAPPING  MASTER MODAL */}
         <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
@@ -893,6 +893,7 @@ export const ShiftMappingMaster: React.FC = () => {
                   error={errors.ShiftManagementMasterId}
                 />
               </div>
+
               <SingleSelectDropdownWithPagination
                 label="Employee"
                 title="Select Employee"
@@ -904,6 +905,7 @@ export const ShiftMappingMaster: React.FC = () => {
                 error={errors.EmployeeId}
               />
             </div>
+
             <div>
               <SingleSelectDropdownWithPagination
                 label="Department"
@@ -943,7 +945,7 @@ export const ShiftMappingMaster: React.FC = () => {
           title="Customize Shift Mapping Master Table Columns"
         />
 
-        {/* FILTER BRANCH MODAL */}
+        {/* FILTER SHIFT MAPPING  MASTER MODAL */}
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}

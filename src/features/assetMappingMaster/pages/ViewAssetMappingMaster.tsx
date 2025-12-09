@@ -12,7 +12,7 @@ import useToast from "@/core/hooks/useToast";
 import { assetMappingMasterService } from "../services/AssetMappingMasterService";
 import type { AssetMappingMasterData, DeleteAssetMappingMasterRequest } from "../models/AssetMappingMasterModel";
 
-const ViewAssetMappingPage: React.FC = () => {
+const ViewAssetMappingMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
@@ -131,7 +131,7 @@ const ViewAssetMappingPage: React.FC = () => {
                         </div>
 
                         {/* Asset Information*/}
-                        <div className="mt-6 rounded border border-gray-300 bg-white ">
+                        <div className="mt-4 rounded border border-gray-300 bg-white ">
                             <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded">
                                 <h4 className="font-semibold text-sm text-gray-800">Asset Information</h4>
                             </div>
@@ -256,4 +256,4 @@ const ViewAssetMappingPage: React.FC = () => {
     );
 };
 
-export default ViewAssetMappingPage;
+export default ViewAssetMappingMaster;

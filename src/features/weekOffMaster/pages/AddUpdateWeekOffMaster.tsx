@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateWeekOffMasterRequest, FilterWithPaginationWeekOffMasterRequest } from "../models/WeekOffMasterModel";
 import { WeekOffMasterService } from "../services/WeekOffMasterService";
+import { MultiSelectDropdown } from "@/ui/components/DropDown/MultiSelectDropdown";
+import { MONTHS_OPTIONS } from "@/core/constants";
 
 const initialFormState = (): AddUpdateWeekOffMasterRequest => ({
   WeekOffPolicyMasterId: 0,
@@ -24,7 +26,7 @@ const initialFormState = (): AddUpdateWeekOffMasterRequest => ({
   NotApplicableForMonths: ""
 });
 
-export const AddUpdateWeekOffPage: React.FC = () => {
+export const AddUpdateWeekOffMaster: React.FC = () => {
 
   //#region STATE MANAGEMENT
   const [formData, setFormData] = useState<AddUpdateWeekOffMasterRequest>(() => initialFormState());
@@ -186,12 +188,15 @@ export const AddUpdateWeekOffPage: React.FC = () => {
       WeeklyOff: formData.WeeklyOff,
       WeeklyOff2: formData.WeeklyOff2,
       WeeklyOff2Type: formData.WeeklyOff2Type,
-      NotApplicableForMonths: formData.NotApplicableForMonths
+      NotApplicableForMonths: Array.isArray(formData.NotApplicableForMonths)
+        ? formData.NotApplicableForMonths.join(",")
+        : formData.NotApplicableForMonths,
+
     };
   }
   //#endregion
 
-  //#region HANDLE SUBMIT
+  //#region HANDLE ADD UPDATE WEEK OFF MASTER
   const handleAddUpdateWeekOffMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -288,6 +293,7 @@ export const AddUpdateWeekOffPage: React.FC = () => {
                     error={errors.WeekOffPolicyName}
                   />
                 </div>
+
                 <div>
                   <Input
                     type="text"
@@ -300,7 +306,9 @@ export const AddUpdateWeekOffPage: React.FC = () => {
                     error={errors.WeekOffPolicyCode}
                   />
                 </div>
+
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                 <div>
                   <Input
@@ -314,6 +322,7 @@ export const AddUpdateWeekOffPage: React.FC = () => {
                     error={errors.WeekDays}
                   />
                 </div>
+
                 <div>
                   <Input
                     type="text"
@@ -326,8 +335,9 @@ export const AddUpdateWeekOffPage: React.FC = () => {
                     error={errors.WeeklyOff}
                   />
                 </div>
-                
+
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                 <div>
                   <Input
@@ -341,6 +351,7 @@ export const AddUpdateWeekOffPage: React.FC = () => {
                     error={errors.WeeklyOff2}
                   />
                 </div>
+
                 <div>
                   <Input
                     type="text"
@@ -353,9 +364,11 @@ export const AddUpdateWeekOffPage: React.FC = () => {
                     error={errors.WeeklyOff2Type}
                   />
                 </div>
+
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                  <div>
+                <div>
                   <Input
                     type="text"
                     required
@@ -369,18 +382,24 @@ export const AddUpdateWeekOffPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <Input
-                    type="text"
+                  <MultiSelectDropdown
+                    label="Not Applicable For Months"
+                    title="Select"
                     required
-                    label='Not Applicable For Months'
-                    value={formData.NotApplicableForMonths ?? ""}
-                    onChange={(e) => handleFieldChange("NotApplicableForMonths", e.target.value)}
-                    placeholder="Enter NotApplicable For Months"
-                    maxLength={250}
+                    dataList={MONTHS_OPTIONS.map(opt => ({ label: opt.name, value: opt.id, }))}
+                    initialValues={Array.isArray(formData.NotApplicableForMonths)? MONTHS_OPTIONS
+                          .filter(opt =>
+                            formData.NotApplicableForMonths.includes(opt.name)
+                          )  
+                          .map(opt => ({label: opt.name, value: opt.id}))
+                        : []
+                    }
+                    onSelected={(selectedItems) => {
+                      handleFieldChange("NotApplicableForMonths", selectedItems.map(item => item.value))
+                    }}
                     error={errors.NotApplicableForMonths}
                   />
                 </div>
-               
               </div>
             </div>
           </form>
@@ -416,4 +435,4 @@ export const AddUpdateWeekOffPage: React.FC = () => {
   );
 };
 
-export default AddUpdateWeekOffPage;
+export default AddUpdateWeekOffMaster;

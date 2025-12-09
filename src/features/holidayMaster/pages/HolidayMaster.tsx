@@ -75,14 +75,14 @@ export const HolidayMaster: React.FC = () => {
   // ADD UPDATE HOLIDAY URL
   const [HolidayURLFiles, setHolidayURLFiles] = useState<(File | string)[]>([]);
 
-  // EDIT DEPARTMENT MASTER
+  // EDIT HOLIDAY MASTER
   const [editingHolidayMasterData, setEditingHolidayMasterData] = useState<HolidayMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  //ADD UPDATE WEEK OFF MAPPING MASTER
+  //ADD UPDATE HOLIDAY MASTER
   const [formData, setFormData] = useState<AddUpdateHolidayMasterRequest>(() => initialFormState());
 
-  //DELETE DEPARTMENT MASTER STATES
+  //DELETE HOLIDAY MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteHolidayMasterDetailsData, setDeleteHolidayMasterDetailsData] = useState<HolidayMasterData | null>(null)
@@ -604,7 +604,7 @@ export const HolidayMaster: React.FC = () => {
               totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
             });
 
-            addToast({ type: 'success', title: 'HolidayMaster added successfully' })
+            addToast({ type: 'success', title: 'Holiday added successfully' })
           } else {
 
             const updatedRecord = response.right.Data[0] as HolidayMasterData;
@@ -693,7 +693,7 @@ export const HolidayMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Holiday master data'
+      'Delete Holiday Master Data'
     )
   }
   //#endregion
@@ -819,7 +819,6 @@ export const HolidayMaster: React.FC = () => {
                   maxFiles={5}
                   maxSizeMB={10}
                 />
-
               </div>
             </div>
           </div>

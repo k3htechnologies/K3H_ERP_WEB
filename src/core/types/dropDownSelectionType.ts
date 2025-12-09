@@ -30,6 +30,7 @@ export interface MultiSelectDropdownProps {
   dataList: { label: string; value: string | number }[]
   onSelected: (selectedItems: { label: string; value: string | number }[]) => void
   title: string
+  label:string
   validator?: (values: (string | number)[]) => string | undefined
   initialValues?: { label: string; value: string | number }[]
   disabled?: boolean
@@ -41,6 +42,8 @@ export interface MultiSelectDropdownProps {
   loading?: boolean
   noDataText?: string
   size?: 'sm' | 'md' | 'lg'
+  required?: boolean,
+  error?: string;
 }
 
 export interface SinglePageSelectionProps {
@@ -57,8 +60,6 @@ export interface SinglePageSelectionProps {
     spacing: Record<string, string>;
     fontSize: Record<string, string>;
   };
-  error?: string;
-  required?: boolean;
 }
 
 export interface MultiSelectPaginationProps {

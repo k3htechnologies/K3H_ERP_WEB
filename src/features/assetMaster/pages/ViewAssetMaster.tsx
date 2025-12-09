@@ -88,7 +88,8 @@ const ViewAssetPage: React.FC = () => {
             state: {
                 editProjectMasterData: row,
                 fromList: true,
-                listState: listState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
+                listState: listState ?? { page: 1, filters: {}, 
+                sortInfo: undefined, searchTerm: '' }
             }
         });
     };
@@ -97,7 +98,8 @@ const ViewAssetPage: React.FC = () => {
     //#region BACK PROJECT PAGE
     const handleBackToListAssetMaster = () => {
         navigate('/assetMaster', {
-            state: { listState: listState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' } }
+            state: { listState: listState ?? { page: 1, filters: {}, 
+            sortInfo: undefined, searchTerm: '' } }
         });
     };
     //#endregion
@@ -129,7 +131,7 @@ const ViewAssetPage: React.FC = () => {
                         </div>
 
                         {/* ASSET INFORMATION */}
-                        <div className="mt-6 rounded border border-gray-300 bg-white ">
+                        <div className="mt-2 rounded border border-gray-300 bg-white ">
                             <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded">
                                 <h4 className="font-semibold text-sm text-gray-800">Asset Information</h4>
                             </div>
@@ -219,6 +221,7 @@ const ViewAssetPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
+                
                 {/* DELETE CONFIRMATION  ASSET MODAL */}
                 <ConfirmationDialogBox
                     isOpen={isConfirmationDialogBoxOpen}

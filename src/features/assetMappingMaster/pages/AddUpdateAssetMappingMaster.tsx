@@ -27,7 +27,7 @@ const initialFormState = (): AddUpdateAssetMappingMasterRequest => ({
   Remarks: ""
 });
 
-export const AddUpdateAssetMappingPage: React.FC = () => {
+export const AddUpdateAssetMappingMaster: React.FC = () => {
 
   //#region STATE MANAGEMENT
   const [formData, setFormData] = useState<AddUpdateAssetMappingMasterRequest>(() => initialFormState());
@@ -191,7 +191,7 @@ export const AddUpdateAssetMappingPage: React.FC = () => {
   }
   //#endregion
 
-  //#region HANDLE ADD AND UPDATE
+  //#region HANDLE ADD AND UPDATE ASSET MAPPING MASTER
   const handleAddUpdateAssetMappingMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -276,6 +276,7 @@ export const AddUpdateAssetMappingPage: React.FC = () => {
             <div className="space-y-4 pb-3">
               <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic AssetMapping Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                
                 <div>
                   <SingleSelectDropdownWithPagination
                     label="Asset"
@@ -402,4 +403,4 @@ export const AddUpdateAssetMappingPage: React.FC = () => {
   );
 };
 
-export default AddUpdateAssetMappingPage;
+export default AddUpdateAssetMappingMaster;

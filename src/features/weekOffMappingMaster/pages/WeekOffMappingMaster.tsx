@@ -318,7 +318,7 @@ export const WeekOffMappingMaster: React.FC = () => {
 
   //#endregion
 
-  //#region VIEW EDIT
+  //#region VIEW EDIT WEEKOFF MAPPING
   const handleViewWeekOffMappingDetails = useCallback((row: WeekOffMappingMasterData) => {
     setViewWeekOffMappingMasterDetailsData(row)
     setIsViewModalOpen(true)
@@ -891,6 +891,7 @@ export const WeekOffMappingMaster: React.FC = () => {
                   error={errors.WeekOffPolicyMasterId}
                 />
               </div>
+
               <SingleSelectDropdownWithPagination
                 label="Employee"
                 title="Select Employee"
@@ -902,6 +903,7 @@ export const WeekOffMappingMaster: React.FC = () => {
                 error={errors.EmployeeId}
               />
             </div>
+            
             <div>
               <SingleSelectDropdownWithPagination
                 label="Department"

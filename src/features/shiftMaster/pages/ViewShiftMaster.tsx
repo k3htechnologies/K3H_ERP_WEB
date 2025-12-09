@@ -12,14 +12,14 @@ import useToast from "@/core/hooks/useToast";
 import type { DeleteShiftMasterRequest, ShiftMasterData } from "../models/ShiftMasterModel";
 import { ShiftMasterService } from "../services/ShiftMasterService";
 
-const ViewShiftPage: React.FC = () => {
+const ViewShiftMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
 
 
-    //DELETE Shift MASTER
+    //DELETE SHIFT MASTER
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
     const [deleteShiftMasterDetailsData, setDeleteShiftMasterDetailsData] = useState<ShiftMasterData | null>(null)
 
@@ -55,7 +55,7 @@ const ViewShiftPage: React.FC = () => {
 
             setIsLoadingMessage,
             async () => {
-                const params: DeleteShiftMasterRequest= {
+                const params: DeleteShiftMasterRequest = {
 
                     ShiftManagementMasterId: deleteShiftMasterDetailsData.ShiftManagementMasterId || 0,
 
@@ -82,7 +82,7 @@ const ViewShiftPage: React.FC = () => {
         );
     };
 
-    //#region EDIT SHIFT MASTER
+    //#region ADD SHIFT MASTER
     const handleEditShiftMaster = (row: ShiftMasterData) => {
         if (!row?.ShiftManagementMasterId) return;
         navigate(`/shiftMaster/add/${row.ShiftManagementMasterId}`, {
@@ -109,7 +109,7 @@ const ViewShiftPage: React.FC = () => {
             <div className="grid grid-cols-12 gap-6">
 
                 {/* LEFT SIDE PROFILE CARD */}
-                
+
                 <div className="col-span-5">
 
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
@@ -125,19 +125,21 @@ const ViewShiftPage: React.FC = () => {
                                 <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">
                                     {editShiftData.ShiftCode}
                                 </span>
-                                <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">
-                                    {editShiftData.ShiftBeginTime}
-                                </span>
+
                             </div>
                         </div>
 
-                        {/* Basic Information*/}
-                        <div className="mt-6 rounded border border-gray-300 bg-white ">
+                        {/* Shift Duration*/}
+                        <div className="mt-2 rounded border border-gray-300 bg-white ">
                             <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded">
-                                <h4 className="font-semibold text-sm text-gray-800">Basic Information</h4>
+                                <h4 className="font-semibold text-sm text-gray-800">Shift Duration</h4>
                             </div>
                             <div className="p-4">
-                                <FieldItem label="Gender" value={editShiftData.ShiftDurationTime} isRow />
+                                <FieldItem label="Shift Begin Time" value={editShiftData.ShiftBeginTime} isRow />
+                                <FieldItem label="Shift End Time" value={editShiftData.ShiftEndTime} isRow />
+                                <FieldItem label="Shift Duration " value={editShiftData.ShiftDurationTime} isRow />
+                                <FieldItem label="Shift Work Duration" value={editShiftData.ShiftWorkDurationTime} isRow />
+                                <FieldItem label="First Half Up To" value={editShiftData.FirstHalfUpTo} isRow />
                             </div>
                         </div>
 
@@ -182,19 +184,20 @@ const ViewShiftPage: React.FC = () => {
                             </Button>
                         </div>
 
-                        {/* Applicability Details */}
+                        {/* Half Day And Absence Rules */}
                         <div className="mt-6 rounded border border-gray-300 bg-white ">
                             <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg">
-                                <h4 className="font-semibold text-sm text-gray-800">Applicability Details</h4>
+                                <h4 className="font-semibold text-sm text-gray-800">Half Day And Absence Rules</h4>
                             </div>
 
                             <div className="p-4">
-                                <FieldItem label="Branch Name" value={editShiftData.ShiftDurationTime} isRow />
-                                <FieldItem label="State Name" value={editShiftData.ShiftName} isRow />
-                                <FieldItem label="Max Salary" value={editShiftData.ShiftEndTime} isRow />
-                                <FieldItem label="Min Salary" value={editShiftData.ShiftWorkDurationTime} isRow />
+                                <FieldItem label="HalfDay Out Time Before" value={editShiftData.HalfDayOutTimeBefore} isRow />
+                                <FieldItem label="HalfDay In Time After" value={editShiftData.HalfDayInTimeAfter} isRow />
+                                <FieldItem label="Half Day Working Hours" value={editShiftData.HalfDayWorkingHours} isRow />
+                                <FieldItem label="Absent Working Hours" value={editShiftData.AbsentWorkingHours} isRow />
                             </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -202,6 +205,21 @@ const ViewShiftPage: React.FC = () => {
 
                 <div className="col-span-7">
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
+
+                        {/* Break Details */}
+                        <div className="mt-6 rounded border border-gray-300 bg-white ">
+                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg">
+                                <h4 className="font-semibold text-sm text-gray-800">Break Details</h4>
+                            </div>
+
+                            <div className="p-4">
+                                <FieldItem label="Break Begin Time" value={editShiftData.BreakBeginTime} isRow />
+                                <FieldItem label="Break End Time" value={editShiftData.BreakEndTime} isRow />
+                                <FieldItem label="Break Duration Time" value={editShiftData.BreakDurationTime} isRow />
+                                <FieldItem label="Grace Time" value={editShiftData.GraceTime} isRow />
+                            </div>
+                        </div>
+
                         {/* Audit Trail */}
                         <div className="mt-6 rounded border border-gray-300 bg-white ">
                             <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg">
@@ -216,8 +234,10 @@ const ViewShiftPage: React.FC = () => {
 
                             </div>
                         </div>
+
                     </div>
                 </div>
+                
                 {/* DELETE CONFIRMATION  SHIFT MODAL */}
                 <ConfirmationDialogBox
                     isOpen={isConfirmationDialogBoxOpen}
@@ -236,4 +256,4 @@ const ViewShiftPage: React.FC = () => {
     );
 };
 
-export default ViewShiftPage;
+export default ViewShiftMaster;

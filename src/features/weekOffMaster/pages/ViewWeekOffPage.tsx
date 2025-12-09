@@ -11,7 +11,7 @@ import type { DeleteWeekOffMasterRequest, WeekOffMasterData } from "../models/We
 import { WeekOffMasterService } from "../services/WeekOffMasterService";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 
-const ViewWeekOffPage: React.FC = () => {
+const ViewWeekOffMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
@@ -81,7 +81,7 @@ const ViewWeekOffPage: React.FC = () => {
         );
     };
 
-    //#region EDIT WEEK OFF
+    //#region EDIT WEEK OFF MASTER
     const handleEditWeekOffMaster = (row: WeekOffMasterData) => {
 
         if (!row?.WeekOffPolicyMasterId) return;
@@ -132,7 +132,7 @@ const ViewWeekOffPage: React.FC = () => {
                         </div>
 
                         {/* BASIC INFORMATION */}
-                        <div className="mt-6 rounded border border-gray-300 bg-white ">
+                        <div className="mt-4 rounded border border-gray-300 bg-white ">
                             <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded">
                                 <h4 className="font-semibold text-sm text-gray-800">Basic Information</h4>
                             </div>
@@ -205,7 +205,7 @@ const ViewWeekOffPage: React.FC = () => {
                 <div className="col-span-7">
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
 
-                        {/* DATA AVAILABLE DETAILS */}
+                        {/* Audit Trail */}
                         <div className="mt-6 rounded border border-gray-300 bg-white ">
                             <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg">
                                 <h4 className="font-semibold text-sm text-gray-800">Audit Trail</h4>
@@ -221,6 +221,7 @@ const ViewWeekOffPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
+                
                 {/* DELETE CONFIRMATION  WEEK OFF MODAL */}
                 <ConfirmationDialogBox
                     isOpen={isConfirmationDialogBoxOpen}
@@ -239,4 +240,4 @@ const ViewWeekOffPage: React.FC = () => {
     );
 };
 
-export default ViewWeekOffPage;
+export default ViewWeekOffMaster;

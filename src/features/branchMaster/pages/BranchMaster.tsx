@@ -80,7 +80,7 @@ export const BranchMaster: React.FC = () => {
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
 
-  //ADD UPDATE DEPARTMENT MASTER
+  //ADD UPDATE BRANCH MASTER
   const [formData, setFormData] = useState<AddUpdateBranchMasterRequest>(() => initialFormState());
 
   //DELETE BRANCH MASTER STATES
@@ -598,7 +598,7 @@ export const BranchMaster: React.FC = () => {
 
   //#endregion
 
-  //#region ADD UPDATE EDIT BRAMCH MASTER
+  //#region ADD UPDATE EDIT BRANCH MASTER
 
   const handleFieldChange = (field: keyof AddUpdateBranchMasterRequest, value: any) => {
 
@@ -945,7 +945,6 @@ export const BranchMaster: React.FC = () => {
         </Modal>
 
         {/* CUSTOMIZE COLUMNS MODAL */}
-
 
         <CustomizeColumnsModal
           isOpen={isShowCustomizeBranchMasterColumnsModal}

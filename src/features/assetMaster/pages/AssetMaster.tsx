@@ -477,7 +477,13 @@ export const AssetMaster: React.FC = () => {
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+
+        {/* // LOADER */}
+
         <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+
+        {/* ACTION TOOLBAR */}
+
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
@@ -570,7 +576,7 @@ export const AssetMaster: React.FC = () => {
                 label='Asset Name'
                 value={tempFilters?.AssetName ?? ''}
                 onChange={e => handleFilterChange('AssetName', e.target.value)}
-                placeholder="Enter asset name" />
+                placeholder="Enter Asset Name" />
 
               <Input type="text"
                 label='Status'

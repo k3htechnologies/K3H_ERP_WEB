@@ -12,14 +12,14 @@ import useToast from "@/core/hooks/useToast";
 import { DeductionMasterService } from "../services/DeductionMasterService";
 import type { DeductionMasterData, DeleteDeductionMasterRequest } from "../models/DeductionMasterModel";
 
-const ViewDeductionPage: React.FC = () => {
+const ViewDeductionMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
 
 
-    //DELETE Deduction MASTER
+    //DELETE DEDUCTION MASTER
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
     const [deleteDeductionMasterDetailsData, setDeleteDeductionMasterDetailsData] = useState<DeductionMasterData | null>(null)
 
@@ -42,7 +42,7 @@ const ViewDeductionPage: React.FC = () => {
     // MESSAGE IF DATA NOT FOUND
     if (!editDeductionData) return <div>No Deduction Data Found</div>;
 
-    //#region DELETE Deduction MASTER
+    //#region DELETE DEDUCTION MASTER
     const handleDeleteDeductionMaster = async () => {
 
         setIsConfirmationDialogBoxOpen(false);
@@ -78,11 +78,11 @@ const ViewDeductionPage: React.FC = () => {
             undefined,
             (error: any) => addToast({ type: "error", title: error.message }),
             undefined,
-            "Deleting Deduction Mapping Master Data"
+            "Deleting Deduction Master Data"
         );
     };
 
-    //#region EDIT DEDUCTION MAPPING
+    //#region EDIT DEDUCTION 
     const handleEditDeductionMaster = (row: DeductionMasterData) => {
         if (!row?.DeductionMasterId) return;
         navigate(`/deductionMaster/add/${row.DeductionMasterId}`, {
@@ -132,7 +132,7 @@ const ViewDeductionPage: React.FC = () => {
                         </div>
 
                         {/* Basic Information*/}
-                        <div className="mt-6 rounded border border-gray-300 bg-white ">
+                        <div className="mt-4 rounded border border-gray-300 bg-white ">
                             <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded">
                                 <h4 className="font-semibold text-sm text-gray-800">Basic Information</h4>
                             </div>
@@ -202,7 +202,9 @@ const ViewDeductionPage: React.FC = () => {
 
                 <div className="col-span-7">
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
+
                         {/* Audit Trail */}
+
                         <div className="mt-6 rounded border border-gray-300 bg-white ">
                             <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg">
                                 <h4 className="font-semibold text-sm text-gray-800">Audit Trail</h4>
@@ -218,7 +220,8 @@ const ViewDeductionPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                {/* DELETE CONFIRMATION  Deduction MODAL */}
+                
+                {/* DELETE CONFIRMATION  DEDUCTION MODAL */}
                 <ConfirmationDialogBox
                     isOpen={isConfirmationDialogBoxOpen}
                     onClose={() => setIsConfirmationDialogBoxOpen(false)}
@@ -236,4 +239,4 @@ const ViewDeductionPage: React.FC = () => {
     );
 };
 
-export default ViewDeductionPage;
+export default ViewDeductionMaster;

@@ -230,7 +230,7 @@ export const AssetMappingMaster: React.FC = () => {
   //#endregion
 
 
-  //#region API | SERVICES CALL TO GET AssetMapping
+  //#region API | SERVICES CALL TO GET ASSET MAPPING
   const getAssetMappings = async (filterParams: FilterWithPaginationAssetMappingMasterRequest) => {
 
     return await assetMappingMasterService.apiCallPullAssetMappingMaster(filterParams);
@@ -448,8 +448,11 @@ export const AssetMappingMaster: React.FC = () => {
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        
         <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
@@ -481,7 +484,7 @@ export const AssetMappingMaster: React.FC = () => {
           exportLoading={isLoading}
         />
 
-        {/* DATA TABLE AssetMapping*/}
+        {/* DATA TABLE ASSET MAPPING*/}
 
         <DataTable
           data={AssetMappingsForTable}

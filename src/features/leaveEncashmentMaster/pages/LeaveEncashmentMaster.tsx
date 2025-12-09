@@ -58,11 +58,11 @@ export const LeaveEncashmentMaster: React.FC = () => {
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  // EDIT BRANCH MASTER
+  // EDIT LEAVE ENCASHMENT MASTER
   const [editingLeaveEncashmentMasterData, setEditingLeaveEncashmentMasterData] = useState<LeaveEncashmentMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  //ADD UPDATE DEPARTMENT MASTER
+  //ADD UPDATE LEAVE ENCASHMENT MASTER
   const [formData, setFormData] = useState<AddUpdateLeaveEncashmentMasterRequest>(() => initialFormState());
 
   //DELETE LEAVE ENCASHMENT MASTER STATES
@@ -381,7 +381,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
   //#endregion
 
-  //#region VIEW BRANCH DETAILS MODAL COMPONENT
+  //#region VIEW LEAVE ENCASHMENT DETAILS MODAL COMPONENT
 
   interface ViewLeaveEncashmentDetailsModalProps {
     isOpen: boolean
@@ -657,7 +657,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Leave Encashment master data'
+      'Delete Leave Encashment Master Data'
     )
   }
 
@@ -695,7 +695,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
           exportLoading={isLoading}
         />
 
-        {/* DATA TABLE BRANCH */}
+        {/* DATA TABLE LEAVE ENCASHMENT */}
 
         <DataTable
           data={leaveEncashmentListForTable}
@@ -710,7 +710,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
           onSort={handleSortColumn}
         />
 
-        {/* VIEW LEAVE ENCASHMENT MAPPING MODAL */}
+        {/* VIEW LEAVE ENCASHMENT  MODAL */}
 
         <ViewLeaveEncashmentDetailsModal isOpen={isViewModalOpen}
           onClose={() => {
@@ -811,7 +811,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
           title="Customize Leave Encashment Master Table Columns"
         />
 
-        {/* DELETE CONFIRMATION LeaveEncashment MODAL */}
+        {/* DELETE CONFIRMATION LEAVE ENCASHMENT MODAL */}
         <ConfirmationDialogBox
           isOpen={isConfirmationDialogBoxOpen}
           onClose={() => {

@@ -77,7 +77,7 @@ export const BranchAssociationsMaster: React.FC = () => {
   const [editingBranchAssociationMasterData, setEditingBranchAssociationMasterData] = useState<BranchAssociationsMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  //ADD UPDATE DEPARTMENT MASTER
+  //ADD UPDATE BRANCH ASSOCIATION MASTER
   const [formData, setFormData] = useState<AddUpdateBranchAssociationsMasterRequest>(() => initialFormState());
 
 
@@ -239,8 +239,11 @@ export const BranchAssociationsMaster: React.FC = () => {
         // Find the column label for sorting
         let sortByParam = undefined
         if (sortInfo) {
+
           const column = branchAssociationsMasterColumns.find(col => col.key === sortInfo.column)
+
           if (column) {
+
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
         }
@@ -528,7 +531,7 @@ export const BranchAssociationsMaster: React.FC = () => {
 
   //#endregion
 
-  //ADD UPDATE Branch Association MASTER
+  //ADD UPDATE BRANCH ASSOCIATION MASTER
 
   const handleFieldChange = (field: keyof AddUpdateBranchAssociationsMasterRequest, value: any) => {
 

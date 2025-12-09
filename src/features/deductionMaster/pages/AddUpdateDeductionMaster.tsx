@@ -14,8 +14,9 @@ import type { AddUpdateDeductionMasterRequest, FilterWithPaginationDeductionMast
 import { DeductionMasterService } from "../services/DeductionMasterService";
 import { fetchBranchMasterDropdown } from "@/features/branchMaster/branchMasterDropDown";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { GENDER_OPTIONS } from "@/core/constants";
+import { DEDUCTION_TYPE_OPTIONS, GENDER_OPTIONS } from "@/core/constants";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
+import { MultiSelectDropdown } from "@/ui/components/DropDown/MultiSelectDropdown";
 
 const initialFormState = (): AddUpdateDeductionMasterRequest => ({
   DeductionMasterId: 0,
@@ -32,7 +33,7 @@ const initialFormState = (): AddUpdateDeductionMasterRequest => ({
   StateName: ""
 });
 
-export const AddUpdateDeductionPage: React.FC = () => {
+export const AddUpdateDeductionMaster: React.FC = () => {
 
   //#region STATE MANAGEMENT
   const [formData, setFormData] = useState<AddUpdateDeductionMasterRequest>(() => initialFormState());
@@ -45,7 +46,7 @@ export const AddUpdateDeductionPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // GET VALUE FROM URL DeductionMasterId
+  // GET VALUE FROM URL DEDUCTION MASTER ID
   const { DeductionMasterId } = useParams<{ DeductionMasterId?: string }>();
   const DeductionId = DeductionMasterId ? Number(DeductionMasterId) : 0;
   const isAddMode = DeductionId === 0;
@@ -221,7 +222,7 @@ export const AddUpdateDeductionPage: React.FC = () => {
   }
   //#endregion
 
-  //#region HANDLE ADD AND UPDATE
+  //#region HANDLE ADD AND UPDATE DEDUCTION MASTER
   const handleAddUpdateDeductionMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -321,14 +322,19 @@ export const AddUpdateDeductionPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <Input
-                    type="text"
+                  <MultiSelectDropdown
+                    label="Type"
+                    title="Select Type"
                     required
-                    label='Type '
-                    value={formData.Type ?? ""}
-                    onChange={(e) => handleFieldChange("Type", e.target.value)}
-                    placeholder="Enter Type"
-                    maxLength={250}
+                    dataList={DEDUCTION_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id, }))}
+                    initialValues={DEDUCTION_TYPE_OPTIONS.filter(opt => 
+                      formData.Type.includes(opt.id)).map(opt => ({
+                      label: opt.name,
+                      value: opt.id,
+                    }))}
+                    onSelected={(selectedItem) => {
+                      handleFieldChange("Type", selectedItem.map(item => item.value))
+                    }}
                     error={errors.Type}
                   />
                 </div>
@@ -406,7 +412,7 @@ export const AddUpdateDeductionPage: React.FC = () => {
                     error={errors.MinSalary}
                   />
                 </div>
-                
+
                 <div>
                   <Input
                     type="text"
@@ -455,27 +461,5 @@ export const AddUpdateDeductionPage: React.FC = () => {
   );
 };
 
-export default AddUpdateDeductionPage;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+export default AddUpdateDeductionMaster;
 

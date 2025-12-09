@@ -386,7 +386,7 @@ export const DeductionMaster: React.FC = () => {
     },
     {
       key: 'StateName',
-      label: 'StateName',
+      label: 'State Name',
       width: '12',
       sortable: false,
       align: 'left',
@@ -476,6 +476,11 @@ export const DeductionMaster: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
         <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+
+         {/* ============================================================================
+          COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
+           ============================================================================ */}
+
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
@@ -546,7 +551,7 @@ export const DeductionMaster: React.FC = () => {
           title="Customize Table Columns"
         />
 
-        {/* FILTER MODAL */}
+        {/* FILTER  DEDUCTION MODAL  */}
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}

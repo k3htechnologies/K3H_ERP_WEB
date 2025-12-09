@@ -15,7 +15,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { Edit, Mail, Phone } from 'lucide-react';
-import { filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterRERA, isValidAadhaar, isValidCIN, isValidEmail, isValidMobile, isValidPAN, isValidRERA } from '@/core/utils/fileValidation';
+import { filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterRERA, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidRERA } from '@/core/utils/fileValidation';
 import { runApiWithLoader } from '@/core/utils';
 import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import * as E from 'fp-ts/Either';
@@ -358,6 +358,9 @@ const AddCompany: React.FC = () => {
     // GST Number
     if (!formData.GSTNumber?.trim()) {
       newErrors.GSTNumber = "GST Number is required.";
+    }
+    else if (!isValidGST(formData.GSTNumber?.trim())) {
+      newErrors.PanNumber = "Enter a valid GST Number.";
     }
     // (You can add a GST regex if you want stricter)
 

@@ -7,6 +7,7 @@ import {
   FileText,
   Image as ImageIcon,
   List,
+  InfoIcon,
 } from "lucide-react";
 import { MultiImageViewer } from "@/ui/components/ImageViewer/ImageViewer";
 import useToast from "@/core/hooks/useToast";
@@ -381,8 +382,18 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
             marginTop: theme.spacing.sm,
             fontSize: theme.fontSize.sm,
             color: error ? theme.colors.error : theme.colors.textSecondary,
+            display: "flex",
+              alignItems: "center",
+              gap: "6px", 
           }}
         >
+          <InfoIcon
+            style={{
+              fontSize: theme.fontSize.xs,
+              color: error ? theme.colors.error : theme.colors.textSecondary,
+              height: 14
+            }}
+          />
           {error}
         </div>
       )}

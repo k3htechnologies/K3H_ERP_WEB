@@ -77,15 +77,15 @@ export interface AddUpdateVendorRequest {
     EmailId: string | ''
     AadharCardNumber: string | ''
 
-    AadharCardURL: string|''
+    AadharCardURL: (File | string)[] | null;
     RemoveAadharCardURL: string | ''
 
     PanCardNumber: string | ''
-    PanCardURL: string|''
+    PanCardURL: (File | string)[] | null;
     RemovePanCardURL: string | ''
 
     GSTNumber: string | ''
-    GSTCertificateURL: string|''
+    GSTCertificateURL: (File | string)[] | null;
     RemoveGSTCertificateURL: string | ''
 
     Address: string | ''

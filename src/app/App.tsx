@@ -56,9 +56,9 @@ import ProjectRERADocumentCategoryMaster from '@/features/projectRERADocumentCat
 import ProjectRERADocument from '@/features/projectRERADocument/pages/ProjectRERADocument';
 import ViewCompantMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
 import Inventory from '@/features/inventory/pages/Inventory';
-import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
 import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor';
 import { OutDoor } from '@/features/outdoor/pages/OutDoor';
+
 import { ViewVendor } from '@/features/vendor/pages/ViewVendor';
 
 // Loading component for Suspense fallback
@@ -107,6 +107,9 @@ function App() {
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
           <Route path="profile" element={<Profile />} />
+
+          
+
           <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
           <Route path="companyMaster/addCompany" element={<AddCompany />} />
 
@@ -128,6 +131,7 @@ function App() {
             <Route path="employeeMaster" element={<EmployeeMaster />} />
             <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />
             <Route path="employeeMaster/add/:employeeId??" element={<AddUpdateEmployeeMaster />} />
+            <Route path="employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
             <Route path="/outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
             <Route path="outdoor" element={<OutDoor />} />
             <Route path="companyMaster" element={<CompanyMaster />} />

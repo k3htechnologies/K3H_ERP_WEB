@@ -32,6 +32,7 @@ import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListM
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import type { AddUpdateEmployeeMasterRequest, FilterWithPaginationEmployeeMasterRequest } from "@/features/employeeMaster/models/EmployeeMasterModel";
 
+
 const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
   EmployeeId: 0,
   UniqueKey: null,
@@ -877,6 +878,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                   <Input
                     label="Account Number"
                     required value={formData.AccountNo}
+                    maxLength={18}
                     onChange={(e) => handleFieldChange("AccountNo", filterNumbers(e.target.value))}
                     error={errors.AccountNo} />
                 </div>

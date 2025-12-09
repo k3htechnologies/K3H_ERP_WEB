@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Menu, Bell, Edit, User } from 'lucide-react'
-import appLogo from '@/assets/images/appLogo.png'
+import { Menu, Bell, User } from 'lucide-react'
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
 import { Modal } from '@/ui/components/Modal/Modal'
 import { useNavigate } from 'react-router-dom'
@@ -15,7 +14,6 @@ import useToast from '@/core/hooks/useToast'
 import { ToastContainer } from '@/ui/components/Toast';
 import { Loader } from '@/core/utils/loader'
 import { COLORS } from '@/core/constants'
-import Profile from '@/features/profile/page/profile'
 
 interface HeaderProps {
     isSidebarOpen: boolean
@@ -138,11 +136,12 @@ export const Header: React.FC<HeaderProps> = ({
 
     //#region NOTIFICATION SCROLL HANDLER
     const handleNotificationScroll = (e: React.UIEvent<HTMLDivElement>) => {
+
         const el = e.currentTarget;
         const threshold = 60; // how close to bottom before loading next page
 
         if (el.scrollHeight - el.scrollTop <= el.clientHeight + threshold) {
-            // if more pages remain and not already fetching
+            
             if (pagination.currentPage < (pagination.totalPages || 0) && !isFetchingMoreNotification) {
                 const nextPage = pagination.currentPage + 1;
                 setIsFetchingMoreNotification(true);
@@ -262,7 +261,7 @@ export const Header: React.FC<HeaderProps> = ({
                     isOpen={isEmployeeProfileModalOpen}
                     onClose={() => setIsEmployeeProfileModalOpen(false)}
                     title="Profile"
-                    size="small-half"
+                    size="small25"
                 >
                     <div className="p-4">
                         <div className="flex items-center space-x-4 mb-6">

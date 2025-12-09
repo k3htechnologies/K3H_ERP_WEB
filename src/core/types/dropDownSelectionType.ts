@@ -1,5 +1,4 @@
 import type { COLOR_MAP } from "../constants/colors";
-import type { DropdownOptions } from "@/ui/components/DropDown/Multiselectpagination";
 
 export interface SingleSelectWithPaginationProps {
   options?: { label: string; value: string | number }[]
@@ -63,8 +62,25 @@ export interface SinglePageSelectionProps {
 }
 
 export interface MultiSelectPaginationProps {
+  options?: { label: string; value: string | number }[];
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'default' | 'outlined' | 'filled';
+  color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info';
+  dataFetchCallBack?: (
+    pageNumber: number,
+    params?: { value?: string; [key: string]: string | undefined }
+  ) => Promise<{ totalNumberOfRecord: number; itemList: { label: string; value: string | number }[] }>;
+  onSelected: (items: { label: string; value: string | number }[]) => void;
+  title?: string;
   label?: string;
-  options: DropdownOptions[];
-  selectedValues: (string | number)[];
-  onChange: (values: (string | number)[]) => void;
+  validator?: (values: (string | number)[]) => string | undefined;
+  initialValues?: { label: string; value: string | number }[] | null;
+  dataList?: { label: string; value: string | number }[];
+  pageSize?: number;
+  disabled?: boolean;
+  hasSubmitted?: boolean;
+  required?: boolean;
+  error?: string;
+  className?: string;
+  style?: React.CSSProperties;
 }

@@ -78,10 +78,10 @@ export const DepartmentMaster: React.FC = () => {
   const [editingDepartmentMasterData, setEditingDepartmentMasterData] = useState<DepartmentMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  
+
   //ADD UPDATE DEPARTMENT MASTER
-    const [formData, setFormData] = useState<AddUpdateDepartmentMasterRequest>(() => initialFormState());
-  
+  const [formData, setFormData] = useState<AddUpdateDepartmentMasterRequest>(() => initialFormState());
+
   //DELETE DEPARTMENT MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
@@ -496,15 +496,16 @@ export const DepartmentMaster: React.FC = () => {
                     color='red'
                     variant='solid'
                     colorMode="light"
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleConfirmationDialogBoxOpen(data)
                     }}
+                    leftIcon={<Trash2 className="h-5 w-5" />}
                   >
-                    <Trash2 className="h-5 w-5" />
+
                     Delete
                   </Button>
                 ) : <div style={{ width: "120px", height: "44px" }}></div>}
@@ -512,15 +513,16 @@ export const DepartmentMaster: React.FC = () => {
 
                 <Button
                   color='blue'
-                  size='sm'
+                  size='md'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
                     setIsViewModalOpen(false)
                     handleEditDepartmentMaster(data)
                   }}
+                  leftIcon={<Edit className="h-5 w-5" />}
                 >
-                  <Edit className="h-5 w-5" />
+
                   Edit
                 </Button>
               </>
@@ -601,7 +603,7 @@ export const DepartmentMaster: React.FC = () => {
 
     if (formData.DepartmentCode.trim() === "") {
       newErrors.DepartmentCode = "Department Code is required";
-    } else if (formData.DepartmentCode.trim().length  >= 5) {
+    } else if (formData.DepartmentCode.trim().length >= 5) {
       newErrors.DepartmentCode = "Department Code must be at least 4 characters long";
     }
 
@@ -906,7 +908,7 @@ export const DepartmentMaster: React.FC = () => {
           }}
           title={editingDepartmentMasterData ? 'Update Department' : 'Add Department'}
           onSubmit={handleAddUpdateDepartmentMaster}
-          saveText={editingDepartmentMasterData ? 'Update Department' : 'Save Department'}
+          saveText={'Save'}
           resetText='Reset'
           loading={isLoading}
           size='xl'

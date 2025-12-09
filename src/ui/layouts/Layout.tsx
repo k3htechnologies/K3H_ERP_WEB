@@ -25,6 +25,51 @@ export const Layout: React.FC = () => {
 
     useNetworkStatus();
 
+    //#region LOAD MENU
+
+    const loadMenuData = async () => {
+
+        try {
+            // CHECK MENU IS AVAILABLE IN LOCAL STORAGE
+            const storedMenu = LocalStorageHelper.getMenuData();
+
+            if (storedMenu && storedMenu.length > 0) {
+                setMenuData(storedMenu);
+                return;
+            }
+
+            const request: PullMenuRequest = {
+
+                EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
+            };
+
+            const response = await menuService.apiCallPullMenu(request);
+
+            if (E.isRight(response)) {
+
+                const menu = response.right.Data;
+
+                LocalStorageHelper.storeMenuData(menu);
+
+                if (menu) {
+
+                    setMenuData(response.right.Data);
+
+                } else {
+
+                    setMenuData([]);
+
+                }
+            }
+        } catch (err: any) {
+            throw err;
+        } finally {
+
+        }
+    }
+
+    //#endregion
+
     const hasFetchedMenu = useRef(false);
 
     useEffect(() => {
@@ -33,50 +78,27 @@ export const Layout: React.FC = () => {
 
         hasFetchedMenu.current = true;
 
-        const loadMenuData = async () => {
 
-            try {
-                // CHECK MENU IS AVAILABLE IN LOCAL STORAGE
-                const storedMenu = LocalStorageHelper.getMenuData();
-
-                if (storedMenu && storedMenu.length > 0) {
-                    setMenuData(storedMenu);
-                    return;
-                }
-
-                const request: PullMenuRequest = {
-
-                    EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
-                };
-
-                const response = await menuService.apiCallPullMenu(request);
-
-                if (E.isRight(response)) {
-
-                    const menu = response.right.Data;
-
-                    LocalStorageHelper.storeMenuData(menu);
-
-                    if (menu) {
-
-                        setMenuData(response.right.Data);
-
-                    } else {
-
-                        setMenuData([]);
-
-                    }
-                }
-            } catch (err: any) {
-                throw err;
-            } finally {
-
-            }
-        }
 
         loadMenuData();
 
     }, [])
+
+    useEffect(() => {
+        const handleMenuUpdated = () => {
+
+            const storedMenu = LocalStorageHelper.getMenuData();
+            
+            setMenuData(storedMenu || []);
+        };
+
+        window.addEventListener('menu-updated', handleMenuUpdated);
+
+        return () => {
+            window.removeEventListener('menu-updated', handleMenuUpdated);
+        };
+    }, []);
+
 
     const handleToggleSidebar = () => {
 

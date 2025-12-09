@@ -48,6 +48,14 @@ import ViewAssetMappingMaster from '@/features/assetMappingMaster/pages/ViewAsse
 import ViewShiftMaster from '@/features/shiftMaster/pages/ViewShiftMaster';
 import ViewDeductionMaster from '@/features/deductionMaster/pages/ViewDeductionMaster';
 import ViewWeekOffMaster from '@/features/weekOffMaster/pages/ViewWeekOffPage';
+import SubMaterialMaster from '@/features/subMaterialMaster/pages/SubMaterialMaster';
+import { UomMaster } from '@/features/uomMaster/pages/UomMaster';
+import ProjectDocumentCategoryMaster from '@/features/projectDocumentCategory/pages/ProjectDocumentCategoryMaster';
+import ProjectDocument from '@/features/projectDocument/pages/ProjectDocument';
+import ProjectRERADocumentCategoryMaster from '@/features/projectRERADocumentCategory/pages/ProjectRERADocumentCategoryMaster';
+import ProjectRERADocument from '@/features/projectRERADocument/pages/ProjectRERADocument';
+import ViewCompantMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
+import Inventory from '@/features/inventory/pages/Inventory';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -96,7 +104,8 @@ function App() {
           <Route path="error" element={<ErrorFallbackPage />} />
           <Route path="profile" element={<Profile />} />
 
-          <Route path="companyMaster/addCompany" element={<AddCompany />} />
+          
+
 
           {/* Protected Routes with Layout */}
           <Route
@@ -117,6 +126,8 @@ function App() {
             <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />
             <Route path="employeeMaster/add/:employeeId??" element={<AddUpdateEmployeeMaster />} />
             <Route path="companyMaster" element={<CompanyMaster />} />
+            <Route path="companyMaster/view" element={<ViewCompantMaster />} />
+            <Route path="companyMaster/add/:companyId?" element={<AddCompany />} />
             <Route path="tnc" element={<TncMaster />} />
             <Route path="bankListMaster" element={<BankListMaster />} />
             <Route path="branchMaster" element={<BranchMaster />} />
@@ -148,9 +159,14 @@ function App() {
             <Route path="projectMaster/view" element={<ViewProjectMaster />} />
             <Route path="/projectMaster/add/:projectId??" element={<AddUpdateProjectMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
-            <Route path="materialMaster" element={<MaterialMaster />} />
-
-
+            <Route path="materialMaster" element={<MaterialMaster  />} />
+            <Route path="inventory" element={<Inventory></Inventory>}/>
+            <Route path="subMaterialMaster" element={<SubMaterialMaster />} />
+            <Route path="uomMaster" element={<UomMaster />} />
+            <Route path="category" element={<ProjectDocumentCategoryMaster />} />
+            <Route path="document" element={<ProjectDocument />} />
+            <Route path="reraCategory" element={<ProjectRERADocumentCategoryMaster />} />
+            <Route path="rera" element={<ProjectRERADocument />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

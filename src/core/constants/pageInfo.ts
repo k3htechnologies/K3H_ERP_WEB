@@ -131,6 +131,41 @@ export const getPageInfo = (path: string) => {
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
 
+        case 'materialMaster':
+            return {
+                title: 'Material Master',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+        case 'subMaterialMaster':
+            return {
+                title: 'Sub Material Master',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+        case 'uomMaster':
+            return {
+                title: 'UOM Master',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+        case 'category':
+            return {
+                title: 'Project Document Category Master',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+        case 'reraCategory':
+            return {
+                title: 'RERA Document Category Master',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+        case 'rera':
+            return {
+                title: 'RERA Document',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+        case 'document':
+            return {
+                title: 'Project Document',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
         case 'profile':
             return {
                 title: 'Employee Profile',

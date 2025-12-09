@@ -284,10 +284,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         return {
           container: `${item.path?.toUpperCase() === '/DASHBOARD'
             ? 'relative'
-            : 'relative ml-8 pl-4'
+            : 'relative ml-8 pl-2'
             }`,
           button: `
-            w-full flex items-center space-x-3  py-2 rounded-md transition-all duration-200
+            w-full flex items-center space-x-3  py-1.5 rounded-md transition-all duration-200
             ${!isOpen ? 'px-2' : 'px-4'}
             ${isCurrentPage
               ? 'text-blue-800 font-semibold'

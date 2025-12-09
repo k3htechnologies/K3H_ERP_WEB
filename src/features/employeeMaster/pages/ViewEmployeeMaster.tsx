@@ -58,7 +58,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     //#region INIT
     useEffect(() => {
         if (activeTab === 'Assets') {
-            loadAssetMasterMapping(editEmployeeData!.FullName.trim());
+            loadAssetMasterMapping(`${editEmployeeData!.FirstName.trim()} ${editEmployeeData!.LastName.trim()}`);
         }
         else if (activeTab === 'Project') {
             const stored = LocalStorageHelper.getStoredEmployeeData();
@@ -68,7 +68,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     }, [activeTab]);
 
     //#endregion
-    //#region DATA LOAD
+    //#region DATA LOAD FOR ASSET MAPPING TO EACH EMPLOYEE
 
     const loadAssetMasterMapping = async (FullName: string) => {
         await runApiWithLoader(
@@ -79,7 +79,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                 const params: FilterWithPaginationAssetMappingMasterRequest = {
                     PageNumber: 1,
                     PageSize: 100,
-                    EmployeeName: FullName
+                    EmployeeName: FullName,
+                    
                 };
 
                 const response = await assetMappingMasterService.apiCallPullAssetMappingMaster(params);
@@ -138,8 +139,6 @@ export const ViewEmployeeMaster: React.FC = () => {
                 {/* Left column: profile card */}
                 <div className="col-span-5">
                     <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-
-
                         <div className="pt-10 px-2 pb-2">
                             <div className="text-center">
                                 <h3 className="text-lg font-semibold text-gray-900">{editEmployeeData?.FullName} <span className="inline-block ml-2 text-green-500">●</span></h3>
@@ -161,7 +160,7 @@ export const ViewEmployeeMaster: React.FC = () => {
 
 
                                 <div className="p-4">
-                                    <FieldItem label="Mobile Number" value={editEmployeeData!.PersonalMobileNumber} isRow />
+                                    <FieldItem label="Mobile Number" value={`+91 ${editEmployeeData?.PersonalMobileNumber ?? ''}`} isRow />
                                     <FieldItem label="Email ID" value={editEmployeeData!.EmailId} isRow />
                                     <FieldItem label="Gender" value={editEmployeeData!.Gender} isRow />
                                     <FieldItem label="DOB"
@@ -221,7 +220,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                     <FieldItem label="Marital Status" value={editEmployeeData!.MaritalStatus} isRow />
                                     <FieldItem label="Blood Group" value={editEmployeeData!.BloodGroup} isRow />
                                     <FieldItem label="Office Email ID" value={editEmployeeData!.OfficeEmailId} isRow />
-                                    <FieldItem label="Office Mobile Number" value={editEmployeeData!.OfficeMobileNumber} isRow />
+                                    <FieldItem label="Office Mobile Number" value={`+91 ${editEmployeeData?.OfficeMobileNumber ?? ''}`} isRow />
                                     <FieldItem label="Employment Type" value={editEmployeeData!.EmployeeType} isRow />
 
                                 </div>
@@ -239,7 +238,7 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                 <div className="p-4">
                                     <FieldItem label="Relationship" value={editEmployeeData!.EmergencyContactPersonRelationship} isRow />
-                                    <FieldItem label="Contact Number" value={editEmployeeData!.EmergencyMobileNumber} isRow />
+                                    <FieldItem label="Contact Number" value={`+91 ${editEmployeeData?.EmergencyMobileNumber ?? ''}`} isRow />
                                 </div>
                             </div>
 
@@ -287,7 +286,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                             <FieldItem label="Bank Name" value={editEmployeeData!.BankName} isRow withBorder />
                             <FieldItem label="Branch" value={editEmployeeData!.Branch} isRow withBorder />
                             <FieldItem label="Account No" value={editEmployeeData!.AccountNo} isRow withBorder />
-                            <FieldItem label="IFSC Code" value={editEmployeeData!.IFSCCode} isRow withBorder />
+                            <FieldItem label="IFSC Code" value={editEmployeeData!.IFSCCode} isRow />
                         </div>
                     </div>
 
@@ -346,10 +345,14 @@ export const ViewEmployeeMaster: React.FC = () => {
                             tabs={TabList}
                             defaultActive={activeTab}
                             onTabChange={(t) => {
+
                                 setActiveTab(t.id);
+
                                 if (t.id === "Assets") {
-                                    loadAssetMasterMapping(editEmployeeData!.FullName);
+
+                                    loadAssetMasterMapping(`${editEmployeeData!.FirstName.trim()} ${editEmployeeData!.LastName.trim()}`);
                                 }
+
                                 else if (t.id === "Project") {
 
                                     const stored = LocalStorageHelper.getStoredEmployeeData();

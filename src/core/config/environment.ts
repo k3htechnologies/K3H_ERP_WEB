@@ -24,8 +24,7 @@ const productionConfig: EnvironmentConfig = {
 
 //============================ [GET CURRENT ENVIRONMENT ] ========================================================
 const getCurrentEnvironment = (): 'DEVELOPMENT' | 'PRODUCTION' => {
-    // const env = import.meta.env.VITE_APP_ENVIRONMENT || import.meta.env.MODE
-    const env = "PRODUCTION";
+    const env = "PRODUCTION"
     switch (env) {
         case 'PRODUCTION':
             return 'PRODUCTION'

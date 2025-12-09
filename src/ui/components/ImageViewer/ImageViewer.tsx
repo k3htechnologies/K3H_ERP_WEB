@@ -184,7 +184,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     <div className="inline-block">
       {/* Trigger */}
       {triggerLabel ? (
-        <button type="button" onClick={() => open(0)} className="text-sm font-medium underline" style={{ color: COLORS.primary }}>
+        <button type="button" onClick={() => open(0)} className="text-sm font-medium underline" style={{ color: COLORS.primary1 }}>
           {triggerLabel}
         </button>
       ) : (

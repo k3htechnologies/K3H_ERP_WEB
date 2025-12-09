@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
 import { THEME } from '@/core/constants/theme'
 import type { InputProps } from '@/core/types/form.types'
-import { Info, InfoIcon } from 'lucide-react'
+import {  InfoIcon } from 'lucide-react'
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({

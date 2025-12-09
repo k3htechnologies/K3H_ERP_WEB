@@ -752,7 +752,7 @@ export const HolidayMappingMaster: React.FC = () => {
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
         <TableActionToolbar
           isShowSearchBar
@@ -772,7 +772,7 @@ export const HolidayMappingMaster: React.FC = () => {
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeHolidayMappingMasterColumnsModal(true)}
           isShowAddButton={canAction}
-          addTitle="Add holiday Mapping"
+          addTitle="Add Holiday Mapping"
           onAdd={handleAddHolidayMappingModal}
           isShowImportButton={false}
           isShowExportButton={canExport}
@@ -784,9 +784,8 @@ export const HolidayMappingMaster: React.FC = () => {
           data={holidayMappingListForTable}
           columns={visibleHolidayMappingMasterColumns}
           pagination={holidayMappingMasterPaginationInfo}
-          emptyMessage="No holiday mappings found"
+          emptyMessage="No Holiday Mappings Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -812,7 +811,7 @@ export const HolidayMappingMaster: React.FC = () => {
           columns={holidayMappingMasterColumns}
           selectedKeys={selectedHolidayMappingMasterColumnKeys}
           requiredKeys={requiredHolidayMappingMasterColumnKeys}
-          title="Customize Holiday Mapping Master Table Columns"
+          title="Customize Master Table Columns"
         />
         <Modal
           isOpen={showFilterPopup}

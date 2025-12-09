@@ -7,7 +7,7 @@ export const fetchDepartmentMasterDropdown = async (pageNumber: number, params?:
             PageSize: 10,
             PageNumber: pageNumber,
             DepartmentName: params?.value || '',
-            IsCheckPermission: true
+            IsCheckPermission: false
         });
 
         if (E.isLeft(responseEither)) {

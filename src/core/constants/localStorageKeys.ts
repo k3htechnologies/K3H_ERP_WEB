@@ -23,6 +23,11 @@ export const LOCAL_STORAGE_KEYS = {
     WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS: 'weekOffMappingMaster.selectedColumns',
     WEEK_OFF_MASTER_SELECTED_COLUMNS: 'weekOffMaster.selectedColumns',
     TNC_MASTER_SELECTED_COLUMNS: 'tncMaster.selectedColumns',
+    SUB_MATERIAL_MASTER_SELECTED_COLUMNS: 'subMaterialMaster.selectedColumns',
+    UOM_MASTER_SELECTED_COLUMNS: 'uomMaster.selectedColumns',
+    MATERIAL_MASTER_SELECTED_COLUMNS: 'materialMaster.selectedColumns',
+    PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectDocumentCategoryMaster.selectedColumns',
+    PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectRERADocumentCategoryMaster.selectedColumns',
     MENU_MODULE: 'menuModule',
     COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER: 'country_state_district_city_village_data',
 } as const

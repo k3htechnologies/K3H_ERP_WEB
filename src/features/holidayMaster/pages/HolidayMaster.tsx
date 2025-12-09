@@ -683,12 +683,12 @@ export const HolidayMaster: React.FC = () => {
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by holiday name..."
+          searchPlaceholder="Search By Holiday Name"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
@@ -715,9 +715,8 @@ export const HolidayMaster: React.FC = () => {
           data={holidayListForTable}
           columns={visibleHolidayMasterColumns}
           pagination={holidayMasterPaginationInfo}
-          emptyMessage="No holidays found"
+          emptyMessage="No Holidays Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -768,7 +767,7 @@ export const HolidayMaster: React.FC = () => {
           saveText="Apply Filter"
           cancelText="Clear Filter"
           onCancel={() => clearFilters()}
-          size="half-screen"
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">

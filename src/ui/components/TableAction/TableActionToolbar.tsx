@@ -225,17 +225,17 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                     setIsExportOpen((s) => !s)
                     setIsImportOpen(false) 
                   }}
-                  className="text-black gap-2"
-                  color="purple"
-                  colorMode="light"
+                  color="blue"
+                  colorMode="gradient_light"
                   size="mxs"
                   defineWidth
                   title="Export"
                   aria-expanded={isExportOpen}
                   aria-haspopup="menu"
                   style={{ width: '95px' }}
+                  leftIcon={<Download className="h-4 w-4" />}
                 >
-                  <Download className="h-4 w-4 text-black" /> <span className="text-black">Export</span>
+                   <span>Export</span>
                 </Button>
 
                 {isExportOpen && (
@@ -259,6 +259,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Export as Excel"
+                          style={{justifyContent:"left"}}
                         >
 
                           Export as Excel
@@ -279,6 +280,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Export as PDF"
+                          style={{justifyContent:"left"}}
                         >
 
                           Export as PDF
@@ -300,17 +302,17 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                     setIsImportOpen((s) => !s)
                     setIsExportOpen(false) // close export when opening import
                   }}
-                  className="text-black gap-2"
                   color="green"
-                  colorMode="light"
+                  colorMode="gradient"
                   size="mxs"
                   defineWidth
                   title={importTitle}
                   aria-expanded={isImportOpen}
                   aria-haspopup="menu"
                   style={{ width: '95px' }}
+                  leftIcon={ <Upload className="h-4 w-4 " /> }
                 >
-                  <Upload className="h-4 w-4 text-black" /> <span className="text-black">{importTitle}</span>
+                <span>{importTitle}</span>
                 </Button>
 
                 {isImportOpen && (
@@ -334,6 +336,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Upload Excel"
+                          style={{justifyContent:"left"}}
                         >
 
                           Upload Excel
@@ -354,9 +357,9 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Download Sample Excel"
+                          style={{justifyContent:"left"}}
                         >
-
-                          Sample Excel
+                          Sample Download
                         </Button>
                       )}
                     </div>
@@ -376,12 +379,13 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                 color="blue"
                 size="mxs"
                 variant="solid"
-                colorMode="light"
+                colorMode="gradient_dark"
                 defineWidth
                 title={addTitle}
                 aria-label={addTitle}
+                leftIcon={ <Plus className="h-4 w-4" />}
               >
-                <Plus className="h-4 w-4" /> <span>{addTitle}</span>
+                <span>{addTitle}</span>
               </Button>
             )}
           </div>

@@ -154,6 +154,11 @@ useEffect(() => {
           boxShadow: isOpen ? theme.shadows.sm : "none",
           opacity: disabled ? 0.6 : 1,
           position: "relative",
+          width: "100%",
+          maxWidth: "100%",
+          minWidth: "150px",
+          marginLeft: "0",
+          ...style,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" }}>
@@ -247,6 +252,24 @@ useEffect(() => {
         >
           <div
             style={{
+              position: "absolute",
+              ...(dropdownPosition === "up"
+                ? {
+                    bottom: "100%",
+                    marginBottom: "4px",
+                  }
+                : {
+                    top: "100%",
+                    marginTop: "4px",
+                  }),
+              left: 0,
+              right: 0,
+              zIndex: 1000,
+              backgroundColor: theme.colors.background,
+              border: `1px solid ${theme.colors.primary}40`,
+              borderRadius: theme.borderRadius.md,
+              boxShadow: theme.shadows.lg,
+              maxHeight: sizeStyles.dropdownHeight + "px",
               display: "flex",
               justifyContent: "space-between",
               padding: "8px 10px",

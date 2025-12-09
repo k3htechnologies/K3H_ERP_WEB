@@ -25,6 +25,7 @@ interface MultiFilePickerProps {
   onChange: (files: FileValue[]) => void;
   placeholder?: string;
   error?: string;
+  onRemoveExisting?: (url: string) => void;
 }
 
 const parseUrls = (urls?: string): string[] =>
@@ -44,6 +45,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
   onChange,
   placeholder = "Select file(s)...",
   error,
+  onRemoveExisting,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -135,8 +137,12 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
 
   // ❌ Delete existing file
   const removeExisting = (index: number) => {
+    const urlToRemove = existingUrls[index];
     setExistingUrls((prev) => prev.filter((_, i) => i !== index));
 
+    if (onRemoveExisting && urlToRemove) {
+      onRemoveExisting(urlToRemove);
+    }
   };
 
   // ❌ Delete uploaded file
@@ -197,7 +203,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          background: "#fff",
+          backgroundColor: theme.colors.backgroundSecondary,
         }}
       >
         <span
@@ -302,8 +308,9 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
                   </span>
 
                   <MultiImageViewer
-                    images={[{ url, mimeType: mime }]}
+                    images={[url]}
                     title={label || "Document"}
+                    size="xl"
                     triggerLabel={<Eye size={18} style={{ cursor: "pointer" }} />}
                   />
 
@@ -348,8 +355,9 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
                   </span>
 
                   <MultiImageViewer
-                    images={[{ url, mimeType: mime }]}
+                    images={[url]}
                     title={label || "Document"}
+                    size="sm"
                     triggerLabel={<Eye size={18} style={{ cursor: "pointer" }} />}
                   />
 

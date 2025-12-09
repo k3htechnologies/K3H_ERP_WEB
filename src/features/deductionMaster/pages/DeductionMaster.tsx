@@ -19,7 +19,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
@@ -31,12 +31,14 @@ import { Edit, Trash2 } from 'lucide-react';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { BranchMasterService } from '@/features/branchMaster/services/BranchMasteService';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { useCountryStateCityDistrictVillageData } from '@/core/hooks/useCountryStateCityDistrictVillage';
 
 
 export const DeductionMaster: React.FC = () => {
 
   //#region STATE MANAGEMENT
-  const [deductionMasterList, setDeductionMasterList] = useState<DeductionMasterData[]>([]);
+  const [DeductionMasterList, setDeductionMasterList] = useState<DeductionMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
 
@@ -55,7 +57,7 @@ export const DeductionMaster: React.FC = () => {
     searchDeductions(value)
   }, 350)
 
-  //VIEW DEDUCTION MASTER MODAL STATES
+  //VIEW Deduction MASTER MODAL STATES
   const [viewDeductionMasterDetailsData, setViewDeductionMasterDetailsData] = useState<DeductionMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
@@ -67,32 +69,63 @@ export const DeductionMaster: React.FC = () => {
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeDeductionMasterColumnsModal, setIsShowCustomizeDeductionMasterColumnsModal] = useState(false);
 
+  // EDIT Deduction MASTER
+  const [editingDeductionMasterData, setEditingDeductionMasterData] = useState<DeductionMasterData | null>(null)
+  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
+  const [DeductionMasterFormData, setDeductionMasterFormData] = useState<AddUpdateDeductionMasterRequest>({
+    DeductionMasterId: 0,
+    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    Name: "",
+    Type: "",
+    Value: 0,
+    BranchMasterId: 0,
+    BranchName: "",
+    MinSalary: 0,
+    MaxSalary: 0,
+    Gender: "",
+    StateName: "",
+    StateMasterId: 0
+  });
+
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+  //DELETE Deduction MASTER STATES
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+  const [deleteDeductionMasterDetailsData, setDeleteDeductionMasterDetailsData] = useState<DeductionMasterData | null>(null)
+
+  //#endregion
+
+ //#region COUNTRY STATE CITY DISTRICT 
+  const {
+    statesByCountryId,
+  } = useCountryStateCityDistrictVillageData()
+
+  const [selectedCountryId, setSelectedCountryId] = React.useState<number | null>(1)
+  const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null)
+
+  const stateOptions =
+    selectedCountryId != null
+      ? (statesByCountryId[selectedCountryId] || []).map(s => ({
+        label: s.name,
+        value: s.id,
+      }))
+      : []
   //#endregion
 
   //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
-  //#endregion
 
   //#region INITIALIZATION
   const hasFetchedInitialDeductions = useRef(false)
-
-
-  // EDIT ASSET MASTER
-  const [editingDeductionMasterData, setEditingDeductionMasterData] = useState<DeductionMasterData | null>(null)
-  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-
-  //DELETE ASSET MASTER STATES
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-  const [deleteDeductionMasterDetailsData, setDeleteDeductionMasterDetailsData] = useState<DeductionMasterData | null>(null)
 
   useEffect(() => {
 
     if (hasFetchedInitialDeductions.current) return
 
     hasFetchedInitialDeductions.current = true;
-
     fetchDeductionList()
+    setSelectedCountryId(1)
   }, [])
 
 
@@ -104,8 +137,6 @@ export const DeductionMaster: React.FC = () => {
   }, [debouncedSearch])
   //#endregion
 
-
-  //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
@@ -123,7 +154,7 @@ export const DeductionMaster: React.FC = () => {
 
         if (sortInfo) {
 
-          const column = deductionMasterColumns.find(col => col.key === sortInfo.column)
+          const column = DeductionMasterColumns.find(col => col.key === sortInfo.column)
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
@@ -167,7 +198,7 @@ export const DeductionMaster: React.FC = () => {
     )
   }
 
-  // SEARCH DEDUCTION 
+  // SEARCH Deduction 
   const searchDeductions = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -192,7 +223,7 @@ export const DeductionMaster: React.FC = () => {
     debouncedSearch.cancel?.();
     fetchDeductionList();
   }
-  // END SEARCH DEDUCTION 
+  // END SEARCH Deduction 
 
   // EXPORT EXCEL | PDF
   const handleExportDeductions = async (exportType: 'Excel' | 'PDF') => {
@@ -202,7 +233,7 @@ export const DeductionMaster: React.FC = () => {
       async () => {
         let sortByParam = undefined
         if (sortInfo) {
-          const column = deductionMasterColumns.find(col => col.key === sortInfo.column)
+          const column = DeductionMasterColumns.find(col => col.key === sortInfo.column)
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
@@ -236,16 +267,15 @@ export const DeductionMaster: React.FC = () => {
 
   //END EXPORT EXCEL | PDF
 
-  //API | SERVICES CALL TO GET DEDUCTION 
+  //API | SERVICES CALL TO GET Deduction 
 
   const getDeductions = async (filterParams: FilterWithPaginationDeductionMasterRequest) => {
 
     return await DeductionMasterService.apiCallPullDeductionMaster(filterParams);
   }
 
-  //END API | SERVICES CALL TO GET DEDUCTION
+  //END API | SERVICES CALL TO GET Deduction
 
-  //#endregion
 
   //#region TABLE CONFIGURATION
 
@@ -261,7 +291,7 @@ export const DeductionMaster: React.FC = () => {
 
   }
 
-  const deductionMasterPaginationInfo: PaginationInfo = useMemo(
+  const DeductionMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
       totalPages: pagination.totalPages,
@@ -272,7 +302,7 @@ export const DeductionMaster: React.FC = () => {
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
   )
 
-  const deductionListForTable = useMemo(() => deductionMasterList, [deductionMasterList]);
+  const DeductionListForTable = useMemo(() => DeductionMasterList, [DeductionMasterList]);
 
 
   // STABLE HANDLER VIEW
@@ -281,20 +311,12 @@ export const DeductionMaster: React.FC = () => {
     setIsViewModalOpen(true)
   }, [])
 
-  const handleEditDeductionMaster = useCallback((row: DeductionMasterData) => {
-    setEditingDeductionMasterData({
-      ...row,
-
-    })
-    setIsAddUpdateModalOpen(true);
-
-  }, [])
 
   const handleConfirmationDialogBoxOpen = useCallback((row: DeductionMasterData) => {
     setDeleteDeductionMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
-  const deductionMasterColumns = useMemo<TableColumn[]>(
+  const DeductionMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
         key: 'Name',
@@ -304,57 +326,14 @@ export const DeductionMaster: React.FC = () => {
         fixed: 'left',
         align: 'left',
         render: (value, row) => (
-          <div className="flex items-center justify-start">
+          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
             <TooltipText
               text={value || 'N/A'}
               maxWidth="250px"
               tooltipThreshold={25}
               onClick={() => handleViewDeductionDetails(row)}
             />
-            {canAction && (
-              <div className="flex items-center justify-end ml-2 w-20">
-                <>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEditDeductionMaster(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    title="Edit Asset"
-                    style={{
-                      color: '#0B3251',
-                      padding: '0px 8px'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleConfirmationDialogBoxOpen(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    style={{
-                      color: 'red',
-                      padding: '0px 8px'
-                    }}
-                    title="Delete Asset"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </>
-              </div>
-            )}
+
           </div>
         )
       },
@@ -439,24 +418,9 @@ export const DeductionMaster: React.FC = () => {
             tooltipThreshold={12}
           />
         )
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       }
     ],
+    // dependencies: include everything used inside that might change
     [handleViewDeductionDetails]
   )
 
@@ -466,7 +430,7 @@ export const DeductionMaster: React.FC = () => {
 
   const requiredDeductionMasterColumnKeys: string[] = ['Name'];
 
-  const allDeductionMasterColumnKeys: string[] = deductionMasterColumns.map(c => c.key)
+  const allDeductionMasterColumnKeys: string[] = DeductionMasterColumns.map(c => c.key)
 
   const [selectedDeductionMasterColumnKeys, setSelectedDeductionMasterColumnKeys] = useState<string[]>(() => {
 
@@ -488,16 +452,16 @@ export const DeductionMaster: React.FC = () => {
   useEffect(() => {
     setSelectedDeductionMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredDeductionMasterColumnKeys])).filter(k => allDeductionMasterColumnKeys.includes(k)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deductionMasterColumns.length])
+  }, [DeductionMasterColumns.length])
 
   const visibleDeductionMasterColumns = useMemo(
-    () => deductionMasterColumns.filter(col => selectedDeductionMasterColumnKeys.includes(col.key)),
-    [deductionMasterColumns, selectedDeductionMasterColumnKeys]
+    () => DeductionMasterColumns.filter(col => selectedDeductionMasterColumnKeys.includes(col.key)),
+    [DeductionMasterColumns, selectedDeductionMasterColumnKeys]
   )
 
   //#endregion
 
-  //#region VIEW DEDUCTION DETAILS MODAL COMPONENT
+  //#region VIEW Deduction DETAILS MODAL COMPONENT
 
   interface ViewDeductionDetailsModalProps {
     isOpen: boolean
@@ -516,82 +480,76 @@ export const DeductionMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Settings - Company setup (Deduction Details)"
+        title="Deduction Details"
         onSubmit={(e) => {
           e.preventDefault()
           onClose()
         }}
         cancelText="Close"
         loading={false}
+        size='xl'
       >
         <div className="space-y-6">
+
           <div className="space-y-4">
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Deduction Name</span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.Name || 'N/A'}
-              </span>
+
+            <FieldItem label="Deduction Name" value={data.Name} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Type" value={data.Type} isRow withBorder={true} />
+            <FieldItem label="Value" value={data.Value} isRow withBorder={true} />
+            <FieldItem label="BranchName" value={data.BranchName} isRow withBorder={true} />
+            <FieldItem label="MinSalary" value={data.MinSalary} isRow withBorder={true} />
+            <FieldItem label="MaxSalary" value={data.MaxSalary} isRow withBorder={true} />
+            <FieldItem label="Gender" value={data.Gender} isRow withBorder={true} />
+            <FieldItem label="State Name" value={data.StateName} isRow withBorder={true} />
+
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold pb-2">
+                Action Details
+              </h4>
+
+              <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
+
+              {data.ModifiedBy !== '' ?
+                <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
+
+                :
+                ''}
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Type</span>
-              <span className="text-sm text-blue-600 font-medium">{data.Type || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Value</span>
-              <span className="text-sm text-blue-600 font-medium">{data.Value || 0}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Branch Name</span>
-              <span className="text-sm text-blue-600 font-medium">{data.BranchName || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Min Salary</span>
-              <span className="text-sm text-blue-600 font-medium">{data.MinSalary ? `₹${data.MinSalary.toLocaleString('en-IN')}` : 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Max Salary</span>
-              <span className="text-sm text-blue-600 font-medium">{data.MaxSalary ? `₹${data.MaxSalary.toLocaleString('en-IN')}` : 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Gender</span>
-              <span className="text-sm text-blue-600 font-medium">{data.Gender || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">State</span>
-              <span className="text-sm text-blue-600 font-medium">{data.StateName || 'N/A'}</span>
-            </div>
-          </div>
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created By</span>
-                  <span className="text-sm text-blue-600 font-medium">{data.CreatedBy || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created Date</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {data.ModifiedBy && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified By</span>
-                    <span className="text-sm text-blue-600 font-medium">{data.ModifiedBy}</span>
-                  </div>
-                )}
-                {data.ModifiedDate && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified Date</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
-                    </span>
-                  </div>
-                )}
-              </div>
+            <div className="flex justify-between items-center pt-4">
+
+              {canAction && (
+                <>
+                  <Button
+                    color='gray'
+                    variant='solid'
+                    colorMode="light"
+                    size='md'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsViewModalOpen(false)
+                      handleConfirmationDialogBoxOpen(data)
+                    }}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    Delete
+                  </Button>
+
+                  <Button
+                    color='blue'
+                    size='md'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsViewModalOpen(false)
+                      handleEditDeductionMasterData(data)
+                    }}
+                  >
+                    <Edit className="h-5 w-5" />
+                    Edit
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -626,498 +584,519 @@ export const DeductionMaster: React.FC = () => {
   }
   //#endregion
 
-  //#region ADD UPDATE EDIT ASSET MASTER
-  const handleAddDeductionModal = () => {
+  //#region ADD UPDATE EDIT Deduction MASTER
+
+  const handleAddDeductionMaster = () => {
     setEditingDeductionMasterData(null);
-    setIsAddUpdateModalOpen(true);
-  };
-
-  interface AddUpdateDeductionModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSubmit: (data: AddUpdateDeductionMasterRequest) => void;
-    data?: DeductionMasterData | null;
-    loading?: boolean;
-  }
-
-  const AddUpdateDeductionModel: React.FC<AddUpdateDeductionModalProps> = ({
-    isOpen,
-    onClose,
-    onSubmit,
-    data,
-    loading = false
-  }) => {
-    const [formData, setFormData] = useState<AddUpdateDeductionMasterRequest>({
+    setDeductionMasterFormData({
       DeductionMasterId: 0,
       Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
       Name: "",
       Type: "",
       Value: 0,
       BranchMasterId: 0,
+      BranchName: "",
       MinSalary: 0,
       MaxSalary: 0,
       Gender: "",
-      StateMasterId: 0,
-      BranchName: "",
       StateName: "",
-
+      StateMasterId: 0
     });
-    // Single error object for all fields
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const [dropdownLabels, setDropdownLabels] = useState<{
-              branchName?:string;
-            }>({});
 
-    useEffect(() => {
-      if (isOpen) {
-        if (data) {
-          // EDIT Deduction
-          setFormData({
-            DeductionMasterId: data.DeductionMasterId ?? 0,
-            Uniquekey: data.Uniquekey ?? "",
-            Name: data.Name ?? "",
-            Type: data.Type ?? "",
-            Value: data.Value ?? 0,
-            BranchMasterId: data.BranchMasterId ?? 0,
-            MinSalary: data.MinSalary ?? 0,
-            MaxSalary: data.MaxSalary ?? 0,
-            Gender: data.Gender ?? "",
-            StateMasterId: data.StateMasterId ?? 0,
-            BranchName: data.BranchName ?? "",
-            StateName: data.StateName ?? "",
-          });
-          setDropdownLabels({
-          branchName: data.BranchName ?? "",
-         
-
-        });
-        } else {
-          // ADD Deduction 
-          setFormData({
-            DeductionMasterId: 0,
-            Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            Name: "",
-            Type: "",
-            Value: 0,
-            BranchMasterId: 0,
-            MinSalary: 0,
-            MaxSalary: 0,
-            Gender: "",
-            StateMasterId: 0,
-            BranchName: "",
-            StateName: "",
-
-          });
-        }
-        setErrors({});
-      }
-    }, [isOpen, data]);
-
-    //handle input change
-    const handleFieldChange = (
-      field: keyof AddUpdateDeductionMasterRequest,
-      value: any
-    ) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    };
-
-    // Submit handler
-    const handleSubmitAddUpdateAsset = (e: React.FormEvent) => {
-      e.preventDefault();
-      const requiredFields = [
-        "Name",
-        "Value",
-        "Type",
-        "Gender",
-        "MinSalary",
-        "MaxSalary",
-        "StateMasterId",
-      ];
-
-      const newErrors: any = {};
-      requiredFields.forEach((field) => {
-        const value = formData[field as keyof AddUpdateDeductionMasterRequest];
-        if (value === null || value === undefined || value === 0 || value.toString().trim() === "") {
-          const label = field.replace(/([A-Z])/g, " $1");
-          newErrors[field] = `${label} is required`;
-        }
-      });
-      setErrors(newErrors);
-
-      // STOP submit if any error
-      if (Object.keys(newErrors).length > 0) return;
-
-      onSubmit(formData);
-    };
-
-    const fetchBranchOptions = async (pageNumber: number, params?: { value?: string }) => {
-      const responseEither = await BranchMasterService.apiCallPullBranchMaster({
-        PageSize: 10,
-        PageNumber: pageNumber,
-        BranchName: params?.value || "",
-        IsCheckPermission: true,
-      });
-      if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
-      const apiResponse = responseEither.right;
-      const branchList = apiResponse?.Data?.map((item: any) => ({ label: item.BranchName, value: String(item.BranchMasterId) })) || [];
-      return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? branchList.length, itemList: branchList };
-    };
-
-    const toDropdownInitialValue = (
-      id?: number | null,
-      label?: string
-    ): { label: string; value: string | number } | null => {
-      if (!id) return null;
-      return {
-        label: label || String(id),
-        value: String(id),
-      };
-    };
-
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        onCancel={onClose}
-        title={formData.DeductionMasterId === 0 ? "Add Deduction Master " : "Update Deduction Master"}
-        onSubmit={handleSubmitAddUpdateAsset}
-        saveText={formData.DeductionMasterId === 0 ? "Save" : "Update"}
-        cancelText="Cancel"
-        loading={loading}
-      >
-        <div className="space-y-6">
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Name <span className="text-red-500">*</span></label>
-              <Input
-                value={formData.Name ?? ""}
-                onChange={(e) => handleFieldChange("Name", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.Name ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.Name && (
-                <p className="text-red-500 text-xs mt-1">{errors.Name}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Type <span className="text-red-500">*</span></label>
-              <Input
-                value={formData.Type ?? ""}
-                onChange={(e) => handleFieldChange("Type", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.Type ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.Type && (
-                <p className="text-red-500 text-xs mt-1">{errors.Type}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Value <span className="text-red-500">*</span></label>
-              <Input
-                value={formData.Value ?? ""}
-                onChange={(e) => handleFieldChange("Value", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.Value ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.Value && (
-                <p className="text-red-500 text-xs mt-1">{errors.Value}</p>
-              )}
-            </div>
-
-            <div>
-              <SinglePageSelection
-                label="Gender" required
-                value={formData.Gender}
-                onChange={(val) => handleFieldChange("Gender", String(val))}
-                options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                MinSalary <span className="text-red-500">*</span></label>
-              <Input
-                value={formData.MinSalary ?? ""}
-                onChange={(e) => handleFieldChange("MinSalary", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.MinSalary ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.MinSalary && (
-                <p className="text-red-500 text-xs mt-1">{errors.MinSalary}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                MaxSalary <span className="text-red-500">*</span></label>
-              <Input
-                value={formData.MaxSalary ?? ""}
-                onChange={(e) => handleFieldChange("MaxSalary", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.MaxSalary ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.MaxSalary && (
-                <p className="text-red-500 text-xs mt-1">{errors.MaxSalary}</p>
-              )}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <SingleSelectDropdownWithPagination
-                label="Branch"
-                title="Select..."
-                size="lg"
-                dataFetchCallBack={fetchBranchOptions}
-                onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
-                initialValue={toDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
-              />
-            </div>
-          </div>
-        </div>
-      </Modal >
-    );
+    setFormErrors({});
+    setIsAddUpdateModalOpen(true);
   };
 
-const handleAddUpdateDeductionMaster = async (formData: AddUpdateDeductionMasterRequest) => {
+  const handleEditDeductionMasterData = (row: DeductionMasterData) => {
+    setEditingDeductionMasterData(row);
+    setDeductionMasterFormData({
+      DeductionMasterId: row.DeductionMasterId || 0,
+      Uniquekey: row.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      Name: row.Name || "",
+      Type: row.Type || "",
+      Value: row.Value || 0,
+      BranchMasterId: row.BranchMasterId || 0,
+      BranchName: row.BranchName || "",
+      MinSalary: row.MinSalary || 0,
+      MaxSalary: row.MaxSalary || 0,
+      Gender: row.Gender || "",
+      StateName: row.StateName || "",
+      StateMasterId: row.StateMasterId || 0
+    });
+    setDropdownLabels({
+      branchName: row.BranchName ?? "",
+      Gender: row.Gender ?? "",
+      StateName: row.StateName ?? ""
+    });
+    setFormErrors({});
+    setIsAddUpdateModalOpen(true);
+  }
 
-  setIsAddUpdateModalOpen(false);
-  await runApiWithLoader(
-    setIsLoading,
-    setIsLoadingMessage,
-    async () => {
-      const response = await DeductionMasterService.apiCallAddUpdateDeductionMaster(formData);
-      if (E.isRight(response)) {
-        setIsAddUpdateModalOpen(false);
-        const isAdd = formData.DeductionMasterId === 0
-        if (isAdd) {
-          const newRecord = response.right.Data[0] as DeductionMasterData
 
-          setDeductionMasterList(prevData => [newRecord, ...prevData]);
+  const handleFieldChange = (field: keyof AddUpdateDeductionMasterRequest, value: string | number | null | boolean) => {
+    setDeductionMasterFormData(prev => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  }
+
+  const validateDeductionMasterForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!DeductionMasterFormData.Name) {
+      newErrors.Name = "Deduction Name is required.";
+    }
+
+    if (!DeductionMasterFormData.Type) {
+      newErrors.Type = "Type is required.";
+    }
+
+    if (!DeductionMasterFormData.Value) {
+      newErrors.Value = "Value is required.";
+    }
+
+    if (!DeductionMasterFormData.Gender?.trim()) {
+      newErrors.Gender = "Gender is required.";
+    }
+    if (!DeductionMasterFormData.StateMasterId) {
+      newErrors.StateMasterId = "State Name is required.";
+    }
+    if (!DeductionMasterFormData.MinSalary) {
+      newErrors.MinSalary = "Min Salary is required.";
+    }
+    if (!DeductionMasterFormData.MaxSalary) {
+      newErrors.MaxSalary = "Max Salary is required.";
+    }
+    if (!DeductionMasterFormData.BranchMasterId) {
+      newErrors.BranchMasterId = "Branch Name is required.";
+    }
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors,
+    };
+  }
+
+  const PushWeekDeductionFormData = (): AddUpdateDeductionMasterRequest => {
+    return {
+      DeductionMasterId: DeductionMasterFormData.DeductionMasterId || 0,
+      Uniquekey: DeductionMasterFormData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      Name: DeductionMasterFormData.Name || "",
+      Type: DeductionMasterFormData.Type || "",
+      Value: DeductionMasterFormData.Value || 0,
+      BranchMasterId: DeductionMasterFormData.BranchMasterId || 0,
+      BranchName: DeductionMasterFormData.BranchName || "",
+      MinSalary: DeductionMasterFormData.MinSalary || 0,
+      MaxSalary: DeductionMasterFormData.MaxSalary || 0,
+      Gender: DeductionMasterFormData.Gender || "",
+      StateName: DeductionMasterFormData.StateName || "",
+      StateMasterId: DeductionMasterFormData.StateMasterId || 0
+    };
+  };
+
+  const fetchBranchOptions = async (pageNumber: number, params?: { value?: string }) => {
+    const responseEither = await BranchMasterService.apiCallPullBranchMaster({
+      PageSize: 10,
+      PageNumber: pageNumber,
+      BranchName: params?.value || "",
+      IsCheckPermission: true,
+    });
+    if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
+    const apiResponse = responseEither.right;
+    const branchList = apiResponse?.Data?.map((item: any) => ({ label: item.BranchName, value: String(item.BranchMasterId) })) || [];
+    return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? branchList.length, itemList: branchList };
+  };
+
+  const toDropdownInitialValue = (
+    id?: number | null,
+    label?: string
+  ): { label: string; value: string | number } | null => {
+    if (!id) return null;
+    return {
+      label: label || String(id),
+      value: String(id),
+    };
+  };
+
+  const [dropdownLabels, setDropdownLabels] = useState<{
+    branchName?: string;
+    Gender?: string;
+    StateName?: string
+  }>({});
+
+
+  const handleAddUpdateDeductionMaster = async () => {
+
+    setFormErrors({});
+
+    const validation = validateDeductionMasterForm();
+
+    if (!validation.isValid) {
+      setFormErrors(validation.errors);
+      return;
+    }
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+
+        const payload = PushWeekDeductionFormData();
+        const response = await DeductionMasterService.apiCallAddUpdateDeductionMaster(payload);
+
+        if (E.isRight(response)) {
+
+          setIsAddUpdateModalOpen(false);
+
+          const isAdd = DeductionMasterFormData.DeductionMasterId === 0
+
+          if (isAdd) {
+
+            const newRecord = response.right.Data[0] as DeductionMasterData
+
+            setDeductionMasterList(prevData => [newRecord, ...prevData]);
+
+            setPagination({
+              currentPage: pagination.currentPage,
+              totalRecords: pagination.totalRecords + 1,
+              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
+            });
+
+            addToast({ type: 'success', title: 'Deduction added successfully' })
+          } else {
+
+            const updatedRecord = response.right.Data[0] as DeductionMasterData;
+
+            setDeductionMasterList(prevData =>
+              prevData.map(item =>
+                item.DeductionMasterId === DeductionMasterFormData.DeductionMasterId
+                  ? updatedRecord
+                  : item
+              )
+            )
+
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+          }
+
+          setIsAddUpdateModalOpen(false);
+
+          setEditingDeductionMasterData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+        }
+
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Operation failed' })
+      },
+      undefined,
+      DeductionMasterFormData.DeductionMasterId === 0 ? 'Add Deduction' : 'Update Deduction...'
+    )
+  }
+  //#region DELETE Deduction MASTER
+  const handleDeleteDeductionMaster = async () => {
+    setIsConfirmationDialogBoxOpen(false);
+    if (!deleteDeductionMasterDetailsData) return
+
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+
+      async () => {
+
+        const params: DeleteDeductionMasterRequest = {
+          DeductionMasterId: deleteDeductionMasterDetailsData.DeductionMasterId || 0,
+          UniqueKey: deleteDeductionMasterDetailsData.Uniquekey || ""
+        }
+        const response = await DeductionMasterService.apiCallDeleteDeductionMaster(params);
+
+        if (E.isRight(response)) {
+          setDeductionMasterList(prevData => prevData.filter(item => item.DeductionMasterId! == deleteDeductionMasterDetailsData.DeductionMasterId));
 
           setPagination({
             currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords + 1,
-            totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
           });
 
-          addToast({ type: 'success', title: 'Asset added successfully' })
+          addToast({ type: "success", title: response.right.SuccessMessage[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+          setDeleteDeductionMasterDetailsData(null);
         } else {
-
-          const updatedRecord = response.right.Data[0] as DeductionMasterData;
-
-          setDeductionMasterList(prevData =>
-            prevData.map(item =>
-              item.DeductionMasterId === formData.DeductionMasterId
-                ? updatedRecord
-                : item
-            )
-          )
-
-          addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+          addToast({ type: 'error', title: response.left.message });
+          setIsConfirmationDialogBoxOpen(false);
         }
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message })
+      },
+      undefined,
+      'Delete Deduction Master Data...'
+    )
+  }
 
-        setIsAddUpdateModalOpen(false);
+  return (
+    <>
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-        setEditingDeductionMasterData(null);
+       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        {/* ============================================================================
+          COMMAN LOADER FOR PAGE
+           ============================================================================ */}
 
-      } else {
+        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+        {/* ============================================================================
+          COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
+           ============================================================================ */}
 
-        addToast({ type: 'error', title: response.left.message });
-      }
+        <TableActionToolbar
+          isShowSearchBar
+          searchTerm={searchTerm}
+          searchPlaceholder="Search By Deduction Name"
+          onSearchChange={(v) => {
+            setSearchTerm(v)
+            debouncedSearch(v)
+          }}
+          onClearSearch={clearsearchDeductions}
+          isShowFilterButton
+          filters={filters}
+          onOpenFilter={() => {
+            setTempFilters(filters)
+            setShowFilterPopup(true)
+          }}
+          isShowCustomizeButton
+          onCustomize={() => setIsShowCustomizeDeductionMasterColumnsModal(true)}
+          isShowAddButton={canAction}
+          addTitle="Add Deduction"
+          onAdd={handleAddDeductionMaster}
+          isShowImportButton={false}
+          isShowExportButton={canExport}
+          onExportExcel={handleExportDeductionExcel}
+          onExportPdf={handleExportDeductionPdf}
+          exportLoading={isLoading}
+        />
+        <DataTable
+          data={DeductionListForTable}
+          columns={visibleDeductionMasterColumns}
+          pagination={DeductionMasterPaginationInfo}
+          emptyMessage="No Deductions Data Found"
+          fixedHeight={true}
+          recordsPerPage={20}
+          className="flex-1"
+          sortInfo={sortInfo}
+          onSort={handleSortColumn}
+        />
+        <ViewDeductionDetailsModal isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false)
+            setViewDeductionMasterDetailsData(null)
+          }}
+          data={viewDeductionMasterDetailsData}
+        />
+        {/*  ADD EDIT UPDATE TNC MODAL */}
+        <Modal
+          isOpen={isAddUpdateModalOpen}
+          onClose={() => {
+            setIsAddUpdateModalOpen(false)
+            setEditingDeductionMasterData(null)
+            setFormErrors({})
+          }}
+          onCancel={() => {
+            setIsAddUpdateModalOpen(false)
+            setEditingDeductionMasterData(null)
+            setFormErrors({})
+          }}
+          title={editingDeductionMasterData ? 'Update Deduction Master Details' : 'Add Deduction Master Details'}
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleAddUpdateDeductionMaster()
+          }}
+          saveText="Save"
+          cancelText="Cancel"
+          loading={isLoading}
+          size="large75"
+        >
+          <div className="space-y-6 p-6 bg-blue-50">
 
-      return response
-    },
-    undefined,
-    (error: any) => {
-      addToast({ type: 'error', title: error.message || 'Operation failed' })
-    },
-    undefined,
-    formData.DeductionMasterId === 0 ? 'Add Asset' : 'Update Asset...'
-  )
-}
-//#region DELETE Deduction MASTER
-const handleDeleteDeductionMaster = async () => {
-  setIsConfirmationDialogBoxOpen(false);
-  if (!deleteDeductionMasterDetailsData) return
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Deduction Name'
+                  value={DeductionMasterFormData.Name ?? ""}
+                  onChange={(e) => handleFieldChange("Name", e.target.value)}
+                  placeholder="Enter Deduction Name"
+                  maxLength={250}
+                  error={formErrors.Name}
+                />
+              </div>
 
-  await runApiWithLoader(
-    setIsLoading,
-    setIsLoadingMessage,
+              <div>
+                <Input
+                  type="text"
+                  label='Type'
+                  value={DeductionMasterFormData.Type ?? ""}
+                  onChange={(e) => handleFieldChange("Type", e.target.value)}
+                  required
+                  maxLength={20}
+                  placeholder="Enter Type"
+                  error={formErrors.Type}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Input
+                  type="text"
+                  label='Value'
+                  value={DeductionMasterFormData.Value ?? ""}
+                  onChange={(e) => handleFieldChange("Value", e.target.value)}
+                  required
+                  maxLength={20}
+                  placeholder="Enter Value"
+                  error={formErrors.Value}
+                />
+              </div>
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Branch"
+                  title="Select..."
+                  size="lg"
+                  dataFetchCallBack={fetchBranchOptions}
+                  onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
+                  initialValue={toDropdownInitialValue(DeductionMasterFormData.BranchMasterId, dropdownLabels.branchName)}
+                  error={formErrors.BranchMasterId}
+                />
+              </div>
+            </div>
 
-    async () => {
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <SinglePageSelection
+                  label="Gender"
+                  required
+                  value={DeductionMasterFormData.Gender}
+                  onChange={(value) => handleFieldChange("Gender", value)}
+                  options={GENDER_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                  error={formErrors.Gender}
+                />
+              </div>
+              <div>
+                <SinglePageSelection
+                  label="State"
+                  value={selectedStateId ?? ''} required
+                  onChange={val => {
+                    const id = Number(val)
+                    setSelectedStateId(id)
+                    handleFieldChange('StateMasterId', id)
+                  }}
+                  disabled={
+                    stateOptions.length === 0}
+                  options={stateOptions}
+                  error={formErrors.StateMasterId}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Min Salary'
+                  value={DeductionMasterFormData.MinSalary ?? ""}
+                  onChange={(e) => handleFieldChange("MinSalary", e.target.value)}
+                  placeholder="Enter Min Salary"
+                  maxLength={250}
+                  error={formErrors.MinSalary}
+                />
+              </div>
 
-      const params: DeleteDeductionMasterRequest = {
-        DeductionMasterId: deleteDeductionMasterDetailsData.DeductionMasterId ?? 0,
-        UniqueKey: deleteDeductionMasterDetailsData.Uniquekey ?? ""
-      }
-      const response = await DeductionMasterService.apiCallDeleteDeductionMaster(params);
-      if (E.isRight(response)) {
-        setDeductionMasterList(prevData => prevData.filter(item => item.DeductionMasterId! == deleteDeductionMasterDetailsData.DeductionMasterId));
-        setPagination({
-          currentPage: pagination.currentPage,
-          totalRecords: pagination.totalRecords - 1,
-          totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
-        });
-
-        addToast({ type: "success", title: response.right.SuccessMessage[0] })
-
-        setIsConfirmationDialogBoxOpen(false);
-        setDeleteDeductionMasterDetailsData(null);
-      } else {
-        addToast({ type: 'error', title: response.left.message });
-        setIsConfirmationDialogBoxOpen(false);
-      }
-      return response
-    },
-    undefined,
-    (error: any) => {
-      addToast({ type: 'error', title: error.message })
-    },
-    undefined,
-    'Delete Deduction Master Data...'
-  )
-}
-
-return (
-  <>
-    <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-    <div className="h-full flex flex-col">
-      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
-      <TableActionToolbar
-        isShowSearchBar
-        searchTerm={searchTerm}
-        searchPlaceholder="Search by deduction name..."
-        onSearchChange={(v) => {
-          setSearchTerm(v)
-          debouncedSearch(v)
-        }}
-        onClearSearch={clearsearchDeductions}
-        isShowFilterButton
-        filters={filters}
-        onOpenFilter={() => {
-          setTempFilters(filters)
-          setShowFilterPopup(true)
-        }}
-        isShowCustomizeButton
-        onCustomize={() => setIsShowCustomizeDeductionMasterColumnsModal(true)}
-        isShowAddButton={canAction}
-        addTitle="Add Deduction"
-        onAdd={handleAddDeductionModal}
-        isShowImportButton={false}
-        isShowExportButton={canExport}
-        onExportExcel={handleExportDeductionExcel}
-        onExportPdf={handleExportDeductionPdf}
-        exportLoading={isLoading}
-      />
-      <DataTable
-        data={deductionListForTable}
-        columns={visibleDeductionMasterColumns}
-        pagination={deductionMasterPaginationInfo}
-        emptyMessage="No deductions found"
-        fixedHeight={true}
-        maxHeight="calc(100vh - 200px)"
-        recordsPerPage={20}
-        className="flex-1"
-        sortInfo={sortInfo}
-        onSort={handleSortColumn}
-      />
-      <ViewDeductionDetailsModal isOpen={isViewModalOpen}
-        onClose={() => {
-          setIsViewModalOpen(false)
-          setViewDeductionMasterDetailsData(null)
-        }}
-        data={viewDeductionMasterDetailsData}
-      />
-
-
-      {/*  ADD EDIT UPDATE TNC MODAL */}
-      <AddUpdateDeductionModel
-        isOpen={isAddUpdateModalOpen}
-        onClose={() => {
-          setIsAddUpdateModalOpen(false)
-          setEditingDeductionMasterData(null)
-        }}
-        onSubmit={handleAddUpdateDeductionMaster}
-        data={editingDeductionMasterData}
-        loading={isLoading}
-      />
-      {/* CUSTOMIZE COLUMNS MODAL */}
-      <CustomizeColumnsModal
-        isOpen={isShowCustomizeDeductionMasterColumnsModal}
-        onClose={() => setIsShowCustomizeDeductionMasterColumnsModal(false)}
-        onApply={(keys) => {
-          const withRequired = Array.from(new Set([...keys, ...requiredDeductionMasterColumnKeys]))
-          setSelectedDeductionMasterColumnKeys(withRequired)
-          try {
-            LocalStorageHelper.storeDeductionMasterTableColumns(JSON.stringify(withRequired))
-          } catch { }
-        }}
-        columns={deductionMasterColumns}
-        selectedKeys={selectedDeductionMasterColumnKeys}
-        requiredKeys={requiredDeductionMasterColumnKeys}
-        title="Customize Deduction Master Table Columns"
-      />
-      <Modal
-        isOpen={showFilterPopup}
-        onClose={() => setShowFilterPopup(false)}
-        title="Filter - Deduction Master"
-        onSubmit={(e) => {
-          e.preventDefault()
-          applyFilters()
-        }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
-        onCancel={() => clearFilters()}
-        size="half-screen"
-      >
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Deduction Name</label>
-              <Input
-                type="text"
-                value={tempFilters.Name || ''}
-                onChange={(e) => handleFilterChange('Name', e.target.value)}
-                placeholder="Enter deduction name"
-              />
+              <div>
+                <Input
+                  type="text"
+                  label='Max Salary'
+                  value={DeductionMasterFormData.MaxSalary ?? ""}
+                  onChange={(e) => handleFieldChange("MaxSalary", e.target.value)}
+                  required
+                  maxLength={20}
+                  placeholder="Enter Max Salary"
+                  error={formErrors.MaxSalary}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </Modal>
 
-      {/* DELETE CONFIRMATION deduction Master MODAL */}
-      <ConfirmationDialogBox
-        isOpen={isConfirmationDialogBoxOpen}
-        onClose={() => {
-          setIsConfirmationDialogBoxOpen(false)
-          setDeleteDeductionMasterDetailsData(null)
-        }}
-        onConfirm={handleDeleteDeductionMaster}
-        title="You are about to delete a deduction?"
-        message="Deleting this deduction Master Data will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
-        loading={isLoading}
-        variant="danger"
-      />
-    </div>
-  </>
-);
+        </Modal>
+
+        {/* CUSTOMIZE COLUMNS MODAL */}
+        <CustomizeColumnsModal
+          isOpen={isShowCustomizeDeductionMasterColumnsModal}
+          onClose={() => setIsShowCustomizeDeductionMasterColumnsModal(false)}
+          onApply={(keys) => {
+            const withRequired = Array.from(new Set([...keys, ...requiredDeductionMasterColumnKeys]))
+            setSelectedDeductionMasterColumnKeys(withRequired)
+            try {
+              LocalStorageHelper.storeDeductionMasterTableColumns(JSON.stringify(withRequired))
+            } catch { }
+          }}
+          columns={DeductionMasterColumns}
+          selectedKeys={selectedDeductionMasterColumnKeys}
+          requiredKeys={requiredDeductionMasterColumnKeys}
+          title="Customize Deduction Master Table Columns"
+        />
+        <Modal
+          isOpen={showFilterPopup}
+          onClose={() => setShowFilterPopup(false)}
+          title="Filter - Deduction Master"
+          onSubmit={(e) => {
+            e.preventDefault()
+            applyFilters()
+          }}
+          saveText="Apply Filter"
+          cancelText="Clear Filter"
+          onCancel={() => clearFilters()}
+          size="half-screen"
+        >
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Deduction Name</label>
+                <Input
+                  type="text"
+                  value={tempFilters.Name || ''}
+                  onChange={(e) => handleFilterChange('Name', e.target.value)}
+                  placeholder="Enter Deduction name"
+                />
+              </div>
+            </div>
+          </div>
+        </Modal>
+
+        {/* DELETE CONFIRMATION Deduction Master MODAL */}
+        <ConfirmationDialogBox
+          isOpen={isConfirmationDialogBoxOpen}
+          onClose={() => {
+            setIsConfirmationDialogBoxOpen(false)
+            setDeleteDeductionMasterDetailsData(null)
+          }}
+          onConfirm={handleDeleteDeductionMaster}
+          title="You are about to delete a Deduction?"
+          message="Deleting this Deduction Master Data will permanently remove its contents."
+          confirmText="Delete"
+          cancelText="Cancel"
+          loading={isLoading}
+          variant="danger"
+        />
+      </div>
+    </>
+  );
 };
 
 export default DeductionMaster

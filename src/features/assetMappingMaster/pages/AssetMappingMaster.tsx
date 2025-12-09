@@ -17,7 +17,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
@@ -27,8 +27,11 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { Edit, Trash2 } from 'lucide-react';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
-import { assetMasterService } from '@/features/assetMaster/services/AssetMasterService';
-import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { DatePickerInput } from '@/ui/components/forms/Datepicker';
+import { fetchAssetMasterDropdown } from '@/features/assetMaster/assetMasterDropDown';
+import { fetchEmployeeMasterDropdown } from '@/features/employeeMaster/employeeMasterDropDown';
+import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 
 
 export const AssetMappingMaster: React.FC = () => {
@@ -65,6 +68,28 @@ export const AssetMappingMaster: React.FC = () => {
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeAssetMappingMasterColumnsModal, setIsShowCustomizeAssetMappingMasterColumnsModal] = useState(false);
 
+  // EDIT ASSET MAPPING MASTER 
+  const [editingAssetMappingMasterData, setEditingAssetMappingMasterData] = useState<AssetMappingMasterData | null>(null)
+  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+
+  const [AssetMappingMasterFormData, setAssetMappingMasterFormData] = useState<AddUpdateAssetMappingMasterRequest>({
+    AssetMasterMappingId: 0,
+    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    AssetMasterId: 0,
+    AssignedDate: "",
+    EmployeeId: 0,
+    ReturnDate: "",
+    ConditionOnIssue: "",
+    ConditionOnReturn: "",
+    Remarks: ""
+  });
+
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+
+  //DELETE ASSET MAPPING MASTER STATES
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+  const [deleteAssetMappingMasterDetailsData, setDeleteAssetMappingMasterDetailsData] = useState<AssetMappingMasterData | null>(null)
 
   //#endregion
 
@@ -74,14 +99,6 @@ export const AssetMappingMaster: React.FC = () => {
 
   //#region INITIALIZATION
   const hasFetchedInitialAssetMappings = useRef(false)
-
-  // EDIT ASSET Mapping MASTER STATES
-  const [editingAssetMappingMasterData, setEditingAssetMappingMasterData] = useState<AssetMappingMasterData | null>(null)
-  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-
-  //DELETE ASSET Mapping MASTER STATES
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-  const [deleteAssetMappingMasterDetailsData, setDeleteAssetMappingMasterDetailsData] = useState<AssetMappingMasterData | null>(null)
 
   useEffect(() => {
 
@@ -99,10 +116,9 @@ export const AssetMappingMaster: React.FC = () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
-  //#endregion
-
 
   //#endregion
+
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
@@ -190,15 +206,17 @@ export const AssetMappingMaster: React.FC = () => {
     debouncedSearch.cancel?.();
     fetchAssetMappingList();
   }
-  // END SEARCH ASSET MAPPING 
+  //#endregion 
 
-  // EXPORT EXCEL | PDF
+  //#region EXPORT EXCEL | PDF
   const handleExportAssetMappings = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
+
         // Find the column label for sorting
+
         let sortByParam = undefined
         if (sortInfo) {
           const column = assetMappingMasterColumns.find(col => col.key === sortInfo.column)
@@ -234,9 +252,10 @@ export const AssetMappingMaster: React.FC = () => {
   const handleExportAssetMappingExcel = () => handleExportAssetMappings('Excel')
   const handleExportAssetMappingPdf = () => handleExportAssetMappings('PDF')
 
-  //END EXPORT EXCEL | PDF
+  //#endregion
 
-  //API | SERVICES CALL TO GET ASSET MAPPING 
+
+  //#region API | SERVICES CALL TO GET ASSET MAPPING 
 
   const getAssetMappings = async (filterParams: FilterWithPaginationAssetMappingMasterRequest) => {
 
@@ -245,7 +264,6 @@ export const AssetMappingMaster: React.FC = () => {
 
   //END API | SERVICES CALL TO GET ASSET MAPPING
 
-  //#endregion
 
   //#region TABLE CONFIGURATION
 
@@ -274,20 +292,13 @@ export const AssetMappingMaster: React.FC = () => {
 
   const assetMappingListForTable = useMemo(() => assetMappingMasterList, [assetMappingMasterList]);
 
-  // STABLE HANDLER VIEW
+  // STABLE HANDLER VIEW EDIT CONFIRMATION DIALOG BOX
   const handleViewAssetMappingDetails = useCallback((row: AssetMappingMasterData) => {
     setViewAssetMappingMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
 
-  const handleEditAssetMappingMaster = useCallback((row: AssetMappingMasterData) => {
-    setEditingAssetMappingMasterData({
-      ...row,
 
-    })
-    setIsAddUpdateModalOpen(true);
-
-  }, [])
   const handleConfirmationDialogBoxOpen = useCallback((row: AssetMappingMasterData) => {
     setDeleteAssetMappingMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
@@ -303,58 +314,14 @@ export const AssetMappingMaster: React.FC = () => {
         fixed: 'left',
         align: 'left',
         render: (value, row) => (
-          <div className="flex items-center justify-start">
+          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
             <TooltipText
               text={value || 'N/A'}
               maxWidth="250px"
               tooltipThreshold={25}
               onClick={() => handleViewAssetMappingDetails(row)}
             />
-            {canAction && (
-              <div className="flex items-center justify-end ml-2 w-20">
-                <>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEditAssetMappingMaster(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    title="Edit Asset Mapping"
-                    style={{
-                      color: '#0B3251',
-                      padding: '0px 8px'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')} // lighter on hover
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
 
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleConfirmationDialogBoxOpen(row)
-                    }}
-                    color='transparent'
-                    fullWidth
-                    isborderRadius
-                    size='sm'
-                    style={{
-                      color: 'red',
-                      padding: '0px 8px'
-                    }}
-                    title="Delete Asset Mapping"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </>
-              </div>
-            )}
           </div>
         )
       },
@@ -411,8 +378,8 @@ export const AssetMappingMaster: React.FC = () => {
         align: 'center',
         render: (value) => (
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${value === 'Active' ? 'bg-green-100 text-green-800' :
-              value === 'Inactive' ? 'bg-red-100 text-red-800' :
-                'bg-gray-100 text-gray-800'
+            value === 'Inactive' ? 'bg-red-100 text-red-800' :
+              'bg-gray-100 text-gray-800'
             }`}>
             {value || 'N/A'}
           </span>
@@ -502,197 +469,78 @@ export const AssetMappingMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Settings - Company setup (Asset Mapping Details)"
+        title="Asset Mapping Details"
         onSubmit={(e) => {
           e.preventDefault()
           onClose()
         }}
         cancelText="Close"
         loading={false}
+        size='xl'
       >
         <div className="space-y-6">
-          {/* Asset Mapping Information */}
+
           <div className="space-y-4">
 
-            {/* Employee Name */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Employee Name
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.EmployeeName || 'N/A'}
-              </span>
-            </div>
+            <FieldItem label="Asset Name" value={data.AssetName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Employee Name" value={data.EmployeeName} isRow withBorder={true} />
+            <FieldItem label="Asset Code" value={data.AssetCode} isRow withBorder={true} />
+            <FieldItem label="Condition On Return" value={data.ConditionOnReturn} isRow withBorder={true} />
+            <FieldItem label="Condition On Issue" value={data.ConditionOnIssue} isRow withBorder={true} />
+            <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy_hh_mm(data.AssignedDate || '-')} isRow withBorder={true} />
+            <FieldItem label="Return Date" value={formatDate_dd_MonthName_yy_hh_mm(data.ReturnDate || '-')} isRow withBorder={true} />
+            <FieldItem label="Remarks" value={data.Remarks} isRow withBorder={true} />
 
-            {/* Asset Code */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Asset Code
-              </span>
-              <span className="text-sm text-blue-600 font-medium">
-                <TooltipText
-                  text={data.AssetCode || 'N/A'}
-                  maxWidth="170px"
-                  tooltipThreshold={15}
-                  tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
-                />
-              </span>
-            </div>
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold pb-2">
+                Action Details
+              </h4>
 
-            {/* Asset Name */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Asset Name
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.AssetName || 'N/A'}
-              </span>
-            </div>
+              <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
 
-            {/* Asset Type */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Asset Type
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.AssetType || 'N/A'}
-              </span>
-            </div>
+              {data.ModifiedBy !== '' ?
+                <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
 
-            {/* Asset Brand */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Brand
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.AssetBrand || 'N/A'}
-              </span>
+                :
+                ''}
             </div>
+            <div className="flex justify-between items-center pt-4">
 
-            {/* Asset Model */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Model
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.AssetModel || 'N/A'}
-              </span>
-            </div>
+              {canAction && (
+                <>
+                  <Button
+                    color='gray'
+                    variant='solid'
+                    colorMode="light"
+                    size='md'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsViewModalOpen(false)
+                      handleConfirmationDialogBoxOpen(data)
+                    }}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    Delete
+                  </Button>
 
-            {/* Serial Number */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Serial Number
-              </span>
-              <span className="text-sm text-blue-600 font-medium">
-                {data.SerialNumber || 'N/A'}
-              </span>
-            </div>
-
-            {/* Assigned Date */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Assigned Date
-              </span>
-              <span className="text-sm text-blue-600 font-medium">
-                {data.AssignedDate ? formatDate_dd_MonthName_yy(data.AssignedDate) : 'N/A'}
-              </span>
-            </div>
-
-            {/* Return Date */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Return Date
-              </span>
-              <span className="text-sm text-blue-600 font-medium">
-                {data.ReturnDate ? formatDate_dd_MonthName_yy(data.ReturnDate) : 'N/A'}
-              </span>
-            </div>
-
-            {/* Condition On Issue */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Condition On Issue
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.ConditionOnIssue || 'N/A'}
-              </span>
-            </div>
-
-            {/* Condition On Return */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Condition On Return
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.ConditionOnReturn || 'N/A'}
-              </span>
-            </div>
-
-            {/* Remarks */}
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                Remarks
-              </span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.Remarks || 'N/A'}
-              </span>
-            </div>
-
-            {/* Status */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Status</span>
-              <span className="text-sm text-blue-600 font-medium">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${data.Status === 'Active' ? 'bg-green-100 text-green-800' :
-                    data.Status === 'Inactive' ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-800'
-                  }`}>
-                  {data.Status || 'N/A'}
-                </span>
-              </span>
-            </div>
-
-          </div>
-          {/* Action Details Header */}
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created By</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {data.CreatedBy || 'N/A'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created Date</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {data.ModifiedBy && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified By</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {data.ModifiedBy}
-                    </span>
-                  </div>
-                )}
-                {data.ModifiedDate && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified Date</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
-                    </span>
-                  </div>
-                )}
-              </div>
+                  <Button
+                    color='blue'
+                    size='md'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsViewModalOpen(false)
+                      handleEditAssetMappingMasterData(data)
+                    }}
+                  >
+                    <Edit className="h-5 w-5" />
+                    Edit
+                  </Button>
+                </>
+              )}
             </div>
           </div>
-
-
         </div>
       </Modal>
     )
@@ -726,27 +574,9 @@ export const AssetMappingMaster: React.FC = () => {
   //#endregion
 
   //#region ADD UPDATE EDIT ASSET Mapping MASTER
-  const handleAddAssetModal = () => {
+  const handleAddAssetMappingMaster = () => {
     setEditingAssetMappingMasterData(null);
-    setIsAddUpdateModalOpen(true);
-  };
-
-  interface AddUpdateAssetMappingModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSubmit: (data: AddUpdateAssetMappingMasterRequest) => void;
-    data?: AssetMappingMasterData | null;
-    loading?: boolean;
-  }
-
-  const AddUpdateAssetMappingModel: React.FC<AddUpdateAssetMappingModalProps> = ({
-    isOpen,
-    onClose,
-    onSubmit,
-    data,
-    loading = false
-  }) => {
-    const [formData, setFormData] = useState<AddUpdateAssetMappingMasterRequest>({
+    setAssetMappingMasterFormData({
       AssetMasterMappingId: 0,
       Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
       AssetMasterId: 0,
@@ -757,261 +587,121 @@ export const AssetMappingMaster: React.FC = () => {
       ConditionOnReturn: "",
       Remarks: ""
     });
-    // Single error object for all fields
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-     const [dropdownLabels, setDropdownLabels] = useState<{
-          assetName?:string;
-          employees?:string;
-        }>({});
-    useEffect(() => {
-      if (isOpen) {
-        if (data) {
-          //Edit Asset Mapping
-          setFormData({
-            AssetMasterMappingId: data.AssetMasterMappingId ?? 0,
-            Uniquekey: data.Uniquekey ?? "",
-            AssetMasterId: data.AssetMasterId ?? 0,
-            AssignedDate: data.AssignedDate ?? "",
-            EmployeeId: data.EmployeeId ?? 0,
-            ReturnDate: data.ReturnDate ?? "",
-            ConditionOnIssue: data.ConditionOnIssue ?? "",
-            ConditionOnReturn: data.ConditionOnReturn ?? "",
-            Remarks: data.Remarks ?? ""
-          });
-           setDropdownLabels({
-          assetName: data.AssetName ?? "",
-          employees:data.EmployeeName ?? ""
 
-        });
-        } else {
-          //Add Asset Mapping
-          setFormData({
-            AssetMasterMappingId: 0,
-            Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            AssetMasterId: 0,
-            AssignedDate: "",
-            EmployeeId: 0,
-            ReturnDate: "",
-            ConditionOnIssue: "",
-            ConditionOnReturn: "",
-            Remarks: ""
-          });
-        } setErrors({});
-      }
-    }, [isOpen, data]);
+    setFormErrors({});
+    setIsAddUpdateModalOpen(true);
+  };
 
-    //handle input change
-    const handleFieldChange = (
-      field: keyof AddUpdateAssetMappingMasterRequest,
-      value: any
-    ) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    };
-
-    // Submit handler
-    const handleSubmitAddUpdateAsset = (e: React.FormEvent) => {
-      e.preventDefault();
-      const requiredFields = [
-        "AssignedDate",
-        "ReturnDate",
-        "ConditionOnIssue",
-        "ConditionOnReturn",
-        "Remarks",
-        "AssetMasterId",
-        "EmployeeId"
-      ];
-
-      const newErrors: any = {};
-      requiredFields.forEach((field) => {
-        const value = formData[field as keyof AddUpdateAssetMappingMasterRequest];
-        if (value === null || value === undefined ||value === "" ||
-        value === 0 || value.toString().trim() === "") {
-          const label = field.replace(/([A-Z])/g, " $1");
-          newErrors[field] = `${label} is required`;
-        }
-      });
-      setErrors(newErrors);
-
-      // STOP submit if any error
-      if (Object.keys(newErrors).length > 0) return;
-
-      onSubmit(formData);
-    };
-
-
-     const fetchEmployeeOptions = async (pageNumber: number, params?: { value?: string }) => {
-          const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
-            PageSize: 10,
-            PageNumber: pageNumber,
-            EmployeeName: params?.value || "",
-          });
-          if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
-          const apiResponse = responseEither.right;
-          const employeeList = apiResponse?.Data?.map((item: any) => ({ label: item.EmployeeName, value: String(item.EmployeeId) })) || [];
-          return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? employeeList.length, itemList: employeeList };
-        };
-
-    const fetchAssetNameOptions = async (pageNumber: number, params?: { value?: string }) => {
-          const responseEither = await assetMasterService.apiCallPullAssetMaster({
-            PageSize: 10,
-            PageNumber: pageNumber,
-            AssetName: params?.value || "",
-          });
-          if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
-          const apiResponse = responseEither.right;
-          const assetList = apiResponse?.Data?.map((item: any) => ({ label: item.AssetName, value: String(item.AssetMasterId) })) || [];
-          return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? assetList.length, itemList: assetList };
-        };
-        const toDropdownInitialValue = (
-          id?: number | null,
-          label?: string
-        ): { label: string; value: string | number } | null => {
-          if (!id) return null;
-          return {
-            label: label || String(id),
-            value: String(id),
-          };
-        };
-       
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        onCancel={onClose}
-        title={formData.AssetMasterMappingId === 0 ? "Add Asset" : "Update Asset"}
-        onSubmit={handleSubmitAddUpdateAsset}
-        saveText={formData.AssetMasterMappingId === 0 ? "Save" : "Update"}
-        cancelText="Cancel"
-        loading={loading}
-      >
-        <div className="space-y-6">
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-            <SingleSelectDropdownWithPagination
-              label="Assets"
-              title="Select..."
-              size="lg"
-              dataFetchCallBack={fetchAssetNameOptions}
-              onSelected={(item) => handleFieldChange("AssetMasterId", Number(item.value))}
-              initialValue={toDropdownInitialValue(formData.AssetMasterId, dropdownLabels.assetName)}
-            />
-            </div>
-            <div>
-            <SingleSelectDropdownWithPagination
-              label="Employees"
-              title="Select..."
-              size="lg"
-              dataFetchCallBack={fetchEmployeeOptions}
-              onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
-              initialValue={toDropdownInitialValue(formData.EmployeeId, dropdownLabels.employees)}
-            />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Condition On Issue <span className="text-red-500">*</span></label>
-              <Input
-                value={formData.ConditionOnIssue ?? ""}
-                onChange={(e) => handleFieldChange("ConditionOnIssue", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.ConditionOnIssue ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.ConditionOnIssue && (
-                <p className="text-red-500 text-xs mt-1">{errors.ConditionOnIssue}</p>
-              )}
-            </div>
-
-            {/* Condition On Return */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Condition On Return <span className="text-red-500">*</span></label>
-              <Input
-                value={formData.ConditionOnReturn ?? ""}
-                onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.ConditionOnReturn ? "border-red-500" : "border-gray-300"
-                  }`}
-                placeholder=""
-              />
-              {errors.ConditionOnReturn && (
-                <p className="text-red-500 text-xs mt-1">{errors.ConditionOnReturn}</p>
-              )}
-            </div>
-          </div>
-
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/*  Assigned Date */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Assigned Date <span className="text-red-500">*</span></label>
-              <Input
-                type="date"
-                value={formData.AssignedDate?.substring(0, 10)}
-                onChange={(e) => handleFieldChange("AssignedDate", e.target.value)}
-                className={`w-full p-2 rounded border ${errors.AssignedDate ? "border-red-500" : "border-gray-300"
-                  }`}
-              />
-              {errors.AssignedDate && (
-                <p className="text-red-500 text-xs mt-1">{errors.AssignedDate}</p>
-              )}
-            </div>
-
-            {/*  Return Date */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Return Date<span className="text-red-500">*</span></label>
-              <Input
-                type="date"
-                value={formData.ReturnDate?.substring(0, 10)}
-                onChange={(e) =>
-                  handleFieldChange("ReturnDate", e.target.value)
-                }
-                className={`w-full p-2 rounded border ${errors.ReturnDate ? "border-red-500" : "border-gray-300"
-                  }`}
-              />
-              {errors.ReturnDate && (
-                <p className="text-red-500 text-xs mt-1">{errors.ReturnDate}</p>
-              )}
-            </div>
-            {/* Remarks */}
-
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Remarks <span className="text-red-500">*</span></label>
-            <Input
-              value={formData.Remarks as any}
-              onChange={(e) => handleFieldChange("Remarks", e.target.value)}
-              className={`w-full p-2 rounded border ${errors.Remarks ? "border-red-500" : "border-gray-300"
-                }`}
-              placeholder=""
-            />
-            {errors.Remarks && (
-              <p className="text-red-500 text-xs mt-1">{errors.Remarks}</p>
-            )}
-          </div>
-        </div>
-      </Modal>
-    );
+  const handleEditAssetMappingMasterData = (row: AssetMappingMasterData) => {
+    setEditingAssetMappingMasterData(row);
+    setAssetMappingMasterFormData({
+      AssetMasterMappingId: row.AssetMasterMappingId || 0,
+      Uniquekey: row.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      AssetMasterId: row.AssetMasterId || 0,
+      AssignedDate: row.AssignedDate || "",
+      EmployeeId: row.EmployeeId || 0,
+      ReturnDate: row.ReturnDate || "",
+      ConditionOnIssue: row.ConditionOnIssue || "",
+      ConditionOnReturn: row.ConditionOnReturn || "",
+      Remarks: row.Remarks || ""
+    });
+    setDropdownLabels({
+      assetName: row.AssetName ?? "",
+      employeeName: row.EmployeeName ?? ""
+    });
+    setFormErrors({});
+    setIsAddUpdateModalOpen(true);
   }
 
-  const handleAddUpdateAssetMappingMaster = async (formData: AddUpdateAssetMappingMasterRequest) => {
+
+  const handleFieldChange = (field: keyof AddUpdateAssetMappingMasterRequest, value: string | number | null | boolean) => {
+    setAssetMappingMasterFormData(prev => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  }
+
+  const validateAssetMappingMasterForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!AssetMappingMasterFormData.AssetMasterId) {
+      newErrors.AssetMasterId = "Asset Name is required.";
+    }
+
+    if (!AssetMappingMasterFormData.EmployeeId) {
+      newErrors.EmployeeId = "Employee Name is required.";
+    }
+
+    if (!AssetMappingMasterFormData.ConditionOnReturn?.trim()) {
+      newErrors.ConditionOnReturn = "Condition On Return is required.";
+    }
+    if (!AssetMappingMasterFormData.ConditionOnIssue?.trim()) {
+      newErrors.ConditionOnIssue = "Condition On Issue is required.";
+    }
+    if (!AssetMappingMasterFormData.AssignedDate?.trim()) {
+      newErrors.AssignedDate = "Assigned Date is required.";
+    }
+    if (!AssetMappingMasterFormData.ReturnDate?.trim()) {
+      newErrors.ReturnDate = "Return Date is required.";
+    }
+    if (!AssetMappingMasterFormData.Remarks?.trim()) {
+      newErrors.Remarks = "Remarks is required.";
+    }
+
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors,
+    };
+  }
+
+  const PushWeekAssetMappingFormData = (): AddUpdateAssetMappingMasterRequest => {
+    return {
+      AssetMasterMappingId: AssetMappingMasterFormData.AssetMasterMappingId || 0,
+      Uniquekey: AssetMappingMasterFormData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      AssetMasterId: AssetMappingMasterFormData.AssetMasterId || 0,
+      AssignedDate: AssetMappingMasterFormData.AssignedDate || "",
+      EmployeeId: AssetMappingMasterFormData.EmployeeId || 0,
+      ReturnDate: AssetMappingMasterFormData.ReturnDate || "",
+      ConditionOnIssue: AssetMappingMasterFormData.ConditionOnIssue || "",
+      ConditionOnReturn: AssetMappingMasterFormData.ConditionOnReturn || "",
+      Remarks: AssetMappingMasterFormData.Remarks || ""
+    };
+  };
+
+  const [dropdownLabels, setDropdownLabels] = useState<{
+    assetName?: string;
+    employeeName?: string;
+  }>({});
+
+  const handleAddUpdateAssetMappingMaster = async () => {
+
+    setFormErrors({});
+
+    const validation = validateAssetMappingMasterForm();
+
+    if (!validation.isValid) {
+      setFormErrors(validation.errors);
+      return;
+    }
 
     setIsAddUpdateModalOpen(false);
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        const response = await assetMappingMasterService.apiCallAddUpdateAssetMappingMaster(formData);
+
+        const payload = PushWeekAssetMappingFormData();
+        const response = await assetMappingMasterService.apiCallAddUpdateAssetMappingMaster(payload);
+
         if (E.isRight(response)) {
+
           setIsAddUpdateModalOpen(false);
-          const isAdd = formData.AssetMasterMappingId === 0
+
+          const isAdd = AssetMappingMasterFormData.AssetMasterMappingId === 0
+
           if (isAdd) {
+
             const newRecord = response.right.Data[0] as AssetMappingMasterData
 
             setAssetMappingMasterList(prevData => [newRecord, ...prevData]);
@@ -1030,7 +720,7 @@ export const AssetMappingMaster: React.FC = () => {
 
             setAssetMappingMasterList(prevData =>
               prevData.map(item =>
-                item.AssetMasterMappingId === formData.AssetMasterMappingId
+                item.AssetMasterMappingId === AssetMappingMasterFormData.AssetMasterMappingId
                   ? updatedRecord
                   : item
               )
@@ -1055,7 +745,7 @@ export const AssetMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
-      formData.AssetMasterMappingId === 0 ? 'Add Asset' : 'Update Asset...'
+      AssetMappingMasterFormData.AssetMasterMappingId === 0 ? 'Add Asset' : 'Update Asset...'
     )
   }
 
@@ -1072,8 +762,8 @@ export const AssetMappingMaster: React.FC = () => {
       async () => {
 
         const params: DeleteAssetMappingMasterRequest = {
-          AssetMasterMappingId: deleteAssetMappingMasterDetailsData.AssetMasterMappingId ?? 0,
-          UniqueKey: deleteAssetMappingMasterDetailsData.Uniquekey ?? ""
+          AssetMasterMappingId: deleteAssetMappingMasterDetailsData.AssetMasterMappingId || 0,
+          UniqueKey: deleteAssetMappingMasterDetailsData.Uniquekey || ""
         }
         const response = await assetMappingMasterService.apiCallDeleteAssetMappingMaster(params);
 
@@ -1111,7 +801,7 @@ export const AssetMappingMaster: React.FC = () => {
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
@@ -1125,7 +815,7 @@ export const AssetMappingMaster: React.FC = () => {
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by asset name..."
+          searchPlaceholder="Search By Asset Name..."
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
@@ -1141,7 +831,7 @@ export const AssetMappingMaster: React.FC = () => {
           onCustomize={() => setIsShowCustomizeAssetMappingMasterColumnsModal(true)}
           isShowAddButton={canAction}
           addTitle="Add Asset Mapping"
-          onAdd={handleAddAssetModal}
+          onAdd={handleAddAssetMappingMaster}
           isShowImportButton={false}
           isShowExportButton={canExport}
           onExportExcel={handleExportAssetMappingExcel}
@@ -1173,19 +863,122 @@ export const AssetMappingMaster: React.FC = () => {
           data={viewAssetMappingMasterDetailsData}
         />
 
-        {/*  ADD EDIT UPDATE Asset Mapping MODAL */}
-        <AddUpdateAssetMappingModel
+        {/*  ADD EDIT UPDATE ASSET MAPPING MASTER */}
+
+        <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
             setIsAddUpdateModalOpen(false)
             setEditingAssetMappingMasterData(null)
+            setFormErrors({})
           }}
-          onSubmit={handleAddUpdateAssetMappingMaster}
-          data={editingAssetMappingMasterData}
+          onCancel={() => {
+            setIsAddUpdateModalOpen(false)
+            setEditingAssetMappingMasterData(null)
+            setFormErrors({})
+          }}
+          title={editingAssetMappingMasterData ? 'Update Asset Mapping Master Details' : 'Add Asset Mapping Master Details'}
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleAddUpdateAssetMappingMaster()
+          }}
+          saveText="Save"
+          cancelText="Cancel"
           loading={isLoading}
-        />
-        {/* CUSTOMIZE COLUMNS MODAL */}
+          size="large75"
+        >
+          <div className="space-y-6 p-6 bg-blue-50">
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Asset"
+                  title="Select..."
+                  size="lg"
+                  dataFetchCallBack={fetchAssetMasterDropdown}
+                  onSelected={(item) => handleFieldChange("AssetMasterId", Number(item.value))}
+                  initialValue={createDropdownInitialValue(AssetMappingMasterFormData.AssetMasterId, dropdownLabels.assetName)}
+                  error={formErrors.AssetMasterId}
+                />
+              </div>
+              <SingleSelectDropdownWithPagination
+                label="Employees"
+                title="Select..."
+                size="lg"
+                required
+                dataFetchCallBack={fetchEmployeeMasterDropdown}
+                onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
+                initialValue={createDropdownInitialValue(AssetMappingMasterFormData.EmployeeId, dropdownLabels.employeeName)}
+                error={formErrors.EmployeeId}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Condition On Return'
+                  value={AssetMappingMasterFormData.ConditionOnReturn ?? ""}
+                  onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)}
+                  placeholder="Enter Condition On Return"
+                  maxLength={250}
+                  error={formErrors.ConditionOnReturn}
+                />
+              </div>
+
+              <div>
+                <Input
+                  type="text"
+                  label='Condition On Issue'
+                  value={AssetMappingMasterFormData.ConditionOnIssue ?? ""}
+                  onChange={(e) => handleFieldChange("ConditionOnIssue", e.target.value)}
+                  required
+                  maxLength={20}
+                  placeholder="Enter Condition On Issue"
+                  error={formErrors.ConditionOnIssue}
+                />
+
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <DatePickerInput
+                  label="Assigned Date"
+                  value={formatDate_dd_mm_yyyy(AssetMappingMasterFormData.AssignedDate)}
+                  onChange={(val) => handleFieldChange('AssignedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={formErrors.AssignedDate}
+                />
+              </div>
+
+              <div>
+                <DatePickerInput
+                  label="Return Date"
+                  value={formatDate_dd_mm_yyyy(AssetMappingMasterFormData.ReturnDate)}
+                  onChange={(val) => handleFieldChange('ReturnDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={formErrors.ReturnDate}
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  label='Remarks'
+                  value={AssetMappingMasterFormData.Remarks ?? ""}
+                  onChange={(e) => handleFieldChange("Remarks", e.target.value)}
+                  required
+                  maxLength={20}
+                  placeholder="Enter Remarks"
+                  error={formErrors.Remarks}
+                />
+              </div>
+            </div>
+
+          </div>
+        </Modal>
+
+        {/* CUSTOMIZE COLUMNS MODAL */}
 
         <CustomizeColumnsModal
           isOpen={isShowCustomizeAssetMappingMasterColumnsModal}

@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
@@ -31,6 +31,7 @@ import { fetchBranchMasterDropdown } from "@/features/branchMaster/branchMasterD
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import type { AddUpdateEmployeeMasterRequest, FilterWithPaginationEmployeeMasterRequest } from "@/features/employeeMaster/models/EmployeeMasterModel";
+
 
 const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
   EmployeeId: 0,
@@ -77,6 +78,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate();
+  const location = useLocation();
 
   //GET VALUE FROM URL :EMPLOYEEID
   const { employeeId } = useParams<{ employeeId?: string }>();
@@ -146,6 +148,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
   //#endregion
 
+  //#region HANDLE FILED CHNAGE EVENT
   const handleFieldChange = (field: keyof AddUpdateEmployeeMasterRequest, value: any) => {
 
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -154,6 +157,7 @@ const AddUpdateEmployeePage: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
+  //#endregion
 
   //#region INITIALIZATION
   useEffect(() => {
@@ -161,14 +165,16 @@ const AddUpdateEmployeePage: React.FC = () => {
       fetchEmployeeMasterDetails();
       return;
     }
-    // create mode defaults
+    
     setSelectedCountryId(1);
     handleFieldChange('CountryMasterId', 1);
+    
   }, [employeeId]);
 
 
   //#endregion
 
+  //#region FETCH EMPLOYEE MASTER DETAILS
   const fetchEmployeeMasterDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -256,10 +262,9 @@ const AddUpdateEmployeePage: React.FC = () => {
       'Loading Employee Data'
     )
   }
+  //#endregion
 
-
-
-
+  //#region EMPLOYEE MASTER VALIDATION | ADD | UPDATE ACTION
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddEmployeeMasterForm = (): {
 
@@ -496,11 +501,26 @@ const AddUpdateEmployeePage: React.FC = () => {
 
           addToast({ type: "success", title: formData.EmployeeId ? "Employee updated successfully" : "Employee added successfully" });
 
-          setTimeout(() => {
+          // Get list state from navigation if available, otherwise use defaults
+          const locationState = location.state as {
+            listState?: {
+              page?: number;
+              filters?: any;
+              sortInfo?: any;
+              searchTerm?: string;
+            };
+          } | null;
 
-            navigate("/employeeMaster");
+          const listState = locationState?.listState || {
+            page: 1,
+            filters: {},
+            sortInfo: undefined,
+            searchTerm: '',
+          };
 
-          }, 500);
+          navigate("/employeeMaster", {
+            state: { listState }
+          });
 
         } else {
 
@@ -521,7 +541,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
   };
 
-
+  //#endregion
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
@@ -858,6 +878,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                   <Input
                     label="Account Number"
                     required value={formData.AccountNo}
+                    maxLength={18}
                     onChange={(e) => handleFieldChange("AccountNo", filterNumbers(e.target.value))}
                     error={errors.AccountNo} />
                 </div>
@@ -872,10 +893,8 @@ const AddUpdateEmployeePage: React.FC = () => {
             </div>
           </form>
         </div>
-        <div
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}
-        >
+         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+                    style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
           <Button
             color="transparent"
             variant='transparent_border'

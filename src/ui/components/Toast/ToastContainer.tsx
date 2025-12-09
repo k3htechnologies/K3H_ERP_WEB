@@ -3,6 +3,11 @@ import { Toast } from './Toast'
 import type { ToastProps } from './Toast'
 import { Modal } from '../Modal/Modal'
 import { LOCAL_STORAGE_KEYS } from '@/core/constants'
+import { useNavigate } from 'react-router-dom'
+import * as E from 'fp-ts/Either';
+import type { PullMenuRequest } from '@/features/menu/models/MenuModel'
+import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
+import { menuService } from '@/features/menu/services/MenuService'
 
 export interface ToastContainerProps {
     toasts: ToastProps[]
@@ -13,7 +18,11 @@ export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
 
     const [isMenuModalOpen, setIsMenuModalOpen] = useState(false)
 
+    //LOCATION
+    const navigate = useNavigate();
+
     // Whenever toasts change, check if any have title === 'Menu Changed'
+
     useEffect(() => {
         const hasMenuChangedToast = toasts.some(t => t.title === 'Menu Changed')
 
@@ -23,19 +32,18 @@ export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
         }
     }, [toasts])
 
-
     if (!isMenuModalOpen) {
         return (
             <div
                 style={{
                     position: 'fixed',
-                    top: '20px',
-                    right: '20px',
+                    top: '36px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
                     zIndex: 9999,
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '12px',
-                    maxWidth: '400px',
                     pointerEvents: 'none'
                 }}
             >
@@ -55,6 +63,31 @@ export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
             </div>
         )
     }
+
+    //#region DATA LOAD FOR ASSET MAPPING TO EACH EMPLOYEE
+
+    const refreshMenu = async () => {
+
+        const request: PullMenuRequest = {
+
+            EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
+        };
+
+        const response = await menuService.apiCallPullMenu(request);
+
+        if (E.isRight(response)) {
+
+            const menu = response.right.Data;
+
+            LocalStorageHelper.storeMenuData(menu);
+
+            window.dispatchEvent(new Event('menu-updated'));
+
+        }
+    };
+
+    //#endregion 
+
     return (
         <Modal
             isOpen={isMenuModalOpen}
@@ -67,10 +100,8 @@ export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
             onSubmit={(e) => {
                 e.preventDefault()
                 setIsMenuModalOpen(false);
-                setTimeout(() => {
-                    window.location.href = '/dashboard'
-                }, 1500)
-
+                refreshMenu()
+                navigate('/dashboard');
             }}
         >
             <div className="space-y-3">

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, forwardRef } from "react";
-import { ChevronDown, ChevronUp, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, InfoIcon, Search } from "lucide-react";
 import type { SinglePageSelectionProps } from "@/core/types/dropDownSelectionType";
 import { THEME } from "@/core/constants/theme";
 
@@ -241,18 +241,27 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
           </div>
         )}
         {/* Error message */}
-        {error && (
-          <p
+        {(error ) && (
+          <div
             style={{
-              color: theme.colors.error,
+              marginTop: theme.spacing.sm,
               fontSize: theme.fontSize.sm,
-              marginTop: '4px',
-              marginLeft: '0',
-              marginBottom: '0',
+              color: error ? theme.colors.error : theme.colors.textSecondary,
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",       // spacing between icon & text
             }}
           >
-            {error}
-          </p>
+            <InfoIcon
+              style={{
+                fontSize: theme.fontSize.xs,
+                color: error ? theme.colors.error : theme.colors.textSecondary,
+                height:14
+              }}
+            />
+
+            {error }
+          </div>
         )}
       </div>
     );

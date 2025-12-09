@@ -1,6 +1,7 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 import type { EmployeeData } from "@/features/authentication/models/AuthenticationModel"
 import type { CompanyMasterData } from "@/features/companyMaster/models/CompanyMasterModel"
+import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel"
 
 export interface FilterWithPaginationProjectMasterRequest {
     PageSize: number
@@ -50,7 +51,7 @@ export interface ProjectMasterData {
     ProjectAreaInSqft: string | '';
     OnGoingBudgetCost: string | '';
 
-    SurveyDate: string | null;           
+    SurveyDate: string | null;
     ExpectedStartDate: string | null;
     ExecutionStartDate: string | null;
 
@@ -106,6 +107,7 @@ export interface ProjectWithBankDetails {
     LastModifiedBy: string | ''
     LastModifiedDate: string | null
 }
+
 export interface AddUpdateProjectMasterRequest {
     ProjectId: number | 0;
     Uniquekey: string | '';
@@ -146,7 +148,57 @@ export interface AddUpdateProjectMasterRequest {
     GoogleLocation: string | '';
 }
 
+export interface AddUpdateProjectMasterWithEmployeeRequest {
+    ProjectId: number | 0;
+    Uniquekey: string | '';
+    EmployeeId: string | '';
+}
 
+export interface DeleteProjectMasterWithEmployeeRequest {
+    ProjectId: number | 0;
+    Uniquekey: string | '';
+    EmployeeId: string | '';
+}
+
+export interface AddUpdateProjectMasterWithCompanyRequest {
+    ProjectId: number | 0;
+    Uniquekey: string | '';
+    CompanyId: string | '';
+}
+
+export interface DeleteProjectMasterWithCompanyRequest {
+    ProjectId: number | 0;
+    Uniquekey: string | '';
+    CompanyId: string | '';
+}
+
+export interface AddUpdateProjectMasterWithBankDetailsRequest {
+    ProjectWithBankDetailsId: number | 0;
+    Uniquekey: string | '';
+    ProjectId: number | 0;
+    BeneficiaryAccountHolderName: string | '';
+    BankListMasterId: number | 0;
+    AccountNumber: string | '';
+    Branch: string | '';
+    IFSCCode: string | '';
+    AcType: string | '';
+
+}
+
+export interface DeleteProjectMasterWithBankDetailsRequest {
+    ProjectWithBankDetailsId: number | 0;
+    Uniquekey: string | '';
+    ProjectId: number | 0;
+}
 
 export type ProjectMasterListResponse = ApiResponse<ProjectMasterData[]>;
 export type ProjectMasterSaveResponse = ApiResponse<ProjectMasterData[]>;
+export type ProjectMasterWithEmployeeResponse = ApiResponse<EmployeeMasterData[]>;
+export type ProjectMasterWithEmployeeSaveResponse = ApiResponse<EmployeeMasterData[]>;
+export type ProjectMasterWithEmployeeDeleteResponse = ApiResponse<number>;
+export type ProjectMasterWithCompanyResponse = ApiResponse<CompanyMasterData[]>;
+export type ProjectMasterWithCompanySaveResponse = ApiResponse<CompanyMasterData[]>;
+export type ProjectMasterWithCompanyDeleteResponse = ApiResponse<number>;
+export type ProjectMasterWithBankDetailsResponse = ApiResponse<ProjectWithBankDetails[]>;
+export type ProjectMasterWithBankDetailsSaveResponse = ApiResponse<ProjectWithBankDetails[]>;
+export type ProjectMasterWithBankDetailsDeleteResponse = ApiResponse<number>;

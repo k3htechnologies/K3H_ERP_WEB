@@ -4,14 +4,12 @@ import { Input } from '@/ui/components/forms'
 import { THEME } from '@/core/constants/theme'
 import type { DatePickerProps } from '@/core/types/form.types'
 
-
 const parseDdMmYyyy = (value?: string | null): Date | null => {
   if (!value) return null
   const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(value)
   if (!match) return null
   const [, dd, mm, yyyy] = match
   const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd))
-  // basic safety check
   if (
     d.getFullYear() === Number(yyyy) &&
     d.getMonth() === Number(mm) - 1 &&
@@ -49,6 +47,10 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date | null>(parseDdMmYyyy(value))
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
+  const popupRef = useRef<HTMLDivElement | null>(null)
+
+  // 'bottom' means popup below input (default), 'top' means popup above input
+  const [openPosition, setOpenPosition] = useState<'bottom' | 'top'>('bottom')
 
   // Close on outside click
   useEffect(() => {
@@ -57,8 +59,15 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
         setIsOpen(false)
       }
     }
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false)
+    }
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKey)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKey)
+    }
   }, [])
 
   // Keep state in sync with external value
@@ -68,6 +77,7 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
     if (parsed) setCurrentMonth(parsed)
   }, [value])
 
+  // Calculate weeks grid derived values
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth()
 
@@ -77,10 +87,8 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
   const weeks: (Date | null)[][] = []
   let currentRow: (Date | null)[] = []
 
-  // Leading empty cells
   for (let i = 0; i < firstDayOfWeek; i++) currentRow.push(null)
 
-  // Days of month
   for (let day = 1; day <= daysInMonth; day++) {
     currentRow.push(new Date(year, month, day))
     if (currentRow.length === 7) {
@@ -88,7 +96,6 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
       currentRow = []
     }
   }
-  // Trailing empty cells
   if (currentRow.length > 0) {
     while (currentRow.length < 7) currentRow.push(null)
     weeks.push(currentRow)
@@ -134,6 +141,67 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
 
   const displayValue = selectedDate ? formatDdMmYyyy(selectedDate) : ''
 
+  // Decide open position (above/below) whenever popup open state changes or on resize/scroll
+  const computeAndSetPosition = () => {
+    const wrapper = wrapperRef.current
+    const popup = popupRef.current
+    if (!wrapper) return
+    // If popup not rendered yet, assume bottom; will re-evaluate after next paint
+    if (!popup) {
+      setOpenPosition('bottom')
+      return
+    }
+
+    const rect = wrapper.getBoundingClientRect()
+    const popupHeight = popup.offsetHeight || 240 // fallback estimate
+    const spaceBelow = window.innerHeight - rect.bottom
+    const spaceAbove = rect.top
+
+    // prefer below if enough, otherwise above if enough; otherwise choose the one with more space
+    if (spaceBelow >= popupHeight + 8) {
+      setOpenPosition('bottom')
+    } else if (spaceAbove >= popupHeight + 8) {
+      setOpenPosition('top')
+    } else {
+      setOpenPosition(spaceBelow >= spaceAbove ? 'bottom' : 'top')
+    }
+  }
+
+  // Compute position when opening
+  useEffect(() => {
+    if (!isOpen) return
+
+    // run after next paint so popupRef.offsetHeight is accurate
+    const raf = requestAnimationFrame(() => {
+      computeAndSetPosition()
+    })
+
+    // also recompute on scroll/resize while open
+    const onScroll = () => computeAndSetPosition()
+    window.addEventListener('resize', onScroll, { passive: true })
+    window.addEventListener('scroll', onScroll, { passive: true })
+
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('resize', onScroll)
+      window.removeEventListener('scroll', onScroll)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, currentMonth, selectedDate]) // re-check when calendar size/content might change
+
+  // Also recompute when popup first mounts (popupRef becomes available)
+  useEffect(() => {
+    if (!isOpen) return
+    computeAndSetPosition()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [popupRef.current])
+
+  // Toggle open with disabled guard
+  const handleToggleOpen = () => {
+    if (disabled) return
+    setIsOpen(prev => !prev)
+  }
+
   return (
     <div
       ref={wrapperRef}
@@ -148,19 +216,22 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
         disabled={disabled}
         error={error}
         helperText={helperText}
-        onClick={() => {
-          if (!disabled) setIsOpen(prev => !prev)
-        }}
+        onClick={handleToggleOpen}
         leftIcon={<CalendarIcon size={18} />}
         placeholder="DD-MM-YYYY"
       />
 
       {isOpen && !disabled && (
         <div
+          ref={popupRef}
           style={{
             position: 'absolute',
-            top: '100%',
-            marginTop: 8,
+            // If openPosition is bottom, place below: top = 100% + margin
+            // If openPosition is top, place above: bottom = 100% + margin
+            top: openPosition === 'bottom' ? '100%' : undefined,
+            bottom: openPosition === 'top' ? '100%' : undefined,
+            marginTop: openPosition === 'bottom' ? 8 : undefined,
+            marginBottom: openPosition === 'top' ? 8 : undefined,
             right: 0,
             zIndex: 50,
             width: 320,
@@ -169,6 +240,8 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
             boxShadow: theme.shadows.lg,
             border: `1px solid ${theme.colors.border}`,
             padding: 16,
+            // small transform to help with clipping rounding
+            transformOrigin: openPosition === 'bottom' ? 'top right' : 'bottom right'
           }}
         >
           {/* Header: month + year + nav */}
@@ -280,7 +353,7 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
                       cursor: 'pointer',
                       fontSize: theme.fontSize.sm,
                       backgroundColor: selected
-                        ? theme.colors.primary
+                        ? theme.colors.primary1
                         : 'transparent',
                       color: selected ? '#fff' : theme.colors.text,
                     }}

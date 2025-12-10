@@ -60,6 +60,7 @@ import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor'
 import { OutDoor } from '@/features/outdoor/pages/OutDoor';
 
 import { ViewVendor } from '@/features/vendor/pages/ViewVendor';
+import SiteProgress from '@/features/siteProgress/pages/SiteProgress';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -177,6 +178,7 @@ function App() {
             <Route path="document" element={<ProjectDocument />} />
             <Route path="reraCategory" element={<ProjectRERADocumentCategoryMaster />} />
             <Route path="rera" element={<ProjectRERADocument />} />
+            <Route path="siteProgress" element={<SiteProgress />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

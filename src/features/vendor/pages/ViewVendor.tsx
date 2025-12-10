@@ -32,11 +32,11 @@ export const ViewVendor: React.FC = () => {
 
   //#region Get VENDOR DATA FROM LOCATION STATE
 
-  const editVendorData = (location.state?.editVendorData ?? null) as VendorData | null;
+  const editVendorMasterData = (location.state?.editVendorData ?? null) as VendorData | null;
 
   //#endregion
 
-  //#region EDIT VENDOR
+  //#region EDIT VENDOR MASTER
 
   const handleEditVendor = (row: VendorData) => {
     if (!row?.VendorId) return;
@@ -74,11 +74,11 @@ export const ViewVendor: React.FC = () => {
               <div className="pt-10 px-6 pb-6">
                 <div className="text-center">
                   <h3 className="text-lg font-semibold text-gray-900">
-                    {editVendorData?.VendorName || 'Vendor'}
+                    {editVendorMasterData?.VendorName || 'Vendor'}
                   </h3>
                   <div className="mt-2 flex justify-center gap-2">
                     <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">
-                      {editVendorData?.CompanyName || 'N/A'}
+                      {editVendorMasterData?.CompanyName || 'N/A'}
                     </span>
 
                   </div>
@@ -87,9 +87,9 @@ export const ViewVendor: React.FC = () => {
                 {/* Basic Info box */}
                 <div className="mt-6 rounded">
                   <h4 className="font-semibold text-sm text-gray-800 mb-3">Basic Information</h4>
-                  <FieldItem label="Mobile Number" value={editVendorData?.MobileNumber || '-'} isRow />
-                  <FieldItem label="Email ID" value={editVendorData?.EmailId || '-'} isRow />
-                  <FieldItem label="Company Type" value={editVendorData?.CompanyType || '-'} isRow />
+                  <FieldItem label="Mobile Number" value={editVendorMasterData?.MobileNumber || '-'} isRow />
+                  <FieldItem label="Email ID" value={editVendorMasterData?.EmailId || '-'} isRow />
+                  <FieldItem label="Company Type" value={editVendorMasterData?.CompanyType || '-'} isRow />
 
                 </div>
 
@@ -98,7 +98,7 @@ export const ViewVendor: React.FC = () => {
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
-                      handleEditVendor(editVendorData!)
+                      handleEditVendor(editVendorMasterData!)
                     }}
                     color='blue'
                     fullWidth
@@ -125,9 +125,9 @@ export const ViewVendor: React.FC = () => {
                 <div className="mt-6 rounded">
                   <h4 className="font-semibold text-sm text-gray-800 mb-3">Government Identifiers</h4>
 
-                  <FieldItem label="PAN Number" value={editVendorData?.PanCardNumber ?? '-'} urls={editVendorData?.PanCardURL} isRow />
-                  <FieldItem label="GST Number" value={editVendorData?.GSTNumber ?? '-'} urls={editVendorData?.GSTCertificateURL} isRow />
-                  <FieldItem label="Aadhar Card Number" value={editVendorData?.AadharCardNumber ?? '-'} urls={editVendorData?.AadharCardURL} isRow />
+                  <FieldItem label="PAN Number" value={editVendorMasterData?.PanCardNumber ?? '-'} urls={editVendorMasterData?.PanCardURL} isRow />
+                  <FieldItem label="GST Number" value={editVendorMasterData?.GSTNumber ?? '-'} urls={editVendorMasterData?.GSTCertificateURL} isRow />
+                  <FieldItem label="Aadhar Card Number" value={editVendorMasterData?.AadharCardNumber ?? '-'} urls={editVendorMasterData?.AadharCardURL} isRow />
                 </div>
 
                 {/* ADDRESS */}
@@ -135,13 +135,13 @@ export const ViewVendor: React.FC = () => {
                   <h4 className="font-semibold text-sm text-gray-800 mb-3">Address Details</h4>
                   <FieldItem
                     label="Address"
-                    value={editVendorData?.Address || 'N/A'}
+                    value={editVendorMasterData?.Address || 'N/A'}
                     isRow={false}
                   />
-                  <FieldItem label="Country" value={editVendorData?.CountryName || 'N/A'} isRow />
-                  <FieldItem label="State" value={editVendorData?.StateName || 'N/A'} isRow />
-                  <FieldItem label="District" value={editVendorData?.DistrictName || 'N/A'} isRow />
-                  <FieldItem label="City" value={editVendorData?.CityName || 'N/A'} isRow />
+                  <FieldItem label="Country" value={editVendorMasterData?.CountryName || 'N/A'} isRow />
+                  <FieldItem label="State" value={editVendorMasterData?.StateName || 'N/A'} isRow />
+                  <FieldItem label="District" value={editVendorMasterData?.DistrictName || 'N/A'} isRow />
+                  <FieldItem label="City" value={editVendorMasterData?.CityName || 'N/A'} isRow />
                 </div>
               </div>
             </div>
@@ -160,17 +160,17 @@ export const ViewVendor: React.FC = () => {
                     defaultOpen: false,
                     content: (
                       <div className="grid grid-cols-1 gap-4">
-                        {editVendorData?.AvailableMaterialList && (
+                        {editVendorMasterData?.AvailableMaterialList && (
                           <FieldItem
                             label="Available Materials"
-                            value={editVendorData?.AvailableMaterialList}
+                            value={editVendorMasterData?.AvailableMaterialList}
                             isRow={false}
                           />
                         )}
-                        {editVendorData?.AvailableContractList && (
+                        {editVendorMasterData?.AvailableContractList && (
                           <FieldItem
                             label="Available Contracts"
-                            value={editVendorData?.AvailableContractList}
+                            value={editVendorMasterData?.AvailableContractList}
                             isRow={false}
                           />
                         )}
@@ -183,18 +183,18 @@ export const ViewVendor: React.FC = () => {
                     defaultOpen: false,
                     content: (
                       <div className="grid grid-cols-1 gap-4">
-                        <FieldItem label="Created By" value={editVendorData?.CreatedBy || 'N/A'} isRow />
+                        <FieldItem label="Created By" value={editVendorMasterData?.CreatedBy || 'N/A'} isRow />
                         <FieldItem
                           label="Created Date"
-                          value={formatDate_dd_MonthName_yy_hh_mm(editVendorData?.CreatedDate || '-')}
+                          value={formatDate_dd_MonthName_yy_hh_mm(editVendorMasterData?.CreatedDate || '-')}
                           isRow
                         />
-                        {editVendorData?.ModifiedBy && (
+                        {editVendorMasterData?.ModifiedBy && (
                           <>
-                            <FieldItem label="Modified By" value={editVendorData?.ModifiedBy} isRow />
+                            <FieldItem label="Modified By" value={editVendorMasterData?.ModifiedBy} isRow />
                             <FieldItem
                               label="Modified Date"
-                              value={formatDate_dd_MonthName_yy_hh_mm(editVendorData?.ModifiedDate || '-')}
+                              value={formatDate_dd_MonthName_yy_hh_mm(editVendorMasterData?.ModifiedDate || '-')}
                               isRow
                             />
                           </>

@@ -93,7 +93,7 @@ export const Vendor: React.FC = () => {
 
       setSearchTerm(String(listState.searchTerm));
 
-      loadVendors(listState.page ?? 1, { EmployeeName: String(listState.searchTerm).trim() });
+      loadVendors(listState.page ?? 1, { VendorName: String(listState.searchTerm).trim() });
 
       return;
     }
@@ -265,10 +265,10 @@ export const Vendor: React.FC = () => {
     fetchVendorList(page);
   }, [fetchVendorList]);
 
-  const handleSortColumn = (sortInfo: SortInfo) => {
-    setSortInfo(sortInfo);
-    fetchVendorList(1);
-  }
+   const handleSortColumn = useCallback((sort: SortInfo) => {
+      setSortInfo(sort);
+      fetchVendorList(1);
+    }, []);
 
   const vendorPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -298,7 +298,7 @@ export const Vendor: React.FC = () => {
         },
       },
     })
-  }, [filters, navigate, pagination.currentPage])
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
 
   //#endregion
 

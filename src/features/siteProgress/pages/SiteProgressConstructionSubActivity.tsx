@@ -33,12 +33,8 @@ const SiteProgressConstructionSubActivity: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
-    if (!location.state?.projectId || !location.state?.constructionActivityId) {
-      addToast({ type: 'error', title: 'Activity context missing' });
-      return;
-    }
+    
     fetchConstructionSubActivityList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
   //#endregion
 
@@ -52,15 +48,10 @@ const SiteProgressConstructionSubActivity: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        if (!location.state?.projectId || !location.state?.constructionActivityId) return;
-
+        
         const params: FilterWithPaginationSiteProgressConstructionSubActivityRequest = {
-          PageNumber: page,
-          PageSize: pagination.pageSize,
           ProjectId: location.state.projectId,
-          ConstructionActivityId: location.state.constructionActivityId,
-          SearchTerm: term.trim() || undefined,
-          SortBy: sortInfo ? `${sortInfo.column} ${sortInfo.direction.toUpperCase()}` : undefined
+          ConstructionActivityId: location.state.constructionActivityId
         };
 
         const response = await SiteProgressService.apiCallPullSiteProgressConstructionSubActivity(params);
@@ -109,13 +100,6 @@ const SiteProgressConstructionSubActivity: React.FC = () => {
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize]
   );
 
-  const filteredConstructionSubActivityList = useMemo(() => {
-    if (!searchTerm.trim()) return constructionSubActivityList;
-    const term = searchTerm.toLowerCase();
-    return constructionSubActivityList.filter(item =>
-      (item.SubActivityName || '').toLowerCase().includes(term)
-    );
-  }, [constructionSubActivityList, searchTerm]);
   //#endregion
 
   //#region TABLE COLUMN
@@ -180,7 +164,7 @@ const SiteProgressConstructionSubActivity: React.FC = () => {
 
       {/* DATA TABLE */}
       <DataTable
-        data={filteredConstructionSubActivityList}
+        data={constructionSubActivityList}
         columns={constructionSubActivityColumns}
         pagination={constructionSubActivityPaginationInfo}
         emptyMessage="No construction sub activities found"

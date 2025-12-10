@@ -21,7 +21,7 @@ const SiteProgressSubConstruction: React.FC = () => {
   const [loadingMessage, setIsLoadingMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-  const { pagination, setPagination } = usePagination(20);
+  const { pagination, setPagination } = usePagination(50);
   const { addToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation() as Location & {
@@ -35,12 +35,9 @@ const SiteProgressSubConstruction: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
-    if (!location.state?.projectId || !location.state?.inventoryBuildingId || !location.state?.constructionId) {
-      addToast({ type: 'error', title: 'Construction context missing' });
-      return;
-    }
+  
     fetchSubConstructionList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [location.state]);
   //#endregion
 
@@ -54,8 +51,7 @@ const SiteProgressSubConstruction: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        if (!location.state?.projectId || !location.state?.inventoryBuildingId || !location.state?.constructionId) return;
-
+        
         const params: FilterWithPaginationSiteProgressSubConstructionRequest = {
           ProjectId: location.state.projectId,
           InventoryBuildingId: location.state.inventoryBuildingId,
@@ -108,14 +104,6 @@ const SiteProgressSubConstruction: React.FC = () => {
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize]
   );
 
-  const filteredSubConstructionList = useMemo(() => {
-    if (!searchTerm.trim()) return subConstructionList;
-    const term = searchTerm.toLowerCase();
-    return subConstructionList.filter(item =>
-      (item.SubConstruction || '').toLowerCase().includes(term) ||
-      (item.Status || '').toLowerCase().includes(term)
-    );
-  }, [subConstructionList, searchTerm]);
   //#endregion
 
   //#region VIEW
@@ -162,7 +150,7 @@ const SiteProgressSubConstruction: React.FC = () => {
       render: value => value || '-'
     },
     {
-      key: 'PlanStartDate',
+       key: 'PlanStartDate',
       label: 'Plan Start',
       width: '16',
       sortable: false,
@@ -172,6 +160,38 @@ const SiteProgressSubConstruction: React.FC = () => {
     {
       key: 'PlanEndDate',
       label: 'Plan End',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'PlanDuration',
+      label: 'Duration',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'ActualStartDate',
+      label: 'Actual Start',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'ActualEndDate',
+      label: 'Actual End',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'ActualDaysDifference',
+      label: 'Days Difference',
       width: '16',
       sortable: false,
       align: 'center',
@@ -222,7 +242,7 @@ const SiteProgressSubConstruction: React.FC = () => {
 
       {/* DATA TABLE */}
       <DataTable
-        data={filteredSubConstructionList}
+        data={subConstructionList}
         columns={subConstructionColumns}
         pagination={subConstructionPaginationInfo}
         emptyMessage="No sub construction records found"

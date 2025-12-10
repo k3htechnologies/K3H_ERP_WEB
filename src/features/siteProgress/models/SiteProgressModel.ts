@@ -50,10 +50,6 @@ export interface FilterWithPaginationSiteProgressWingConstructionRequest {
     InventoryBuildingId: number
     ConstructionId: number
     SubConstructionId: number
-    PageNumber?: number
-    PageSize?: number
-    SortBy?: string
-    SearchTerm?: string
     ExportType?: 'Excel' | 'PDF'
 }
 
@@ -84,10 +80,6 @@ export interface FilterWithPaginationSiteProgressFloorConstructionRequest {
     ConstructionId: number
     SubConstructionId: number
     InventoryFlatFloorBasementPodiumWingId: number
-    PageNumber?: number
-    PageSize?: number
-    SortBy?: string
-    SearchTerm?: string
     ExportType?: 'Excel' | 'PDF'
 }
 export interface SiteProgressFloorConstructionData {
@@ -119,10 +111,6 @@ export interface FilterWithPaginationSiteProgressFlatConstructionRequest {
     SubConstructionId: number
     InventoryFlatFloorBasementPodiumWingId: number
     InventoryFloorId: number
-    PageNumber?: number
-    PageSize?: number
-    SortBy?: string
-    SearchTerm?: string
     ExportType?: 'Excel' | 'PDF'
 }
 
@@ -158,10 +146,6 @@ export interface FilterWithPaginationSiteProgressConstructionActivityRequest {
     InventoryFlatFloorBasementPodiumWingId: number
     InventoryFloorId: number
     InventoryFlatId: number
-    PageNumber?: number
-    PageSize?: number
-    SortBy?: string
-    SearchTerm?: string
     ExportType?: 'Excel' | 'PDF'
 }
 
@@ -181,10 +165,6 @@ export interface SiteProgressConstructionActivityData {
 export interface FilterWithPaginationSiteProgressConstructionSubActivityRequest {
     ProjectId: number
     ConstructionActivityId: number
-    PageNumber?: number
-    PageSize?: number
-    SortBy?: string
-    SearchTerm?: string
     ExportType?: 'Excel' | 'PDF'
 }
 

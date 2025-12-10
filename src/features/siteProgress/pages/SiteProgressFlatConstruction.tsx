@@ -38,12 +38,9 @@ const SiteProgressFlatConstruction: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
-    if (!location.state?.projectId || !location.state?.inventoryBuildingId || !location.state?.constructionId || !location.state?.subConstructionId || !location.state?.inventoryFlatFloorBasementPodiumWingId || !location.state?.inventoryFloorId) {
-      addToast({ type: 'error', title: 'Floor context missing' });
-      return;
-    }
+   
     fetchFlatConstructionList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [location.state]);
   //#endregion
 
@@ -57,19 +54,14 @@ const SiteProgressFlatConstruction: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        if (!location.state?.projectId || !location.state?.inventoryBuildingId || !location.state?.constructionId || !location.state?.subConstructionId || !location.state?.inventoryFlatFloorBasementPodiumWingId || !location.state?.inventoryFloorId) return;
-
+        
         const params: FilterWithPaginationSiteProgressFlatConstructionRequest = {
-          PageNumber: page,
-          PageSize: pagination.pageSize,
           ProjectId: location.state.projectId,
           InventoryBuildingId: location.state.inventoryBuildingId,
           ConstructionId: location.state.constructionId,
           SubConstructionId: location.state.subConstructionId,
           InventoryFlatFloorBasementPodiumWingId: location.state.inventoryFlatFloorBasementPodiumWingId,
-          InventoryFloorId: location.state.inventoryFloorId,
-          SearchTerm: term.trim() || undefined,
-          SortBy: sortInfo ? `${sortInfo.column} ${sortInfo.direction.toUpperCase()}` : undefined
+          InventoryFloorId: location.state.inventoryFloorId
         };
 
         const response = await SiteProgressService.apiCallPullSiteProgressFlatConstruction(params);
@@ -117,15 +109,6 @@ const SiteProgressFlatConstruction: React.FC = () => {
     }),
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize]
   );
-
-  const filteredFlatConstructionList = useMemo(() => {
-    if (!searchTerm.trim()) return flatConstructionList;
-    const term = searchTerm.toLowerCase();
-    return flatConstructionList.filter(item =>
-      (item.FlatNumber || '').toLowerCase().includes(term) ||
-      (item.Status || '').toLowerCase().includes(term)
-    );
-  }, [flatConstructionList, searchTerm]);
   //#endregion
 
   //#region VIEW
@@ -175,7 +158,7 @@ const SiteProgressFlatConstruction: React.FC = () => {
       render: value => value || '-'
     },
     {
-      key: 'PlanStartDate',
+        key: 'PlanStartDate',
       label: 'Plan Start',
       width: '16',
       sortable: false,
@@ -185,6 +168,38 @@ const SiteProgressFlatConstruction: React.FC = () => {
     {
       key: 'PlanEndDate',
       label: 'Plan End',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'PlanDuration',
+      label: 'Duration',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'ActualStartDate',
+      label: 'Actual Start',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'ActualEndDate',
+      label: 'Actual End',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'ActualDaysDifference',
+      label: 'Days Difference',
       width: '16',
       sortable: false,
       align: 'center',
@@ -235,7 +250,7 @@ const SiteProgressFlatConstruction: React.FC = () => {
 
       {/* DATA TABLE */}
       <DataTable
-        data={filteredFlatConstructionList}
+        data={flatConstructionList}
         columns={flatConstructionColumns}
         pagination={flatConstructionPaginationInfo}
         emptyMessage="No flat construction records found"

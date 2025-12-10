@@ -37,10 +37,7 @@ const SiteProgressFloorConstruction: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
-    if (!location.state?.projectId || !location.state?.inventoryBuildingId || !location.state?.constructionId || !location.state?.subConstructionId || !location.state?.inventoryFlatFloorBasementPodiumWingId) {
-      addToast({ type: 'error', title: 'Wing context missing' });
-      return;
-    }
+    
     fetchFloorConstructionList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
@@ -56,18 +53,13 @@ const SiteProgressFloorConstruction: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        if (!location.state?.projectId || !location.state?.inventoryBuildingId || !location.state?.constructionId || !location.state?.subConstructionId || !location.state?.inventoryFlatFloorBasementPodiumWingId) return;
-
+        
         const params: FilterWithPaginationSiteProgressFloorConstructionRequest = {
-          PageNumber: page,
-          PageSize: pagination.pageSize,
           ProjectId: location.state.projectId,
           InventoryBuildingId: location.state.inventoryBuildingId,
           ConstructionId: location.state.constructionId,
           SubConstructionId: location.state.subConstructionId,
-          InventoryFlatFloorBasementPodiumWingId: location.state.inventoryFlatFloorBasementPodiumWingId,
-          SearchTerm: term.trim() || undefined,
-          SortBy: sortInfo ? `${sortInfo.column} ${sortInfo.direction.toUpperCase()}` : undefined
+          InventoryFlatFloorBasementPodiumWingId: location.state.inventoryFlatFloorBasementPodiumWingId
         };
 
         const response = await SiteProgressService.apiCallPullSiteProgressFloorConstruction(params);
@@ -116,14 +108,6 @@ const SiteProgressFloorConstruction: React.FC = () => {
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize]
   );
 
-  const filteredFloorConstructionList = useMemo(() => {
-    if (!searchTerm.trim()) return floorConstructionList;
-    const term = searchTerm.toLowerCase();
-    return floorConstructionList.filter(item =>
-      (item.Floor || '').toLowerCase().includes(term) ||
-      (item.Status || '').toLowerCase().includes(term)
-    );
-  }, [floorConstructionList, searchTerm]);
   //#endregion
 
   //#region VIEW
@@ -171,8 +155,7 @@ const SiteProgressFloorConstruction: React.FC = () => {
       align: 'center',
       render: value => value || '-'
     },
-    {
-      key: 'PlanStartDate',
+    {  key: 'PlanStartDate',
       label: 'Plan Start',
       width: '16',
       sortable: false,
@@ -182,6 +165,38 @@ const SiteProgressFloorConstruction: React.FC = () => {
     {
       key: 'PlanEndDate',
       label: 'Plan End',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'PlanDuration',
+      label: 'Duration',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'ActualStartDate',
+      label: 'Actual Start',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'ActualEndDate',
+      label: 'Actual End',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'ActualDaysDifference',
+      label: 'Days Difference',
       width: '16',
       sortable: false,
       align: 'center',
@@ -232,7 +247,7 @@ const SiteProgressFloorConstruction: React.FC = () => {
 
       {/* DATA TABLE */}
       <DataTable
-        data={filteredFloorConstructionList}
+        data={floorConstructionList}
         columns={floorConstructionColumns}
         pagination={floorConstructionPaginationInfo}
         emptyMessage="No floor construction records found"

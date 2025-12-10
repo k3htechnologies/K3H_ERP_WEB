@@ -13,7 +13,7 @@ import type {
   SiteProgressConstructionData
 } from '@/features/siteProgress/models/SiteProgressModel';
 import { SiteProgressService } from '@/features/siteProgress/services/SiteProgressService';
-var storedProjectId=1;
+var storedProjectId = 1;
 const SiteProgress: React.FC = () => {
 
   //#region STATE
@@ -31,7 +31,7 @@ const SiteProgress: React.FC = () => {
   useEffect(() => {
 
     fetchSiteProgressConstructionList();
-   
+
   }, []);
   //#endregion
 
@@ -45,7 +45,7 @@ const SiteProgress: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-      
+
 
         const params: FilterWithPaginationSiteProgressConstructionRequest = {
           ProjectId: storedProjectId
@@ -99,25 +99,36 @@ const SiteProgress: React.FC = () => {
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize]
   );
 
-  
+
   //#endregion
 
   //#region VIEW
   const handleViewConstruction = useCallback((row: SiteProgressConstructionData) => {
 
-    if (!row.ProjectId || !row.InventoryBuildingId || !row.ConstructionId) {
+    if (!row.InventoryBuildingId) {
 
-      addToast({ type: 'error', title: 'Construction details not available' });
-      return;
+      navigate('/siteProgress/SiteProgressConstructionActivity', {
+        state: {
+          projectId: row.ProjectId,
+          inventoryBuildingId: row.InventoryBuildingId,
+          constructionId: row.ConstructionId,
+          subConstructionId: 0,
+          inventoryFlatFloorBasementPodiumWingId: 0,
+          inventoryFloorId: 0,
+          inventoryFlatId: 0
+        }
+      });
 
     }
-    navigate('/siteProgress/SiteProgressSubConstruction', {
-      state: {
-        projectId: row.ProjectId,
-        inventoryBuildingId: row.InventoryBuildingId,
-        constructionId: row.ConstructionId
-      }
-    });
+    else {
+      navigate('/siteProgress/SiteProgressSubConstruction', {
+        state: {
+          projectId: row.ProjectId,
+          inventoryBuildingId: row.InventoryBuildingId,
+          constructionId: row.ConstructionId
+        }
+      });
+    }
   }, [navigate]);
   //#endregion
 
@@ -208,53 +219,53 @@ const SiteProgress: React.FC = () => {
   //#endregion
 
   return (
-    
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {/* ============================================================================
+
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        {/* ============================================================================
+      {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Construction"
-          onSearchChange={(v) => {
-            setSearchTerm(v);
-            fetchSiteProgressConstructionList(1, v);
-          }}
-          onClearSearch={() => {
-            setSearchTerm('');
-            fetchSiteProgressConstructionList(1);
-          }}
-          isShowFilterButton={false}
-          filters={{}}
-          onOpenFilter={() => {}}
-          isShowCustomizeButton={false}
-          onCustomize={() => {}}
-          isShowAddButton={false}
-          isShowImportButton={false}
-          isShowExportButton={false}
-        />
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Construction"
+        onSearchChange={(v) => {
+          setSearchTerm(v);
+          fetchSiteProgressConstructionList(1, v);
+        }}
+        onClearSearch={() => {
+          setSearchTerm('');
+          fetchSiteProgressConstructionList(1);
+        }}
+        isShowFilterButton={false}
+        filters={{}}
+        onOpenFilter={() => { }}
+        isShowCustomizeButton={false}
+        onCustomize={() => { }}
+        isShowAddButton={false}
+        isShowImportButton={false}
+        isShowExportButton={false}
+      />
 
-        {/* DATA TABLE */}
-        <DataTable
-          data={siteProgressConstructionList}
-          columns={siteProgressConstructionColumns}
-          pagination={siteProgressConstructionPaginationInfo}
-          emptyMessage="No construction records found"
-          fixedHeight
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-          loading={isLoading}
-        />
+      {/* DATA TABLE */}
+      <DataTable
+        data={siteProgressConstructionList}
+        columns={siteProgressConstructionColumns}
+        pagination={siteProgressConstructionPaginationInfo}
+        emptyMessage="No construction records found"
+        fixedHeight
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+        loading={isLoading}
+      />
 
-      </div>
+    </div>
   );
 };
 

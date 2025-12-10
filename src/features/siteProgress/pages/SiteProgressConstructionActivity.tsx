@@ -21,7 +21,7 @@ const SiteProgressConstructionActivity: React.FC = () => {
   const [loadingMessage, setIsLoadingMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-  const { pagination, setPagination } = usePagination(20);
+  const { pagination, setPagination } = usePagination(100);
   const { addToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation() as Location & {
@@ -39,12 +39,8 @@ const SiteProgressConstructionActivity: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
-    if (!location.state?.projectId || !location.state?.inventoryBuildingId || !location.state?.constructionId || !location.state?.subConstructionId || !location.state?.inventoryFlatFloorBasementPodiumWingId || !location.state?.inventoryFloorId || !location.state?.inventoryFlatId) {
-      addToast({ type: 'error', title: 'Flat context missing' });
-      return;
-    }
+    
     fetchConstructionActivityList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
   //#endregion
 
@@ -58,20 +54,16 @@ const SiteProgressConstructionActivity: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        if (!location.state?.projectId || !location.state?.inventoryBuildingId || !location.state?.constructionId || !location.state?.subConstructionId || !location.state?.inventoryFlatFloorBasementPodiumWingId || !location.state?.inventoryFloorId || !location.state?.inventoryFlatId) return;
+        
 
         const params: FilterWithPaginationSiteProgressConstructionActivityRequest = {
-          PageNumber: page,
-          PageSize: pagination.pageSize,
           ProjectId: location.state.projectId,
           InventoryBuildingId: location.state.inventoryBuildingId,
           ConstructionId: location.state.constructionId,
           SubConstructionId: location.state.subConstructionId,
           InventoryFlatFloorBasementPodiumWingId: location.state.inventoryFlatFloorBasementPodiumWingId,
           InventoryFloorId: location.state.inventoryFloorId,
-          InventoryFlatId: location.state.inventoryFlatId,
-          SearchTerm: term.trim() || undefined,
-          SortBy: sortInfo ? `${sortInfo.column} ${sortInfo.direction.toUpperCase()}` : undefined
+          InventoryFlatId: location.state.inventoryFlatId
         };
 
         const response = await SiteProgressService.apiCallPullSiteProgressConstructionActivity(params);
@@ -120,13 +112,6 @@ const SiteProgressConstructionActivity: React.FC = () => {
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize]
   );
 
-  const filteredConstructionActivityList = useMemo(() => {
-    if (!searchTerm.trim()) return constructionActivityList;
-    const term = searchTerm.toLowerCase();
-    return constructionActivityList.filter(item =>
-      (item.ActivityName || '').toLowerCase().includes(term)
-    );
-  }, [constructionActivityList, searchTerm]);
   //#endregion
 
   //#region VIEW
@@ -199,7 +184,7 @@ const SiteProgressConstructionActivity: React.FC = () => {
 
       {/* DATA TABLE */}
       <DataTable
-        data={filteredConstructionActivityList}
+        data={constructionActivityList}
         columns={constructionActivityColumns}
         pagination={constructionActivityPaginationInfo}
         emptyMessage="No construction activities found"

@@ -36,12 +36,9 @@ const SiteProgressWingConstruction: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
-    if (!location.state?.projectId || !location.state?.inventoryBuildingId || !location.state?.constructionId || !location.state?.subConstructionId) {
-      addToast({ type: 'error', title: 'Sub construction context missing' });
-      return;
-    }
+    
     fetchWingConstructionList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [location.state]);
   //#endregion
 
@@ -55,17 +52,12 @@ const SiteProgressWingConstruction: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        if (!location.state?.projectId || !location.state?.inventoryBuildingId || !location.state?.constructionId || !location.state?.subConstructionId) return;
 
         const params: FilterWithPaginationSiteProgressWingConstructionRequest = {
-          PageNumber: page,
-          PageSize: pagination.pageSize,
           ProjectId: location.state.projectId,
           InventoryBuildingId: location.state.inventoryBuildingId,
           ConstructionId: location.state.constructionId,
-          SubConstructionId: location.state.subConstructionId,
-          SearchTerm: term.trim() || undefined,
-          SortBy: sortInfo ? `${sortInfo.column} ${sortInfo.direction.toUpperCase()}` : undefined
+          SubConstructionId: location.state.subConstructionId
         };
 
         const response = await SiteProgressService.apiCallPullSiteProgressWingConstruction(params);
@@ -113,15 +105,6 @@ const SiteProgressWingConstruction: React.FC = () => {
     }),
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize]
   );
-
-  const filteredWingConstructionList = useMemo(() => {
-    if (!searchTerm.trim()) return wingConstructionList;
-    const term = searchTerm.toLowerCase();
-    return wingConstructionList.filter(item =>
-      (item.Wing || '').toLowerCase().includes(term) ||
-      (item.Status || '').toLowerCase().includes(term)
-    );
-  }, [wingConstructionList, searchTerm]);
   //#endregion
 
   //#region VIEW
@@ -169,7 +152,7 @@ const SiteProgressWingConstruction: React.FC = () => {
       render: value => value || '-'
     },
     {
-      key: 'PlanStartDate',
+        key: 'PlanStartDate',
       label: 'Plan Start',
       width: '16',
       sortable: false,
@@ -179,6 +162,38 @@ const SiteProgressWingConstruction: React.FC = () => {
     {
       key: 'PlanEndDate',
       label: 'Plan End',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'PlanDuration',
+      label: 'Duration',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'ActualStartDate',
+      label: 'Actual Start',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'ActualEndDate',
+      label: 'Actual End',
+      width: '16',
+      sortable: false,
+      align: 'center',
+      render: value => value || '-'
+    },
+    {
+      key: 'ActualDaysDifference',
+      label: 'Days Difference',
       width: '16',
       sortable: false,
       align: 'center',
@@ -229,7 +244,7 @@ const SiteProgressWingConstruction: React.FC = () => {
 
       {/* DATA TABLE */}
       <DataTable
-        data={filteredWingConstructionList}
+        data={wingConstructionList}
         columns={wingConstructionColumns}
         pagination={wingConstructionPaginationInfo}
         emptyMessage="No wing construction records found"

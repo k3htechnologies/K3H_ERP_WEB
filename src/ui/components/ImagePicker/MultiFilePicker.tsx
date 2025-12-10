@@ -84,14 +84,6 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
         continue;
       }
 
-      if (file.size > maxSizeMB * 1024 * 1024) {
-        addToast({
-          type: "error",
-          title: `${file.name} is larger than ${maxSizeMB}MB`,
-        });
-        continue;
-      }
-
       if (existingUrls.length + newFiles.length >= maxFiles) {
         addToast({ type: "error", title: `Maximum ${maxFiles} files allowed` });
         break;

@@ -15,7 +15,7 @@ const ViewWeekOffMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [, setIsLoadingMessage] = useState('');
 
 
     //DELETE WEEK OFF MASTER

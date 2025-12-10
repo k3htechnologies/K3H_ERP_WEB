@@ -46,6 +46,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
     const [isOpen, setIsOpen] = useState(false);
+    const [openUpward, setOpenUpward] = useState(false);
 
     const isFetchingRef = useRef(false);
     const pageRef = useRef(1);
@@ -248,6 +249,36 @@ export const SingleSelectDropdownWithPagination = forwardRef<
       };
     }, []);
 
+
+    // DETECT SPACE FOR UPWARD OPEN
+    const DROPDOWN_ESTIMATED_HEIGHT = sizeStyles.dropdownHeight + 60;
+
+    const handleToggle = () => {
+      if (disabled) return;
+
+      const node = containerRef.current;
+      if (!node || typeof window === "undefined") {
+        setIsOpen(prev => !prev);
+        return;
+      }
+
+      const rect = node.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      const spaceBelow = windowHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      // If not enough space below and above has more room → open upward
+      if (spaceBelow < DROPDOWN_ESTIMATED_HEIGHT && spaceAbove > spaceBelow) {
+        setOpenUpward(true);
+      } else {
+        setOpenUpward(false);
+      }
+
+      setIsOpen(prev => !prev);
+    };
+
+
     return (
       <div
         ref={(node) => {
@@ -286,7 +317,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
           role="button"
           aria-haspopup="listbox"
           aria-expanded={isOpen}
-          onClick={() => !disabled && setIsOpen(prev => !prev)}
+          onClick={handleToggle}
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -339,7 +370,8 @@ export const SingleSelectDropdownWithPagination = forwardRef<
           <div
             style={{
               position: "absolute",
-              top: "calc(100% + 4px)",
+              top: openUpward ? "auto" : "calc(100% + 4px)",
+              bottom: openUpward ? "calc(100% + 4px)" : "auto",
               left: 0,
               width: "100%",
               maxHeight: sizeStyles.dropdownHeight,
@@ -485,7 +517,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
         )}
 
         {/* Error message */}
-        {(error ) && (
+        {(error) && (
           <div
             style={{
               marginTop: theme.spacing.sm,
@@ -500,11 +532,11 @@ export const SingleSelectDropdownWithPagination = forwardRef<
               style={{
                 fontSize: theme.fontSize.xs,
                 color: error ? theme.colors.error : theme.colors.textSecondary,
-                height:14
+                height: 14
               }}
             />
 
-            {error }
+            {error}
           </div>
         )}
       </div>

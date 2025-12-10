@@ -470,8 +470,7 @@ export const DeductionMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
@@ -577,7 +576,6 @@ export const DeductionMaster: React.FC = () => {
           </div>
         </Modal>
       </div>
-    </>
   );
 };
 

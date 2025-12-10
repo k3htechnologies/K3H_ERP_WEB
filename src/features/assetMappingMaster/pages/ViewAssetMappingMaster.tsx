@@ -8,7 +8,7 @@ import { runApiWithLoader } from "@/core/utils";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import * as E from "fp-ts/Either";
-import useToast from "@/core/hooks/useToast";
+import { useToast } from "@/core/hooks/useToast";
 import { assetMappingMasterService } from "../services/AssetMappingMasterService";
 import type { AssetMappingMasterData, DeleteAssetMappingMasterRequest } from "../models/AssetMappingMasterModel";
 
@@ -16,9 +16,8 @@ const ViewAssetMappingMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
-
-
+    const [, setIsLoadingMessage] = useState('');
+    
     //DELETE ASSET MASTER
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
     const [deleteAssetMasterDetailsData, setDeleteAssetMasterDetailsData] = useState<AssetMappingMasterData | null>(null)
@@ -183,7 +182,7 @@ const ViewAssetMappingMaster: React.FC = () => {
                                 Cancel
                             </Button>
                         </div>
-                        
+
                         {/* Assignment Details */}
                         <div className="mt-6 rounded border border-gray-300 bg-white ">
                             <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg">
@@ -233,7 +232,7 @@ const ViewAssetMappingMaster: React.FC = () => {
                                 <FieldItem label="Created Date" value={editAssetData.CreatedDate ? formatDate_dd_MonthName_yy(editAssetData.CreatedDate) : ""} isRow />
                                 <FieldItem label="Modified By" value={editAssetData.ModifiedBy} isRow />
                                 <FieldItem label="Modified Date" value={editAssetData.ModifiedDate ? formatDate_dd_MonthName_yy(editAssetData.ModifiedDate) : ""} isRow />
-                                
+
                             </div>
                         </div>
                     </div>

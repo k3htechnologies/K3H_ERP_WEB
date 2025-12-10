@@ -5,7 +5,6 @@ import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
 import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
-import ToastContainer from "@/ui/components/Toast/ToastContainer";
 import { useEffect, useState } from "react";
 import React from "react";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
@@ -52,7 +51,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
   const isAddMode = DeductionId === 0;
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const {  addToast } = useToast();
 
   // ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -289,8 +288,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
@@ -457,7 +455,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
           </Button>
         </div>
       </div>
-    </>
+    
   );
 };
 

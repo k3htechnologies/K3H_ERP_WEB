@@ -7,16 +7,12 @@ import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { ArrowLeft, Edit } from 'lucide-react';
 import { Button } from '@/ui/components/forms';
 import Accordion from '@/ui/components/Card/Accordion';
-import { useToast } from '@/core/hooks/useToast';
-import { ToastContainer } from '@/ui/components/Toast';
 
 export const ViewVendor: React.FC = () => {
   //#region STATE MANAGEMENT
   const [isLoading] = useState(false);
   const [loadingMessage] = useState('');
-  // TOAST
-  const { toasts, removeToast } = useToast();
-
+  
   //LOCATION
   const navigate = useNavigate();
 
@@ -64,8 +60,7 @@ export const ViewVendor: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
         <Loader loading={isLoading} title={loadingMessage}>
@@ -213,7 +208,7 @@ export const ViewVendor: React.FC = () => {
           </div>
         </div>
       </div>
-    </>
+    
   );
 };
 

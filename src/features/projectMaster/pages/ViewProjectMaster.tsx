@@ -19,7 +19,6 @@ import usePagination from '@/core/hooks/usePagination';
 import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
 import Checkbox from '@/ui/components/forms/Checkbox';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
-import { ToastContainer } from '@/ui/components/Toast';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 import { DataTable, type FilterInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
@@ -56,7 +55,7 @@ export const ViewProjectMaster: React.FC = () => {
     const [projectWithBankDetailsList, setProjectWithBankDetailsList] = useState<ProjectWithBankDetails[]>([]);
 
     // TOAST
-    const { toasts, removeToast, addToast } = useToast()
+    const { addToast } = useToast()
 
     //LOCATION
     const navigate = useNavigate();
@@ -1413,8 +1412,7 @@ export const ViewProjectMaster: React.FC = () => {
 
     //#endregion
     return (
-        <>
-            <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+       
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <Loader loading={isLoading} title={loadingMessage}>
                     <div></div>
@@ -2045,7 +2043,6 @@ export const ViewProjectMaster: React.FC = () => {
                     variant="danger"
                 />
             </div>
-        </>
     );
 };
 

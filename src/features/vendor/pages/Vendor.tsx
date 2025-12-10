@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   VendorData,
@@ -36,7 +35,7 @@ export const Vendor: React.FC = () => {
   const [loadingMessage, setIsLoadingMessage] = useState('');
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-  const { toasts, removeToast, addToast } = useToast()
+  const { addToast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const navigate = useNavigate();
 
@@ -598,8 +597,7 @@ export const Vendor: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-full flex flex-col">
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
@@ -742,7 +740,6 @@ export const Vendor: React.FC = () => {
           </div>
         </Modal>
       </div>
-    </>
   )
 }
 

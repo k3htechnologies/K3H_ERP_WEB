@@ -10,7 +10,6 @@ import { useToast } from "@/core/hooks/useToast";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
-import ToastContainer from "@/ui/components/Toast/ToastContainer";
 import {
   BLOOD_GROUP_OPTIONS,
   EMERGENCY_RELATION_OPTIONS,
@@ -84,7 +83,7 @@ const AddUpdateEmployeePage: React.FC = () => {
   const { employeeId } = useParams<{ employeeId?: string }>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const {  addToast } = useToast();
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -543,8 +542,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
   //#endregion
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
@@ -894,7 +892,7 @@ const AddUpdateEmployeePage: React.FC = () => {
           </form>
         </div>
          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-                    style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
+                    style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "301px", right: '14px' }}>
           <Button
             color="transparent"
             variant='transparent_border'
@@ -921,7 +919,6 @@ const AddUpdateEmployeePage: React.FC = () => {
         </div>
 
       </div>
-    </>
   );
 };
 

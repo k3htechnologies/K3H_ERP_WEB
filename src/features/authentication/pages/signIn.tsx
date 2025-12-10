@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import useToast from '@/core/hooks/useToast';
+import {useToast} from '@/core/hooks/useToast';
 import { ToastContainer } from '@/ui/components/Toast';
 import { Input } from '@/ui/components/forms/Input';
 import { Button } from '@/ui/components/forms/Button';

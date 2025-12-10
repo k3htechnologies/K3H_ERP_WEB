@@ -1,7 +1,6 @@
 import useToast from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader'
 import { Button } from '@/ui/components/forms/Button';
-import ToastContainer from '@/ui/components/Toast/ToastContainer'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import type { AddUpdateCompanyMasterRequest, AddUpdateCompanyPartnerRequest, CompanyPartnerData, FilterWithPaginationCompanyMasterRequest } from '@/features/companyMaster/models/CompanyMasterModel';
@@ -109,7 +108,7 @@ const AddCompany: React.FC = () => {
   //GET VALUE FROM URL :COMPANYID
   const { companyId } = useParams<{ companyId?: string }>();
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const { addToast } = useToast()
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -881,8 +880,7 @@ const AddCompany: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
@@ -1627,7 +1625,6 @@ const AddCompany: React.FC = () => {
         </Modal>
 
       </div >
-    </>
   )
 }
 

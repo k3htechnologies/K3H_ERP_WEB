@@ -5,7 +5,6 @@ import { Button } from "@/ui/components/forms/Button";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { Loader } from "@/core/utils/loader";
-import ToastContainer from "@/ui/components/Toast/ToastContainer";
 import { useToast } from "@/core/hooks/useToast";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import { VendorService } from "@/features/vendor/services/VendorService";
@@ -86,7 +85,7 @@ export const AddUpdateVendor: React.FC = () => {
   const { vendorId } = useParams<{ vendorId?: string }>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -380,10 +379,10 @@ export const AddUpdateVendor: React.FC = () => {
       newErrors.PanCardNumber = "Enter a valid PAN Number.";
     }
 
-
     if (!aadharCardURLFiles.length && !aadharCardURL) {
       newErrors.AadharCardURL = "Aadhaar card file is required.";
     }
+
     if (!panCardURLFiles.length && !panCardURL) {
       newErrors.PanCardURL = "PAN card file is required.";
     }
@@ -480,9 +479,13 @@ export const AddUpdateVendor: React.FC = () => {
     if (!searchMaterial.trim()) return materialsubmaterialList;
 
     const searchLower = searchMaterial.toLowerCase();
+
     return materialsubmaterialList.filter((item) =>
+
       item.SubMaterialName?.toLowerCase().includes(searchLower) ||
+
       item.MaterialName?.toLowerCase().includes(searchLower)
+
     );
   }, [materialsubmaterialList, searchMaterial]);
 
@@ -537,7 +540,7 @@ export const AddUpdateVendor: React.FC = () => {
           });
 
         } else {
-          
+
           addToast({ type: "error", title: response.left?.message });
         }
         return response;
@@ -555,379 +558,374 @@ export const AddUpdateVendor: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+      <Loader loading={isLoading} title={loadingMessage}><div></div> </Loader>
 
-          {/* ============================================================= [BASIC EMPLOYEE DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
-              Basic Details
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Vendor Name */}
-              <Input
-                label="Vendor Name"
-                required
-                value={formData.VendorName}
-                onChange={(e) => handleFieldChange("VendorName", e.target.value)}
-                error={errors.VendorName}
-              />
-              <Input
-                label="Company Name"
-                required
-                value={formData.CompanyName}
-                onChange={(e) => handleFieldChange("CompanyName", e.target.value)}
-                error={errors.CompanyName}
-              />
-              <Input
-                label="Mobile Number"
-                required
-                leftIcon="+91"
-                value={formData.MobileNumber}
-                maxLength={10}
-                onChange={(e) => handleFieldChange("MobileNumber", filterMobile(e.target.value))}
-                error={errors.MobileNumber}
-              />
-              <Input
-                label="Email Id"
-                required
-                type="email"
-                value={formData.EmailId}
-                onChange={(e) => handleFieldChange("EmailId", filterEmail(e.target.value))}
-                error={errors.EmailId}
-              />
-              <SinglePageSelection
-                label="Company Type"
-                required
-                value={formData.CompanyType}
-                onChange={(val) => handleFieldChange("CompanyType", String(val))}
-                options={COMPANY_TYPE_OPTIONS.map((opt) => ({
-                  label: opt.name,
-                  value: opt.id,
-                }))}
-                error={errors.CompanyType}
-              />
-            </div>
-          </div>
+      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
 
-          {/* GOVERNMENT IDENTIFIERS */}
-          <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
-              Government Identifiers
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Input
-                label="Aadhaar Card Number" required
-                value={formData.AadharCardNumber}
-                onChange={(e) => handleFieldChange("AadharCardNumber", filterAadhaar(e.target.value))}
-                placeholder="Enter Aadhaar card number"
-                error={errors.AadharCardNumber}
-              />
-
-              <MultiFilePicker
-                label='Aadhar Card'
-                required
-                error={errors.AadharCardURL}
-                value={aadharCardURLFiles}
-                onChange={setAadharCardURLFiles}
-                availableFilesURL={aadharCardURL ?? ""}
-                allowedTypes={[
-                  "image/jpeg",
-                  "image/png",
-                  "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                ]}
-                maxFiles={5}
-                maxSizeMB={10}
-                onRemoveExisting={(url) => {
-                  setRemovedAadharCardUrls((prev) => [...prev, url])
-                }}
-              />
-
-              <Input
-                label="PAN Card Number" required
-                value={formData.PanCardNumber}
-                onChange={(e) => handleFieldChange("PanCardNumber", filterPAN(e.target.value))}
-                placeholder="Enter PAN card number"
-                error={errors.PanCardNumber}
-              />
-              <MultiFilePicker
-                label='PAN Card'
-                required
-                error={errors.PanCardURL}
-                value={panCardURLFiles}
-                onChange={setPANCardURLFiles}
-                availableFilesURL={panCardURL ?? ""}
-                allowedTypes={[
-                  "image/jpeg",
-                  "image/png",
-                  "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                ]}
-                maxFiles={5}
-                maxSizeMB={10}
-                onRemoveExisting={(url) => {
-                  setRemovedPanCardUrls((prev) => [...prev, url])
-                }}
-              />
-              <Input
-                label="GST Number" required
-                value={formData.GSTNumber}
-                onChange={(e) => handleFieldChange("GSTNumber", filterGST(e.target.value))}
-                placeholder="Enter GST number"
-                error={errors.GSTNumber}
-              />
-
-              <MultiFilePicker
-                label='GST Certificate'
-                required
-                error={errors.GSTCertificateURL}
-                value={gstGSTCertificateFiles}
-                onChange={setGSTCertificateFiles}
-                availableFilesURL={gSTCertificateURL ?? ""}
-                allowedTypes={[
-                  "image/jpeg",
-                  "image/png",
-                  "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                ]}
-                maxFiles={5}
-                maxSizeMB={10}
-                onRemoveExisting={(url) => {
-                  setRemovedGSTCertificateUrls((prev) => [...prev, url])
-                }}
-              />
-            </div>
-          </div>
-
-          {/* ADDRESS */}
-          <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
-              Address
-            </h3>
-
-            <TextArea
-              label="Address"
+        {/* ============================================================= [BASIC EMPLOYEE DETAILS] ============================================================================================= */}
+        <div className="space-y-4 pb-3">
+          <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
+            Basic Details
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Vendor Name */}
+            <Input
+              label="Vendor Name"
               required
-              rows={3}
-              className="thin-scroll"
-              value={formData.Address}
-              onChange={(e) => handleFieldChange("Address", e.target.value)}
-              error={errors.Address}
+              value={formData.VendorName}
+              onChange={(e) => handleFieldChange("VendorName", e.target.value)}
+              error={errors.VendorName}
+            />
+            <Input
+              label="Company Name"
+              required
+              value={formData.CompanyName}
+              onChange={(e) => handleFieldChange("CompanyName", e.target.value)}
+              error={errors.CompanyName}
+            />
+            <Input
+              label="Mobile Number"
+              required
+              leftIcon="+91"
+              value={formData.MobileNumber}
+              maxLength={10}
+              onChange={(e) => handleFieldChange("MobileNumber", filterMobile(e.target.value))}
+              error={errors.MobileNumber}
+            />
+            <Input
+              label="Email Id"
+              required
+              type="email"
+              value={formData.EmailId}
+              onChange={(e) => handleFieldChange("EmailId", filterEmail(e.target.value))}
+              error={errors.EmailId}
+            />
+            <SinglePageSelection
+              label="Company Type"
+              required
+              value={formData.CompanyType}
+              onChange={(val) => handleFieldChange("CompanyType", String(val))}
+              options={COMPANY_TYPE_OPTIONS.map((opt) => ({
+                label: opt.name,
+                value: opt.id,
+              }))}
+              error={errors.CompanyType}
+            />
+          </div>
+        </div>
+
+        {/* GOVERNMENT IDENTIFIERS */}
+        <div className="space-y-4 pb-3">
+          <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
+            Government Identifiers
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Input
+              label="Aadhaar Card Number" required
+              value={formData.AadharCardNumber}
+              onChange={(e) => handleFieldChange("AadharCardNumber", filterAadhaar(e.target.value))}
+              placeholder="Enter Aadhaar card number"
+              error={errors.AadharCardNumber}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <SinglePageSelection
-                label="Country"
-                value={selectedCountryId || ""}
-                required
-                onChange={(val) => {
-                  const id = Number(val);
-                  setSelectedCountryId(id);
-                  setSelectedStateId(null);
-                  setSelectedDistrictId(null);
-                  setSelectedCityId(null);
-                  handleFieldChange("CountryMasterId", id);
-                  handleFieldChange("StateMasterId", 0);
-                  handleFieldChange("DistrictMasterId", 0);
-                  handleFieldChange("CityMasterId", 0);
-                }}
-                disabled={isLocationLoading}
-                options={countryOptions}
-                error={errors.CountryMasterId}
-              />
-
-              <SinglePageSelection
-                label="State"
-                value={selectedStateId || ""}
-                required
-                onChange={(val) => {
-                  const id = Number(val);
-                  setSelectedStateId(id);
-                  setSelectedDistrictId(null);
-                  setSelectedCityId(null);
-                  handleFieldChange("StateMasterId", id);
-                  handleFieldChange("DistrictMasterId", 0);
-                  handleFieldChange("CityMasterId", 0);
-                }}
-                disabled={!selectedCountryId || stateOptions.length === 0}
-                options={stateOptions}
-                error={errors.StateMasterId}
-              />
-
-              <SinglePageSelection
-                label="District"
-                value={selectedDistrictId || ""}
-                required
-                onChange={(val) => {
-                  const id = Number(val);
-                  setSelectedDistrictId(id);
-                  setSelectedCityId(null);
-                  handleFieldChange("DistrictMasterId", id);
-                  handleFieldChange("CityMasterId", 0);
-                }}
-                disabled={!selectedStateId || districtOptions.length === 0}
-                options={districtOptions}
-                error={errors.DistrictMasterId}
-              />
-
-              <SinglePageSelection
-                label="City"
-                value={selectedCityId || ""}
-                required
-                onChange={(val) => {
-                  const id = Number(val);
-                  setSelectedCityId(id);
-                  handleFieldChange("CityMasterId", id);
-                }}
-                disabled={!selectedDistrictId || cityOptions.length === 0}
-                options={cityOptions}
-                error={errors.CityMasterId}
-              />
-            </div>
-          </div>
-
-          {/* MATERIAL / CONTRACT */}
-          <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
-              Material and Contract Management
-            </h3>
-
-            <Tabs
-              tabs={[
-                { id: "material", label: "Material" },
-                { id: "contract", label: "Contract" },
+            <MultiFilePicker
+              label='Aadhar Card'
+              required
+              error={errors.AadharCardURL}
+              value={aadharCardURLFiles}
+              onChange={setAadharCardURLFiles}
+              availableFilesURL={aadharCardURL ?? ""}
+              allowedTypes={[
+                "image/jpeg",
+                "image/png",
+                "application/pdf",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
-
-              defaultActive={activeTab}
-              onTabChange={(tab) => setActiveTab(tab.id)}
+              maxFiles={5}
+              maxSizeMB={10}
+              onRemoveExisting={(url) => {
+                setRemovedAadharCardUrls((prev) => [...prev, url])
+              }}
             />
 
-            {/* Material Tab Content */}
-            {activeTab === "material" && (
-              <div className="space-y-4">
+            <Input
+              label="PAN Card Number" required
+              value={formData.PanCardNumber}
+              onChange={(e) => handleFieldChange("PanCardNumber", filterPAN(e.target.value))}
+              placeholder="Enter PAN card number"
+              error={errors.PanCardNumber}
+            />
+            <MultiFilePicker
+              label='PAN Card'
+              required
+              error={errors.PanCardURL}
+              value={panCardURLFiles}
+              onChange={setPANCardURLFiles}
+              availableFilesURL={panCardURL ?? ""}
+              allowedTypes={[
+                "image/jpeg",
+                "image/png",
+                "application/pdf",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              ]}
+              maxFiles={5}
+              maxSizeMB={10}
+              onRemoveExisting={(url) => {
+                setRemovedPanCardUrls((prev) => [...prev, url])
+              }}
+            />
+            <Input
+              label="GST Number" required
+              value={formData.GSTNumber}
+              onChange={(e) => handleFieldChange("GSTNumber", filterGST(e.target.value))}
+              placeholder="Enter GST number"
+              error={errors.GSTNumber}
+            />
 
-                <div className="bg-gray-50 border rounded-lg p-4 space-y-3" style={{ minHeight: "400px", maxHeight: "400px", display: "flex", flexDirection: "column" }}>
-
-                  <Input
-                    type="text"
-                    placeholder="Search By Material Name"
-                    value={searchMaterial}
-                    onChange={(e) => setSearchMaterial(e.target.value)}
-                    leftIcon={<Search className="h-4 w-4 text-gray-400" />}
-                  />
-
-                  {/* Material List */}
-                  <div className="space-y-2 flex-1 overflow-y-auto thin-scroll">
-                    {filteredMaterialList.length > 0 ? (
-                      filteredMaterialList.map((item) => {
-                        const isSelected = selectedMaterials.has(item.SubMaterialMasterId);
-                        return (
-                          <div
-                            key={item.SubMaterialMasterId}
-                            className="bg-white rounded-lg p-1 flex justify-between items-center hover:bg-gray-50">
-                            <div>
-                              <p className="font-medium text-gray-900">
-                                {item.SubMaterialName}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {item.MaterialName}
-                              </p>
-                            </div>
-
-                            <Button
-                              type="button"
-                              color="transparent"
-                              onClick={() => handleAddMaterial(item)}
-                            >
-                              {isSelected ? (
-                                <Trash2 className="w-4 h-4" />
-                              ) : (
-                                <Plus className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </div>
-                        );
-                      })
-                    ) : (
-<div className="text-center text-gray-400 py-3">
-                      <NoDataView />
-                      </div>
-
-                    )}
-                  </div>
-                </div>
-
-              </div>
-            )}
-
-
-            {activeTab === "contract" && (
-              <div className="space-y-4">
-
-                <div className="bg-gray-50 border rounded-lg p-4 space-y-3" style={{ minHeight: "400px", maxHeight: "400px", display: "flex", flexDirection: "column" }}>
-                  <Input
-                    type="text"
-                    placeholder="Search Contract"
-                    value={""}
-                    onChange={() => { }}
-                    disabled
-                  />
-
-
-                  <div className="flex-1 overflow-y-auto flex items-center justify-center">
-                    <p className="text-center text-gray-400 py-3">
-                      Contract management coming soon
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
+            <MultiFilePicker
+              label='GST Certificate'
+              required
+              error={errors.GSTCertificateURL}
+              value={gstGSTCertificateFiles}
+              onChange={setGSTCertificateFiles}
+              availableFilesURL={gSTCertificateURL ?? ""}
+              allowedTypes={[
+                "image/jpeg",
+                "image/png",
+                "application/pdf",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              ]}
+              maxFiles={5}
+              maxSizeMB={10}
+              onRemoveExisting={(url) => {
+                setRemovedGSTCertificateUrls((prev) => [...prev, url])
+              }}
+            />
           </div>
-
-
         </div>
 
-        <div
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}
-        >
-          <Button
-            color="transparent"
-            variant='transparent_border'
-            size="sm"
-            onClick={() => {
-              navigate(-1);
-            }}
-            className="px-6"
-          >
-            Cancel
-          </Button>
+        {/* ADDRESS */}
+        <div className="space-y-4 pb-3">
+          <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
+            Address
+          </h3>
 
-          <Button
-            color="green"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-            className="px-6"
-            disabled={isLoading}
-          >
-            {formData.VendorId ? "Update Vendor" : "Add Vendor"}
-          </Button>
+          <TextArea
+            label="Address"
+            required
+            rows={3}
+            className="thin-scroll"
+            value={formData.Address}
+            onChange={(e) => handleFieldChange("Address", e.target.value)}
+            error={errors.Address}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <SinglePageSelection
+              label="Country"
+              value={selectedCountryId || ""}
+              required
+              onChange={(val) => {
+                const id = Number(val);
+                setSelectedCountryId(id);
+                setSelectedStateId(null);
+                setSelectedDistrictId(null);
+                setSelectedCityId(null);
+                handleFieldChange("CountryMasterId", id);
+                handleFieldChange("StateMasterId", 0);
+                handleFieldChange("DistrictMasterId", 0);
+                handleFieldChange("CityMasterId", 0);
+              }}
+              disabled={isLocationLoading}
+              options={countryOptions}
+              error={errors.CountryMasterId}
+            />
+
+            <SinglePageSelection
+              label="State"
+              value={selectedStateId || ""}
+              required
+              onChange={(val) => {
+                const id = Number(val);
+                setSelectedStateId(id);
+                setSelectedDistrictId(null);
+                setSelectedCityId(null);
+                handleFieldChange("StateMasterId", id);
+                handleFieldChange("DistrictMasterId", 0);
+                handleFieldChange("CityMasterId", 0);
+              }}
+              disabled={!selectedCountryId || stateOptions.length === 0}
+              options={stateOptions}
+              error={errors.StateMasterId}
+            />
+
+            <SinglePageSelection
+              label="District"
+              value={selectedDistrictId || ""}
+              required
+              onChange={(val) => {
+                const id = Number(val);
+                setSelectedDistrictId(id);
+                setSelectedCityId(null);
+                handleFieldChange("DistrictMasterId", id);
+                handleFieldChange("CityMasterId", 0);
+              }}
+              disabled={!selectedStateId || districtOptions.length === 0}
+              options={districtOptions}
+              error={errors.DistrictMasterId}
+            />
+
+            <SinglePageSelection
+              label="City"
+              value={selectedCityId || ""}
+              required
+              onChange={(val) => {
+                const id = Number(val);
+                setSelectedCityId(id);
+                handleFieldChange("CityMasterId", id);
+              }}
+              disabled={!selectedDistrictId || cityOptions.length === 0}
+              options={cityOptions}
+              error={errors.CityMasterId}
+            />
+          </div>
         </div>
+
+        {/* MATERIAL / CONTRACT */}
+        <div className="space-y-4 pb-3">
+          <h3 className="text-lg font-semibold text-gray-500 border-b pb-2">
+            Material and Contract Management
+          </h3>
+
+          <Tabs
+            tabs={[
+              { id: "material", label: "Material" },
+              { id: "contract", label: "Contract" },
+            ]}
+
+            defaultActive={activeTab}
+            onTabChange={(tab) => setActiveTab(tab.id)}
+          />
+
+          {/* Material Tab Content */}
+          {activeTab === "material" && (
+            <div className="space-y-4">
+
+              <div className="bg-gray-50 border rounded-lg p-4 space-y-3 h-[400px] flex flex-col">
+
+                <Input
+                  type="text"
+                  placeholder="Search By Material Name"
+                  value={searchMaterial}
+                  onChange={(e) => setSearchMaterial(e.target.value)}
+                  leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+                />
+
+                <div className="space-y-2 flex-1 overflow-y-auto thin-scroll">
+                  {filteredMaterialList.length > 0 ? (
+                    filteredMaterialList.map((item) => {
+                      const isSelected = selectedMaterials.has(item.SubMaterialMasterId);
+                      return (
+                        <div
+                          key={item.SubMaterialMasterId}
+                          className="bg-white rounded-lg p-1 flex justify-between items-center hover:bg-gray-50"
+                        >
+                          <div>
+                            <p className="font-medium text-gray-900">{item.SubMaterialName}</p>
+                            <p className="text-xs text-gray-500">{item.MaterialName}</p>
+                          </div>
+
+                          <Button
+                            type="button"
+                            color="transparent"
+                            onClick={() => handleAddMaterial(item)}
+                          >
+                            {isSelected ? (
+                              <Trash2 className="w-4 h-4" />
+                            ) : (
+                              <Plus className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center text-gray-400 py-3">
+                      <NoDataView />
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+
+
+          {activeTab === "contract" && (
+            <div className="space-y-4">
+
+              <div className="bg-gray-50 border rounded-lg p-4 space-y-3" style={{ minHeight: "400px", maxHeight: "400px", display: "flex", flexDirection: "column" }}>
+                <Input
+                  type="text"
+                  placeholder="Search Contract"
+                  value={""}
+                  onChange={() => { }}
+                  disabled
+                />
+
+
+                <div className="flex-1 overflow-y-auto flex items-center justify-center">
+                  <p className="text-center text-gray-400 py-3">
+                    Contract management coming soon
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+
       </div>
-    </>
+
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "301px", right: '14px' }}
+      >
+        <Button
+          color="transparent"
+          variant='transparent_border'
+          size="sm"
+          onClick={() => {
+            navigate(-1);
+          }}
+          className="px-6"
+        >
+          Cancel
+        </Button>
+
+        <Button
+          color="green"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+          className="px-6"
+          disabled={isLoading}
+        >
+          {formData.VendorId ? "Update Vendor" : "Add Vendor"}
+        </Button>
+      </div>
+    </div>
   );
 };
 

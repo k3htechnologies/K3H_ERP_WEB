@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import useToast from '@/core/hooks/useToast';
 import { runApiWithLoader } from '@/core/utils/apiLoaderHelper';
 import type { EmployeeMasterData, FilterWithPaginationEmployeeMasterRequest } from '@/features/employeeMaster/models/EmployeeMasterModel';
-import ToastContainer from '@/ui/components/Toast/ToastContainer';
 import * as E from 'fp-ts/Either';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
@@ -20,7 +19,7 @@ export const Profile: React.FC = () => {
     const [loadingMessage, setIsLoadingMessage] = useState('');
 
     // TOAST
-    const { toasts, removeToast, addToast } = useToast()
+    const { addToast } = useToast()
 
     //#endregion
 
@@ -92,10 +91,7 @@ export const Profile: React.FC = () => {
     const safe = (value?: any) => (value === null || value === undefined || value === '' ? '-' : value)
 
     return (
-        <>
-            <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-
-            {/* Main Scrollable Container with Bottom Padding */}
+       
             <div className="relative h-full flex flex-col bg-gray-50 p-2 rounded-lg overflow-y-auto thin-scroll pb-1">
 
                 {/* Loader */}
@@ -217,7 +213,6 @@ export const Profile: React.FC = () => {
                     </Button>
                 </div>
             </div>
-        </>
     )
 }
 

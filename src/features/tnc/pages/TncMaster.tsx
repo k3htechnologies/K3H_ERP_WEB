@@ -748,7 +748,7 @@ export const TncMaster: React.FC = () => {
           isShowCustomizeButton={false}
           onCustomize={() => setIsShowCustomizeTncColumnsModal(true)}
           isShowAddButton={canAction}
-          addTitle="Add Tnc"
+          addTitle="Add"
           onAdd={handleAddTncModal}
           isShowImportButton={false}
           isShowExportButton={canExport}

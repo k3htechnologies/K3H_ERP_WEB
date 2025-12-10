@@ -506,7 +506,7 @@ export const ProjectMaster: React.FC = () => {
 
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Project"
+          addTitle="Add"
           onAdd={handleAddProjectMasterModal}
 
           // IMPORT 

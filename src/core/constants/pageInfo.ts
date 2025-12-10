@@ -168,7 +168,7 @@ export const getPageInfo = (path: string) => {
             }
         case 'profile':
             return {
-                title: 'Employee Profile',
+                title: 'Profile',
                 description: 'Profile',
             }
         case 'siteProgress':

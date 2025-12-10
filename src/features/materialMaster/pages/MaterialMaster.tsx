@@ -832,7 +832,7 @@ export const MaterialMaster: React.FC = () => {
           onCustomize={() => setIsShowCustomizeMaterialMasterColumnsModal(true)}
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Material"
+          addTitle="Add"
           onAdd={handleAddMaterialModal}
 
           // IMPORT
@@ -855,7 +855,6 @@ export const MaterialMaster: React.FC = () => {
           pagination={materialMasterPaginationInfo}
           emptyMessage="No Materials Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}

@@ -1,14 +1,217 @@
-import React from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate, type Location } from 'react-router-dom';
+import { usePagination } from '@/core/hooks/usePagination';
+import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import { runApiWithLoader } from '@/core/utils';
+import * as E from 'fp-ts/Either';
+import { useToast } from '@/core/hooks/useToast';
+import { Loader } from '@/core/utils/loader';
+import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
+import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import type {
+  FilterWithPaginationSiteProgressConstructionActivityRequest,
+  SiteProgressConstructionActivityData
+} from '@/features/siteProgress/models/SiteProgressModel';
+import { SiteProgressService } from '@/features/siteProgress/services/SiteProgressService';
 
 const SiteProgressConstructionActivity: React.FC = () => {
-  return (
-    <div className="w-full">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Dashboard</h2>
-        <p className="text-gray-600">Welcome to your dashboard. Select a menu item from the sidebar to get started.</p>
-      </div>
-    </div>
-  )
-}
+  //#region STATE
+  const [constructionActivityList, setConstructionActivityList] = useState<SiteProgressConstructionActivityData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
+  const { pagination, setPagination } = usePagination(20);
+  const { addToast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation() as Location & {
+    state?: {
+      projectId?: number;
+      inventoryBuildingId?: number;
+      constructionId?: number;
+      subConstructionId?: number;
+      inventoryFlatFloorBasementPodiumWingId?: number;
+      inventoryFloorId?: number;
+      inventoryFlatId?: number;
+    };
+  };
+  //#endregion
 
-export default SiteProgressConstructionActivity
+  //#region INIT
+  useEffect(() => {
+    if (!location.state?.projectId || !location.state?.inventoryBuildingId || !location.state?.constructionId || !location.state?.subConstructionId || !location.state?.inventoryFlatFloorBasementPodiumWingId || !location.state?.inventoryFloorId || !location.state?.inventoryFlatId) {
+      addToast({ type: 'error', title: 'Flat context missing' });
+      return;
+    }
+    fetchConstructionActivityList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
+  //#endregion
+
+  //#region DATA LOAD
+  const fetchConstructionActivityList = async (page: number = pagination.currentPage, term: string = searchTerm) => {
+    await loadConstructionActivity(page, term);
+  };
+
+  const loadConstructionActivity = async (page: number, term: string = searchTerm) => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+        if (!location.state?.projectId || !location.state?.inventoryBuildingId || !location.state?.constructionId || !location.state?.subConstructionId || !location.state?.inventoryFlatFloorBasementPodiumWingId || !location.state?.inventoryFloorId || !location.state?.inventoryFlatId) return;
+
+        const params: FilterWithPaginationSiteProgressConstructionActivityRequest = {
+          PageNumber: page,
+          PageSize: pagination.pageSize,
+          ProjectId: location.state.projectId,
+          InventoryBuildingId: location.state.inventoryBuildingId,
+          ConstructionId: location.state.constructionId,
+          SubConstructionId: location.state.subConstructionId,
+          InventoryFlatFloorBasementPodiumWingId: location.state.inventoryFlatFloorBasementPodiumWingId,
+          InventoryFloorId: location.state.inventoryFloorId,
+          InventoryFlatId: location.state.inventoryFlatId,
+          SearchTerm: term.trim() || undefined,
+          SortBy: sortInfo ? `${sortInfo.column} ${sortInfo.direction.toUpperCase()}` : undefined
+        };
+
+        const response = await SiteProgressService.apiCallPullSiteProgressConstructionActivity(params);
+
+        if (E.isRight(response)) {
+          setConstructionActivityList(response.right.Data);
+          setPagination({
+            currentPage: page,
+            totalRecords: response.right.TotalNumberOfRecord,
+            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize)
+          });
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message });
+      },
+      undefined,
+      'Loading Site Progress - Construction Activity'
+    );
+  };
+  //#endregion
+
+  //#region TABLE CONFIG
+  const handlePageChange = useCallback((page: number) => {
+    fetchConstructionActivityList(page);
+  }, []);
+
+  const handleSortColumn = useCallback((sort: SortInfo) => {
+    setSortInfo(sort);
+    fetchConstructionActivityList(1);
+  }, []);
+
+  const constructionActivityPaginationInfo: PaginationInfo = useMemo(
+    () => ({
+      currentPage: pagination.currentPage,
+      totalPages: pagination.totalPages,
+      totalRecords: pagination.totalRecords,
+      pageSize: pagination.pageSize,
+      onPageChange: handlePageChange
+    }),
+    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize]
+  );
+
+  const filteredConstructionActivityList = useMemo(() => {
+    if (!searchTerm.trim()) return constructionActivityList;
+    const term = searchTerm.toLowerCase();
+    return constructionActivityList.filter(item =>
+      (item.ActivityName || '').toLowerCase().includes(term)
+    );
+  }, [constructionActivityList, searchTerm]);
+  //#endregion
+
+  //#region VIEW
+  const handleViewConstructionActivity = useCallback((row: SiteProgressConstructionActivityData) => {
+    if (!row.ProjectId || !row.ConstructionActivityId) {
+      addToast({ type: 'error', title: 'Activity details not available' });
+      return;
+    }
+    navigate('/siteProgress/SiteProgressConstructionSubActivity', {
+      state: {
+        projectId: row.ProjectId,
+        constructionActivityId: row.ConstructionActivityId
+      }
+    });
+  }, [navigate]);
+  //#endregion
+
+  //#region TABLE COLUMN
+  const constructionActivityColumns = useMemo<TableColumn[]>(() => [
+    {
+      key: 'ActivityName',
+      label: 'Activity',
+      width: '32',
+      sortable: true,
+      fixed: 'left',
+      align: 'left',
+      render: (value, row) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="260px"
+          tooltipThreshold={26}
+          onClick={() => handleViewConstructionActivity(row)}
+        />
+      )
+    }
+  ], [handleViewConstructionActivity]);
+  //#endregion
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* ============================================================================
+          COMMAN LOADER FOR PAGE
+           ============================================================================ */}
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+
+      {/* ============================================================================
+          COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
+           ============================================================================ */}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Activity"
+        onSearchChange={(v) => {
+          setSearchTerm(v);
+          fetchConstructionActivityList(1, v);
+        }}
+        onClearSearch={() => {
+          setSearchTerm('');
+          fetchConstructionActivityList(1);
+        }}
+        isShowFilterButton={false}
+        filters={{}}
+        onOpenFilter={() => {}}
+        isShowCustomizeButton={false}
+        onCustomize={() => {}}
+        isShowAddButton={false}
+        isShowImportButton={false}
+        isShowExportButton={false}
+      />
+
+      {/* DATA TABLE */}
+      <DataTable
+        data={filteredConstructionActivityList}
+        columns={constructionActivityColumns}
+        pagination={constructionActivityPaginationInfo}
+        emptyMessage="No construction activities found"
+        fixedHeight
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+        loading={isLoading}
+      />
+    </div>
+  );
+};
+
+export default SiteProgressConstructionActivity;

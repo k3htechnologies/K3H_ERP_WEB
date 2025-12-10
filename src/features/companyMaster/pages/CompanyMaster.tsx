@@ -604,7 +604,7 @@ export const CompanyMaster: React.FC = () => {
                     onCustomize={() => setIsShowCustomizeCompanyColumnsModal(true)}
                     // ADD
                     isShowAddButton={canAction}
-                    addTitle="Add Company"
+                    addTitle="Add"
                     onAdd={handleAddCompanyModal}
 
                     // IMPORT

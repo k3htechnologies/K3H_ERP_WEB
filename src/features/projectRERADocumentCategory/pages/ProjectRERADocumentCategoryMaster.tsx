@@ -782,7 +782,7 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
           onCustomize={() => setIsShowCustomizeProjectRERADocumentCategoryMasterColumnsModal(true)}
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Category"
+          addTitle="Add"
           onAdd={handleAddProjectRERADocumentCategoryModal}
           // IMPORT
           isShowImportButton={canAction}

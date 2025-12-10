@@ -883,7 +883,7 @@ export const DesignationMaster: React.FC = () => {
 
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Designation"
+          addTitle="Add"
           onAdd={handleAddDesignationModal}
 
           // IMPORT

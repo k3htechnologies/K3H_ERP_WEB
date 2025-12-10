@@ -848,7 +848,7 @@ export const DepartmentMaster: React.FC = () => {
           onCustomize={() => setIsShowCustomizeDepartmentMasterColumnsModal(true)}
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Department"
+          addTitle="Add"
           onAdd={handleAddDepartmentModal}
 
           // IMPORT

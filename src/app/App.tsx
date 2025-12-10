@@ -61,6 +61,12 @@ import { OutDoor } from '@/features/outdoor/pages/OutDoor';
 
 import { ViewVendor } from '@/features/vendor/pages/ViewVendor';
 import SiteProgress from '@/features/siteProgress/pages/SiteProgress';
+import SiteProgressSubConstruction from '@/features/siteProgress/pages/SiteProgressSubConstruction';
+import SiteProgressWingConstruction from '@/features/siteProgress/pages/SiteProgressWingConstruction';
+import SiteProgressFloorConstruction from '@/features/siteProgress/pages/SiteProgressFloorConstruction';
+import SiteProgressFlatConstruction from '@/features/siteProgress/pages/SiteProgressFlatConstruction';
+import SiteProgressConstructionActivity from '@/features/siteProgress/pages/SiteProgressConstructionActivity';
+import SiteProgressConstructionSubActivity from '@/features/siteProgress/pages/SiteProgressConstructionSubActivity';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -107,7 +113,7 @@ function App() {
           {/* Public Routes */}
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
-          <Route path="profile" element={<Profile />} />
+         
 
           
 
@@ -179,6 +185,13 @@ function App() {
             <Route path="reraCategory" element={<ProjectRERADocumentCategoryMaster />} />
             <Route path="rera" element={<ProjectRERADocument />} />
             <Route path="siteProgress" element={<SiteProgress />} />
+            <Route path="siteProgress/SiteProgressSubConstruction" element={<SiteProgressSubConstruction />} />
+            <Route path="siteProgress/SiteProgressWingConstruction" element={<SiteProgressWingConstruction />} />
+            <Route path="siteProgress/SiteProgressFloorConstruction" element={<SiteProgressFloorConstruction />} />
+            <Route path="siteProgress/SiteProgressFlatConstruction" element={<SiteProgressFlatConstruction />} />
+            <Route path="siteProgress/SiteProgressConstructionActivity" element={<SiteProgressConstructionActivity />} />
+            <Route path="siteProgress/SiteProgressConstructionSubActivity" element={<SiteProgressConstructionSubActivity />} />
+           <Route path="profile" element={<Profile />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

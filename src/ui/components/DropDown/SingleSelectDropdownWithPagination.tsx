@@ -302,10 +302,11 @@ export const SingleSelectDropdownWithPagination = forwardRef<
         {label && (
           <div
             style={{
-              marginBottom: "6px",
-              fontSize: sizeStyles.fontSize,
+              display: "block",
+              marginBottom: "4px",
+              fontSize: theme.fontSize.sm,
               fontWeight: theme.fontWeight.medium,
-              color: theme.colors.black,
+              color: theme.colors.text,
             }}
           >
             {label}

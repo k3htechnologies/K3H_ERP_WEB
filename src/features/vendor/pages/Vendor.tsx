@@ -622,7 +622,7 @@ export const Vendor: React.FC = () => {
           
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Vendor"
+          addTitle="Add"
           onAdd={handleAddVendor}
 
            // IMPORT

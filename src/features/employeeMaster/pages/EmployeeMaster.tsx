@@ -702,7 +702,7 @@ export const EmployeeMaster: React.FC = () => {
           onCustomize={() => setIsShowCustomizeEmployeeColumnsModal(true)}
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Employee"
+          addTitle="Add"
           onAdd={handleAddEmployeeModal}
 
           // IMPORT

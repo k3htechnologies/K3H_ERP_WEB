@@ -782,7 +782,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
           onCustomize={() => setIsShowCustomizeProjectDocumentCategoryMasterColumnsModal(true)}
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Category"
+          addTitle="Add"
           onAdd={handleAddProjectDocumentCategoryModal}
           // IMPORT
           isShowImportButton={canAction}

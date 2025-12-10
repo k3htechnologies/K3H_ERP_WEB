@@ -866,7 +866,7 @@ export const SubMaterialMaster: React.FC = () => {
           onCustomize={() => setIsShowCustomizeSubMaterialMasterColumnsModal(true)}
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Sub Material"
+          addTitle="Add"
           onAdd={handleAddSubMaterialModal}
 
           // IMPORT

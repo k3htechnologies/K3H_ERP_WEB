@@ -553,7 +553,7 @@ const AddUpdateEmployeePage: React.FC = () => {
           <form onSubmit={handleSubmit}>
             {/* ============================================================= [BASIC EMPLOYEE DETAILS] ============================================================================================= */}
             <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Employee Details</h3>
+              <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-400 pb-2">Basic Employee Details</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
@@ -684,7 +684,7 @@ const AddUpdateEmployeePage: React.FC = () => {
             </div>
             {/* ============================================================= [EMPLOYEE INFO SHEET] ============================================================================================= */}
             <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Employee Info Sheet</h3>
+              <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-400 pb-2">Employee Info Sheet</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
@@ -757,7 +757,7 @@ const AddUpdateEmployeePage: React.FC = () => {
             </div>
             {/* ============================================================= [ADDRESS] ============================================================================================= */}
             <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Address</h3>
+              <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-400 pb-2">Address</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <TextArea
@@ -851,7 +851,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
             {/* ============================================================= [BANK DETAILS] ============================================================================================= */}
             <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Bank Details</h3>
+              <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-400 pb-2">Bank Details</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>

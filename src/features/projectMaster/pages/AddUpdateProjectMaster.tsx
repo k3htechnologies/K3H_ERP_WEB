@@ -5,7 +5,6 @@ import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
 import { PROJECT_STATUS_OPTIONS } from "@/core/constants/staticData";
 import { useEffect, useState } from "react";
@@ -18,6 +17,7 @@ import { ProjectMasterService } from "../services/ProjectMasterService";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 
 const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ProjectId: 0,
@@ -736,38 +736,17 @@ const AddUpdateProjectMaster: React.FC = () => {
                     </div>
                 </form>
             </div>
-            <div
-                className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-                style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}
-            >
-                <Button
-                    color="transparent"
-                    variant='transparent_border'
-                    size="sm"
-                    onClick={() => {
-                        navigate(-1);
-                    }}
-                    className="px-6"
-                >
-                    Cancel
-                </Button>
 
-                {canAction ?
-                    <Button
-                        color="green"
-                        size="sm"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            handleSubmit();
-                        }}
-                        className="px-6"
-                        disabled={isLoading}
-                    >
-                        {formData.ProjectId ? "Update Project" : "Add Project"}
-                    </Button>
-                    : ""}
-            </div>
-
+            <BottomActionBar
+                cancelText="Cancel"
+                saveText={formData.ProjectId ? "Update Project" : "Add Project"}
+                onCancel={() => navigate(-1)}
+                onSave={() => {
+                    handleSubmit();
+                }}
+                canAction={canAction} 
+                isLoading={isLoading}
+            />
         </div>
     );
 };

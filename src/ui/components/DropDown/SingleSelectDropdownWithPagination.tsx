@@ -6,6 +6,7 @@ import React, {
   useCallback,
   forwardRef,
 } from "react";
+import { createPortal } from "react-dom";
 import { THEME } from "@/core/constants/theme";
 import { InfoIcon, Search, X } from "lucide-react";
 import type { SingleSelectWithPaginationProps } from "@/core/types/dropDownSelectionType";
@@ -46,7 +47,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
     const [isOpen, setIsOpen] = useState(false);
-    const [openUpward, setOpenUpward] = useState(false);
+    const [, setOpenUpward] = useState(false);
 
     const isFetchingRef = useRef(false);
     const pageRef = useRef(1);
@@ -92,7 +93,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
       [dataFetchCallBack, searchText]
     );
 
-    // initial load once (keeps behavior similar to your version)
+    // initial load once
     useEffect(() => {
       fetchData(true);
     }, [fetchData]);
@@ -143,7 +144,6 @@ export const SingleSelectDropdownWithPagination = forwardRef<
       // reset page and fetch new results, then scroll smoothly to top
       fetchData(true, value).then(() => {
         if (scrollRef.current) {
-          // smooth scroll to top of options container
           try {
             scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
           } catch {
@@ -249,10 +249,69 @@ export const SingleSelectDropdownWithPagination = forwardRef<
       };
     }, []);
 
+    // PORTAL POSITIONING: compute where the portal should be placed (fixed coords)
+    const DROPDOWN_ESTIMATED_HEIGHT = sizeStyles.dropdownHeight + 12;
+    const [portalPos, setPortalPos] = useState<{
+      left: number;
+      top: number;
+      width: number;
+      maxHeight: number;
+    } | null>(null);
 
-    // DETECT SPACE FOR UPWARD OPEN
-    const DROPDOWN_ESTIMATED_HEIGHT = sizeStyles.dropdownHeight + 60;
+    const updatePortalPos = useCallback(() => {
+      const node = containerRef.current;
+      if (!node || typeof window === "undefined") {
+        setPortalPos(null);
+        return;
+      }
 
+      const rect = node.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      const dropdownH = sizeStyles.dropdownHeight;
+      const spaceBelow = vh - rect.bottom;
+      const spaceAbove = rect.top;
+
+      // open below if enough space; otherwise open above
+      const openBelow = spaceBelow >= DROPDOWN_ESTIMATED_HEIGHT || spaceBelow >= spaceAbove;
+
+      // compute top for fixed positioning (viewport coords)
+      let top = openBelow ? rect.bottom + 6 : rect.top - dropdownH - 6;
+
+      // clamp so popup remains on-screen
+      const minTop = 8;
+      const maxTop = Math.max(8, vh - dropdownH - 8);
+      top = Math.min(Math.max(top, minTop), maxTop);
+
+      // left and width (clamp right edge)
+      let left = rect.left;
+      let width = rect.width;
+      const rightOverflow = left + width - vw;
+      if (rightOverflow > 8) {
+        left = Math.max(8, left - rightOverflow);
+      }
+
+      setPortalPos({ left, top, width, maxHeight: dropdownH });
+
+      // also set openUpward (for backwards compatibility if needed)
+      setOpenUpward(!openBelow);
+    }, [sizeStyles.dropdownHeight]);
+
+    useEffect(() => {
+      if (!isOpen) return;
+      updatePortalPos(); // initial compute
+
+      const onUpdate = () => updatePortalPos();
+      window.addEventListener("resize", onUpdate);
+      window.addEventListener("scroll", onUpdate, true); // track ancestor scroll too
+      return () => {
+        window.removeEventListener("resize", onUpdate);
+        window.removeEventListener("scroll", onUpdate, true);
+      };
+    }, [isOpen, updatePortalPos]);
+
+    // handle toggle: compute portal position when opening
     const handleToggle = () => {
       if (disabled) return;
 
@@ -268,21 +327,28 @@ export const SingleSelectDropdownWithPagination = forwardRef<
       const spaceBelow = windowHeight - rect.bottom;
       const spaceAbove = rect.top;
 
-      // If not enough space below and above has more room → open upward
+      // maintain openUpward fallback
       if (spaceBelow < DROPDOWN_ESTIMATED_HEIGHT && spaceAbove > spaceBelow) {
         setOpenUpward(true);
       } else {
         setOpenUpward(false);
       }
 
-      setIsOpen(prev => !prev);
+      setIsOpen(prev => {
+        const next = !prev;
+        if (next) {
+          setTimeout(() => updatePortalPos(), 0);
+        } else {
+          setPortalPos(null);
+        }
+        return next;
+      });
     };
-
 
     return (
       <div
         ref={(node) => {
-          // forward ref + local containerRef@ts-ignore
+          // forward ref + local containerRef
           if (ref) {
             if (typeof ref === "function") ref(node);
             else (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
@@ -367,20 +433,21 @@ export const SingleSelectDropdownWithPagination = forwardRef<
           </svg>
         </div>
 
-        {isOpen && (
+        {/* Portal popup: render into document.body so modal is not affected */}
+        {isOpen && portalPos && typeof document !== "undefined" && createPortal(
           <div
+            onMouseDown={(e) => e.stopPropagation()} // avoid body click from closing while interacting
             style={{
-              position: "absolute",
-              top: openUpward ? "auto" : "calc(100% + 4px)",
-              bottom: openUpward ? "calc(100% + 4px)" : "auto",
-              left: 0,
-              width: "100%",
-              maxHeight: sizeStyles.dropdownHeight,
+              position: "fixed",
+              left: portalPos.left,
+              top: portalPos.top,
+              width: portalPos.width,
+              maxHeight: portalPos.maxHeight,
               overflow: "hidden",
               border: `1px solid ${theme.colors.border}`,
               borderRadius: theme.borderRadius.sm,
               boxShadow: theme.shadows.lg,
-              zIndex: 999,
+              zIndex: 9999, // ensure above modal overlay
               padding: 0,
               background: theme.colors.background,
             }}
@@ -455,10 +522,10 @@ export const SingleSelectDropdownWithPagination = forwardRef<
               className="thin-scroll"
               style={{
                 overflowY: "auto",
-                maxHeight: sizeStyles.dropdownHeight - 48, // leave room for search
+                maxHeight: portalPos.maxHeight - 48, // leave room for search
                 scrollBehavior: "smooth",
                 WebkitOverflowScrolling: "touch",
-                paddingBottom: 10,          // <-- ensure last item not clipped
+                paddingBottom: 10,          // ensure last item not clipped
                 boxSizing: "border-box",
               }}
               onMouseDown={(e) => {
@@ -514,7 +581,8 @@ export const SingleSelectDropdownWithPagination = forwardRef<
               )}
               <div style={{ height: 12, pointerEvents: "none" }} />
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* Error message */}

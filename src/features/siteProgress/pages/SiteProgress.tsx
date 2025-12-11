@@ -15,7 +15,7 @@ import type {
 } from '@/features/siteProgress/models/SiteProgressModel';
 import { SiteProgressService } from '@/features/siteProgress/services/SiteProgressService';
 
-var storedProjectId = 1;
+var storedProjectId = 3;
 
 const SiteProgress: React.FC = () => {
 

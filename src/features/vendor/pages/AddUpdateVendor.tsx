@@ -22,6 +22,7 @@ import { Tabs } from "@/ui/components/Tab/Tab";
 import { Trash2, Plus, Search } from "lucide-react";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 
 
 const initialFormState = (): AddUpdateVendorRequest => ({
@@ -896,35 +897,18 @@ export const AddUpdateVendor: React.FC = () => {
 
       </div>
 
-      <div
-        className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "301px", right: '14px' }}
-      >
-        <Button
-          color="transparent"
-          variant='transparent_border'
-          size="sm"
-          onClick={() => {
-            navigate(-1);
-          }}
-          className="px-6"
-        >
-          Cancel
-        </Button>
+      <BottomActionBar
+        cancelText="Cancel"
+        saveText={formData.VendorId ? "Update Vendor" : "Add Vendor"}
+        onCancel={() => navigate(-1)}
+        canAction={canAction}
+        onSave={() => {
+          handleSubmit();
+        }}
+        isLoading={isLoading}
+      />
 
-        <Button
-          color="green"
-          size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            handleSubmit();
-          }}
-          className="px-6"
-          disabled={isLoading}
-        >
-          {formData.VendorId ? "Update Vendor" : "Add Vendor"}
-        </Button>
-      </div>
+     
     </div>
   );
 };

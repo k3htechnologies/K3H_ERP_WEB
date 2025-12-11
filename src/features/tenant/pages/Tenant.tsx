@@ -5,7 +5,7 @@ import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type { BuildingData, FilterWithPaginationBuildingRequest } from '@/features/building/models/BuildingModel';
-import {buildingService } from '@/features/building/services/BuildingService';
+import { employeeMasterService as buildingService } from '@/features/building/services/BuildingService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';

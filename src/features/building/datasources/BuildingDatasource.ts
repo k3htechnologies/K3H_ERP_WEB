@@ -1,4 +1,5 @@
 import baseClient from '@/core/config/baseClient'
+import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { BuildingApi } from '@/features/building/api/BuildingApi'
 import type {
     FilterWithPaginationBuildingRequest,
@@ -43,6 +44,11 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
         } catch (error) {
 
             console.error('Error: Pull BUILDING:', error);
+
+            if (error === TokenExpiredException) {
+                await this.pullBuilding(params);
+            }
+
             throw error
         }
     }
@@ -59,6 +65,11 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
             return response
         } catch (error) {
             console.error('Error: Add Update BUILDING:', error)
+
+            if (error === TokenExpiredException) {
+                await this.addUpdateBuilding(params);
+            }
+
             throw error
         }
     }
@@ -80,6 +91,11 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
         } catch (error) {
 
             console.error('ERRPR : DELETE BUILDING:', error)
+
+            if (error === TokenExpiredException) {
+                await this.deleteBuilding(params);
+            }
+
             throw error
         }
     }

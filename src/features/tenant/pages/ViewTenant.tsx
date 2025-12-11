@@ -9,7 +9,7 @@ import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import { ArrowLeft, Edit } from 'lucide-react';
 import { Button } from '@/ui/components/forms';
-import { buildingService } from '@/features/building/services/BuildingService';
+import { employeeMasterService as buildingService } from '@/features/building/services/BuildingService';
 import type { FilterWithPaginationBuildingRequest } from '../models/BuildingModel';
 var ProjectId = 1;
 export const ViewBuilding: React.FC = () => {
@@ -68,7 +68,7 @@ export const ViewBuilding: React.FC = () => {
                     PageSize: 1,
                     BuildingId: preservedListState.filters.BuildingId,
                     IsCheckPermission: false,
-                    ProjectId: ProjectId
+                    ProjectId:ProjectId
                 };
 
                 const response = await buildingService.apiCallPullBuilding(params);
@@ -236,7 +236,7 @@ export const ViewBuilding: React.FC = () => {
                                 {
                                     key: "religious",
                                     title: "Religious Structure",
-                                    defaultOpen: true,
+                                     defaultOpen: true,
                                     content: (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <FieldItem label="Is Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
@@ -247,7 +247,7 @@ export const ViewBuilding: React.FC = () => {
                                 {
                                     key: "fsi",
                                     title: "FSI / TDR",
-                                    defaultOpen: true,
+                                     defaultOpen: true,
                                     content: (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <FieldItem label="FSI / TDR Utilization (sqft)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />

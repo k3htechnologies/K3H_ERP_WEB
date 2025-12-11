@@ -3,7 +3,7 @@ import { Input } from "@/ui/components/forms/Input";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
-import { buildingService } from "@/features/building/services/BuildingService";
+import { employeeMasterService as buildingService } from "@/features/building/services/BuildingService";
 import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";

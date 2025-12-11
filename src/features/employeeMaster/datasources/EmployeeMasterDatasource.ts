@@ -5,12 +5,13 @@ import type {
     AddUpdateEmployeeMasterRequest,
     EmployeeMasterListResponse,
     LocationResponse
-} from '../models/EmployeeMasterModel'
+} from '@/features/employeeMaster/models/EmployeeMasterModel'
+import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 
 export abstract class EmployeeMasterDatasource {
 
     abstract pullEmployeeMaster(params: FilterWithPaginationEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
-    abstract addUpdateEmployeeMaster(data: AddUpdateEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
+    abstract addUpdateEmployeeMaster(params: AddUpdateEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
 }
 
 export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
@@ -19,13 +20,13 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
     }
 
 
-  async pullLocationHierarchy(): Promise<LocationResponse> {
-    debugger
-    const response = await this.k3hHttpClient.getRequestWithAuthentication(
-        `Static/PullCountryStateCityDistrictVillage`
-    );
-    return response;
-}
+    async pullLocationHierarchy(): Promise<LocationResponse> {
+        debugger
+        const response = await this.k3hHttpClient.getRequestWithAuthentication(
+            `Static/PullCountryStateCityDistrictVillage`
+        );
+        return response;
+    }
 
 
     async pullEmployeeMaster(params: FilterWithPaginationEmployeeMasterRequest): Promise<EmployeeMasterListResponse> {
@@ -56,48 +57,52 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
         } catch (error) {
 
             console.error('Error: Pull Employee Master:', error);
+
+            if (error === TokenExpiredException) {
+                await this.pullEmployeeMaster(params);
+            }
             throw error
         }
     }
 
-    async addUpdateEmployeeMaster(data: AddUpdateEmployeeMasterRequest): Promise<EmployeeMasterListResponse> {
+    async addUpdateEmployeeMaster(params: AddUpdateEmployeeMasterRequest): Promise<EmployeeMasterListResponse> {
 
         try {
 
             const payLoad: AddUpdateEmployeeMasterRequest = {
-                EmployeeId: data.EmployeeId ?? 0,
-                UniqueKey: data.UniqueKey ?? '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-                FirstName: data.FirstName?.trim() ?? '',
-                MiddleName: data.MiddleName?.trim() ?? '',
-                LastName: data.LastName?.trim() ?? '',
-                DepartmentMasterId: data.DepartmentMasterId ?? 0,
-                DesignationMasterId: data.DesignationMasterId ?? 0,
-                BranchMasterId: data.BranchMasterId ?? 0,
-                Gender: data.Gender?.trim() ?? '',
-                MaritalStatus: data.MaritalStatus?.trim() ?? '',
-                DateOfBirth: data.DateOfBirth ?? '',
-                JoiningDate: data.JoiningDate ?? '',
-                IsGeoFenceLocation: data.IsGeoFenceLocation ?? false,
-                EmailId: data.EmailId?.trim() ?? '',
-                OfficeEmailId: data.OfficeEmailId?.trim() ?? '',
-                ReportPersonId: data.ReportPersonId ?? 0,
-                PersonalMobileNumber: data.PersonalMobileNumber?.trim() ?? '',
-                OfficeMobileNumber: data.OfficeMobileNumber?.trim() ?? '',
-                BankListMasterId: data.BankListMasterId ?? 0,
-                BankBranchName: data.BankBranchName?.trim() ?? '',
-                IFSCCode: data.IFSCCode?.trim() ?? '',
-                AccountNo: data.AccountNo?.trim() ?? '',
-                EmployeeType: data.EmployeeType?.trim() ?? '',
-                EmergencyMobileNumber: data.EmergencyMobileNumber?.trim() ?? '',
-                EmergencyContactPersonRelationship: data.EmergencyContactPersonRelationship?.trim() ?? '',
-                CommunicationAddress: data.CommunicationAddress?.trim() ?? '',
-                PermanentAddress: data.PermanentAddress?.trim() ?? '',
-                BloodGroup: data.BloodGroup?.trim() ?? '',
-                CompanyId: data.CompanyId ?? 0,
-                CountryMasterId: data.CountryMasterId ?? 0,
-                StateMasterId: data.StateMasterId ?? 0,
-                DistrictMasterId: data.DistrictMasterId ?? 0,
-                CityMasterId: data.CityMasterId ?? 0,
+                EmployeeId: params.EmployeeId ?? 0,
+                UniqueKey: params.UniqueKey ?? '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+                FirstName: params.FirstName?.trim() ?? '',
+                MiddleName: params.MiddleName?.trim() ?? '',
+                LastName: params.LastName?.trim() ?? '',
+                DepartmentMasterId: params.DepartmentMasterId ?? 0,
+                DesignationMasterId: params.DesignationMasterId ?? 0,
+                BranchMasterId: params.BranchMasterId ?? 0,
+                Gender: params.Gender?.trim() ?? '',
+                MaritalStatus: params.MaritalStatus?.trim() ?? '',
+                DateOfBirth: params.DateOfBirth ?? '',
+                JoiningDate: params.JoiningDate ?? '',
+                IsGeoFenceLocation: params.IsGeoFenceLocation ?? false,
+                EmailId: params.EmailId?.trim() ?? '',
+                OfficeEmailId: params.OfficeEmailId?.trim() ?? '',
+                ReportPersonId: params.ReportPersonId ?? 0,
+                PersonalMobileNumber: params.PersonalMobileNumber?.trim() ?? '',
+                OfficeMobileNumber: params.OfficeMobileNumber?.trim() ?? '',
+                BankListMasterId: params.BankListMasterId ?? 0,
+                BankBranchName: params.BankBranchName?.trim() ?? '',
+                IFSCCode: params.IFSCCode?.trim() ?? '',
+                AccountNo: params.AccountNo?.trim() ?? '',
+                EmployeeType: params.EmployeeType?.trim() ?? '',
+                EmergencyMobileNumber: params.EmergencyMobileNumber?.trim() ?? '',
+                EmergencyContactPersonRelationship: params.EmergencyContactPersonRelationship?.trim() ?? '',
+                CommunicationAddress: params.CommunicationAddress?.trim() ?? '',
+                PermanentAddress: params.PermanentAddress?.trim() ?? '',
+                BloodGroup: params.BloodGroup?.trim() ?? '',
+                CompanyId: params.CompanyId ?? 0,
+                CountryMasterId: params.CountryMasterId ?? 0,
+                StateMasterId: params.StateMasterId ?? 0,
+                DistrictMasterId: params.DistrictMasterId ?? 0,
+                CityMasterId: params.CityMasterId ?? 0,
             }
 
 
@@ -109,6 +114,12 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
             return response
         } catch (error) {
             console.error('Error: Add Update Employee Master:', error)
+
+            if (error === TokenExpiredException) {
+                await this.addUpdateEmployeeMaster(params);
+            }
+
+
             throw error
         }
     }

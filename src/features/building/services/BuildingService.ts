@@ -10,14 +10,14 @@ import type {
 
 import * as E from 'fp-ts/Either';
 
-const employeeMasterDatasource = new BuildingDatasourceImpl();
+const buildingDatasource = new BuildingDatasourceImpl();
 
-export const employeeMasterService = {
+export const buildingService = {
 
     apiCallPullBuilding: async (params: FilterWithPaginationBuildingRequest): Promise<E.Either<Failure, BuildingListResponse>> => {
         try {
 
-            return E.right(await employeeMasterDatasource.pullBuilding(params));
+            return E.right(await buildingDatasource.pullBuilding(params));
 
         } catch (error: any) {
 
@@ -26,10 +26,10 @@ export const employeeMasterService = {
         }
     },
 
-    apiCallAddUpdateBuilding: async (data: AddUpdateBuildingRequest): Promise<E.Either<Failure, BuildingListResponse>> => {
+    apiCallAddUpdateBuilding: async (params: AddUpdateBuildingRequest): Promise<E.Either<Failure, BuildingListResponse>> => {
         try {
 
-            return E.right(await employeeMasterDatasource.addUpdateBuilding(data));
+            return E.right(await buildingDatasource.addUpdateBuilding(params));
 
         } catch (error: any) {
 
@@ -38,10 +38,10 @@ export const employeeMasterService = {
         }
     },
 
-    apiCallDeleteBuilding: async (data: DeleteBuildingRequest): Promise<E.Either<Failure, BuildingDeleteResponse>> => {
+    apiCallDeleteBuilding: async (params: DeleteBuildingRequest): Promise<E.Either<Failure, BuildingDeleteResponse>> => {
         try {
 
-            return E.right(await employeeMasterDatasource.deleteBuilding(data));
+            return E.right(await buildingDatasource.deleteBuilding(params));
 
         } catch (error: any) {
 

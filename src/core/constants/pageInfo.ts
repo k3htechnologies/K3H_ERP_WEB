@@ -222,7 +222,12 @@ export const getPageInfo = (path: string) => {
                 title: 'Building',
                 description: 'Profile',
             }
-        // ✅ Add other cases here...
+             case 'tenant':
+            return {
+                title: 'Tenant',
+                description: 'Profile',
+            }
+        
         default:
             return {
                 title: 'Dashboard',

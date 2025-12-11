@@ -70,6 +70,9 @@ import SiteProgressConstructionSubActivity from '@/features/siteProgress/pages/S
 import { Building } from '@/features/building/pages/Building';
 import ViewBuilding from '@/features/building/pages/ViewBuilding';
 import AddUpdateBuilding from '@/features/building/pages/AddUpdateBuilding';
+import Tenant from '@/features/tenant/pages/Tenant';
+import AddUpdateTenant from '@/features/tenant/pages/AddUpdateTenant';
+import ViewTenant from '@/features/tenant/pages/ViewTenant';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -191,6 +194,10 @@ function App() {
             <Route path="building" element={<Building />} />
             <Route path="building/view" element={<ViewBuilding />} />
             <Route path="building/add/:buildingId?" element={<AddUpdateBuilding />} />
+
+            <Route path="tenant" element={<Tenant />} />
+            <Route path="tenant/view" element={<ViewTenant />} />
+            <Route path="tenant/add/:tenantId?" element={<AddUpdateTenant />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

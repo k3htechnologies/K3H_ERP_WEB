@@ -8,12 +8,15 @@ import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import { SiteProgressBreadcrumb } from '@/features/siteProgress/Breadcrumb/SiteProgressBreadcrumb';
 import type {
   FilterWithPaginationSiteProgressConstructionRequest,
   SiteProgressConstructionData
 } from '@/features/siteProgress/models/SiteProgressModel';
 import { SiteProgressService } from '@/features/siteProgress/services/SiteProgressService';
+
 var storedProjectId = 1;
+
 const SiteProgress: React.FC = () => {
 
   //#region STATE
@@ -115,7 +118,10 @@ const SiteProgress: React.FC = () => {
           subConstructionId: 0,
           inventoryFlatFloorBasementPodiumWingId: 0,
           inventoryFloorId: 0,
-          inventoryFlatId: 0
+          inventoryFlatId: 0,
+          breadcrumbs: [
+            { label: `Construction: ${row.Construction || 'N/A'}`, path: '/siteProgress' }
+          ]
         }
       });
 
@@ -125,7 +131,10 @@ const SiteProgress: React.FC = () => {
         state: {
           projectId: row.ProjectId,
           inventoryBuildingId: row.InventoryBuildingId,
-          constructionId: row.ConstructionId
+          constructionId: row.ConstructionId,
+          breadcrumbs: [
+            { label: `Construction: ${row.Construction || 'N/A'}`, path: '/siteProgress' }
+          ]
         }
       });
     }
@@ -250,6 +259,11 @@ const SiteProgress: React.FC = () => {
         isShowImportButton={false}
         isShowExportButton={false}
       />
+
+      {/* ============================================================================
+          BREADCRUMB NAVIGATION
+           ============================================================================ */}
+      <SiteProgressBreadcrumb items={[]} />
 
       {/* DATA TABLE */}
       <DataTable

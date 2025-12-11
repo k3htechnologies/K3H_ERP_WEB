@@ -8,6 +8,7 @@ import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import { SiteProgressBreadcrumb } from '@/features/siteProgress/Breadcrumb/SiteProgressBreadcrumb';
 import type {
   FilterWithPaginationSiteProgressSubConstructionRequest,
   SiteProgressSubConstructionData
@@ -30,6 +31,7 @@ const SiteProgressSubConstruction: React.FC = () => {
       projectId?: number;
       inventoryBuildingId?: number;
       constructionId?: number;
+      breadcrumbs?: Array<{ label: string; path?: string }>;
     };
   };
   //#endregion
@@ -109,6 +111,11 @@ const SiteProgressSubConstruction: React.FC = () => {
 
   //#region VIEW
   const handleViewSubConstruction = useCallback((row: SiteProgressSubConstructionData) => {
+
+    const currentBreadcrumbs = location.state?.breadcrumbs || [];
+
+    const newBreadcrumb = { label: `Sub Construction: ${row.SubConstruction || '-'}` };
+
     if (row.NextAction?.toUpperCase() === "ACTIVITY") {
       navigate('/siteProgress/SiteProgressConstructionActivity', {
         state: {
@@ -118,7 +125,8 @@ const SiteProgressSubConstruction: React.FC = () => {
           subConstructionId: row.SubConstructionId,
           inventoryFlatFloorBasementPodiumWingId: 0,
           inventoryFloorId: 0,
-          inventoryFlatId: 0
+          inventoryFlatId: 0,
+          breadcrumbs: [...currentBreadcrumbs, newBreadcrumb]
         }
       });
     }
@@ -128,11 +136,12 @@ const SiteProgressSubConstruction: React.FC = () => {
           projectId: row.ProjectId,
           inventoryBuildingId: row.InventoryBuildingId,
           constructionId: row.ConstructionId,
-          subConstructionId: row.SubConstructionId
+          subConstructionId: row.SubConstructionId,
+          breadcrumbs: [...currentBreadcrumbs, newBreadcrumb]
         }
       });
     }
-  }, [navigate]);
+  }, [navigate, location.state]);
   //#endregion
 
   //#region TABLE COLUMN
@@ -220,12 +229,17 @@ const SiteProgressSubConstruction: React.FC = () => {
   ], [handleViewSubConstruction]);
   //#endregion
 
+  const breadcrumbItems = useMemo(() => {
+    return location.state?.breadcrumbs || [];
+  }, [location.state]);
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+
 
       {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
@@ -251,6 +265,11 @@ const SiteProgressSubConstruction: React.FC = () => {
         isShowImportButton={false}
         isShowExportButton={false}
       />
+      {/* ============================================================================
+          BREADCRUMB NAVIGATION
+           ============================================================================ */}
+      <SiteProgressBreadcrumb items={breadcrumbItems} />
+
 
       {/* DATA TABLE */}
       <DataTable

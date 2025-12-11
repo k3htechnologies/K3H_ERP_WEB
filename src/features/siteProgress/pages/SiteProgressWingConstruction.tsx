@@ -8,6 +8,7 @@ import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import { SiteProgressBreadcrumb } from '@/features/siteProgress/Breadcrumb/SiteProgressBreadcrumb';
 import type {
   FilterWithPaginationSiteProgressWingConstructionRequest,
   SiteProgressWingConstructionData
@@ -30,6 +31,7 @@ const SiteProgressWingConstruction: React.FC = () => {
       inventoryBuildingId?: number;
       constructionId?: number;
       subConstructionId?: number;
+      breadcrumbs?: Array<{ label: string; path?: string }>;
     };
   };
   //#endregion
@@ -109,6 +111,8 @@ const SiteProgressWingConstruction: React.FC = () => {
 
   //#region VIEW
   const handleViewWingConstruction = useCallback((row: SiteProgressWingConstructionData) => {
+    const currentBreadcrumbs = location.state?.breadcrumbs || [];
+    const newBreadcrumb = { label: `Wing: ${row.Wing || '-'}` };
     
     navigate('/siteProgress/SiteProgressFloorConstruction', {
       state: {
@@ -116,10 +120,11 @@ const SiteProgressWingConstruction: React.FC = () => {
         inventoryBuildingId: row.InventoryBuildingId,
         constructionId: row.ConstructionId,
         subConstructionId: row.SubConstructionId,
-        inventoryFlatFloorBasementPodiumWingId: row.InventoryFlatFloorBasementPodiumWingId
+        inventoryFlatFloorBasementPodiumWingId: row.InventoryFlatFloorBasementPodiumWingId,
+        breadcrumbs: [...currentBreadcrumbs, newBreadcrumb]
       }
     });
-  }, [navigate]);
+  }, [navigate, location.state]);
   //#endregion
 
   //#region TABLE COLUMN
@@ -207,6 +212,10 @@ const SiteProgressWingConstruction: React.FC = () => {
   ], [handleViewWingConstruction]);
   //#endregion
 
+  const breadcrumbItems = useMemo(() => {
+    return location.state?.breadcrumbs || [];
+  }, [location.state]);
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       {/* ============================================================================
@@ -238,6 +247,11 @@ const SiteProgressWingConstruction: React.FC = () => {
         isShowImportButton={false}
         isShowExportButton={false}
       />
+
+      {/* ============================================================================
+          BREADCRUMB NAVIGATION
+           ============================================================================ */}
+      <SiteProgressBreadcrumb items={breadcrumbItems} />
 
       {/* DATA TABLE */}
       <DataTable

@@ -8,6 +8,7 @@ import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import { SiteProgressBreadcrumb } from '@/features/siteProgress/Breadcrumb/SiteProgressBreadcrumb';
 import type {
   FilterWithPaginationSiteProgressFloorConstructionRequest,
   SiteProgressFloorConstructionData
@@ -31,13 +32,14 @@ const SiteProgressFloorConstruction: React.FC = () => {
       constructionId?: number;
       subConstructionId?: number;
       inventoryFlatFloorBasementPodiumWingId?: number;
+      breadcrumbs?: Array<{ label: string; path?: string }>;
     };
   };
   //#endregion
 
   //#region INIT
   useEffect(() => {
-    
+
     fetchFloorConstructionList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
@@ -53,7 +55,7 @@ const SiteProgressFloorConstruction: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        
+
         const params: FilterWithPaginationSiteProgressFloorConstructionRequest = {
           ProjectId: location.state.projectId,
           InventoryBuildingId: location.state.inventoryBuildingId,
@@ -112,7 +114,9 @@ const SiteProgressFloorConstruction: React.FC = () => {
 
   //#region VIEW
   const handleViewFloorConstruction = useCallback((row: SiteProgressFloorConstructionData) => {
-    
+    const currentBreadcrumbs = location.state?.breadcrumbs || [];
+    const newBreadcrumb = { label: `Floor: ${row.Floor || '-'}` };
+
     navigate('/siteProgress/SiteProgressFlatConstruction', {
       state: {
         projectId: row.ProjectId,
@@ -120,10 +124,11 @@ const SiteProgressFloorConstruction: React.FC = () => {
         constructionId: row.ConstructionId,
         subConstructionId: row.SubConstructionId,
         inventoryFlatFloorBasementPodiumWingId: row.InventoryFlatFloorBasementPodiumWingId,
-        inventoryFloorId: row.InventoryFloorId
+        inventoryFloorId: row.InventoryFloorId,
+        breadcrumbs: [...currentBreadcrumbs, newBreadcrumb]
       }
     });
-  }, [navigate]);
+  }, [navigate, location.state]);
   //#endregion
 
   //#region TABLE COLUMN
@@ -152,7 +157,8 @@ const SiteProgressFloorConstruction: React.FC = () => {
       align: 'center',
       render: value => value || '-'
     },
-    {  key: 'PlanStartDate',
+    {
+      key: 'PlanStartDate',
       label: 'Plan Start',
       width: '16',
       sortable: false,
@@ -210,12 +216,17 @@ const SiteProgressFloorConstruction: React.FC = () => {
   ], [handleViewFloorConstruction]);
   //#endregion
 
+  const breadcrumbItems = useMemo(() => {
+    return location.state?.breadcrumbs || [];
+  }, [location.state]);
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+
 
       {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
@@ -234,13 +245,19 @@ const SiteProgressFloorConstruction: React.FC = () => {
         }}
         isShowFilterButton={false}
         filters={{}}
-        onOpenFilter={() => {}}
+        onOpenFilter={() => { }}
         isShowCustomizeButton={false}
-        onCustomize={() => {}}
+        onCustomize={() => { }}
         isShowAddButton={false}
         isShowImportButton={false}
         isShowExportButton={false}
       />
+
+      {/* ============================================================================
+          BREADCRUMB NAVIGATION
+           ============================================================================ */}
+      <SiteProgressBreadcrumb items={breadcrumbItems} />
+
 
       {/* DATA TABLE */}
       <DataTable

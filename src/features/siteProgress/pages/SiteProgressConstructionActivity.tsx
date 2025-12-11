@@ -8,6 +8,7 @@ import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import { SiteProgressBreadcrumb } from '@/features/siteProgress/Breadcrumb/SiteProgressBreadcrumb';
 import type {
   FilterWithPaginationSiteProgressConstructionActivityRequest,
   SiteProgressConstructionActivityData
@@ -33,13 +34,14 @@ const SiteProgressConstructionActivity: React.FC = () => {
       inventoryFlatFloorBasementPodiumWingId?: number;
       inventoryFloorId?: number;
       inventoryFlatId?: number;
+      breadcrumbs?: Array<{ label: string; path?: string }>;
     };
   };
   //#endregion
 
   //#region INIT
   useEffect(() => {
-    
+
     fetchConstructionActivityList();
   }, [location.state]);
   //#endregion
@@ -54,7 +56,7 @@ const SiteProgressConstructionActivity: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        
+
 
         const params: FilterWithPaginationSiteProgressConstructionActivityRequest = {
           ProjectId: location.state.projectId,
@@ -116,14 +118,17 @@ const SiteProgressConstructionActivity: React.FC = () => {
 
   //#region VIEW
   const handleViewConstructionActivity = useCallback((row: SiteProgressConstructionActivityData) => {
-    
+    const currentBreadcrumbs = location.state?.breadcrumbs || [];
+    const newBreadcrumb = { label: `Activity: ${row.ActivityName || 'N/A'}` };
+
     navigate('/siteProgress/SiteProgressConstructionSubActivity', {
       state: {
         projectId: row.ProjectId,
-        constructionActivityId: row.ConstructionActivityId
+        constructionActivityId: row.ConstructionActivityId,
+        breadcrumbs: [...currentBreadcrumbs, newBreadcrumb]
       }
     });
-  }, [navigate]);
+  }, [navigate, location.state]);
   //#endregion
 
   //#region TABLE COLUMN
@@ -147,12 +152,17 @@ const SiteProgressConstructionActivity: React.FC = () => {
   ], [handleViewConstructionActivity]);
   //#endregion
 
+  const breadcrumbItems = useMemo(() => {
+    return location.state?.breadcrumbs || [];
+  }, [location.state]);
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+
 
       {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
@@ -171,13 +181,17 @@ const SiteProgressConstructionActivity: React.FC = () => {
         }}
         isShowFilterButton={false}
         filters={{}}
-        onOpenFilter={() => {}}
+        onOpenFilter={() => { }}
         isShowCustomizeButton={false}
-        onCustomize={() => {}}
+        onCustomize={() => { }}
         isShowAddButton={false}
         isShowImportButton={false}
         isShowExportButton={false}
       />
+      {/* ============================================================================
+          BREADCRUMB NAVIGATION
+           ============================================================================ */}
+      <SiteProgressBreadcrumb items={breadcrumbItems} />
 
       {/* DATA TABLE */}
       <DataTable

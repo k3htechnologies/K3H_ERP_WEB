@@ -8,6 +8,7 @@ import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import { SiteProgressBreadcrumb } from '@/features/siteProgress/Breadcrumb/SiteProgressBreadcrumb';
 import type {
   FilterWithPaginationSiteProgressFlatConstructionRequest,
   SiteProgressFlatConstructionData
@@ -32,6 +33,7 @@ const SiteProgressFlatConstruction: React.FC = () => {
       subConstructionId?: number;
       inventoryFlatFloorBasementPodiumWingId?: number;
       inventoryFloorId?: number;
+      breadcrumbs?: Array<{ label: string; path?: string }>;
     };
   };
   //#endregion
@@ -113,6 +115,8 @@ const SiteProgressFlatConstruction: React.FC = () => {
 
   //#region VIEW
   const handleViewFlatConstruction = useCallback((row: SiteProgressFlatConstructionData) => {
+    const currentBreadcrumbs = location.state?.breadcrumbs || [];
+    const newBreadcrumb = { label: `Flat: ${row.FlatNumber || 'N/A'}` };
     
     navigate('/siteProgress/SiteProgressConstructionActivity', {
       state: {
@@ -122,10 +126,11 @@ const SiteProgressFlatConstruction: React.FC = () => {
         subConstructionId: row.SubConstructionId,
         inventoryFlatFloorBasementPodiumWingId: row.InventoryFlatFloorBasementPodiumWingId,
         inventoryFloorId: row.InventoryFloorId,
-        inventoryFlatId: row.InventoryFlatId
+        inventoryFlatId: row.InventoryFlatId,
+        breadcrumbs: [...currentBreadcrumbs, newBreadcrumb]
       }
     });
-  }, [navigate]);
+  }, [navigate, location.state]);
   //#endregion
 
   //#region TABLE COLUMN
@@ -213,6 +218,10 @@ const SiteProgressFlatConstruction: React.FC = () => {
   ], [handleViewFlatConstruction]);
   //#endregion
 
+  const breadcrumbItems = useMemo(() => {
+    return location.state?.breadcrumbs || [];
+  }, [location.state]);
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       {/* ============================================================================
@@ -220,6 +229,7 @@ const SiteProgressFlatConstruction: React.FC = () => {
            ============================================================================ */}
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
+      
       {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
@@ -244,6 +254,12 @@ const SiteProgressFlatConstruction: React.FC = () => {
         isShowImportButton={false}
         isShowExportButton={false}
       />
+
+      {/* ============================================================================
+          BREADCRUMB NAVIGATION
+           ============================================================================ */}
+      <SiteProgressBreadcrumb items={breadcrumbItems} />
+
 
       {/* DATA TABLE */}
       <DataTable

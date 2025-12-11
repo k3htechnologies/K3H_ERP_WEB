@@ -8,6 +8,7 @@ import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import { SiteProgressBreadcrumb } from '@/features/siteProgress/Breadcrumb/SiteProgressBreadcrumb';
 import type {
   FilterWithPaginationSiteProgressConstructionSubActivityRequest,
   SiteProgressConstructionSubActivityData
@@ -27,13 +28,14 @@ const SiteProgressConstructionSubActivity: React.FC = () => {
     state?: {
       projectId?: number;
       constructionActivityId?: number;
+      breadcrumbs?: Array<{ label: string; path?: string }>;
     };
   };
   //#endregion
 
   //#region INIT
   useEffect(() => {
-    
+
     fetchConstructionSubActivityList();
   }, [location.state]);
   //#endregion
@@ -48,7 +50,7 @@ const SiteProgressConstructionSubActivity: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        
+
         const params: FilterWithPaginationSiteProgressConstructionSubActivityRequest = {
           ProjectId: location.state.projectId,
           ConstructionActivityId: location.state.constructionActivityId
@@ -130,12 +132,17 @@ const SiteProgressConstructionSubActivity: React.FC = () => {
   ], []);
   //#endregion
 
+  const breadcrumbItems = useMemo(() => {
+    return location.state?.breadcrumbs || [];
+  }, [location.state]);
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+
 
       {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
@@ -154,13 +161,19 @@ const SiteProgressConstructionSubActivity: React.FC = () => {
         }}
         isShowFilterButton={false}
         filters={{}}
-        onOpenFilter={() => {}}
+        onOpenFilter={() => { }}
         isShowCustomizeButton={false}
-        onCustomize={() => {}}
+        onCustomize={() => { }}
         isShowAddButton={false}
         isShowImportButton={false}
         isShowExportButton={false}
       />
+
+      {/* ============================================================================
+          BREADCRUMB NAVIGATION
+           ============================================================================ */}
+      <SiteProgressBreadcrumb items={breadcrumbItems} />
+
 
       {/* DATA TABLE */}
       <DataTable

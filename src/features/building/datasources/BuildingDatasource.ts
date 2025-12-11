@@ -29,7 +29,7 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
             })
 
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
-            if (params.BuildingId) queryParams.append('ProjectId', params.BuildingId.toString());
+            if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString());
             if (params.BuildingName?.trim()) queryParams.append('BuildingName', params.BuildingName.trim());
             if (params.CTSNumber?.trim()) queryParams.append('CTSNumber', params.CTSNumber.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());

@@ -21,7 +21,6 @@ export const getPageInfo = (path: string) => {
                     description: "Assign and manage module permissions for designations",
                 };
             }
-
             return {
 
                 title: 'Designation Master',
@@ -178,14 +177,14 @@ export const getPageInfo = (path: string) => {
                     description: "Assign and manage module permissions for designations",
                 };
             }
-            
+
             if (second === "SiteProgressWingConstruction") {
                 return {
                     title: "Wing Wise Construction",
                     description: "Assign and manage module permissions for designations",
                 };
             }
-            
+
             if (second === "SiteProgressFloorConstruction") {
                 return {
                     title: "Floor Wise Construction",
@@ -209,13 +208,18 @@ export const getPageInfo = (path: string) => {
 
             if (second === "SiteProgressConstructionSubActivity") {
                 return {
-                   title: "Sub Activity",
+                    title: "Sub Activity",
                     description: "Assign and manage module permissions for designations",
                 };
             }
 
             return {
                 title: 'Site Progress',
+                description: 'Profile',
+            }
+        case 'building':
+            return {
+                title: 'Building',
                 description: 'Profile',
             }
         // ✅ Add other cases here...

@@ -8,7 +8,6 @@ import { runApiWithLoader } from "@/core/utils";
 import { employeeMasterService } from "@/features/employeeMaster/services/EmployeeMasterService";
 import { useToast } from "@/core/hooks/useToast";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
 import {
   BLOOD_GROUP_OPTIONS,
@@ -559,7 +558,7 @@ const AddUpdateEmployeePage: React.FC = () => {
         <form onSubmit={handleSubmit}>
           {/* ============================================================= [BASIC EMPLOYEE DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-400 pb-2">Basic Employee Details</h3>
+           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Employee Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
@@ -690,7 +689,7 @@ const AddUpdateEmployeePage: React.FC = () => {
           </div>
           {/* ============================================================= [EMPLOYEE INFO SHEET] ============================================================================================= */}
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-400 pb-2">Employee Info Sheet</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Employee Info Sheet</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
@@ -763,7 +762,7 @@ const AddUpdateEmployeePage: React.FC = () => {
           </div>
           {/* ============================================================= [ADDRESS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-400 pb-2">Address</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <TextArea
@@ -857,7 +856,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
           {/* ============================================================= [BANK DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-400 pb-2">Bank Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Bank Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>

@@ -46,6 +46,8 @@ export const MASTER_DATA = {
 
     bankAccountType: ['Current','DEMAT','Fixed','Salary','Saving'],
 
+    landOwnershipType: ['Government','Landlord','Society'],
+
 } as const
 
 // ============================================================================
@@ -84,3 +86,4 @@ export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory)
 export const COMPANY_TYPE = toOptions(MASTER_DATA.companyType)
 export const PROJECT_DOCUMENT_STATUS = toOptions(MASTER_DATA.documentStatus)
 export const BANK_ACCOUNT_TYPE = toOptions(MASTER_DATA.bankAccountType)
+export const LAND_OWNERSHIP_TYPE = toOptions(MASTER_DATA.landOwnershipType)

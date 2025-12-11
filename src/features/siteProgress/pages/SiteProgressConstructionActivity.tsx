@@ -119,7 +119,21 @@ const SiteProgressConstructionActivity: React.FC = () => {
   //#region VIEW
   const handleViewConstructionActivity = useCallback((row: SiteProgressConstructionActivityData) => {
     const currentBreadcrumbs = location.state?.breadcrumbs || [];
-    const newBreadcrumb = { label: `Activity: ${row.ActivityName || 'N/A'}` };
+    const activityState = {
+      projectId: row.ProjectId,
+      inventoryBuildingId: location.state?.inventoryBuildingId,
+      constructionId: location.state?.constructionId,
+      subConstructionId: location.state?.subConstructionId,
+      inventoryFlatFloorBasementPodiumWingId: location.state?.inventoryFlatFloorBasementPodiumWingId,
+      inventoryFloorId: location.state?.inventoryFloorId,
+      inventoryFlatId: location.state?.inventoryFlatId,
+      breadcrumbs: currentBreadcrumbs
+    };
+    const newBreadcrumb = {
+      label: `Activity: ${row.ActivityName || 'N/A'}`,
+      path: '/siteProgress/SiteProgressConstructionActivity',
+      state: activityState
+    };
 
     navigate('/siteProgress/SiteProgressConstructionSubActivity', {
       state: {
@@ -152,9 +166,11 @@ const SiteProgressConstructionActivity: React.FC = () => {
   ], [handleViewConstructionActivity]);
   //#endregion
 
+  //#region BREAD CRUM ITEMS
   const breadcrumbItems = useMemo(() => {
     return location.state?.breadcrumbs || [];
   }, [location.state]);
+  //#endregion
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

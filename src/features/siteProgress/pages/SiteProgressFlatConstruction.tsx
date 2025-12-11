@@ -116,7 +116,20 @@ const SiteProgressFlatConstruction: React.FC = () => {
   //#region VIEW
   const handleViewFlatConstruction = useCallback((row: SiteProgressFlatConstructionData) => {
     const currentBreadcrumbs = location.state?.breadcrumbs || [];
-    const newBreadcrumb = { label: `Flat: ${row.FlatNumber || 'N/A'}` };
+    const flatState = {
+      projectId: row.ProjectId,
+      inventoryBuildingId: row.InventoryBuildingId,
+      constructionId: row.ConstructionId,
+      subConstructionId: row.SubConstructionId,
+      inventoryFlatFloorBasementPodiumWingId: row.InventoryFlatFloorBasementPodiumWingId,
+      inventoryFloorId: row.InventoryFloorId,
+      breadcrumbs: currentBreadcrumbs
+    };
+    const newBreadcrumb = { 
+      label: `Flat: ${row.FlatNumber || 'N/A'}`,
+      path: '/siteProgress/SiteProgressFlatConstruction',
+      state: flatState
+    };
     
     navigate('/siteProgress/SiteProgressConstructionActivity', {
       state: {
@@ -218,10 +231,11 @@ const SiteProgressFlatConstruction: React.FC = () => {
   ], [handleViewFlatConstruction]);
   //#endregion
 
+  //#region BREAD CRUM ITEMS
   const breadcrumbItems = useMemo(() => {
     return location.state?.breadcrumbs || [];
   }, [location.state]);
-
+//#endregion
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       {/* ============================================================================

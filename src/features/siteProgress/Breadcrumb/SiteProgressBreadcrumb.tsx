@@ -1,11 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Home } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 interface BreadcrumbItem {
   label: string;
   path?: string;
   onClick?: () => void;
+  state?: any;
 }
 
 interface SiteProgressBreadcrumbProps {
@@ -19,20 +20,20 @@ export const SiteProgressBreadcrumb: React.FC<SiteProgressBreadcrumbProps> = ({ 
     if (item.onClick) {
       item.onClick();
     } else if (item.path) {
-      navigate(item.path);
+      navigate(item.path, { state: item.state || {} });
     }
   };
 
+  const visibleItems = items.filter(it => typeof it?.label === "string" && it.label.trim() !== "");
+
+  if (visibleItems.length === 0) {
+    return null; 
+  }
+
   return (
+   
     <nav className="flex items-center space-x-2 text-sm mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
-      <button
-        onClick={() => navigate('/siteProgress')}
-        className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-        title="Site Progress"
-      >
-        <Home className="h-4 w-4 mr-1" />
-        <span className="font-medium">Site Progress</span>
-      </button>
+      
 
       {items.map((item, index) => (
         <React.Fragment key={index}>

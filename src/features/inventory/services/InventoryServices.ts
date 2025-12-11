@@ -13,5 +13,13 @@ export const InventoryService = {
         } catch(error : any){
            return E.left({message : error.message})
         }
+    },
+
+    apiCallToExportPdfExcel : async (projectId : number, exportType : string) => {
+        try{
+            return E.right(await inventoryDatasource.apiCallToExportExcelPdf(projectId,exportType))
+        }catch(error : any){
+            return E.left({message : error.message})
+        }
     }
 }

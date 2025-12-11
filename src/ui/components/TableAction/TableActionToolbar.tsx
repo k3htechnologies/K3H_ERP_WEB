@@ -25,6 +25,7 @@ export interface TableActionToolbarProps {
   isShowAddButton?: boolean
   addTitle?: string
   onAdd?: () => void
+  showMoreAddOptions? : React.ReactNode
 
   /** IMPORT BUTTON */
   isShowImportButton?: boolean
@@ -62,6 +63,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
   isShowAddButton = true,
   addTitle = 'Add',
   onAdd,
+  showMoreAddOptions = [],
 
   // IMPORT
   isShowImportButton = true,
@@ -77,6 +79,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
 }) => {
   const [isExportOpen, setIsExportOpen] = useState(false)
   const [isImportOpen, setIsImportOpen] = useState(false)
+  const [showIsAddMore,setShowIsAddMore] = useState(false)
 
   const exportRef = useRef<HTMLDivElement | null>(null)
   const importRef = useRef<HTMLDivElement | null>(null)
@@ -336,7 +339,6 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           size="sm"
                           title="Upload Excel"
                         >
-
                           Upload Excel
                         </Button>
                       )}
@@ -356,7 +358,6 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           size="sm"
                           title="Download Sample Excel"
                         >
-
                           Sample Excel
                         </Button>
                       )}
@@ -368,11 +369,16 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
 
             {/* ADD BUTTON */}
             {isShowAddButton && onAdd && (
+              <div className='relative'>
               <Button
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  onAdd()
+                  if(showMoreAddOptions){
+                    setShowIsAddMore((s) => !s)
+                  }else {
+                    onAdd()
+                  }
                 }}
                 color="blue"
                 size="mxs"
@@ -381,10 +387,13 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                 defineWidth
                 title={addTitle}
                 aria-label={addTitle}
+                style={{ width: '95px' }}
                 leftIcon={ <Plus className="h-4 w-4" />}
               >
                 <span>{addTitle}</span>
               </Button>
+              {showIsAddMore &&  <div className='absolute z-50 mt-2 right-0'>{showMoreAddOptions}</div>}
+              </div>
             )}
           </div>
         )}

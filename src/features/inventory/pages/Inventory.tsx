@@ -1,23 +1,29 @@
 
 import { useEffect, useRef, useState } from "react"
 import { type InventoryModel, type InventoryFlatData, type InventoryFlatFloorBasementPodiumWingDatum } from "../models/InventoryMasterModel"
-import { Download, Eye, Loader, Plus } from "lucide-react"
+import { Eye, Loader, Plus } from "lucide-react"
 import { InventoryService } from "../services/InventoryServices"
 import * as E from 'fp-ts/Either'
 import useToast from "@/core/hooks/useToast"
-import {  ToastContainer } from "@/ui/components/Toast"
-import { Button } from "@/ui/components/forms"
+import { ToastContainer } from "@/ui/components/Toast"
 import { ExpandableCard } from "@/ui/components/Card/ExpandableCard"
+import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar"
+import { DataTable } from "@/ui/components/DataTable/DataTable"
+import { handleExportFile } from "@/core/utils/exportFile"
+import { Button } from "@/ui/components/forms"
+import { useNavigate } from 'react-router-dom';
+
 
 const Inventory = () => {
 
-    const [currentTab, setCurrentTab] = useState("Table")
+    const [currentTab, setCurrentTab] = useState("Grid")
     const [inventory, setInventory] = useState<InventoryModel[]>([])
     const [selectedBuilding, setSelectedBuilding] = useState<InventoryFlatFloorBasementPodiumWingDatum[] | undefined>(undefined)
     const [selectedBuildingIndex, setSelectedBuildingIndex] = useState<number | null>(null)
     const [selectedWing, setSelectedWing] = useState<InventoryFlatFloorBasementPodiumWingDatum | undefined>(undefined);
     const isApiCalled = useRef(false)
     const { toasts, addToast, removeToast } = useToast()
+
 
     useEffect(() => {
         if (isApiCalled.current === false) {
@@ -45,71 +51,78 @@ const Inventory = () => {
     }, [inventory]) // Only depend on inventory, not selectedBuildingIndex
 
     return inventory.length == 0 ? <Loader></Loader> :
+
         <div className="flex flex-col gap-5">
             <ToastContainer toasts={toasts} onRemoveToast={removeToast}></ToastContainer>
-            <div className="flex flex-col justify-evenly w-full h-[218px] rounded-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
+            <div className="flex flex-col justify-evenly w-full h-[210px] rounded-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
                 <div className="flex justify-between">
-                    <div className="flex">
+                    <div className="flex pt-1">
                         <div className=" w-[250px] h-[40px] bg-[#F1F1F1] rounded-[6px] border-[0.3px] border-[rgba(0,0,0,0.5)]">
                             <div className="flex h-full justify-evenly items-center  p-1 ">
-                                <div onClick={() => { setCurrentTab("Table") }} className={`flex cursor-pointer ${currentTab === "Table" ? "bg-[#FFFFFF]" : ""} ${currentTab === "Table" ? "text-[#135BEC]" : "text-black/50"} flex-1 justify-center h-[32px] items-center rounded-[2px] font-medium`}>Table</div>
                                 <div onClick={() => { setCurrentTab("Grid") }} className={`flex cursor-pointer ${currentTab === "Grid" ? "bg-[#FFFFFF]" : ""} ${currentTab === "Grid" ? "text-[#135BEC]" : "text-black/50"} flex-1 justify-center h-[32px] items-center rounded-[2px] font-medium`}>Grid</div>
+
+                                <div onClick={() => { setCurrentTab("Table") }} className={`flex cursor-pointer ${currentTab === "Table" ? "bg-[#FFFFFF]" : ""} ${currentTab === "Table" ? "text-[#135BEC]" : "text-black/50"} flex-1 justify-center h-[32px] items-center rounded-[2px] font-medium`}>Table</div>
                             </div>
                         </div>
-
                     </div>
-                    <div className="flex gap-4">
-                        <Button
-                            onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                            }}
-                            color="blue"
-                            size="mxs"
-                            variant="solid"
-                            colorMode="gradient_dark"
-                            defineWidth
-                            style={{ width: '95px' }}
-                            leftIcon={<Plus className="h-4 w-4" />}
-                        >
-                            <span>Add </span>
-                        </Button>
-
-                        <Button
-                            onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                            }}
-                            color="blue"
-                            colorMode="gradient_light"
-                            size="mxs"
-                            defineWidth
-                            title="Export"
-
-                            aria-haspopup="menu"
-                            style={{ width: '95px' }}
-                            leftIcon={<Download className="h-4 w-4" />}
-                        >
-                            <span>Export</span>
-                        </Button>
-                        <Button
-                            onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                            }}
-                            className="text-black gap-2"
-                            color="green"
-                            colorMode="gradient"
-                            defineWidth
-                            title="Import"
-
-                            aria-haspopup="menu"
-                            style={{ width: '95px' }}
-                            leftIcon={<Download className="h-4 w-4" />}
-                        >
-                            <span>Import</span>
-                        </Button>
-                    </div>
+                    <TableActionToolbar isShowSearchBar={false} isShowExportButton={true} onExportExcel={async () => {
+                        const apiResponse = await InventoryService.apiCallToExportPdfExcel(2, "Excel");
+                        handleExportFile(apiResponse, "Excel", 'Inventory', addToast)
+                    }} onExportPdf={async () => {
+                        const apiResponse = await InventoryService.apiCallToExportPdfExcel(2, "PDF");
+                        handleExportFile(apiResponse, "PDF", 'Inventory', addToast)
+                    }}
+                        isShowAddButton
+                        onAdd={() => { }}
+                        isShowImportButton
+                        onUploadExcel={() => { }}
+                        showMoreAddOptions={
+                            <div className="flex flex-col w-[150px] bg-white rounded-md border-[1px] border-gray-200 shadow-lg">
+                                <Button
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                    }}
+                                    disabled={false}
+                                    color="transparent"
+                                    fullWidth
+                                    isborderRadius
+                                    size="sm"
+                                    title="Add Building"
+                                >
+                                    Add Building
+                                </Button>
+                                <Button
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                    }}
+                                    disabled={false}
+                                    color="transparent"
+                                    fullWidth
+                                    isborderRadius
+                                    size="sm"
+                                    title="Add Wing"
+                                >
+                                    Add Wing
+                                </Button>
+                                <Button
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                    }}
+                                    disabled={false}
+                                    color="transparent"
+                                    fullWidth
+                                    isborderRadius
+                                    size="sm"
+                                    title="Add Floor"
+                                >
+                                    Add Floor
+                                </Button>
+                            </div>
+                        }
+                    ></TableActionToolbar>
                 </div>
 
                 <div className="h-[0.3px] bg-[#000000]/50 w-full"></div>
@@ -172,42 +185,102 @@ const Inventory = () => {
             </div>
 
             {
-                selectedWing != undefined ?
-                    selectedWing.InventoryFloorData.map((floor, floorIndex) => (
-                        <ExpandableCard key={floorIndex} title={floor.Floor} showline={true} customizedIcon={<Plus className="p-1.5" size={28} />}
-                            child={
-                                <div className="flex flex-1 w-screen gap-5 overflow-y-auto scroll-smooth">
-                                    {floor.InventoryFlatData?.map((flat, flatIndex) => (
-                                        <FlatComponent
-                                            key={flatIndex}
-                                            InventoryFlatId={flat.InventoryFlatId}
-                                            Uniquekey={flat.Uniquekey}
-                                            InventoryBuildingId={flat.InventoryBuildingId}
-                                            BuildingNumber={flat.BuildingNumber}
-                                            InventoryFlatFloorBasementPodiumWingId={flat.InventoryFlatFloorBasementPodiumWingId}
-                                            Wing={flat.Wing}
-                                            InventoryFloorId={flat.InventoryFloorId}
-                                            Floor={flat.Floor}
-                                            Flat={flat.Flat}
-                                            RERACarpetAreaSqFt={flat.RERACarpetAreaSqFt}
-                                            FlatType={flat.FlatType}
-                                            FlatConfiguration={flat.FlatConfiguration}
-                                            FlatStatus={flat.FlatStatus}
-                                            FlatFacing={flat.FlatFacing}
-                                            InventoryFlatSpecificationData={flat.InventoryFlatSpecificationData}
-                                            OwnerName={flat.OwnerName}
-                                            BookingId={flat.BookingId}
-                                            BookingCreatedById={flat.BookingCreatedById}
-                                            BookingCreatedBy={flat.BookingCreatedBy}
-                                            BookingCreatedDate={flat.BookingCreatedDate}
-                                        />
-                                    ))}
-                                </div>
-                            }></ExpandableCard>
-                    ))
-                    : (
-                        <div className="text-center text-gray-400 py-8">No floors available</div>
-                    )}
+                currentTab == "Table" ?
+                    <DataTable
+
+                        data={
+                            selectedWing!.InventoryFloorData
+
+                                .flatMap(floor => floor.InventoryFlatData)
+                        }
+                        columns={[
+                            {
+                                key: 'Floor',
+                                label: 'Floor',
+                                width: '30',
+                                sortable: false,
+                                align: 'center',
+                                render: (value) => value || ''
+                            },
+                            {
+                                key: 'Flat',
+                                label: 'Flat',
+                                width: '30',
+                                sortable: false,
+                                align: 'center',
+                                render: (value) => value || '',
+                            },
+                            {
+                                key: 'RERACarpetAreaSqFt',
+                                label: 'Rera',
+                                width: '30',
+                                sortable: false,
+                                align: 'center',
+                                render: (value) => value || '',
+                            },
+                            {
+                                key: 'FlatType',
+                                label: 'Property Type',
+                                width: '30',
+                                sortable: false,
+                                align: 'center',
+                                render: (value) => value || '',
+                            },
+                            {
+                                key: 'FlatStatus',
+                                label: 'Status',
+                                width: '30',
+                                sortable: false,
+                                align: 'center',
+                                render: (value) => <div className={`flex items-center justify-center h-8 rounded-[16px] bg-[${value == "Available" ? "#22C55E26" : value == "Hold" ? "#FBFF0026" : ""}]`}> {value} </div>
+                            },
+                            {
+                                key: 'Owner',
+                                label: 'Buyer/Tenant',
+                                width: '30',
+                                sortable: false,
+                                align: 'center',
+                                render: (value) => value || '',
+                            },
+
+
+                        ]}></DataTable> :
+                    selectedWing != undefined ?
+                        selectedWing.InventoryFloorData.map((floor, floorIndex) => (
+                            <ExpandableCard key={floorIndex} title={floor.Floor} showline={true} customizedIcon={<Plus className="p-1.5" size={28} />}
+                                child={
+                                    <div className="flex flex-1 w-screen gap-5 overflow-y-auto scroll-smooth">
+                                        {floor.InventoryFlatData?.map((flat, flatIndex) => (
+                                            <FlatComponent
+                                                key={flatIndex}
+                                                InventoryFlatId={flat.InventoryFlatId}
+                                                Uniquekey={flat.Uniquekey}
+                                                InventoryBuildingId={flat.InventoryBuildingId}
+                                                BuildingNumber={flat.BuildingNumber}
+                                                InventoryFlatFloorBasementPodiumWingId={flat.InventoryFlatFloorBasementPodiumWingId}
+                                                Wing={flat.Wing}
+                                                InventoryFloorId={flat.InventoryFloorId}
+                                                Floor={flat.Floor}
+                                                Flat={flat.Flat}
+                                                RERACarpetAreaSqFt={flat.RERACarpetAreaSqFt}
+                                                FlatType={flat.FlatType}
+                                                FlatConfiguration={flat.FlatConfiguration}
+                                                FlatStatus={flat.FlatStatus}
+                                                FlatFacing={flat.FlatFacing}
+                                                InventoryFlatSpecificationData={flat.InventoryFlatSpecificationData}
+                                                OwnerName={flat.OwnerName}
+                                                BookingId={flat.BookingId}
+                                                BookingCreatedById={flat.BookingCreatedById}
+                                                BookingCreatedBy={flat.BookingCreatedBy}
+                                                BookingCreatedDate={flat.BookingCreatedDate}
+                                            />
+                                        ))}
+                                    </div>
+                                }></ExpandableCard>
+                        ))
+                        : (
+                            <div className="text-center text-gray-400 py-8">No floors available</div>
+                        )}
         </div>
 }
 
@@ -239,6 +312,9 @@ const WingComponent = (wingProps: WingProps) => {
 }
 
 const FlatComponent = (flat: InventoryFlatData) => {
+
+    const navigate = useNavigate();
+
     // Use inline style for gradient since colors are dynamic
     // Convert hex to rgba for proper gradient with opacity
     const hexToRgba = (hex: string, alpha: number = 0.12) => {
@@ -261,6 +337,9 @@ const FlatComponent = (flat: InventoryFlatData) => {
 
     return (
         <div
+        onClick={() => {navigate('/inventorySpecification', {
+            state : {flat}
+        })}}
             className={`
           flex flex-col justify-evenly 
           h-[215px] w-[266px] 

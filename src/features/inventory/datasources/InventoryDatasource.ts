@@ -26,6 +26,20 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
             throw error;
         }
     }
+
+    async apiCallToExportExcelPdf(projectId : number,exportType : string) {
+        try{
+            const url = `${InventoryApis.PULL}?ProjectId=${projectId}&ExportType=${exportType}`;
+            const apiResponse = await this.k3hHttpClient.getRequestWithAuthentication(url);
+            
+            return apiResponse;
+        }catch(error){
+            if(error === TokenExpiredException){
+                this.apiCallToFetchInventory( projectId)
+            }
+            throw error;
+        }
+    }
 }
 
 

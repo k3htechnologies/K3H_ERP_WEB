@@ -1,54 +1,38 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
-import { TextArea } from "@/ui/components/forms/Textarea";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
-import { employeeMasterService as buildingService } from "@/features/building/services/BuildingService";
 import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
 import { filterNumbers, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
-import type { AddUpdateBuildingRequest, FilterWithPaginationBuildingRequest } from "@/features/building/models/BuildingModel";
+import type { AddUpdateTenantRequest, FilterWithPaginationTenantRequest } from "@/features/tenant/models/TenantModel";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
-import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { LAND_OWNERSHIP_TYPE } from "@/core/constants";
-import Checkbox from "@/ui/components/forms/Checkbox";
+import { tenantService } from "../services/TenantService";
 
 var ProjectId = 1;
 
-const initialFormState = (): AddUpdateBuildingRequest => ({
-  BuildingId: null,
+const initialFormState = (): AddUpdateTenantRequest => ({
+  TenantId: 0,
   Uniquekey: null,
-  ProjectId: null,
-  BuildingName: "",
-  CTSNumber: "",
-  TotalPlotAreaSqFt: null,
-  RoadWidth: "",
-  CountryMasterId: 1,
-  DistrictMasterId: null,
-  StateMasterId: null,
-  CityMasterId: null,
-  TotalNumberOfUnits: null,
-  TotalUnitsAreaUtilizedSqFt: null,
-  IsGarden: null,
-  TotalGardenAreaSqFt: null,
-  IsReligiousStructure: null,
-  TotalReligiousStructureAreaSqFt: null,
-  PropertyAgeYears: null,
-  NumberOfFloors: null,
-  FSI_TDR_UtilizationSqFt: null,
-  LandOwnershipType: "",
-  IsLitigation: null,
-  LitigationRemarks: "",
+  BuildingId: 0,
+  ProjectId: ProjectId,
+  FlatNumber: "",
+  FlatCarpetAreaSqFt: null,
+  Facing: "",
+  FlatType: "",
+  FlatConfiguration: "",
+  FreeAreaOfferedPercent: null,
+  ExtraAreaPurchasedSqFt: null,
+  TotalAreaSqFt: null,
 });
 
-const AddUpdateBuilding: React.FC = () => {
+const AddUpdateTenant: React.FC = () => {
 
   //#region STATE MANAGEMENT
-  const [formData, setFormData] = useState<AddUpdateBuildingRequest>(() => initialFormState());
+  const [formData, setFormData] = useState<AddUpdateTenantRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
@@ -56,8 +40,8 @@ const AddUpdateBuilding: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  //GET VALUE FROM URL :BUILDINGID
-  const { buildingId } = useParams<{ buildingId?: string }>();
+  //GET VALUE FROM URL :TENANTID
+  const { tenantId } = useParams<{ tenantId?: string }>();
 
   // TOAST
   const { addToast } = useToast();
@@ -68,55 +52,11 @@ const AddUpdateBuilding: React.FC = () => {
   //#endregion
 
   //#region MENU PERMISSIONS
-  const { canAction } = useMenuPermissions('/building');
-  //#endregion
-
-  //#region COUNTRY STATE CITY DISTRICT 
-  const {
-    isLoading: isLocationLoading,
-    countries,
-    statesByCountryId,
-    districtsByStateId,
-    citiesByDistrictId,
-  } = useCountryStateCityDistrictVillageData()
-
-  const [selectedCountryId, setSelectedCountryId] = React.useState<number | null>(1)
-  const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null)
-  const [selectedDistrictId, setSelectedDistrictId] = React.useState<number | null>(null)
-  const [selectedCityId, setSelectedCityId] = React.useState<number | null>(null)
-
-  const countryOptions = countries.map(c => ({ label: c.name, value: c.id }))
-
-  const stateOptions =
-    selectedCountryId != null
-      ? (statesByCountryId[selectedCountryId] || []).map(s => ({
-        label: s.name,
-        value: s.id,
-      }))
-      : []
-
-  const districtOptions =
-    selectedStateId != null
-      ? (districtsByStateId[selectedStateId] || []).map(d => ({
-        label: d.name,
-        value: d.id,
-      }))
-      : []
-
-  const cityOptions =
-    selectedDistrictId != null
-      ? (citiesByDistrictId[selectedDistrictId] || []).map(c => ({
-        label: c.name,
-        value: c.id,
-      }))
-      : [];
-
-
-
+  const { canAction } = useMenuPermissions('/tenant');
   //#endregion
 
   //#region HANDLE FILED CHNAGE EVENT
-  const handleFieldChange = (field: keyof AddUpdateBuildingRequest, value: any) => {
+  const handleFieldChange = (field: keyof AddUpdateTenantRequest, value: any) => {
 
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -129,34 +69,33 @@ const AddUpdateBuilding: React.FC = () => {
   //#region INITIALIZATION
 
   useEffect(() => {
-    if (buildingId) {
-      fetchBuildingDetails();
+    if (tenantId) {
+      fetchTenantDetails();
       return;
     }
 
-    setSelectedCountryId(1);
-    handleFieldChange('CountryMasterId', 1);
+    handleFieldChange('ProjectId', ProjectId);
 
-  }, [buildingId]);
+  }, [tenantId]);
 
   //#endregion
 
-  //#region FETCH BUILDING DETAILS
-  const fetchBuildingDetails = async () => {
+  //#region FETCH TENANT DETAILS
+  const fetchTenantDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
 
-        const params: FilterWithPaginationBuildingRequest = {
+        const params: FilterWithPaginationTenantRequest = {
           PageNumber: 1,
           PageSize: 1,
           IsCheckPermission: false,
-          BuildingId: Number(buildingId),
-          ProjectId:Number(ProjectId)
+          TenantId: Number(tenantId),
+          ProjectId: Number(ProjectId)
         }
 
-        const response = await buildingService.apiCallPullBuilding(params);
+        const response = await tenantService.apiCallPullTenant(params);
 
         if (E.isRight(response)) {
 
@@ -165,35 +104,19 @@ const AddUpdateBuilding: React.FC = () => {
           if (e) {
             setFormData(prev => ({
               ...prev,
-              BuildingId: e.BuildingId ?? prev.BuildingId,
+              TenantId: e.TenantId ?? prev.TenantId,
               Uniquekey: e.Uniquekey ?? prev.Uniquekey,
+              BuildingId: e.BuildingId ?? prev.BuildingId,
               ProjectId: e.ProjectId ?? prev.ProjectId,
-              BuildingName: e.BuildingName ?? prev.BuildingName,
-              CTSNumber: e.CTSNumber ?? prev.CTSNumber,
-              TotalPlotAreaSqFt: e.TotalPlotAreaSqFt ?? prev.TotalPlotAreaSqFt,
-              RoadWidth: e.RoadWidth ?? prev.RoadWidth,
-              CountryMasterId: e.CountryMasterId ?? prev.CountryMasterId,
-              DistrictMasterId: e.DistrictMasterId ?? prev.DistrictMasterId,
-              StateMasterId: e.StateMasterId ?? prev.StateMasterId,
-              CityMasterId: e.CityMasterId ?? prev.CityMasterId,
-              TotalNumberOfUnits: e.TotalNumberOfUnits ?? prev.TotalNumberOfUnits,
-              TotalUnitsAreaUtilizedSqFt: e.TotalUnitsAreaUtilizedSqFt ?? prev.TotalUnitsAreaUtilizedSqFt,
-              IsGarden: e.IsGarden ?? prev.IsGarden,
-              TotalGardenAreaSqFt: e.TotalGardenAreaSqFt ?? prev.TotalGardenAreaSqFt,
-              IsReligiousStructure: e.IsReligiousStructure ?? prev.IsReligiousStructure,
-              TotalReligiousStructureAreaSqFt: e.TotalReligiousStructureAreaSqFt ?? prev.TotalReligiousStructureAreaSqFt,
-              PropertyAgeYears: e.PropertyAgeYears ?? prev.PropertyAgeYears,
-              NumberOfFloors: e.NumberOfFloors ?? prev.NumberOfFloors,
-              FSI_TDR_UtilizationSqFt: e.FSI_TDR_UtilizationSqFt ?? prev.FSI_TDR_UtilizationSqFt,
-              LandOwnershipType: e.LandOwnershipType ?? prev.LandOwnershipType,
-              IsLitigation: e.IsLitigation ?? prev.IsLitigation,
-              LitigationRemarks: e.LitigationRemarks ?? prev.LitigationRemarks,
+              FlatNumber: e.FlatNumber ?? prev.FlatNumber,
+              FlatCarpetAreaSqFt: e.FlatCarpetAreaSqFt ?? prev.FlatCarpetAreaSqFt,
+              Facing: e.Facing ?? prev.Facing,
+              FlatType: e.FlatType ?? prev.FlatType,
+              FlatConfiguration: e.FlatConfiguration ?? prev.FlatConfiguration,
+              FreeAreaOfferedPercent: e.FreeAreaOfferedPercent ?? prev.FreeAreaOfferedPercent,
+              ExtraAreaPurchasedSqFt: e.ExtraAreaPurchasedSqFt ?? prev.ExtraAreaPurchasedSqFt,
+              TotalAreaSqFt: e.TotalAreaSqFt ?? prev.TotalAreaSqFt,
             }));
-
-            setSelectedCountryId(e.CountryMasterId ?? null);
-            setSelectedStateId(e.StateMasterId ?? null);
-            setSelectedDistrictId(e.DistrictMasterId ?? null);
-            setSelectedCityId(e.CityMasterId ?? null);
           }
         } else {
 
@@ -208,14 +131,14 @@ const AddUpdateBuilding: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Building Data'
+      'Loading Tenant Data'
     )
   }
   //#endregion
 
-  //#region BUILDING VALIDATION | ADD | UPDATE ACTION
+  //#region TENANT VALIDATION | ADD | UPDATE ACTION
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
-  const validateAddBuildingForm = (): {
+  const validateAddTenantForm = (): {
 
     isValid: boolean
 
@@ -225,30 +148,20 @@ const AddUpdateBuilding: React.FC = () => {
 
     const newErrors: { [key: string]: string } = {}
 
-    if (!formData.BuildingName?.trim()) {
-      newErrors.BuildingName = 'Building Name is required'
+    if (!formData.FlatNumber?.trim()) {
+      newErrors.FlatNumber = 'Flat Number is required'
     }
-
-    if (!formData.CTSNumber?.trim()) {
-      newErrors.CTSNumber = 'CTS Number is required'
+    if (!formData.FlatType?.trim()) {
+      newErrors.FlatType = 'Flat Type is required'
     }
-    if (!formData.TotalPlotAreaSqFt) {
-      newErrors.TotalPlotAreaSqFt = 'Total Plot Area SqFt is required'
+    if (!formData.BuildingId) {
+      newErrors.BuildingId = 'Building Id is required'
     }
-    if (!formData.RoadWidth) {
-      newErrors.RoadWidth = 'Road width is required'
+    if (!formData.ProjectId) {
+      newErrors.ProjectId = 'Project Id is required'
     }
-    if (!formData.CountryMasterId) {
-      newErrors.CountryMasterId = "Country is required";
-    }
-    if (!formData.StateMasterId) {
-      newErrors.StateMasterId = "State is required";
-    }
-    if (!formData.DistrictMasterId) {
-      newErrors.DistrictMasterId = "District is required";
-    }
-    if (!formData.CityMasterId) {
-      newErrors.CityMasterId = "City is required";
+    if (!formData.TotalAreaSqFt) {
+      newErrors.TotalAreaSqFt = 'Total Area is required'
     }
 
     return {
@@ -257,31 +170,20 @@ const AddUpdateBuilding: React.FC = () => {
     }
   }
 
-  const PushBuildingFormData = (): AddUpdateBuildingRequest => {
+  const PushTenantFormData = (): AddUpdateTenantRequest => {
     return {
-      BuildingId: formData.BuildingId,
+      TenantId: formData.TenantId,
       Uniquekey: formData.Uniquekey,
+      BuildingId: formData.BuildingId,
       ProjectId: formData.ProjectId,
-      BuildingName: formData.BuildingName,
-      CTSNumber: formData.CTSNumber,
-      TotalPlotAreaSqFt: formData.TotalPlotAreaSqFt,
-      RoadWidth: formData.RoadWidth,
-      CountryMasterId: formData.CountryMasterId,
-      DistrictMasterId: formData.DistrictMasterId,
-      StateMasterId: formData.StateMasterId,
-      CityMasterId: formData.CityMasterId,
-      TotalNumberOfUnits: formData.TotalNumberOfUnits,
-      TotalUnitsAreaUtilizedSqFt: formData.TotalUnitsAreaUtilizedSqFt,
-      IsGarden: formData.IsGarden,
-      TotalGardenAreaSqFt: formData.TotalGardenAreaSqFt,
-      IsReligiousStructure: formData.IsReligiousStructure,
-      TotalReligiousStructureAreaSqFt: formData.TotalReligiousStructureAreaSqFt,
-      PropertyAgeYears: formData.PropertyAgeYears,
-      NumberOfFloors: formData.NumberOfFloors,
-      FSI_TDR_UtilizationSqFt: formData.FSI_TDR_UtilizationSqFt,
-      LandOwnershipType: formData.LandOwnershipType,
-      IsLitigation: formData.IsLitigation,
-      LitigationRemarks: formData.LitigationRemarks,
+      FlatNumber: formData.FlatNumber,
+      FlatCarpetAreaSqFt: formData.FlatCarpetAreaSqFt,
+      Facing: formData.Facing,
+      FlatType: formData.FlatType,
+      FlatConfiguration: formData.FlatConfiguration,
+      FreeAreaOfferedPercent: formData.FreeAreaOfferedPercent,
+      ExtraAreaPurchasedSqFt: formData.ExtraAreaPurchasedSqFt,
+      TotalAreaSqFt: formData.TotalAreaSqFt,
     };
 
   };
@@ -290,7 +192,8 @@ const AddUpdateBuilding: React.FC = () => {
 
     setErrors({})
 
-    const validation = validateAddBuildingForm()
+
+    const validation = validateAddTenantForm()
 
     if (!validation.isValid) {
 
@@ -305,14 +208,15 @@ const AddUpdateBuilding: React.FC = () => {
       setLoadingMessage,
       async () => {
 
-        const payload = PushBuildingFormData();
+        const payload = PushTenantFormData();
 
-        const response = await buildingService.apiCallAddUpdateBuilding(payload);
+        const response = await tenantService.apiCallAddUpdateTenant(payload);
 
         if (E.isRight(response)) {
 
-          addToast({ type: "success", title: formData.BuildingId ? "Building updated successfully" : "Building added successfully" });
+          addToast({ type: "success", title: formData.TenantId ? "Tenant updated successfully" : "Tenant added successfully" });
 
+          // Get list state from navigation if available, otherwise use defaults
           const locationState = location.state as {
             listState?: {
               page?: number;
@@ -329,7 +233,7 @@ const AddUpdateBuilding: React.FC = () => {
             searchTerm: '',
           };
 
-          navigate("/building", {
+          navigate("/tenant", {
             state: { listState }
           });
 
@@ -347,7 +251,7 @@ const AddUpdateBuilding: React.FC = () => {
       },
       undefined,
 
-      Number(buildingId) === 0 ? 'Add Building' : 'Update Building'
+      Number(tenantId) === 0 ? 'Add Tenant' : 'Update Tenant'
     )
 
   };
@@ -363,231 +267,96 @@ const AddUpdateBuilding: React.FC = () => {
 
       <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
         <form onSubmit={handleSubmit}>
-          {/* ============================================================= [BASIC BUILDING DETAILS] ============================================================================================= */}
+          {/* ============================================================= [BASIC TENANT DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Building Details</h3>
+           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Tenant Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <Input
-                  label="Building Name"
-                  value={formData.BuildingName}
+                  label="Flat Number"
+                  value={formData.FlatNumber}
                   required
-                  onChange={e => handleFieldChange('BuildingName', e.target.value)}
-                  error={errors.BuildingName} />
+                  onChange={e => handleFieldChange('FlatNumber', e.target.value)}
+                  error={errors.FlatNumber} />
               </div>
               <div>
                 <Input
-                  value={formData.CTSNumber}
-                  label="CTS Number"
+                  value={formData.FlatType}
+                  label="Flat Type"
                   required
-                  onChange={e => handleFieldChange('CTSNumber', e.target.value)}
-                  error={errors.CTSNumber} />
-              </div>
-              <div>
-                <SinglePageSelection
-                  label="Land Ownership Type"
-                  value={formData.LandOwnershipType}
-                  onChange={(e) => handleFieldChange('LandOwnershipType', String(e))}
-                  options={LAND_OWNERSHIP_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={errors.LandOwnershipType}
-                />
-
+                  onChange={e => handleFieldChange('FlatType', e.target.value)}
+                  error={errors.FlatType} />
               </div>
               <div>
                 <Input
-                  value={formData.RoadWidth}
-                  label="Road Width"
+                  value={formData.FlatConfiguration}
+                  label="Flat Configuration"
+                  onChange={e => handleFieldChange('FlatConfiguration', e.target.value)}
+                  error={errors.FlatConfiguration} />
+              </div>
+              <div>
+                <Input
+                  value={formData.Facing ?? ''}
+                  label="Facing"
+                  onChange={e => handleFieldChange('Facing', e.target.value)}
+                  error={errors.Facing} />
+              </div>
+              <div>
+                <Input
+                  value={formData.BuildingId ?? ''}
+                  label="Building Id"
                   required
-                  onChange={e => handleFieldChange('RoadWidth', e.target.value)}
-                  error={errors.RoadWidth} />
+                  onChange={e => handleFieldChange('BuildingId', Number(filterNumbers(e.target.value) || 0))}
+                  error={errors.BuildingId} />
               </div>
               <div>
                 <Input
-                  value={formData.TotalPlotAreaSqFt ?? ''}
-                  label="Total Plot Area (sqft)"
+                  value={formData.ProjectId ?? ''}
+                  label="Project Id"
                   required
-                  error={errors.TotalPlotAreaSqFt}
-                  onChange={e => handleFieldChange('TotalPlotAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
-                />
+                  onChange={e => handleFieldChange('ProjectId', Number(filterNumbers(e.target.value) || 0))}
+                  error={errors.ProjectId} />
               </div>
-              <div>
-                <Input
-                  value={formData.TotalUnitsAreaUtilizedSqFt ?? ''}
-                  label="Utilized Units Area (sqft)"
-                  error={errors.TotalUnitsAreaUtilizedSqFt}
-                  onChange={e => handleFieldChange('TotalUnitsAreaUtilizedSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
-                />
-              </div>
-              <div>
-                <Input
-                  value={formData.TotalNumberOfUnits ?? ''}
-                  label="Total Units"
-                  error={errors.TotalNumberOfUnits}
-                  onChange={e => handleFieldChange('TotalNumberOfUnits', filterNumbersWithDecimal(e.target.value) || 0)}
-                />
-              </div>
-              <div>
-                <Input
-                  value={formData.NumberOfFloors ?? ''}
-                  label="Number Of Floors"
-                  error={errors.NumberOfFloors}
-                  onChange={e => handleFieldChange('NumberOfFloors', Number(filterNumbers(e.target.value) || 0))}
-                />
-              </div>
-              <div>
-                <Input
-                  value={formData.PropertyAgeYears ?? ''}
-                  label="Property Age (Years)"
-                  error={errors.PropertyAgeYears}
-                  onChange={e => handleFieldChange('PropertyAgeYears', filterNumbersWithDecimal(e.target.value) || 0)}
-                />
-              </div>
-              <div>
-                <Input
-                  value={formData.FSI_TDR_UtilizationSqFt ?? ''}
-                  label="FSI / TDR Utilization (sqft)"
-                  error={errors.FSI_TDR_UtilizationSqFt}
-                  onChange={e => handleFieldChange('FSI_TDR_UtilizationSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
-                />
-              </div>
-
-
-              <div className="md:col-span-2 lg:col-span-3">
-
-                <Checkbox
-                  label="Is Garden"
-                  checked={formData.IsGarden === true}
-                  onChange={(e) => handleFieldChange('IsGarden', e.target.checked ? true : false)}
-                />
-
-              </div>
-
-              {formData.IsGarden === true ?
-                <div>
-                  <Input
-                    value={formData.TotalGardenAreaSqFt ?? ''}
-                    label="Garden Area (sqft)"
-                    onChange={e => handleFieldChange('TotalGardenAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
-                    error={errors.TotalGardenAreaSqFt}
-                  />
-                </div>
-                : ""}
-
-              <div className="md:col-span-2 lg:col-span-3">
-
-                <Checkbox
-                  label="Is Religious Structure"
-                  checked={formData.IsReligiousStructure === true}
-                  onChange={(e) => handleFieldChange('IsReligiousStructure', e.target.checked ? true : false)}
-                />
-
-              </div>
-              {formData.IsReligiousStructure === true ?
-                <div>
-                  <Input
-                    value={formData.TotalReligiousStructureAreaSqFt ?? ''}
-                    label="Religious Structure Area (sqft)"
-                    onChange={e => handleFieldChange('TotalReligiousStructureAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
-                    error={errors.TotalReligiousStructureAreaSqFt}
-                  />
-                </div>
-                : ""}
-
-              <div className="md:col-span-2 lg:col-span-3">
-
-                <Checkbox
-                  label="Is Litigation"
-                  checked={formData.IsLitigation === true}
-                  onChange={(e) => handleFieldChange('IsLitigation', e.target.checked ? true : false)}
-                />
-
-              </div>
-              {formData.IsLitigation === true ?
-                <div className="md:col-span-2 lg:col-span-3">
-                  <TextArea
-                    label="Litigation Remarks"
-                    className='thin-scroll'
-                    value={formData.LitigationRemarks ?? ''}
-                    error={errors.LitigationRemarks}
-                    onChange={(e) => handleFieldChange("LitigationRemarks", e.target.value)}
-                  />
-                </div>
-                : ""}
             </div>
           </div>
-          {/* ============================================================= [ADDRESS] ============================================================================================= */}
+          {/* ============================================================= [AREA DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Location</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Area Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
-                <SinglePageSelection
-                  label="Country"
-                  value={selectedCountryId || ''} required
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedCountryId(id)
-                    setSelectedStateId(null)
-                    setSelectedDistrictId(null)
-                    setSelectedCityId(null)
-
-                    handleFieldChange('CountryMasterId', id)
-                  }}
-                  disabled={isLocationLoading}
-                  options={countryOptions}
-                  error={errors.CountryMasterId}
+                <Input
+                  value={formData.FlatCarpetAreaSqFt ?? ''}
+                  label="Carpet Area (sqft)"
+                  onChange={e => handleFieldChange('FlatCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  error={errors.FlatCarpetAreaSqFt}
                 />
               </div>
               <div>
-
-                <SinglePageSelection
-                  label="State"
-                  value={selectedStateId ?? ''} required
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedStateId(id)
-                    setSelectedDistrictId(null)
-                    setSelectedCityId(null)
-
-                    handleFieldChange('StateMasterId', id)
-                  }}
-                  disabled={!selectedCountryId || stateOptions.length === 0}
-                  options={stateOptions}
-                  error={errors.StateMasterId}
+                <Input
+                  value={formData.TotalAreaSqFt ?? ''}
+                  label="Total Area (sqft)"
+                  required
+                  onChange={e => handleFieldChange('TotalAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  error={errors.TotalAreaSqFt}
                 />
               </div>
               <div>
-                <SinglePageSelection
-                  label="District"
-                  value={selectedDistrictId ?? ''} required
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedDistrictId(id)
-                    setSelectedCityId(null)
-
-                    handleFieldChange('DistrictMasterId', id)
-                  }}
-                  disabled={!selectedStateId || districtOptions.length === 0}
-                  options={districtOptions}
-                  error={errors.DistrictMasterId}
+                <Input
+                  value={formData.FreeAreaOfferedPercent ?? ''}
+                  label="Free Area Offered (%)"
+                  onChange={e => handleFieldChange('FreeAreaOfferedPercent', filterNumbersWithDecimal(e.target.value) || 0)}
+                  error={errors.FreeAreaOfferedPercent}
                 />
               </div>
               <div>
-                <SinglePageSelection
-                  label="City"
-                  value={selectedCityId ?? ''} required
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedCityId(id)
-                    handleFieldChange('CityMasterId', id)
-                  }}
-                  disabled={!selectedDistrictId || cityOptions.length === 0}
-                  options={cityOptions}
-                  error={errors.CityMasterId}
+                <Input
+                  value={formData.ExtraAreaPurchasedSqFt ?? ''}
+                  label="Extra Area Purchased (sqft)"
+                  onChange={e => handleFieldChange('ExtraAreaPurchasedSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  error={errors.ExtraAreaPurchasedSqFt}
                 />
               </div>
-
-
             </div>
           </div>
 
@@ -596,7 +365,7 @@ const AddUpdateBuilding: React.FC = () => {
 
       <BottomActionBar
         cancelText="Cancel"
-        saveText={formData.BuildingId ? "Update Building" : "Add Building"}
+        saveText={formData.TenantId ? "Update Tenant" : "Add Tenant"}
         onCancel={() => navigate(-1)}
         canAction={canAction}
         onSave={() => {
@@ -610,4 +379,4 @@ const AddUpdateBuilding: React.FC = () => {
   );
 };
 
-export default AddUpdateBuilding;
+export default AddUpdateTenant;

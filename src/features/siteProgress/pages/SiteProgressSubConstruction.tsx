@@ -24,7 +24,7 @@ const SiteProgressSubConstruction: React.FC = () => {
   const { pagination, setPagination } = usePagination(50);
   const { addToast } = useToast();
   const navigate = useNavigate();
-  
+
   const location = useLocation() as Location & {
     state?: {
       projectId?: number;
@@ -257,7 +257,7 @@ const SiteProgressSubConstruction: React.FC = () => {
         data={subConstructionList}
         columns={subConstructionColumns}
         pagination={subConstructionPaginationInfo}
-        emptyMessage="No sub construction records found"
+        emptyMessage="No sub Construction Records Found"
         fixedHeight
         recordsPerPage={20}
         className="flex-1"

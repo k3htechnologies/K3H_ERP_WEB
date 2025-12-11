@@ -167,7 +167,7 @@ const SiteProgressConstructionSubActivity: React.FC = () => {
         data={constructionSubActivityList}
         columns={constructionSubActivityColumns}
         pagination={constructionSubActivityPaginationInfo}
-        emptyMessage="No construction sub activities found"
+        emptyMessage="No Construction Sub Activities Found"
         fixedHeight
         recordsPerPage={20}
         className="flex-1"

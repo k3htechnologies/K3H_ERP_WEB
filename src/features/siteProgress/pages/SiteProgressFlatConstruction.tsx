@@ -250,7 +250,7 @@ const SiteProgressFlatConstruction: React.FC = () => {
         data={flatConstructionList}
         columns={flatConstructionColumns}
         pagination={flatConstructionPaginationInfo}
-        emptyMessage="No flat construction records found"
+        emptyMessage="No Flat Construction Records Found"
         fixedHeight
         recordsPerPage={20}
         className="flex-1"

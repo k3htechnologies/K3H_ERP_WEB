@@ -247,7 +247,7 @@ const SiteProgressFloorConstruction: React.FC = () => {
         data={floorConstructionList}
         columns={floorConstructionColumns}
         pagination={floorConstructionPaginationInfo}
-        emptyMessage="No floor construction records found"
+        emptyMessage="No Floor Construction Records Found"
         fixedHeight
         recordsPerPage={20}
         className="flex-1"

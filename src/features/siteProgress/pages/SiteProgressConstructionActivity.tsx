@@ -116,10 +116,7 @@ const SiteProgressConstructionActivity: React.FC = () => {
 
   //#region VIEW
   const handleViewConstructionActivity = useCallback((row: SiteProgressConstructionActivityData) => {
-    if (!row.ProjectId || !row.ConstructionActivityId) {
-      addToast({ type: 'error', title: 'Activity details not available' });
-      return;
-    }
+    
     navigate('/siteProgress/SiteProgressConstructionSubActivity', {
       state: {
         projectId: row.ProjectId,

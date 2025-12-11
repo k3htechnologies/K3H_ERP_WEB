@@ -113,10 +113,7 @@ const SiteProgressFlatConstruction: React.FC = () => {
 
   //#region VIEW
   const handleViewFlatConstruction = useCallback((row: SiteProgressFlatConstructionData) => {
-    if (!row.ProjectId || !row.InventoryBuildingId || !row.ConstructionId || !row.SubConstructionId || !row.InventoryFlatFloorBasementPodiumWingId || !row.InventoryFloorId || !row.InventoryFlatId) {
-      addToast({ type: 'error', title: 'Flat details not available' });
-      return;
-    }
+    
     navigate('/siteProgress/SiteProgressConstructionActivity', {
       state: {
         projectId: row.ProjectId,

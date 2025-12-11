@@ -24,6 +24,7 @@ const SiteProgressSubConstruction: React.FC = () => {
   const { pagination, setPagination } = usePagination(50);
   const { addToast } = useToast();
   const navigate = useNavigate();
+  
   const location = useLocation() as Location & {
     state?: {
       projectId?: number;
@@ -35,9 +36,9 @@ const SiteProgressSubConstruction: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
-  
+
     fetchSubConstructionList();
-    
+
   }, [location.state]);
   //#endregion
 
@@ -51,7 +52,7 @@ const SiteProgressSubConstruction: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        
+
         const params: FilterWithPaginationSiteProgressSubConstructionRequest = {
           ProjectId: location.state.projectId,
           InventoryBuildingId: location.state.inventoryBuildingId,
@@ -108,18 +109,29 @@ const SiteProgressSubConstruction: React.FC = () => {
 
   //#region VIEW
   const handleViewSubConstruction = useCallback((row: SiteProgressSubConstructionData) => {
-    if (!row.ProjectId || !row.InventoryBuildingId || !row.ConstructionId || !row.SubConstructionId) {
-      addToast({ type: 'error', title: 'Sub Construction details not available' });
-      return;
+    if (row.NextAction?.toUpperCase() === "ACTIVITY") {
+      navigate('/siteProgress/SiteProgressConstructionActivity', {
+        state: {
+          projectId: row.ProjectId,
+          inventoryBuildingId: row.InventoryBuildingId,
+          constructionId: row.ConstructionId,
+          subConstructionId: row.SubConstructionId,
+          inventoryFlatFloorBasementPodiumWingId: 0,
+          inventoryFloorId: 0,
+          inventoryFlatId: 0
+        }
+      });
     }
-    navigate('/siteProgress/SiteProgressWingConstruction', {
-      state: {
-        projectId: row.ProjectId,
-        inventoryBuildingId: row.InventoryBuildingId,
-        constructionId: row.ConstructionId,
-        subConstructionId: row.SubConstructionId
-      }
-    });
+    if (row.NextAction?.toUpperCase() === "WING") {
+      navigate('/siteProgress/SiteProgressWingConstruction', {
+        state: {
+          projectId: row.ProjectId,
+          inventoryBuildingId: row.InventoryBuildingId,
+          constructionId: row.ConstructionId,
+          subConstructionId: row.SubConstructionId
+        }
+      });
+    }
   }, [navigate]);
   //#endregion
 
@@ -150,7 +162,7 @@ const SiteProgressSubConstruction: React.FC = () => {
       render: value => value || '-'
     },
     {
-       key: 'PlanStartDate',
+      key: 'PlanStartDate',
       label: 'Plan Start',
       width: '16',
       sortable: false,
@@ -232,9 +244,9 @@ const SiteProgressSubConstruction: React.FC = () => {
         }}
         isShowFilterButton={false}
         filters={{}}
-        onOpenFilter={() => {}}
+        onOpenFilter={() => { }}
         isShowCustomizeButton={false}
-        onCustomize={() => {}}
+        onCustomize={() => { }}
         isShowAddButton={false}
         isShowImportButton={false}
         isShowExportButton={false}

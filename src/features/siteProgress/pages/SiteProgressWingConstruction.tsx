@@ -109,10 +109,7 @@ const SiteProgressWingConstruction: React.FC = () => {
 
   //#region VIEW
   const handleViewWingConstruction = useCallback((row: SiteProgressWingConstructionData) => {
-    if (!row.ProjectId || !row.InventoryBuildingId || !row.ConstructionId || !row.SubConstructionId || !row.InventoryFlatFloorBasementPodiumWingId) {
-      addToast({ type: 'error', title: 'Wing details not available' });
-      return;
-    }
+    
     navigate('/siteProgress/SiteProgressFloorConstruction', {
       state: {
         projectId: row.ProjectId,

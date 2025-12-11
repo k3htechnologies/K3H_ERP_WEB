@@ -112,10 +112,7 @@ const SiteProgressFloorConstruction: React.FC = () => {
 
   //#region VIEW
   const handleViewFloorConstruction = useCallback((row: SiteProgressFloorConstructionData) => {
-    if (!row.ProjectId || !row.InventoryBuildingId || !row.ConstructionId || !row.SubConstructionId || !row.InventoryFlatFloorBasementPodiumWingId || !row.InventoryFloorId) {
-      addToast({ type: 'error', title: 'Floor details not available' });
-      return;
-    }
+    
     navigate('/siteProgress/SiteProgressFlatConstruction', {
       state: {
         projectId: row.ProjectId,

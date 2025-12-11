@@ -105,7 +105,7 @@ const SiteProgress: React.FC = () => {
   //#region VIEW
   const handleViewConstruction = useCallback((row: SiteProgressConstructionData) => {
 
-    if (!row.InventoryBuildingId) {
+    if (row.NextAction?.toUpperCase() === "ACTIVITY") {
 
       navigate('/siteProgress/SiteProgressConstructionActivity', {
         state: {
@@ -120,7 +120,7 @@ const SiteProgress: React.FC = () => {
       });
 
     }
-    else {
+    else if (row.NextAction?.toUpperCase() === "SUB CONSTRUCTION") {
       navigate('/siteProgress/SiteProgressSubConstruction', {
         state: {
           projectId: row.ProjectId,

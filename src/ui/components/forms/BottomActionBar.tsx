@@ -25,7 +25,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
 }) => {
     return (
         <div
-            className="fixed bottom-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+            className="fixed bottom-0 z-20 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
             style={{
                 paddingBottom: "env(safe-area-inset-bottom)",
                 left: leftOffset,

@@ -132,3 +132,25 @@ export const isValidIFSC = (ifsc: string): boolean => {
   const regex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
   return regex.test(value);
 };
+
+// ----------------------------------
+// 🔹 FILTER ONLY NUMBERS AND DECIMAL
+// ----------------------------------
+
+export const filterNumbersWithDecimal = (value: string): string => {
+ value = value.replace(/[^0-9.]/g, "");
+
+  const firstDotIndex = value.indexOf(".");
+  if (firstDotIndex !== -1) {
+    const beforeDot = value.slice(0, firstDotIndex + 1);
+    const afterDot = value.slice(firstDotIndex + 1).replace(/\./g, ""); // remove extra dots
+    value = beforeDot + afterDot;
+  }
+
+  if (firstDotIndex !== -1) {
+    const [intPart, decimalPart = ""] = value.split(".");
+    value = intPart + "." + decimalPart.substring(0, 2);
+  }
+
+  return value;
+};

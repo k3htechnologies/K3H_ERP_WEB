@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
-import type { BuildingData } from '../models/BuildingModel';
+import type { TenantData, FilterWithPaginationTenantRequest } from '../models/TenantModel';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import Accordion from '@/ui/components/Card/Accordion';
@@ -9,13 +9,12 @@ import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import { ArrowLeft, Edit } from 'lucide-react';
 import { Button } from '@/ui/components/forms';
-import { buildingService } from '@/features/building/services/BuildingService';
-import type { FilterWithPaginationBuildingRequest } from '../models/BuildingModel';
+import { tenantService } from '../services/TenantService';
 var ProjectId = 1;
-export const ViewBuilding: React.FC = () => {
+export const ViewTenant: React.FC = () => {
 
     //#region STATE MANAGEMENT
-    const [buildingData, setBuildingData] = useState<BuildingData | null>(null);
+    const [tenantData, setTenantData] = useState<TenantData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
     // TOAST
@@ -26,7 +25,7 @@ export const ViewBuilding: React.FC = () => {
 
     const location = useLocation() as {
         state?: {
-            editBuildingData?: BuildingData | null;
+            editTenantData?: TenantData | null;
             fromList?: boolean;
             listState?: {
                 page: number;
@@ -39,42 +38,42 @@ export const ViewBuilding: React.FC = () => {
     const preservedListState = location.state?.listState;
 
     //#endregion
-    //#region Get BUILDING DATA FROM LOCATION STATE
-    const incomingBuildingData = (location.state?.editBuildingData ?? null) as BuildingData | null;
+    //#region Get TENANT DATA FROM LOCATION STATE
+    const incomingTenantData = (location.state?.editTenantData ?? null) as TenantData | null;
     //#endregion
 
     //#region INIT
     useEffect(() => {
-        if (incomingBuildingData) {
-            setBuildingData(incomingBuildingData);
+        if (incomingTenantData) {
+            setTenantData(incomingTenantData);
             return;
         }
 
-        loadBuildingFromServer();
+        loadTenantFromServer();
     }, []);
 
     //#endregion
 
     //#region DATA LOAD
-    const loadBuildingFromServer = async () => {
-        if (!preservedListState?.filters?.BuildingId) return;
+    const loadTenantFromServer = async () => {
+        if (!preservedListState?.filters?.TenantId) return;
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
             async () => {
 
-                const params: FilterWithPaginationBuildingRequest = {
+                const params: FilterWithPaginationTenantRequest = {
                     PageNumber: 1,
                     PageSize: 1,
-                    BuildingId: preservedListState.filters.BuildingId,
+                    TenantId: preservedListState.filters.TenantId,
                     IsCheckPermission: false,
                     ProjectId: ProjectId
                 };
 
-                const response = await buildingService.apiCallPullBuilding(params);
+                const response = await tenantService.apiCallPullTenant(params);
 
                 if (E.isRight(response)) {
-                    setBuildingData(response.right.Data?.[0] ?? null);
+                    setTenantData(response.right.Data?.[0] ?? null);
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -86,18 +85,18 @@ export const ViewBuilding: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Loading Building Data'
+            'Loading Tenant Data'
         );
     };
 
     //#endregion 
-    //#region EDIT BUILDING
+    //#region EDIT TENANT
 
-    const handleEditBuilding = (row: BuildingData) => {
-        if (!row?.BuildingId) return;
-        navigate(`/building/add/${row.BuildingId}`, {
+    const handleEditTenant = (row: TenantData) => {
+        if (!row?.TenantId) return;
+        navigate(`/tenant/add/${row.TenantId}`, {
             state: {
-                editBuildingData: row,
+                editTenantData: row,
                 fromList: true,
                 listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
             }
@@ -106,9 +105,9 @@ export const ViewBuilding: React.FC = () => {
 
     //#endregion
 
-    //#region BACK BUILDING PAGE
-    const handleBackToListBuilding = () => {
-        navigate('/building', {
+    //#region BACK TENANT PAGE
+    const handleBackToListTenant = () => {
+        navigate('/tenant', {
             state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' } }
         });
     };
@@ -125,9 +124,10 @@ export const ViewBuilding: React.FC = () => {
                     <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
                         <div className="pt-10 px-2 pb-2">
                             <div className="text-center">
-                                <h3 className="text-lg font-semibold text-gray-900">{buildingData?.BuildingName} <span className="inline-block ml-2 text-green-500">●</span></h3>
+                                <h3 className="text-lg font-semibold text-gray-900">{tenantData?.FlatNumber} <span className="inline-block ml-2 text-green-500">●</span></h3>
                                 <div className="mt-2 flex justify-center gap-2">
-                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">{buildingData?.CTSNumber}</span>
+                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">{tenantData?.FlatType}</span>
+                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">{tenantData?.FlatConfiguration}</span>
                                 </div>
                             </div>
 
@@ -142,12 +142,12 @@ export const ViewBuilding: React.FC = () => {
 
 
                                 <div className="p-4">
-                                    <FieldItem label="Building Name" value={buildingData?.BuildingName ?? '-'} isRow />
-                                    <FieldItem label="CTS Number" value={buildingData?.CTSNumber ?? '-'} isRow />
-                                    <FieldItem label="Road Width" value={buildingData?.RoadWidth ?? '-'} isRow />
-                                    <FieldItem label="Land Ownership" value={buildingData?.LandOwnershipType ?? '-'} isRow />
-                                    <FieldItem label="Litigation" value={buildingData?.IsLitigation ? 'Yes' : 'No'} isRow />
-                                    <FieldItem label="Litigation Remarks" value={buildingData?.LitigationRemarks ?? '-'} isRow />
+                                    <FieldItem label="Flat Number" value={tenantData?.FlatNumber ?? '-'} isRow />
+                                    <FieldItem label="Flat Type" value={tenantData?.FlatType ?? '-'} isRow />
+                                    <FieldItem label="Configuration" value={tenantData?.FlatConfiguration ?? '-'} isRow />
+                                    <FieldItem label="Facing" value={tenantData?.Facing ?? '-'} isRow />
+                                    <FieldItem label="Total Area (sqft)" value={tenantData?.TotalAreaSqFt ?? '-'} isRow />
+                                    <FieldItem label="Carpet Area (sqft)" value={tenantData?.FlatCarpetAreaSqFt ?? '-'} isRow />
                                 </div>
                             </div>
 
@@ -156,8 +156,8 @@ export const ViewBuilding: React.FC = () => {
                                     onClick={(e) => {
                                         e.preventDefault()
                                         e.stopPropagation()
-                                        if (buildingData) {
-                                            handleEditBuilding(buildingData)
+                                        if (tenantData) {
+                                            handleEditTenant(tenantData)
                                         }
                                     }}
                                     color='blue'
@@ -171,7 +171,7 @@ export const ViewBuilding: React.FC = () => {
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        handleBackToListBuilding()
+                                        handleBackToListTenant()
                                     }}
                                     color='transparent'
                                     variant='transparent_border'
@@ -192,10 +192,9 @@ export const ViewBuilding: React.FC = () => {
 
 
                                 <div className="p-4">
-                                    <FieldItem label="Country" value={buildingData?.CountryName ?? '-'} isRow />
-                                    <FieldItem label="State" value={buildingData?.StateName ?? '-'} isRow />
-                                    <FieldItem label="District" value={buildingData?.DistrictName ?? '-'} isRow />
-                                    <FieldItem label="City" value={buildingData?.CityName ?? '-'} isRow />
+                                    <FieldItem label="Building Number" value={tenantData?.BuildingNumber ?? '-'} isRow />
+                                    <FieldItem label="Wing" value={tenantData?.Wing ?? '-'} isRow />
+                                    <FieldItem label="Floor" value={tenantData?.Floor ?? '-'} isRow />
                                 </div>
                             </div>
 
@@ -211,10 +210,10 @@ export const ViewBuilding: React.FC = () => {
                         <div className="bg-white border border-gray-200 rounded p-4 shadow-sm">
                             <h4 className="font-semibold mb-3">Property Information</h4>
 
-                            <FieldItem label="Total Plot Area (sqft)" value={buildingData?.TotalPlotAreaSqFt ?? '-'} isRow withBorder />
-                            <FieldItem label="Utilized Area (sqft)" value={buildingData?.TotalUnitsAreaUtilizedSqFt ?? '-'} isRow withBorder />
-                            <FieldItem label="Total Units" value={buildingData?.TotalNumberOfUnits ?? '-'} isRow withBorder />
-                            <FieldItem label="Floors" value={buildingData?.NumberOfFloors ?? '-'} isRow />
+                            <FieldItem label="Free Area Offered (%)" value={tenantData?.FreeAreaOfferedPercent ?? '-'} isRow withBorder />
+                            <FieldItem label="Extra Area Purchased (sqft)" value={tenantData?.ExtraAreaPurchasedSqFt ?? '-'} isRow withBorder />
+                            <FieldItem label="RERA Carpet Area (sqft)" value={tenantData?.RERACarpetAreaSqFt ?? '-'} isRow withBorder />
+                            <FieldItem label="Inventory Flat Type" value={tenantData?.InventoryFlatType ?? '-'} isRow />
                         </div>
                     </div>
 
@@ -223,35 +222,25 @@ export const ViewBuilding: React.FC = () => {
                         <Accordion
                             items={[
                                 {
-                                    key: "garden",
-                                    title: "Garden Information",
+                                    key: "parking",
+                                    title: "Parking Information",
                                     defaultOpen: true,
                                     content: (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Is Garden" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
-                                            <FieldItem label="Garden Area (sqft)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
+                                            <FieldItem label="Parking Number" value={tenantData?.ParkingNumber ?? '-'} />
+                                            <FieldItem label="Parking Id" value={tenantData?.ParkingId ?? '-'} />
                                         </div>
                                     )
                                 },
                                 {
-                                    key: "religious",
-                                    title: "Religious Structure",
-                                    defaultOpen: true,
+                                    key: "inventory",
+                                    title: "Inventory Details",
+                                     defaultOpen: true,
                                     content: (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Is Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
-                                            <FieldItem label="Structure Area (sqft)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
-                                        </div>
-                                    )
-                                },
-                                {
-                                    key: "fsi",
-                                    title: "FSI / TDR",
-                                    defaultOpen: true,
-                                    content: (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="FSI / TDR Utilization (sqft)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />
-                                            <FieldItem label="Property Age (Years)" value={buildingData?.PropertyAgeYears ?? '-'} />
+                                            <FieldItem label="Inventory Flat Id" value={tenantData?.InventoryFlatId ?? '-'} />
+                                            <FieldItem label="Inventory Flat Type" value={tenantData?.InventoryFlatType ?? '-'} />
+                                            <FieldItem label="Inventory Configuration" value={tenantData?.InventoryFlatConfiguration ?? '-'} />
                                         </div>
                                     )
                                 }
@@ -267,4 +256,4 @@ export const ViewBuilding: React.FC = () => {
     );
 };
 
-export default ViewBuilding;
+export default ViewTenant;

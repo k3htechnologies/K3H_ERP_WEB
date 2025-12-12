@@ -1,6 +1,6 @@
 export const BuildingApi = {
     PULL: '/Building/PullBuilding',
-    ADD_UPDATE: '/Building/PullBuilding',
+    ADD_UPDATE: '/Building/AddUpdateBuilding',
     DELETE: '/Building/DeleteBuilding'
 
 } as const

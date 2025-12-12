@@ -52,7 +52,7 @@ export const HolidayMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const {addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -706,8 +706,7 @@ export const HolidayMaster: React.FC = () => {
   }
   //#endregion
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
@@ -901,7 +900,6 @@ export const HolidayMaster: React.FC = () => {
           variant="danger"
         />
       </div>
-    </>
   )
 }
 

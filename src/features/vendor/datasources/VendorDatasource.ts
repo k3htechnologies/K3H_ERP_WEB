@@ -3,7 +3,6 @@ import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { VendorApi } from '@/features/vendor/api/VendorApi'
 import type {
     FilterWithPaginationVendorRequest,
-    AddUpdateVendorRequest,
     DeleteVendorRequest,
     VendorListResponse,
     VendorSaveResponse,

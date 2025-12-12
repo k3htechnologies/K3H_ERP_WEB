@@ -352,27 +352,24 @@ export const OutDoor: React.FC = () => {
   }), [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]);
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-900">Outdoor Visits</h2>
+          <button
+            onClick={handleAddOutdoor}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            <Plus className="w-5 h-5" />
+            Add Outdoor
+          </button>
+        </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Outdoor Visits</h2>
-            <button
-              onClick={handleAddOutdoor}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              <Plus className="w-5 h-5" />
-              Add Outdoor
-            </button>
-          </div>
-
-          {/* {OutDoorList.length === 0 ? (
+        {/* {OutDoorList.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-500">No outdoor records found</p>
             </div>
@@ -402,262 +399,262 @@ export const OutDoor: React.FC = () => {
               })}
             </div>
           )} */}
-          {OutDoorList.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No outdoor records found</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {OutDoorList.map((item) => {
-                const isMeetingStarted = canPunchInOut(item.OutDoorDate, item.OutDoorTime);
-                const hasMissed = hasMissedPunch(item);
-                const hasMissedPrevious = hasMissedPunchInPreviousDate(item);
+        {OutDoorList.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No outdoor records found</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
+            {OutDoorList.map((item) => {
+              const isMeetingStarted = canPunchInOut(item.OutDoorDate, item.OutDoorTime);
+              const hasMissed = hasMissedPunch(item);
+              const hasMissedPrevious = hasMissedPunchInPreviousDate(item);
 
-                const isPunchedInAndOut = item.PunchIn && item.PunchOut;
+              const isPunchedInAndOut = item.PunchIn && item.PunchOut;
 
-                return (
-                  <ExpandableCard
-                    key={item.OutdoorId}
-                    title={
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex-1">
-                          <h3 className="text-sm font-medium text-gray-900 mb-1">
-                            {formatDate_dd_MonthName_yy(item.OutDoorDate)}
-                          </h3>
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs text-gray-600 flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5" />
-                              {formatTimeFromDateTime(item.OutDoorTime) || 'N/A'}
-                            </span>
+              return (
+                <ExpandableCard
+                  key={item.OutdoorId}
+                  title={
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium text-gray-900 mb-1">
+                          {formatDate_dd_MonthName_yy(item.OutDoorDate)}
+                        </h3>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-gray-600 flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            {formatTimeFromDateTime(item.OutDoorTime) || 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+
+                    </div>
+                  }
+                  showline={true}
+                  customizedIcon={
+                    <div className="flex items-center gap-2">
+                      {/* Missed Punch Icon */}
+                      {hasMissed && (
+                        <div title={!item.PunchIn ? "Punch In missed" : "Punch Out missed"}>
+                          <AlertTriangle className="w-5 h-5 text-red-500" />
+                        </div>
+                      )}
+
+                      {/* Conclusion Button */}
+                      {isPunchedInAndOut && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenConclusionModal(item);
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-white/50 transition-colors"
+                          title={item.Conclusion ? "Edit Conclusion" : "Add Conclusion"}
+                        >
+                          <ClipboardCheck
+                            className={`w-5 h-5 ${item.Conclusion ? 'text-purple-600' : 'text-gray-600'}`}
+                          />
+                        </button>
+                      )}
+
+                      {/* Punch In/Out Button */}
+                      {!isPunchedInAndOut && isMeetingStarted && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePunchInOut(item);
+                          }}
+                          disabled={punchingItemId === item.OutdoorId}
+                          className="p-1.5 rounded-lg hover:bg-white/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title={!item.PunchIn ? "Punch In" : "Punch Out"}
+                        >
+                          {punchingItemId === item.OutdoorId ? (
+                            <div className="w-5 h-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Fingerprint
+                              className={`w-5 h-5 ${!item.PunchIn ? 'text-green-600' : 'text-blue-600'}`}
+                            />
+                          )}
+                        </button>
+                      )}
+                    </div>
+
+                  }
+                  child={
+                    <div className="space-y-4">
+                      {/* Left Column */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-2.5 p-2.5 bg-blue-50 rounded-lg border border-blue-100">
+                            <Building2 className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Name</p>
+                              <p className="text-sm font-semibold text-gray-900">{item.CompanyName || 'N/A'}</p>
+                            </div>
                           </div>
+
+                          <div className="flex items-start gap-2.5 p-2.5 bg-green-50 rounded-lg border border-green-100">
+                            <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Address</p>
+                              <p className="text-sm font-semibold text-gray-900">{item.CompanyAddress || 'N/A'}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-2.5 p-2.5 bg-purple-50 rounded-lg border border-purple-100">
+                            <Target className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Purpose</p>
+                              <p className="text-sm font-semibold text-gray-900">{item.Purpose || 'N/A'}</p>
+                            </div>
+                          </div>
+
+                          {item.Conclusion && (
+                            <div className="flex items-start gap-2.5 p-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                              <ClipboardCheck className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Conclusion</p>
+                                <p className="text-sm text-gray-600">{item.Conclusion}</p>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
-                      </div>
-                    }
-                    showline={true}
-                    customizedIcon={
-                      <div className="flex items-center gap-2">
-                        {/* Missed Punch Icon */}
-                        {hasMissed && (
-                          <div title={!item.PunchIn ? "Punch In missed" : "Punch Out missed"}>
-                            <AlertTriangle className="w-5 h-5 text-red-500" />
-                          </div>
-                        )}
-
-                        {/* Conclusion Button */}
-                        {isPunchedInAndOut && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenConclusionModal(item);
-                            }}
-                            className="p-1.5 rounded-lg hover:bg-white/50 transition-colors"
-                            title={item.Conclusion ? "Edit Conclusion" : "Add Conclusion"}
-                          >
-                            <ClipboardCheck
-                              className={`w-5 h-5 ${item.Conclusion ? 'text-purple-600' : 'text-gray-600'}`}
-                            />
-                          </button>
-                        )}
-
-                        {/* Punch In/Out Button */}
-                        {!isPunchedInAndOut && isMeetingStarted && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePunchInOut(item);
-                            }}
-                            disabled={punchingItemId === item.OutdoorId}
-                            className="p-1.5 rounded-lg hover:bg-white/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={!item.PunchIn ? "Punch In" : "Punch Out"}
-                          >
-                            {punchingItemId === item.OutdoorId ? (
-                              <div className="w-5 h-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                              <Fingerprint
-                                className={`w-5 h-5 ${!item.PunchIn ? 'text-green-600' : 'text-blue-600'}`}
-                              />
-                            )}
-                          </button>
-                        )}
-                      </div>
-
-                    }
-                    child={
-                      <div className="space-y-4">
-                        {/* Left Column */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-3">
-                            <div className="flex items-start gap-2.5 p-2.5 bg-blue-50 rounded-lg border border-blue-100">
-                              <Building2 className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Name</p>
-                                <p className="text-sm font-semibold text-gray-900">{item.CompanyName || 'N/A'}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-start gap-2.5 p-2.5 bg-green-50 rounded-lg border border-green-100">
-                              <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Address</p>
-                                <p className="text-sm font-semibold text-gray-900">{item.CompanyAddress || 'N/A'}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-start gap-2.5 p-2.5 bg-purple-50 rounded-lg border border-purple-100">
-                              <Target className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Purpose</p>
-                                <p className="text-sm font-semibold text-gray-900">{item.Purpose || 'N/A'}</p>
-                              </div>
-                            </div>
-
-                            {item.Conclusion && (
-                              <div className="flex items-start gap-2.5 p-2.5 bg-gray-50 rounded-lg border border-gray-200">
-                                <ClipboardCheck className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                                <div className="flex-1">
-                                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Conclusion</p>
-                                  <p className="text-sm text-gray-600">{item.Conclusion}</p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Right Column */}
-                          <div className="space-y-3">
-                            {item.DepartmentName && (
-                              <div className="flex items-start gap-2.5 p-2.5 bg-cyan-50 rounded-lg border border-cyan-100">
-                                <Users className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                                <div className="flex-1">
-                                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Department</p>
-                                  <p className="text-sm font-semibold text-gray-900">{item.DepartmentName}</p>
-                                </div>
-                              </div>
-                            )}
-
-                            <div className="flex items-start gap-2.5 p-2.5 bg-orange-50 rounded-lg border border-orange-100">
+                        {/* Right Column */}
+                        <div className="space-y-3">
+                          {item.DepartmentName && (
+                            <div className="flex items-start gap-2.5 p-2.5 bg-cyan-50 rounded-lg border border-cyan-100">
                               <Users className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
                               <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Accompanied By</p>
-                                <p className="text-sm font-semibold text-gray-900">{item.AccompaniedByName || 'N/A'}</p>
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Department</p>
+                                <p className="text-sm font-semibold text-gray-900">{item.DepartmentName}</p>
                               </div>
                             </div>
+                          )}
 
-                            <div className="flex items-start gap-2.5 p-2.5 bg-indigo-50 rounded-lg border border-indigo-100">
-                              <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Requested By</p>
-                                <p className="text-sm font-semibold text-gray-900">{item.CreatedBy || 'N/A'}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center justify-end pt-2">
-                              <button
-                                onClick={() => navigate(`/outdoor/add/${item.OutdoorId}`)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm min-w-[110px] justify-center"
-                              >
-                                <Edit className="w-4 h-4" />
-                                Edit
-                              </button>
+                          <div className="flex items-start gap-2.5 p-2.5 bg-orange-50 rounded-lg border border-orange-100">
+                            <Users className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Accompanied By</p>
+                              <p className="text-sm font-semibold text-gray-900">{item.AccompaniedByName || 'N/A'}</p>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Punch In/Out Section */}
-                        {(item.PunchIn || item.PunchOut || hasMissedPrevious) && (
-                          <div className="border-t border-gray-200 pt-3">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                              <Fingerprint className="w-4 h-4" />
-                              Attendance
-                            </h4>
-                            {hasMissedPrevious ? (
-                              <div className="p-3 bg-red-50 rounded-lg border border-red-200">
-                                <p className="text-sm font-medium text-red-700">Attendance is not marked</p>
-                              </div>
-                            ) : (
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {item.PunchIn && (
-                                  <div className="p-3 bg-green-50 rounded-lg border border-green-100">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                      <p className="text-xs font-semibold text-green-700 uppercase">Punch In</p>
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-900 mb-1">
-                                      {formatTimeFromDateTime(item.PunchIn) || 'N/A'}
-                                    </p>
-                                    {item.PunchInAddress && (
-                                      <p className="text-xs text-gray-600 flex items-start gap-1">
-                                        <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                                        <span className="line-clamp-2">{item.PunchInAddress}</span>
-                                      </p>
-                                    )}
-                                  </div>
-                                )}
-                                {item.PunchOut && (
-                                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                      <p className="text-xs font-semibold text-blue-700 uppercase">Punch Out</p>
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-900 mb-1">
-                                      {formatTimeFromDateTime(item.PunchOut) || 'N/A'}
-                                    </p>
-                                    {item.PunchOutAddress && (
-                                      <p className="text-xs text-gray-600 flex items-start gap-1">
-                                        <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                                        <span className="line-clamp-2">{item.PunchOutAddress}</span>
-                                      </p>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Visiting Card Section */}
-                        <div className="border-t border-gray-200 pt-3">
-                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center gap-2.5">
-                              <FileText className="w-4 h-4 text-gray-400" />
-                              <div>
-                                <p className="text-sm font-medium text-gray-700">Visiting Card</p>
-                                <p className="text-xs text-gray-500">Document attachment</p>
-                              </div>
+                          <div className="flex items-start gap-2.5 p-2.5 bg-indigo-50 rounded-lg border border-indigo-100">
+                            <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Requested By</p>
+                              <p className="text-sm font-semibold text-gray-900">{item.CreatedBy || 'N/A'}</p>
                             </div>
-                            {item.VisitingCardURL ? (() => {
-                              const cardUrls = parseDocumentUrls(item.VisitingCardURL);
-                              const images = cardUrls.map(url => ({ url }));
-                              return (
-                                <MultiImageViewer
-                                  images={images}
-                                  title="Visiting Card"
-                                  triggerLabel={
-                                    <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm">
-                                      <ExternalLink className="w-3.5 h-3.5" />
-                                      View Card{cardUrls.length > 1 ? ` (${cardUrls.length})` : ''}
-                                    </button>
-                                  }
-                                />
-                              );
-                            })() : (
-                              <span className="text-xs text-gray-400 italic">Not Uploaded</span>
-                            )}
+                          </div>
+
+                          <div className="flex items-center justify-end pt-2">
+                            <button
+                              onClick={() => navigate(`/outdoor/add/${item.OutdoorId}`)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm min-w-[110px] justify-center"
+                            >
+                              <Edit className="w-4 h-4" />
+                              Edit
+                            </button>
                           </div>
                         </div>
                       </div>
-                    }
-                  />
-                );
-              })}
-            </div>
-          )}
 
-        </div>
-        <Pagination pagination={paginationInfo} className="mt-4" />
+                      {/* Punch In/Out Section */}
+                      {(item.PunchIn || item.PunchOut || hasMissedPrevious) && (
+                        <div className="border-t border-gray-200 pt-3">
+                          <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                            <Fingerprint className="w-4 h-4" />
+                            Attendance
+                          </h4>
+                          {hasMissedPrevious ? (
+                            <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                              <p className="text-sm font-medium text-red-700">Attendance is not marked</p>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {item.PunchIn && (
+                                <div className="p-3 bg-green-50 rounded-lg border border-green-100">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <p className="text-xs font-semibold text-green-700 uppercase">Punch In</p>
+                                  </div>
+                                  <p className="text-sm font-medium text-gray-900 mb-1">
+                                    {formatTimeFromDateTime(item.PunchIn) || 'N/A'}
+                                  </p>
+                                  {item.PunchInAddress && (
+                                    <p className="text-xs text-gray-600 flex items-start gap-1">
+                                      <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                      <span className="line-clamp-2">{item.PunchInAddress}</span>
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                              {item.PunchOut && (
+                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <p className="text-xs font-semibold text-blue-700 uppercase">Punch Out</p>
+                                  </div>
+                                  <p className="text-sm font-medium text-gray-900 mb-1">
+                                    {formatTimeFromDateTime(item.PunchOut) || 'N/A'}
+                                  </p>
+                                  {item.PunchOutAddress && (
+                                    <p className="text-xs text-gray-600 flex items-start gap-1">
+                                      <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                      <span className="line-clamp-2">{item.PunchOutAddress}</span>
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Visiting Card Section */}
+                      <div className="border-t border-gray-200 pt-3">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center gap-2.5">
+                            <FileText className="w-4 h-4 text-gray-400" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">Visiting Card</p>
+                              <p className="text-xs text-gray-500">Document attachment</p>
+                            </div>
+                          </div>
+                          {item.VisitingCardURL ? (() => {
+                            const cardUrls = parseDocumentUrls(item.VisitingCardURL);
+                            const images = cardUrls.map(url => ({ url }));
+                            return (
+                              <MultiImageViewer
+                                images={images}
+                                title="Visiting Card"
+                                triggerLabel={
+                                  <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm">
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                    View Card{cardUrls.length > 1 ? ` (${cardUrls.length})` : ''}
+                                  </button>
+                                }
+                              />
+                            );
+                          })() : (
+                            <span className="text-xs text-gray-400 italic">Not Uploaded</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  }
+                />
+              );
+            })}
+          </div>
+        )}
+
       </div>
+      <Pagination pagination={paginationInfo} className="mt-4" />
 
-      {/* Conclusion Modal */}
+
+
       <Modal
         isOpen={conclusionModalOpen}
         onClose={handleCloseConclusionModal}
@@ -681,7 +678,7 @@ export const OutDoor: React.FC = () => {
           autoResize={true}
         />
       </Modal>
-    </>
+    </div>
   );
 };
 

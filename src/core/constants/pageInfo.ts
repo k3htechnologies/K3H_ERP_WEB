@@ -21,7 +21,6 @@ export const getPageInfo = (path: string) => {
                     description: "Assign and manage module permissions for designations",
                 };
             }
-
             return {
 
                 title: 'Designation Master',
@@ -168,10 +167,67 @@ export const getPageInfo = (path: string) => {
             }
         case 'profile':
             return {
-                title: 'Employee Profile',
+                title: 'Profile',
                 description: 'Profile',
             }
-        // ✅ Add other cases here...
+        case 'siteProgress':
+            if (second === "SiteProgressSubConstruction") {
+                return {
+                    title: "Site Progress Sub Construction",
+                    description: "Assign and manage module permissions for designations",
+                };
+            }
+
+            if (second === "SiteProgressWingConstruction") {
+                return {
+                    title: "Wing Wise Construction",
+                    description: "Assign and manage module permissions for designations",
+                };
+            }
+
+            if (second === "SiteProgressFloorConstruction") {
+                return {
+                    title: "Floor Wise Construction",
+                    description: "Assign and manage module permissions for designations",
+                };
+            }
+
+            if (second === "SiteProgressFlatConstruction") {
+                return {
+                    title: "Flat Wise Construction",
+                    description: "Assign and manage module permissions for designations",
+                };
+            }
+
+            if (second === "SiteProgressConstructionActivity") {
+                return {
+                    title: "Activity",
+                    description: "Assign and manage module permissions for designations",
+                };
+            }
+
+            if (second === "SiteProgressConstructionSubActivity") {
+                return {
+                    title: "Sub Activity",
+                    description: "Assign and manage module permissions for designations",
+                };
+            }
+
+            return {
+                title: 'Site Progress',
+                description: 'Profile',
+            }
+        case 'building':
+            return {
+                title: 'Building',
+                description: 'Profile',
+            }
+             case 'tenant':
+            return {
+                title: 'Tenant',
+                description: 'Profile',
+            }
+        
         default:
             return {
                 title: 'Dashboard',

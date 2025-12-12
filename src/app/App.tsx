@@ -39,10 +39,10 @@ import ViewProjectMaster from '@/features/projectMaster/pages/ViewProjectMaster'
 import AddUpdateProjectMaster from '@/features/projectMaster/pages/AddUpdateProjectMaster';
 import { AddUpdateAssetMaster } from '@/features/assetMaster/pages/AddUpdateAssetMaster';
 import ViewAssetMaster from '@/features/assetMaster/pages/ViewAssetMaster';
-import  { AddUpdateWeekOffMaster } from '@/features/weekOffMaster/pages/AddUpdateWeekOffMaster';
-import AddUpdateAssetMappingMaster  from '@/features/assetMappingMaster/pages/AddUpdateAssetMappingMaster';
-import AddUpdateDeductionMaster  from '@/features/deductionMaster/pages/AddUpdateDeductionMaster';
-import AddUpdateShiftMaster  from '@/features/shiftMaster/pages/AddUpdateShiftMaster';
+import { AddUpdateWeekOffMaster } from '@/features/weekOffMaster/pages/AddUpdateWeekOffMaster';
+import AddUpdateAssetMappingMaster from '@/features/assetMappingMaster/pages/AddUpdateAssetMappingMaster';
+import AddUpdateDeductionMaster from '@/features/deductionMaster/pages/AddUpdateDeductionMaster';
+import AddUpdateShiftMaster from '@/features/shiftMaster/pages/AddUpdateShiftMaster';
 import ViewAssetMappingMaster from '@/features/assetMappingMaster/pages/ViewAssetMappingMaster';
 import ViewShiftMaster from '@/features/shiftMaster/pages/ViewShiftMaster';
 import ViewDeductionMaster from '@/features/deductionMaster/pages/ViewDeductionMaster';
@@ -55,10 +55,23 @@ import ProjectRERADocumentCategoryMaster from '@/features/projectRERADocumentCat
 import ProjectRERADocument from '@/features/projectRERADocument/pages/ProjectRERADocument';
 import ViewCompantMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
 import Inventory from '@/features/inventory/pages/Inventory';
-import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
 import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor';
 import { OutDoor } from '@/features/outdoor/pages/OutDoor';
+
 import { ViewVendor } from '@/features/vendor/pages/ViewVendor';
+import SiteProgress from '@/features/siteProgress/pages/SiteProgress';
+import SiteProgressSubConstruction from '@/features/siteProgress/pages/SiteProgressSubConstruction';
+import SiteProgressWingConstruction from '@/features/siteProgress/pages/SiteProgressWingConstruction';
+import SiteProgressFloorConstruction from '@/features/siteProgress/pages/SiteProgressFloorConstruction';
+import SiteProgressFlatConstruction from '@/features/siteProgress/pages/SiteProgressFlatConstruction';
+import SiteProgressConstructionActivity from '@/features/siteProgress/pages/SiteProgressConstructionActivity';
+import SiteProgressConstructionSubActivity from '@/features/siteProgress/pages/SiteProgressConstructionSubActivity';
+import { Building } from '@/features/building/pages/Building';
+import ViewBuilding from '@/features/building/pages/ViewBuilding';
+import AddUpdateBuilding from '@/features/building/pages/AddUpdateBuilding';
+import Tenant from '@/features/tenant/pages/Tenant';
+import AddUpdateTenant from '@/features/tenant/pages/AddUpdateTenant';
+import ViewTenant from '@/features/tenant/pages/ViewTenant';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -105,9 +118,6 @@ function App() {
           {/* Public Routes */}
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
-          <Route path="companyMaster/addCompany" element={<AddCompany />} />
 
           {/* Protected Routes with Layout */}
           <Route
@@ -121,13 +131,13 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="departmentMaster" element={<DepartmentMaster />} />
-            <Route path="/vendor/add/:vendorId?" element={<AddUpdateVendor />} />
+            <Route path="vendor/add/:vendorId?" element={<AddUpdateVendor />} />
             <Route path="designationMaster" element={<DesignationMaster />} />
             <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
             <Route path="employeeMaster" element={<EmployeeMaster />} />
             <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />
-            <Route path="employeeMaster/add/:employeeId??" element={<AddUpdateEmployeeMaster />} />
-            <Route path="/outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
+            <Route path="employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
+            <Route path="outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
             <Route path="outdoor" element={<OutDoor />} />
             <Route path="companyMaster" element={<CompanyMaster />} />
             <Route path="companyMaster/view" element={<ViewCompantMaster />} />
@@ -138,12 +148,12 @@ function App() {
             <Route path="branchAssociationsMaster" element={<BranchAssociationsMaster />} />
             <Route path="assetMaster" element={<AssetMaster />} />
             <Route path="assetMaster/view" element={<ViewAssetMaster />} />
-            <Route path="assetMaster/add/:AssetMasterId??" element={<AddUpdateAssetMaster />} />
+            <Route path="assetMaster/add/:AssetMasterId?" element={<AddUpdateAssetMaster />} />
             <Route path="assetMappingMaster" element={<AssetMappingMaster />} />
-            <Route path="assetMappingMaster/view" element={< ViewAssetMappingMaster/>} />
+            <Route path="assetMappingMaster/view" element={< ViewAssetMappingMaster />} />
             <Route path="assetMappingMaster/add/:AssetMasterMappingId?" element={<AddUpdateAssetMappingMaster />} />
             <Route path="deductionMaster" element={<DeductionMaster />} />
-            <Route path="deductionMaster/view" element={< ViewDeductionMaster/>} />
+            <Route path="deductionMaster/view" element={< ViewDeductionMaster />} />
             <Route path="deductionMaster/add/:DeductionMasterId?" element={<AddUpdateDeductionMaster />} />
             <Route path="earningMaster" element={<EarningMaster />} />
             <Route path="holidayMaster" element={<HolidayMaster />} />
@@ -151,27 +161,42 @@ function App() {
             <Route path="leaveEncashmentMaster" element={<LeaveEncashmentMaster />} />
             <Route path="leaveTypeMaster" element={<LeaveTypeMaster />} />
             <Route path="shiftMaster" element={<ShiftMaster />} />
-            <Route path="shiftMaster/view" element={< ViewShiftMaster/>} />
+            <Route path="shiftMaster/view" element={< ViewShiftMaster />} />
             <Route path="shiftMaster/add/:ShiftManagementMasterId?" element={<AddUpdateShiftMaster />} />
             <Route path="shiftMappingMaster" element={<ShiftMappingMaster />} />
             <Route path="weekOffMaster" element={<WeekOffMasterMaster />} />
             <Route path="WeekOffMaster/view" element={<ViewWeekOffMaster />} />
-            <Route path="WeekOffMaster/add/:WeekOffMasterId??" element={<AddUpdateWeekOffMaster />} />
+            <Route path="WeekOffMaster/add/:WeekOffMasterId?" element={<AddUpdateWeekOffMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
             <Route path="vendor" element={<Vendor />} />
-            <Route path="vendor/view" element={<ViewVendor/>} />
+            <Route path="vendor/view" element={<ViewVendor />} />
             <Route path="projectMaster" element={<ProjectMaster />} />
             <Route path="projectMaster/view" element={<ViewProjectMaster />} />
-            <Route path="/projectMaster/add/:projectId??" element={<AddUpdateProjectMaster />} />
+            <Route path="projectMaster/add/:projectId?" element={<AddUpdateProjectMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
-            <Route path="materialMaster" element={<MaterialMaster  />} />
-            <Route path="inventory" element={<Inventory></Inventory>}/>
+            <Route path="materialMaster" element={<MaterialMaster />} />
+            <Route path="inventory" element={<Inventory></Inventory>} />
             <Route path="subMaterialMaster" element={<SubMaterialMaster />} />
             <Route path="uomMaster" element={<UomMaster />} />
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />
             <Route path="document" element={<ProjectDocument />} />
             <Route path="reraCategory" element={<ProjectRERADocumentCategoryMaster />} />
             <Route path="rera" element={<ProjectRERADocument />} />
+            <Route path="siteProgress" element={<SiteProgress />} />
+            <Route path="siteProgress/SiteProgressSubConstruction" element={<SiteProgressSubConstruction />} />
+            <Route path="siteProgress/SiteProgressWingConstruction" element={<SiteProgressWingConstruction />} />
+            <Route path="siteProgress/SiteProgressFloorConstruction" element={<SiteProgressFloorConstruction />} />
+            <Route path="siteProgress/SiteProgressFlatConstruction" element={<SiteProgressFlatConstruction />} />
+            <Route path="siteProgress/SiteProgressConstructionActivity" element={<SiteProgressConstructionActivity />} />
+            <Route path="siteProgress/SiteProgressConstructionSubActivity" element={<SiteProgressConstructionSubActivity />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="building" element={<Building />} />
+            <Route path="building/view" element={<ViewBuilding />} />
+            <Route path="building/add/:buildingId?" element={<AddUpdateBuilding />} />
+
+            <Route path="tenant" element={<Tenant />} />
+            <Route path="tenant/view" element={<ViewTenant />} />
+            <Route path="tenant/add/:tenantId?" element={<AddUpdateTenant />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

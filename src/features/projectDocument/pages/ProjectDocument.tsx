@@ -1,7 +1,6 @@
 import useToast from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import { Tabs, type TabItem } from '@/ui/components/Tab/Tab';
-import { ToastContainer } from '@/ui/components/Toast';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { fetchProjectDocumentCategoryDropdown } from '@/features/projectDocumentCategory/projectDocumentCategoryDropDown';
 import { runApiWithLoader } from '@/core/utils';
@@ -66,7 +65,7 @@ const ProjectDocument: React.FC = () => {
   const [filters] = useState<FilterInfo>({});
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -903,9 +902,6 @@ const ProjectDocument: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
         <Loader loading={isLoading} title={loadingMessage}>
           <div></div>
@@ -1172,7 +1168,6 @@ const ProjectDocument: React.FC = () => {
           variant="danger"
         />
       </div>
-    </>
   );
 };
 

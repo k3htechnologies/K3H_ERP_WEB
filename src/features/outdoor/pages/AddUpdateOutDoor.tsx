@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
-import ToastContainer from "@/ui/components/Toast/ToastContainer";
 import { useToast } from "@/core/hooks/useToast";
 import { OutDoorDataService } from "@/features/outdoor/services/OutDoorDataService";
 import type { OutDoorMasterData, AddUpdateOutDoor } from "../models/OutDoorModel";
@@ -44,7 +43,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
   const { outdoorId } = useParams<{ outdoorId?: string }>();
 
-  const { toasts, removeToast, addToast } = useToast();
+  const {addToast } = useToast();
 
   const [outdoorFormData, setOutdoorFormData] = useState<AddUpdateOutDoor>({
     OutdoorId: 0,
@@ -450,7 +449,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
   return (
     <div className="p-6">
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+     
       
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">

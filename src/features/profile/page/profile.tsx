@@ -2,15 +2,16 @@ import React, { useEffect, useRef, useState } from 'react'
 import useToast from '@/core/hooks/useToast';
 import { runApiWithLoader } from '@/core/utils/apiLoaderHelper';
 import type { EmployeeMasterData, FilterWithPaginationEmployeeMasterRequest } from '@/features/employeeMaster/models/EmployeeMasterModel';
-import ToastContainer from '@/ui/components/Toast/ToastContainer';
 import * as E from 'fp-ts/Either';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
 import { Loader } from '@/core/utils/loader';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { Button } from '@/ui/components/forms';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/ui/components/forms';
+import { ChevronLeft, MoveLeftIcon } from 'lucide-react';
+import { COLORS } from '@/core/constants';
 
 export const Profile: React.FC = () => {
 
@@ -20,7 +21,7 @@ export const Profile: React.FC = () => {
     const [loadingMessage, setIsLoadingMessage] = useState('');
 
     // TOAST
-    const { toasts, removeToast, addToast } = useToast()
+    const { addToast } = useToast()
 
     //#endregion
 
@@ -81,7 +82,7 @@ export const Profile: React.FC = () => {
                 addToast({ type: 'error', title: error.message })
             },
             undefined,
-            'Loading Employee Data...'
+            'Loading Employee'
         )
     }
 
@@ -92,132 +93,233 @@ export const Profile: React.FC = () => {
     const safe = (value?: any) => (value === null || value === undefined || value === '' ? '-' : value)
 
     return (
-        <>
-            <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-            {/* Main Scrollable Container with Bottom Padding */}
-            <div className="relative h-full flex flex-col bg-gray-50 p-2 rounded-lg overflow-y-auto thin-scroll pb-1">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="space-y-4">
+                <div className="flex items-center gap-2">
 
+                    <Button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        color='transparent'
+                        size='sm'
+                        style={{backgroundColor:COLORS.primary,height:16,width:5}}
+                        leftIcon={<ChevronLeft/>}
+                    >
+                       
+                    </Button>
+
+                    <h2 className="text-lg font-semibold text-gray-900 pl-3">
+                        Profile Details
+                    </h2>
+                </div>
                 {/* Loader */}
-
                 <Loader loading={isLoading} title={loadingMessage}>
                     <div />
                 </Loader>
 
                 {!isLoading && employeeData && (
                     <>
-                        {/* ================== BASIC DETAILS ================== */}
-                        <section className="mb-4 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                            <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                                Basic Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <FieldItem label="First Name" value={safe(employeeData.FirstName)} />
-                                <FieldItem label="Middle Name" value={safe(employeeData.MiddleName)} />
-                                <FieldItem label="Last Name" value={safe(employeeData.LastName)} />
-                                <FieldItem label="Gender" value={safe(employeeData.Gender)} />
-                                <FieldItem label="Marital Status" value={safe(employeeData.MaritalStatus)} />
-                                <FieldItem label="Blood Group" value={safe(employeeData.BloodGroup)} />
-                                <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(safe(employeeData.DateOfBirth))} />
-                                <FieldItem label="Office Email ID" value={safe(employeeData.OfficeEmailId)} />
-                                <FieldItem label="Email ID" value={safe(employeeData.EmailId)} />
-                                <FieldItem label="Personal Mobile" value={safe(employeeData.PersonalMobileNumber)} />
-                                <FieldItem label="Office Mobile" value={safe(employeeData.OfficeMobileNumber)} />
-                                <FieldItem label="Employment Type" value={safe(employeeData.EmployeeType)} />
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+
+                            <div className="lg:col-span-2 space-y-6">
+
+                                {/* ================== BASIC DETAILS ================== */}
+                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        Basic Details
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="First Name" value={safe(employeeData.FirstName)} />
+                                                <FieldItem label="Middle Name" value={safe(employeeData.MiddleName)} />
+                                                <FieldItem label="Last Name" value={safe(employeeData.LastName)} />
+                                            </div>
+                                        </div>
+
+
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Gender" value={safe(employeeData.Gender)} />
+                                                <FieldItem label="Marital Status" value={safe(employeeData.MaritalStatus)} />
+                                                <FieldItem label="Blood Group" value={safe(employeeData.BloodGroup)} />
+                                            </div>
+                                        </div>
+
+
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(safe(employeeData.DateOfBirth))} />
+                                                <FieldItem label="Email ID" value={safe(employeeData.EmailId)} />
+                                                <FieldItem label="Personal Mobile No." value={safe(employeeData.PersonalMobileNumber)} />
+                                            </div>
+                                        </div>
+
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem
+                                                    label="Communication Address"
+                                                    value={safe(employeeData.CommunicationAddress)}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-3  pt-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem
+                                                    label="Permanent Address"
+                                                    value={safe(employeeData.PermanentAddress)}
+                                                />
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+
+
+                                </section>
+
+                                {/* ================== EMPLOYEE INFO ================== */}
+                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        Employee Infoformation
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Company Name" value={safe(employeeData.CompanyName)} />
+                                                <FieldItem label="Branch" value={safe(employeeData.Branch)} />
+                                                <FieldItem label="Department" value={safe(employeeData.Department)} />
+
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Designation" value={safe(employeeData.Designation)} />
+                                                <FieldItem
+                                                    label="Joining Date"
+                                                    value={formatDate_dd_MonthName_yy(safe(employeeData.JoiningDate))}
+                                                />
+                                                <FieldItem label="Reporting Person" value={safe(employeeData.ReportPersonName)} />
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Employment Type" value={safe(employeeData.EmployeeType)} />
+
+                                                <FieldItem label="Office Number" value={safe(employeeData.OfficeMobileNumber)} />
+                                                <FieldItem label="Office E-mail ID" value={safe(employeeData.OfficeEmailId)} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                {/* ================== ADDRESS ================== */}
+                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        Address
+                                    </h4>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                                <FieldItem label="Country" value={safe(employeeData.CountryName)} />
+                                                <FieldItem label="State" value={safe(employeeData.StateName)} />
+
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                <FieldItem label="District" value={safe(employeeData.DistrictName)} />
+                                                <FieldItem label="City" value={safe(employeeData.CityName)} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                {/* ================== BANK DETAILS ================== */}
+                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900  mb-4">
+                                        Bank Details
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                <FieldItem label="Bank Name" value={safe(employeeData.BankName)} />
+                                                <FieldItem label="Account Number" value={safe(employeeData.AccountNo)} />
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                <FieldItem label="Bank Branch Name" value={safe(employeeData.BankBranchName)} />
+                                                <FieldItem label="IFSC Code" value={safe(employeeData.IFSCCode)} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                {/* ================== ACTION DETAILS ================== */}
+                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        Action Details
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                <FieldItem label="Created By" value={safe(employeeData.CreatedBy)} />
+                                                <FieldItem
+                                                    label="Created Date"
+                                                    value={formatDate_dd_MonthName_yy(safe(employeeData.CreatedDate))}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                <FieldItem label="Modified By" value={safe(employeeData.ModifiedBy)} />
+                                                <FieldItem
+                                                    label="Modified Date"
+                                                    value={formatDate_dd_MonthName_yy_hh_mm(safe(employeeData.ModifiedDate))}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
                             </div>
-                        </section>
 
-                        {/* ================== EMPLOYEE INFO ================== */}
-                        <section className="mb-4 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                            <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                                Employee Info
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <FieldItem label="Company Name" value={safe(employeeData.CompanyName)} />
-                                <FieldItem label="Branch" value={safe(employeeData.Branch)} />
-                                <FieldItem label="Department" value={safe(employeeData.Department)} />
-                                <FieldItem label="Designation" value={safe(employeeData.Designation)} />
-                                <FieldItem
-                                    label="Joining Date"
-                                    value={formatDate_dd_MonthName_yy(safe(employeeData.JoiningDate))}
-                                />
-                                <FieldItem label="Reporting Person" value={safe(employeeData.ReportPersonName)} />
+                            {/* ================== RIGHT SIDE (1/3 WIDTH) ================== */}
+                            <div className="lg:col-span-1 space-y-6">
+
+                                {/* Reporting Structure example block */}
+                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
+                                        Reporting Structure
+                                    </h4>
+                                    <div>Right Panel Data Here</div>
+                                </section>
+
+                                {/* Documents example block */}
+                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
+                                        Documents
+                                    </h4>
+                                    <div>Documents Listing Here</div>
+                                </section>
+
                             </div>
-                        </section>
 
-                        {/* ================== ADDRESS ================== */}
-                        <section className="mb-4 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                            <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                                Address
-                            </h4>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <div className="md:col-span-2 lg:col-span-3">
-                                    <FieldItem
-                                        label="Communication Address"
-                                        value={safe(employeeData.CommunicationAddress)}
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2 lg:col-span-3">
-                                    <FieldItem
-                                        label="Permanent Address"
-                                        value={safe(employeeData.PermanentAddress)}
-                                    />
-                                </div>
-
-                                <FieldItem label="Country" value={safe(employeeData.CountryName)} />
-                                <FieldItem label="State" value={safe(employeeData.StateName)} />
-                                <FieldItem label="District" value={safe(employeeData.DistrictName)} />
-                                <FieldItem label="City" value={safe(employeeData.CityName)} />
-                            </div>
-                        </section>
-
-                        {/* ================== BANK DETAILS ================== */}
-                        <section className="mb-4 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                            <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                                Bank Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <FieldItem label="Bank Name" value={safe(employeeData.BankName)} />
-                                <FieldItem label="Account Number" value={safe(employeeData.AccountNo)} />
-                                <FieldItem label="Bank Branch Name" value={safe(employeeData.BankBranchName)} />
-                                <FieldItem label="IFSC Code" value={safe(employeeData.IFSCCode)} />
-                            </div>
-                        </section>
-
-                        {/* ================== ACTION DETAILS ================== */}
-                        <section className="bg-blue-50 rounded-xl p-6 border border-blue-100 shadow-sm mb-20">
-                            <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                                Action Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <FieldItem label="Created By" value={safe(employeeData.CreatedBy)} />
-                                <FieldItem
-                                    label="Created Date"
-                                    value={formatDate_dd_MonthName_yy(safe(employeeData.CreatedDate))}
-                                />
-                                <FieldItem label="Modified By" value={safe(employeeData.ModifiedBy)} />
-                                <FieldItem
-                                    label="Modified Date"
-                                    value={formatDate_dd_MonthName_yy_hh_mm(safe(employeeData.ModifiedDate))}
-                                />
-                            </div>
-                        </section>
+                        </div>
                     </>
                 )}
 
-                {/* ✅ Fixed Bottom Close Button */}
-                <div
-                    className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end shadow-md h-16"
-                    style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-                >
-                    <Button onClick={() => navigate(-1)} size="md">
-                        Close
-                    </Button>
-                </div>
             </div>
-        </>
+        </div>
     )
 }
 

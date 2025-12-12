@@ -52,7 +52,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
   const isAddMode = DeductionId === 0;
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const {  addToast } = useToast();
 
   // ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -292,8 +292,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
@@ -465,7 +464,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
           </Button>
         </div>
       </div>
-    </>
+    
   );
 };
 

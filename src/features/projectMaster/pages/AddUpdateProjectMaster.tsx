@@ -5,9 +5,7 @@ import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
-import ToastContainer from "@/ui/components/Toast/ToastContainer";
 import { PROJECT_STATUS_OPTIONS } from "@/core/constants/staticData";
 import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
@@ -19,6 +17,7 @@ import { ProjectMasterService } from "../services/ProjectMasterService";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 
 const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ProjectId: 0,
@@ -72,7 +71,7 @@ const AddUpdateProjectMaster: React.FC = () => {
     const { projectId } = useParams<{ projectId?: string }>();
 
     // TOAST
-    const { toasts, removeToast, addToast } = useToast();
+    const { addToast } = useToast();
 
     //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -282,6 +281,10 @@ const AddUpdateProjectMaster: React.FC = () => {
             newErrors.RERANumber = "Enter a valid RERA Number.";
         }
 
+        if (!projectPhotoFiles.length && !projectPhotoURL) {
+            newErrors.ProjectPhotoURL = "Project photo is required.";
+        }
+
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -405,369 +408,346 @@ const AddUpdateProjectMaster: React.FC = () => {
     //#endregion
 
     return (
-        <>
-            <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-
-                <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
 
-                <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
-                    <form onSubmit={handleSubmit}>
-                        <div className="space-y-4 pb-4">
-                            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Details</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div>
-                                    <Input
-                                        label="Project Name"
-                                        required
-                                        error={errors.ProjectName}
-                                        type="text"
-                                        value={formData.ProjectName}
-                                        onChange={(e) => handleFieldChange('ProjectName', e.target.value)}
-                                        placeholder="Enter project name"
-                                    />
-                                </div>
-                                <div>
-                                    <Input
-                                        label="CTS Number"
-                                        required
-                                        error={errors.CTSNumber}
-                                        type="text"
-                                        value={formData.CTSNumber}
-                                        onChange={(e) => handleFieldChange('CTSNumber', e.target.value)}
-                                        placeholder="Enter CTS number"
-                                    />
-                                </div>
-                                <div>
-                                    <MultiFilePicker
-                                        label="Project Photo"
-                                        required
-                                        error={errors.ProjectPhotoURL}
-                                        value={projectPhotoFiles}
-                                        onChange={setProjectPhotoFiles}
-                                        availableFilesURL={projectPhotoURL ?? ""}
-                                        allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                                        maxFiles={5}
-                                        maxSizeMB={10}
-                                        onRemoveExisting={(url) => {
-                                            setRemovedProjectPhotoUrls((prev) => [...prev, url])
-                                        }}
-                                    />
-                                </div>
-                                <div>
-                                    <SinglePageSelection
-                                        label="Country"
-                                        required
-                                        value={selectedCountryId || ''}
-                                        onChange={(val) => {
-                                            const id = Number(val);
-                                            setSelectedCountryId(id);
-                                            setSelectedStateId(null);
-                                            setSelectedDistrictId(null);
-                                            setSelectedCityId(null);
-                                            handleFieldChange('CountryMasterId', id);
-                                        }}
-                                        disabled={isLocationLoading}
-                                        options={countryOptions}
-                                    />
-                                </div>
-                                <div>
-                                    <SinglePageSelection
-                                        label="State"
-                                        required
-                                        error={errors.StateMasterId}
-                                        value={selectedStateId ?? ''}
-                                        onChange={(val) => {
-                                            const id = Number(val);
-                                            setSelectedStateId(id);
-                                            setSelectedDistrictId(null);
-                                            setSelectedCityId(null);
-                                            handleFieldChange('StateMasterId', id);
-                                        }}
-                                        disabled={!selectedCountryId || stateOptions.length === 0}
-                                        options={stateOptions}
-                                    />
-                                </div>
-                                <div>
-                                    <SinglePageSelection
-                                        label="District"
-                                        required
-                                        error={errors.DistrictMasterId}
-                                        value={selectedDistrictId ?? ''}
-                                        onChange={(val) => {
-                                            const id = Number(val);
-                                            setSelectedDistrictId(id);
-                                            setSelectedCityId(null);
-                                            handleFieldChange('DistrictMasterId', id);
-                                        }}
-                                        disabled={!selectedStateId || districtOptions.length === 0}
-                                        options={districtOptions}
-                                    />
-                                </div>
-                                <div>
-                                    <SinglePageSelection
-                                        label="City"
-                                        required
-                                        error={errors.CityMasterId}
-                                        value={selectedCityId ?? ''}
-                                        onChange={(val) => {
-                                            const id = Number(val);
-                                            setSelectedCityId(id);
-                                            handleFieldChange('CityMasterId', id);
-                                        }}
-                                        disabled={!selectedDistrictId || cityOptions.length === 0}
-                                        options={cityOptions}
-                                    />
-                                </div>
-                                <div>
-                                    <Input
-                                        label="PIN Code"
-                                        type="text"
-                                        value={formData.ZipCode}
-                                        onChange={(e) => handleFieldChange('ZipCode', e.target.value)}
-                                        placeholder="Enter PIN code"
-                                    />
-                                </div>
-                                <div>
-                                    <Input
-                                        label="Business Category"
-                                        type="text"
-                                        value={formData.BussinessCategory}
-                                        onChange={(e) => handleFieldChange('BussinessCategory', e.target.value)}
-                                        placeholder="Enter Bussiness category"
-                                    />
-                                </div>
-                                <div>
-                                    <Input
-                                        label="Project Location"
-                                        required
-                                        error={errors.ProjectLocation}
-                                        type="text"
-                                        value={formData.ProjectLocation}
-                                        onChange={(e) => handleFieldChange('ProjectLocation', e.target.value)}
-                                        placeholder="Enter project location"
-                                    />
-                                </div>
-                                <div>
-                                    <Input
-                                        label="Google Location"
-                                        type="text"
-                                        value={formData.GoogleLocation}
-                                        onChange={(e) => handleFieldChange('GoogleLocation', e.target.value)}
-                                        placeholder="Enter Google location"
-                                    />
-                                </div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+
+            <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+
+
+            <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+                <form onSubmit={handleSubmit}>
+                    <div className="space-y-4 pb-4">
+                        <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div>
+                                <Input
+                                    label="Project Name"
+                                    required
+                                    error={errors.ProjectName}
+                                    type="text"
+                                    value={formData.ProjectName}
+                                    onChange={(e) => handleFieldChange('ProjectName', e.target.value)}
+                                    placeholder="Enter project name"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="CTS Number"
+                                    required
+                                    error={errors.CTSNumber}
+                                    type="text"
+                                    value={formData.CTSNumber}
+                                    onChange={(e) => handleFieldChange('CTSNumber', e.target.value)}
+                                    placeholder="Enter CTS number"
+                                />
+                            </div>
+                            <div>
+                                <MultiFilePicker
+                                    label="Project Photo"
+                                    required
+                                    error={errors.ProjectPhotoURL}
+                                    value={projectPhotoFiles}
+                                    onChange={setProjectPhotoFiles}
+                                    availableFilesURL={projectPhotoURL ?? ""}
+                                    allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                    maxFiles={5}
+                                    maxSizeMB={10}
+                                    onRemoveExisting={(url) => {
+                                        setRemovedProjectPhotoUrls((prev) => [...prev, url])
+                                    }}
+                                />
+                            </div>
+                            <div>
+                                <SinglePageSelection
+                                    label="Country"
+                                    required
+                                    value={selectedCountryId || ''}
+                                    onChange={(val) => {
+                                        const id = Number(val);
+                                        setSelectedCountryId(id);
+                                        setSelectedStateId(null);
+                                        setSelectedDistrictId(null);
+                                        setSelectedCityId(null);
+                                        handleFieldChange('CountryMasterId', id);
+                                    }}
+                                    disabled={isLocationLoading}
+                                    options={countryOptions}
+                                />
+                            </div>
+                            <div>
+                                <SinglePageSelection
+                                    label="State"
+                                    required
+                                    error={errors.StateMasterId}
+                                    value={selectedStateId ?? ''}
+                                    onChange={(val) => {
+                                        const id = Number(val);
+                                        setSelectedStateId(id);
+                                        setSelectedDistrictId(null);
+                                        setSelectedCityId(null);
+                                        handleFieldChange('StateMasterId', id);
+                                    }}
+                                    disabled={!selectedCountryId || stateOptions.length === 0}
+                                    options={stateOptions}
+                                />
+                            </div>
+                            <div>
+                                <SinglePageSelection
+                                    label="District"
+                                    required
+                                    error={errors.DistrictMasterId}
+                                    value={selectedDistrictId ?? ''}
+                                    onChange={(val) => {
+                                        const id = Number(val);
+                                        setSelectedDistrictId(id);
+                                        setSelectedCityId(null);
+                                        handleFieldChange('DistrictMasterId', id);
+                                    }}
+                                    disabled={!selectedStateId || districtOptions.length === 0}
+                                    options={districtOptions}
+                                />
+                            </div>
+                            <div>
+                                <SinglePageSelection
+                                    label="City"
+                                    required
+                                    error={errors.CityMasterId}
+                                    value={selectedCityId ?? ''}
+                                    onChange={(val) => {
+                                        const id = Number(val);
+                                        setSelectedCityId(id);
+                                        handleFieldChange('CityMasterId', id);
+                                    }}
+                                    disabled={!selectedDistrictId || cityOptions.length === 0}
+                                    options={cityOptions}
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="PIN Code"
+                                    type="text"
+                                    value={formData.ZipCode}
+                                    onChange={(e) => handleFieldChange('ZipCode', e.target.value)}
+                                    placeholder="Enter PIN code"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Business Category"
+                                    type="text"
+                                    value={formData.BussinessCategory}
+                                    onChange={(e) => handleFieldChange('BussinessCategory', e.target.value)}
+                                    placeholder="Enter Bussiness category"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Project Location"
+                                    required
+                                    error={errors.ProjectLocation}
+                                    type="text"
+                                    value={formData.ProjectLocation}
+                                    onChange={(e) => handleFieldChange('ProjectLocation', e.target.value)}
+                                    placeholder="Enter project location"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Google Location"
+                                    type="text"
+                                    value={formData.GoogleLocation}
+                                    onChange={(e) => handleFieldChange('GoogleLocation', e.target.value)}
+                                    placeholder="Enter Google location"
+                                />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Scheme & Scope Details */}
-                        <div className="space-y-4 pb-4">
-                            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Scheme & Scope Details</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
-                                    <Input
-                                        label="Project Scope"
-                                        type="text"
-                                        value={formData.ProjectScope}
-                                        onChange={(e) => handleFieldChange('ProjectScope', e.target.value)}
-                                        placeholder="Enter project scope"
-                                    />
-                                </div>
-                                <div>
-                                    <Input
-                                        label="Project Scheme"
-                                        type="text"
-                                        value={formData.ProjectScheme}
-                                        onChange={(e) => handleFieldChange('ProjectScheme', e.target.value)}
-                                        placeholder="Enter project scheme"
-                                    />
-                                </div>
-                                <div>
-                                    <Input
-                                        label="Project Sub Scheme"
-                                        type="text"
-                                        value={formData.ProjectSubScheme}
-                                        onChange={(e) => handleFieldChange('ProjectSubScheme', e.target.value)}
-                                        placeholder="Enter project sub scheme"
-                                    />
-                                </div>
+                    {/* Scheme & Scope Details */}
+                    <div className="space-y-4 pb-4">
+                        <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Scheme & Scope Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <Input
+                                    label="Project Scope"
+                                    type="text"
+                                    value={formData.ProjectScope}
+                                    onChange={(e) => handleFieldChange('ProjectScope', e.target.value)}
+                                    placeholder="Enter project scope"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Project Scheme"
+                                    type="text"
+                                    value={formData.ProjectScheme}
+                                    onChange={(e) => handleFieldChange('ProjectScheme', e.target.value)}
+                                    placeholder="Enter project scheme"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Project Sub Scheme"
+                                    type="text"
+                                    value={formData.ProjectSubScheme}
+                                    onChange={(e) => handleFieldChange('ProjectSubScheme', e.target.value)}
+                                    placeholder="Enter project sub scheme"
+                                />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Project Documentation */}
-                        <div className="space-y-4 pb-4">
-                            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Project Documentation</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
-                                    <Input
-                                        label="RERA Number"
-                                        error={errors.RERANumber}
-                                        type="text"
-                                        value={formData.RERANumber}
-                                        onChange={(e) => handleFieldChange('RERANumber', filterRERA(e.target.value))}
-                                        placeholder="Enter RERA number"
-                                    />
-                                </div>
-                                <div>
-                                    <DatePickerInput
-                                        label="RERA Certificate Date"
-                                        value={formatDate_dd_mm_yyyy(formData.RERACertificateDate)}
-                                        onChange={(val) => handleFieldChange('RERACertificateDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                    />
-                                </div>
-                                <div>
-                                    <DatePickerInput
-                                        label="RERA Completion Date"
-                                        value={formatDate_dd_mm_yyyy(formData.RERAComplitionDate)}
-                                        onChange={(val) => handleFieldChange('RERAComplitionDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                    />
-                                </div>
+                    {/* Project Documentation */}
+                    <div className="space-y-4 pb-4">
+                        <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Project Documentation</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <Input
+                                    label="RERA Number"
+                                    error={errors.RERANumber}
+                                    type="text"
+                                    value={formData.RERANumber}
+                                    onChange={(e) => handleFieldChange('RERANumber', filterRERA(e.target.value))}
+                                    placeholder="Enter RERA number"
+                                />
+                            </div>
+                            <div>
+                                <DatePickerInput
+                                    label="RERA Certificate Date"
+                                    value={formatDate_dd_mm_yyyy(formData.RERACertificateDate)}
+                                    onChange={(val) => handleFieldChange('RERACertificateDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                />
+                            </div>
+                            <div>
+                                <DatePickerInput
+                                    label="RERA Completion Date"
+                                    value={formatDate_dd_mm_yyyy(formData.RERAComplitionDate)}
+                                    onChange={(val) => handleFieldChange('RERAComplitionDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Project Financials */}
-                        <div className="space-y-4 pb-4">
-                            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Project Financials</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
-                                    <Input
-                                        label="Project Estimate Cost"
-                                        type="text"
-                                        value={formData.ProjectEstimateCost || ''}
-                                        onChange={(e) => handleFieldChange('ProjectEstimateCost', filterNumbers(e.target.value) || 0)}
-                                        placeholder="Enter estimate cost"
-                                    />
-                                </div>
-                                <div>
-                                    <Input
-                                        label="On Going Budget Cost"
-                                        type="text"
-                                        value={formData.OnGoingBudgetCost || ''}
-                                        onChange={(e) => handleFieldChange('OnGoingBudgetCost', filterNumbers(e.target.value) || 0)}
-                                        placeholder="Enter budget cost"
-                                    />
-                                </div>
-                                <div>
-                                    <Input
-                                        label="Project Area in Sqft"
-                                        type="text"
-                                        value={formData.ProjectAreaInSqft || ''}
-                                        onChange={(e) => handleFieldChange('ProjectAreaInSqft', filterNumbers(e.target.value) || 0)}
-                                        placeholder="Enter area in sqft"
-                                    />
-                                </div>
+                    {/* Project Financials */}
+                    <div className="space-y-4 pb-4">
+                        <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Project Financials</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <Input
+                                    label="Project Estimate Cost"
+                                    type="text"
+                                    value={formData.ProjectEstimateCost || ''}
+                                    onChange={(e) => handleFieldChange('ProjectEstimateCost', filterNumbers(e.target.value) || 0)}
+                                    placeholder="Enter estimate cost"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="On Going Budget Cost"
+                                    type="text"
+                                    value={formData.OnGoingBudgetCost || ''}
+                                    onChange={(e) => handleFieldChange('OnGoingBudgetCost', filterNumbers(e.target.value) || 0)}
+                                    placeholder="Enter budget cost"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Project Area in Sqft"
+                                    type="text"
+                                    value={formData.ProjectAreaInSqft || ''}
+                                    onChange={(e) => handleFieldChange('ProjectAreaInSqft', filterNumbers(e.target.value) || 0)}
+                                    placeholder="Enter area in sqft"
+                                />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Timeline */}
-                        <div className="space-y-4 pb-4">
-                            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Timeline</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
-                                    <DatePickerInput
-                                        label="Survey Date"
-                                        value={formatDate_dd_mm_yyyy(formData.SurveyDate)}
-                                        onChange={(val) => handleFieldChange('SurveyDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                    />
-                                </div>
-                                <div>
-                                    <DatePickerInput
-                                        label="Expected Start Date"
-                                        value={formatDate_dd_mm_yyyy(formData.ExpectedStartDate)}
-                                        onChange={(val) => handleFieldChange('ExpectedStartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                    />
-                                </div>
-                                <div>
-                                    <DatePickerInput
-                                        label="Execution Start Date"
-                                        value={formatDate_dd_mm_yyyy(formData.ExecutionStartDate)}
-                                        onChange={(val) => handleFieldChange('ExecutionStartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                    />
-                                </div>
+                    {/* Timeline */}
+                    <div className="space-y-4 pb-4">
+                        <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Timeline</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <DatePickerInput
+                                    label="Survey Date"
+                                    value={formatDate_dd_mm_yyyy(formData.SurveyDate)}
+                                    onChange={(val) => handleFieldChange('SurveyDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                />
+                            </div>
+                            <div>
+                                <DatePickerInput
+                                    label="Expected Start Date"
+                                    value={formatDate_dd_mm_yyyy(formData.ExpectedStartDate)}
+                                    onChange={(val) => handleFieldChange('ExpectedStartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                />
+                            </div>
+                            <div>
+                                <DatePickerInput
+                                    label="Execution Start Date"
+                                    value={formatDate_dd_mm_yyyy(formData.ExecutionStartDate)}
+                                    onChange={(val) => handleFieldChange('ExecutionStartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Contact Information */}
-                        <div className="space-y-4 pb-4">
-                            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Contact Information</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
-                                    <Input
-                                        label="Site Contact Name"
-                                        type="text"
-                                        value={formData.SiteContactName}
-                                        onChange={(e) => handleFieldChange('SiteContactName', e.target.value)}
-                                        placeholder="Enter contact name"
-                                    />
-                                </div>
-                                <div>
-                                    <Input
-                                        label="Site Contact Mobile Number"
-                                        error={errors.SiteContactMobileNumber}
-                                        type="text"
-                                        value={formData.SiteContactMobileNumber}
-                                        maxLength={10}
-                                        onChange={(e) => handleFieldChange('SiteContactMobileNumber', filterMobile(e.target.value))}
-                                        placeholder="Enter mobile number"
-                                    />
-                                </div>
-                                <div>
-                                    <SinglePageSelection
-                                        label="Project Status"
-                                        value={formData.ProjectStatus}
-                                        onChange={(val) => handleFieldChange('ProjectStatus', String(val))}
-                                        options={PROJECT_STATUS_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                    />
-                                </div>
+                    {/* Contact Information */}
+                    <div className="space-y-4 pb-4">
+                        <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Contact Information</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <Input
+                                    label="Site Contact Name"
+                                    type="text"
+                                    value={formData.SiteContactName}
+                                    onChange={(e) => handleFieldChange('SiteContactName', e.target.value)}
+                                    placeholder="Enter contact name"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Site Contact Mobile Number"
+                                    error={errors.SiteContactMobileNumber}
+                                    type="text"
+                                    value={formData.SiteContactMobileNumber}
+                                    maxLength={10}
+                                    onChange={(e) => handleFieldChange('SiteContactMobileNumber', filterMobile(e.target.value))}
+                                    placeholder="Enter mobile number"
+                                />
+                            </div>
+                            <div>
+                                <SinglePageSelection
+                                    label="Project Status"
+                                    value={formData.ProjectStatus}
+                                    onChange={(val) => handleFieldChange('ProjectStatus', String(val))}
+                                    options={PROJECT_STATUS_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                                />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Redevelopment Checkbox */}
-                        <div className="space-y-4 pb-4">
-                            <Checkbox
-                                label="Is this project a Redevelopment Project?"
-                                checked={formData.IsRedevelopment === 1}
-                                onChange={(e) => handleFieldChange('IsRedevelopment', e.target.checked ? 1 : 0)}
-                            />
-                        </div>
-                    </form>
-                </div>
-                <div
-                    className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-                    style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}
-                >
-                    <Button
-                        color="transparent"
-                        variant='transparent_border'
-                        size="sm"
-                        onClick={() => {
-                            navigate(-1);
-                        }}
-                        className="px-6"
-                    >
-                        Cancel
-                    </Button>
-                    
-                    {canAction ?
-                        <Button
-                            color="green"
-                            size="sm"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleSubmit();
-                            }}
-                            className="px-6"
-                            disabled={isLoading}
-                        >
-                            {formData.ProjectId ? "Update Project" : "Add Project"}
-                        </Button>
-                        : ""}
-                </div>
-
+                    {/* Redevelopment Checkbox */}
+                    <div className="space-y-4 pb-4">
+                        <Checkbox
+                            label="Is this project a Redevelopment Project?"
+                            checked={formData.IsRedevelopment === 1}
+                            onChange={(e) => handleFieldChange('IsRedevelopment', e.target.checked ? 1 : 0)}
+                        />
+                    </div>
+                </form>
             </div>
-        </>
+
+            <BottomActionBar
+                cancelText="Cancel"
+                saveText={formData.ProjectId ? "Update Project" : "Add Project"}
+                onCancel={() => navigate(-1)}
+                onSave={() => {
+                    handleSubmit();
+                }}
+                canAction={canAction} 
+                isLoading={isLoading}
+            />
+        </div>
     );
 };
 

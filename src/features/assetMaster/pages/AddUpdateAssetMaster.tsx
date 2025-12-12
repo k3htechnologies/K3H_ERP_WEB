@@ -5,7 +5,6 @@ import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
 import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
-import ToastContainer from "@/ui/components/Toast/ToastContainer";
 import { useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateAssetMasterRequest, FilterWithPaginationAssetMasterRequest } from "../models/AssetMasterModel";
@@ -45,7 +44,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
   const isAddMode = assetId === 0;
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   // ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -271,20 +270,19 @@ export const AddUpdateAssetMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
         {/* Loader */}
 
-        <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-        <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
 
-          <form onSubmit={handleAddUpdateAssetMaster}>
+        <form onSubmit={handleAddUpdateAssetMaster}>
 
-            {/* Basic Asset Details */}
+          {/* Basic Asset Details */}
 
             <div className="space-y-4 pb-3">
               <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Asset Details</h3>

@@ -25,9 +25,9 @@ export const MASTER_DATA = {
 
     genders: ['Male', 'Female', 'Other'],
 
-    months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
 
-    deductionType:['Provident Fund','Professional Tax',"Tax Deduction at Source",'Labor Welfare Fund','ESI','Labour WaleFare Fund','National Pension Scheme','Health Insurance Premiums'],
+    deductionType: ['Provident Fund', 'Professional Tax', "Tax Deduction at Source", 'Labor Welfare Fund', 'ESI', 'Labour WaleFare Fund', 'National Pension Scheme', 'Health Insurance Premiums'],
      
     days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
 
@@ -35,18 +35,30 @@ export const MASTER_DATA = {
 
     bloodGroups: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
 
-    companyType: ['LLP','Private Limited Company','Proprietorship'],
-    
+    companyType: ['LLP', 'Private Limited Company', 'Proprietorship'],
+
     projectStatus: ['On-Going', 'Completed', 'On-Hold', 'Cancelled', 'Planning'],
-    
+
     businessCategory: ['Real Estate', 'Construction', 'Infrastructure', 'Residential', 'Commercial', 'Mixed Use'],
 
     documentStatus: [
-        'Applied','Doc Misssing', 'In Process', 'Issued','Not Applied','Not Applicable',
-        'Paid','Payment Due', 'Rejected',
+        'Applied', 'Doc Misssing', 'In Process', 'Issued', 'Not Applied', 'Not Applicable',
+        'Paid', 'Payment Due', 'Rejected',
     ],
 
-    bankAccountType: ['Current','DEMAT','Fixed','Salary','Saving'],
+    bankAccountType: ['Current', 'DEMAT', 'Fixed', 'Salary', 'Saving'],
+
+    landOwnershipType: ['Government', 'Landlord', 'Society'],
+
+    flat_unit_Type: ['Commercial', 'Gym', 'Residential', 'Void'],
+
+    residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', 'Duplex'],
+
+    commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
+
+    flat_unit_facing: ['EAST','FRONT','GARDEN','NORTH','PARK','ROAD','SOUTH','WEST'],
+
+    applicant_type: ['Applicant','Co - Applicant'],
 
 } as const
 
@@ -87,3 +99,9 @@ export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory)
 export const COMPANY_TYPE = toOptions(MASTER_DATA.companyType)
 export const PROJECT_DOCUMENT_STATUS = toOptions(MASTER_DATA.documentStatus)
 export const BANK_ACCOUNT_TYPE = toOptions(MASTER_DATA.bankAccountType)
+export const LAND_OWNERSHIP_TYPE = toOptions(MASTER_DATA.landOwnershipType)
+export const FLAT_UNIT_TYPE = toOptions(MASTER_DATA.flat_unit_Type)
+export const RESIDENTIAL_FLAT_CONFIGURATION = toOptions(MASTER_DATA.residential_flat_configuration_Type)
+export const COMMERCIAL_FLAT_CONFIGURATION = toOptions(MASTER_DATA.commercial_flat_configuration_Type)
+export const FLAT_UNIT_FACING = toOptions(MASTER_DATA.flat_unit_facing)
+export const APPLICANT_TYPE = toOptions(MASTER_DATA.applicant_type)

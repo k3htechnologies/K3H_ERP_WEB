@@ -182,6 +182,29 @@ export const LocalStorageHelper = {
         return null;
     },
     //#endregion
+    //#region STORE TENANT COLUMNS
+    storeTenantTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.TENANT_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Tenant Columns Details:', error);
+        }
+    },
+    //#endregion
+    //#region GET TENANT COLUMNS
+    getTenantTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TENANT_SELECTED_COLUMNS);
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.TENANT_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Tenant Columns Details:', error);
+                return null;
+            }
+        }
+        return null;
+    },
+    //#endregion
     //#region STORE BRANCH MASTER COLUMNS
     storeBranchMasterTableColumns: (columns: string): void => {
         try {

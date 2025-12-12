@@ -1,7 +1,6 @@
 import useToast from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader'
 import { Button } from '@/ui/components/forms/Button';
-import ToastContainer from '@/ui/components/Toast/ToastContainer'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import type { AddUpdateCompanyMasterRequest, AddUpdateCompanyPartnerRequest, CompanyPartnerData, FilterWithPaginationCompanyMasterRequest } from '@/features/companyMaster/models/CompanyMasterModel';
@@ -15,7 +14,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { Edit, Mail, Phone } from 'lucide-react';
-import { filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterRERA, isValidAadhaar, isValidCIN, isValidEmail, isValidMobile, isValidPAN, isValidRERA } from '@/core/utils/fileValidation';
+import { filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterRERA, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidRERA } from '@/core/utils/fileValidation';
 import { runApiWithLoader } from '@/core/utils';
 import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import * as E from 'fp-ts/Either';
@@ -109,7 +108,7 @@ const AddCompany: React.FC = () => {
   //GET VALUE FROM URL :COMPANYID
   const { companyId } = useParams<{ companyId?: string }>();
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const { addToast } = useToast()
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -358,6 +357,9 @@ const AddCompany: React.FC = () => {
     // GST Number
     if (!formData.GSTNumber?.trim()) {
       newErrors.GSTNumber = "GST Number is required.";
+    }
+    else if (!isValidGST(formData.GSTNumber?.trim())) {
+      newErrors.PanNumber = "Enter a valid GST Number.";
     }
     // (You can add a GST regex if you want stricter)
 
@@ -878,8 +880,7 @@ const AddCompany: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
@@ -1624,7 +1625,6 @@ const AddCompany: React.FC = () => {
         </Modal>
 
       </div >
-    </>
   )
 }
 

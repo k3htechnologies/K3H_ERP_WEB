@@ -16,7 +16,7 @@ const ViewDeductionMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [, setIsLoadingMessage] = useState('');
 
 
     //DELETE DEDUCTION MASTER

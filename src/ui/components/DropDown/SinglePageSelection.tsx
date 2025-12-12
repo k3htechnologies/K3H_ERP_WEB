@@ -115,8 +115,8 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
             style={{
               display: "block",
               marginBottom: "4px",
-              fontWeight: 500,
-              fontSize: theme.fontSize.md,
+              fontSize: theme.fontSize.sm,
+              fontWeight: theme.fontWeight.medium,
               color: theme.colors.text,
             }}
           >
@@ -241,7 +241,7 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
           </div>
         )}
         {/* Error message */}
-        {(error ) && (
+        {(error) && (
           <div
             style={{
               marginTop: theme.spacing.sm,
@@ -256,11 +256,11 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
               style={{
                 fontSize: theme.fontSize.xs,
                 color: error ? theme.colors.error : theme.colors.textSecondary,
-                height:14
+                height: 14
               }}
             />
 
-            {error }
+            {error}
           </div>
         )}
       </div>

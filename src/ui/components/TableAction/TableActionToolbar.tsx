@@ -383,6 +383,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                 defineWidth
                 title={addTitle}
                 aria-label={addTitle}
+                style={{ width: '95px' }}
                 leftIcon={ <Plus className="h-4 w-4" />}
               >
                 <span>{addTitle}</span>

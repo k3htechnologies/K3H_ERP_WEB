@@ -763,20 +763,30 @@ const AddUpdateTenant: React.FC = () => {
   } => {
     const newErrorsTenantApplicant: { [key: string]: string } = {}
 
+    const countPrimaryApplicants = () =>
+      applicantList.filter(a =>
+        String(a.ApplicantType ?? '').toUpperCase() === 'APPLICANT'
+      ).length
+
+
     if (!formDataForApplicant.ApplicantType?.trim()) {
-      newErrorsTenantApplicant.ApplicantType = 'Applicant Type is required.'
+      newErrorsTenantApplicant.ApplicantType = 'Applicant Type is required'
     }
 
     if (!formDataForApplicant.ApplicantName?.trim()) {
-      newErrorsTenantApplicant.ApplicantName = 'Applicant Name is required.'
+      newErrorsTenantApplicant.ApplicantName = 'Applicant Name is required'
     }
 
     if (!formDataForApplicant.ApplicantMobileNumber?.trim()) {
-      newErrorsTenantApplicant.ApplicantMobileNumber = 'Mobile Number is required.'
+      newErrorsTenantApplicant.ApplicantMobileNumber = 'Mobile Number is required'
     }
 
     if (!applicantPhotoFiles.length) {
-      newErrorsTenantApplicant.PhotoURL = "Applicant Photo is required.";
+      newErrorsTenantApplicant.PhotoURL = "Applicant Photo is required";
+    }
+
+    if (countPrimaryApplicants() > 0) {
+      newErrorsTenantApplicant.ApplicantType = 'Only one primary applicant is allowed'
     }
 
 
@@ -1028,24 +1038,12 @@ const AddUpdateTenant: React.FC = () => {
       addFilesWithExisting(fd, prefix, realApp._gstFiles, 'GSTNumberURL'); // check backend expects this key
       addFilesWithExisting(fd, prefix, realApp._chequeFiles, 'ChequeURL');
     });
-
-    // debug: list all formData parts (open console to inspect)
-    // remove or comment this block in production
-    for (const pair of fd.entries()) {
-      const [k, v] = pair as [string, any];
-      if (v instanceof File) {
-        console.log('FD file ->', k, (v as File).name, (v as File).size);
-      } else {
-        console.log('FD value ->', k, v);
-      }
-    }
-
     return fd;
   };
 
   //#endregion
 
- return (
+  return (
 
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
@@ -1383,7 +1381,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.PanCardURL}
                 value={panCardFiles}
                 onChange={setPanCardFiles}
-                availableFilesURL={editingApplicantData?._panFiles }
+                availableFilesURL={editingApplicantData?._panFiles}
                 allowedTypes={[
                   'image/jpeg',
                   'image/png',

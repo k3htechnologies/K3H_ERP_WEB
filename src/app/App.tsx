@@ -55,6 +55,7 @@ import ProjectRERADocumentCategoryMaster from '@/features/projectRERADocumentCat
 import ProjectRERADocument from '@/features/projectRERADocument/pages/ProjectRERADocument';
 import ViewCompantMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
 import Inventory from '@/features/inventory/pages/Inventory';
+import InventorySpecification from '@/features/inventory/pages/InventorySpecification';
 import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor';
 import { OutDoor } from '@/features/outdoor/pages/OutDoor';
 
@@ -177,6 +178,7 @@ function App() {
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
             <Route path="materialMaster" element={<MaterialMaster />} />
             <Route path="inventory" element={<Inventory></Inventory>} />
+            <Route path="inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="subMaterialMaster" element={<SubMaterialMaster />} />
             <Route path="uomMaster" element={<UomMaster />} />
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />

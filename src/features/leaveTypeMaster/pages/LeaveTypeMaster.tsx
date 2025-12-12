@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   LeaveTypeMasterData,
@@ -54,7 +53,7 @@ export const LeaveTypeMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const {addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -62,7 +61,7 @@ export const LeaveTypeMaster: React.FC = () => {
     searchLeaveTypes(value)
   }, 350)
 
-  //VIEW BRANCH MASTER MODAL STATES
+  //VIEW LEAVE TYPE MASTER MODAL STATES
   const [viewLeaveTypeMasterDetailsData, setViewLeaveTypeMasterDetailsData] = useState<LeaveTypeMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
@@ -79,7 +78,7 @@ export const LeaveTypeMaster: React.FC = () => {
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  //ADD UPDATE DEPARTMENT MASTER
+  //ADD UPDATE LEAVE TYPE MASTER
   const [formData, setFormData] = useState<AddUpdateLeaveTypeMasterRequest>(() => initialFormState());
 
 
@@ -196,7 +195,7 @@ export const LeaveTypeMaster: React.FC = () => {
   }
   //#endregion
 
-  //#region SERACH DEPARTMENT 
+  //#region SERACH LEAVE TYPE 
   const searchLeaveTypes = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -266,7 +265,7 @@ export const LeaveTypeMaster: React.FC = () => {
 
   //#endregion
 
-  //#region API | SERVICES CALL TO GET BRANCH
+  //#region API | SERVICES CALL TO GET LEAVE TYPE
   const getLeaveTypes = async (filterParams: FilterWithPaginationLeaveTypeMasterRequest) => {
 
     return await LeaveTypeMasterService.apiCallPullLeaveTypeMaster(filterParams);
@@ -584,7 +583,7 @@ export const LeaveTypeMaster: React.FC = () => {
 
 
 
-  //#region ADD UPDATE EDIT DEPARTMENT MASTER
+  //#region ADD UPDATE EDIT LEAVE TYPE MASTER
 
   const handleFieldChange = (field: keyof AddUpdateLeaveTypeMasterRequest, value: any) => {
 
@@ -727,7 +726,7 @@ export const LeaveTypeMaster: React.FC = () => {
 
   //#endregion
 
-  //#region DELETE Leave Type MASTER
+  //#region DELETE LEAVE TYPE MASTER
   const handleDeleteLeaveTypeMaster = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
@@ -780,8 +779,6 @@ export const LeaveTypeMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
@@ -823,7 +820,7 @@ export const LeaveTypeMaster: React.FC = () => {
         />
 
 
-        {/* DATA TABLE BRANCH */}
+        {/* DATA TABLE LEAVE TYPE */}
         <DataTable
           data={leaveTypeListForTable}
           columns={visibleLeaveTypeMasterColumns}
@@ -836,7 +833,7 @@ export const LeaveTypeMaster: React.FC = () => {
           onSort={handleSortColumn}
         />
 
-        {/* VIEW BRANCH MODAL */}
+        {/* VIEW LEAVE TYPE MODAL */}
         <ViewLeaveTypeDetailsModal isOpen={isViewModalOpen}
           onClose={() => {
             setIsViewModalOpen(false)
@@ -845,7 +842,7 @@ export const LeaveTypeMaster: React.FC = () => {
           data={viewLeaveTypeMasterDetailsData}
         />
 
-        {/*  ADD EDIT UPDATE LeaveType MODAL */}
+        {/*  ADD EDIT UPDATE LEAVE TYPE MODAL */}
         <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
@@ -972,7 +969,7 @@ export const LeaveTypeMaster: React.FC = () => {
             </div>
           </div>
         </Modal>
-        {/* DELETE CONFIRMATION LeaveType MODAL */}
+        {/* DELETE CONFIRMATION LEAVE TYPE MODAL */}
         <ConfirmationDialogBox
           isOpen={isConfirmationDialogBoxOpen}
           onClose={() => {
@@ -987,8 +984,7 @@ export const LeaveTypeMaster: React.FC = () => {
           loading={isLoading}
           variant="danger"
         />
-      </div >
-    </>
+      </div>
   )
 }
 

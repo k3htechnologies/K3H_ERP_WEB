@@ -10,7 +10,6 @@ import { useToast } from "@/core/hooks/useToast";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
-import ToastContainer from "@/ui/components/Toast/ToastContainer";
 import {
   BLOOD_GROUP_OPTIONS,
   EMERGENCY_RELATION_OPTIONS,
@@ -31,6 +30,8 @@ import { fetchBranchMasterDropdown } from "@/features/branchMaster/branchMasterD
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import type { AddUpdateEmployeeMasterRequest, FilterWithPaginationEmployeeMasterRequest } from "@/features/employeeMaster/models/EmployeeMasterModel";
+import BottomActionBar from "@/ui/components/forms/BottomActionBar";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 
 const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
@@ -84,7 +85,7 @@ const AddUpdateEmployeePage: React.FC = () => {
   const { employeeId } = useParams<{ employeeId?: string }>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -102,6 +103,10 @@ const AddUpdateEmployeePage: React.FC = () => {
     bankName?: string;
   }>({});
 
+  //#endregion
+
+  //#region MENU PERMISSIONS
+  const { canAction } = useMenuPermissions('/employeeMaster');
   //#endregion
 
   //#region COUNTRY STATE CITY DISTRICT 
@@ -165,10 +170,10 @@ const AddUpdateEmployeePage: React.FC = () => {
       fetchEmployeeMasterDetails();
       return;
     }
-    
+
     setSelectedCountryId(1);
     handleFieldChange('CountryMasterId', 1);
-    
+
   }, [employeeId]);
 
 
@@ -543,384 +548,369 @@ const AddUpdateEmployeePage: React.FC = () => {
 
   //#endregion
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
 
-        <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
-          <form onSubmit={handleSubmit}>
-            {/* ============================================================= [BASIC EMPLOYEE DETAILS] ============================================================================================= */}
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Employee Details</h3>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div>
-                  <Input
-                    label="First Name"
-                    value={formData.FirstName}
-                    required
-                    onChange={e => handleFieldChange('FirstName', filterLetters(e.target.value))}
-                    error={errors.FirstName} />
-                </div>
-                <div>
-                  <Input
-                    value={formData.MiddleName}
-                    label="Middle Name "
-                    required
-                    onChange={e => handleFieldChange('MiddleName', filterLetters(e.target.value))}
-                    error={errors.MiddleName} />
-                </div>
-                <div>
-                  <Input
-                    value={formData.LastName}
-                    label="Last Name"
-                    required
-                    onChange={e => handleFieldChange('LastName', filterLetters(e.target.value))}
-                    error={errors.LastName} />
-                </div>
-                <div>
-                  <SinglePageSelection
-                    label="Gender"
-                    required
-                    value={formData.Gender}
-                    onChange={(e) => handleFieldChange('Gender', String(e))}
-                    options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                    error={errors.Gender}
-                  />
-                </div>
-                <div>
-                  <SinglePageSelection
-                    label="Marital Status"
-                    value={formData.MaritalStatus}
-                    onChange={(val) => handleFieldChange("MaritalStatus", String(val))}
-                    options={MARITAL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} required
-                    error={errors.MaritalStatus}
-                  />
-                </div>
-                <div>
-                  <SinglePageSelection
-                    value={formData.BloodGroup}
-                    label="Blood Group"
-                    onChange={(val) => handleFieldChange("BloodGroup", String(val))} required
-                    options={BLOOD_GROUP_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                    error={errors.BloodGroup}
-                  />
-                </div>
-                <div>
-                  <DatePickerInput
-                    label="DOB"
-                    value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
-                    onChange={(val) => handleFieldChange('DateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required
-                    error={errors.DateOfBirth}
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-                  />
 
-                </div>
-                <div>
-                  <Input label="Email Id"
-                    value={formData.EmailId}
-                    required
-                    onChange={(e) => handleFieldChange("EmailId", filterEmail(e.target.value))}
-                    error={errors.EmailId} />
-                </div>
-                <div>
-                  <Input
-                    label="Office Email Id"
-                    value={formData.OfficeEmailId}
-                    onChange={(e) => handleFieldChange("OfficeEmailId", filterEmail(e.target.value))}
-                    error={errors.OfficeEmailId}
-                  />
-                </div>
+      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+        <form onSubmit={handleSubmit}>
+          {/* ============================================================= [BASIC EMPLOYEE DETAILS] ============================================================================================= */}
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-400 pb-2">Basic Employee Details</h3>
 
-                <div>
-                  <Input
-                    leftIcon="+91"
-                    label="Personal Mobile Number"
-                    required
-                    value={formData.PersonalMobileNumber}
-                    onChange={(e) => handleFieldChange("PersonalMobileNumber", filterMobile(e.target.value))}
-                    error={errors.PersonalMobileNumber} />
-                </div>
-                <div>
-                  <Input
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <Input
+                  label="First Name"
+                  value={formData.FirstName}
+                  required
+                  onChange={e => handleFieldChange('FirstName', filterLetters(e.target.value))}
+                  error={errors.FirstName} />
+              </div>
+              <div>
+                <Input
+                  value={formData.MiddleName}
+                  label="Middle Name "
+                  required
+                  onChange={e => handleFieldChange('MiddleName', filterLetters(e.target.value))}
+                  error={errors.MiddleName} />
+              </div>
+              <div>
+                <Input
+                  value={formData.LastName}
+                  label="Last Name"
+                  required
+                  onChange={e => handleFieldChange('LastName', filterLetters(e.target.value))}
+                  error={errors.LastName} />
+              </div>
+              <div>
+                <SinglePageSelection
+                  label="Gender"
+                  required
+                  value={formData.Gender}
+                  onChange={(e) => handleFieldChange('Gender', String(e))}
+                  options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                  error={errors.Gender}
+                />
+              </div>
+              <div>
+                <SinglePageSelection
+                  label="Marital Status"
+                  value={formData.MaritalStatus}
+                  onChange={(val) => handleFieldChange("MaritalStatus", String(val))}
+                  options={MARITAL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} required
+                  error={errors.MaritalStatus}
+                />
+              </div>
+              <div>
+                <SinglePageSelection
+                  value={formData.BloodGroup}
+                  label="Blood Group"
+                  onChange={(val) => handleFieldChange("BloodGroup", String(val))} required
+                  options={BLOOD_GROUP_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                  error={errors.BloodGroup}
+                />
+              </div>
+              <div>
+                <DatePickerInput
+                  label="DOB"
+                  value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
+                  onChange={(val) => handleFieldChange('DateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required
+                  error={errors.DateOfBirth}
 
-                    value={formData.OfficeMobileNumber}
-                    leftIcon="+91"
-                    label="Office Mobile Number"
-                    onChange={(e) => handleFieldChange("OfficeMobileNumber", filterMobile(e.target.value))}
-                    error={errors.OfficeMobileNumber}
-                  />
-                </div>
-                <div>
-                  <SinglePageSelection
-                    label="Employee Type"
-                    value={formData.EmployeeType} required
-                    onChange={(val) => handleFieldChange("EmployeeType", String(val))}
-                    options={EMPLOYEE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                    error={errors.EmployeeType}
-                  />
-                </div>
-                <div>
-                  <SinglePageSelection
-                    label="Relation to Emergency Contact"
-                    value={formData.EmergencyContactPersonRelationship} required
-                    onChange={(val) => handleFieldChange("EmergencyContactPersonRelationship", String(val))}
-                    options={EMERGENCY_RELATION_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                    error={errors.EmergencyContactPersonRelationship}
-                  />
-                </div>
-                <div>
-                  <Input
-                    label="Emergency Contact Number"
-                    leftIcon="+91"
-                    value={formData.EmergencyMobileNumber}
-                    required
-                    onChange={(e) => handleFieldChange("EmergencyMobileNumber", filterMobile(e.target.value))}
-                    error={errors.EmergencyMobileNumber} />
-                </div>
+                />
+
+              </div>
+              <div>
+                <Input label="Email Id"
+                  value={formData.EmailId}
+                  required
+                  onChange={(e) => handleFieldChange("EmailId", filterEmail(e.target.value))}
+                  error={errors.EmailId} />
+              </div>
+              <div>
+                <Input
+                  label="Office Email Id"
+                  value={formData.OfficeEmailId}
+                  onChange={(e) => handleFieldChange("OfficeEmailId", filterEmail(e.target.value))}
+                  error={errors.OfficeEmailId}
+                />
+              </div>
+
+              <div>
+                <Input
+                  leftIcon="+91"
+                  label="Personal Mobile Number"
+                  required
+                  value={formData.PersonalMobileNumber}
+                  onChange={(e) => handleFieldChange("PersonalMobileNumber", filterMobile(e.target.value))}
+                  error={errors.PersonalMobileNumber} />
+              </div>
+              <div>
+                <Input
+
+                  value={formData.OfficeMobileNumber}
+                  leftIcon="+91"
+                  label="Office Mobile Number"
+                  onChange={(e) => handleFieldChange("OfficeMobileNumber", filterMobile(e.target.value))}
+                  error={errors.OfficeMobileNumber}
+                />
+              </div>
+              <div>
+                <SinglePageSelection
+                  label="Employee Type"
+                  value={formData.EmployeeType} required
+                  onChange={(val) => handleFieldChange("EmployeeType", String(val))}
+                  options={EMPLOYEE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                  error={errors.EmployeeType}
+                />
+              </div>
+              <div>
+                <SinglePageSelection
+                  label="Relation to Emergency Contact"
+                  value={formData.EmergencyContactPersonRelationship} required
+                  onChange={(val) => handleFieldChange("EmergencyContactPersonRelationship", String(val))}
+                  options={EMERGENCY_RELATION_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                  error={errors.EmergencyContactPersonRelationship}
+                />
+              </div>
+              <div>
+                <Input
+                  label="Emergency Contact Number"
+                  leftIcon="+91"
+                  value={formData.EmergencyMobileNumber}
+                  required
+                  onChange={(e) => handleFieldChange("EmergencyMobileNumber", filterMobile(e.target.value))}
+                  error={errors.EmergencyMobileNumber} />
               </div>
             </div>
-            {/* ============================================================= [EMPLOYEE INFO SHEET] ============================================================================================= */}
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Employee Info Sheet</h3>
+          </div>
+          {/* ============================================================= [EMPLOYEE INFO SHEET] ============================================================================================= */}
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-400 pb-2">Employee Info Sheet</h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div>
-                  <SingleSelectDropdownWithPagination
-                    label="Company"
-                    title="Select Company"
-                    size="lg"
-                    dataFetchCallBack={fetchCompanyMasterDropdown}
-                    onSelected={(item) => handleFieldChange("CompanyId", Number(item.value))}
-                    initialValue={createDropdownInitialValue(formData.CompanyId, dropdownLabels.companyName)}
-                    error={errors.CompanyId}
-                  />
-                </div>
-                <div>
-                  <SingleSelectDropdownWithPagination
-                    label="Department"
-                    title="Select Department"
-                    size="lg"
-                    dataFetchCallBack={fetchDepartmentMasterDropdown}
-                    onSelected={(item) => handleFieldChange("DepartmentMasterId", Number(item.value))}
-                    initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
-                    error={errors.DepartmentMasterId}
-                  />
-                </div>
-                <div>
-                  <SingleSelectDropdownWithPagination
-                    label="Branch"
-                    title="Select Branch"
-                    size="lg"
-                    dataFetchCallBack={fetchBranchMasterDropdown}
-                    onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
-                    initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
-                    error={errors.BranchMasterId}
-                  />
-                </div>
-                <div>
-                  <SingleSelectDropdownWithPagination
-                    label="Designation"
-                    title="Select Designation"
-                    size="lg"
-                    dataFetchCallBack={fetchDesignationMasterDropdown}
-                    onSelected={(item) => handleFieldChange("DesignationMasterId", Number(item.value))}
-                    initialValue={createDropdownInitialValue(formData.DesignationMasterId, dropdownLabels.designationName)}
-                    error={errors.DesignationMasterId}
-                  />
-                </div>
-                <div>
-                  <DatePickerInput
-                    label="Joining Date"
-                    value={formatDate_dd_mm_yyyy(formData.JoiningDate)}
-                    onChange={(val) => handleFieldChange('JoiningDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                    required
-                    error={errors.JoiningDate}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Company"
+                  title="Select Company"
+                  size="lg"
+                  dataFetchCallBack={fetchCompanyMasterDropdown}
+                  onSelected={(item) => handleFieldChange("CompanyId", Number(item.value))}
+                  initialValue={createDropdownInitialValue(formData.CompanyId, dropdownLabels.companyName)}
+                  error={errors.CompanyId}
+                />
+              </div>
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Department"
+                  title="Select Department"
+                  size="lg"
+                  dataFetchCallBack={fetchDepartmentMasterDropdown}
+                  onSelected={(item) => handleFieldChange("DepartmentMasterId", Number(item.value))}
+                  initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
+                  error={errors.DepartmentMasterId}
+                />
+              </div>
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Branch"
+                  title="Select Branch"
+                  size="lg"
+                  dataFetchCallBack={fetchBranchMasterDropdown}
+                  onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
+                  initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
+                  error={errors.BranchMasterId}
+                />
+              </div>
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Designation"
+                  title="Select Designation"
+                  size="lg"
+                  dataFetchCallBack={fetchDesignationMasterDropdown}
+                  onSelected={(item) => handleFieldChange("DesignationMasterId", Number(item.value))}
+                  initialValue={createDropdownInitialValue(formData.DesignationMasterId, dropdownLabels.designationName)}
+                  error={errors.DesignationMasterId}
+                />
+              </div>
+              <div>
+                <DatePickerInput
+                  label="Joining Date"
+                  value={formatDate_dd_mm_yyyy(formData.JoiningDate)}
+                  onChange={(val) => handleFieldChange('JoiningDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={errors.JoiningDate}
 
-                  />
+                />
 
-                </div>
-                <div>
-                  <SingleSelectDropdownWithPagination
-                    label="Reporting Person"
-                    title="Select Reporting Person"
-                    size="lg"
-                    dataFetchCallBack={fetchEmployeeMasterDropdown}
-                    onSelected={(item) => handleFieldChange("ReportPersonId", Number(item.value))}
-                    initialValue={createDropdownInitialValue(formData.ReportPersonId, dropdownLabels.reportPersonName)}
-                    error={errors.ReportPersonId}
-                  />
-                </div>
+              </div>
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Reporting Person"
+                  title="Select Reporting Person"
+                  size="lg"
+                  dataFetchCallBack={fetchEmployeeMasterDropdown}
+                  onSelected={(item) => handleFieldChange("ReportPersonId", Number(item.value))}
+                  initialValue={createDropdownInitialValue(formData.ReportPersonId, dropdownLabels.reportPersonName)}
+                  error={errors.ReportPersonId}
+                />
               </div>
             </div>
-            {/* ============================================================= [ADDRESS] ============================================================================================= */}
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Address</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <TextArea
-                    label="Communication Address"
-                    required
-                    className='thin-scroll'
-                    value={formData.CommunicationAddress}
-                    onChange={(e) => handleFieldChange("CommunicationAddress", e.target.value)}
-                    error={errors.CommunicationAddress} />
-                </div>
-                <div>
-                  <TextArea
-                    label="Permanent Address"
-                    required
-                    className='thin-scroll'
-                    value={formData.PermanentAddress}
-                    onChange={(e) => handleFieldChange("PermanentAddress", e.target.value)}
-                    error={errors.PermanentAddress} />
-                </div>
+          </div>
+          {/* ============================================================= [ADDRESS] ============================================================================================= */}
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-400 pb-2">Address</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <TextArea
+                  label="Communication Address"
+                  required
+                  className='thin-scroll'
+                  value={formData.CommunicationAddress}
+                  onChange={(e) => handleFieldChange("CommunicationAddress", e.target.value)}
+                  error={errors.CommunicationAddress} />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div>
-                  <SinglePageSelection
-                    label="Country"
-                    value={selectedCountryId || ''} required
-                    onChange={val => {
-                      const id = Number(val)
-                      setSelectedCountryId(id)
-                      setSelectedStateId(null)
-                      setSelectedDistrictId(null)
-                      setSelectedCityId(null)
-
-                      handleFieldChange('CountryMasterId', id)
-                    }}
-                    disabled={isLocationLoading}
-                    options={countryOptions}
-                    error={errors.CountryMasterId}
-                  />
-                </div>
-                <div>
-
-                  <SinglePageSelection
-                    label="State"
-                    value={selectedStateId ?? ''} required
-                    onChange={val => {
-                      const id = Number(val)
-                      setSelectedStateId(id)
-                      setSelectedDistrictId(null)
-                      setSelectedCityId(null)
-
-                      handleFieldChange('StateMasterId', id)
-                    }}
-                    disabled={!selectedCountryId || stateOptions.length === 0}
-                    options={stateOptions}
-                    error={errors.StateMasterId}
-                  />
-                </div>
-                <div>
-                  <SinglePageSelection
-                    label="District"
-                    value={selectedDistrictId ?? ''} required
-                    onChange={val => {
-                      const id = Number(val)
-                      setSelectedDistrictId(id)
-                      setSelectedCityId(null)
-
-                      handleFieldChange('DistrictMasterId', id)
-                    }}
-                    disabled={!selectedStateId || districtOptions.length === 0}
-                    options={districtOptions}
-                    error={errors.DistrictMasterId}
-                  />
-                </div>
-                <div>
-                  <SinglePageSelection
-                    label="City"
-                    value={selectedCityId ?? ''} required
-                    onChange={val => {
-                      const id = Number(val)
-                      setSelectedCityId(id)
-                      handleFieldChange('CityMasterId', id)
-                    }}
-                    disabled={!selectedDistrictId || cityOptions.length === 0}
-                    options={cityOptions}
-                    error={errors.CityMasterId}
-                  />
-                </div>
-
+              <div>
+                <TextArea
+                  label="Permanent Address"
+                  required
+                  className='thin-scroll'
+                  value={formData.PermanentAddress}
+                  onChange={(e) => handleFieldChange("PermanentAddress", e.target.value)}
+                  error={errors.PermanentAddress} />
               </div>
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <SinglePageSelection
+                  label="Country"
+                  value={selectedCountryId || ''} required
+                  onChange={val => {
+                    const id = Number(val)
+                    setSelectedCountryId(id)
+                    setSelectedStateId(null)
+                    setSelectedDistrictId(null)
+                    setSelectedCityId(null)
 
-            {/* ============================================================= [BANK DETAILS] ============================================================================================= */}
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Bank Details</h3>
+                    handleFieldChange('CountryMasterId', id)
+                  }}
+                  disabled={isLocationLoading}
+                  options={countryOptions}
+                  error={errors.CountryMasterId}
+                />
+              </div>
+              <div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div>
-                  <SingleSelectDropdownWithPagination
-                    label="Bank"
-                    required
-                    title="Select Bank"
-                    size="lg"
-                    dataFetchCallBack={fetchBankListMasterDropdown}
-                    onSelected={(item) => { handleFieldChange("BankListMasterId", Number(item?.value || 0)); }}
-                    initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
-                    error={errors.BankListMasterId}
-                  />
-                </div>
-                <div>
-                  <Input label="Bank Branch Name"
-                    required value={formData.BankBranchName}
-                    onChange={(e) => handleFieldChange("BankBranchName", filterLetters(e.target.value))}
-                    error={errors.BankBranchName} />
-                </div>
-                <div>
-                  <Input
-                    label="Account Number"
-                    required value={formData.AccountNo}
-                    onChange={(e) => handleFieldChange("AccountNo", filterNumbers(e.target.value))}
-                    error={errors.AccountNo} />
-                </div>
-                <div>
-                  <Input label="IFSC Code"
-                    required
-                    value={formData.IFSCCode}
-                    onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
-                    error={errors.IFSCCode} />
-                </div>
+                <SinglePageSelection
+                  label="State"
+                  value={selectedStateId ?? ''} required
+                  onChange={val => {
+                    const id = Number(val)
+                    setSelectedStateId(id)
+                    setSelectedDistrictId(null)
+                    setSelectedCityId(null)
+
+                    handleFieldChange('StateMasterId', id)
+                  }}
+                  disabled={!selectedCountryId || stateOptions.length === 0}
+                  options={stateOptions}
+                  error={errors.StateMasterId}
+                />
+              </div>
+              <div>
+                <SinglePageSelection
+                  label="District"
+                  value={selectedDistrictId ?? ''} required
+                  onChange={val => {
+                    const id = Number(val)
+                    setSelectedDistrictId(id)
+                    setSelectedCityId(null)
+
+                    handleFieldChange('DistrictMasterId', id)
+                  }}
+                  disabled={!selectedStateId || districtOptions.length === 0}
+                  options={districtOptions}
+                  error={errors.DistrictMasterId}
+                />
+              </div>
+              <div>
+                <SinglePageSelection
+                  label="City"
+                  value={selectedCityId ?? ''} required
+                  onChange={val => {
+                    const id = Number(val)
+                    setSelectedCityId(id)
+                    handleFieldChange('CityMasterId', id)
+                  }}
+                  disabled={!selectedDistrictId || cityOptions.length === 0}
+                  options={cityOptions}
+                  error={errors.CityMasterId}
+                />
+              </div>
+
+            </div>
+          </div>
+
+          {/* ============================================================= [BANK DETAILS] ============================================================================================= */}
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-400 pb-2">Bank Details</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Bank"
+                  required
+                  title="Select Bank"
+                  size="lg"
+                  dataFetchCallBack={fetchBankListMasterDropdown}
+                  onSelected={(item) => { handleFieldChange("BankListMasterId", Number(item?.value || 0)); }}
+                  initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
+                  error={errors.BankListMasterId}
+                />
+              </div>
+              <div>
+                <Input label="Bank Branch Name"
+                  required value={formData.BankBranchName}
+                  onChange={(e) => handleFieldChange("BankBranchName", filterLetters(e.target.value))}
+                  error={errors.BankBranchName} />
+              </div>
+              <div>
+                <Input
+                  label="Account Number"
+                  required value={formData.AccountNo}
+                  maxLength={18}
+                  onChange={(e) => handleFieldChange("AccountNo", filterNumbers(e.target.value))}
+                  error={errors.AccountNo} />
+              </div>
+              <div>
+                <Input label="IFSC Code"
+                  required
+                  value={formData.IFSCCode}
+                  onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
+                  error={errors.IFSCCode} />
               </div>
             </div>
-          </form>
-        </div>
-         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-                    style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
-          <Button
-            color="transparent"
-            variant='transparent_border'
-            size="sm"
-            onClick={() => {
-              navigate(-1);
-            }}
-            className="px-6"
-          >
-            Cancel
-          </Button>
-          <Button
-            color="green"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-            className="px-6"
-            disabled={isLoading}
-          >
-            {formData.EmployeeId ? "Update Employee" : "Add Employee"}
-          </Button>
-        </div>
-
+          </div>
+        </form>
       </div>
-    </>
+
+      <BottomActionBar
+        cancelText="Cancel"
+        saveText={formData.EmployeeId ? "Update Employee" : "Add Employee"}
+        onCancel={() => navigate(-1)}
+        canAction={canAction}
+        onSave={() => {
+          handleSubmit();
+        }}
+        isLoading={isLoading}
+      />
+
+
+    </div>
   );
 };
 

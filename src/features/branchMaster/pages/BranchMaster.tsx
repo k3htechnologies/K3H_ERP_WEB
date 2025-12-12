@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AddUpdateBranchMasterRequest,
@@ -55,7 +54,7 @@ export const BranchMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const {addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -80,11 +79,10 @@ export const BranchMaster: React.FC = () => {
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
 
-  //ADD UPDATE DEPARTMENT MASTER
+  //ADD UPDATE BRANCH MASTER
   const [formData, setFormData] = useState<AddUpdateBranchMasterRequest>(() => initialFormState());
 
   //DELETE BRANCH MASTER STATES
-
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteBranchMasterDetailsData, setDeleteBranchMasterDetailsData] = useState<BranchMasterData | null>(null)
 
@@ -161,7 +159,6 @@ export const BranchMaster: React.FC = () => {
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
-
         }
 
         const params: FilterWithPaginationBranchMasterRequest = {
@@ -367,9 +364,9 @@ export const BranchMaster: React.FC = () => {
               text={value || 'N/A'}
               maxWidth="250px"
               tooltipThreshold={25}
-              onClick={() => handleViewBranchDetails(row)} // just pass a function, no need for e.preventDefault here
-            />
-
+              onClick={() => handleViewBranchDetails(row)} 
+             />
+             
           </div>
         )
       },
@@ -600,7 +597,7 @@ export const BranchMaster: React.FC = () => {
 
   //#endregion
 
-  //#region ADD UPDATE EDIT BRAMCH MASTER
+  //#region ADD UPDATE EDIT BRANCH MASTER
 
   const handleFieldChange = (field: keyof AddUpdateBranchMasterRequest, value: any) => {
 
@@ -802,8 +799,7 @@ export const BranchMaster: React.FC = () => {
   }
   //#endregion
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {/* ============================================================================
@@ -948,7 +944,6 @@ export const BranchMaster: React.FC = () => {
 
         {/* CUSTOMIZE COLUMNS MODAL */}
 
-
         <CustomizeColumnsModal
           isOpen={isShowCustomizeBranchMasterColumnsModal}
           onClose={() => setIsShowCustomizeBranchMasterColumnsModal(false)}
@@ -1020,7 +1015,6 @@ export const BranchMaster: React.FC = () => {
         />
 
       </div>
-    </>
 
   )
 }

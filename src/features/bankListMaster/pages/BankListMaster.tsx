@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   BankListMasterData,
@@ -28,7 +27,7 @@ const BankListMaster: React.FC = () => {
 
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-  const { toasts, removeToast, addToast } = useToast();
+  const {addToast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebouncedCallback((value: string) => {
@@ -187,7 +186,7 @@ const BankListMaster: React.FC = () => {
         key: 'BankNameWithCode',
         label: 'Bank Name',
         width: '100',
-        sortable: true,
+        sortable: false,
         fixed: 'left',
         align: 'left',
         render: value => (
@@ -253,8 +252,6 @@ const BankListMaster: React.FC = () => {
   };
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <Loader loading={isLoading} title={loadingMessage}>
           <div></div>
@@ -340,7 +337,6 @@ const BankListMaster: React.FC = () => {
           </div>
         </Modal>
       </div>
-    </>
   );
 };
 

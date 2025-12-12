@@ -1,45 +1,39 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
-  AddUpdateAssetMappingMasterRequest,
   AssetMappingMasterData,
-  DeleteAssetMappingMasterRequest,
   FilterWithPaginationAssetMappingMasterRequest
 } from '@/features/assetMappingMaster/models/AssetMappingMasterModel';
 
-import { assetMappingMasterService } from '@/features/assetMappingMaster/services/AssetMappingMasterService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Button, Input } from '@/ui/components/forms';
+import { Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { Edit, Trash2 } from 'lucide-react';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
-import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { DatePickerInput } from '@/ui/components/forms/Datepicker';
-import { fetchAssetMasterDropdown } from '@/features/assetMaster/assetMasterDropDown';
-import { fetchEmployeeMasterDropdown } from '@/features/employeeMaster/employeeMasterDropDown';
-import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { assetMappingMasterService } from '../services/AssetMappingMasterService';
+import { updateFilter } from '@/core/utils/filterHelper';
+import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 
 
 export const AssetMappingMaster: React.FC = () => {
 
   //#region STATE MANAGEMENT
-  const [assetMappingMasterList, setAssetMappingMasterList] = useState<AssetMappingMasterData[]>([]);
+  const [AssetMappingMasterList, setAssetMappingMasterList] = useState<AssetMappingMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
+
+  // USE NAVIGATE
+  const navigate = useNavigate();
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
@@ -48,17 +42,13 @@ export const AssetMappingMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const {addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchAssetMappings(value)
-  }, 350)
-
-  //VIEW ASSET MAPPING MASTER MODAL STATES
-  const [viewAssetMappingMasterDetailsData, setViewAssetMappingMasterDetailsData] = useState<AssetMappingMasterData | null>(null)
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  }, 350);
 
   //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
@@ -66,63 +56,52 @@ export const AssetMappingMaster: React.FC = () => {
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeAssetMappingMasterColumnsModal, setIsShowCustomizeAssetMappingMasterColumnsModal] = useState(false);
-
-  // EDIT ASSET MAPPING MASTER 
-  const [editingAssetMappingMasterData, setEditingAssetMappingMasterData] = useState<AssetMappingMasterData | null>(null)
-  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-
-  const [AssetMappingMasterFormData, setAssetMappingMasterFormData] = useState<AddUpdateAssetMappingMasterRequest>({
-    AssetMasterMappingId: 0,
-    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    AssetMasterId: 0,
-    AssignedDate: "",
-    EmployeeId: 0,
-    ReturnDate: "",
-    ConditionOnIssue: "",
-    ConditionOnReturn: "",
-    Remarks: ""
-  });
-
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-
-
-  //DELETE ASSET MAPPING MASTER STATES
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-  const [deleteAssetMappingMasterDetailsData, setDeleteAssetMappingMasterDetailsData] = useState<AssetMappingMasterData | null>(null)
-
-  //#endregion
+  const [isShowCustomizeAssetMappingColumnsModal, setIsShowCustomizeAssetMappingColumnsModal] = useState(false);
 
   //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
-  //#region INITIALIZATION
-  const hasFetchedInitialAssetMappings = useRef(false)
+  const location = useLocation() as any;
 
+  //#endregion
+
+  //#region INIT
   useEffect(() => {
+    const incoming = location.state?.listState;
+    const listState = incoming ?? {
+      page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: ''
+    };
 
-    if (hasFetchedInitialAssetMappings.current) return
+    setPagination({ currentPage: listState.page ?? pagination.currentPage });
 
-    hasFetchedInitialAssetMappings.current = true;
+    setSortInfo(listState.sortInfo);
 
-    fetchAssetMappingList()
-  }, [])
+    setFilters(listState.filters ?? {});
 
+    setTempFilters(listState.filters ?? {});
 
-  //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
+    setSearchTerm(listState.searchTerm ?? '');
+
+    if (listState.searchTerm && String(listState.searchTerm).trim()) {
+      loadAssetMappings(listState.page ?? 1, { AssetName: String(listState.searchTerm).trim() });
+      return;
+    }
+
+    loadAssetMappings(listState.page ?? 1, listState.filters ?? {});
+  }, [location.state]);
+
+  //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
-
   //#endregion
-
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchAssetMappingList = async (page: number = pagination.currentPage) => {
+  const fetchAssetMappingMasterList = async (page: number = pagination.currentPage) => {
     return await loadAssetMappings(page, filters);
   }
 
@@ -131,29 +110,24 @@ export const AssetMappingMaster: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-
         let sortByParam = undefined;
 
         if (sortInfo) {
 
-          const column = assetMappingMasterColumns.find(col => col.key === sortInfo.column)
+          const column = AssetMappingMasterColumns.find(col => col.key === sortInfo.column);
           if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
+            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
-
         }
-
         const params: FilterWithPaginationAssetMappingMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          AssetMasterMappingId: filterParams.AssetMasterMappingId ? Number(filterParams.AssetMasterMappingId) : undefined,
+          AssetMasterMappingId: filterParams.AssetMappingMasterId ? Number(filterParams.AssetMappingMasterId) : undefined,
           AssetName: filterParams.AssetName?.trim() || undefined,
-          EmployeeName: filterParams.EmployeeName?.trim() || undefined,
           SortBy: sortByParam
-        }
+        };
 
-        const response = await getAssetMappings(params);
-
+        const response = await assetMappingMasterService.apiCallPullAssetMappingMaster(params);
         if (E.isRight(response)) {
 
           setAssetMappingMasterList(response.right.Data);
@@ -165,30 +139,26 @@ export const AssetMappingMaster: React.FC = () => {
           });
 
         } else {
-
           addToast({ type: 'error', title: response.left.message });
-
+          return response;
         }
-
-        return response
       },
       undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message })
-      },
+      (error: any) => addToast({ type: 'error', title: error.message }),
       undefined,
-      'Loading Asset Mapping Data...'
-    )
-  }
+      'Loading Asset Mapping Data'
+    );
+  };
+  //#endregion
 
-  // SEARCH ASSET MAPPING 
+  //#region SEARCH & CLEAR
   const searchAssetMappings = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
 
-      fetchAssetMappingList();
+      fetchAssetMappingMasterList();
 
       return
     }
@@ -197,89 +167,93 @@ export const AssetMappingMaster: React.FC = () => {
       AssetName: searchValue.trim(),
     };
 
-    await loadAssetMappings(1, filterParams)
+    await loadAssetMappings(1, filterParams);
+  };
 
-  }
+  //#endregion
 
-  const clearsearchAssetMappings = () => {
+  //#region CLEAR ASSET MAPPING MASTER 
+  const clearSearchAssetMappings = () => {
     setSearchTerm('');
-    debouncedSearch.cancel?.();
-    fetchAssetMappingList();
-  }
-  //#endregion 
 
-  //#region EXPORT EXCEL | PDF
+    debouncedSearch.cancel?.();
+
+    setFilters({});
+    setTempFilters({});
+    setPagination({ currentPage: 1 });
+    loadAssetMappings(1, {});
+    try {
+      navigate(location.pathname, { replace: true, state: {} });
+    } catch {
+    }
+  };
+  //#endregion
+
+  //#region EXPORT / IMPORT EXCEL AND PDF
   const handleExportAssetMappings = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-
         // Find the column label for sorting
-
         let sortByParam = undefined
         if (sortInfo) {
-          const column = assetMappingMasterColumns.find(col => col.key === sortInfo.column)
+          const column = AssetMappingMasterColumns.find(col => col.key === sortInfo.column);
           if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
+            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
-
         const params: FilterWithPaginationAssetMappingMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           AssetName: filters.AssetName?.trim() || undefined,
-          EmployeeName: filters.EmployeeName?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
-        }
+        };
 
         const response = await getAssetMappings(params);
 
-        handleExportFile(response, exportType, 'Asset Mapping Master', addToast)
+        handleExportFile(response, exportType, 'AssetMapping Master', addToast);
 
         return response;
       },
       undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Export failed' })
-      },
+      (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
       undefined,
-      'Preparing Export...'
-    )
-  }
+      'Preparing Export'
+    );
+  };
 
   const handleExportAssetMappingExcel = () => handleExportAssetMappings('Excel')
   const handleExportAssetMappingPdf = () => handleExportAssetMappings('PDF')
-
   //#endregion
 
 
-  //#region API | SERVICES CALL TO GET ASSET MAPPING 
-
+  //#region API | SERVICES CALL TO GET ASSET MAPPING
   const getAssetMappings = async (filterParams: FilterWithPaginationAssetMappingMasterRequest) => {
 
     return await assetMappingMasterService.apiCallPullAssetMappingMaster(filterParams);
   }
+  //#endregion
 
-  //END API | SERVICES CALL TO GET ASSET MAPPING
 
+  //#region HANDLE PAGE CHNAGE EVENT
+  const handlePageChange = useCallback((page: number) => {
+    fetchAssetMappingMasterList(page);
+  }, []);
 
-  //#region TABLE CONFIGURATION
-
-  const handlePageChange = (page: number) => {
-    fetchAssetMappingList(page);
-  };
-
-  const handleSortColumn = (sortInfo: SortInfo) => {
+  //#region TABLE SORT COLUMN
+  const handleSortColumn = useCallback((sortInfo: SortInfo) => {
 
     setSortInfo(sortInfo);
 
-    fetchAssetMappingList(1);
+    fetchAssetMappingMasterList(1);
 
-  }
+  }, []);
+  //#endregion
 
-  const assetMappingMasterPaginationInfo: PaginationInfo = useMemo(
+  //#region TABLE PAGINATION INFO
+  const AssetMappingPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
       totalPages: pagination.totalPages,
@@ -287,782 +261,293 @@ export const AssetMappingMaster: React.FC = () => {
       pageSize: pagination.pageSize,
       onPageChange: handlePageChange
     }),
-    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
-  )
+    [pagination, handlePageChange]
+  );
 
-  const assetMappingListForTable = useMemo(() => assetMappingMasterList, [assetMappingMasterList]);
+  const AssetMappingsForTable = useMemo(() => AssetMappingMasterList, [AssetMappingMasterList]);
+  //#endregion
 
-  // STABLE HANDLER VIEW EDIT CONFIRMATION DIALOG BOX
-  const handleViewAssetMappingDetails = useCallback((row: AssetMappingMasterData) => {
-    setViewAssetMappingMasterDetailsData(row)
-    setIsViewModalOpen(true)
-  }, [])
-
-
-  const handleConfirmationDialogBoxOpen = useCallback((row: AssetMappingMasterData) => {
-    setDeleteAssetMappingMasterDetailsData(row)
-    setIsConfirmationDialogBoxOpen(true)
-  }, [])
-
-  const assetMappingMasterColumns = useMemo<TableColumn[]>(
-    () => [
-      {
-        key: 'AssetName',
-        label: 'Asset Name',
-        width: '20',
-        sortable: true,
-        fixed: 'left',
-        align: 'left',
-        render: (value, row) => (
-          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
-            <TooltipText
-              text={value || 'N/A'}
-              maxWidth="250px"
-              tooltipThreshold={25}
-              onClick={() => handleViewAssetMappingDetails(row)}
-            />
-
-          </div>
-        )
-      },
-      {
-        key: 'EmployeeName',
-        label: 'Employee Name',
-        width: '18',
-        sortable: true,
-        align: 'left',
-        render: (value) => (
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="200px"
-            tooltipThreshold={20}
-          />
-        )
-      },
-      {
-        key: 'AssetCode',
-        label: 'Asset Code',
-        width: '12',
-        sortable: false,
-        align: 'center',
-        render: (value) => (
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="150px"
-            tooltipThreshold={15}
-            tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
-          />
-        )
-      },
-      {
-        key: 'AssignedDate',
-        label: 'Assigned Date',
-        width: '12',
-        sortable: false,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : 'N/A'
-      },
-      {
-        key: 'ReturnDate',
-        label: 'Return Date',
-        width: '12',
-        sortable: false,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : 'N/A'
-      },
-      {
-        key: 'Status',
-        label: 'Status',
-        width: '10',
-        sortable: false,
-        align: 'center',
-        render: (value) => (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${value === 'Active' ? 'bg-green-100 text-green-800' :
-            value === 'Inactive' ? 'bg-red-100 text-red-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
-            {value || 'N/A'}
-          </span>
-        )
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '12',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '12',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+  //#region NAVIGATE TO  VIEW ASSET MAPPING
+  const handleNavigateToView = (row: AssetMappingMasterData) => {
+    navigate('/assetMappingMaster/view', {
+      state: {
+        assetData: row,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm
+        }
       }
-    ],
-    // dependencies: include everything used inside that might change
-    [handleViewAssetMappingDetails]
-  )
+    });
+  };
+
+  //#region NAVIGATE TO ADD ASSET MAPPING
+  const handleAddAssetMappingModal = useCallback(() => {
+    navigate('/assetMappingMaster/add', {
+      state: {
+        fromList: true,
+        listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
+      }
+    });
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
 
   //#endregion
 
-  //#region CUSTOMIZE TABLE COLUMNS
+  //#region TABLE COLUMNS
+  const AssetMappingMasterColumns = useMemo<TableColumn[]>(() => [
+    {
+      key: 'AssetName',
+      label: 'Asset Name',
+      width: '20',
+      sortable: true,
+      fixed: 'left',
+      align: 'left',
+      render: (value, row) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="250px"
+          tooltipThreshold={25}
+          onClick={() => handleNavigateToView(row)}
+        />
+      )
+    },
+    {
+      key: 'EmployeeName',
+      label: 'Employee Name',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="170px"
+          tooltipThreshold={15}
+        />
+      )
+    },
+    {
+      key: 'AssignedDate',
+      label: 'Assigned Date',
+      width: '15',
+      sortable: false,
+      align: 'left',
+      render: (value) => 
+        value ? formatDate_dd_MonthName_yy(value) : '-'
+    },
+    {
+      key: 'ReturnDate',
+      label: 'Return Date',
+      width: '12',
+      sortable: false,
+      align: 'center',
+      render: (value) =>
+        value ? formatDate_dd_MonthName_yy(value) : '-'
+    },
+    {
+      key: 'ConditionOnIssue',
+      label: 'Condition On Issue',
+      width: '12',
+      sortable: false,
+      align: 'left',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="120px"
+          tooltipThreshold={12}
+        />
+      )
+    },
+    {
+      key: 'ConditionOnReturn',
+      label: 'Condition On Return',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="150px"
+          tooltipThreshold={15}
+        />
+      )
+    },
 
-  const requiredAssetMappingMasterColumnKeys: string[] = ['AssetName'];
+  ], [handleNavigateToView]);
+  //#endregion
 
-  const allAssetMappingMasterColumnKeys: string[] = assetMappingMasterColumns.map(c => c.key)
+  //#region COLUMN CUSTOMIZATION
+  const requiredAssetMappingColumnKeys: string[] = ['AssetName'];
 
-  const [selectedAssetMappingMasterColumnKeys, setSelectedAssetMappingMasterColumnKeys] = useState<string[]>(() => {
+  const allAssetMappingColumnKeys: string[] = AssetMappingMasterColumns.map(c => c.key);
 
+  const [selectedAssetMappingColumnKeys, setSelectedAssetMappingColumnKeys] = useState<string[]>(() => {
     try {
 
-      const saved = LocalStorageHelper.getAssetMappingMasterTableColumns();
+      const saved = LocalStorageHelper.getAssetMappingMasterTableColumns?.();
 
       if (saved) {
 
         const parsed = JSON.parse(saved) as string[]
         // Ensure required columns are always present
 
-        const withRequired = Array.from(new Set([...parsed, ...requiredAssetMappingMasterColumnKeys]));
+        const withRequired = Array.from(new Set([...parsed, ...requiredAssetMappingColumnKeys]));
 
         // Filter out any keys that no longer exist
-        return withRequired.filter(k => allAssetMappingMasterColumnKeys.includes(k));
-
+        return withRequired.filter(k => allAssetMappingColumnKeys.includes(k));
       }
     } catch { }
-    return allAssetMappingMasterColumnKeys
-  })
+    return allAssetMappingColumnKeys;
+  });
 
   useEffect(() => {
-    // Guarantee required columns remain selected if state changes elsewhere
-
-    setSelectedAssetMappingMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredAssetMappingMasterColumnKeys])).filter(k => allAssetMappingMasterColumnKeys.includes(k)));
-
+    setSelectedAssetMappingColumnKeys(prev => Array.from(new Set([...prev, ...requiredAssetMappingColumnKeys])).filter(k => allAssetMappingColumnKeys.includes(k)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assetMappingMasterColumns.length])
+  }, [AssetMappingMasterColumns.length])
 
-  const visibleAssetMappingMasterColumns = useMemo(
-    () => assetMappingMasterColumns.filter(col => selectedAssetMappingMasterColumnKeys.includes(col.key)),
-    [assetMappingMasterColumns, selectedAssetMappingMasterColumnKeys]
-  )
-
-  //#endregion
-
-  //#region VIEW ASSET MAPPING DETAILS MODAL COMPONENT
-
-  interface ViewAssetMappingDetailsModalProps {
-    isOpen: boolean
-    onClose: () => void
-    data: AssetMappingMasterData | null
-  }
-
-  const ViewAssetMappingDetailsModal: React.FC<ViewAssetMappingDetailsModalProps> = ({
-    isOpen,
-    onClose,
-    data
-  }) => {
-    if (!data) return null
-
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Asset Mapping Details"
-        onSubmit={(e) => {
-          e.preventDefault()
-          onClose()
-        }}
-        cancelText="Close"
-        loading={false}
-        size='xl'
-      >
-        <div className="space-y-6">
-
-          <div className="space-y-4">
-
-            <FieldItem label="Asset Name" value={data.AssetName} isRow withBorder={true} className='font-medium text-blue-900 ' />
-            <FieldItem label="Employee Name" value={data.EmployeeName} isRow withBorder={true} />
-            <FieldItem label="Asset Code" value={data.AssetCode} isRow withBorder={true} />
-            <FieldItem label="Condition On Return" value={data.ConditionOnReturn} isRow withBorder={true} />
-            <FieldItem label="Condition On Issue" value={data.ConditionOnIssue} isRow withBorder={true} />
-            <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy_hh_mm(data.AssignedDate || '-')} isRow withBorder={true} />
-            <FieldItem label="Return Date" value={formatDate_dd_MonthName_yy_hh_mm(data.ReturnDate || '-')} isRow withBorder={true} />
-            <FieldItem label="Remarks" value={data.Remarks} isRow withBorder={true} />
-
-            <div className="space-y-4">
-              <h4 className="text-lg font-semibold pb-2">
-                Action Details
-              </h4>
-
-              <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
-
-              {data.ModifiedBy !== '' ?
-                <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
-
-                :
-                ''}
-            </div>
-            <div className="flex justify-between items-center pt-4">
-
-              {canAction && (
-                <>
-                  <Button
-                    color='gray'
-                    variant='solid'
-                    colorMode="light"
-                    size='md'
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      setIsViewModalOpen(false)
-                      handleConfirmationDialogBoxOpen(data)
-                    }}
-                  >
-                    <Trash2 className="h-5 w-5" />
-                    Delete
-                  </Button>
-
-                  <Button
-                    color='blue'
-                    size='md'
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      setIsViewModalOpen(false)
-                      handleEditAssetMappingMasterData(data)
-                    }}
-                  >
-                    <Edit className="h-5 w-5" />
-                    Edit
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </Modal>
-    )
-  }
-
+  const visibleAssetMappingColumns = useMemo(
+    () => AssetMappingMasterColumns.filter(col => selectedAssetMappingColumnKeys.includes(col.key)),
+    [AssetMappingMasterColumns, selectedAssetMappingColumnKeys]
+  );
   //#endregion
 
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters)
-    loadAssetMappings(1, tempFilters)
-    setShowFilterPopup(false)
-  }
+    setFilters(tempFilters);
+    loadAssetMappings(1, tempFilters);
+    setShowFilterPopup(false);
+  };
+  //#endregion
 
+  //#region CLEAR FILTER
   const clearFilters = () => {
-    setTempFilters({})
-    setFilters({})
-    loadAssetMappings(1, {})
-    setShowFilterPopup(false)
-  }
+    setTempFilters({});
+    setFilters({});
 
+    // reset page
+    setPagination({ currentPage: 1 });
+
+    // load empty filters
+    loadAssetMappings(1, {});
+
+    setShowFilterPopup(false);
+    // clear router state (very important)
+
+    navigate(location.pathname, { replace: true, state: {} });
+
+  };
+  //#endregion
+
+  //#region HANDLE FILTER CHNAGE
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...tempFilters }
-    if (value.trim()) {
-      newFilters[key] = value.trim()
-    } else {
-      delete newFilters[key]
-    }
-    setTempFilters(newFilters)
+    setTempFilters(prev => updateFilter(prev, key, value));
   }
   //#endregion
 
-  //#region ADD UPDATE EDIT ASSET Mapping MASTER
-  const handleAddAssetMappingMaster = () => {
-    setEditingAssetMappingMasterData(null);
-    setAssetMappingMasterFormData({
-      AssetMasterMappingId: 0,
-      Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      AssetMasterId: 0,
-      AssignedDate: "",
-      EmployeeId: 0,
-      ReturnDate: "",
-      ConditionOnIssue: "",
-      ConditionOnReturn: "",
-      Remarks: ""
-    });
-
-    setFormErrors({});
-    setIsAddUpdateModalOpen(true);
-  };
-
-  const handleEditAssetMappingMasterData = (row: AssetMappingMasterData) => {
-    setEditingAssetMappingMasterData(row);
-    setAssetMappingMasterFormData({
-      AssetMasterMappingId: row.AssetMasterMappingId || 0,
-      Uniquekey: row.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      AssetMasterId: row.AssetMasterId || 0,
-      AssignedDate: row.AssignedDate || "",
-      EmployeeId: row.EmployeeId || 0,
-      ReturnDate: row.ReturnDate || "",
-      ConditionOnIssue: row.ConditionOnIssue || "",
-      ConditionOnReturn: row.ConditionOnReturn || "",
-      Remarks: row.Remarks || ""
-    });
-    setDropdownLabels({
-      assetName: row.AssetName ?? "",
-      employeeName: row.EmployeeName ?? ""
-    });
-    setFormErrors({});
-    setIsAddUpdateModalOpen(true);
-  }
-
-
-  const handleFieldChange = (field: keyof AddUpdateAssetMappingMasterRequest, value: string | number | null | boolean) => {
-    setAssetMappingMasterFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  }
-
-  const validateAssetMappingMasterForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!AssetMappingMasterFormData.AssetMasterId) {
-      newErrors.AssetMasterId = "Asset Name is required.";
-    }
-
-    if (!AssetMappingMasterFormData.EmployeeId) {
-      newErrors.EmployeeId = "Employee Name is required.";
-    }
-
-    if (!AssetMappingMasterFormData.ConditionOnReturn?.trim()) {
-      newErrors.ConditionOnReturn = "Condition On Return is required.";
-    }
-    if (!AssetMappingMasterFormData.ConditionOnIssue?.trim()) {
-      newErrors.ConditionOnIssue = "Condition On Issue is required.";
-    }
-    if (!AssetMappingMasterFormData.AssignedDate?.trim()) {
-      newErrors.AssignedDate = "Assigned Date is required.";
-    }
-    if (!AssetMappingMasterFormData.ReturnDate?.trim()) {
-      newErrors.ReturnDate = "Return Date is required.";
-    }
-    if (!AssetMappingMasterFormData.Remarks?.trim()) {
-      newErrors.Remarks = "Remarks is required.";
-    }
-
-
-    return {
-      isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors,
-    };
-  }
-
-  const PushWeekAssetMappingFormData = (): AddUpdateAssetMappingMasterRequest => {
-    return {
-      AssetMasterMappingId: AssetMappingMasterFormData.AssetMasterMappingId || 0,
-      Uniquekey: AssetMappingMasterFormData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      AssetMasterId: AssetMappingMasterFormData.AssetMasterId || 0,
-      AssignedDate: AssetMappingMasterFormData.AssignedDate || "",
-      EmployeeId: AssetMappingMasterFormData.EmployeeId || 0,
-      ReturnDate: AssetMappingMasterFormData.ReturnDate || "",
-      ConditionOnIssue: AssetMappingMasterFormData.ConditionOnIssue || "",
-      ConditionOnReturn: AssetMappingMasterFormData.ConditionOnReturn || "",
-      Remarks: AssetMappingMasterFormData.Remarks || ""
-    };
-  };
-
-  const [dropdownLabels, setDropdownLabels] = useState<{
-    assetName?: string;
-    employeeName?: string;
-  }>({});
-
-  const handleAddUpdateAssetMappingMaster = async () => {
-
-    setFormErrors({});
-
-    const validation = validateAssetMappingMasterForm();
-
-    if (!validation.isValid) {
-      setFormErrors(validation.errors);
-      return;
-    }
-
-    setIsAddUpdateModalOpen(false);
-    await runApiWithLoader(
-      setIsLoading,
-      setIsLoadingMessage,
-      async () => {
-
-        const payload = PushWeekAssetMappingFormData();
-        const response = await assetMappingMasterService.apiCallAddUpdateAssetMappingMaster(payload);
-
-        if (E.isRight(response)) {
-
-          setIsAddUpdateModalOpen(false);
-
-          const isAdd = AssetMappingMasterFormData.AssetMasterMappingId === 0
-
-          if (isAdd) {
-
-            const newRecord = response.right.Data[0] as AssetMappingMasterData
-
-            setAssetMappingMasterList(prevData => [newRecord, ...prevData]);
-
-            setPagination({
-              currentPage: pagination.currentPage,
-              totalRecords: pagination.totalRecords + 1,
-              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-            });
-
-
-            addToast({ type: 'success', title: 'Asset added successfully' })
-          } else {
-
-            const updatedRecord = response.right.Data[0] as AssetMappingMasterData;
-
-            setAssetMappingMasterList(prevData =>
-              prevData.map(item =>
-                item.AssetMasterMappingId === AssetMappingMasterFormData.AssetMasterMappingId
-                  ? updatedRecord
-                  : item
-              )
-            )
-
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-          }
-
-          setIsAddUpdateModalOpen(false);
-
-          setEditingAssetMappingMasterData(null);
-
-        } else {
-
-          addToast({ type: 'error', title: response.left.message });
-        }
-
-        return response
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Operation failed' })
-      },
-      undefined,
-      AssetMappingMasterFormData.AssetMasterMappingId === 0 ? 'Add Asset' : 'Update Asset...'
-    )
-  }
-
-  //#region DELETE Asset Mapping MASTER
-  const handleDeleteAssetMappingMaster = async () => {
-    setIsConfirmationDialogBoxOpen(false);
-
-    if (!deleteAssetMappingMasterDetailsData) return
-
-    await runApiWithLoader(
-      setIsLoading,
-      setIsLoadingMessage,
-
-      async () => {
-
-        const params: DeleteAssetMappingMasterRequest = {
-          AssetMasterMappingId: deleteAssetMappingMasterDetailsData.AssetMasterMappingId || 0,
-          UniqueKey: deleteAssetMappingMasterDetailsData.Uniquekey || ""
-        }
-        const response = await assetMappingMasterService.apiCallDeleteAssetMappingMaster(params);
-
-        if (E.isRight(response)) {
-          setAssetMappingMasterList(prevData => prevData.filter(item => item.AssetMasterMappingId !== deleteAssetMappingMasterDetailsData.AssetMasterMappingId));
-
-          setPagination({
-            currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords - 1,
-            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
-          });
-
-          addToast({ type: "success", title: response.right.SuccessMessage[0] })
-
-          setIsConfirmationDialogBoxOpen(false);
-          setDeleteAssetMappingMasterDetailsData(null);
-        } else {
-          addToast({ type: 'error', title: response.left.message });
-
-          setIsConfirmationDialogBoxOpen(false);
-        }
-        return response
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message })
-      },
-      undefined,
-      'Delete Asset Mapping Master data...'
-    )
-  }
-
-  //#endregion
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {/* ============================================================================
-          COMMAN LOADER FOR PAGE
-           ============================================================================ */}
-
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
-
-        {/* ============================================================================
-          COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
-           ============================================================================ */}
+        
+        <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search By Asset Name..."
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
+          searchPlaceholder="Search By Asset Name"
+          onSearchChange={v => {
+            setSearchTerm(v);
+            debouncedSearch(v);
           }}
-          onClearSearch={clearsearchAssetMappings}
+          onClearSearch={clearSearchAssetMappings}
           isShowFilterButton
           filters={filters}
           onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
+            setTempFilters(filters);
+            setShowFilterPopup(true);
           }}
           isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeAssetMappingMasterColumnsModal(true)}
+          onCustomize={() => setIsShowCustomizeAssetMappingColumnsModal(true)}
+
+          // ADD
           isShowAddButton={canAction}
-          addTitle="Add Asset Mapping"
-          onAdd={handleAddAssetMappingMaster}
-          isShowImportButton={false}
+          addTitle="Add AssetMapping"
+          onAdd={handleAddAssetMappingModal}
+
+
+          // EXPORT
           isShowExportButton={canExport}
           onExportExcel={handleExportAssetMappingExcel}
           onExportPdf={handleExportAssetMappingPdf}
           exportLoading={isLoading}
         />
 
+        {/* DATA TABLE ASSET MAPPING*/}
 
-        {/* DATA TABLE ASSET MAPPING */}
         <DataTable
-          data={assetMappingListForTable}
-          columns={visibleAssetMappingMasterColumns}
-          pagination={assetMappingMasterPaginationInfo}
-          emptyMessage="No asset mappings found"
-          fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
+          data={AssetMappingsForTable}
+          columns={visibleAssetMappingColumns}
+          pagination={AssetMappingPaginationInfo}
+          emptyMessage="No Asset found"
+          fixedHeight
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
           onSort={handleSortColumn}
         />
 
-        {/* VIEW ASSET MAPPING MODAL */}
-        <ViewAssetMappingDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewAssetMappingMasterDetailsData(null)
-          }}
-          data={viewAssetMappingMasterDetailsData}
-        />
-
-        {/*  ADD EDIT UPDATE ASSET MAPPING MASTER */}
-
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingAssetMappingMasterData(null)
-            setFormErrors({})
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingAssetMappingMasterData(null)
-            setFormErrors({})
-          }}
-          title={editingAssetMappingMasterData ? 'Update Asset Mapping Master Details' : 'Add Asset Mapping Master Details'}
-          onSubmit={(e) => {
-            e.preventDefault()
-            handleAddUpdateAssetMappingMaster()
-          }}
-          saveText="Save"
-          cancelText="Cancel"
-          loading={isLoading}
-          size="large75"
-        >
-          <div className="space-y-6 p-6 bg-blue-50">
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <SingleSelectDropdownWithPagination
-                  label="Asset"
-                  title="Select..."
-                  size="lg"
-                  dataFetchCallBack={fetchAssetMasterDropdown}
-                  onSelected={(item) => handleFieldChange("AssetMasterId", Number(item.value))}
-                  initialValue={createDropdownInitialValue(AssetMappingMasterFormData.AssetMasterId, dropdownLabels.assetName)}
-                  error={formErrors.AssetMasterId}
-                />
-              </div>
-              <SingleSelectDropdownWithPagination
-                label="Employees"
-                title="Select..."
-                size="lg"
-                required
-                dataFetchCallBack={fetchEmployeeMasterDropdown}
-                onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
-                initialValue={createDropdownInitialValue(AssetMappingMasterFormData.EmployeeId, dropdownLabels.employeeName)}
-                error={formErrors.EmployeeId}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Input
-                  type="text"
-                  required
-                  label='Condition On Return'
-                  value={AssetMappingMasterFormData.ConditionOnReturn ?? ""}
-                  onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)}
-                  placeholder="Enter Condition On Return"
-                  maxLength={250}
-                  error={formErrors.ConditionOnReturn}
-                />
-              </div>
-
-              <div>
-                <Input
-                  type="text"
-                  label='Condition On Issue'
-                  value={AssetMappingMasterFormData.ConditionOnIssue ?? ""}
-                  onChange={(e) => handleFieldChange("ConditionOnIssue", e.target.value)}
-                  required
-                  maxLength={20}
-                  placeholder="Enter Condition On Issue"
-                  error={formErrors.ConditionOnIssue}
-                />
-
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <DatePickerInput
-                  label="Assigned Date"
-                  value={formatDate_dd_mm_yyyy(AssetMappingMasterFormData.AssignedDate)}
-                  onChange={(val) => handleFieldChange('AssignedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                  required
-                  error={formErrors.AssignedDate}
-                />
-              </div>
-
-              <div>
-                <DatePickerInput
-                  label="Return Date"
-                  value={formatDate_dd_mm_yyyy(AssetMappingMasterFormData.ReturnDate)}
-                  onChange={(val) => handleFieldChange('ReturnDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                  required
-                  error={formErrors.ReturnDate}
-                />
-              </div>
-              <div>
-                <Input
-                  type="text"
-                  label='Remarks'
-                  value={AssetMappingMasterFormData.Remarks ?? ""}
-                  onChange={(e) => handleFieldChange("Remarks", e.target.value)}
-                  required
-                  maxLength={20}
-                  placeholder="Enter Remarks"
-                  error={formErrors.Remarks}
-                />
-              </div>
-            </div>
-
-          </div>
-        </Modal>
-
         {/* CUSTOMIZE COLUMNS MODAL */}
 
         <CustomizeColumnsModal
-          isOpen={isShowCustomizeAssetMappingMasterColumnsModal}
-          onClose={() => setIsShowCustomizeAssetMappingMasterColumnsModal(false)}
-          onApply={(keys) => {
+          isOpen={isShowCustomizeAssetMappingColumnsModal}
+          onClose={() => setIsShowCustomizeAssetMappingColumnsModal(false)}
+          onApply={keys => {
             const withRequired = Array.from(
-              new Set([...keys, ...requiredAssetMappingMasterColumnKeys]),
-            )
 
-            setSelectedAssetMappingMasterColumnKeys(withRequired)
+              new Set([...keys, ...requiredAssetMappingColumnKeys])
+            );
+            setSelectedAssetMappingColumnKeys(withRequired);
 
             try {
-              LocalStorageHelper.storeAssetMappingMasterTableColumns(
-                JSON.stringify(withRequired),
-              )
+              LocalStorageHelper.storeAssetMappingMasterTableColumns?.(
+
+                JSON.stringify(withRequired)
+              );
             } catch { }
           }}
-          columns={assetMappingMasterColumns}
-          selectedKeys={selectedAssetMappingMasterColumnKeys}
-          requiredKeys={requiredAssetMappingMasterColumnKeys}
-          title="Customize Asset Mapping Master Table Columns"
+          columns={AssetMappingMasterColumns}
+          selectedKeys={selectedAssetMappingColumnKeys}
+          requiredKeys={requiredAssetMappingColumnKeys}
+          title="Customize Table Columns"
         />
 
-        {/* FILTER ASSET MAPPING MODAL */}
+        {/* FILTER MODAL */}
+
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}
           title="Filter - Asset Mapping Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
+          onSubmit={e => {
+            e.preventDefault();
+            applyFilters();
           }}
           saveText="Apply Filter"
           cancelText="Clear Filter"
           onCancel={() => clearFilters()}
-          size="half-screen"
+          resetText=''
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Asset Name
-                </label>
-                <Input
-                  type="text"
-                  value={tempFilters.AssetName || ''}
-                  onChange={(e) => handleFilterChange('AssetName', e.target.value)}
-                  placeholder="Enter asset name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Employee Name
-                </label>
-                <Input
-                  type="text"
-                  value={tempFilters.EmployeeName || ''}
-                  onChange={(e) => handleFilterChange('EmployeeName', e.target.value)}
-                  placeholder="Enter employee name"
-                />
-              </div>
+              <Input type="text"
+                label='Asset Name'
+                value={tempFilters?.AssetName ?? ''}
+                onChange={e => handleFilterChange('AssetName', e.target.value)}
+                placeholder="Enter Asset Name" />
             </div>
           </div>
         </Modal>
-
-        {/* DELETE CONFIRMATION ASSET MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteAssetMappingMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteAssetMappingMaster}
-          title="You are about to delete a asset mapping?"
-          message="Deleting this Asset Mapping Data will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
       </div>
-    </>
+   
   );
 };
 
 export default AssetMappingMaster;
-

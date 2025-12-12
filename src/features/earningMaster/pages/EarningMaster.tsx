@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AddUpdateEarningMasterRequest,
@@ -55,7 +54,7 @@ export const EarningMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const { addToast } = useToast()
 
 
   // SINGLE SEARCH TEXT BOX
@@ -108,10 +107,13 @@ export const EarningMaster: React.FC = () => {
 
   useEffect(() => {
     if (hasFetchedInitialEarnings.current) return
+
     hasFetchedInitialEarnings.current = true;
+
     fetchEarningList()
   }, [])
 
+  //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
@@ -234,9 +236,7 @@ export const EarningMaster: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-
         // Find the column label for sorting
-
         let sortByParam = undefined
         if (sortInfo) {
           const column = earningMasterColumns.find(col => col.key === sortInfo.column)
@@ -321,9 +321,9 @@ export const EarningMaster: React.FC = () => {
     setViewEarningMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
-//#endregion
- 
-//#region EDIT EARNING MASTER
+  //#endregion
+
+  //#region EDIT EARNING MASTER
 
   const handleEditEarningMaster = useCallback((row: EarningMasterData) => {
     setEditingEarningMasterData({
@@ -341,8 +341,6 @@ export const EarningMaster: React.FC = () => {
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
-
-
   const handleConfirmationDialogBoxOpen = useCallback((row: EarningMasterData) => {
     setDeleteEarningMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
@@ -351,7 +349,6 @@ export const EarningMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE COLUMN
-
   const earningMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -417,7 +414,6 @@ export const EarningMaster: React.FC = () => {
     // dependencies: include everything used inside that might change
     [handleViewEarningDetails]
   )
-
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
@@ -455,9 +451,7 @@ export const EarningMaster: React.FC = () => {
     [earningMasterColumns, selectedEarningMasterColumnKeys]
   )
 
-
   //#endregion
-
   //#region VIEW ASSET MAPPING DETAILS MODAL COMPONENT
 
   interface ViewEarningDetailsModalProps {
@@ -609,7 +603,7 @@ export const EarningMaster: React.FC = () => {
 
       newErrors.Name = "Name is required"
     }
-    
+
     if (formData.Type.trim() === "") {
       newErrors.Type = "Type is required";
     }
@@ -617,13 +611,18 @@ export const EarningMaster: React.FC = () => {
     if (formData.Value === 0) {
       newErrors.Value = "Value is required";
     }
+    if (formData.BranchMasterId === 0) {
+      newErrors.BranchMasterId = "Branch is required";
+    }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors
     }
   }
+  //#endregion
 
+  //#region PUSH DATA
   const PushEarningMasterFormData = (): AddUpdateEarningMasterRequest => {
     return {
       EarningMasterId: formData.EarningMasterId,
@@ -731,8 +730,8 @@ export const EarningMaster: React.FC = () => {
       async () => {
 
         const params: DeleteEarningMasterRequest = {
-          EarningMasterId: deleteEarningMasterDetailsData.EarningMasterId ?? 0,
-          UniqueKey: deleteEarningMasterDetailsData.Uniquekey ?? ""
+          EarningMasterId: deleteEarningMasterDetailsData.EarningMasterId || 0,
+          UniqueKey: deleteEarningMasterDetailsData.Uniquekey || ""
         }
         const response = await EarningMasterService.apiCallDeleteEarningMaster(params);
 
@@ -761,13 +760,12 @@ export const EarningMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Earning master data...'
+      'Delete Earning Master Data'
     )
   }
   //#endregion
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
         <TableActionToolbar
@@ -787,15 +785,24 @@ export const EarningMaster: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeEarningMasterColumnsModal(true)}
+
+          // ADD
           isShowAddButton={canAction}
           addTitle='Add Earning'
           onAdd={handleAddEarningModal}
+
+          // IMPORT
           isShowImportButton={false}
+
+          // EXPORT
           isShowExportButton={canExport}
           onExportExcel={handleExportEarningExcel}
           onExportPdf={handleExportEarningPdf}
           exportLoading={isLoading}
         />
+
+        {/* DATA TABLE EARNING*/}
+
         <DataTable
           data={earningListForTable}
           columns={visibleEarningMasterColumns}
@@ -807,6 +814,8 @@ export const EarningMaster: React.FC = () => {
           sortInfo={sortInfo}
           onSort={handleSortColumn}
         />
+
+        {/* VIEW EARNING MODAL */}
         <ViewEarningDetailsModal isOpen={isViewModalOpen}
           onClose={() => {
             setIsViewModalOpen(false)
@@ -817,8 +826,6 @@ export const EarningMaster: React.FC = () => {
 
         {/*  ADD EDIT UPDATE EARNING MASTER */}
 
-
-        {/*  ADD EDIT UPDATE DEPARTMENT MODAL */}
         <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
@@ -883,6 +890,7 @@ export const EarningMaster: React.FC = () => {
                   label="Branch"
                   title="Select Branch"
                   size="lg"
+                  required
                   dataFetchCallBack={fetchBranchMasterDropdown}
                   onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
                   initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
@@ -911,6 +919,8 @@ export const EarningMaster: React.FC = () => {
           requiredKeys={requiredEarningMasterColumnKeys}
           title="Customize Table Columns"
         />
+
+        {/* FILTER MODAL */}
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}
@@ -955,7 +965,6 @@ export const EarningMaster: React.FC = () => {
         />
 
       </div>
-    </>
   )
 }
 

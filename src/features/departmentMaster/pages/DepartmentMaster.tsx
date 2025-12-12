@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AddUpdateDepartmentMasterRequest,
@@ -54,7 +53,7 @@ export const DepartmentMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -78,10 +77,10 @@ export const DepartmentMaster: React.FC = () => {
   const [editingDepartmentMasterData, setEditingDepartmentMasterData] = useState<DepartmentMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  
+
   //ADD UPDATE DEPARTMENT MASTER
-    const [formData, setFormData] = useState<AddUpdateDepartmentMasterRequest>(() => initialFormState());
-  
+  const [formData, setFormData] = useState<AddUpdateDepartmentMasterRequest>(() => initialFormState());
+
   //DELETE DEPARTMENT MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
@@ -496,15 +495,16 @@ export const DepartmentMaster: React.FC = () => {
                     color='red'
                     variant='solid'
                     colorMode="light"
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleConfirmationDialogBoxOpen(data)
                     }}
+                    leftIcon={<Trash2 className="h-5 w-5" />}
                   >
-                    <Trash2 className="h-5 w-5" />
+
                     Delete
                   </Button>
                 ) : <div style={{ width: "120px", height: "44px" }}></div>}
@@ -512,15 +512,16 @@ export const DepartmentMaster: React.FC = () => {
 
                 <Button
                   color='blue'
-                  size='sm'
+                  size='md'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
                     setIsViewModalOpen(false)
                     handleEditDepartmentMaster(data)
                   }}
+                  leftIcon={<Edit className="h-5 w-5" />}
                 >
-                  <Edit className="h-5 w-5" />
+
                   Edit
                 </Button>
               </>
@@ -601,7 +602,7 @@ export const DepartmentMaster: React.FC = () => {
 
     if (formData.DepartmentCode.trim() === "") {
       newErrors.DepartmentCode = "Department Code is required";
-    } else if (formData.DepartmentCode.trim().length  >= 5) {
+    } else if (formData.DepartmentCode.trim().length >= 5) {
       newErrors.DepartmentCode = "Department Code must be at least 4 characters long";
     }
 
@@ -817,8 +818,6 @@ export const DepartmentMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {/* ============================================================================
           COMMAN LOADER FOR PAGE
@@ -849,7 +848,7 @@ export const DepartmentMaster: React.FC = () => {
           onCustomize={() => setIsShowCustomizeDepartmentMasterColumnsModal(true)}
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Department"
+          addTitle="Add"
           onAdd={handleAddDepartmentModal}
 
           // IMPORT
@@ -906,7 +905,7 @@ export const DepartmentMaster: React.FC = () => {
           }}
           title={editingDepartmentMasterData ? 'Update Department' : 'Add Department'}
           onSubmit={handleAddUpdateDepartmentMaster}
-          saveText={editingDepartmentMasterData ? 'Update Department' : 'Save Department'}
+          saveText={'Save'}
           resetText='Reset'
           loading={isLoading}
           size='xl'
@@ -1015,8 +1014,6 @@ export const DepartmentMaster: React.FC = () => {
 
 
       </div>
-    </>
-
   )
 }
 

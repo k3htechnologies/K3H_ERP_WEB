@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   VendorData,
@@ -15,41 +14,92 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
+import { useLocation, type Location, useNavigate } from 'react-router-dom';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { Trash2 } from 'lucide-react';
+import { updateFilter } from '@/core/utils/filterHelper';
+import { technicalService } from '@/features/technical/services/TechnicalService';
+import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 
 
 export const Vendor: React.FC = () => {
-
+  //#region STATE
   const [vendorList, setVendorList] = useState<VendorData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-  const { toasts, removeToast, addToast } = useToast()
+  const { addToast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
+  const navigate = useNavigate();
+
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchVendors(value)
   }, 350)
-  const [viewVendorDetailsData, setViewVendorDetailsData] = useState<VendorData | null>(null)
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
-  const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-  const [isShowCustomizeVendorColumnsModal, setIsShowCustomizeVendorColumnsModal] = useState(false);
-  const { canExport } = useMenuPermissions();
-  const hasFetchedInitialVendors = useRef(false)
 
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+
+  const [deleteVendorDetailsData, setDeleteVendorDetailsData] = useState<VendorData | null>(null)
+
+  const [filters, setFilters] = useState<FilterInfo>({});
+
+  const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
+  const [isShowCustomizeVendorColumnsModal, setIsShowCustomizeVendorColumnsModal] = useState(false);
+
+  const { canAction, canExport } = useMenuPermissions();
+
+  const location = useLocation() as Location & {
+    state?: {
+      listState?: {
+        page?: number;
+        filters?: FilterInfo;
+        sortInfo?: SortInfo;
+        searchTerm?: string;
+      };
+    };
+  };
+  //#endregion
+
+  //#region INIT
   useEffect(() => {
-    if (hasFetchedInitialVendors.current) return
-    hasFetchedInitialVendors.current = true;
-    fetchVendorList()
-  }, [])
+
+    const incoming = location.state?.listState as
+      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string }
+      | undefined;
+
+    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '' };
+
+
+    setPagination({ currentPage: listState.page ?? pagination.currentPage });
+
+    setSortInfo(listState.sortInfo);
+
+    setFilters(listState.filters ?? {});
+
+    setTempFilters(listState.filters ?? {});
+
+    setSearchTerm(listState.searchTerm ?? '');
+
+    if (listState.searchTerm && String(listState.searchTerm).trim()) {
+
+      setSearchTerm(String(listState.searchTerm));
+
+      loadVendors(listState.page ?? 1, { VendorName: String(listState.searchTerm).trim() });
+
+      return;
+    }
+    loadVendors(listState.page ?? 1, listState.filters ?? {});
+
+  }, [location.state]);
 
   useEffect(() => {
     return () => {
@@ -57,22 +107,28 @@ export const Vendor: React.FC = () => {
     }
   }, [debouncedSearch])
 
+  //#endregion
+
+  //#region DATA LOAD
+
   const fetchVendorList = async (page: number = pagination.currentPage) => {
     return await loadVendors(page, filters);
-  }
+  };
 
   const loadVendors = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        let sortByParam = undefined;
+        let sortByParam: string | undefined;
+
         if (sortInfo) {
-          const column = vendorColumns.find(col => col.key === sortInfo.column)
+          const column = vendorColumns.find(col => col.key === sortInfo.column);
           if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
+            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
+
         const params: FilterWithPaginationVendorRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
@@ -84,58 +140,86 @@ export const Vendor: React.FC = () => {
           MobileNumber: filterParams.MobileNumber?.trim() || undefined,
           SortBy: sortByParam
         }
+
         const response = await getVendors(params);
+
         if (E.isRight(response)) {
+
           setVendorList(response.right.Data);
+
           setPagination({
             currentPage: page,
             totalRecords: response.right.TotalNumberOfRecord,
-            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
+            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize)
           });
         } else {
           addToast({ type: 'error', title: response.left.message });
         }
-        return response
+
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message })
+        addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Vendor Data...'
-    )
-  }
+      'Loading Vendor Data'
+    );
+  };
 
+  //#endregion
+
+  //#region SEARCH VENDOR FILTER
   const searchVendors = async (searchValue: string) => {
     setSearchTerm(searchValue);
+
     if (searchValue.trim() === '') {
       fetchVendorList();
-      return
+      return;
     }
+
     const filterParams: FilterInfo = {
-      VendorName: searchValue.trim(),
+      VendorName: searchValue.trim()
     };
-    await loadVendors(1, filterParams)
-  }
 
-  const clearsearchVendors = () => {
+    await loadVendors(1, filterParams);
+  };
+
+
+  //#endregion
+
+  //#region CLAER SERACH VENDOR
+  const clearSearchVendors = () => {
     setSearchTerm('');
-    debouncedSearch.cancel?.();
-    fetchVendorList();
-  }
 
+    debouncedSearch.cancel?.();
+
+    setFilters({});
+    setTempFilters({});
+    setPagination({ currentPage: 1 });
+    loadVendors(1, {});
+    try {
+      navigate(location.pathname, { replace: true, state: {} });
+    } catch {
+    }
+  };
+
+  //#endregion
+
+  //#region  EXCEL EXPORT TO EXCEL | PDF
   const handleExportVendors = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        let sortByParam = undefined
+        let sortByParam: string | undefined;
         if (sortInfo) {
-          const column = vendorColumns.find(col => col.key === sortInfo.column)
+          const column = vendorColumns.find(col => col.key === sortInfo.column);
           if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
+            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
+
         const params: FilterWithPaginationVendorRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -147,34 +231,44 @@ export const Vendor: React.FC = () => {
           SortBy: sortByParam,
           ExportType: exportType
         }
+
         const response = await getVendors(params);
-        handleExportFile(response, exportType, 'Vendor', addToast)
+
+        handleExportFile(response, exportType, 'Vendor Master', addToast);
+
         return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Export failed' })
+        addToast({ type: 'error', title: error.message || 'Export failed' });
       },
       undefined,
-      'Preparing Export...'
-    )
-  }
+      'Preparing Export'
+    );
+  };
+
 
   const handleExportVendorExcel = () => handleExportVendors('Excel')
   const handleExportVendorPdf = () => handleExportVendors('PDF')
 
+  //#endregion
+
+  //#region PULL VENDOR MASTER
   const getVendors = async (filterParams: FilterWithPaginationVendorRequest) => {
     return await VendorService.apiCallPullVendor(filterParams);
-  }
-
-  const handlePageChange = (page: number) => {
-    fetchVendorList(page);
   };
+  //#endregion
 
-  const handleSortColumn = (sortInfo: SortInfo) => {
-    setSortInfo(sortInfo);
-    fetchVendorList(1);
-  }
+  //#region TABLE CONFIG
+
+  const handlePageChange = useCallback((page: number) => {
+    fetchVendorList(page);
+  }, [fetchVendorList]);
+
+   const handleSortColumn = useCallback((sort: SortInfo) => {
+      setSortInfo(sort);
+      fetchVendorList(1);
+    }, []);
 
   const vendorPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -188,12 +282,36 @@ export const Vendor: React.FC = () => {
   )
 
   const vendorListForTable = useMemo(() => vendorList, [vendorList]);
+  //#endregion
 
+  //#region VIEW VENDOR MASTER
   const handleViewVendorDetails = useCallback((row: VendorData) => {
-    setViewVendorDetailsData(row)
-    setIsViewModalOpen(true)
+    navigate('/vendor/view', {
+      state: {
+        editVendorData: row,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm,
+        },
+      },
+    })
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+
+  //#endregion
+
+  //#region CONFIRMATION DIALOG BOX
+
+  const handleConfirmationDialogBoxOpen = useCallback((row: VendorData) => {
+    setDeleteVendorDetailsData(row)
+    setIsConfirmationDialogBoxOpen(true)
   }, [])
 
+  //#endregion
+
+  //#region TABLE COLUMN
   const vendorColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -204,14 +322,12 @@ export const Vendor: React.FC = () => {
         fixed: 'left',
         align: 'left',
         render: (value, row) => (
-          <div className="flex items-center justify-start">
-            <TooltipText
-              text={value || 'N/A'}
-              maxWidth="250px"
-              tooltipThreshold={25}
-              onClick={() => handleViewVendorDetails(row)}
-            />
-          </div>
+          <TooltipText
+            text={value || 'N/A'}
+            maxWidth="250px"
+            tooltipThreshold={25}
+            onClick={() => handleViewVendorDetails(row)}
+          />
         )
       },
       {
@@ -265,37 +381,43 @@ export const Vendor: React.FC = () => {
         )
       },
       {
-        key: 'IsApproval',
-        label: 'Approval Status',
+        key: 'actions',
+        label: 'Actions',
         width: '12',
-        sortable: false,
+        fixed: 'right',
         align: 'center',
-        render: (value) => (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${value ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-            {value ? 'Approved' : 'Pending'}
-          </span>
+        render: (_value, row) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row as VendorData)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Vendor"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
         )
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '15',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       }
     ],
-    [handleViewVendorDetails]
+    [canAction, handleViewVendorDetails, handleConfirmationDialogBoxOpen]
   )
 
+  //#endregion
+
+  //#region CUSTOMIZE COLUMNS
   const requiredVendorColumnKeys: string[] = ['VendorName'];
   const allVendorColumnKeys: string[] = vendorColumns.map(c => c.key)
   const [selectedVendorColumnKeys, setSelectedVendorColumnKeys] = useState<string[]>(() => {
@@ -306,7 +428,9 @@ export const Vendor: React.FC = () => {
         const withRequired = Array.from(new Set([...parsed, ...requiredVendorColumnKeys]));
         return withRequired.filter(k => allVendorColumnKeys.includes(k));
       }
-    } catch { }
+    } catch {
+      // Ignore parsing errors
+    }
     return allVendorColumnKeys
   })
 
@@ -318,160 +442,174 @@ export const Vendor: React.FC = () => {
   const visibleVendorColumns = useMemo(
     () => vendorColumns.filter(col => selectedVendorColumnKeys.includes(col.key)),
     [vendorColumns, selectedVendorColumnKeys]
-  )
+  );
+  //#endregion
 
-  interface ViewVendorDetailsModalProps {
-    isOpen: boolean
-    onClose: () => void
-    data: VendorData | null
-  }
+  //#region FILTER HELPERS
+  const applyFilters = () => {
+    setFilters(tempFilters);
+    loadVendors(1, tempFilters);
+    setShowFilterPopup(false);
+  };
 
-  const ViewVendorDetailsModal: React.FC<ViewVendorDetailsModalProps> = ({
-    isOpen,
-    onClose,
-    data
-  }) => {
-    if (!data) return null
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Settings - Company setup (Vendor Details)"
-        onSubmit={(e) => {
-          e.preventDefault()
-          onClose()
-        }}
-        cancelText="Close"
-        loading={false}
-      >
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Vendor Name</span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.VendorName || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Company Name</span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.CompanyName || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Company Type</span>
-              <span className="text-sm text-blue-600 font-medium">{data.CompanyType || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Mobile Number</span>
-              <span className="text-sm text-blue-600 font-medium">{data.MobileNumber || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Email</span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.EmailId || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">GST Number</span>
-              <span className="text-sm text-blue-600 font-medium">{data.GSTNumber || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Address</span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.Address || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">City</span>
-              <span className="text-sm text-blue-600 font-medium">{data.CityName || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">State</span>
-              <span className="text-sm text-blue-600 font-medium">{data.StateName || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Approval Status</span>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${data.IsApproval ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                {data.IsApproval ? 'Approved' : 'Pending'}
-              </span>
-            </div>
-          </div>
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created By</span>
-                  <span className="text-sm text-blue-600 font-medium">{data.CreatedBy || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created Date</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {data.ModifiedBy && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified By</span>
-                    <span className="text-sm text-blue-600 font-medium">{data.ModifiedBy}</span>
-                  </div>
-                )}
-                {data.ModifiedDate && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified Date</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </Modal>
+  const clearFilters = () => {
+    setTempFilters({});
+    setFilters({});
+
+    // reset page
+    setPagination({ currentPage: 1 });
+
+    // load empty filters
+    loadVendors(1, {});
+
+    setShowFilterPopup(false);
+
+    // clear router state (very important)
+    navigate(location.pathname, { replace: true, state: {} });
+  };
+  //#endregion
+
+  //#region ADD NEW EMPLOYEE
+  const handleAddVendor = () => {
+    navigate('/vendor/add');
+  };
+  //#endregion
+
+  //#region  HANDLE CHANGE EVENT
+
+  const handleFilterChange = (key: string, value: string) => {
+    setTempFilters(prev => updateFilter(prev, key, value));
+  };
+
+  //#endregion
+
+
+  //#region IMPORT EXCEL | DOWNLOAD
+
+  const excelImportVendor = async () => {
+
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setIsLoadingMessage,
+
+      async () => {
+
+
+        return null;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Import failed' })
+      },
+      undefined,
+      'Preparing Import'
     )
   }
 
-  const applyFilters = () => {
-    setFilters(tempFilters)
-    loadVendors(1, tempFilters)
-    setShowFilterPopup(false)
+
+  const downloadExcelSampleVendor = async () => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+        // Find the column label for sorting
+
+        const params: FilterPullExcelSample = {
+          TableName: 'Vendor'
+        }
+
+        const response = await technicalService.apiCallPullExcelSample(params);
+
+        handleExportFile(response, 'Excel', 'Vendor', addToast, 'Sample file download successfully')
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Export failed' })
+      },
+      undefined,
+      'Preparing Downloading'
+    )
   }
 
-  const clearFilters = () => {
-    setTempFilters({})
-    setFilters({})
-    loadVendors(1, {})
-    setShowFilterPopup(false)
+  const handleExcelImportVendor = () => excelImportVendor()
+  const handleDownloadExcelSampleVendor = () => downloadExcelSampleVendor()
+
+
+
+  //#endregion
+
+  //#region  DELETE VENDOR EVENT
+  const handleDeleteVendor = async () => {
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteVendorDetailsData) return
+
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+        const params = {
+          VendorId: deleteVendorDetailsData.VendorId ?? 0,
+          UniqueKey: deleteVendorDetailsData.Uniquekey ?? ""
+        }
+
+        const response = await VendorService.apiCallDeleteVendor(params);
+
+        if (E.isRight(response)) {
+
+          setVendorList(prevData => prevData.filter(item => item.VendorId !== deleteVendorDetailsData.VendorId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteVendorDetailsData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+        }
+
+        return response
+      },
+      undefined,
+      (error: unknown) => {
+        const err = error as { message?: string };
+        addToast({ type: 'error', title: err.message || 'An error occurred' })
+      },
+      undefined,
+      'Delete Vendor'
+    )
   }
 
-  const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...tempFilters }
-    if (value.trim()) {
-      newFilters[key] = value.trim()
-    } else {
-      delete newFilters[key]
-    }
-    setTempFilters(newFilters)
-  }
+  //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
+    
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-full flex flex-col">
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by vendor name..."
+          searchPlaceholder="Search By Vendor Name"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
           }}
-          onClearSearch={clearsearchVendors}
+          onClearSearch={clearSearchVendors}
           isShowFilterButton
           filters={filters}
           onOpenFilter={() => {
@@ -479,9 +617,20 @@ export const Vendor: React.FC = () => {
             setShowFilterPopup(true)
           }}
           isShowCustomizeButton
+
           onCustomize={() => setIsShowCustomizeVendorColumnsModal(true)}
-          isShowAddButton={false}
-          isShowImportButton={false}
+          
+          // ADD
+          isShowAddButton={canAction}
+          addTitle="Add"
+          onAdd={handleAddVendor}
+
+           // IMPORT
+          isShowImportButton={canAction}
+          onUploadExcel={handleExcelImportVendor}
+          onDownloadSampleExcel={handleDownloadExcelSampleVendor}
+
+           // EXPORT
           isShowExportButton={canExport}
           onExportExcel={handleExportVendorExcel}
           onExportPdf={handleExportVendorPdf}
@@ -491,21 +640,30 @@ export const Vendor: React.FC = () => {
           data={vendorListForTable}
           columns={visibleVendorColumns}
           pagination={vendorPaginationInfo}
-          emptyMessage="No vendors found"
+          emptyMessage="No Vendors Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
           onSort={handleSortColumn}
         />
-        <ViewVendorDetailsModal isOpen={isViewModalOpen}
+
+        {/* DELETE CONFIRMATION MODAL */}
+        <ConfirmationDialogBox
+          isOpen={isConfirmationDialogBoxOpen}
           onClose={() => {
-            setIsViewModalOpen(false)
-            setViewVendorDetailsData(null)
+            setIsConfirmationDialogBoxOpen(false)
+            setDeleteVendorDetailsData(null)
           }}
-          data={viewVendorDetailsData}
+          onConfirm={handleDeleteVendor}
+          title="You are about to delete a vendor?"
+          message="Deleting this vendor will permanently remove its contents."
+          confirmText="Delete"
+          cancelText="Cancel"
+          loading={isLoading}
+          variant="danger"
         />
+
         <CustomizeColumnsModal
           isOpen={isShowCustomizeVendorColumnsModal}
           onClose={() => setIsShowCustomizeVendorColumnsModal(false)}
@@ -514,13 +672,14 @@ export const Vendor: React.FC = () => {
             setSelectedVendorColumnKeys(withRequired)
             try {
               LocalStorageHelper.storeVendorTableColumns(JSON.stringify(withRequired))
-            } catch { }
+            } catch { /* empty */ }
           }}
           columns={vendorColumns}
           selectedKeys={selectedVendorColumnKeys}
           requiredKeys={requiredVendorColumnKeys}
           title="Customize Vendor Table Columns"
         />
+
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}
@@ -531,34 +690,56 @@ export const Vendor: React.FC = () => {
           }}
           saveText="Apply Filter"
           cancelText="Clear Filter"
+          resetText=''
           onCancel={() => clearFilters()}
-          size="half-screen"
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Vendor Name</label>
+
                 <Input
+                  label='Vendor Name'
                   type="text"
                   value={tempFilters.VendorName || ''}
                   onChange={(e) => handleFilterChange('VendorName', e.target.value)}
-                  placeholder="Enter vendor name"
+                  placeholder="Enter Vendor Name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+
                 <Input
+                  label='Company Name'
                   type="text"
                   value={tempFilters.CompanyName || ''}
                   onChange={(e) => handleFilterChange('CompanyName', e.target.value)}
-                  placeholder="Enter company name"
+                  placeholder="Enter Company Name"
+                />
+              </div>
+              <div>
+
+                <Input
+                  label='Company Type'
+                  type="text"
+                  value={tempFilters.CompanyType || ''}
+                  onChange={(e) => handleFilterChange('CompanyType', e.target.value)}
+                  placeholder="Enter Company Type"
+                />
+              </div>
+              <div>
+
+                <Input
+                  label='Mobile Number'
+                  type="text"
+                  value={tempFilters.MobileNumber || ''}
+                  onChange={(e) => handleFilterChange('MobileNumber', e.target.value)}
+                  placeholder="Enter Mobile Number"
                 />
               </div>
             </div>
           </div>
         </Modal>
       </div>
-    </>
   )
 }
 

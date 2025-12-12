@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   ShiftMasterData,
@@ -15,49 +14,92 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-
+import { useLocation, useNavigate } from 'react-router-dom';
+import { updateFilter } from '@/core/utils/filterHelper';
 
 export const ShiftMaster: React.FC = () => {
 
-  const [shiftMasterList, setShiftMasterList] = useState<ShiftMasterData[]>([]);
+  //#region STATE MANAGEMENT
+  const [ShiftMasterList, setShiftMasterList] = useState<ShiftMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
+
+  // USE NAVIGATE
+  const navigate = useNavigate();
+
+  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
+
+  //TABLE SORT INFO
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-  const { toasts, removeToast, addToast } = useToast()
-  const [searchTerm, setSearchTerm] = useState('')
+
+  // TOAST
+  const { addToast } = useToast();
+
+  // SINGLE SEARCH TEXT BOX
+  const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchShifts(value)
-  }, 350)
-  const [viewShiftMasterDetailsData, setViewShiftMasterDetailsData] = useState<ShiftMasterData | null>(null)
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  }, 350);
+
+  //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-  const [isShowCustomizeShiftMasterColumnsModal, setIsShowCustomizeShiftMasterColumnsModal] = useState(false);
-  const { canExport } = useMenuPermissions();
-  const hasFetchedInitialShifts = useRef(false)
 
+  //CUSTOMIZE COLUMN MODAL
+  const [isShowCustomizeShiftColumnsModal, setIsShowCustomizeShiftColumnsModal] = useState(false);
+
+  //#region MENU PERMISSIONS
+  const { canAction, canExport } = useMenuPermissions();
+  //#endregion
+
+  const location = useLocation() as any;
+
+  //#endregion
+
+  //#region INIT
   useEffect(() => {
-    if (hasFetchedInitialShifts.current) return
-    hasFetchedInitialShifts.current = true;
-    fetchShiftList()
-  }, [])
+    const incoming = location.state?.listState;
+    const listState = incoming ?? {
+      page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: ''
+    };
 
+    setPagination({ currentPage: listState.page ?? pagination.currentPage });
+
+    setSortInfo(listState.sortInfo);
+
+    setFilters(listState.filters ?? {});
+
+    setTempFilters(listState.filters ?? {});
+
+    setSearchTerm(listState.searchTerm ?? '');
+
+    if (listState.searchTerm && String(listState.searchTerm).trim()) {
+      loadShifts(listState.page ?? 1, { ShiftName: String(listState.searchTerm).trim() });
+      return;
+    }
+
+    loadShifts(listState.page ?? 1, listState.filters ?? {});
+  }, [location.state]);
+
+  //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
+  //#endregion
 
-  const fetchShiftList = async (page: number = pagination.currentPage) => {
+  //#region DATA LOADING | FETCH |  LOAD | SEARCH 
+
+  const fetchShiftMasterList = async (page: number = pagination.currentPage) => {
     return await loadShifts(page, filters);
   }
 
@@ -67,10 +109,12 @@ export const ShiftMaster: React.FC = () => {
       setIsLoadingMessage,
       async () => {
         let sortByParam = undefined;
+
         if (sortInfo) {
-          const column = shiftMasterColumns.find(col => col.key === sortInfo.column)
+
+          const column = ShiftMasterColumns.find(col => col.key === sortInfo.column);
           if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
+            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
         const params: FilterWithPaginationShiftMasterRequest = {
@@ -79,57 +123,82 @@ export const ShiftMaster: React.FC = () => {
           ShiftManagementMasterId: filterParams.ShiftManagementMasterId ? Number(filterParams.ShiftManagementMasterId) : undefined,
           ShiftName: filterParams.ShiftName?.trim() || undefined,
           SortBy: sortByParam
-        }
-        const response = await getShifts(params);
+        };
+
+        const response = await ShiftMasterService.apiCallPullShiftMaster(params);
         if (E.isRight(response)) {
+
           setShiftMasterList(response.right.Data);
+
           setPagination({
             currentPage: page,
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
           });
+
         } else {
           addToast({ type: 'error', title: response.left.message });
+          return response;
         }
-        return response
       },
       undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message })
-      },
+      (error: any) => addToast({ type: 'error', title: error.message }),
       undefined,
-      'Loading Shift Data...'
-    )
-  }
+      'Loading Shift Data'
+    );
+  };
+  //#endregion
 
+  //#region SEARCH  SHIFT MASTER
   const searchShifts = async (searchValue: string) => {
+
     setSearchTerm(searchValue);
+
     if (searchValue.trim() === '') {
-      fetchShiftList();
+
+      fetchShiftMasterList();
+
       return
     }
+
     const filterParams: FilterInfo = {
       ShiftName: searchValue.trim(),
     };
-    await loadShifts(1, filterParams)
-  }
 
-  const clearsearchShifts = () => {
+    await loadShifts(1, filterParams);
+  };
+
+  //#endregion
+
+  //#region CLEAR SHIFT MASTER 
+  const clearSearchShifts = () => {
     setSearchTerm('');
-    debouncedSearch.cancel?.();
-    fetchShiftList();
-  }
 
+    debouncedSearch.cancel?.();
+
+    setFilters({});
+    setTempFilters({});
+    setPagination({ currentPage: 1 });
+    loadShifts(1, {});
+    try {
+      navigate(location.pathname, { replace: true, state: {} });
+    } catch {
+    }
+  };
+  //#endregion
+
+  //#region EXPORT / IMPORT EXCEL AND PDF
   const handleExportShifts = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
+        // Find the column label for sorting
         let sortByParam = undefined
         if (sortInfo) {
-          const column = shiftMasterColumns.find(col => col.key === sortInfo.column)
+          const column = ShiftMasterColumns.find(col => col.key === sortInfo.column);
           if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
+            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
         const params: FilterWithPaginationShiftMasterRequest = {
@@ -138,37 +207,52 @@ export const ShiftMaster: React.FC = () => {
           ShiftName: filters.ShiftName?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
-        }
+        };
+
         const response = await getShifts(params);
-        handleExportFile(response, exportType, 'Shift Master', addToast)
+
+        handleExportFile(response, exportType, 'Shift Master', addToast);
+
         return response;
       },
       undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Export failed' })
-      },
+      (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
       undefined,
-      'Preparing Export...'
-    )
-  }
+      'Preparing Export'
+    );
+  };
 
   const handleExportShiftExcel = () => handleExportShifts('Excel')
   const handleExportShiftPdf = () => handleExportShifts('PDF')
+  //#endregion
 
+
+  //#region API | SERVICES CALL TO GET SHIFT
   const getShifts = async (filterParams: FilterWithPaginationShiftMasterRequest) => {
+
     return await ShiftMasterService.apiCallPullShiftMaster(filterParams);
   }
+  //#endregion
 
-  const handlePageChange = (page: number) => {
-    fetchShiftList(page);
-  };
 
-  const handleSortColumn = (sortInfo: SortInfo) => {
+  //#region HANDLE PAGE CHNAGE EVENT
+  const handlePageChange = useCallback((page: number) => {
+
+    fetchShiftMasterList(page);
+  }, []);
+
+  //#region TABLE SORT COLUMN
+  const handleSortColumn = useCallback((sortInfo: SortInfo) => {
+
     setSortInfo(sortInfo);
-    fetchShiftList(1);
-  }
 
-  const shiftMasterPaginationInfo: PaginationInfo = useMemo(
+    fetchShiftMasterList(1);
+
+  }, []);
+  //#endregion
+
+  //#region TABLE PAGINATION INFO
+  const ShiftPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
       totalPages: pagination.totalPages,
@@ -176,344 +260,313 @@ export const ShiftMaster: React.FC = () => {
       pageSize: pagination.pageSize,
       onPageChange: handlePageChange
     }),
-    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
-  )
+    [pagination, handlePageChange]
+  );
 
-  const shiftListForTable = useMemo(() => shiftMasterList, [shiftMasterList]);
+  const ShiftsForTable = useMemo(() => ShiftMasterList, [ShiftMasterList]);
+  //#endregion
 
-  const handleViewShiftDetails = useCallback((row: ShiftMasterData) => {
-    setViewShiftMasterDetailsData(row)
-    setIsViewModalOpen(true)
-  }, [])
-
-  const shiftMasterColumns = useMemo<TableColumn[]>(
-    () => [
-      {
-        key: 'ShiftName',
-        label: 'Shift Name',
-        width: '25',
-        sortable: true,
-        fixed: 'left',
-        align: 'left',
-        render: (value, row) => (
-          <div className="flex items-center justify-start">
-            <TooltipText
-              text={value || 'N/A'}
-              maxWidth="250px"
-              tooltipThreshold={25}
-              onClick={() => handleViewShiftDetails(row)}
-            />
-          </div>
-        )
-      },
-      {
-        key: 'ShiftCode',
-        label: 'Shift Code',
-        width: '15',
-        sortable: false,
-        align: 'center',
-        render: (value) => (
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="150px"
-            tooltipThreshold={15}
-            tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
-          />
-        )
-      },
-      {
-        key: 'ShiftBeginTime',
-        label: 'Start Time',
-        width: '12',
-        sortable: false,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'ShiftEndTime',
-        label: 'End Time',
-        width: '12',
-        sortable: false,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'ShiftDurationTime',
-        label: 'Duration',
-        width: '12',
-        sortable: false,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '12',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '12',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+  //#region NAVIGATE TO  VIEW SHIFT
+  const handleNavigateToView = (row: ShiftMasterData) => {
+    navigate('/shiftMaster/view', {
+      state: {
+        ShiftData: row,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm
+        }
       }
-    ],
-    [handleViewShiftDetails]
-  )
+    });
+  };
 
-  const requiredShiftMasterColumnKeys: string[] = ['ShiftName'];
-  const allShiftMasterColumnKeys: string[] = shiftMasterColumns.map(c => c.key)
-  const [selectedShiftMasterColumnKeys, setSelectedShiftMasterColumnKeys] = useState<string[]>(() => {
+  //#region NAVIGATE TO ADD SHIFT
+  const handleAddShiftModal = useCallback(() => {
+    navigate('/shiftMaster/add', {
+      state: {
+        fromList: true,
+        listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
+      }
+    });
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+
+  //#endregion
+
+  //#region TABLE COLUMNS
+  const ShiftMasterColumns = useMemo<TableColumn[]>(() => [
+    {
+      key: 'ShiftName',
+      label: 'Shift Name',
+      width: '20',
+      sortable: true,
+      fixed: 'left',
+      align: 'left',
+      render: (value, row) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="250px"
+          tooltipThreshold={25}
+          onClick={() => handleNavigateToView(row)}
+        />
+      )
+    },
+
+    {
+      key: 'ShiftCode',
+      label: 'Shift Code',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="150px"
+          tooltipThreshold={15}
+        />
+      )
+    },
+
+    {
+      key: 'ShiftBeginTime',
+      label: 'Shift Begin Time',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="120px"
+          tooltipThreshold={12}
+        />
+      )
+    },
+
+    {
+      key: 'ShiftEndTime',
+      label: 'Shift End Time',
+      width: '12',
+      sortable: false,
+      align: 'left',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="120px"
+          tooltipThreshold={12}
+        />
+      )
+    },
+
+    {
+      key: 'ShiftDurationTime',
+      label: 'Shift Duration Time',
+      width: '12',
+      sortable: false,
+      align: 'left',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="120px"
+          tooltipThreshold={12}
+        />
+      )
+    },
+
+    {
+      key: 'ShiftWorkDurationTime',
+      label: 'Shift Work Duration Time',
+      width: '12',
+      sortable: false,
+      align: 'left',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="120px"
+          tooltipThreshold={12}
+        />
+      )
+    },
+
+  ], [handleNavigateToView]);
+  //#endregion
+
+  //#region COLUMN CUSTOMIZATION
+  const requiredShiftColumnKeys: string[] = ['ShiftName'];
+
+  const allShiftColumnKeys: string[] = ShiftMasterColumns.map(c => c.key);
+
+  const [selectedShiftColumnKeys, setSelectedShiftColumnKeys] = useState<string[]>(() => {
     try {
-      const saved = LocalStorageHelper.getShiftMasterTableColumns();
+
+      const saved = LocalStorageHelper.getShiftMasterTableColumns?.();
+
       if (saved) {
+
         const parsed = JSON.parse(saved) as string[]
-        const withRequired = Array.from(new Set([...parsed, ...requiredShiftMasterColumnKeys]));
-        return withRequired.filter(k => allShiftMasterColumnKeys.includes(k));
+        // Ensure required columns are always present
+
+        const withRequired = Array.from(new Set([...parsed, ...requiredShiftColumnKeys]));
+
+        // Filter out any keys that no longer exist
+        return withRequired.filter(k => allShiftColumnKeys.includes(k));
       }
     } catch { }
-    return allShiftMasterColumnKeys
-  })
+    return allShiftColumnKeys;
+  });
 
   useEffect(() => {
-    setSelectedShiftMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredShiftMasterColumnKeys])).filter(k => allShiftMasterColumnKeys.includes(k)));
+    setSelectedShiftColumnKeys(prev => Array.from(new Set([...prev, ...requiredShiftColumnKeys])).filter(k => allShiftColumnKeys.includes(k)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shiftMasterColumns.length])
+  }, [ShiftMasterColumns.length])
 
-  const visibleShiftMasterColumns = useMemo(
-    () => shiftMasterColumns.filter(col => selectedShiftMasterColumnKeys.includes(col.key)),
-    [shiftMasterColumns, selectedShiftMasterColumnKeys]
-  )
+  const visibleShiftColumns = useMemo(
+    () => ShiftMasterColumns.filter(col => selectedShiftColumnKeys.includes(col.key)),
+    [ShiftMasterColumns, selectedShiftColumnKeys]
+  );
+  //#endregion
 
-  interface ViewShiftDetailsModalProps {
-    isOpen: boolean
-    onClose: () => void
-    data: ShiftMasterData | null
-  }
-
-  const ViewShiftDetailsModal: React.FC<ViewShiftDetailsModalProps> = ({
-    isOpen,
-    onClose,
-    data
-  }) => {
-    if (!data) return null
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Settings - Company setup (Shift Details)"
-        onSubmit={(e) => {
-          e.preventDefault()
-          onClose()
-        }}
-        cancelText="Close"
-        loading={false}
-      >
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Shift Code</span>
-              <span className="text-sm text-blue-600 font-medium">{data.ShiftCode || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Shift Name</span>
-              <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                {data.ShiftName || 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Start Time</span>
-              <span className="text-sm text-blue-600 font-medium">{data.ShiftBeginTime || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">End Time</span>
-              <span className="text-sm text-blue-600 font-medium">{data.ShiftEndTime || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Duration</span>
-              <span className="text-sm text-blue-600 font-medium">{data.ShiftDurationTime || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Work Duration</span>
-              <span className="text-sm text-blue-600 font-medium">{data.ShiftWorkDurationTime || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Break Duration</span>
-              <span className="text-sm text-blue-600 font-medium">{data.BreakDurationTime || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Grace Time</span>
-              <span className="text-sm text-blue-600 font-medium">{data.GraceTime || 'N/A'}</span>
-            </div>
-            {data.Remarks && (
-              <div className="flex justify-between items-start py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Remarks</span>
-                <span className="text-sm text-blue-600 font-medium text-left break-words whitespace-normal max-w-[400px]">
-                  {data.Remarks}
-                </span>
-              </div>
-            )}
-          </div>
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Action Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created By</span>
-                  <span className="text-sm text-blue-600 font-medium">{data.CreatedBy || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Created Date</span>
-                  <span className="text-sm text-blue-600 font-medium">
-                    {formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {data.ModifiedBy && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified By</span>
-                    <span className="text-sm text-blue-600 font-medium">{data.ModifiedBy}</span>
-                  </div>
-                )}
-                {data.ModifiedDate && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Modified Date</span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </Modal>
-    )
-  }
-
+  //#region FILTER MODAL HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters)
-    loadShifts(1, tempFilters)
-    setShowFilterPopup(false)
-  }
+    setFilters(tempFilters);
+    loadShifts(1, tempFilters);
+    setShowFilterPopup(false);
+  };
+  //#endregion
 
+  //#region CLEAR FILTER
   const clearFilters = () => {
-    setTempFilters({})
-    setFilters({})
-    loadShifts(1, {})
-    setShowFilterPopup(false)
-  }
+    setTempFilters({});
+    setFilters({});
 
+    // reset page
+    setPagination({ currentPage: 1 });
+
+    // load empty filters
+    loadShifts(1, {});
+
+    setShowFilterPopup(false);
+    // clear router state (very important)
+
+    navigate(location.pathname, { replace: true, state: {} });
+
+  };
+  //#endregion
+
+  //#region HANDLE FILTER CHNAGE
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...tempFilters }
-    if (value.trim()) {
-      newFilters[key] = value.trim()
-    } else {
-      delete newFilters[key]
-    }
-    setTempFilters(newFilters)
+    setTempFilters(prev => updateFilter(prev, key, value));
   }
+  //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+    
+
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        {/* LOADER */}
+
+        <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+
+        {/* ============================================================================
+          COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
+           ============================================================================ */}
+
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by shift name..."
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
+          searchPlaceholder="Search By Shift Name"
+          onSearchChange={v => {
+            setSearchTerm(v);
+            debouncedSearch(v);
           }}
-          onClearSearch={clearsearchShifts}
+          onClearSearch={clearSearchShifts}
           isShowFilterButton
           filters={filters}
           onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
+            setTempFilters(filters);
+            setShowFilterPopup(true);
           }}
           isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeShiftMasterColumnsModal(true)}
-          isShowAddButton={false}
-          isShowImportButton={false}
+          onCustomize={() => setIsShowCustomizeShiftColumnsModal(true)}
+
+          // ADD
+          isShowAddButton={canAction}
+          addTitle="Add Shift"
+          onAdd={handleAddShiftModal}
+
+
+          // EXPORT
           isShowExportButton={canExport}
           onExportExcel={handleExportShiftExcel}
           onExportPdf={handleExportShiftPdf}
           exportLoading={isLoading}
         />
+
+        {/* DATA TABLE SHIFT*/}
+
         <DataTable
-          data={shiftListForTable}
-          columns={visibleShiftMasterColumns}
-          pagination={shiftMasterPaginationInfo}
-          emptyMessage="No shifts found"
-          fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
+          data={ShiftsForTable}
+          columns={visibleShiftColumns}
+          pagination={ShiftPaginationInfo}
+          emptyMessage="No Shift found"
+          fixedHeight
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
           onSort={handleSortColumn}
         />
-        <ViewShiftDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewShiftMasterDetailsData(null)
-          }}
-          data={viewShiftMasterDetailsData}
-        />
+
+        {/* CUSTOMIZE COLUMNS MODAL */}
+
         <CustomizeColumnsModal
-          isOpen={isShowCustomizeShiftMasterColumnsModal}
-          onClose={() => setIsShowCustomizeShiftMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(new Set([...keys, ...requiredShiftMasterColumnKeys]))
-            setSelectedShiftMasterColumnKeys(withRequired)
+          isOpen={isShowCustomizeShiftColumnsModal}
+          onClose={() => setIsShowCustomizeShiftColumnsModal(false)}
+          onApply={keys => {
+            const withRequired = Array.from(
+
+              new Set([...keys, ...requiredShiftColumnKeys])
+            );
+            setSelectedShiftColumnKeys(withRequired);
+
             try {
-              LocalStorageHelper.storeShiftMasterTableColumns(JSON.stringify(withRequired))
+              LocalStorageHelper.storeShiftMasterTableColumns?.(
+
+                JSON.stringify(withRequired)
+              );
             } catch { }
           }}
-          columns={shiftMasterColumns}
-          selectedKeys={selectedShiftMasterColumnKeys}
-          requiredKeys={requiredShiftMasterColumnKeys}
-          title="Customize Shift Master Table Columns"
+          columns={ShiftMasterColumns}
+          selectedKeys={selectedShiftColumnKeys}
+          requiredKeys={requiredShiftColumnKeys}
+          title="Customize Table Columns"
         />
+
+        {/* FILTER SHIFT MODAL */}
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}
           title="Filter - Shift Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
+          onSubmit={e => {
+            e.preventDefault();
+            applyFilters();
           }}
           saveText="Apply Filter"
           cancelText="Clear Filter"
           onCancel={() => clearFilters()}
-          size="half-screen"
+          resetText=''
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Shift Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.ShiftName || ''}
-                  onChange={(e) => handleFilterChange('ShiftName', e.target.value)}
-                  placeholder="Enter shift name"
-                />
-              </div>
+              <Input type="text"
+                label='Shift Name'
+                value={tempFilters?.ShiftName ?? ''}
+                onChange={e => handleFilterChange('ShiftName', e.target.value)}
+                placeholder="Enter Shift Name" />
             </div>
           </div>
         </Modal>
       </div>
-    </>
-  )
-}
+  );
+};
 
-export default ShiftMaster
-
-
+export default ShiftMaster;

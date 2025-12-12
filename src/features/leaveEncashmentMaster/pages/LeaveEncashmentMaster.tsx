@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   LeaveEncashmentMasterData,
@@ -16,7 +15,7 @@ import { LeaveEncashmentMasterService } from '@/features/leaveEncashmentMaster/s
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -26,6 +25,14 @@ import { Edit, Trash2 } from 'lucide-react';
 import { Button, Input } from '@/ui/components/forms';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 
+
+const initialFormState = (): AddUpdateLeaveEncashmentMasterRequest => ({
+  LeaveEncashmentMasterSlabsId: 0,
+  Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  MinSalary: 0,
+  MaxSalary: 0,
+  EncashmentRate: 0,
+});
 
 export const LeaveEncashmentMaster: React.FC = () => {
 
@@ -41,44 +48,36 @@ export const LeaveEncashmentMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const {addToast } = useToast()
 
-  //VIEW BRANCH MASTER MODAL STATES
+  //VIEW LEAVE ENCASHMENT MASTER MODAL STATES
   const [viewLeaveEncashmentMasterDetailsData, setViewLeaveEncashmentMasterDetailsData] = useState<LeaveEncashmentMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
+  //ERROR SET UP
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeLeaveEncashmentMasterColumnsModal, setIsShowCustomizeLeaveEncashmentMasterColumnsModal] = useState(false);
-
-  // EDIT BRANCH MASTER
+  // EDIT LEAVE ENCASHMENT MASTER
   const [editingLeaveEncashmentMasterData, setEditingLeaveEncashmentMasterData] = useState<LeaveEncashmentMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
+  //ADD UPDATE LEAVE ENCASHMENT MASTER
+  const [formData, setFormData] = useState<AddUpdateLeaveEncashmentMasterRequest>(() => initialFormState());
 
-  const [leaveEncashmentMasterFormData, setLeaveEncashmentMasterFormData] = useState<AddUpdateLeaveEncashmentMasterRequest>({
-    LeaveEncashmentMasterSlabsId: 0,
-    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    MinSalary: 0,
-    MaxSalary: 0,
-    EncashmentRate: 0,
-  });
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-
-  //DELETE LeaveEncashment MASTER STATES
-
+  //DELETE LEAVE ENCASHMENT MASTER STATES
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-
   const [deleteLeaveEncashmentMasterDetailsData, setDeleteLeaveEncashmentMasterDetailsData] = useState<LeaveEncashmentMasterData | null>(null)
+
+  //CUSTOMIZE COLUMN MODAL
+  const [isShowCustomizeLeaveEncashmentMasterColumnsModal, setIsShowCustomizeLeaveEncashmentMasterColumnsModal] = useState(false);
+  //#endregion
 
   //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
-
+  //#endregion
 
   //#region INITIALIZATION
   const hasFetchedInitialLeaveEncashments = useRef(false)
-  //#endregion
-
 
   useEffect(() => {
     if (hasFetchedInitialLeaveEncashments.current) return
@@ -87,10 +86,34 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
     fetchLeaveEncashmentList()
   }, [])
+  //#endregion
 
+  //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
+
+  useEffect(() => {
+    if (isAddUpdateModalOpen) {
+      if (editingLeaveEncashmentMasterData) {
+        setFormData({
+          LeaveEncashmentMasterSlabsId: editingLeaveEncashmentMasterData.LeaveEncashmentMasterSlabsId,
+          Uniquekey: editingLeaveEncashmentMasterData.Uniquekey || initialFormState().Uniquekey,
+          MinSalary: editingLeaveEncashmentMasterData.MinSalary || 0,
+          MaxSalary: editingLeaveEncashmentMasterData.MaxSalary || 0,
+          EncashmentRate: editingLeaveEncashmentMasterData.EncashmentRate || 0,
+        });
+      } else {
+        setFormData(initialFormState());
+      }
+      setErrors({});
+    }
+  }, [isAddUpdateModalOpen, editingLeaveEncashmentMasterData]);
+
+  //#endregion
+
+  //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchLeaveEncashmentList = async (page: number = pagination.currentPage) => {
     return await loadLeaveEncashments(page);
+    
   }
 
   const loadLeaveEncashments = async (page: number) => {
@@ -108,6 +131,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
         }
+
         const params: FilterWithPaginationLeaveEncashmentMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
@@ -137,9 +161,10 @@ export const LeaveEncashmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Leave Encashment Data...'
+      'Loading Leave Encashment Data'
     )
   }
+  //#endregion
 
   //#region EXPORT EXCEL | PDF
   const handleExportLeaveEncashments = async (exportType: 'Excel' | 'PDF') => {
@@ -174,7 +199,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' })
       },
       undefined,
-      'Preparing Export...'
+      'Preparing Export'
     )
   }
 
@@ -183,25 +208,34 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
   //#endregion
 
-  //#region API | SERVICES CALL TO GET BRANCH 
-
-
+  //#region API | SERVICES CALL TO GET LEAVE ENCASHMENT 
   const getLeaveEncashments = async (filterParams: FilterWithPaginationLeaveEncashmentMasterRequest) => {
+
     return await LeaveEncashmentMasterService.apiCallPullLeaveEncashmentMaster(filterParams);
   }
 
   //#endregion
 
-  //#region TABLE CONFIGURATION
+
+  //#region HANDLE PAGE CHNAGE EVENT
 
   const handlePageChange = (page: number) => {
     fetchLeaveEncashmentList(page);
   };
+  //#endregion
 
+
+  //#region TABLE SORT COLUMN
   const handleSortColumn = (sortInfo: SortInfo) => {
+
     setSortInfo(sortInfo);
+
     fetchLeaveEncashmentList(1);
   }
+  //#endregion
+
+
+  //#region TABLE PAGINATION INFO
 
   const leaveEncashmentMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -215,19 +249,40 @@ export const LeaveEncashmentMaster: React.FC = () => {
   )
 
   const leaveEncashmentListForTable = useMemo(() => leaveEncashmentMasterList, [leaveEncashmentMasterList]);
+  //#endregion
 
-  // STABLE HANDLER VIEW EDIT CONFIRMATION DIALOG BOX
+  
+  //#region VIEW EDIT LEAVE ENCASHMENT
   const handleViewLeaveEncashmentDetails = useCallback((row: LeaveEncashmentMasterData) => {
     setViewLeaveEncashmentMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
 
+  //#endregion
+
+  //#region EDIT LEAVE ENCASHMENT  MASTER
+
+  const handleEditLeaveEncashmentMasterData = useCallback((row: LeaveEncashmentMasterData) => {
+    setEditingLeaveEncashmentMasterData({
+      ...row,
+      EncashmentRate: row.EncashmentRate || 0,
+      MaxSalary: row.MaxSalary || 0,
+      MinSalary: row.MinSalary || 0,
+
+    })
+    setIsAddUpdateModalOpen(true);
+
+  }, [])
+  //#endregion
+
+  //#region CONFIRMATION DIALOG BOX
   const handleConfirmationDialogBoxOpen = useCallback((row: LeaveEncashmentMasterData) => {
     setDeleteLeaveEncashmentMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
+  //#endregion
 
-
+  //#region TABLE COLUMN
   const leaveEncashmentMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -276,22 +331,6 @@ export const LeaveEncashmentMaster: React.FC = () => {
           </span>
         )
       },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '20',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '20',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
-      }
     ],
     // dependencies: include everything used inside that might change
     [handleViewLeaveEncashmentDetails]
@@ -326,8 +365,10 @@ export const LeaveEncashmentMaster: React.FC = () => {
   })
 
   useEffect(() => {
+    // Guarantee required columns remain selected if state changes elsewhere
 
     setSelectedLeaveEncashmentMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredLeaveEncashmentMasterColumnKeys])).filter(k => allLeaveEncashmentMasterColumnKeys.includes(k)));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
 
   }, [leaveEncashmentMasterColumns.length])
@@ -339,7 +380,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
   //#endregion
 
-  //#region VIEW BRANCH DETAILS MODAL COMPONENT
+  //#region VIEW LEAVE ENCASHMENT DETAILS MODAL COMPONENT
 
   interface ViewLeaveEncashmentDetailsModalProps {
     isOpen: boolean
@@ -396,7 +437,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
                   color='gray'
                   variant='solid'
                   colorMode="light"
-                  size='md'
+                  size='sm'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
@@ -410,7 +451,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
                 <Button
                   color='blue'
-                  size='md'
+                  size='sm'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
@@ -431,54 +472,44 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
   //#endregion
 
-  // ADD UPDATE Leave Encashment Master
-  const handleAddLeaveEncashmentModal = () => {
-    setEditingLeaveEncashmentMasterData(null);
-    setLeaveEncashmentMasterFormData({
-      LeaveEncashmentMasterSlabsId: 0,
-      Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      MinSalary: 0,
-      MaxSalary: 0,
-      EncashmentRate: 0,
-    });
+  //#region ADD UPDATE LEAVE ENCASHMENT MASTER
 
-    setFormErrors({});
-    setIsAddUpdateModalOpen(true);
-  }
+  const handleFieldChange = (field: keyof AddUpdateLeaveEncashmentMasterRequest, value: any) => {
 
-  const handleEditLeaveEncashmentMasterData = (row: LeaveEncashmentMasterData) => {
-    setEditingLeaveEncashmentMasterData(row);
-    setLeaveEncashmentMasterFormData({
-      LeaveEncashmentMasterSlabsId: row.LeaveEncashmentMasterSlabsId || 0,
-      Uniquekey: row.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      MinSalary: row.MinSalary || 0,
-      MaxSalary: row.MaxSalary || 0,
-      EncashmentRate: row.EncashmentRate || 0,
-    });
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
-    setFormErrors({});
-    setIsAddUpdateModalOpen(true);
-  }
-
-  const handleFieldChange = (field: keyof AddUpdateLeaveEncashmentMasterRequest, value: string | number | null | boolean) => {
-    setLeaveEncashmentMasterFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
+  };
+
+  const handleAddLeaveEncashmentMasterModal = () => {
+    setEditingLeaveEncashmentMasterData(null);
+    setFormData(initialFormState());
+    setErrors({});
+    setIsAddUpdateModalOpen(true);
   }
 
-  const validateLeaveEncashmentMasterForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
-    const newErrors: { [key: string]: string } = {};
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateLeaveEncashmentMasterForm = (): {
 
-    if (!leaveEncashmentMasterFormData.EncashmentRate) {
+    isValid: boolean
+
+    errors: { [key: string]: string }
+
+  } => {
+
+    const newErrors: { [key: string]: string } = {}
+
+    if (!formData.EncashmentRate) {
       newErrors.EncashmentRate = "Encashment Rate is required.";
     }
 
-    if (!leaveEncashmentMasterFormData.MinSalary) {
+    if (!formData.MinSalary) {
       newErrors.MinSalary = "Min Salary is required.";
     }
 
-    if (!leaveEncashmentMasterFormData.MaxSalary) {
+    if (!formData.MaxSalary) {
       newErrors.MaxSalary = "Max Salary is required.";
     }
 
@@ -490,39 +521,42 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
   const PushLeaveEncashmentMasterFormData = (): AddUpdateLeaveEncashmentMasterRequest => {
     return {
-      LeaveEncashmentMasterSlabsId: leaveEncashmentMasterFormData.LeaveEncashmentMasterSlabsId || 0,
-      Uniquekey: leaveEncashmentMasterFormData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      MinSalary: leaveEncashmentMasterFormData.MinSalary || 0,
-      MaxSalary: leaveEncashmentMasterFormData.MaxSalary || 0,
-      EncashmentRate: leaveEncashmentMasterFormData.EncashmentRate || 0,
+      LeaveEncashmentMasterSlabsId: formData.LeaveEncashmentMasterSlabsId,
+      Uniquekey: formData.Uniquekey,
+      MinSalary: formData.MinSalary,
+      MaxSalary: formData.MaxSalary,
+      EncashmentRate: formData.EncashmentRate,
     };
   };
 
-  const handleAddUpdateLeaveEncashmentMaster = async () => {
+  const handleAddUpdateLeaveEncashmentMaster = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-
-    setFormErrors({});
+    setErrors({});
 
     const validation = validateLeaveEncashmentMasterForm();
 
     if (!validation.isValid) {
-      setFormErrors(validation.errors);
+
+      setErrors(validation.errors);
+
       return;
     }
 
     await runApiWithLoader(
       setIsLoading,
+
       setIsLoadingMessage,
       async () => {
 
         const payload = PushLeaveEncashmentMasterFormData();
-        const response = await LeaveEncashmentMasterService.apiCallAddUpdateLeaveEncashmentMaster(payload);
 
+        const response = await LeaveEncashmentMasterService.apiCallAddUpdateLeaveEncashmentMaster(payload);
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = leaveEncashmentMasterFormData.LeaveEncashmentMasterSlabsId === 0
+          const isAdd = formData.LeaveEncashmentMasterSlabsId === 0
 
           if (isAdd) {
 
@@ -544,7 +578,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
             setLeaveEncashmentMasterList(prevData =>
               prevData.map(item =>
-                item.LeaveEncashmentMasterSlabsId === leaveEncashmentMasterFormData.LeaveEncashmentMasterSlabsId
+                item.LeaveEncashmentMasterSlabsId === formData.LeaveEncashmentMasterSlabsId
                   ? updatedRecord
                   : item
               )
@@ -569,12 +603,12 @@ export const LeaveEncashmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
-      leaveEncashmentMasterFormData.LeaveEncashmentMasterSlabsId === 0 ? 'Add Leave Encashment' : 'Update Leave Encashment...'
+      formData.LeaveEncashmentMasterSlabsId === 0 ? 'Add Leave Encashment' : 'Update Leave Encashment...'
     )
-  }
+  };
   //#endregion 
 
-  //#region DELETE Leave Encashment MASTER
+  //#region DELETE LEAVE ENCASHMENT MASTER
   const handleDeleteLeaveEncashmentMaster = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
@@ -588,7 +622,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
       async () => {
 
         const params: DeleteLeaveEncashmentMasterRequest = {
-          LeaveEncashmentMasterSlabsId: deleteLeaveEncashmentMasterDetailsData.LeaveEncashmentMasterSlabsId ?? 0,
+          LeaveEncashmentMasterSlabsId: deleteLeaveEncashmentMasterDetailsData.LeaveEncashmentMasterSlabsId || 0,
           UniqueKey: deleteLeaveEncashmentMasterDetailsData.Uniquekey || ""
         }
 
@@ -622,32 +656,45 @@ export const LeaveEncashmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Leave Encashment master data...'
+      'Delete Leave Encashment Master Data'
     )
   }
 
   //#endregion
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="h-full flex flex-col">
+    
+
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+
+        {/* COMMAN LOADER FOR PAGE */}
 
         <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+
+        {/* COMBINED IMPORT , EXPORT ROW */}
 
         <TableActionToolbar
           isShowSearchBar={false}
           isShowFilterButton={false}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeLeaveEncashmentMasterColumnsModal(true)}
+
+          // ADD
           isShowAddButton={canAction}
           addTitle="Add LeaveEncashment"
-          onAdd={handleAddLeaveEncashmentModal}
+          onAdd={handleAddLeaveEncashmentMasterModal}
+
+          // IMPORT
           isShowImportButton={false}
+
+          // EXPORT 
           isShowExportButton={canExport}
           onExportExcel={handleExportLeaveEncashmentExcel}
           onExportPdf={handleExportLeaveEncashmentPdf}
           exportLoading={isLoading}
         />
+
+        {/* DATA TABLE LEAVE ENCASHMENT */}
+
         <DataTable
           data={leaveEncashmentListForTable}
           columns={visibleLeaveEncashmentMasterColumns}
@@ -660,6 +707,9 @@ export const LeaveEncashmentMaster: React.FC = () => {
           sortInfo={sortInfo}
           onSort={handleSortColumn}
         />
+
+        {/* VIEW LEAVE ENCASHMENT  MODAL */}
+
         <ViewLeaveEncashmentDetailsModal isOpen={isViewModalOpen}
           onClose={() => {
             setIsViewModalOpen(false)
@@ -668,42 +718,41 @@ export const LeaveEncashmentMaster: React.FC = () => {
           data={viewLeaveEncashmentMasterDetailsData}
         />
 
-        {/*  ADD EDIT UPDATE LeaveEncashment MODAL */}
+        {/*  ADD EDIT UPDATE LEAVE ENCASHMENT MODAL */}
+
         <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
             setIsAddUpdateModalOpen(false)
             setEditingLeaveEncashmentMasterData(null)
-            setFormErrors({})
+            setFormData(initialFormState());
+            setErrors({})
           }}
           onCancel={() => {
             setIsAddUpdateModalOpen(false)
             setEditingLeaveEncashmentMasterData(null)
-            setFormErrors({})
+            setFormData(initialFormState());
+            setErrors({})
           }}
-          title={editingLeaveEncashmentMasterData ? 'Update LeaveEncashment Master Details' : 'Add Branch Master Details'}
-          onSubmit={(e) => {
-            e.preventDefault()
-            handleAddUpdateLeaveEncashmentMaster()
-          }}
-          saveText="Save"
-          cancelText="Cancel"
+          title={editingLeaveEncashmentMasterData ? 'Update LeaveEncashment Master Details' : 'Add LeaveEncashment Master Details'}
+          onSubmit={handleAddUpdateLeaveEncashmentMaster}
+          saveText={editingLeaveEncashmentMasterData ? 'Update LeaveEncashment' : 'Save LeaveEncashment'}
+          resetText='Reset'
           loading={isLoading}
-          size="large75"
+          size="xl"
         >
-          <div className="space-y-6 p-6 bg-blue-50">
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-6 p-6 bg-blue-100">
+            <div className='space-y-4'>
               <div>
                 <Input
                   type="text"
                   required
                   label='Encashment Rate'
-                  value={leaveEncashmentMasterFormData.EncashmentRate ?? ""}
+                  value={formData.EncashmentRate ?? ""}
                   onChange={(e) => handleFieldChange("EncashmentRate", e.target.value)}
                   placeholder="Enter Encashment Rate"
                   maxLength={250}
-                  error={formErrors.EncashmentRate}
+                  error={errors.EncashmentRate}
                 />
               </div>
 
@@ -711,43 +760,47 @@ export const LeaveEncashmentMaster: React.FC = () => {
                 <Input
                   type="text"
                   label='Min Salary'
-                  value={leaveEncashmentMasterFormData.MinSalary ?? ""}
+                  value={formData.MinSalary ?? ""}
                   onChange={(e) => handleFieldChange("MinSalary", e.target.value)}
                   required
                   maxLength={20}
                   placeholder="Enter Min Salary"
-                  error={formErrors.MinSalary}
+                  error={errors.MinSalary}
                 />
-
               </div>
-            </div>
 
-            <div >
               <div>
                 <Input
                   type="text"
                   label='MaxSalary'
-                  value={leaveEncashmentMasterFormData.MaxSalary ?? ""}
+                  value={formData.MaxSalary ?? ""}
                   onChange={(e) => handleFieldChange("MaxSalary", e.target.value)}
                   required
                   placeholder="Enter MaxSalary"
                   maxLength={250}
-                  error={formErrors.MaxSalary}
+                  error={errors.MaxSalary}
                 />
               </div>
             </div>
-
           </div>
         </Modal>
+
+        {/* CUSTOMIZE COLUMNS MODAL */}
 
         <CustomizeColumnsModal
           isOpen={isShowCustomizeLeaveEncashmentMasterColumnsModal}
           onClose={() => setIsShowCustomizeLeaveEncashmentMasterColumnsModal(false)}
           onApply={(keys) => {
-            const withRequired = Array.from(new Set([...keys, ...requiredLeaveEncashmentMasterColumnKeys]))
+            const withRequired = Array.from(
+              new Set([...keys, ...requiredLeaveEncashmentMasterColumnKeys])
+            )
+
             setSelectedLeaveEncashmentMasterColumnKeys(withRequired)
+
             try {
-              LocalStorageHelper.storeLeaveEncashmentMasterTableColumns(JSON.stringify(withRequired))
+              LocalStorageHelper.storeLeaveEncashmentMasterTableColumns(
+                JSON.stringify(withRequired)
+              )
             } catch { }
           }}
           columns={leaveEncashmentMasterColumns}
@@ -756,7 +809,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
           title="Customize Leave Encashment Master Table Columns"
         />
 
-        {/* DELETE CONFIRMATION LeaveEncashment MODAL */}
+        {/* DELETE CONFIRMATION LEAVE ENCASHMENT MODAL */}
         <ConfirmationDialogBox
           isOpen={isConfirmationDialogBoxOpen}
           onClose={() => {
@@ -772,7 +825,6 @@ export const LeaveEncashmentMaster: React.FC = () => {
           variant="danger"
         />
       </div>
-    </>
   )
 }
 

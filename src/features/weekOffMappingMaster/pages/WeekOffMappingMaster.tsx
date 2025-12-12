@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   WeekOffMappingMasterData,
@@ -17,7 +16,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
@@ -27,11 +26,21 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Edit, Trash2 } from 'lucide-react';
 import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
-import { WeekOffMasterService } from '@/features/weekOffMaster/services/WeekOffMasterService';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
-import { departmentMasterService } from '@/features/departmentMaster/services/DepartmentMasterService';
+import { updateFilter } from '@/core/utils/filterHelper';
+import { fetchEmployeeMasterDropdown } from '@/features/employeeMaster/employeeMasterDropDown';
+import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
+import { fetchDepartmentMasterDropdown } from '@/features/departmentMaster/departmentMasterDropdown';
+import { fetchWeekOffMasterDropdown } from '../weekOffMasterDropDown';
 
+
+const initialFormState = (): AddUpdateWeekOffMappingMasterRequest => ({
+  WeekOffPolicyMasterMappingId: 0,
+  Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  WeekOffPolicyMasterId: 0,
+  DepartmentMasterId: "",
+  EmployeeId: ""
+});
 
 export const WeekOffMappingMaster: React.FC = () => {
 
@@ -47,7 +56,7 @@ export const WeekOffMappingMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const {addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -64,48 +73,77 @@ export const WeekOffMappingMaster: React.FC = () => {
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeWeekOffMappingMasterColumnsModal, setIsShowCustomizeWeekOffMappingMasterColumnsModal] = useState(false);
+  //ERROR SET UP
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  // Edit WEEKOFF MAPPING MASTER
+  // EDIT WEEKOFF MAPPING MASTER
   const [editingWeekOffMappingMasterData, setEditingWeekOffMappingMasterData] = useState<WeekOffMappingMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  const [WeekOffMappingMasterFormData, setWeekOffMappingMasterFormData] = useState<AddUpdateWeekOffMappingMasterRequest>({
-    WeekOffPolicyMasterMappingId: 0,
-    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    WeekOffPolicyMasterId: 0,
-    DepartmentMasterId: "",
-    EmployeeId: ""
-  });
-
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  //ADD UPDATE WEEK OFF MAPPING MASTER
+  const [formData, setFormData] = useState<AddUpdateWeekOffMappingMasterRequest>(() => initialFormState());
 
   //DELETE WEEKOFF MAPPING MASTER
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteWeekOffMappingMasterDetailsData, setDeleteWeekOffMappingMasterDetailsData] = useState<WeekOffMappingMasterData | null>(null)
 
+  //CUSTOMIZE COLUMN MODAL
+  const [isShowCustomizeWeekOffMappingMasterColumnsModal, setIsShowCustomizeWeekOffMappingMasterColumnsModal] = useState(false);
+
+  const [dropdownLabels, setDropdownLabels] = useState<{
+    departmentName?: string;
+    employeeName?: string;
+    weekOffPolicyName?: string
+  }>({});
   //#endregion
 
   //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
+  //#endregion
 
   //#region INITIALIZATION
   const hasFetchedInitialWeekOffMappings = useRef(false)
 
   useEffect(() => {
+
     if (hasFetchedInitialWeekOffMappings.current) return
+
     hasFetchedInitialWeekOffMappings.current = true;
+
     fetchWeekOffMappingList()
   }, [])
 
-  //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
+  //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
+
+  useEffect(() => {
+    if (isAddUpdateModalOpen) {
+      if (editingWeekOffMappingMasterData) {
+        setFormData({
+          WeekOffPolicyMasterMappingId: editingWeekOffMappingMasterData.WeekOffPolicyMasterMappingId,
+          Uniquekey: editingWeekOffMappingMasterData.Uniquekey || initialFormState().Uniquekey,
+          WeekOffPolicyMasterId: editingWeekOffMappingMasterData.WeekOffPolicyMasterId || 0,
+          DepartmentMasterId: editingWeekOffMappingMasterData.DepartmentMasterId || '',
+          EmployeeId: editingWeekOffMappingMasterData.EmployeeId || '',
+        });
+        setDropdownLabels({
+          departmentName: editingWeekOffMappingMasterData.DepartmentName || "",
+          employeeName: editingWeekOffMappingMasterData.EmployeeName || "",
+          weekOffPolicyName: editingWeekOffMappingMasterData.WeekOffPolicyName || ""
+        });
+      } else {
+        setFormData(initialFormState());
+      }
+      setErrors({});
+    }
+  }, [isAddUpdateModalOpen, editingWeekOffMappingMasterData]);
+
   //#endregion
+
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
@@ -162,11 +200,12 @@ export const WeekOffMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Week Off Mapping Data...'
+      'Loading Week Off Mapping'
     )
   }
+  //#endregion
 
-  // SEARCH WEEK OFF MAPPING 
+  //#region SEARCH WEEK OFF MAPPING 
   const searchWeekOffMappings = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -183,20 +222,23 @@ export const WeekOffMappingMaster: React.FC = () => {
 
     await loadWeekOffMappings(1, filterParams)
   }
+  //#endregion
 
+  //#region CLEAR SERACH WEEK OFF MAPPING
   const clearsearchWeekOffMappings = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
     fetchWeekOffMappingList();
   }
-  // END WEEK OFF MAPPING 
+  //#endregion 
 
-  // EXPORT EXCEL | PDF
+  //#region EXPORT EXCEL | PDF
   const handleExportWeekOffMappings = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
+        // Find the column label for sorting
         let sortByParam = undefined
         if (sortInfo) {
           const column = weekOffMappingMasterColumns.find(col => col.key === sortInfo.column)
@@ -226,34 +268,39 @@ export const WeekOffMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' })
       },
       undefined,
-      'Preparing Export...'
+      'Preparing Export'
     )
   }
 
   const handleExportWeekOffMappingExcel = () => handleExportWeekOffMappings('Excel')
   const handleExportWeekOffMappingPdf = () => handleExportWeekOffMappings('PDF')
 
-  //END EXPORT EXCEL | PDF
+  //#endregion
 
-  //API | SERVICES CALL TO GET WEEK OFF MAPPING
+  //#region API | SERVICES CALL TO GET WEEK OFF MAPPING
   const getWeekOffMappings = async (filterParams: FilterWithPaginationWeekOffMappingMasterRequest) => {
 
     return await WeekOffMappingMasterService.apiCallPullWeekOffMappingMaster(filterParams);
   }
+  //#endregion
 
-  // END API | SERVICES CALL TO GET WEEK OFF MAPPING
+  //#region HANDLE PAGE CHNAGE EVENT
 
-  //#region TABLE CONFIGURATION
   const handlePageChange = (page: number) => {
     fetchWeekOffMappingList(page);
   };
+  //#endregion
 
+  //#region TABLE SORT COLUMN
   const handleSortColumn = (sortInfo: SortInfo) => {
 
     setSortInfo(sortInfo);
 
     fetchWeekOffMappingList(1);
   }
+  //#endregion
+
+  //#region TABLE PAGINATION INFO
 
   const weekOffMappingMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -268,17 +315,39 @@ export const WeekOffMappingMaster: React.FC = () => {
 
   const weekOffMappingListForTable = useMemo(() => weekOffMappingMasterList, [weekOffMappingMasterList]);
 
-  // STABLE HANDLER VIEW
+  //#endregion
+
+  //#region VIEW EDIT WEEKOFF MAPPING
   const handleViewWeekOffMappingDetails = useCallback((row: WeekOffMappingMasterData) => {
     setViewWeekOffMappingMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
 
+  //#endregion
 
+  //#region EDIT WEEK OFF MAPPING  MASTER
+
+  const handleEditWeekOffMappingMaster = useCallback((row: WeekOffMappingMasterData) => {
+    setEditingWeekOffMappingMasterData({
+      ...row,
+      WeekOffPolicyMasterId: row.WeekOffPolicyMasterId || 0,
+      DepartmentMasterId: row.DepartmentMasterId || '',
+      EmployeeId: row.EmployeeId || '',
+
+    })
+    setIsAddUpdateModalOpen(true);
+
+  }, [])
+  //#endregion
+
+  //#region CONFIRMATION DIALOG BOX
   const handleConfirmationDialogBoxOpen = useCallback((row: WeekOffMappingMasterData) => {
     setDeleteWeekOffMappingMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
+  //#endregion
+
+  //#region TABLE COLUMN
   const weekOffMappingMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -352,28 +421,14 @@ export const WeekOffMappingMaster: React.FC = () => {
           </span>
         )
       },
-      {
-        key: 'CreatedBy',
-        label: 'Last Modified By',
-        width: '10',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Last Modified Date',
-        width: '10',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
-      }
     ],
+    // dependencies: include everything used inside that might change
     [handleViewWeekOffMappingDetails]
   )
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
+
   const requiredWeekOffMappingMasterColumnKeys: string[] = ['WeekOffPolicyName'];
 
   const allWeekOffMappingMasterColumnKeys: string[] = weekOffMappingMasterColumns.map(c => c.key)
@@ -387,7 +442,11 @@ export const WeekOffMappingMaster: React.FC = () => {
       if (saved) {
 
         const parsed = JSON.parse(saved) as string[]
+        // Ensure required columns are always present
+
         const withRequired = Array.from(new Set([...parsed, ...requiredWeekOffMappingMasterColumnKeys]));
+
+        // Filter out any keys that no longer exist
         return withRequired.filter(k => allWeekOffMappingMasterColumnKeys.includes(k));
 
       }
@@ -396,7 +455,10 @@ export const WeekOffMappingMaster: React.FC = () => {
   })
 
   useEffect(() => {
+    // Guarantee required columns remain selected if state changes elsewhere
+
     setSelectedWeekOffMappingMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredWeekOffMappingMasterColumnKeys])).filter(k => allWeekOffMappingMasterColumnKeys.includes(k)));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weekOffMappingMasterColumns.length])
 
@@ -468,7 +530,7 @@ export const WeekOffMappingMaster: React.FC = () => {
                     color='gray'
                     variant='solid'
                     colorMode="light"
-                    size='md'
+                    size='sm'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
@@ -482,12 +544,12 @@ export const WeekOffMappingMaster: React.FC = () => {
 
                   <Button
                     color='blue'
-                    size='md'
+                    size='sm'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
-                      handleEditWeekOffMappingMasterData(data)
+                      handleEditWeekOffMappingMaster(data)
                     }}
                   >
                     <Edit className="h-5 w-5" />
@@ -511,84 +573,66 @@ export const WeekOffMappingMaster: React.FC = () => {
     setShowFilterPopup(false)
   }
 
+  //#endregion
+
+  //#region CLEAR FILTER
+
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
     loadWeekOffMappings(1, {})
     setShowFilterPopup(false)
   }
+  //#endregion
+
+  //#region HANDLE FILTER CHNAGE
 
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...tempFilters }
-    if (value.trim()) {
-      newFilters[key] = value.trim()
-    } else {
-      delete newFilters[key]
-    }
-    setTempFilters(newFilters)
-  }
-
-  //ADD UPDATE Earning MASTER
-  const handleAddWeekOffMappingMaster = () => {
-    setEditingWeekOffMappingMasterData(null);
-    setWeekOffMappingMasterFormData({
-      WeekOffPolicyMasterMappingId: 0,
-      Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      WeekOffPolicyMasterId: 0,
-      DepartmentMasterId: "",
-      EmployeeId: ""
-    });
-
-    setFormErrors({});
-    setIsAddUpdateModalOpen(true);
+    setTempFilters(prev => updateFilter(prev, key, value));
   };
 
-  const handleEditWeekOffMappingMasterData = (row: WeekOffMappingMasterData) => {
-    setEditingWeekOffMappingMasterData(row);
-    setWeekOffMappingMasterFormData({
-      WeekOffPolicyMasterMappingId: row.WeekOffPolicyMasterMappingId || 0,
-      Uniquekey: row.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      WeekOffPolicyMasterId: row.WeekOffPolicyMasterId || 0,
-      DepartmentMasterId: row.DepartmentMasterId || "",
-      EmployeeId: row.EmployeeId || ""
-    });
-    setDropdownLabels({
-      weekOffPolicyName: row.WeekOffPolicyName ?? "",
-      employeeName: row.EmployeeName ?? "",
-      departmentName: row.DepartmentName ?? ""
+  //#endregion
 
-    });
-    setFormErrors({});
+  //#region ADD UPDATE WEEK OFF MAPPING MASTER
+
+  const handleFieldChange = (field: keyof AddUpdateWeekOffMappingMasterRequest, value: any) => {
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleAddWeekOffMappingMasterModal = () => {
+    setEditingWeekOffMappingMasterData(null);
+    setFormData(initialFormState());
+    setErrors({});
     setIsAddUpdateModalOpen(true);
   }
 
-  const handleFieldChange = (field: keyof AddUpdateWeekOffMappingMasterRequest, value: string | number | null | boolean) => {
-  setWeekOffMappingMasterFormData(prev => ({
-    ...prev,
-    [field]: typeof value === "number" ? String(value) : value
-  }));
-  if (formErrors[field]) {
-    setFormErrors(prev => ({ ...prev, [field]: '' }));
-  }
-}
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateAddWeekOffMappingMasterForm = (): {
 
+    isValid: boolean
 
+    errors: { [key: string]: string }
 
-  const validateWeekOffMappingMasterForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
-    const newErrors: { [key: string]: string } = {};
+  } => {
 
-    if (!WeekOffMappingMasterFormData.DepartmentMasterId) {
+    const newErrors: { [key: string]: string } = {}
+
+    if (!formData.DepartmentMasterId) {
       newErrors.DepartmentMasterId = "Department Name is required.";
     }
 
-    if (!WeekOffMappingMasterFormData.EmployeeId) {
+    if (!formData.EmployeeId) {
       newErrors.EmployeeId = "Employee Name is required.";
     }
 
-    if (!WeekOffMappingMasterFormData.WeekOffPolicyMasterId) {
+    if (!formData.WeekOffPolicyMasterId) {
       newErrors.WeekOffPolicyMasterId = "Week Off Policy Name is required.";
     }
-
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -598,100 +642,44 @@ export const WeekOffMappingMaster: React.FC = () => {
 
   const PushWeekWeekOffMappingFormData = (): AddUpdateWeekOffMappingMasterRequest => {
     return {
-      WeekOffPolicyMasterMappingId: Number(WeekOffMappingMasterFormData.WeekOffPolicyMasterMappingId) || 0,
-      Uniquekey: WeekOffMappingMasterFormData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      WeekOffPolicyMasterId: Number(WeekOffMappingMasterFormData.WeekOffPolicyMasterId) || 0,
-      DepartmentMasterId: String(WeekOffMappingMasterFormData.DepartmentMasterId || ""),
-      EmployeeId: String(WeekOffMappingMasterFormData.EmployeeId || "")
+      WeekOffPolicyMasterMappingId: formData.WeekOffPolicyMasterMappingId,
+      Uniquekey: formData.Uniquekey,
+      WeekOffPolicyMasterId: formData.WeekOffPolicyMasterId,
+      DepartmentMasterId: formData.DepartmentMasterId,
+      EmployeeId: formData.EmployeeId
     };
+
   };
 
-  const fetchEmployeeOptions = async (pageNumber: number, params?: { value?: string }) => {
-    const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
-      PageSize: 10,
-      PageNumber: pageNumber,
-      EmployeeName: params?.value || "",
-    });
+  const handleAddUpdateWeekOffMappingMaster = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
+    setErrors({});
 
-    const apiResponse = responseEither.right;
-    const employeeList = apiResponse?.Data?.map((item: any) => ({
-      label: `${item.FirstName} ${item.MiddleName || ""} ${item.LastName || ""}`.trim(),
-      value: String(item.EmployeeId),
-    })) || [];
-
-    return {
-      totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? employeeList.length,
-      itemList: employeeList,
-    };
-  };
-
-  const fetchWeekOffPolicyNameOptions = async (pageNumber: number, params?: { value?: string }) => {
-    const responseEither = await WeekOffMasterService.apiCallPullWeekOffMaster({
-      PageSize: 10,
-      PageNumber: pageNumber,
-      WeekOffPolicyName: params?.value || "",
-    });
-    if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
-    const apiResponse = responseEither.right;
-    const WeekOffPolicyNameList = apiResponse?.Data?.map((item: any) => ({ label: item.WeekOffPolicyName, value: String(item.WeekOffPolicyMasterId) })) || [];
-    return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? WeekOffPolicyNameList.length, itemList: WeekOffPolicyNameList };
-  };
-
-  const fetchDepartmentNameOptions = async (pageNumber: number, params?: { value?: string }) => {
-    const responseEither = await departmentMasterService.apiCallPullDepartmentMaster({
-      PageSize: 10,
-      PageNumber: pageNumber,
-      DepartmentName: params?.value || "",
-    });
-    if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
-    const apiResponse = responseEither.right;
-    const DepartmentNameList = apiResponse?.Data?.map((item: any) => ({ label: item.DepartmentName, value: String(item.DepartmentMasterId) })) || [];
-    return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? DepartmentNameList.length, itemList: DepartmentNameList };
-  };
-  const toDropdownInitialValue = (
-  id?: string | number,
-  label?: string
-): { label: string; value: string } | null => {
-  if (id === undefined || id === null) return null;
-  return {
-    label: label || String(id),
-    value: String(id),  // convert everything to string
-  };
-};
-
-
-  const [dropdownLabels, setDropdownLabels] = useState<{
-    weekOffPolicyName?: string;
-    employeeName?: string
-    departmentName?: string
-  }>({});
-
-  const handleAddUpdateWeekOffMappingMaster = async () => {
-    console.log("FORM DATA BEFORE API:", WeekOffMappingMasterFormData);
-    setFormErrors({});
-
-    const validation = validateWeekOffMappingMasterForm();
+    const validation = validateAddWeekOffMappingMasterForm();
 
     if (!validation.isValid) {
-      setFormErrors(validation.errors);
+
+      setErrors(validation.errors);
+
       return;
     }
 
     await runApiWithLoader(
       setIsLoading,
+
       setIsLoadingMessage,
       async () => {
 
         const payload = PushWeekWeekOffMappingFormData();
+
         const response = await WeekOffMappingMasterService.apiCallAddUpdateWeekOffMappingMaster(payload);
 
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = WeekOffMappingMasterFormData.WeekOffPolicyMasterMappingId === 0
+          const isAdd = formData.WeekOffPolicyMasterMappingId === 0
 
           if (isAdd) {
 
@@ -713,7 +701,7 @@ export const WeekOffMappingMaster: React.FC = () => {
 
             setWeekOffMappingMasterList(prevData =>
               prevData.map(item =>
-                item.WeekOffPolicyMasterMappingId === WeekOffMappingMasterFormData.WeekOffPolicyMasterMappingId
+                item.WeekOffPolicyMasterMappingId === formData.WeekOffPolicyMasterMappingId
                   ? updatedRecord
                   : item
               )
@@ -738,12 +726,16 @@ export const WeekOffMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
-      WeekOffMappingMasterFormData.WeekOffPolicyMasterMappingId === 0 ? 'Add Week Off Mapping' : 'Update Week Off Mapping...'
+      formData.WeekOffPolicyMasterMappingId === 0 ? 'Add Week Off Mapping' : 'Update Week Off Mapping...'
     )
-  }
+  };
+
+  //#endregion
 
   //#region DELETE WEEK OFF MAPPING MASTER
+
   const handleDeleteWeekOffMappingMaster = async () => {
+
     setIsConfirmationDialogBoxOpen(false);
 
     if (!deleteWeekOffMappingMasterDetailsData) return
@@ -755,12 +747,13 @@ export const WeekOffMappingMaster: React.FC = () => {
       async () => {
 
         const params: DeleteWeekOffMappingMasterRequest = {
-          WeekOffPolicyMasterMappingId: deleteWeekOffMappingMasterDetailsData.WeekOffPolicyMasterMappingId ?? 0,
-          UniqueKey: deleteWeekOffMappingMasterDetailsData.Uniquekey ?? ""
+          WeekOffPolicyMasterMappingId: deleteWeekOffMappingMasterDetailsData.WeekOffPolicyMasterMappingId,
+          UniqueKey: deleteWeekOffMappingMasterDetailsData.Uniquekey || ""
         }
         const response = await WeekOffMappingMasterService.apiCallDeleteWeekOffMappingMaster(params);
 
         if (E.isRight(response)) {
+
           setWeekOffMappingMasterList(prevData => prevData.filter(item => item.WeekOffPolicyMasterMappingId !== deleteWeekOffMappingMasterDetailsData.WeekOffPolicyMasterMappingId));
 
           setPagination({
@@ -772,7 +765,9 @@ export const WeekOffMappingMaster: React.FC = () => {
           addToast({ type: "success", title: response.right.SuccessMessage[0] })
 
           setIsConfirmationDialogBoxOpen(false);
+
           setDeleteWeekOffMappingMasterDetailsData(null);
+
         } else {
           addToast({ type: 'error', title: response.left.message });
 
@@ -785,15 +780,14 @@ export const WeekOffMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Week Off Mapping master data...'
+      'Delete Week Off Mapping master data'
     )
   }
-
+  //#endregion
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
 
-      <div className="h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
         {/* COMMAN LOADER FOR PAGE */}
 
@@ -804,7 +798,7 @@ export const WeekOffMappingMaster: React.FC = () => {
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search by week off policy name..."
+          searchPlaceholder="Search By Week Off Policy Name..."
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
@@ -818,15 +812,24 @@ export const WeekOffMappingMaster: React.FC = () => {
           }}
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeWeekOffMappingMasterColumnsModal(true)}
+
+          // ADD
           isShowAddButton={canAction}
-          addTitle='Add Week Off Name'
-          onAdd={handleAddWeekOffMappingMaster}
+          addTitle='Add Week Off'
+          onAdd={handleAddWeekOffMappingMasterModal}
+
+          // IMPORT
           isShowImportButton={false}
+
+          // EXPORT 
           isShowExportButton={canExport}
           onExportExcel={handleExportWeekOffMappingExcel}
           onExportPdf={handleExportWeekOffMappingPdf}
           exportLoading={isLoading}
         />
+
+        {/* DATA TABLE WEEK OFF MAPPING */}
+
         <DataTable
           data={weekOffMappingListForTable}
           columns={visibleWeekOffMappingMasterColumns}
@@ -839,6 +842,9 @@ export const WeekOffMappingMaster: React.FC = () => {
           sortInfo={sortInfo}
           onSort={handleSortColumn}
         />
+
+        {/* VIEW WEEK OFF MAPPING MODAL */}
+
         <ViewWeekOffMappingDetailsModal isOpen={isViewModalOpen}
           onClose={() => {
             setIsViewModalOpen(false)
@@ -847,76 +853,86 @@ export const WeekOffMappingMaster: React.FC = () => {
           data={viewWeekOffMappingMasterDetailsData}
         />
 
+        {/*  ADD EDIT UPDATE WEEK OFF MAPPING MODAL */}
+
         <Modal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
             setIsAddUpdateModalOpen(false)
             setEditingWeekOffMappingMasterData(null)
-            setFormErrors({})
+            setFormData(initialFormState());
+            setErrors({})
           }}
           onCancel={() => {
             setIsAddUpdateModalOpen(false)
             setEditingWeekOffMappingMasterData(null)
-            setFormErrors({})
+            setFormData(initialFormState());
           }}
-          title={editingWeekOffMappingMasterData ? 'Update Week Off Mapping Master Details' : 'Add Week Off Mapping Master Details'}
-          onSubmit={(e) => {
-            e.preventDefault()
-            handleAddUpdateWeekOffMappingMaster()
-          }}
-          saveText="Save"
-          cancelText="Cancel"
+          title={editingWeekOffMappingMasterData ? 'Update Week Off Mapping ' : 'Add Week Off Mapping'}
+          onSubmit={handleAddUpdateWeekOffMappingMaster}
+          saveText={editingWeekOffMappingMasterData ? 'Update Week Off Mapping' : 'Save Week Off Mapping'}
+          resetText='Reset'
           loading={isLoading}
-          size="large75"
+          size="xl"
         >
-          <div className="space-y-6 p-6 bg-blue-50">
-            <div>
+          <div className="space-y-6 p-6 bg-blue-100">
+            <div className='space-y-4'>
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Week Off Policy Name"
+                  title="Select Week Off Policy Name "
+                  size="lg"
+                  required
+                  dataFetchCallBack={fetchWeekOffMasterDropdown}
+                  onSelected={(item) => handleFieldChange("WeekOffPolicyMasterId", Number(item.value))}
+                  initialValue={createDropdownInitialValue(formData.WeekOffPolicyMasterId, dropdownLabels.weekOffPolicyName)}
+                  error={errors.WeekOffPolicyMasterId}
+                />
+              </div>
+
               <SingleSelectDropdownWithPagination
-                label="Week Off Policy Name"
-                title="Select Week Off Policy Name "
+                label="Employee"
+                title="Select Employee"
                 size="lg"
                 required
-                dataFetchCallBack={fetchWeekOffPolicyNameOptions}
-                onSelected={(item) => handleFieldChange("WeekOffPolicyMasterId", Number(item.value))}
-                initialValue={toDropdownInitialValue(WeekOffMappingMasterFormData.WeekOffPolicyMasterId, dropdownLabels.weekOffPolicyName)}
-                error={formErrors.WeekOffPolicyMasterId}
+                dataFetchCallBack={fetchEmployeeMasterDropdown}
+                onSelected={(item) => handleFieldChange("EmployeeId", item.value)}
+                initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
+                error={errors.EmployeeId}
               />
             </div>
-            <div>
-              <SingleSelectDropdownWithPagination
-                label="Employees"
-                title="Select Employees"
-                size="lg"
-                required
-                dataFetchCallBack={fetchEmployeeOptions}
-                onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
-                initialValue={toDropdownInitialValue(WeekOffMappingMasterFormData.EmployeeId, dropdownLabels.employeeName)}
-                error={formErrors.EmployeeId}
-              />
-            </div>
+            
             <div>
               <SingleSelectDropdownWithPagination
                 label="Department"
                 title="Select Department"
                 size="lg"
                 required
-                dataFetchCallBack={fetchDepartmentNameOptions}
-                onSelected={(item) => handleFieldChange("DepartmentMasterId", Number(item.value))}
-                initialValue={toDropdownInitialValue(WeekOffMappingMasterFormData.DepartmentMasterId, dropdownLabels.departmentName)}
-                error={formErrors.DepartmentMasterId}
+                dataFetchCallBack={fetchDepartmentMasterDropdown}
+                onSelected={(item) => handleFieldChange("DepartmentMasterId", item.value)}
+                initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
+                error={errors.DepartmentMasterId}
               />
             </div>
           </div>
-        </Modal>
+        </Modal >
 
-        <CustomizeColumnsModal
+        {/* CUSTOMIZE COLUMNS MODAL */}
+
+        < CustomizeColumnsModal
           isOpen={isShowCustomizeWeekOffMappingMasterColumnsModal}
           onClose={() => setIsShowCustomizeWeekOffMappingMasterColumnsModal(false)}
           onApply={(keys) => {
-            const withRequired = Array.from(new Set([...keys, ...requiredWeekOffMappingMasterColumnKeys]))
+            const withRequired = Array.from(
+              new Set([...keys, ...requiredWeekOffMappingMasterColumnKeys]),
+            )
+
             setSelectedWeekOffMappingMasterColumnKeys(withRequired)
+
             try {
-              LocalStorageHelper.storeWeekOffMappingMasterTableColumns(JSON.stringify(withRequired))
+              LocalStorageHelper.storeWeekOffMappingMasterTableColumns(
+                JSON.stringify(withRequired)
+              )
             } catch { }
           }}
           columns={weekOffMappingMasterColumns}
@@ -924,7 +940,9 @@ export const WeekOffMappingMaster: React.FC = () => {
           requiredKeys={requiredWeekOffMappingMasterColumnKeys}
           title="Customize Week Off Mapping Master Table Columns"
         />
-        <Modal
+
+        {/* FILTER WEEK OFF MAPPING MODAL */}
+        < Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}
           title="Filter - Week Off Mapping Master"
@@ -935,7 +953,8 @@ export const WeekOffMappingMaster: React.FC = () => {
           saveText="Apply Filter"
           cancelText="Clear Filter"
           onCancel={() => clearFilters()}
-          size="half-screen"
+          resetText=''
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">
@@ -968,10 +987,10 @@ export const WeekOffMappingMaster: React.FC = () => {
               </div>
             </div>
           </div>
-        </Modal>
+        </Modal >
 
-        {/* DELETE CONFIRMATION  WeekOffMapping MODAL */}
-        <ConfirmationDialogBox
+        {/* DELETE CONFIRMATION  WEEK OFF MAPPING MODAL */}
+        < ConfirmationDialogBox
           isOpen={isConfirmationDialogBoxOpen}
           onClose={() => {
             setIsConfirmationDialogBoxOpen(false)
@@ -987,7 +1006,6 @@ export const WeekOffMappingMaster: React.FC = () => {
         />
 
       </div>
-    </>
   )
 }
 

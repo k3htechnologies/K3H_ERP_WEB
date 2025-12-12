@@ -83,10 +83,11 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
 
   const exportRef = useRef<HTMLDivElement | null>(null)
   const importRef = useRef<HTMLDivElement | null>(null)
+  const addMoreRef = useRef<HTMLDivElement | null>(null)
 
-  // Close export/import dropdown when clicked outside or Escape pressed.
+  // Close export/import/add dropdown when clicked outside or Escape pressed.
   useEffect(() => {
-    if (!isExportOpen && !isImportOpen) return
+    if (!isExportOpen && !isImportOpen && !showIsAddMore) return
 
     function handleDocClick(e: MouseEvent) {
       const target = e.target as Node | null
@@ -95,16 +96,20 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
       if (exportRef.current && exportRef.current.contains(target!)) return
       // click inside import menu -> do nothing
       if (importRef.current && importRef.current.contains(target!)) return
+      // click inside add more options menu -> do nothing
+      if (addMoreRef.current && addMoreRef.current.contains(target!)) return
 
-      // otherwise close both
+      // otherwise close all
       setIsExportOpen(false)
       setIsImportOpen(false)
+      setShowIsAddMore(false)
     }
 
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         setIsExportOpen(false)
         setIsImportOpen(false)
+        setShowIsAddMore(false)
       }
     }
 
@@ -114,7 +119,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
       document.removeEventListener('mousedown', handleDocClick)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isExportOpen, isImportOpen])
+  }, [isExportOpen, isImportOpen, showIsAddMore])
 
   const activeFilterCount = Object.values(filters || {}).filter(
     (value) => value && String(value).trim() !== ''
@@ -262,6 +267,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Export as Excel"
+                          style={{justifyContent:"left"}}
                         >
 
                           Export as Excel
@@ -282,6 +288,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Export as PDF"
+                          style={{justifyContent:"left"}}
                         >
 
                           Export as PDF
@@ -303,7 +310,6 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                     setIsImportOpen((s) => !s)
                     setIsExportOpen(false) // close export when opening import
                   }}
-                  className="text-black gap-2"
                   color="green"
                   colorMode="gradient"
                   size="mxs"
@@ -338,6 +344,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Upload Excel"
+                          style={{justifyContent:"left"}}
                         >
                           Upload Excel
                         </Button>
@@ -357,6 +364,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Download Sample Excel"
+                          style={{justifyContent:"left"}}
                         >
                           Sample Excel
                         </Button>
@@ -369,7 +377,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
 
             {/* ADD BUTTON */}
             {isShowAddButton && onAdd && (
-              <div className='relative'>
+              <div ref={addMoreRef} className='relative'>
               <Button
                 onClick={(e) => {
                   e.preventDefault()

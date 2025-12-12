@@ -86,7 +86,7 @@ export const Modal: React.FC<ModalProps> = ({
                             onClick={onClose}
                             color="transparent"
                             isborderRadius
-                            size="sm"
+                            size="md"
                             type='button'
                             disabled={loading}
                         >
@@ -114,7 +114,7 @@ export const Modal: React.FC<ModalProps> = ({
                                             color="gray"
                                             variant="solid"
                                             colorMode="light"
-                                            size="sm"
+                                            size="md"
                                             onClick={onreset}
                                             disabled={loading}
                                         >
@@ -127,7 +127,7 @@ export const Modal: React.FC<ModalProps> = ({
                                             type="button"
                                             color="transparent"
                                             variant="transparent_border"
-                                            size="sm"
+                                            size="md"
                                             onClick={onCancel}
                                             disabled={loading}
                                         >
@@ -141,7 +141,7 @@ export const Modal: React.FC<ModalProps> = ({
                                     <Button
                                         type="submit"
                                         color="blue"
-                                        size="sm"
+                                        size="md"
                                         disabled={loading}
                                     >
                                         <Save className="h-4 w-4 gap-2" />
@@ -212,7 +212,7 @@ export const Modal: React.FC<ModalProps> = ({
                                         type="button"
                                         color="transparent"
                                         variant="transparent_border"
-                                        size="sm"
+                                        size="md"
                                         onClick={onCancel}
                                         disabled={loading}
                                     >
@@ -226,7 +226,7 @@ export const Modal: React.FC<ModalProps> = ({
                                 <Button
                                     type="submit"
                                     color="blue"
-                                    size="sm"
+                                    size="md"
                                     disabled={loading}
                                 >
                                     <Save className="h-4 w-4 gap-2" />

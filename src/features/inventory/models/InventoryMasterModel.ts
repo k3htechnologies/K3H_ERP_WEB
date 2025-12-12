@@ -53,7 +53,7 @@ export interface InventoryFlatData {
     RERACarpetAreaSqFt:                     number;
     FlatType:                               string;
     FlatConfiguration:                      string;
-    FlatStatus:                             'Sale' | "Available" | "Member" | "Blocked";
+    FlatStatus:                             'Sale' | "Available" | "Member" | "Blocked" | "Hold";
     FlatFacing:                             string;
     InventoryFlatSpecificationData:         InventoryFlatSpecificationDatum[];
     OwnerName:                              string;
@@ -79,4 +79,5 @@ export interface InventoryFlatSpecificationDatum {
 }
 
 export type InventoryApiPullReponse = ApiResponse<InventoryModel[]>
+export type UpdateFlatApiResponse = ApiResponse<InventoryFlatData[]>
 

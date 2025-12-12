@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AddUpdateMaterialMasterRequest,
@@ -54,7 +53,7 @@ export const MaterialMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const {addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -802,8 +801,7 @@ export const MaterialMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {/* ============================================================================
           COMMAN LOADER FOR PAGE
@@ -834,7 +832,7 @@ export const MaterialMaster: React.FC = () => {
           onCustomize={() => setIsShowCustomizeMaterialMasterColumnsModal(true)}
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Material"
+          addTitle="Add"
           onAdd={handleAddMaterialModal}
 
           // IMPORT
@@ -857,7 +855,6 @@ export const MaterialMaster: React.FC = () => {
           pagination={materialMasterPaginationInfo}
           emptyMessage="No Materials Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
@@ -1000,7 +997,6 @@ export const MaterialMaster: React.FC = () => {
 
 
       </div>
-    </>
 
   )
 }

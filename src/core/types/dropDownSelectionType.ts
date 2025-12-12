@@ -29,6 +29,7 @@ export interface MultiSelectDropdownProps {
   dataList: { label: string; value: string | number }[]
   onSelected: (selectedItems: { label: string; value: string | number }[]) => void
   title: string
+  label:string
   validator?: (values: (string | number)[]) => string | undefined
   initialValues?: { label: string; value: string | number }[]
   disabled?: boolean
@@ -40,6 +41,8 @@ export interface MultiSelectDropdownProps {
   loading?: boolean
   noDataText?: string
   size?: 'sm' | 'md' | 'lg'
+  required?: boolean,
+  error?: string;
 }
 
 export interface SinglePageSelectionProps {
@@ -70,14 +73,10 @@ export interface MultiSelectPaginationProps {
   onSelected: (items: { label: string; value: string | number }[]) => void;
   title?: string;
   label?: string;
-  validator?: (values: (string | number)[]) => string | undefined;
-  initialValues?: { label: string; value: string | number }[] | null;
-  dataList?: { label: string; value: string | number }[];
-  pageSize?: number;
+  options: DropdownOptions[];
+  selectedValues: (string | number)[];
+  onChange: (values: (string | number)[]) => void;
   disabled?: boolean;
-  hasSubmitted?: boolean;
   required?: boolean;
-  error?: string;
-  className?: string;
-  style?: React.CSSProperties;
+
 }

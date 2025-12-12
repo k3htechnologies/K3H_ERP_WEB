@@ -58,7 +58,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         fontSize: currentSize.fontSize,
         fontWeight: theme.fontWeight.normal,
         borderRadius: theme.borderRadius.lg,
-        border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
+        border: `0.5px solid ${error ? theme.colors.error : theme.colors.border}`,
         outline: 'none',
         transition: theme.transitions.normal,
         boxSizing: 'border-box' as const,

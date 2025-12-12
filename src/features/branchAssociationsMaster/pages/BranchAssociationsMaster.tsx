@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AddUpdateBranchAssociationsMasterRequest,
@@ -53,7 +52,7 @@ export const BranchAssociationsMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -77,7 +76,7 @@ export const BranchAssociationsMaster: React.FC = () => {
   const [editingBranchAssociationMasterData, setEditingBranchAssociationMasterData] = useState<BranchAssociationsMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  //ADD UPDATE DEPARTMENT MASTER
+  //ADD UPDATE BRANCH ASSOCIATION MASTER
   const [formData, setFormData] = useState<AddUpdateBranchAssociationsMasterRequest>(() => initialFormState());
 
 
@@ -239,8 +238,11 @@ export const BranchAssociationsMaster: React.FC = () => {
         // Find the column label for sorting
         let sortByParam = undefined
         if (sortInfo) {
+
           const column = branchAssociationsMasterColumns.find(col => col.key === sortInfo.column)
+
           if (column) {
+
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
         }
@@ -528,7 +530,7 @@ export const BranchAssociationsMaster: React.FC = () => {
 
   //#endregion
 
-  //ADD UPDATE Branch Association MASTER
+  //ADD UPDATE BRANCH ASSOCIATION MASTER
 
   const handleFieldChange = (field: keyof AddUpdateBranchAssociationsMasterRequest, value: any) => {
 
@@ -665,8 +667,7 @@ export const BranchAssociationsMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {/* ============================================================================
@@ -845,7 +846,6 @@ export const BranchAssociationsMaster: React.FC = () => {
           </div>
         </Modal>
       </div>
-    </>
 
   )
 }

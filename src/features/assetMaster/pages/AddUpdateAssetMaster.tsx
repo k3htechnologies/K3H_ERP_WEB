@@ -1,0 +1,450 @@
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Input } from "@/ui/components/forms/Input";
+import * as E from "fp-ts/Either";
+import { runApiWithLoader } from "@/core/utils";
+import { useToast } from "@/core/hooks/useToast";
+import { Button } from "@/ui/components/forms/Button";
+import { Loader } from "@/core/utils/loader";
+import { useEffect, useState } from "react";
+import React from "react";
+import type { AddUpdateAssetMasterRequest, FilterWithPaginationAssetMasterRequest } from "../models/AssetMasterModel";
+import { assetMasterService } from "../services/AssetMasterService";
+
+const initialFormState = (): AddUpdateAssetMasterRequest => ({
+  AssetMasterId: 0,
+  Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  AssetCode: '',
+  AssetName: '',
+  AssetType: '',
+  AssetModel: '',
+  AssetBrand: '',
+  SerialNumber: '',
+  PurchaseDate: '',
+  WarrantyExpiryDate: '',
+  AssetCost: 0,
+  SupplierName: ''
+});
+
+export const AddUpdateAssetMaster: React.FC = () => {
+
+  //#region STATE MANAGEMENT
+  const [formData, setFormData] = useState<AddUpdateAssetMasterRequest>(() => initialFormState());
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+
+  // NAVIGATE
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // GET VALUE FROM URL ASSET MASTER ID
+  const { AssetMasterId } = useParams<{ AssetMasterId?: string }>();
+  const assetId = AssetMasterId ? Number(AssetMasterId) : 0;
+  const isAddMode = assetId === 0;
+
+  // TOAST
+  const { addToast } = useToast();
+
+  // ERROR SET UP
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+  //#endregion
+
+  //#region HANDLE FIELD CHANGE EVENT
+  const handleFieldChange = (field: keyof AddUpdateAssetMasterRequest, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+  //#endregion
+
+  //#region INITIALIZATION
+  useEffect(() => {
+    if (!isAddMode) {
+      fetchAssetMasterDetails();
+    }
+  }, [assetId]);
+  //#endregion
+
+  //#region FETCH ASSET MASTER DETAILS
+  const fetchAssetMasterDetails = async () => {
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setLoadingMessage,
+
+      async () => {
+
+        const params: FilterWithPaginationAssetMasterRequest = {
+          PageNumber: 1,
+          PageSize: 1,
+          AssetMasterId: assetId
+        };
+
+        const response = await assetMasterService.apiCallPullAssetMaster(params);
+
+        if (E.isRight(response)) {
+
+          const e = response.right.Data?.[0];
+
+          if (e) {
+            setFormData(prev => ({
+              ...prev,
+              AssetMasterId: e.AssetMasterId ?? prev.AssetMasterId,
+              Uniquekey: e.Uniquekey ?? prev.Uniquekey,
+              AssetName: e.AssetName ?? prev.AssetName,
+              AssetCode: e.AssetCode ?? prev.AssetCode,
+              AssetBrand: e.AssetBrand ?? prev.AssetBrand,
+              AssetCost: e.AssetCost ?? prev.AssetCost,
+              AssetModel: e.AssetModel ?? prev.AssetModel,
+              SerialNumber: e.SerialNumber ?? prev.SerialNumber,
+              SupplierName: e.SupplierName ?? prev.SupplierName,
+              PurchaseDate: e.PurchaseDate ?? prev.PurchaseDate,
+              WarrantyExpiryDate: e.WarrantyExpiryDate ?? prev.WarrantyExpiryDate,
+              AssetType: e.AssetType ?? prev.AssetType
+            }));
+          }
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message });
+      },
+      undefined,
+      'Loading Asset Data'
+    );
+  };
+  //#endregion
+
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateAddAssetMasterForm = (): {
+
+    isValid: boolean
+
+    errors: { [key: string]: string }
+
+  } => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!formData.AssetName?.trim()) {
+      newErrors.AssetName = 'Asset Name is required.';
+    } else if (formData.AssetName.trim().length > 50) {
+      newErrors.AssetName = 'Asset Name must be at most 50 characters';
+    }
+
+    if (!formData.AssetCode?.trim()) {
+      newErrors.AssetCode = 'Asset Code is required.';
+    } else if (formData.AssetCode.trim().length > 5) {
+      newErrors.AssetCode = 'Asset Code must be at most 4 characters';
+    }
+
+    if (!formData.AssetModel?.trim()) {
+      newErrors.AssetModel = 'Asset Model is required.';
+    }
+
+    if (!formData.AssetType?.trim()) {
+      newErrors.AssetType = "Asset Type is required";
+    }
+
+    if (!formData.AssetCost) {
+      newErrors.AssetCost = "Asset Cost is required";
+    }
+
+    if (!formData.SerialNumber?.trim()) {
+      newErrors.SerialNumber = 'Serial Number is required.';
+    }
+
+    if (!formData.SupplierName?.trim()) {
+      newErrors.SupplierName = "Supplier Name is required";
+    }
+
+    if (!formData.AssetBrand) {
+      newErrors.AssetBrand = "Asset Brand is required";
+    }
+
+    if (!formData.PurchaseDate?.trim()) {
+      newErrors.PurchaseDate = "Purchase Date is required";
+    }
+
+    if (!formData.WarrantyExpiryDate) {
+      newErrors.WarrantyExpiryDate = "Warranty ExpiryDate is required";
+    }
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors
+    };
+  };
+  //#endregion
+
+  //#region PUSH DATA
+  const PushAssetMasterFormData = (): AddUpdateAssetMasterRequest => {
+    return {
+      AssetMasterId: formData.AssetMasterId,
+      Uniquekey: formData.Uniquekey,
+      AssetCode: formData.AssetCode,
+      AssetName: formData.AssetName,
+      AssetType: formData.AssetType,
+      AssetModel: formData.AssetModel,
+      AssetBrand: formData.AssetBrand,
+      SerialNumber: formData.SerialNumber,
+      PurchaseDate: formData.PurchaseDate,
+      WarrantyExpiryDate: formData.WarrantyExpiryDate,
+      AssetCost: formData.AssetCost,
+      SupplierName: formData.SupplierName
+    };
+  }
+  //#endregion
+
+  //#region HANDLE SUBMIT
+  const handleAddUpdateAssetMaster = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setErrors({});
+
+    const validation = validateAddAssetMasterForm();
+
+    if (!validation.isValid) {
+
+      setErrors(validation.errors);
+
+      return;
+    }
+
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setLoadingMessage,
+
+      async () => {
+        const payload = PushAssetMasterFormData();
+
+        const response = await assetMasterService.apiCallAddUpdateAssetMaster(payload);
+
+        if (E.isRight(response)) {
+          addToast({ type: "success", title: isAddMode ? "Asset added successfully" : "Asset updated successfully" });
+
+          const locationState = location.state as {
+            listState?: {
+              page?: number;
+              filters?: any;
+              sortInfo?: any;
+              searchTerm?: string;
+            };
+          } | null;
+
+          const listState = locationState?.listState || {
+            page: 1,
+            filters: {},
+            sortInfo: undefined,
+            searchTerm: '',
+          };
+
+          navigate("/assetMaster",
+            {
+              state: { listState }
+            });
+
+        } else {
+          addToast({ type: "error", title: response.left?.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message });
+      },
+      undefined,
+      isAddMode ? 'Add Asset' : 'Update Asset'
+    );
+  };
+  //#endregion
+
+  return (
+
+
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+
+      <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+
+      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+
+        <form onSubmit={handleAddUpdateAssetMaster}>
+
+          {/* Basic Asset Details */}
+
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Asset Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Name'
+                  value={formData.AssetName ?? ""}
+                  onChange={(e) => handleFieldChange("AssetName", e.target.value)}
+                  placeholder="Enter Asset Name"
+                  maxLength={250}
+                  error={errors.AssetName}
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Code'
+                  value={formData.AssetCode ?? ""}
+                  onChange={(e) => handleFieldChange("AssetCode", e.target.value)}
+                  placeholder="Enter Asset Code"
+                  maxLength={250}
+                  error={errors.AssetCode}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Cost'
+                  value={formData.AssetCost ?? ""}
+                  onChange={(e) => handleFieldChange("AssetCost", e.target.value)}
+                  placeholder="Enter Asset Cost"
+                  maxLength={250}
+                  error={errors.AssetCost}
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Brand'
+                  value={formData.AssetBrand ?? ""}
+                  onChange={(e) => handleFieldChange("AssetBrand", e.target.value)}
+                  placeholder="Enter Asset Brand"
+                  maxLength={250}
+                  error={errors.AssetBrand}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Model'
+                  value={formData.AssetModel ?? ""}
+                  onChange={(e) => handleFieldChange("AssetModel", e.target.value)}
+                  placeholder="Enter Asset Model"
+                  maxLength={250}
+                  error={errors.AssetModel}
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='AssetType'
+                  value={formData.AssetType ?? ""}
+                  onChange={(e) => handleFieldChange("AssetType", e.target.value)}
+                  placeholder="Enter AssetType"
+                  maxLength={250}
+                  error={errors.AssetType}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Supplier Name'
+                  value={formData.SupplierName ?? ""}
+                  onChange={(e) => handleFieldChange("SupplierName", e.target.value)}
+                  placeholder="Enter Supplier Name"
+                  maxLength={250}
+                  error={errors.SupplierName}
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Serial Number'
+                  value={formData.SerialNumber ?? ""}
+                  onChange={(e) => handleFieldChange("SerialNumber", e.target.value)}
+                  placeholder="Enter Serial Number"
+                  maxLength={250}
+                  error={errors.SerialNumber}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  type="date"
+                  required
+                  label='Purchase Date'
+                  value={formData.PurchaseDate?.substring(0, 10)}
+                  onChange={(e) => handleFieldChange("PurchaseDate", e.target.value)}
+                  placeholder="Enter Purchase Date"
+                  maxLength={250}
+                  error={errors.PurchaseDate}
+                />
+              </div>
+
+              <div>
+                <Input
+                  type="date"
+                  required
+                  label='Warranty Expiry Date'
+                  value={formData.WarrantyExpiryDate?.substring(0, 10)}
+                  onChange={(e) => handleFieldChange("WarrantyExpiryDate", e.target.value)}
+                  placeholder="Enter Warranty Expiry Date"
+                  maxLength={250}
+                  error={errors.WarrantyExpiryDate}
+                />
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
+        <Button
+          color="transparent"
+          variant='transparent_border'
+          size="sm"
+          onClick={() => { navigate(-1); }}
+          className="px-6"
+        >
+          Cancel
+        </Button>
+
+        <Button
+          color="green"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            handleAddUpdateAssetMaster(e);
+          }}
+          className="px-6"
+          disabled={isLoading}
+        >
+          {isAddMode ? "Add Asset" : "Update Asset"}
+        </Button>
+      </div>
+    </div>
+
+  );
+};
+
+export default AddUpdateAssetMaster;

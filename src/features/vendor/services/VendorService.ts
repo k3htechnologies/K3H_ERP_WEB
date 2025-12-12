@@ -2,7 +2,6 @@ import type { Failure } from '@/core/api/FailureResponse';
 import { VendorDatasourceImpl } from '@/features/vendor/datasources/VendorDatasource'
 import type {
     FilterWithPaginationVendorRequest,
-    AddUpdateVendorRequest,
     DeleteVendorRequest,
     VendorListResponse,
     VendorSaveResponse,
@@ -27,10 +26,10 @@ export const VendorService = {
         }
     },
 
-    apiCallAddUpdateVendor: async (params: AddUpdateVendorRequest): Promise<E.Either<Failure, VendorSaveResponse>> => {
+    apiCallAddUpdateVendor: async (formData: FormData): Promise<E.Either<Failure, VendorSaveResponse>> => {
         try {
 
-            return E.right(await vendorDatasource.addUpdateVendor(params));
+            return E.right(await vendorDatasource.addUpdateVendor(formData));
 
         } catch (error: any) {
 

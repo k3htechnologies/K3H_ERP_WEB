@@ -2,7 +2,7 @@ import type { ApiResponse } from '@/core/api/ApiResponse';
 import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions';
 import { TechnicalApi } from '@/features/technical/api/TechnicalApi'
-import type { CountryStateCityDistrictVillageListResponse, FilterPullExcelSample, FilterRefreshTokenRequest, FilterWithPaginationNotificationRequest, NotificationListResponse, TechnicalListResponse } from '@/features/technical/models/TechnicalModel'
+import type { CountryStateCityDistrictVillageListResponse, FilterPullExcelSample, FilterRefreshTokenRequest, FilterWithPaginationMaterialSubMaterialMasterUOM, FilterWithPaginationNotificationRequest, MaterialSubMaterialMasterUOMListResponse, NotificationListResponse, TechnicalListResponse } from '@/features/technical/models/TechnicalModel'
 
 export abstract class TechnicalDatasource {
 
@@ -10,6 +10,7 @@ export abstract class TechnicalDatasource {
     abstract pullNotification(params: FilterWithPaginationNotificationRequest): Promise<NotificationListResponse>;
     abstract refreshToken(params: FilterRefreshTokenRequest): Promise<ApiResponse<string>>;
     abstract getCountryStateDistrictCityVillage(): Promise<CountryStateCityDistrictVillageListResponse>;
+    abstract getMaterialSubMaterialMasterUOM(params:FilterWithPaginationMaterialSubMaterialMasterUOM): Promise<MaterialSubMaterialMasterUOMListResponse>;
 }
 
 export class TechnicalDatasourceImpl implements TechnicalDatasource {
@@ -90,6 +91,24 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
 
             console.error('Error: GET COUNTRY STATE DISTRICT CITY VILLAGE :', error);
 
+            throw error
+        }
+    }
+
+    async getMaterialSubMaterialMasterUOM(params:FilterWithPaginationMaterialSubMaterialMasterUOM): Promise<MaterialSubMaterialMasterUOMListResponse>{
+        try{
+            
+            const queryParams = new URLSearchParams({
+                ProjectId: (params.ProjectId).toString(),
+                ClientRegistrationId: (params.ClientRegistrationId).toString()
+            })
+
+               const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${TechnicalApi.PULL_MATERIAL_SUBMATERIALUOM}?${queryParams.toString()}`);
+                return response;
+
+        }catch(error){
+            console.error('Error: GET MATERIAL SUBMATERIAL UOM:', error);
             throw error
         }
     }

@@ -14,11 +14,13 @@ export const MultiSelectDropdown = forwardRef<HTMLDivElement, MultiSelectDropdow
       initialValues = [],
       disabled = false,
       className = '',
+      label,
       style,
       onSearch,
       loading = false,
       noDataText = 'No records found',
-      size = 'md',
+      size = 'lg',
+      required = false,
     },
     ref
   ) => {
@@ -28,7 +30,7 @@ export const MultiSelectDropdown = forwardRef<HTMLDivElement, MultiSelectDropdow
     const SIZE_MAP = {
       sm: { fontSize: 12, padding: 6, dropdownHeight: 150, width: 180 },
       md: { fontSize: 14, padding: 8, dropdownHeight: 200, width: 250 },
-      lg: { fontSize: 16, padding: 10, dropdownHeight: 260, width: 320 },
+      lg: { fontSize: 14, padding: 10, dropdownHeight: 260, width: 550 },
     }
 
     const sizeStyles = SIZE_MAP[size]
@@ -90,10 +92,10 @@ export const MultiSelectDropdown = forwardRef<HTMLDivElement, MultiSelectDropdow
     }, [selectedItems, validator])
 
     const getOptionStyles = (selected: boolean): React.CSSProperties => ({
-      padding: `${sizeStyles.padding}px ${sizeStyles.padding }px`,
+      padding: `${sizeStyles.padding}px ${sizeStyles.padding}px`,
       fontSize: sizeStyles.fontSize,
       cursor: disabled ? 'not-allowed' : 'pointer',
-      backgroundColor: selected ? theme.colors.hover :theme.colors.background,
+      backgroundColor: selected ? theme.colors.hover : theme.colors.background,
       color: selected ? theme.colors.text : theme.colors.textSecondary,
       borderRadius: theme.borderRadius.sm,
       transition: theme.transitions.normal,
@@ -109,10 +111,17 @@ export const MultiSelectDropdown = forwardRef<HTMLDivElement, MultiSelectDropdow
           position: 'relative',
           width: sizeStyles.width,
           fontFamily: 'Inter, sans-serif',
-          marginLeft:'20px',
+          marginLeft: '5px',
           ...style,
         }}
       >
+        {label && (
+          <label style={{ display: 'block', marginBottom: 4, fontWeight: 500, fontSize: sizeStyles.fontSize, color: theme.colors.text }}>
+            {label}
+            {required && <span style={{ color: theme.colors.error, marginLeft: '4px' }}>*</span>}
+          </label>
+        )}
+
         <div
           style={{
             display: 'flex',
@@ -230,7 +239,7 @@ export const MultiSelectDropdown = forwardRef<HTMLDivElement, MultiSelectDropdow
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: theme.colors.primary,
+                  color: theme.colors.primary1,
                   cursor: 'pointer',
                   fontSize: sizeStyles.fontSize - 2,
                 }}

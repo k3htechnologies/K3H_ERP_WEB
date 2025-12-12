@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -6,33 +6,22 @@ import * as E from 'fp-ts/Either';
 import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
-  AddUpdateDeductionMasterRequest,
   DeductionMasterData,
-  DeleteDeductionMasterRequest,
   FilterWithPaginationDeductionMasterRequest
 } from '@/features/deductionMaster/models/DeductionMasterModel';
-import {
-  GENDER_OPTIONS,
-} from "@/core/constants/staticData";
 import { DeductionMasterService } from '@/features/deductionMaster/services/DeductionMasterService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Button, Input } from '@/ui/components/forms';
+import { Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import { Edit, Trash2 } from 'lucide-react';
-import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
-import { BranchMasterService } from '@/features/branchMaster/services/BranchMasteService';
-import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { useCountryStateCityDistrictVillageData } from '@/core/hooks/useCountryStateCityDistrictVillage';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { updateFilter } from '@/core/utils/filterHelper';
 
 
 export const DeductionMaster: React.FC = () => {
@@ -42,6 +31,9 @@ export const DeductionMaster: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
 
+  // USE NAVIGATE
+  const navigate = useNavigate();
+
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
@@ -49,17 +41,13 @@ export const DeductionMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const { toasts, removeToast, addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchDeductions(value)
-  }, 350)
-
-  //VIEW Deduction MASTER MODAL STATES
-  const [viewDeductionMasterDetailsData, setViewDeductionMasterDetailsData] = useState<DeductionMasterData | null>(null)
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  }, 350);
 
   //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
@@ -67,69 +55,42 @@ export const DeductionMaster: React.FC = () => {
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeDeductionMasterColumnsModal, setIsShowCustomizeDeductionMasterColumnsModal] = useState(false);
-
-  // EDIT Deduction MASTER
-  const [editingDeductionMasterData, setEditingDeductionMasterData] = useState<DeductionMasterData | null>(null)
-  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-
-  const [DeductionMasterFormData, setDeductionMasterFormData] = useState<AddUpdateDeductionMasterRequest>({
-    DeductionMasterId: 0,
-    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    Name: "",
-    Type: "",
-    Value: 0,
-    BranchMasterId: 0,
-    BranchName: "",
-    MinSalary: 0,
-    MaxSalary: 0,
-    Gender: "",
-    StateName: "",
-    StateMasterId: 0
-  });
-
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-
-  //DELETE Deduction MASTER STATES
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-  const [deleteDeductionMasterDetailsData, setDeleteDeductionMasterDetailsData] = useState<DeductionMasterData | null>(null)
-
-  //#endregion
-
- //#region COUNTRY STATE CITY DISTRICT 
-  const {
-    statesByCountryId,
-  } = useCountryStateCityDistrictVillageData()
-
-  const [selectedCountryId, setSelectedCountryId] = React.useState<number | null>(1)
-  const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null)
-
-  const stateOptions =
-    selectedCountryId != null
-      ? (statesByCountryId[selectedCountryId] || []).map(s => ({
-        label: s.name,
-        value: s.id,
-      }))
-      : []
-  //#endregion
+  const [isShowCustomizeDeductionColumnsModal, setIsShowCustomizeDeductionColumnsModal] = useState(false);
 
   //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
+  //#endregion
 
-  //#region INITIALIZATION
-  const hasFetchedInitialDeductions = useRef(false)
+  const location = useLocation() as any;
 
+  //#endregion
+
+  //#region INIT
   useEffect(() => {
+    const incoming = location.state?.listState;
+    const listState = incoming ?? {
+      page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: ''
+    };
 
-    if (hasFetchedInitialDeductions.current) return
+    setPagination({ currentPage: listState.page ?? pagination.currentPage });
 
-    hasFetchedInitialDeductions.current = true;
-    fetchDeductionList()
-    setSelectedCountryId(1)
-  }, [])
+    setSortInfo(listState.sortInfo);
 
+    setFilters(listState.filters ?? {});
 
-  //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
+    setTempFilters(listState.filters ?? {});
+
+    setSearchTerm(listState.searchTerm ?? '');
+
+    if (listState.searchTerm && String(listState.searchTerm).trim()) {
+      loadDeductions(listState.page ?? 1, { Name: String(listState.searchTerm).trim() });
+      return;
+    }
+
+    loadDeductions(listState.page ?? 1, listState.filters ?? {});
+  }, [location.state]);
+
+  //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
@@ -137,10 +98,9 @@ export const DeductionMaster: React.FC = () => {
   }, [debouncedSearch])
   //#endregion
 
-
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchDeductionList = async (page: number = pagination.currentPage) => {
+  const fetchDeductionMasterList = async (page: number = pagination.currentPage) => {
     return await loadDeductions(page, filters);
   }
 
@@ -149,28 +109,24 @@ export const DeductionMaster: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-
         let sortByParam = undefined;
 
         if (sortInfo) {
 
-          const column = DeductionMasterColumns.find(col => col.key === sortInfo.column)
+          const column = DeductionMasterColumns.find(col => col.key === sortInfo.column);
           if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
+            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
-
         }
-
         const params: FilterWithPaginationDeductionMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           DeductionMasterId: filterParams.DeductionMasterId ? Number(filterParams.DeductionMasterId) : undefined,
           Name: filterParams.Name?.trim() || undefined,
           SortBy: sortByParam
-        }
+        };
 
-        const response = await getDeductions(params);
-
+        const response = await DeductionMasterService.apiCallPullDeductionMaster(params);
         if (E.isRight(response)) {
 
           setDeductionMasterList(response.right.Data);
@@ -182,30 +138,26 @@ export const DeductionMaster: React.FC = () => {
           });
 
         } else {
-
           addToast({ type: 'error', title: response.left.message });
-
+          return response;
         }
-
-        return response
       },
       undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message })
-      },
+      (error: any) => addToast({ type: 'error', title: error.message }),
       undefined,
-      'Loading Deduction Data...'
-    )
-  }
+      'Loading Deduction Data'
+    );
+  };
+  //#endregion
 
-  // SEARCH Deduction 
+  //#region SEARCH & CLEAR
   const searchDeductions = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
 
-      fetchDeductionList();
+      fetchDeductionMasterList();
 
       return
     }
@@ -214,84 +166,94 @@ export const DeductionMaster: React.FC = () => {
       Name: searchValue.trim(),
     };
 
-    await loadDeductions(1, filterParams)
+    await loadDeductions(1, filterParams);
+  };
 
-  }
+  //#endregion
 
-  const clearsearchDeductions = () => {
+  //#region CLEAR DEDUCTION MASTER 
+  const clearSearchDeductions = () => {
     setSearchTerm('');
-    debouncedSearch.cancel?.();
-    fetchDeductionList();
-  }
-  // END SEARCH Deduction 
 
-  // EXPORT EXCEL | PDF
+    debouncedSearch.cancel?.();
+
+    setFilters({});
+    setTempFilters({});
+    setPagination({ currentPage: 1 });
+    loadDeductions(1, {});
+    try {
+      navigate(location.pathname, { replace: true, state: {} });
+    } catch {
+    }
+  };
+  //#endregion
+
+  //#region EXPORT / IMPORT EXCEL AND PDF
   const handleExportDeductions = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
+        // Find the column label for sorting
         let sortByParam = undefined
         if (sortInfo) {
-          const column = DeductionMasterColumns.find(col => col.key === sortInfo.column)
+          const column = DeductionMasterColumns.find(col => col.key === sortInfo.column);
           if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
+            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
-
         const params: FilterWithPaginationDeductionMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           Name: filters.Name?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
-        }
+        };
 
         const response = await getDeductions(params);
 
-        handleExportFile(response, exportType, 'Deduction Master', addToast)
+        handleExportFile(response, exportType, 'Deduction Master', addToast);
 
         return response;
       },
       undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Export failed' })
-      },
+      (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
       undefined,
-      'Preparing Export...'
-    )
-  }
+      'Preparing Export'
+    );
+  };
 
   const handleExportDeductionExcel = () => handleExportDeductions('Excel')
   const handleExportDeductionPdf = () => handleExportDeductions('PDF')
+  //#endregion
 
-  //END EXPORT EXCEL | PDF
 
-  //API | SERVICES CALL TO GET Deduction 
-
+  //#region API | SERVICES CALL TO GET DEDUCTION
   const getDeductions = async (filterParams: FilterWithPaginationDeductionMasterRequest) => {
 
     return await DeductionMasterService.apiCallPullDeductionMaster(filterParams);
   }
+  //#endregion
 
-  //END API | SERVICES CALL TO GET Deduction
 
+  //#region HANDLE PAGE CHNAGE EVENT
+  const handlePageChange = useCallback((page: number) => {
 
-  //#region TABLE CONFIGURATION
+    fetchDeductionMasterList(page);
+  }, []);
 
-  const handlePageChange = (page: number) => {
-    fetchDeductionList(page);
-  };
-
-  const handleSortColumn = (sortInfo: SortInfo) => {
+  //#region TABLE SORT COLUMN
+  const handleSortColumn = useCallback((sortInfo: SortInfo) => {
 
     setSortInfo(sortInfo);
 
-    fetchDeductionList(1);
+    fetchDeductionMasterList(1);
 
-  }
+  }, []);
+  //#endregion
 
-  const DeductionMasterPaginationInfo: PaginationInfo = useMemo(
+  //#region TABLE PAGINATION INFO
+  const DeductionPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
       totalPages: pagination.totalPages,
@@ -299,559 +261,222 @@ export const DeductionMaster: React.FC = () => {
       pageSize: pagination.pageSize,
       onPageChange: handlePageChange
     }),
-    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
-  )
+    [pagination, handlePageChange]
+  );
 
-  const DeductionListForTable = useMemo(() => DeductionMasterList, [DeductionMasterList]);
+  const DeductionsForTable = useMemo(() => DeductionMasterList, [DeductionMasterList]);
+  //#endregion
 
-
-  // STABLE HANDLER VIEW
-  const handleViewDeductionDetails = useCallback((row: DeductionMasterData) => {
-    setViewDeductionMasterDetailsData(row)
-    setIsViewModalOpen(true)
-  }, [])
-
-
-  const handleConfirmationDialogBoxOpen = useCallback((row: DeductionMasterData) => {
-    setDeleteDeductionMasterDetailsData(row)
-    setIsConfirmationDialogBoxOpen(true)
-  }, [])
-  const DeductionMasterColumns = useMemo<TableColumn[]>(
-    () => [
-      {
-        key: 'Name',
-        label: 'Deduction Name',
-        width: '20',
-        sortable: true,
-        fixed: 'left',
-        align: 'left',
-        render: (value, row) => (
-          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
-            <TooltipText
-              text={value || 'N/A'}
-              maxWidth="250px"
-              tooltipThreshold={25}
-              onClick={() => handleViewDeductionDetails(row)}
-            />
-
-          </div>
-        )
-      },
-      {
-        key: 'Type',
-        label: 'Type',
-        width: '15',
-        sortable: false,
-        align: 'left',
-        render: (value) => (
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="150px"
-            tooltipThreshold={15}
-          />
-        )
-      },
-      {
-        key: 'Value',
-        label: 'Value',
-        width: '12',
-        sortable: false,
-        align: 'center',
-        render: (value) => (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            {value || 0}
-          </span>
-        )
-      },
-      {
-        key: 'BranchName',
-        label: 'Branch Name',
-        width: '15',
-        sortable: false,
-        align: 'left',
-        render: (value) => (
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="150px"
-            tooltipThreshold={15}
-          />
-        )
-      },
-      {
-        key: 'MinSalary',
-        label: 'Min Salary',
-        width: '12',
-        sortable: false,
-        align: 'center',
-        render: (value) => value ? `₹${value.toLocaleString('en-IN')}` : 'N/A'
-      },
-      {
-        key: 'MaxSalary',
-        label: 'Max Salary',
-        width: '12',
-        sortable: false,
-        align: 'center',
-        render: (value) => value ? `₹${value.toLocaleString('en-IN')}` : 'N/A'
-      },
-      {
-        key: 'Gender',
-        label: 'Gender',
-        width: '10',
-        sortable: false,
-        align: 'center',
-        render: (value) => (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-            {value || 'N/A'}
-          </span>
-        )
-      },
-      {
-        key: 'StateName',
-        label: 'State',
-        width: '12',
-        sortable: false,
-        align: 'left',
-        render: (value) => (
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="120px"
-            tooltipThreshold={12}
-          />
-        )
+  //#region NAVIGATE TO  VIEW DEDUCTION
+  const handleNavigateToView = (row: DeductionMasterData) => {
+    navigate('/deductionMaster/view', {
+      state: {
+        deductionData: row,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm
+        }
       }
-    ],
-    // dependencies: include everything used inside that might change
-    [handleViewDeductionDetails]
-  )
+    });
+  };
+
+  //#region NAVIGATE TO ADD DEDUCTION
+  const handleAddDeductionModal = useCallback(() => {
+    navigate('/deductionMaster/add', {
+      state: {
+        fromList: true,
+        listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
+      }
+    });
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
 
   //#endregion
 
-  //#region CUSTOMIZE TABLE COLUMNS
+  //#region TABLE COLUMNS
+  const DeductionMasterColumns = useMemo<TableColumn[]>(() => [
+    {
+      key: 'Name',
+      label: 'Deduction Name',
+      width: '20',
+      sortable: true,
+      fixed: 'left',
+      align: 'left',
+      render: (value, row) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="250px"
+          tooltipThreshold={25}
+          onClick={() => handleNavigateToView(row)}
+        />
+      )
+    },
+    {
+      key: 'Type',
+      label: 'Deduction Type',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="150px"
+          tooltipThreshold={15}
+        />
+      )
+    },
+    {
+      key: 'Value',
+      label: 'Deduction Value',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          {value || 0}
+        </span>
+      )
+    },
+    {
+      key: 'BranchName',
+      label: 'Branch Name',
+      width: '12',
+      sortable: false,
+      align: 'left',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="120px"
+          tooltipThreshold={12}
+        />
+      )
+    },
+    {
+      key: 'MinSalary',
+      label: 'Min Salary',
+      width: '12',
+      sortable: false,
+      align: 'left',
+      render: (value) =>
+        value ? `₹${value.toLocaleString('en-IN')}` : 'N/A'
+    },
 
-  const requiredDeductionMasterColumnKeys: string[] = ['Name'];
+    {
+      key: 'MaxSalary',
+      label: 'Max Salary',
+      width: '12',
+      sortable: false,
+      align: 'left',
+      render: (value) =>
+        value ? `₹${value.toLocaleString('en-IN')}` : 'N/A'
+    },
 
-  const allDeductionMasterColumnKeys: string[] = DeductionMasterColumns.map(c => c.key)
+    {
+      key: 'Gender',
+      label: 'Gender',
+      width: '10',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          {value || 'N/A'}
+        </span>
+      )
+    },
+    {
+      key: 'StateName',
+      label: 'State Name',
+      width: '12',
+      sortable: false,
+      align: 'left',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="120px"
+          tooltipThreshold={12}
+        />
+      )
+    },
+  ], [handleNavigateToView]);
+  //#endregion
 
-  const [selectedDeductionMasterColumnKeys, setSelectedDeductionMasterColumnKeys] = useState<string[]>(() => {
+  //#region COLUMN CUSTOMIZATION
+  const requiredDeductionColumnKeys: string[] = ['Name'];
 
+  const allDeductionColumnKeys: string[] = DeductionMasterColumns.map(c => c.key);
+
+  const [selectedDeductionColumnKeys, setSelectedDeductionColumnKeys] = useState<string[]>(() => {
     try {
 
-      const saved = LocalStorageHelper.getDeductionMasterTableColumns();
+      const saved = LocalStorageHelper.getDeductionMasterTableColumns?.();
 
       if (saved) {
 
         const parsed = JSON.parse(saved) as string[]
-        const withRequired = Array.from(new Set([...parsed, ...requiredDeductionMasterColumnKeys]));
-        return withRequired.filter(k => allDeductionMasterColumnKeys.includes(k));
+        // Ensure required columns are always present
 
+        const withRequired = Array.from(new Set([...parsed, ...requiredDeductionColumnKeys]));
+
+        // Filter out any keys that no longer exist
+        return withRequired.filter(k => allDeductionColumnKeys.includes(k));
       }
     } catch { }
-    return allDeductionMasterColumnKeys
-  })
+    return allDeductionColumnKeys;
+  });
 
   useEffect(() => {
-    setSelectedDeductionMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredDeductionMasterColumnKeys])).filter(k => allDeductionMasterColumnKeys.includes(k)));
+    setSelectedDeductionColumnKeys(prev => Array.from(new Set([...prev, ...requiredDeductionColumnKeys])).filter(k => allDeductionColumnKeys.includes(k)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [DeductionMasterColumns.length])
 
-  const visibleDeductionMasterColumns = useMemo(
-    () => DeductionMasterColumns.filter(col => selectedDeductionMasterColumnKeys.includes(col.key)),
-    [DeductionMasterColumns, selectedDeductionMasterColumnKeys]
-  )
-
-  //#endregion
-
-  //#region VIEW Deduction DETAILS MODAL COMPONENT
-
-  interface ViewDeductionDetailsModalProps {
-    isOpen: boolean
-    onClose: () => void
-    data: DeductionMasterData | null
-  }
-
-  const ViewDeductionDetailsModal: React.FC<ViewDeductionDetailsModalProps> = ({
-    isOpen,
-    onClose,
-    data
-  }) => {
-    if (!data) return null
-
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Deduction Details"
-        onSubmit={(e) => {
-          e.preventDefault()
-          onClose()
-        }}
-        cancelText="Close"
-        loading={false}
-        size='xl'
-      >
-        <div className="space-y-6">
-
-          <div className="space-y-4">
-
-            <FieldItem label="Deduction Name" value={data.Name} isRow withBorder={true} className='font-medium text-blue-900 ' />
-            <FieldItem label="Type" value={data.Type} isRow withBorder={true} />
-            <FieldItem label="Value" value={data.Value} isRow withBorder={true} />
-            <FieldItem label="BranchName" value={data.BranchName} isRow withBorder={true} />
-            <FieldItem label="MinSalary" value={data.MinSalary} isRow withBorder={true} />
-            <FieldItem label="MaxSalary" value={data.MaxSalary} isRow withBorder={true} />
-            <FieldItem label="Gender" value={data.Gender} isRow withBorder={true} />
-            <FieldItem label="State Name" value={data.StateName} isRow withBorder={true} />
-
-            <div className="space-y-4">
-              <h4 className="text-lg font-semibold pb-2">
-                Action Details
-              </h4>
-
-              <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
-
-              {data.ModifiedBy !== '' ?
-                <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
-
-                :
-                ''}
-            </div>
-            <div className="flex justify-between items-center pt-4">
-
-              {canAction && (
-                <>
-                  <Button
-                    color='gray'
-                    variant='solid'
-                    colorMode="light"
-                    size='md'
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      setIsViewModalOpen(false)
-                      handleConfirmationDialogBoxOpen(data)
-                    }}
-                  >
-                    <Trash2 className="h-5 w-5" />
-                    Delete
-                  </Button>
-
-                  <Button
-                    color='blue'
-                    size='md'
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      setIsViewModalOpen(false)
-                      handleEditDeductionMasterData(data)
-                    }}
-                  >
-                    <Edit className="h-5 w-5" />
-                    Edit
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </Modal>
-    )
-  }
-
+  const visibleDeductionColumns = useMemo(
+    () => DeductionMasterColumns.filter(col => selectedDeductionColumnKeys.includes(col.key)),
+    [DeductionMasterColumns, selectedDeductionColumnKeys]
+  );
   //#endregion
 
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters)
-    loadDeductions(1, tempFilters)
-    setShowFilterPopup(false)
-  }
+    setFilters(tempFilters);
+    loadDeductions(1, tempFilters);
+    setShowFilterPopup(false);
+  };
+  //#endregion
 
+  //#region CLEAR FILTER
   const clearFilters = () => {
-    setTempFilters({})
-    setFilters({})
-    loadDeductions(1, {})
-    setShowFilterPopup(false)
-  }
+    setTempFilters({});
+    setFilters({});
 
+    // reset page
+    setPagination({ currentPage: 1 });
+
+    // load empty filters
+    loadDeductions(1, {});
+
+    setShowFilterPopup(false);
+    // clear router state (very important)
+
+    navigate(location.pathname, { replace: true, state: {} });
+
+  };
+  //#endregion
+
+  //#region HANDLE FILTER CHNAGE
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...tempFilters }
-    if (value.trim()) {
-      newFilters[key] = value.trim()
-    } else {
-      delete newFilters[key]
-    }
-    setTempFilters(newFilters)
+    setTempFilters(prev => updateFilter(prev, key, value));
   }
   //#endregion
 
-  //#region ADD UPDATE EDIT Deduction MASTER
-
-  const handleAddDeductionMaster = () => {
-    setEditingDeductionMasterData(null);
-    setDeductionMasterFormData({
-      DeductionMasterId: 0,
-      Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      Name: "",
-      Type: "",
-      Value: 0,
-      BranchMasterId: 0,
-      BranchName: "",
-      MinSalary: 0,
-      MaxSalary: 0,
-      Gender: "",
-      StateName: "",
-      StateMasterId: 0
-    });
-
-    setFormErrors({});
-    setIsAddUpdateModalOpen(true);
-  };
-
-  const handleEditDeductionMasterData = (row: DeductionMasterData) => {
-    setEditingDeductionMasterData(row);
-    setDeductionMasterFormData({
-      DeductionMasterId: row.DeductionMasterId || 0,
-      Uniquekey: row.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      Name: row.Name || "",
-      Type: row.Type || "",
-      Value: row.Value || 0,
-      BranchMasterId: row.BranchMasterId || 0,
-      BranchName: row.BranchName || "",
-      MinSalary: row.MinSalary || 0,
-      MaxSalary: row.MaxSalary || 0,
-      Gender: row.Gender || "",
-      StateName: row.StateName || "",
-      StateMasterId: row.StateMasterId || 0
-    });
-    setDropdownLabels({
-      branchName: row.BranchName ?? "",
-      Gender: row.Gender ?? "",
-      StateName: row.StateName ?? ""
-    });
-    setFormErrors({});
-    setIsAddUpdateModalOpen(true);
-  }
-
-
-  const handleFieldChange = (field: keyof AddUpdateDeductionMasterRequest, value: string | number | null | boolean) => {
-    setDeductionMasterFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  }
-
-  const validateDeductionMasterForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!DeductionMasterFormData.Name) {
-      newErrors.Name = "Deduction Name is required.";
-    }
-
-    if (!DeductionMasterFormData.Type) {
-      newErrors.Type = "Type is required.";
-    }
-
-    if (!DeductionMasterFormData.Value) {
-      newErrors.Value = "Value is required.";
-    }
-
-    if (!DeductionMasterFormData.Gender?.trim()) {
-      newErrors.Gender = "Gender is required.";
-    }
-    if (!DeductionMasterFormData.StateMasterId) {
-      newErrors.StateMasterId = "State Name is required.";
-    }
-    if (!DeductionMasterFormData.MinSalary) {
-      newErrors.MinSalary = "Min Salary is required.";
-    }
-    if (!DeductionMasterFormData.MaxSalary) {
-      newErrors.MaxSalary = "Max Salary is required.";
-    }
-    if (!DeductionMasterFormData.BranchMasterId) {
-      newErrors.BranchMasterId = "Branch Name is required.";
-    }
-
-    return {
-      isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors,
-    };
-  }
-
-  const PushWeekDeductionFormData = (): AddUpdateDeductionMasterRequest => {
-    return {
-      DeductionMasterId: DeductionMasterFormData.DeductionMasterId || 0,
-      Uniquekey: DeductionMasterFormData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      Name: DeductionMasterFormData.Name || "",
-      Type: DeductionMasterFormData.Type || "",
-      Value: DeductionMasterFormData.Value || 0,
-      BranchMasterId: DeductionMasterFormData.BranchMasterId || 0,
-      BranchName: DeductionMasterFormData.BranchName || "",
-      MinSalary: DeductionMasterFormData.MinSalary || 0,
-      MaxSalary: DeductionMasterFormData.MaxSalary || 0,
-      Gender: DeductionMasterFormData.Gender || "",
-      StateName: DeductionMasterFormData.StateName || "",
-      StateMasterId: DeductionMasterFormData.StateMasterId || 0
-    };
-  };
-
-  const fetchBranchOptions = async (pageNumber: number, params?: { value?: string }) => {
-    const responseEither = await BranchMasterService.apiCallPullBranchMaster({
-      PageSize: 10,
-      PageNumber: pageNumber,
-      BranchName: params?.value || "",
-      IsCheckPermission: true,
-    });
-    if (E.isLeft(responseEither)) return { totalNumberOfRecord: 0, itemList: [] };
-    const apiResponse = responseEither.right;
-    const branchList = apiResponse?.Data?.map((item: any) => ({ label: item.BranchName, value: String(item.BranchMasterId) })) || [];
-    return { totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? branchList.length, itemList: branchList };
-  };
-
-  const toDropdownInitialValue = (
-    id?: number | null,
-    label?: string
-  ): { label: string; value: string | number } | null => {
-    if (!id) return null;
-    return {
-      label: label || String(id),
-      value: String(id),
-    };
-  };
-
-  const [dropdownLabels, setDropdownLabels] = useState<{
-    branchName?: string;
-    Gender?: string;
-    StateName?: string
-  }>({});
-
-
-  const handleAddUpdateDeductionMaster = async () => {
-
-    setFormErrors({});
-
-    const validation = validateDeductionMasterForm();
-
-    if (!validation.isValid) {
-      setFormErrors(validation.errors);
-      return;
-    }
-    await runApiWithLoader(
-      setIsLoading,
-      setIsLoadingMessage,
-      async () => {
-
-        const payload = PushWeekDeductionFormData();
-        const response = await DeductionMasterService.apiCallAddUpdateDeductionMaster(payload);
-
-        if (E.isRight(response)) {
-
-          setIsAddUpdateModalOpen(false);
-
-          const isAdd = DeductionMasterFormData.DeductionMasterId === 0
-
-          if (isAdd) {
-
-            const newRecord = response.right.Data[0] as DeductionMasterData
-
-            setDeductionMasterList(prevData => [newRecord, ...prevData]);
-
-            setPagination({
-              currentPage: pagination.currentPage,
-              totalRecords: pagination.totalRecords + 1,
-              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-            });
-
-            addToast({ type: 'success', title: 'Deduction added successfully' })
-          } else {
-
-            const updatedRecord = response.right.Data[0] as DeductionMasterData;
-
-            setDeductionMasterList(prevData =>
-              prevData.map(item =>
-                item.DeductionMasterId === DeductionMasterFormData.DeductionMasterId
-                  ? updatedRecord
-                  : item
-              )
-            )
-
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-          }
-
-          setIsAddUpdateModalOpen(false);
-
-          setEditingDeductionMasterData(null);
-
-        } else {
-
-          addToast({ type: 'error', title: response.left.message });
-        }
-
-        return response
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Operation failed' })
-      },
-      undefined,
-      DeductionMasterFormData.DeductionMasterId === 0 ? 'Add Deduction' : 'Update Deduction...'
-    )
-  }
-  //#region DELETE Deduction MASTER
-  const handleDeleteDeductionMaster = async () => {
-    setIsConfirmationDialogBoxOpen(false);
-    if (!deleteDeductionMasterDetailsData) return
-
-    await runApiWithLoader(
-      setIsLoading,
-      setIsLoadingMessage,
-
-      async () => {
-
-        const params: DeleteDeductionMasterRequest = {
-          DeductionMasterId: deleteDeductionMasterDetailsData.DeductionMasterId || 0,
-          UniqueKey: deleteDeductionMasterDetailsData.Uniquekey || ""
-        }
-        const response = await DeductionMasterService.apiCallDeleteDeductionMaster(params);
-
-        if (E.isRight(response)) {
-          setDeductionMasterList(prevData => prevData.filter(item => item.DeductionMasterId! == deleteDeductionMasterDetailsData.DeductionMasterId));
-
-          setPagination({
-            currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords - 1,
-            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
-          });
-
-          addToast({ type: "success", title: response.right.SuccessMessage[0] })
-
-          setIsConfirmationDialogBoxOpen(false);
-          setDeleteDeductionMasterDetailsData(null);
-        } else {
-          addToast({ type: 'error', title: response.left.message });
-          setIsConfirmationDialogBoxOpen(false);
-        }
-        return response
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message })
-      },
-      undefined,
-      'Delete Deduction Master Data...'
-    )
-  }
-
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
 
-       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {/* ============================================================================
-          COMMAN LOADER FOR PAGE
-           ============================================================================ */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
-        {/* ============================================================================
+        <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+
+         {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
@@ -859,246 +484,99 @@ export const DeductionMaster: React.FC = () => {
           isShowSearchBar
           searchTerm={searchTerm}
           searchPlaceholder="Search By Deduction Name"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
+          onSearchChange={v => {
+            setSearchTerm(v);
+            debouncedSearch(v);
           }}
-          onClearSearch={clearsearchDeductions}
+          onClearSearch={clearSearchDeductions}
           isShowFilterButton
           filters={filters}
           onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
+            setTempFilters(filters);
+            setShowFilterPopup(true);
           }}
           isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeDeductionMasterColumnsModal(true)}
+          onCustomize={() => setIsShowCustomizeDeductionColumnsModal(true)}
+
+          // ADD
           isShowAddButton={canAction}
           addTitle="Add Deduction"
-          onAdd={handleAddDeductionMaster}
-          isShowImportButton={false}
+          onAdd={handleAddDeductionModal}
+
+
+          // EXPORT
           isShowExportButton={canExport}
           onExportExcel={handleExportDeductionExcel}
           onExportPdf={handleExportDeductionPdf}
           exportLoading={isLoading}
         />
+
+        {/* DATA TABLE DEDUCTION*/}
+
         <DataTable
-          data={DeductionListForTable}
-          columns={visibleDeductionMasterColumns}
-          pagination={DeductionMasterPaginationInfo}
-          emptyMessage="No Deductions Data Found"
-          fixedHeight={true}
+          data={DeductionsForTable}
+          columns={visibleDeductionColumns}
+          pagination={DeductionPaginationInfo}
+          emptyMessage="No Deduction found"
+          fixedHeight
           recordsPerPage={20}
           className="flex-1"
           sortInfo={sortInfo}
           onSort={handleSortColumn}
         />
-        <ViewDeductionDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewDeductionMasterDetailsData(null)
-          }}
-          data={viewDeductionMasterDetailsData}
-        />
-        {/*  ADD EDIT UPDATE TNC MODAL */}
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingDeductionMasterData(null)
-            setFormErrors({})
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingDeductionMasterData(null)
-            setFormErrors({})
-          }}
-          title={editingDeductionMasterData ? 'Update Deduction Master Details' : 'Add Deduction Master Details'}
-          onSubmit={(e) => {
-            e.preventDefault()
-            handleAddUpdateDeductionMaster()
-          }}
-          saveText="Save"
-          cancelText="Cancel"
-          loading={isLoading}
-          size="large75"
-        >
-          <div className="space-y-6 p-6 bg-blue-50">
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Input
-                  type="text"
-                  required
-                  label='Deduction Name'
-                  value={DeductionMasterFormData.Name ?? ""}
-                  onChange={(e) => handleFieldChange("Name", e.target.value)}
-                  placeholder="Enter Deduction Name"
-                  maxLength={250}
-                  error={formErrors.Name}
-                />
-              </div>
-
-              <div>
-                <Input
-                  type="text"
-                  label='Type'
-                  value={DeductionMasterFormData.Type ?? ""}
-                  onChange={(e) => handleFieldChange("Type", e.target.value)}
-                  required
-                  maxLength={20}
-                  placeholder="Enter Type"
-                  error={formErrors.Type}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Input
-                  type="text"
-                  label='Value'
-                  value={DeductionMasterFormData.Value ?? ""}
-                  onChange={(e) => handleFieldChange("Value", e.target.value)}
-                  required
-                  maxLength={20}
-                  placeholder="Enter Value"
-                  error={formErrors.Value}
-                />
-              </div>
-              <div>
-                <SingleSelectDropdownWithPagination
-                  label="Branch"
-                  title="Select..."
-                  size="lg"
-                  dataFetchCallBack={fetchBranchOptions}
-                  onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
-                  initialValue={toDropdownInitialValue(DeductionMasterFormData.BranchMasterId, dropdownLabels.branchName)}
-                  error={formErrors.BranchMasterId}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <SinglePageSelection
-                  label="Gender"
-                  required
-                  value={DeductionMasterFormData.Gender}
-                  onChange={(value) => handleFieldChange("Gender", value)}
-                  options={GENDER_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                  error={formErrors.Gender}
-                />
-              </div>
-              <div>
-                <SinglePageSelection
-                  label="State"
-                  value={selectedStateId ?? ''} required
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedStateId(id)
-                    handleFieldChange('StateMasterId', id)
-                  }}
-                  disabled={
-                    stateOptions.length === 0}
-                  options={stateOptions}
-                  error={formErrors.StateMasterId}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Input
-                  type="text"
-                  required
-                  label='Min Salary'
-                  value={DeductionMasterFormData.MinSalary ?? ""}
-                  onChange={(e) => handleFieldChange("MinSalary", e.target.value)}
-                  placeholder="Enter Min Salary"
-                  maxLength={250}
-                  error={formErrors.MinSalary}
-                />
-              </div>
-
-              <div>
-                <Input
-                  type="text"
-                  label='Max Salary'
-                  value={DeductionMasterFormData.MaxSalary ?? ""}
-                  onChange={(e) => handleFieldChange("MaxSalary", e.target.value)}
-                  required
-                  maxLength={20}
-                  placeholder="Enter Max Salary"
-                  error={formErrors.MaxSalary}
-                />
-              </div>
-            </div>
-          </div>
-
-        </Modal>
 
         {/* CUSTOMIZE COLUMNS MODAL */}
+
         <CustomizeColumnsModal
-          isOpen={isShowCustomizeDeductionMasterColumnsModal}
-          onClose={() => setIsShowCustomizeDeductionMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(new Set([...keys, ...requiredDeductionMasterColumnKeys]))
-            setSelectedDeductionMasterColumnKeys(withRequired)
+          isOpen={isShowCustomizeDeductionColumnsModal}
+          onClose={() => setIsShowCustomizeDeductionColumnsModal(false)}
+          onApply={keys => {
+            const withRequired = Array.from(
+
+              new Set([...keys, ...requiredDeductionColumnKeys])
+            );
+            setSelectedDeductionColumnKeys(withRequired);
+
             try {
-              LocalStorageHelper.storeDeductionMasterTableColumns(JSON.stringify(withRequired))
+              LocalStorageHelper.storeDeductionMasterTableColumns?.(
+
+                JSON.stringify(withRequired)
+              );
             } catch { }
           }}
           columns={DeductionMasterColumns}
-          selectedKeys={selectedDeductionMasterColumnKeys}
-          requiredKeys={requiredDeductionMasterColumnKeys}
-          title="Customize Deduction Master Table Columns"
+          selectedKeys={selectedDeductionColumnKeys}
+          requiredKeys={requiredDeductionColumnKeys}
+          title="Customize Table Columns"
         />
+
+        {/* FILTER  DEDUCTION MODAL  */}
         <Modal
           isOpen={showFilterPopup}
           onClose={() => setShowFilterPopup(false)}
           title="Filter - Deduction Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
+          onSubmit={e => {
+            e.preventDefault();
+            applyFilters();
           }}
           saveText="Apply Filter"
           cancelText="Clear Filter"
           onCancel={() => clearFilters()}
-          size="half-screen"
+          resetText=''
+          size="small-half"
         >
           <div className="space-y-6">
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Deduction Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.Name || ''}
-                  onChange={(e) => handleFilterChange('Name', e.target.value)}
-                  placeholder="Enter Deduction name"
-                />
-              </div>
+              <Input type="text"
+                label='Deduction Name'
+                value={tempFilters?.Name ?? ''}
+                onChange={e => handleFilterChange('Name', e.target.value)}
+                placeholder="Enter Deduction Name" />
             </div>
           </div>
         </Modal>
-
-        {/* DELETE CONFIRMATION Deduction Master MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteDeductionMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteDeductionMaster}
-          title="You are about to delete a Deduction?"
-          message="Deleting this Deduction Master Data will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
       </div>
-    </>
   );
 };
 
-export default DeductionMaster
-
-
+export default DeductionMaster;

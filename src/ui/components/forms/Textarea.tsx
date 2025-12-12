@@ -105,15 +105,15 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       }),
       ...(error && {
         borderColor: theme.colors.error,
-        boxShadow: `0 0 0 2px ${theme.colors.errorLight}`,
+        boxShadow: `0 0 0 1px ${theme.colors.errorLight}`,
       }),
     }
 
     const focusStyles = {
       borderColor: error ? theme.colors.error : theme.colors.primary,
       boxShadow: error
-        ? `0 0 0 3px ${theme.colors.errorLight}`
-        : `0 0 0 3px ${theme.colors.primaryLight}`,
+        ? `0 0 0 px ${theme.colors.errorLight}`
+        : `0 0 0 1px ${theme.colors.primaryLight}`,
       backgroundColor:
         variant === 'filled'
           ? theme.colors.background

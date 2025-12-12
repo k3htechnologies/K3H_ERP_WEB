@@ -25,6 +25,10 @@ export const MASTER_DATA = {
 
     genders: ['Male', 'Female', 'Other'],
 
+    months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+
+    deductionType:['Provident Fund','Professional Tax',"Tax Deduction at Source",'Labor Welfare Fund','ESI','Labour WaleFare Fund','National Pension Scheme','Health Insurance Premiums'],
+
     maritalStatuses: ['Single', 'Married', 'Divorced', 'Widowed', 'Separated'],
 
     bloodGroups: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
@@ -39,6 +43,8 @@ export const MASTER_DATA = {
         'Applied','Doc Misssing', 'In Process', 'Issued','Not Applied','Not Applicable',
         'Paid','Payment Due', 'Rejected',
     ],
+
+    bankAccountType: ['Current','DEMAT','Fixed','Salary','Saving'],
 
 } as const
 
@@ -68,6 +74,8 @@ export const filterOptions = (
 export const EMERGENCY_RELATION_OPTIONS = toOptions(MASTER_DATA.emergencyRelations)
 export const EMPLOYEE_TYPE_OPTIONS = toOptions(MASTER_DATA.employeeTypes)
 export const GENDER_OPTIONS = toOptions(MASTER_DATA.genders)
+export const MONTHS_OPTIONS = toOptions(MASTER_DATA.months)
+export const DEDUCTION_TYPE_OPTIONS = toOptions(MASTER_DATA.deductionType)
 export const MARITAL_STATUS_OPTIONS = toOptions(MASTER_DATA.maritalStatuses)
 export const BLOOD_GROUP_OPTIONS = toOptions(MASTER_DATA.bloodGroups)
 export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType)
@@ -75,3 +83,4 @@ export const PROJECT_STATUS_OPTIONS = toOptions(MASTER_DATA.projectStatus)
 export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory)
 export const COMPANY_TYPE = toOptions(MASTER_DATA.companyType)
 export const PROJECT_DOCUMENT_STATUS = toOptions(MASTER_DATA.documentStatus)
+export const BANK_ACCOUNT_TYPE = toOptions(MASTER_DATA.bankAccountType)

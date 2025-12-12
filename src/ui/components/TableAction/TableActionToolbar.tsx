@@ -382,7 +382,8 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  if(showMoreAddOptions){
+                   const hasMoreAddOptions = React.Children.count(showMoreAddOptions) > 0;
+                  if(hasMoreAddOptions){
                     setShowIsAddMore((s) => !s)
                   }else {
                     onAdd()

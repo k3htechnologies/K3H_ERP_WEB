@@ -567,7 +567,6 @@ export const AddUpdateShiftMaster: React.FC = () => {
           </Button>
         </div>
       </div >
-    </>
   );
 };
 

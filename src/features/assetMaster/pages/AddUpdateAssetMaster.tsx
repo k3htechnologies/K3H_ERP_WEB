@@ -444,7 +444,6 @@ export const AddUpdateAssetMaster: React.FC = () => {
           </Button>
         </div>
       </div>
-    </>
   );
 };
 

@@ -72,6 +72,7 @@ import AddUpdateBuilding from '@/features/building/pages/AddUpdateBuilding';
 import Tenant from '@/features/tenant/pages/Tenant';
 import AddUpdateTenant from '@/features/tenant/pages/AddUpdateTenant';
 import ViewTenant from '@/features/tenant/pages/ViewTenant';
+import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (

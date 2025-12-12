@@ -2,7 +2,6 @@ import type { Failure } from '@/core/api/FailureResponse';
 import { TenantDatasourceImpl } from '@/features/tenant/datasources/TenantDatasource'
 import type {
     FilterWithPaginationTenantRequest,
-    AddUpdateTenantRequest,
     TenantListResponse,
     DeleteTenantRequest,
     TenantDeleteResponse,
@@ -31,7 +30,7 @@ export const tenantService = {
         }
     },
 
-    apiCallAddUpdateTenant: async (data: AddUpdateTenantRequest): Promise<E.Either<Failure, TenantListResponse>> => {
+    apiCallAddUpdateTenant: async (data: FormData): Promise<E.Either<Failure, TenantListResponse>> => {
         try {
 
             return E.right(await tenantDatasource.addUpdateTenant(data));

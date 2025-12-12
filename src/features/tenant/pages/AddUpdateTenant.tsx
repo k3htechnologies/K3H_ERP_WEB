@@ -2,23 +2,37 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
+import { tenantService } from "@/features/tenant/services/TenantService";
 import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import React from "react";
-import { filterNumbers, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
-import type { AddUpdateTenantRequest, FilterWithPaginationTenantRequest } from "@/features/tenant/models/TenantModel";
+import type { AddUpdateTenantApplicant, AddUpdateTenantRequest, FilterWithPaginationTenantRequest, TenantApplicant, TenantData } from "@/features/tenant/models/TenantModel";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { tenantService } from "../services/TenantService";
+import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
+import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
+import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { APPLICANT_TYPE, COMMERCIAL_FLAT_CONFIGURATION, FLAT_UNIT_FACING, FLAT_UNIT_TYPE, RESIDENTIAL_FLAT_CONFIGURATION } from "@/core/constants";
+import { filterEmail, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN } from "@/core/utils/fileValidation";
+import { Button } from "@/ui/components/forms";
+import { Edit, Trash2 } from "lucide-react";
+import { Modal } from "@/ui/components/Modal/Modal";
+import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
+import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
+import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
+import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
+import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 
+var BuildingId = 1;
 var ProjectId = 1;
 
 const initialFormState = (): AddUpdateTenantRequest => ({
   TenantId: 0,
   Uniquekey: null,
   BuildingId: 0,
-  ProjectId: ProjectId,
+  ProjectId: 0,
   FlatNumber: "",
   FlatCarpetAreaSqFt: null,
   Facing: "",
@@ -29,10 +43,86 @@ const initialFormState = (): AddUpdateTenantRequest => ({
   TotalAreaSqFt: null,
 });
 
+const initialFormStateApplicantDetails = (): AddUpdateTenantApplicant => ({
+  TenantApplicantId: 0,
+  TenantId: 0,
+  BuildingId: 0,
+  ProjectId: 0,
+
+  ApplicantType: '',
+  ApplicantName: '',
+  ApplicantMobileNumber: '',
+  ApplicantEmailId: '',
+
+  // Photo
+  PhotoURL: null,
+  RemovePhotoURL: '',
+
+  // Aadhar
+  AadharCardNumber: '',
+  AadharCardURL: null,
+  RemoveAadharCardURL: '',
+
+  // PAN
+  PanNumber: '',
+  PanCardURL: null,
+  RemovePanCardURL: '',
+
+  // Passport
+  PassportNumber: '',
+  PassportURL: null,
+  RemovePassportURL: '',
+
+  // Driving License
+  DrivingLicenseNumber: '',
+  DrivingLicenseURL: null,
+  RemoveDrivingLicenseURL: '',
+
+  // Voting ID
+  VotingIdNumber: '',
+  VotingIdURL: null,
+  RemoveVotingIdURL: '',
+
+  // GST
+  GSTNumber: '',
+  GSTNumberURL: null,
+  RemoveGSTNumberURL: '',
+
+  // Bank Details
+  BankListMasterId: 0,
+  AccountNumber: '',
+  IFSCCode: '',
+  ChequeURL: null,
+  RemoveChequeURL: ''
+});
+
+
+// --- add after imports, before component ---
+type TenantApplicantWithFiles = TenantApplicant & {
+  _photoFiles?: (File | string)[];
+  _aadharFiles?: (File | string)[];
+  _panFiles?: (File | string)[];
+  _passportFiles?: (File | string)[];
+  _drivingFiles?: (File | string)[];
+  _votingFiles?: (File | string)[];
+  _gstFiles?: (File | string)[];
+  _chequeFiles?: (File | string)[];
+  RemovePhotoURL?: string;
+  RemoveAadharCardURL?: string;
+  RemovePanCardURL?: string;
+  RemovePassportURL?: string;
+  RemoveDrivingLicenseURL?: string;
+  RemoveVotingIdURL?: string;
+  RemoveGSTNumberURL?: string;
+  RemoveChequeURL?: string;
+};
+
+
 const AddUpdateTenant: React.FC = () => {
 
   //#region STATE MANAGEMENT
   const [formData, setFormData] = useState<AddUpdateTenantRequest>(() => initialFormState());
+  const [applicantList, setApplicantList] = useState<TenantApplicantWithFiles[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
@@ -40,7 +130,7 @@ const AddUpdateTenant: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  //GET VALUE FROM URL :TENANTID
+  //GET VALUE FROM URL :EMPLOYEEID
   const { tenantId } = useParams<{ tenantId?: string }>();
 
   // TOAST
@@ -48,6 +138,71 @@ const AddUpdateTenant: React.FC = () => {
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
+
+  //#endregion
+
+  //#region  TENANT APPLICANT
+
+  //SET DROP DOWN 
+  const [dropdownLabels, setDropdownLabels] = useState<{
+    bankName?: string;
+  }>({});
+
+  const [formDataForApplicant, setFormDataForApplicant] = useState<AddUpdateTenantApplicant>(() => initialFormStateApplicantDetails());
+
+  const [editingApplicantData, setEditingApplicantData] = useState<TenantApplicantWithFiles | null>(null)
+  const [isAddUpdateApplicantModalOpen, setIsAddUpdateApplicantModalOpen] = useState(false)
+
+
+  // ================= PHOTO =================
+  const [applicantPhotoFiles, setApplicantPhotoFiles] = useState<(File | string)[]>([]);
+  const [removedApplicantPhotoURLs, setRemovedApplicantPhotoURLs] = useState<string[]>([]);
+  //const [applicantPhotoURL, setApplicantPhotoURL] = useState<string>();
+
+  // ================= AADHAR =================
+  const [aadharCardFiles, setAadharCardFiles] = useState<(File | string)[]>([]);
+  const [removedAadharCardURLs, setRemovedAadharCardURLs] = useState<string[]>([]);
+  //const [aadharCardPreviewURL, setAadharCardPreviewURL] = useState<string>();
+
+  // ================= PAN =================
+  const [panCardFiles, setPanCardFiles] = useState<(File | string)[]>([]);
+  const [removedPanCardURLs, setRemovedPanCardURLs] = useState<string[]>([]);
+  //const [panCardPreviewURL, setPanCardPreviewURL] = useState<string>();
+
+  // ================= PASSPORT =================
+  const [passportFiles, setPassportFiles] = useState<(File | string)[]>([]);
+  const [removedPassportURLs, setRemovedPassportURLs] = useState<string[]>([]);
+  //const [passportPreviewURL, setPassportPreviewURL] = useState<string>();
+
+  // ================= DRIVING LICENSE =================
+  const [drivingLicenseFiles, setDrivingLicenseFiles] = useState<(File | string)[]>([]);
+  const [removedDrivingLicenseURLs, setRemovedDrivingLicenseURLs] = useState<string[]>([]);
+  //const [drivingLicensePreviewURL, setDrivingLicensePreviewURL] = useState<string>();
+
+  // ================= VOTING ID =================
+  const [votingIdFiles, setVotingIdFiles] = useState<(File | string)[]>([]);
+  const [removedVotingIdURLs, setRemovedVotingIdURLs] = useState<string[]>([]);
+  //const [votingIdPreviewURL, setVotingIdPreviewURL] = useState<string>();
+
+  // ================= GST =================
+  const [gstFiles, setGstFiles] = useState<(File | string)[]>([]);
+  const [removedGstURLs, setRemovedGstURLs] = useState<string[]>([]);
+  //const [gstPreviewURL, setGstPreviewURL] = useState<string>();
+
+  // ================= CHEQUE =================
+  const [chequeFiles, setChequeFiles] = useState<(File | string)[]>([]);
+  const [removedChequeURLs, setRemovedChequeURLs] = useState<string[]>([]);
+  //const [chequePreviewURL, setChequePreviewURL] = useState<string>();
+
+  //ERROR SET UP
+  const [errorsTenantApplicant, setErrorsTenantApplicant] = useState<{ [k: string]: string }>({});
+
+
+  //DELETE TENANT APPLICANT STATES
+
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+
+  const [deleteTenantApplicantData, setDeleteTenantApplicantData] = useState<{ row: TenantApplicantWithFiles; index: number } | null>(null);
 
   //#endregion
 
@@ -67,16 +222,15 @@ const AddUpdateTenant: React.FC = () => {
   //#endregion
 
   //#region INITIALIZATION
-
   useEffect(() => {
-    if (tenantId) {
-      fetchTenantDetails();
-      return;
-    }
+    if (!tenantId) return;
+    (async () => {
+      await fetchTenantDetails();
 
-    handleFieldChange('ProjectId', ProjectId);
+    })
+      ();
+  }, [tenantId /* + any stable deps */]);
 
-  }, [tenantId]);
 
   //#endregion
 
@@ -92,31 +246,50 @@ const AddUpdateTenant: React.FC = () => {
           PageSize: 1,
           IsCheckPermission: false,
           TenantId: Number(tenantId),
-          ProjectId: Number(ProjectId)
+          ProjectId: ProjectId,
+          BuildingId: BuildingId
         }
 
         const response = await tenantService.apiCallPullTenant(params);
 
         if (E.isRight(response)) {
 
-          const e = response.right.Data?.[0];
+          const tenant = response.right.Data?.[0] as TenantData | undefined;
 
-          if (e) {
+          if (tenant) {
             setFormData(prev => ({
               ...prev,
-              TenantId: e.TenantId ?? prev.TenantId,
-              Uniquekey: e.Uniquekey ?? prev.Uniquekey,
-              BuildingId: e.BuildingId ?? prev.BuildingId,
-              ProjectId: e.ProjectId ?? prev.ProjectId,
-              FlatNumber: e.FlatNumber ?? prev.FlatNumber,
-              FlatCarpetAreaSqFt: e.FlatCarpetAreaSqFt ?? prev.FlatCarpetAreaSqFt,
-              Facing: e.Facing ?? prev.Facing,
-              FlatType: e.FlatType ?? prev.FlatType,
-              FlatConfiguration: e.FlatConfiguration ?? prev.FlatConfiguration,
-              FreeAreaOfferedPercent: e.FreeAreaOfferedPercent ?? prev.FreeAreaOfferedPercent,
-              ExtraAreaPurchasedSqFt: e.ExtraAreaPurchasedSqFt ?? prev.ExtraAreaPurchasedSqFt,
-              TotalAreaSqFt: e.TotalAreaSqFt ?? prev.TotalAreaSqFt,
+              TenantId: tenant.TenantId ?? prev.TenantId,
+              Uniquekey: tenant.Uniquekey ?? prev.Uniquekey,
+              BuildingId: BuildingId,
+              ProjectId: tenant.ProjectId ?? prev.ProjectId,
+              FlatNumber: tenant.FlatNumber ?? prev.FlatNumber,
+              FlatCarpetAreaSqFt: tenant.FlatCarpetAreaSqFt ?? prev.FlatCarpetAreaSqFt,
+              Facing: tenant.Facing ?? prev.Facing,
+              FlatType: tenant.FlatType ?? prev.FlatType,
+              FlatConfiguration: tenant.FlatConfiguration ?? prev.FlatConfiguration,
+              FreeAreaOfferedPercent: tenant.FreeAreaOfferedPercent ?? prev.FreeAreaOfferedPercent,
+              ExtraAreaPurchasedSqFt: tenant.ExtraAreaPurchasedSqFt ?? prev.ExtraAreaPurchasedSqFt,
+              TotalAreaSqFt: tenant.TotalAreaSqFt ?? prev.TotalAreaSqFt,
             }));
+
+            const applicantsWithFiles = (tenant?.TenantApplicantData || []).map(a => ({
+              ...a,
+              // parseDocumentUrls returns array of filenames/URLs (strings)
+              _photoFiles: parseDocumentUrls(a.PhotoURL ?? ''),
+              _aadharFiles: parseDocumentUrls(a.AadharCardURL ?? ''),
+              _panFiles: parseDocumentUrls(a.PanCardURL ?? ''),
+              _passportFiles: parseDocumentUrls(a.PassportURL ?? ''),
+              _drivingFiles: parseDocumentUrls(a.DrivingLicenseURL ?? ''),
+              _votingFiles: parseDocumentUrls(a.VotingIdURL ?? ''),
+              _gstFiles: parseDocumentUrls(a.GSTNumberURL ?? ''),
+              _chequeFiles: parseDocumentUrls(a.ChequeURL ?? ''),
+            }));
+
+            setApplicantList(applicantsWithFiles);
+            setDropdownLabels({
+              bankName: tenant?.TenantApplicantData[0].BankName || "",
+            });
           }
         } else {
 
@@ -136,7 +309,7 @@ const AddUpdateTenant: React.FC = () => {
   }
   //#endregion
 
-  //#region TENANT VALIDATION | ADD | UPDATE ACTION
+  //#region TENANT MASTER VALIDATION | ADD | UPDATE ACTION
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddTenantForm = (): {
 
@@ -148,20 +321,31 @@ const AddUpdateTenant: React.FC = () => {
 
     const newErrors: { [key: string]: string } = {}
 
+
     if (!formData.FlatNumber?.trim()) {
-      newErrors.FlatNumber = 'Flat Number is required'
+      newErrors.FlatNumber = 'Flat Number is required.'
+    } else if (formData.FlatNumber.trim().length > 50) {
+      newErrors.FlatNumber = 'Flat Number must be at most 50 characters'
     }
+
     if (!formData.FlatType?.trim()) {
-      newErrors.FlatType = 'Flat Type is required'
+      newErrors.FlatType = 'Flat Type is required.'
     }
-    if (!formData.BuildingId) {
-      newErrors.BuildingId = 'Building Id is required'
+
+    if (!formData.BuildingId || formData.BuildingId <= 0) {
+      newErrors.BuildingId = 'Building Id is required.'
     }
-    if (!formData.ProjectId) {
-      newErrors.ProjectId = 'Project Id is required'
+
+    if (!formData.ProjectId || formData.ProjectId <= 0) {
+      newErrors.ProjectId = 'Project Id is required.'
     }
-    if (!formData.TotalAreaSqFt) {
-      newErrors.TotalAreaSqFt = 'Total Area is required'
+
+    if (formData.FlatCarpetAreaSqFt != null && formData.FlatCarpetAreaSqFt < 0) {
+      newErrors.FlatCarpetAreaSqFt = 'Carpet area must be positive';
+    }
+
+    if (formData.TotalAreaSqFt != null && formData.TotalAreaSqFt < 0) {
+      newErrors.TotalAreaSqFt = 'Total area must be positive';
     }
 
     return {
@@ -169,24 +353,6 @@ const AddUpdateTenant: React.FC = () => {
       errors: newErrors
     }
   }
-
-  const PushTenantFormData = (): AddUpdateTenantRequest => {
-    return {
-      TenantId: formData.TenantId,
-      Uniquekey: formData.Uniquekey,
-      BuildingId: formData.BuildingId,
-      ProjectId: formData.ProjectId,
-      FlatNumber: formData.FlatNumber,
-      FlatCarpetAreaSqFt: formData.FlatCarpetAreaSqFt,
-      Facing: formData.Facing,
-      FlatType: formData.FlatType,
-      FlatConfiguration: formData.FlatConfiguration,
-      FreeAreaOfferedPercent: formData.FreeAreaOfferedPercent,
-      ExtraAreaPurchasedSqFt: formData.ExtraAreaPurchasedSqFt,
-      TotalAreaSqFt: formData.TotalAreaSqFt,
-    };
-
-  };
 
   const handleSubmit = async () => {
 
@@ -208,7 +374,7 @@ const AddUpdateTenant: React.FC = () => {
       setLoadingMessage,
       async () => {
 
-        const payload = PushTenantFormData();
+        const payload = buildMultipartFormData();
 
         const response = await tenantService.apiCallAddUpdateTenant(payload);
 
@@ -257,24 +423,704 @@ const AddUpdateTenant: React.FC = () => {
   };
 
   //#endregion
-  return (
 
+  //#region EDIT TENANT APPLICANT
+
+  const handleEditApplicant = useCallback((row: TenantApplicantWithFiles) => {
+
+    const applicantData: AddUpdateTenantApplicant = {
+      TenantApplicantId: row.TenantApplicantId ?? 0,
+      TenantId: row.TenantId ?? 0,
+      BuildingId: row.BuildingId ?? 0,
+      ProjectId: row.ProjectId ?? 0,
+      ApplicantType: row.ApplicantType || '',
+      ApplicantName: row.ApplicantName || '',
+      ApplicantMobileNumber: row.ApplicantMobileNumber || '',
+      ApplicantEmailId: row.ApplicantEmailId || '',
+      RemovePhotoURL: '',
+      AadharCardNumber: row.AadharCardNumber || '',
+      RemoveAadharCardURL: '',
+      PanNumber: row.PanNumber || '',
+      RemovePanCardURL: '',
+      PassportNumber: row.PassportNumber || '',
+      RemovePassportURL: '',
+      DrivingLicenseNumber: row.DrivingLicenseNumber || '',
+      RemoveDrivingLicenseURL: '',
+      VotingIdNumber: row.VotingIdNumber || '',
+      RemoveVotingIdURL: '',
+      GSTNumber: row.GSTNumber || '',
+      RemoveGSTNumberURL: '',
+      BankListMasterId: row.BankListMasterId ?? 0,
+      AccountNumber: row.AccountNumber || '',
+      IFSCCode: row.IFSCCode || '',
+      RemoveChequeURL: '',
+
+      PhotoURL: null,
+      AadharCardURL: null,
+      PanCardURL: null,
+      PassportURL: null,
+      DrivingLicenseURL: null,
+      VotingIdURL: null,
+      GSTNumberURL: null,
+      ChequeURL: null
+    };
+
+
+    setEditingApplicantData(row);
+    setFormDataForApplicant(applicantData);
+
+    // PHOTO
+    setApplicantPhotoFiles(parseDocumentUrls(row.PhotoURL ?? ''));
+    setRemovedApplicantPhotoURLs([]); // always reset
+
+    // AADHAR
+    setAadharCardFiles(parseDocumentUrls(row.AadharCardURL ?? ''));
+    setRemovedAadharCardURLs([]);
+
+    // PAN
+    setPanCardFiles(parseDocumentUrls(row.PanCardURL ?? ''));
+    setRemovedPanCardURLs([]);
+
+    // PASSPORT
+    setPassportFiles(parseDocumentUrls(row.PassportURL ?? ''));
+    setRemovedPassportURLs([]);
+
+    // DRIVING LICENSE
+    setDrivingLicenseFiles(parseDocumentUrls(row.DrivingLicenseURL ?? ''));
+    setRemovedDrivingLicenseURLs([]);
+
+    // VOTING ID
+    setVotingIdFiles(parseDocumentUrls(row.VotingIdURL ?? ''));
+    setRemovedVotingIdURLs([]);
+
+    // GST
+    setGstFiles(parseDocumentUrls(row.GSTNumberURL ?? ''));
+    setRemovedGstURLs([]);
+
+    // CHEQUE
+    setChequeFiles(parseDocumentUrls(row.ChequeURL ?? ''));
+    setRemovedChequeURLs([]);
+
+    setIsAddUpdateApplicantModalOpen(true);
+  }, []);
+  //#endregion
+  //#region DELETE TENANT APPLICANT CONFIRMATION DIALOG
+  const handleConfirmationDialogBoxOpen = (row: TenantApplicantWithFiles, index: number) => {
+    setDeleteTenantApplicantData({ row, index });
+    setIsConfirmationDialogBoxOpen(true)
+  }
+  //#endregion
+  //#region APPLICANT TABLE COLUMN
+  const applicantColumns = useMemo<TableColumn[]>(
+    () => [
+      {
+        key: 'ApplicantName',
+        label: 'Name',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value, row) => {
+          return (
+            <div className="flex items-center justify-end ml-2 gap-1">
+              <MultiImageViewer
+                images={parseDocumentUrls(row.PhotoURL)}
+                title="Applicant Document"
+                triggerLabel={value || '-'}
+              />
+              <div className="w-[34px] flex justify-center">
+
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleEditApplicant(row)
+                  }}
+                  color='transparent'
+                  isborderRadius
+                  size='sm'
+                  title="Edit Applicant"
+                  leftIcon={<Edit className="h-4 w-4" />}
+                >
+                </Button>
+              </div>
+
+
+              <div className="w-[34px] flex justify-center">
+
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+
+                    const idx = applicantList.findIndex(a =>
+                      (a.TenantApplicantId != null && row.TenantApplicantId != null)
+                        ? a.TenantApplicantId === row.TenantApplicantId
+                        : a === row
+                    );
+
+                    handleConfirmationDialogBoxOpen(row, idx >= 0 ? idx : 0);
+
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  size="sm"
+                  style={{ color: 'red' }}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+
+              </div>
+
+            </div>
+          );
+        }
+      },
+
+      {
+        key: 'ApplicantType',
+        label: 'Type',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'ApplicantMobileNumber',
+        label: 'Mobile Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'ApplicantEmailId',
+        label: 'Email Id',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'AadharCardNumber',
+        label: 'Aadhar',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.AadharCardURL)}
+              title="Aadhar Card Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
+      },
+      {
+        key: 'PanNumber',
+        label: 'PAN',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value: string, row: any) => {
+
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.PanCardURL)}
+              title="Pan Card Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
+      },
+      {
+        key: 'PassportNumber',
+        label: 'Passport',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.PassportURL)}
+              title="Passport Number Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
+      },
+
+      {
+        key: 'DrivingLicenseNumber',
+        label: 'Driving License',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.DrivingLicenseURL)}
+              title="Driving License Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
+      },
+      {
+        key: 'VotingIdNumber',
+        label: 'Voting',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.VotingIdURL)}
+              title="Voting Id Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
+      },
+      {
+        key: 'GSTNumber',
+        label: 'GST',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.GSTNumberURL)}
+              title="GST Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
+      },
+
+      {
+        key: 'BankName',
+        label: 'Bank',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.ChequeURL)}
+              title="Cheque Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
+      },
+
+      {
+        key: 'AccountNumber',
+        label: 'Account Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'IFSCCode',
+        label: 'IFSC',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      }
+
+
+    ],
+    [handleEditApplicant, handleConfirmationDialogBoxOpen, applicantList]
+
+  );
+  //#endregion
+  //#region HANDLE CHNAGE EVENT WHEN INPUT BOX ANY OTHER
+  const handleFieldChangeTenantApplicant = (field: keyof AddUpdateTenantApplicant, value: any) => {
+
+    setFormDataForApplicant((prev) => ({ ...prev, [field]: value }));
+
+    if (errorsTenantApplicant[field]) {
+      setErrorsTenantApplicant((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  //#endregion 
+  //#region ADD UPDATE TENANT APPLICANT
+
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateAddApplicantForm = (): {
+
+    isValid: boolean
+
+    errorsTenantApplicant: { [key: string]: string }
+
+  } => {
+    const newErrorsTenantApplicant: { [key: string]: string } = {}
+
+    if (!formDataForApplicant.ApplicantType?.trim()) {
+      newErrorsTenantApplicant.ApplicantType = 'Applicant Type is required.'
+    }
+
+    if (!formDataForApplicant.ApplicantName?.trim()) {
+      newErrorsTenantApplicant.ApplicantName = 'Applicant Name is required.'
+    }
+
+    if (!formDataForApplicant.ApplicantMobileNumber?.trim()) {
+      newErrorsTenantApplicant.ApplicantMobileNumber = 'Mobile Number is required.'
+    }
+
+    if (!applicantPhotoFiles.length) {
+      newErrorsTenantApplicant.PhotoURL = "Applicant Photo is required.";
+    }
+
+
+    return {
+      isValid: Object.keys(newErrorsTenantApplicant).length === 0,
+      errorsTenantApplicant: newErrorsTenantApplicant
+    }
+  }
+
+
+  const handleAddUpdateTenantApplicant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorsTenantApplicant({});
+
+    const validation = validateAddApplicantForm();
+
+    if (!validation.isValid) {
+
+      setErrorsTenantApplicant(validation.errorsTenantApplicant);
+      return;
+
+    }
+
+    const idToUse =
+      editingApplicantData?.TenantApplicantId ??
+      (formDataForApplicant.TenantApplicantId && formDataForApplicant.TenantApplicantId > 0
+        ? formDataForApplicant.TenantApplicantId
+        : 0);
+
+
+    const applicantToSave: TenantApplicant & {
+      _photoFiles?: (File | string)[];
+      _aadharFiles?: (File | string)[];
+      _panFiles?: (File | string)[];
+      _passportFiles?: (File | string)[];
+      _drivingFiles?: (File | string)[];
+      _votingFiles?: (File | string)[];
+      _gstFiles?: (File | string)[];
+      _chequeFiles?: (File | string)[];
+      RemovePhotoURL?: string;
+      RemoveAadharCardURL?: string;
+      RemovePanCardURL?: string;
+      RemovePassportURL?: string;
+      RemoveDrivingLicenseURL?: string;
+      RemoveVotingIdURL?: string;
+      RemoveGSTNumberURL?: string;
+      RemoveChequeURL?: string;
+    } = {
+      TenantApplicantId: idToUse,
+      TenantId: formDataForApplicant.TenantId ?? 0,
+      BuildingId: formDataForApplicant.BuildingId ?? 0,
+      ProjectId: formDataForApplicant.ProjectId ?? 0,
+      ApplicantType: formDataForApplicant.ApplicantType || '',
+      ApplicantName: formDataForApplicant.ApplicantName || '',
+      ApplicantMobileNumber: formDataForApplicant.ApplicantMobileNumber || '',
+      ApplicantEmailId: formDataForApplicant.ApplicantEmailId || '',
+
+      PhotoURL: applicantPhotoFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      AadharCardNumber: formDataForApplicant.AadharCardNumber || '',
+      AadharCardURL: aadharCardFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      PanNumber: formDataForApplicant.PanNumber || '',
+      PanCardURL: panCardFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      PassportNumber: formDataForApplicant.PassportNumber || '',
+      PassportURL: passportFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      DrivingLicenseNumber: formDataForApplicant.DrivingLicenseNumber || '',
+      DrivingLicenseURL: drivingLicenseFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      VotingIdNumber: formDataForApplicant.VotingIdNumber || '',
+      VotingIdURL: votingIdFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      GSTNumber: formDataForApplicant.GSTNumber || '',
+      GSTNumberURL: gstFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      BankListMasterId: formDataForApplicant.BankListMasterId ?? null,
+      AccountNumber: formDataForApplicant.AccountNumber || '',
+      IFSCCode: formDataForApplicant.IFSCCode || '',
+      ChequeURL: chequeFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+
+      BankName: null,
+      CreatedById: 0,
+      CreatedBy: '',
+      CreatedDate: null,
+      ModifiedById: 0,
+      ModifiedBy: '',
+      ModifiedDate: null,
+      LastModifiedBy: '',
+      LastModifiedDate: null,
+
+      _photoFiles: applicantPhotoFiles.slice(),
+      _aadharFiles: aadharCardFiles.slice(),
+      _panFiles: panCardFiles.slice(),
+      _passportFiles: passportFiles.slice(),
+      _drivingFiles: drivingLicenseFiles.slice(),
+      _votingFiles: votingIdFiles.slice(),
+      _gstFiles: gstFiles.slice(),
+      _chequeFiles: chequeFiles.slice(),
+
+      RemovePhotoURL: removedApplicantPhotoURLs.join(','),
+      RemoveAadharCardURL: removedAadharCardURLs.join(','),
+      RemovePanCardURL: removedPanCardURLs.join(','),
+      RemovePassportURL: removedPassportURLs.join(','),
+      RemoveDrivingLicenseURL: removedDrivingLicenseURLs.join(','),
+      RemoveVotingIdURL: removedVotingIdURLs.join(','),
+      RemoveGSTNumberURL: removedGstURLs.join(','),
+      RemoveChequeURL: removedChequeURLs.join(','),
+    };
+
+    setApplicantList(prevList => {
+      if (editingApplicantData && editingApplicantData.TenantApplicantId) {
+        return prevList.map(p => (p.TenantApplicantId === idToUse ? applicantToSave : p));
+      } else {
+        return [...prevList, applicantToSave];
+      }
+    });
+
+    setIsAddUpdateApplicantModalOpen(false);
+    setEditingApplicantData(null);
+    setFormDataForApplicant(initialFormStateApplicantDetails());
+    setApplicantPhotoFiles([]);
+    setAadharCardFiles([]);
+    setPanCardFiles([]);
+    setPassportFiles([]);
+    setDrivingLicenseFiles([]);
+    setVotingIdFiles([]);
+    setGstFiles([]);
+    setChequeFiles([]);
+  };
+
+  //#endregion
+  //#region DELETE TENANT APPLICANT
+
+
+  const handleDeleteApplicant = () => {
+
+    if (!deleteTenantApplicantData) return;
+    const removeIndex = deleteTenantApplicantData.index;
+
+    if (removeIndex < 0) {
+
+      setIsConfirmationDialogBoxOpen(false);
+
+      setDeleteTenantApplicantData(null);
+
+      addToast({ type: 'error', title: 'Unable to find the selected applicant to delete' });
+
+      return;
+
+    }
+
+    setApplicantList(prev => prev.filter((_, i) => i !== removeIndex));
+    setIsConfirmationDialogBoxOpen(false);
+    setDeleteTenantApplicantData(null);
+    addToast({ type: 'success', title: 'Applicant Removed' });
+  };
+
+
+
+  //#endregion
+  //#region  TENANT DETAILS WITH APPLICANT DETAILS
+  const buildMultipartFormData = (): FormData => {
+    const fd = new FormData();
+
+    // top-level tenant fields
+    fd.append('TenantId', String(formData.TenantId ?? 0));
+    fd.append('Uniquekey', String(formData.Uniquekey ?? ''));
+    fd.append('ProjectId', String(ProjectId ?? 0));
+    fd.append('BuildingId', String(formData.BuildingId ?? 0));
+    fd.append('FlatNumber', formData.FlatNumber ?? '');
+    fd.append('FlatCarpetAreaSqFt', String(formData.FlatCarpetAreaSqFt ?? ''));
+    fd.append('Facing', formData.Facing ?? '');
+    fd.append('FlatType', formData.FlatType ?? '');
+    fd.append('FlatConfiguration', formData.FlatConfiguration ?? '');
+    fd.append('FreeAreaOfferedPercent', String(formData.FreeAreaOfferedPercent ?? ''));
+    fd.append('ExtraAreaPurchasedSqFt', String(formData.ExtraAreaPurchasedSqFt ?? ''));
+    fd.append('TotalAreaSqFt', String(formData.TotalAreaSqFt ?? ''));
+
+    // helper that appends existing CSV and File parts (with filename)
+    const addFilesWithExisting = (
+      fdLocal: FormData,
+      prefix: string,
+      fileArray: (File | string)[] | undefined,
+      fieldKey: string
+    ) => {
+      if (!fileArray || fileArray.length === 0) return;
+
+      // existing filenames as CSV (only non-empty strings)
+      const existingNames = fileArray
+        .filter(x => typeof x === 'string' && String(x).trim().length > 0)
+        .map(x => String(x).trim())
+        .join(',');
+
+      if (existingNames) {
+        fdLocal.append(`${prefix}.${fieldKey}`, existingNames);
+      }
+
+      // append actual File objects as repeated file parts
+      fileArray.forEach(item => {
+        if (item instanceof File) {
+          // append with explicit filename (helps some server bindings)
+          fdLocal.append(`${prefix}.${fieldKey}`, item, item.name);
+        }
+      });
+    };
+
+    applicantList.forEach((app, index) => {
+      const prefix = `AddUpdateTenantApplicants[${index}]`;
+
+      fd.append(`${prefix}.BuildingId`, String(app.BuildingId ?? formData.BuildingId ?? BuildingId));
+      fd.append(`${prefix}.ProjectId`, String(app.ProjectId ?? ProjectId));
+      fd.append(`${prefix}.ApplicantType`, String(app.ApplicantType ?? ''));
+      fd.append(`${prefix}.TenantId`, String(app.TenantId ?? formData.TenantId ?? 0));
+      fd.append(`${prefix}.TenantApplicantId`, String(app.TenantApplicantId ?? 0));
+      fd.append(`${prefix}.ApplicantName`, app.ApplicantName ?? '');
+      fd.append(`${prefix}.ApplicantMobileNumber`, app.ApplicantMobileNumber ?? '');
+      fd.append(`${prefix}.ApplicantEmailId`, app.ApplicantEmailId ?? '');
+
+      // non-file fields
+      fd.append(`${prefix}.AadharCardNumber`, app.AadharCardNumber ?? '');
+      fd.append(`${prefix}.PanNumber`, app.PanNumber ?? '');
+      fd.append(`${prefix}.PassportNumber`, app.PassportNumber ?? '');
+      fd.append(`${prefix}.DrivingLicenseNumber`, app.DrivingLicenseNumber ?? '');
+      fd.append(`${prefix}.VotingIdNumber`, app.VotingIdNumber ?? '');
+      // be consistent with your model naming — use same casing as backend expects:
+      fd.append(`${prefix}.GSTNumber`, app.GSTNumber ?? app.GSTNumber ?? '');
+      fd.append(`${prefix}.BankListMasterId`, String(app.BankListMasterId ?? 0));
+      fd.append(`${prefix}.AccountNumber`, app.AccountNumber ?? '');
+      fd.append(`${prefix}.IFSCCode`, app.IFSCCode ?? '');
+
+      // Remove CSV lists (only append non-empty)
+      const appendIfNonEmpty = (key: string, val?: string) => {
+        if (val && String(val).trim().length > 0) fd.append(`${prefix}.${key}`, String(val));
+      };
+
+      appendIfNonEmpty('RemovePhotoURL', (app as any).RemovePhotoURL);
+      appendIfNonEmpty('RemoveAadharCardURL', (app as any).RemoveAadharCardURL);
+      appendIfNonEmpty('RemovePanCardURL', (app as any).RemovePanCardURL);
+      appendIfNonEmpty('RemovePassportURL', (app as any).RemovePassportURL);
+      appendIfNonEmpty('RemoveDrivingLicenseURL', (app as any).RemoveDrivingLicenseURL);
+      appendIfNonEmpty('RemoveVotingIdURL', (app as any).RemoveVotingIdURL);
+      appendIfNonEmpty('RemoveGSTNumberURL', (app as any).RemoveGSTNumberURL);
+      appendIfNonEmpty('RemoveChequeURL', (app as any).RemoveChequeURL);
+
+      // Use the helper to append existing filenames + File objects
+      const realApp: any = app;
+
+      addFilesWithExisting(fd, prefix, realApp._photoFiles, 'PhotoURL');
+      addFilesWithExisting(fd, prefix, realApp._aadharFiles, 'AadharCardURL');
+      addFilesWithExisting(fd, prefix, realApp._panFiles, 'PanCardURL');
+      addFilesWithExisting(fd, prefix, realApp._passportFiles, 'PassportURL');
+      addFilesWithExisting(fd, prefix, realApp._drivingFiles, 'DrivingLicenseURL');
+      addFilesWithExisting(fd, prefix, realApp._votingFiles, 'VotingIdURL');
+      addFilesWithExisting(fd, prefix, realApp._gstFiles, 'GSTNumberURL'); // check backend expects this key
+      addFilesWithExisting(fd, prefix, realApp._chequeFiles, 'ChequeURL');
+    });
+
+    // debug: list all formData parts (open console to inspect)
+    // remove or comment this block in production
+    for (const pair of fd.entries()) {
+      const [k, v] = pair as [string, any];
+      if (v instanceof File) {
+        console.log('FD file ->', k, (v as File).name, (v as File).size);
+      } else {
+        console.log('FD value ->', k, v);
+      }
+    }
+
+    return fd;
+  };
+
+  //#endregion
+
+ return (
 
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
 
-      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+      <div className="flex-1 space-y-2 px-6 py-3 pb-20">
         <form onSubmit={handleSubmit}>
-          {/* ============================================================= [BASIC TENANT DETAILS] ============================================================================================= */}
+          {/* ============================================================= [FLAT DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
-           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Tenant Details</h3>
+            <div className="flex items-center justify-between">
+
+              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+                Applicant Details
+              </h3>
+
+              <div className="ml-4">
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setEditingApplicantData(null);
+                    setFormDataForApplicant(initialFormStateApplicantDetails());
+
+                    setApplicantPhotoFiles([]);
+                    setAadharCardFiles([]);
+                    setPanCardFiles([]);
+                    setPassportFiles([]);
+                    setDrivingLicenseFiles([]);
+                    setVotingIdFiles([]);
+                    setGstFiles([]);
+                    setChequeFiles([]);
+
+                    setRemovedApplicantPhotoURLs([]);
+                    setRemovedAadharCardURLs([]);
+                    setRemovedPanCardURLs([]);
+                    setRemovedPassportURLs([]);
+                    setRemovedDrivingLicenseURLs([]);
+                    setRemovedVotingIdURLs([]);
+                    setRemovedGstURLs([]);
+                    setRemovedChequeURLs([]);
+
+                    setIsAddUpdateApplicantModalOpen(true);
+
+                  }}
+                  color="blue"
+                  size="sm"
+                  title="Add Applicant"
+                >
+                  Add Applicant
+                </Button>
+              </div>
+            </div>
+
+            <DataTable
+              data={applicantList}
+              columns={applicantColumns}
+              emptyMessage="No applicants found"
+              fixedHeight={false}
+              recordsPerPage={20}
+              className="min-w-full"
+              aria-label="Applicant list"
+            />
+          </div>
+
+
+          {/* ============================================================= [FLAT DETAILS] ============================================================================================= */}
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Unit Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <Input
-                  label="Flat Number"
+                  label="Unit Number"
                   value={formData.FlatNumber}
                   required
                   onChange={e => handleFieldChange('FlatNumber', e.target.value)}
@@ -282,90 +1128,92 @@ const AddUpdateTenant: React.FC = () => {
               </div>
               <div>
                 <Input
-                  value={formData.FlatType}
-                  label="Flat Type"
-                  required
-                  onChange={e => handleFieldChange('FlatType', e.target.value)}
-                  error={errors.FlatType} />
-              </div>
-              <div>
-                <Input
-                  value={formData.FlatConfiguration}
-                  label="Flat Configuration"
-                  onChange={e => handleFieldChange('FlatConfiguration', e.target.value)}
-                  error={errors.FlatConfiguration} />
-              </div>
-              <div>
-                <Input
-                  value={formData.Facing ?? ''}
-                  label="Facing"
-                  onChange={e => handleFieldChange('Facing', e.target.value)}
-                  error={errors.Facing} />
-              </div>
-              <div>
-                <Input
-                  value={formData.BuildingId ?? ''}
-                  label="Building Id"
-                  required
-                  onChange={e => handleFieldChange('BuildingId', Number(filterNumbers(e.target.value) || 0))}
-                  error={errors.BuildingId} />
-              </div>
-              <div>
-                <Input
-                  value={formData.ProjectId ?? ''}
-                  label="Project Id"
-                  required
-                  onChange={e => handleFieldChange('ProjectId', Number(filterNumbers(e.target.value) || 0))}
-                  error={errors.ProjectId} />
-              </div>
-            </div>
-          </div>
-          {/* ============================================================= [AREA DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Area Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <Input
+                  label="Carpet Area SqFt"
                   value={formData.FlatCarpetAreaSqFt ?? ''}
-                  label="Carpet Area (sqft)"
-                  onChange={e => handleFieldChange('FlatCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  required
+                  onChange={e => handleFieldChange('FlatCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
                   error={errors.FlatCarpetAreaSqFt}
                 />
+
               </div>
               <div>
-                <Input
-                  value={formData.TotalAreaSqFt ?? ''}
-                  label="Total Area (sqft)"
+
+                <SinglePageSelection
+                  label="Unit Type"
                   required
-                  onChange={e => handleFieldChange('TotalAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
-                  error={errors.TotalAreaSqFt}
+                  value={formData.FlatType}
+                  onChange={(e) => handleFieldChange('FlatType', String(e))}
+                  options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                  error={errors.FlatType}
                 />
               </div>
+
               <div>
-                <Input
+                {formData.FlatType.toUpperCase() === "RESIDENTIAL" ?
+                  <SinglePageSelection
+                    label="Unit Configuration"
+                    required
+                    value={formData.FlatConfiguration ?? ""}
+                    onChange={(e) => handleFieldChange('FlatConfiguration', String(e))}
+                    options={RESIDENTIAL_FLAT_CONFIGURATION.map((opt) => ({ label: opt.name, value: opt.id }))}
+                    error={errors.FlatConfiguration}
+                  />
+                  : ""}
+
+                {formData.FlatType.toUpperCase() === "COMMERCIAL" ?
+                  <SinglePageSelection
+                    label="Unit Configuration"
+                    required
+                    value={formData.FlatConfiguration ?? ""}
+                    onChange={(e) => handleFieldChange('FlatConfiguration', String(e))}
+                    options={COMMERCIAL_FLAT_CONFIGURATION.map((opt) => ({ label: opt.name, value: opt.id }))}
+                    error={errors.FlatConfiguration}
+                  />
+                  : ""}
+              </div>
+
+              <div>
+
+                <SinglePageSelection
+                  label="Facing"
+                  required
+                  value={formData.Facing ?? ""}
+                  onChange={(e) => handleFieldChange('Facing', String(e))}
+                  options={FLAT_UNIT_FACING.map((opt) => ({ label: opt.name, value: opt.id }))}
+                  error={errors.Facing}
+                />
+              </div>
+
+              <div>
+                <Input label="Free Area Offered (%)"
                   value={formData.FreeAreaOfferedPercent ?? ''}
-                  label="Free Area Offered (%)"
-                  onChange={e => handleFieldChange('FreeAreaOfferedPercent', filterNumbersWithDecimal(e.target.value) || 0)}
-                  error={errors.FreeAreaOfferedPercent}
-                />
+                  onChange={(e) => handleFieldChange("FreeAreaOfferedPercent", filterNumbersWithDecimal(e.target.value))}
+                  error={errors.FreeAreaOfferedPercent} />
               </div>
               <div>
                 <Input
+                  label="Extra Area Purchased SqFt"
                   value={formData.ExtraAreaPurchasedSqFt ?? ''}
-                  label="Extra Area Purchased (sqft)"
-                  onChange={e => handleFieldChange('ExtraAreaPurchasedSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  onChange={(e) => handleFieldChange("ExtraAreaPurchasedSqFt", filterNumbersWithDecimal(e.target.value))}
                   error={errors.ExtraAreaPurchasedSqFt}
                 />
               </div>
+              <div>
+                <Input
+                  label="Total Area SqFt"
+                  value={formData.TotalAreaSqFt ?? ''}
+                  onChange={(e) => handleFieldChange("TotalAreaSqFt", filterNumbersWithDecimal(e.target.value))}
+                  error={errors.TotalAreaSqFt}
+                />
+              </div>
             </div>
           </div>
-
         </form>
-      </div>
+      </div >
 
       <BottomActionBar
         cancelText="Cancel"
-        saveText={formData.TenantId ? "Update Tenant" : "Add Tenant"}
+        saveText={(formData.TenantId && formData.TenantId > 0) ? 'Update Tenant' : 'Add Tenant'}
         onCancel={() => navigate(-1)}
         canAction={canAction}
         onSave={() => {
@@ -375,7 +1223,359 @@ const AddUpdateTenant: React.FC = () => {
       />
 
 
-    </div>
+      {/*  ADD EDIT UPDATE TENANT APPLICANT MODAL */}
+
+      <Modal
+        isOpen={isAddUpdateApplicantModalOpen}
+        onClose={() => {
+          setIsAddUpdateApplicantModalOpen(false)
+          setEditingApplicantData(null)
+          setFormDataForApplicant(initialFormStateApplicantDetails());
+          setErrorsTenantApplicant({});
+
+        }}
+        onCancel={() => {
+          setIsAddUpdateApplicantModalOpen(false)
+          setEditingApplicantData(null)
+          setFormDataForApplicant(initialFormStateApplicantDetails());
+          setErrorsTenantApplicant({});
+
+        }}
+        title={editingApplicantData ? 'Update Tenant Applicant' : 'Add Tenant Applicant'}
+        onSubmit={handleAddUpdateTenantApplicant}
+        saveText={editingApplicantData ? 'Update' : 'Save'}
+        cancelText="Cancel"
+        loading={isLoading}
+        size='large-half'
+      >
+        <div className="space-y-6">
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <SinglePageSelection
+                label="Applicant Type"
+                required
+                value={formDataForApplicant?.ApplicantType ?? ""}
+                onChange={(e) => handleFieldChangeTenantApplicant('ApplicantType', String(e))}
+                options={APPLICANT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                error={errorsTenantApplicant.ApplicantType}
+              />
+            </div>
+            <div>
+              <Input
+                label='Applicant Name'
+                required
+                error={errorsTenantApplicant.ApplicantName}
+                value={formDataForApplicant.ApplicantName ?? ""}
+                maxLength={50}
+                onChange={e =>
+                  handleFieldChangeTenantApplicant('ApplicantName', filterLetters(e.target.value))
+                }
+                placeholder="Enter Applicant Name"
+              />
+            </div>
+            <div>
+              <Input
+                label='Mobile Number'
+                required
+                error={errorsTenantApplicant.ApplicantMobileNumber}
+                type="text"
+                value={formDataForApplicant.ApplicantMobileNumber ?? ""}
+                maxLength={10}
+                onChange={e =>
+                  handleFieldChangeTenantApplicant('ApplicantMobileNumber', filterMobile(e.target.value))
+                }
+                placeholder="Enter Mobile Number"
+              />
+            </div>
+
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Input
+                label='Email Id'
+                error={errorsTenantApplicant.ApplicantEmailId}
+                type="text"
+                value={formDataForApplicant.ApplicantEmailId ?? ""}
+                onChange={e =>
+                  handleFieldChangeTenantApplicant('ApplicantEmailId', filterEmail(e.target.value))
+                }
+                placeholder="Enter Email Id"
+              />
+            </div>
+            <div>
+
+              <MultiFilePicker
+                label="Photo"
+                required
+                error={errorsTenantApplicant.PhotoURL}
+                value={applicantPhotoFiles}
+                onChange={setApplicantPhotoFiles}
+                availableFilesURL={editingApplicantData?._photoFiles}
+                allowedTypes={['image/jpeg', 'image/png']}
+                maxFiles={1}
+                maxSizeMB={5}
+                onRemoveExisting={(url) => setRemovedApplicantPhotoURLs((prev) => [...prev, url])}
+              />
+            </div>
+            <div>
+
+            </div>
+
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Input
+                label="Aadhar Number"
+
+                error={errorsTenantApplicant.AadharCardNumber}
+                type="text"
+                value={formDataForApplicant.AadharCardNumber ?? ''}
+                maxLength={12}
+                onChange={(e) =>
+                  handleFieldChangeTenantApplicant('AadharCardNumber', filterNumbers(e.target.value))
+                }
+                placeholder="Enter Aadhar number"
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Aadhaar Card"
+
+                error={errorsTenantApplicant.AadharCardURL}
+                value={aadharCardFiles}
+                onChange={setAadharCardFiles}
+                availableFilesURL={editingApplicantData?._aadharFiles}
+                allowedTypes={[
+                  'image/jpeg',
+                  'image/png',
+                  'application/pdf',
+                ]}
+                maxFiles={2}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => setRemovedAadharCardURLs((prev) => [...prev, url])}
+              />
+            </div>
+            <div>
+
+            </div>
+
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Input
+                label="PAN Number"
+
+                error={errorsTenantApplicant.PanNumber}
+                type="text"
+                value={formDataForApplicant.PanNumber ?? ''}
+                maxLength={10}
+                onChange={(e) =>
+                  handleFieldChangeTenantApplicant('PanNumber', filterPAN(e.target.value).toUpperCase())
+                }
+                placeholder="Enter PAN number"
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="PAN Card"
+
+                error={errorsTenantApplicant.PanCardURL}
+                value={panCardFiles}
+                onChange={setPanCardFiles}
+                availableFilesURL={editingApplicantData?._panFiles }
+                allowedTypes={[
+                  'image/jpeg',
+                  'image/png',
+                  'application/pdf',
+                  'application/msword',
+                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                ]}
+                maxFiles={2}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])}
+              />
+            </div>
+            <div>
+
+            </div>
+
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Input
+                label="Passport Number"
+                error={errorsTenantApplicant.PassportNumber}
+                type="text"
+                value={formDataForApplicant.PassportNumber ?? ''}
+                maxLength={20}
+                onChange={(e) =>
+                  handleFieldChangeTenantApplicant('PassportNumber', e.target.value.toUpperCase())
+                }
+                placeholder="Enter Passport number"
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Passport"
+                error={errorsTenantApplicant.PassportURL}
+                value={passportFiles}
+                onChange={setPassportFiles}
+                availableFilesURL={editingApplicantData?._passportFiles}
+                allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
+                maxFiles={3}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Input
+                label="Driving License Number"
+                error={errorsTenantApplicant.DrivingLicenseNumber}
+                type="text"
+                value={formDataForApplicant.DrivingLicenseNumber ?? ''}
+                maxLength={30}
+                onChange={(e) =>
+                  handleFieldChangeTenantApplicant('DrivingLicenseNumber', e.target.value.toUpperCase())
+                }
+                placeholder="Enter Driving License number"
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Driving License"
+                error={errorsTenantApplicant.DrivingLicenseURL}
+                value={drivingLicenseFiles}
+                onChange={setDrivingLicenseFiles}
+                availableFilesURL={editingApplicantData?._drivingFiles}
+                allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
+                maxFiles={3}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Input
+                label="Voting ID Number"
+                error={errorsTenantApplicant.VotingIdNumber}
+                type="text"
+                value={formDataForApplicant.VotingIdNumber ?? ''}
+                maxLength={30}
+                onChange={(e) =>
+                  handleFieldChangeTenantApplicant('VotingIdNumber', e.target.value.toUpperCase())
+                }
+                placeholder="Enter Voting ID number"
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Voting ID"
+                error={errorsTenantApplicant.VotingIdURL}
+                value={votingIdFiles}
+                onChange={setVotingIdFiles}
+                availableFilesURL={editingApplicantData?._votingFiles}
+                allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
+                maxFiles={3}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Input
+                label="GST Number"
+                error={errorsTenantApplicant.GSTNumber}
+                type="text"
+                value={formDataForApplicant.GSTNumber ?? ''}
+                maxLength={15}
+                onChange={(e) =>
+                  handleFieldChangeTenantApplicant('GSTNumber', e.target.value.toUpperCase())
+                }
+                placeholder="Enter GST number"
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="GST Documents"
+                error={errorsTenantApplicant.GSTNumberURL}
+                value={gstFiles}
+                onChange={setGstFiles}
+                availableFilesURL={editingApplicantData?._gstFiles}
+                allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
+                maxFiles={5}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <SingleSelectDropdownWithPagination
+                label="Bank"
+                title="Select Bank"
+                size="lg"
+                dataFetchCallBack={fetchBankListMasterDropdown}
+                onSelected={(item) => { handleFieldChangeTenantApplicant("BankListMasterId", Number(item?.value || 0)); }}
+                initialValue={createDropdownInitialValue(formDataForApplicant.BankListMasterId, dropdownLabels.bankName)}
+                error={errorsTenantApplicant.BankListMasterId}
+              />
+            </div>
+            <div>
+              <Input
+                label="Account Number"
+                value={formDataForApplicant.AccountNumber ?? ""}
+                maxLength={18}
+                onChange={(e) => handleFieldChangeTenantApplicant("AccountNumber", filterNumbers(e.target.value))}
+                error={errorsTenantApplicant.AccountNumber} />
+            </div>
+            <div>
+              <Input label="IFSC Code"
+                value={formDataForApplicant.IFSCCode ?? ""}
+                onChange={(e) => handleFieldChangeTenantApplicant("IFSCCode", filterIFSC(e.target.value))}
+                error={errorsTenantApplicant.IFSCCode} />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <MultiFilePicker
+                label="Cheque / Cancelled Cheque"
+                error={errorsTenantApplicant.ChequeURL}
+                value={chequeFiles}
+                onChange={setChequeFiles}
+                availableFilesURL={editingApplicantData?._chequeFiles}
+                allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
+                maxFiles={2}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => setRemovedChequeURLs((prev) => [...prev, url])}
+              />
+            </div>
+
+          </div>
+
+        </div>
+      </Modal>
+
+      {/* DELETE CONFIRMATION APPLICANT MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteTenantApplicantData(null)
+        }}
+        onConfirm={handleDeleteApplicant}
+        title="You are about to delete a applicant?"
+        message="Deleting this applicant will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+    </div >
   );
 };
 

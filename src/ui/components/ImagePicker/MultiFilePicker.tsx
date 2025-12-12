@@ -3,7 +3,7 @@ import {
   Paperclip,
   Eye,
   Trash2,
-  File,
+  File as FileIcon,
   FileText,
   Image as ImageIcon,
   List,
@@ -13,7 +13,7 @@ import { MultiImageViewer } from "@/ui/components/ImageViewer/ImageViewer";
 import useToast from "@/core/hooks/useToast";
 import { THEME } from "@/core/constants";
 
-export type FileValue = File | string;
+export type FileValue = globalThis.File | string;
 
 interface MultiFilePickerProps {
   label?: string;
@@ -22,24 +22,35 @@ interface MultiFilePickerProps {
   maxSizeMB?: number;
   maxFiles?: number;
   value: FileValue[];
-  availableFilesURL?: string;
+  /** Accepts CSV string, array of strings, or array mixed with File objects from your internal model */
+  availableFilesURL?: string | (string | File)[] | null;
   onChange: (files: FileValue[]) => void;
   placeholder?: string;
   error?: string;
   onRemoveExisting?: (url: string) => void;
 }
 
-const parseUrls = (urls?: string): string[] =>
-  (urls || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter((s) => s !== "");
+const normalizeAvailableFiles = (input?: string | (string | File)[] | null): string[] | undefined => {
+  if (!input) return undefined;
+
+  if (typeof input === "string") {
+    const trimmed = input.trim();
+    if (trimmed === "") return undefined;
+    return trimmed.split(",").map(s => s.trim()).filter(Boolean);
+  }
+
+  if (Array.isArray(input)) {
+    const onlyStrings = input.filter(item => typeof item === "string") as string[];
+    return onlyStrings.length ? onlyStrings.map(s => s.trim()).filter(Boolean) : undefined;
+  }
+
+  return undefined;
+};
 
 export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
   label,
   required,
   allowedTypes = ["image/jpeg", "image/png", "application/pdf"],
-  maxSizeMB = 5,
   maxFiles = 5,
   value,
   availableFilesURL,
@@ -50,28 +61,52 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const theme = THEME
+  const theme = THEME;
   const [isListOpen, setIsListOpen] = useState(false);
   const [openUpwards, setOpenUpwards] = useState(false);
-  const [existingUrls, setExistingUrls] = useState<string[]>(() =>
-    parseUrls(availableFilesURL),
-  );
+
+  // Normalize incoming availableFilesURL into string[] or undefined
+  const initialExisting = normalizeAvailableFiles(availableFilesURL) ?? [];
+  const [existingUrls, setExistingUrls] = useState<string[]>(() => initialExisting);
 
   const { addToast } = useToast();
 
-  // 🔄 Sync state with prop changes
+  // Sync state with prop changes
   useEffect(() => {
-    setExistingUrls(parseUrls(availableFilesURL));
+    setExistingUrls(normalizeAvailableFiles(availableFilesURL) ?? []);
   }, [availableFilesURL]);
 
-  // 🔥 Auto close drawer when all files removed
+  // Auto close drawer when no files
   useEffect(() => {
     if (existingUrls.length + value.length === 0) {
       setIsListOpen(false);
     }
   }, [existingUrls, value]);
 
-  // ---- file select ----
+  // Click outside to close drawer
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (!isListOpen) return;
+      const node = containerRef.current;
+      if (!node) return;
+      if (!node.contains(e.target as Node)) {
+        setIsListOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isListOpen]);
+
+  // Escape key closes drawer
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsListOpen(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, []);
+
+  // File select handler with validation
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files;
     if (!selected) return;
@@ -79,11 +114,13 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
     const newFiles: FileValue[] = [...value];
 
     for (const file of Array.from(selected)) {
+      // Type validation
       if (!allowedTypes.includes(file.type)) {
         addToast({ type: "error", title: `File type not allowed: ${file.name}` });
         continue;
       }
 
+      // Count validation
       if (existingUrls.length + newFiles.length >= maxFiles) {
         addToast({ type: "error", title: `Maximum ${maxFiles} files allowed` });
         break;
@@ -93,11 +130,11 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
     }
 
     onChange(newFiles);
+    // reset input so same file can be selected again if needed
     e.target.value = "";
   };
 
-  const getUrl = (item: FileValue | string) =>
-    typeof item === "string" ? item : URL.createObjectURL(item);
+  const getUrl = (item: FileValue | string) => (typeof item === "string" ? item : URL.createObjectURL(item));
 
   const getFileLabel = (item: FileValue | string) => {
     if (typeof item === "string") {
@@ -116,29 +153,25 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
     const lower = url.toLowerCase();
     if (lower.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)$/)) return "image/jpeg";
     if (lower.endsWith(".pdf")) return "application/pdf";
-    if (lower.match(/\.(xls|xlsx|xlsm|csv)$/))
-      return "application/vnd.ms-excel";
+    if (lower.match(/\.(xls|xlsx|xlsm|csv)$/)) return "application/vnd.ms-excel";
     return undefined;
   };
 
   const getFileIcon = (mime?: string) => {
-    if (!mime) return <File size={16} />;
+    if (!mime) return <FileIcon size={16} />;
     if (mime.startsWith("image/")) return <ImageIcon size={16} />;
     if (mime === "application/pdf") return <FileText size={16} />;
-    return <File size={16} />;
+    return <FileIcon size={16} />;
   };
 
-  // ❌ Delete existing file
+  // Remove existing (server) file
   const removeExisting = (index: number) => {
     const urlToRemove = existingUrls[index];
     setExistingUrls((prev) => prev.filter((_, i) => i !== index));
-
-    if (onRemoveExisting && urlToRemove) {
-      onRemoveExisting(urlToRemove);
-    }
+    if (onRemoveExisting && urlToRemove) onRemoveExisting(urlToRemove);
   };
 
-  // ❌ Delete uploaded file
+  // Remove uploaded File from value
   const removeUploaded = (index: number) => {
     const updated = value.filter((_, i) => i !== index);
     onChange(updated);
@@ -146,30 +179,26 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
 
   const totalCount = existingUrls.length + value.length;
 
-  // ---- Drawer open up/down check ----
+  // Drawer open up/down check
   const toggleDrawer = () => {
     setIsListOpen((prev) => {
       const willOpen = !prev;
-
       if (willOpen) {
         setTimeout(() => {
           if (!containerRef.current) return;
           const rect = containerRef.current.getBoundingClientRect();
           const spaceBelow = window.innerHeight - rect.bottom;
           const drawerHeight = 260;
-
           setOpenUpwards(spaceBelow < drawerHeight + 20);
         }, 10);
       }
-
       return willOpen;
     });
   };
 
   return (
     <div ref={containerRef} style={{ width: "100%", position: "relative" }}>
-
-      {/* === LABEL LIKE INPUT === */}
+      {/* label */}
       {label && (
         <label
           style={{
@@ -181,13 +210,11 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
           }}
         >
           {label}
-          {required && (
-            <span style={{ color: theme.colors.error, marginLeft: 4 }}>*</span>
-          )}
+          {required && <span style={{ color: theme.colors.error, marginLeft: 4 }}>*</span>}
         </label>
       )}
 
-      {/* Top INPUT BOX */}
+      {/* top input-like area */}
       <div
         style={{
           border: "1px solid #ccc",
@@ -211,23 +238,12 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
         </span>
 
         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Paperclip
-            size={18}
-            style={{ cursor: "pointer" }}
-            onClick={() => inputRef.current?.click()}
-          />
-
-          {totalCount > 0 && (
-            <List
-              size={18}
-              style={{ cursor: "pointer" }}
-              onClick={toggleDrawer}
-            />
-          )}
+          <Paperclip size={18} style={{ cursor: "pointer" }} onClick={() => inputRef.current?.click()} />
+          {totalCount > 0 && <List size={18} style={{ cursor: "pointer" }} onClick={toggleDrawer} />}
         </span>
       </div>
 
-      {/* FILE INPUT (Hidden) */}
+      {/* hidden file input */}
       <input
         type="file"
         multiple
@@ -237,7 +253,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
         accept={allowedTypes.join(",")}
       />
 
-      {/* DRAWER */}
+      {/* drawer */}
       {isListOpen && (
         <div
           style={{
@@ -256,7 +272,6 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
             boxShadow: "0 5px 10px rgba(0,0,0,0.12)",
           }}
         >
-          {/* Drawer HEADER */}
           <div
             style={{
               padding: "10px",
@@ -271,9 +286,8 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
             <span>{totalCount} file(s)</span>
           </div>
 
-          {/* Scrollable LIST */}
           <div style={{ maxHeight: 260, overflowY: "auto" }}>
-            {/* EXISTING URLs */}
+            {/* existing (server) urls */}
             {existingUrls.map((url, index) => {
               const mime = guessMimeFromUrl(url);
               return (
@@ -300,28 +314,17 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
                     {getFileLabel(url)}
                   </span>
 
-                  <MultiImageViewer
-                    images={[url]}
-                    title={label || "Document"}
-                    size="xl"
-                    triggerLabel={<Eye size={18} style={{ cursor: "pointer" }} />}
-                  />
+                  <MultiImageViewer images={[url]} title={label || "Document"} size="xl" triggerLabel={<Eye size={18} style={{ cursor: "pointer" }} />} />
 
-                  <Trash2
-                    size={18}
-                    color="red"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => removeExisting(index)}
-                  />
+                  <Trash2 size={18} color="red" style={{ cursor: "pointer" }} onClick={() => removeExisting(index)} />
                 </div>
               );
             })}
 
-            {/* NEW UPLOADED FILES */}
+            {/* new uploaded files */}
             {value.map((item, index) => {
               const url = getUrl(item);
-              const mime =
-                typeof item === "string" ? guessMimeFromUrl(item) : item.type;
+              const mime = typeof item === "string" ? guessMimeFromUrl(item) : item.type;
 
               return (
                 <div
@@ -347,19 +350,9 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
                     {getFileLabel(item)}
                   </span>
 
-                  <MultiImageViewer
-                    images={[url]}
-                    title={label || "Document"}
-                    size="sm"
-                    triggerLabel={<Eye size={18} style={{ cursor: "pointer" }} />}
-                  />
+                  <MultiImageViewer images={[url]} title={label || "Document"} size="sm" triggerLabel={<Eye size={18} style={{ cursor: "pointer" }} />} />
 
-                  <Trash2
-                    size={18}
-                    color="red"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => removeUploaded(index)}
-                  />
+                  <Trash2 size={18} color="red" style={{ cursor: "pointer" }} onClick={() => removeUploaded(index)} />
                 </div>
               );
             })}
@@ -367,28 +360,24 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
         </div>
       )}
 
-      {/* ERROR MESSAGE BLOCK (MATCHES INPUT STYLE) */}
-      {(error) && (
+      {/* error block */}
+      {error && (
         <div
           style={{
             marginTop: theme.spacing.sm,
             fontSize: theme.fontSize.sm,
             color: error ? theme.colors.error : theme.colors.textSecondary,
             display: "flex",
-              alignItems: "center",
-              gap: "6px", 
+            alignItems: "center",
+            gap: "6px",
           }}
         >
-          <InfoIcon
-            style={{
-              fontSize: theme.fontSize.xs,
-              color: error ? theme.colors.error : theme.colors.textSecondary,
-              height: 14
-            }}
-          />
+          <InfoIcon style={{ fontSize: theme.fontSize.xs, color: error ? theme.colors.error : theme.colors.textSecondary, height: 14 }} />
           {error}
         </div>
       )}
     </div>
   );
 };
+
+export default MultiFilePicker;

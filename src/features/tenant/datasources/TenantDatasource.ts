@@ -3,7 +3,6 @@ import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { TenantApi } from '@/features/tenant/api/TenantApi'
 import type {
     FilterWithPaginationTenantRequest,
-    AddUpdateTenantRequest,
     TenantListResponse,
     DeleteTenantRequest,
     TenantDeleteResponse,
@@ -18,7 +17,7 @@ import type {
 export abstract class TenantDatasource {
 
     abstract pullTenant(params: FilterWithPaginationTenantRequest): Promise<TenantListResponse>;
-    abstract addUpdateTenant(data: AddUpdateTenantRequest): Promise<TenantSaveResponse>;
+    abstract addUpdateTenant(data: FormData): Promise<TenantSaveResponse>;
     abstract deleteTenant(params: DeleteTenantRequest): Promise<TenantDeleteResponse>;
 
     abstract pullTenantDocument(params: FilterWithPaginationTenantDocumentRequest): Promise<TenantDocumentListResponse>;
@@ -64,11 +63,11 @@ export class TenantDatasourceImpl implements TenantDatasource {
         }
     }
 
-    async addUpdateTenant(params: AddUpdateTenantRequest): Promise<TenantSaveResponse> {
+    async addUpdateTenant(params: FormData): Promise<TenantSaveResponse> {
 
         try {
 
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
                 TenantApi.ADD_UPDATE,
                 params
             )

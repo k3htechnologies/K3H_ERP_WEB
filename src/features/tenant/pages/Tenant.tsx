@@ -14,7 +14,6 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
@@ -41,6 +40,10 @@ export const Tenant: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
 
+  const [buildingId, setBuildingId] = useState(0);
+
+  const [buildingName, setBuildingName] = useState('');
+
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchTenants(value);
   }, 350);
@@ -60,6 +63,8 @@ export const Tenant: React.FC = () => {
         filters?: FilterInfo;
         sortInfo?: SortInfo;
         searchTerm?: string;
+        buildingId?: number;
+        buildingName?: string;
       };
     };
   };
@@ -71,7 +76,7 @@ export const Tenant: React.FC = () => {
   useEffect(() => {
 
     const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string }
+      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string; buildingId?: number; buildingName?: string }
       | undefined;
 
     const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '' };
@@ -87,17 +92,25 @@ export const Tenant: React.FC = () => {
 
     setSearchTerm(listState.searchTerm ?? '');
 
+    setBuildingId(listState.buildingId ?? 0);
+
+    setBuildingName(listState.buildingName ?? "");
+
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
 
       setSearchTerm(String(listState.searchTerm));
 
-      loadTenants(listState.page ?? 1, { FlatNumber: String(listState.searchTerm).trim() });
+      setBuildingId(Number(listState.buildingId));
+
+      setBuildingName(String(listState.buildingName));
+
+      loadTenants(listState.page ?? 1, { FlatNumber: String(listState.searchTerm).trim() }, Number(listState.buildingId));
 
       return;
     }
 
 
-    loadTenants(listState.page ?? 1, listState.filters ?? {});
+    loadTenants(listState.page ?? 1, listState.filters ?? {}, Number(listState.buildingId));
 
   }, [location.state]);
 
@@ -112,10 +125,10 @@ export const Tenant: React.FC = () => {
 
   //#region DATA LOAD
   const fetchTenantList = async (page: number = pagination.currentPage) => {
-    return await loadTenants(page, filters);
+    return await loadTenants(page, filters, buildingId);
   };
 
-  const loadTenants = async (page: number, filterParams: FilterInfo) => {
+  const loadTenants = async (page: number, filterParams: FilterInfo, buildingId: number) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -135,7 +148,7 @@ export const Tenant: React.FC = () => {
           IsCheckPermission: true,
           TenantId: filterParams.TenantId ? Number(filterParams.TenantId) : undefined,
           ProjectId: ProjectId,
-          BuildingId: filterParams.BuildingId ? Number(filterParams.BuildingId) : undefined,
+          BuildingId: buildingId,
           FlatNumber: filterParams.FlatNumber?.trim() || undefined,
           FlatConfiguration: filterParams.FlatConfiguration?.trim() || undefined,
           FlatType: filterParams.FlatType?.trim() || undefined,
@@ -170,6 +183,7 @@ export const Tenant: React.FC = () => {
 
   //#region SEARCH EMPLOYEE FILTER
   const searchTenants = async (searchValue: string) => {
+
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
@@ -181,7 +195,7 @@ export const Tenant: React.FC = () => {
       FlatNumber: searchValue.trim()
     };
 
-    await loadTenants(1, filterParams);
+    await loadTenants(1, filterParams, buildingId);
   };
 
 
@@ -189,6 +203,7 @@ export const Tenant: React.FC = () => {
 
   //#region CLAER SERACH EMPLOYEE
   const clearSearchTenants = () => {
+
     setSearchTerm('');
 
     debouncedSearch.cancel?.();
@@ -196,7 +211,7 @@ export const Tenant: React.FC = () => {
     setFilters({});
     setTempFilters({});
     setPagination({ currentPage: 1 });
-    loadTenants(1, {});
+    loadTenants(1, {}, buildingId);
     try {
       navigate(location.pathname, { replace: true, state: {} });
     } catch {
@@ -259,12 +274,12 @@ export const Tenant: React.FC = () => {
   //#region TABLE CONFIG
   const handlePageChange = useCallback((page: number) => {
     fetchTenantList(page);
-  }, []);
+  }, [fetchTenantList]);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     fetchTenantList(1);
-  }, []);
+  }, [fetchTenantList]);
 
   const tenantPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -292,10 +307,12 @@ export const Tenant: React.FC = () => {
           filters,
           sortInfo,
           searchTerm,
+          buildingId,
+          buildingName
         },
       },
     });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm, buildingId, buildingName]);
   //#endregion
 
   //#region TABLE COLUMN
@@ -328,7 +345,7 @@ export const Tenant: React.FC = () => {
             text={value || 'N/A'}
             maxWidth="160px"
             tooltipThreshold={16}
-            
+
           />
         )
       },
@@ -348,7 +365,7 @@ export const Tenant: React.FC = () => {
         align: 'center',
         render: value => value ?? '-'
       },
-       {
+      {
         key: 'Facing',
         label: 'Facing',
         width: '14',
@@ -364,7 +381,7 @@ export const Tenant: React.FC = () => {
         align: 'left',
         render: value => value || 'N/A'
       },
-      
+
       {
         key: 'ExtraAreaPurchasedSqFt',
         label: 'Extra Area Purchased (SqFt)',
@@ -397,7 +414,7 @@ export const Tenant: React.FC = () => {
         align: 'center',
         render: value => value || 'N/A'
       },
-       {
+      {
         key: 'RERACarpetAreaSqFt',
         label: 'RERA Carpet Area (SqFt)',
         width: '12',
@@ -405,7 +422,7 @@ export const Tenant: React.FC = () => {
         align: 'center',
         render: value => value || 'N/A'
       },
-       {
+      {
         key: 'InventoryFlatType',
         label: 'Inventory Flat Type',
         width: '12',
@@ -413,7 +430,7 @@ export const Tenant: React.FC = () => {
         align: 'center',
         render: value => value || 'N/A'
       },
-       {
+      {
         key: 'InventoryFlatConfiguration',
         label: 'Inventory Flat Configuration',
         width: '12',
@@ -421,7 +438,7 @@ export const Tenant: React.FC = () => {
         align: 'center',
         render: value => value || 'N/A'
       },
-       {
+      {
         key: 'ParkingNumber',
         label: 'Parking Number',
         width: '12',
@@ -472,7 +489,7 @@ export const Tenant: React.FC = () => {
   //#region FILTER HELPERS
   const applyFilters = () => {
     setFilters(tempFilters);
-    loadTenants(1, tempFilters);
+    loadTenants(1, tempFilters, buildingId);
     setShowFilterPopup(false);
   };
 
@@ -484,7 +501,7 @@ export const Tenant: React.FC = () => {
     setPagination({ currentPage: 1 });
 
     // load empty filters
-    loadTenants(1, {});
+    loadTenants(1, {}, buildingId);
 
     setShowFilterPopup(false);
 
@@ -495,7 +512,27 @@ export const Tenant: React.FC = () => {
 
   //#region ADD NEW EMPLOYEE
   const handleAddTenantModal = () => {
-    navigate('/tenant/add');
+
+    if (!buildingId || Number(buildingId) === 0) {
+      addToast({ type: 'error', title: 'Please select Building first' });
+      return;
+    }
+
+    navigate('/tenant/add', {
+      state: {
+        editTenantData: [],
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm,
+          buildingId,
+          buildingName
+        },
+      },
+    });
+
   };
   //#endregion
 
@@ -576,7 +613,8 @@ export const Tenant: React.FC = () => {
         isShowCustomizeButton
         onCustomize={() => setIsShowCustomizeTenantColumnsModal(true)}
         // ADD
-        isShowAddButton={canAction}
+        isShowAddButton={canAction && Number(buildingId) > 0 ? true : false}
+
         addTitle="Add"
         onAdd={handleAddTenantModal}
 
@@ -591,31 +629,43 @@ export const Tenant: React.FC = () => {
         onExportPdf={handleExportTenantPdf}
         exportLoading={isLoading}
       />
-      <div className='pb-5'>
 
-        <SingleSelectDropdownWithPagination
-          label="Building"
-          title="Select Building"
-          size="lg"
-          dataFetchCallBack={(pageNumber) => fetchBuildingDropdown(pageNumber, { projectId: 1 })}
-          onSelected={(item) => {
-            const buildingId = item && item.value ? Number(item.value) : undefined;
-            const newFilters: FilterInfo = { ...filters };
+      <div className="pb-5 flex">
 
-            if (buildingId) newFilters.BuildingId = String(buildingId);
-            else delete (newFilters as any).BuildingId;
+        <div className="relative min-w-0 w-[526px]">
 
-            setFilters(newFilters);
-            setPagination({ currentPage: 1 });
-            loadTenants(1, newFilters);
+          <SingleSelectDropdownWithPagination
+            label="Building"
+            title="Select Building"
+            size="lg"
+            initialValue={
+              { label: buildingName ?? "", value: buildingId }
+
+            }
+            dataFetchCallBack={(pageNumber) => fetchBuildingDropdown(pageNumber, { projectId: 1 })}
+            onSelected={(item) => {
+
+              const buildingId = item && item.value ? Number(item.value) : undefined;
+
+              const buildingName = item.label;
+
+              setBuildingId(Number(buildingId));
+
+              setBuildingName(buildingName);
 
 
-            try {
-              navigate(location.pathname, { replace: true, state: { listState: { page: 1, filters: newFilters, sortInfo, searchTerm } } });
-            } catch { }
-          }}
-        />
+              setPagination({ currentPage: 1 });
 
+              loadTenants(1, {}, Number(buildingId));
+
+
+              try {
+                navigate(location.pathname, { replace: true, state: { listState: { page: 1, filters: {}, sortInfo, searchTerm, buildingId, buildingName } } });
+              } catch { }
+            }}
+          />
+
+        </div>
       </div>
 
       <DataTable

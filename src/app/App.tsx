@@ -74,6 +74,8 @@ import Tenant from '@/features/tenant/pages/Tenant';
 import AddUpdateTenant from '@/features/tenant/pages/AddUpdateTenant';
 import ViewTenant from '@/features/tenant/pages/ViewTenant';
 import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
+import BuildingDescription from '@/features/building/pages/BuildingDescription';
+import BuildingDocument from '@/features/building/pages/BuildingDocument';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -196,7 +198,8 @@ function App() {
             <Route path="building" element={<Building />} />
             <Route path="building/view" element={<ViewBuilding />} />
             <Route path="building/add/:buildingId?" element={<AddUpdateBuilding />} />
-
+            <Route path="building/description/:buildingId?" element={<BuildingDescription />} />
+            <Route path="building/document/:buildingId?" element={<BuildingDocument />} />
             <Route path="tenant" element={<Tenant />} />
             <Route path="tenant/view" element={<ViewTenant />} />
             <Route path="tenant/add/:tenantId?" element={<AddUpdateTenant />} />

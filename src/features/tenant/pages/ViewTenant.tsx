@@ -31,10 +31,13 @@ export const ViewTenant: React.FC = () => {
                 filters: any;
                 sortInfo?: any;
                 searchTerm?: string;
+                buildingId?: number;
+                buildingName?: string;
             };
         };
     };
     const preservedListState = location.state?.listState;
+    
 
     //#endregion
 
@@ -58,7 +61,7 @@ export const ViewTenant: React.FC = () => {
             state: {
                 editTenantData: row,
                 fromList: true,
-                listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
+                listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '', buildingId: 0, buildingName: '' }
             }
         });
     };
@@ -69,7 +72,7 @@ export const ViewTenant: React.FC = () => {
     //#region BACK TENANT  PAGE
     const handleBackToListTenant = () => {
         navigate('/tenant', {
-            state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' } }
+            state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '', buildingId: 0, buildingName: '' } }
         });
     };
     //#endregion
@@ -376,7 +379,7 @@ export const ViewTenant: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                            <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     <FieldItem label="Total Area (SqFt)" value={editTenantData?.TotalAreaSqFt} />
                                 </div>

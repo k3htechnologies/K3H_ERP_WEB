@@ -16,8 +16,9 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, type Location, useNavigate } from 'react-router-dom';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
+import { FileText, Info, Trash2 } from 'lucide-react';
 
 var ProjectId = 1;
 
@@ -405,6 +406,57 @@ export const Building: React.FC = () => {
         align: 'center',
         render: value => (value ? 'Yes' : 'No')
       },
+         {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  // handleConfirmationDialogBoxOpen(row as VendorData)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'blue',
+                  padding: '4px 8px'
+                }}
+                title="Building Details"
+              >
+                <Info  className="h-4 w-4" />
+              </Button>
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  // handleConfirmationDialogBoxOpen(row as VendorData)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'green',
+                  padding: '4px 8px'
+                }}
+                title="Building Document"
+              >
+                <FileText   className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+
+          
+        )
+      }
     ],
     [canAction, handleViewBuildingDetails]
   );

@@ -26,24 +26,20 @@ export interface SingleSelectWithPaginationProps {
   style?: React.CSSProperties
 }
 export interface MultiSelectDropdownProps {
-  dataList: { label: string; value: string | number }[]
-  onSelected: (selectedItems: { label: string; value: string | number }[]) => void
-  title: string
-  label:string
-  validator?: (values: (string | number)[]) => string | undefined
-  initialValues?: { label: string; value: string | number }[]
-  disabled?: boolean
-  className?: string
-  style?: React.CSSProperties
-  color?: keyof typeof COLOR_MAP
-  variant?: 'solid' | 'outline'
-  onSearch?: (searchValue: string) => void
-  loading?: boolean
-  noDataText?: string
-  size?: 'sm' | 'md' | 'lg'
-  required?: boolean,
+  label?: string;
+  options: { [key: string]: any }[];               
+  selectedValues: (string | number)[];            
+  onChange: (values: (string | number)[]) => void; 
+  disabled?: boolean;
+  placeholder?: string;
+  size?: 'sm' | 'md' | 'lg';
+  required?: boolean;
   error?: string;
+  labelKey?: string;  
+  valueKey?: string;  
+  searchable?: boolean;
 }
+
 
 export interface SinglePageSelectionProps {
   label?: string;

@@ -30,7 +30,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   const [WeekOffOffMasterList, setWeekOffOffMasterList] = useState<WeekOffMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
-
+  
   // USE NAVIGATE
   const navigate = useNavigate();
 
@@ -45,6 +45,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
+
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchWeekOff(value)
   }, 350);
@@ -164,7 +165,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     }
 
     const filterParams: FilterInfo = {
-      searchValueWeekOffPolicyName: searchValue.trim(),
+      WeekOffPolicyName: searchValue.trim(),
     };
 
     await loadWeekOff(1, filterParams);
@@ -302,7 +303,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   const WeekOffMasterColumns = useMemo<TableColumn[]>(() => [
     {
       key: 'WeekOffPolicyName',
-      label: 'WeekOff Name',
+      label: 'Week Off Name',
       width: '20',
       sortable: true,
       fixed: 'left',
@@ -318,7 +319,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     },
     {
       key: 'WeekOffPolicyCode',
-      label: 'WeekOff Code',
+      label: 'Week Off Code',
       width: '15',
       sortable: false,
       align: 'center',
@@ -419,7 +420,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
-  const requiredWeekOffColumnKeys: string[] = ['WeekOffName'];
+  const requiredWeekOffColumnKeys: string[] = ['WeekOffPolicyName'];
 
   const allWeekOffColumnKeys: string[] = WeekOffMasterColumns.map(c => c.key);
 

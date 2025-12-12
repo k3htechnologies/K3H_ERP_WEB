@@ -51,7 +51,7 @@ export interface AddUpdateDeductionMasterRequest {
     MinSalary: number | 0
     MaxSalary: number | 0
 
-    Gender: string | ''
+    Gender?: string | ''
 
     StateMasterId: number | 0
     StateName: string | ''

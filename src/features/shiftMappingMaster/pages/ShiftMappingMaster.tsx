@@ -91,7 +91,7 @@ export const ShiftMappingMaster: React.FC = () => {
 
   const [dropdownLabels, setDropdownLabels] = useState<{
     departmentName?: string;
-    employeeName?: string;
+    EmployeeName?: string;
     shiftName?: string
   }>({});
   //#endregion
@@ -130,7 +130,7 @@ export const ShiftMappingMaster: React.FC = () => {
         });
         setDropdownLabels({
           departmentName: editingShiftMappingMasterData.DepartmentName || "",
-          employeeName: editingShiftMappingMasterData.EmployeeName || "",
+          EmployeeName: editingShiftMappingMasterData.EmployeeName || "",
           shiftName: editingShiftMappingMasterData.ShiftName || ""
         });
       } else {
@@ -371,7 +371,7 @@ export const ShiftMappingMaster: React.FC = () => {
         label: 'Department Name',
         width: '20',
         sortable: true,
-        align: 'left',
+        align: 'center',
         render: (value) => (
           <TooltipText
             text={value || 'N/A'}
@@ -385,7 +385,7 @@ export const ShiftMappingMaster: React.FC = () => {
         label: 'Employee Name',
         width: '20',
         sortable: true,
-        align: 'left',
+        align: 'center',
         render: (value) => (
           <TooltipText
             text={value || 'N/A'}
@@ -899,7 +899,7 @@ export const ShiftMappingMaster: React.FC = () => {
                 required
                 dataFetchCallBack={fetchEmployeeMasterDropdown}
                 onSelected={(item) => handleFieldChange("EmployeeId", item.value)}
-                initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
+                initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.EmployeeName)}
                 error={errors.EmployeeId}
               />
             </div>
@@ -966,24 +966,6 @@ export const ShiftMappingMaster: React.FC = () => {
                   value={tempFilters.ShiftName || ''}
                   onChange={(e) => handleFilterChange('ShiftName', e.target.value)}
                   placeholder="Enter shift name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Department Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.DepartmentName || ''}
-                  onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}
-                  placeholder="Enter department name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Employee Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.EmployeeName || ''}
-                  onChange={(e) => handleFilterChange('EmployeeName', e.target.value)}
-                  placeholder="Enter employee name"
                 />
               </div>
             </div>

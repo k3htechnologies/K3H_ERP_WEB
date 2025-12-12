@@ -28,12 +28,12 @@ export class DeductionMasterDatasourceImpl implements DeductionMasterDatasource 
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
-            })
+                DeductionMasterId: (params.DeductionMasterId ?? 0).toString(),
+                Name:params.Name?? '',
+                SortBy:params.SortBy?? '',
+                ExportType: params.ExportType ?? ''
 
-            if (params.DeductionMasterId) queryParams.append('DeductionMasterId', params.DeductionMasterId.toString());
-            if (params.Name?.trim()) queryParams.append('Name', params.Name.trim());
-            if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
-            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+             })
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${DeductionMasterApi.PULL}?${queryParams.toString()}`, { signal }

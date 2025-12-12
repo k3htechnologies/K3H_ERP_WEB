@@ -43,7 +43,6 @@ import { AddUpdateWeekOffMaster } from '@/features/weekOffMaster/pages/AddUpdate
 import AddUpdateAssetMappingMaster from '@/features/assetMappingMaster/pages/AddUpdateAssetMappingMaster';
 import AddUpdateDeductionMaster from '@/features/deductionMaster/pages/AddUpdateDeductionMaster';
 import AddUpdateShiftMaster from '@/features/shiftMaster/pages/AddUpdateShiftMaster';
-import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
 import ViewAssetMappingMaster from '@/features/assetMappingMaster/pages/ViewAssetMappingMaster';
 import ViewShiftMaster from '@/features/shiftMaster/pages/ViewShiftMaster';
 import ViewDeductionMaster from '@/features/deductionMaster/pages/ViewDeductionMaster';
@@ -73,6 +72,7 @@ import AddUpdateBuilding from '@/features/building/pages/AddUpdateBuilding';
 import Tenant from '@/features/tenant/pages/Tenant';
 import AddUpdateTenant from '@/features/tenant/pages/AddUpdateTenant';
 import ViewTenant from '@/features/tenant/pages/ViewTenant';
+import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (

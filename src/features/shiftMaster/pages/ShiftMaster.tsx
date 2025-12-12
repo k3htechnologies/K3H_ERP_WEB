@@ -345,9 +345,9 @@ export const ShiftMaster: React.FC = () => {
     {
       key: 'ShiftEndTime',
       label: 'Shift End Time',
-      width: '12',
+      width: '15',
       sortable: false,
-      align: 'left',
+      align: 'center',
       render: (value) => (
         <TooltipText
           text={value || 'N/A'}
@@ -362,7 +362,7 @@ export const ShiftMaster: React.FC = () => {
       label: 'Shift Duration Time',
       width: '12',
       sortable: false,
-      align: 'left',
+      align: 'center',
       render: (value) => (
         <TooltipText
           text={value || 'N/A'}
@@ -377,7 +377,7 @@ export const ShiftMaster: React.FC = () => {
       label: 'Shift Work Duration Time',
       width: '12',
       sortable: false,
-      align: 'left',
+      align: 'center',
       render: (value) => (
         <TooltipText
           text={value || 'N/A'}

@@ -13,6 +13,8 @@ import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleS
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchAssetMasterDropdown } from "@/features/assetMaster/assetMasterDropDown";
+import { DatePickerInput } from "@/ui/components/forms/Datepicker";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 
 const initialFormState = (): AddUpdateAssetMappingMasterRequest => ({
   AssetMasterMappingId: 0,
@@ -265,7 +267,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
         <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-        <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+        <div className="flex-1 space-y-2 px-6 py-3 pb-40 overflow-y-auto thin-scroll ">
 
           <form onSubmit={handleAddUpdateAssetMappingMaster}>
 
@@ -274,7 +276,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
             <div className="space-y-4 pb-3">
               <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic AssetMapping Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                
+
                 <div>
                   <SingleSelectDropdownWithPagination
                     label="Asset"
@@ -329,26 +331,20 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                 <div>
-                  <Input
-                    type="date"
+                  <DatePickerInput
+                    label="Assigned Date"
+                    value={formatDate_dd_mm_yyyy(formData.AssignedDate)}
+                    onChange={(val) => handleFieldChange('AssignedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                     required
-                    label='Assigned Date '
-                    value={formData.AssignedDate ?? ""}
-                    onChange={(e) => handleFieldChange("AssignedDate", e.target.value)}
-                    placeholder="Enter Assigned Date"
-                    maxLength={250}
                     error={errors.AssignedDate}
                   />
                 </div>
                 <div>
-                  <Input
-                    type="date"
+                  <DatePickerInput
+                    label="Return Date"
+                    value={formatDate_dd_mm_yyyy(formData.ReturnDate)}
+                    onChange={(val) => handleFieldChange('ReturnDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                     required
-                    label='Return Date'
-                    value={formData.ReturnDate ?? ""}
-                    onChange={(e) => handleFieldChange("ReturnDate", e.target.value)}
-                    placeholder="Enter Return Date"
-                    maxLength={250}
                     error={errors.ReturnDate}
                   />
                 </div>

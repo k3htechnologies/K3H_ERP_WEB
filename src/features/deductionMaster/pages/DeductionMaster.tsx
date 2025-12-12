@@ -118,11 +118,12 @@ export const DeductionMaster: React.FC = () => {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
+
         const params: FilterWithPaginationDeductionMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          DeductionMasterId: filterParams.DeductionMasterId ? Number(filterParams.DeductionMasterId) : undefined,
-          Name: filterParams.Name?.trim() || undefined,
+          DeductionMasterId: 0,
+          Name: '',
           SortBy: sortByParam
         };
 
@@ -476,7 +477,7 @@ export const DeductionMaster: React.FC = () => {
 
         <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-         {/* ============================================================================
+        {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 

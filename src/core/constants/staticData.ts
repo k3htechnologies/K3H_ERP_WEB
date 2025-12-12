@@ -28,6 +28,8 @@ export const MASTER_DATA = {
     months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
 
     deductionType: ['Provident Fund', 'Professional Tax', "Tax Deduction at Source", 'Labor Welfare Fund', 'ESI', 'Labour WaleFare Fund', 'National Pension Scheme', 'Health Insurance Premiums'],
+     
+    days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
 
     maritalStatuses: ['Single', 'Married', 'Divorced', 'Widowed', 'Separated'],
 
@@ -88,6 +90,7 @@ export const EMPLOYEE_TYPE_OPTIONS = toOptions(MASTER_DATA.employeeTypes)
 export const GENDER_OPTIONS = toOptions(MASTER_DATA.genders)
 export const MONTHS_OPTIONS = toOptions(MASTER_DATA.months)
 export const DEDUCTION_TYPE_OPTIONS = toOptions(MASTER_DATA.deductionType)
+export const DAYS_OPTIONS = toOptions(MASTER_DATA.days)
 export const MARITAL_STATUS_OPTIONS = toOptions(MASTER_DATA.maritalStatuses)
 export const BLOOD_GROUP_OPTIONS = toOptions(MASTER_DATA.bloodGroups)
 export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType)

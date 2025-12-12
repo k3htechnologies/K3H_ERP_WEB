@@ -331,7 +331,7 @@ export const AssetMaster: React.FC = () => {
       label: 'Asset Type',
       width: '15',
       sortable: false,
-      align: 'left',
+      align: 'center',
       render: (value) => (
         <TooltipText
           text={value || 'N/A'}

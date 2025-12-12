@@ -24,14 +24,10 @@ const productionConfig: EnvironmentConfig = {
 
 //============================ [GET CURRENT ENVIRONMENT ] ========================================================
 const getCurrentEnvironment = (): 'DEVELOPMENT' | 'PRODUCTION' => {
-    const env = "PRODUCTION"
-    switch (env) {
-        case 'PRODUCTION':
-            return 'PRODUCTION'
-        default:
-            return 'DEVELOPMENT'
-    }
-}
+  const env = import.meta.env.VITE_ENVIRONMENT ?? 'DEVELOPMENT';
+
+  return env === 'PRODUCTION' ? 'PRODUCTION' : 'DEVELOPMENT';
+};
 
 //============================ [ EXPORT CONFIGURATION BASED ON ENVIRONMENT ] ========================================================
 const getConfig = (): EnvironmentConfig => {

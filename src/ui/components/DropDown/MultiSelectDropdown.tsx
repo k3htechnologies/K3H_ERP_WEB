@@ -1,307 +1,317 @@
-import React, { useState, useEffect, forwardRef } from 'react'
-import { THEME } from '../../../core/constants/theme'
-import { Search, X } from 'lucide-react'
-import type { MultiSelectDropdownProps } from '@/core/types/dropDownSelectionType'
+import { useState, useEffect, useRef, forwardRef } from "react";
+import { ChevronDown, ChevronUp, Search } from "lucide-react";
+import { THEME } from "@/core/constants/theme";
 
-
-export const MultiSelectDropdown = forwardRef<HTMLDivElement, MultiSelectDropdownProps>(
+export const MultiSelectDropdown = forwardRef<
+  HTMLDivElement,
+  {
+    label?: string;
+    options: Record<string, any>[];
+    selectedValues: (string | number)[];
+    onChange: (values: (string | number)[]) => void;
+    disabled?: boolean;
+    placeholder?: string;
+    size?: "sm" | "md" | "lg";
+    required?: boolean;
+    error?: string;
+    labelKey?: string;
+    valueKey?: string;
+    searchable?: boolean;
+  }
+>(
   (
     {
-      dataList,
-      onSelected,
-      title,
-      validator,
-      initialValues = [],
-      disabled = false,
-      className = '',
       label,
-      style,
-      onSearch,
-      loading = false,
-      noDataText = 'No records found',
-      size = 'lg',
+      options,
+      selectedValues,
+      onChange,
+      disabled = false,
+      placeholder = "Select",
+      labelKey = "label",
+      valueKey = "value",
+      searchable = true,
+      size = "md",
       required = false,
+      error,
     },
     ref
   ) => {
-    const theme = THEME
+    const theme = THEME;
 
-    // --- Size Configurations ---
-    const SIZE_MAP = {
-      sm: { fontSize: 12, padding: 6, dropdownHeight: 150, width: 180 },
-      md: { fontSize: 14, padding: 8, dropdownHeight: 200, width: 250 },
-      lg: { fontSize: 14, padding: 10, dropdownHeight: 260, width: 550 },
-    }
+    const [isOpen, setIsOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filteredOptions, setFilteredOptions] = useState(options);
+    const [openUpward, setOpenUpward] = useState(false);
 
-    const sizeStyles = SIZE_MAP[size]
+    const containerRef = useRef<HTMLDivElement>(null);
 
-    const [options, setOptions] = useState(dataList)
-    const [selectedItems, setSelectedItems] = useState(initialValues)
-    const [searchText, setSearchText] = useState('')
-    const [error, setError] = useState<string | undefined>(undefined)
-    const [isOpen, setIsOpen] = useState(false)
+    const sizeConfig = {
+      sm: { height: "36px", padding: "6px 12px", fontSize: theme.fontSize.sm },
+      md: { height: "44px", padding: "8px 16px", fontSize: theme.fontSize.md },
+      lg: { height: "52px", padding: "10px 20px", fontSize: theme.fontSize.lg },
+    };
 
-    // --- Handlers ---
-    const handleSelect = (item: { label: string; value: string | number }) => {
-      const alreadySelected = selectedItems.some(s => s.value === item.value)
-      const newSelection = alreadySelected
-        ? selectedItems.filter(s => s.value !== item.value)
-        : [...selectedItems, item]
+    const currentSize = sizeConfig[size];
 
-      setSelectedItems(newSelection)
-      onSelected(newSelection)
-    }
-
-    const handleSearchLocal = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value
-      setSearchText(value)
-      if (onSearch) {
-        onSearch(value)
+    // Filter options
+    useEffect(() => {
+      if (!searchTerm.trim()) {
+        setFilteredOptions(options);
       } else {
-        setOptions(
-          dataList.filter(item =>
-            item.label.toLowerCase().includes(value.toLowerCase())
+        setFilteredOptions(
+          options.filter((opt: any) =>
+            String(opt[labelKey]).toLowerCase().includes(searchTerm.toLowerCase())
           )
-        )
+        );
       }
-    }
+    }, [searchTerm, options]);
 
+    // Click outside to close
+    useEffect(() => {
+      const handleClick = (e: MouseEvent) => {
+        if (
+          containerRef.current &&
+          !containerRef.current.contains(e.target as Node)
+        ) {
+          setIsOpen(false);
+        }
+      };
+      document.addEventListener("mousedown", handleClick);
+      return () => document.removeEventListener("mousedown", handleClick);
+    }, []);
+
+    // Detect open upward
+    const handleToggle = () => {
+      if (disabled) return;
+
+      const rect = containerRef.current?.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      if (rect) {
+        const dropdownHeight = 300;
+        setOpenUpward(rect.bottom + dropdownHeight > windowHeight);
+      }
+
+      setIsOpen(!isOpen);
+    };
+
+    // Display selected labels
+    const selectedLabels =
+      selectedValues.length > 0
+        ? options
+          .filter((opt) => selectedValues.includes(opt[valueKey]))
+          .map((opt) => opt[labelKey])
+          .join(", ")
+        : placeholder;
+
+    const toggleSelection = (val: string | number) => {
+      if (selectedValues.includes(val)) {
+        onChange(selectedValues.filter((v) => v !== val));
+      } else {
+        onChange([...selectedValues, val]);
+      }
+    };
+
+    // --- SELECT ALL ---
     const handleSelectAll = () => {
-      setSelectedItems(options)
-      onSelected(options)
-    }
+      const allValues = options.map((o) => o[valueKey]);
+      onChange(allValues);
+    };
 
+    // --- CLEAR ALL ---
     const handleClearAll = () => {
-      setSelectedItems([])
-      onSelected([])
-    }
-
-    const clearSearch = () => {
-      setSearchText('')
-      if (onSearch) onSearch('')
-      else setOptions(dataList)
-    }
-
-    // --- Sync and validate ---
-    useEffect(() => {
-      setOptions(dataList)
-    }, [dataList])
-
-    useEffect(() => {
-      if (validator) setError(validator(selectedItems.map(i => i.value)))
-    }, [selectedItems, validator])
-
-    const getOptionStyles = (selected: boolean): React.CSSProperties => ({
-      padding: `${sizeStyles.padding}px ${sizeStyles.padding}px`,
-      fontSize: sizeStyles.fontSize,
-      cursor: disabled ? 'not-allowed' : 'pointer',
-      backgroundColor: selected ? theme.colors.hover : theme.colors.background,
-      color: selected ? theme.colors.text : theme.colors.textSecondary,
-      borderRadius: theme.borderRadius.sm,
-      transition: theme.transitions.normal,
-      display: 'flex',
-      alignItems: 'center',
-    })
+      onChange([]);
+    };
 
     return (
-      <div
-        ref={ref}
-        className={className}
-        style={{
-          position: 'relative',
-          width: sizeStyles.width,
-          fontFamily: 'Inter, sans-serif',
-          marginLeft: '5px',
-          ...style,
-        }}
-      >
+      <div ref={ref || containerRef} style={{ width: "100%", position: "relative" }}>
+        {/* Label */}
         {label && (
-          <label style={{ display: 'block', marginBottom: 4, fontWeight: 500, fontSize: sizeStyles.fontSize, color: theme.colors.text }}>
+          <label
+            style={{
+              display: "block",
+              marginBottom: "4px",
+              fontWeight: 500,
+              fontSize: theme.fontSize.md,
+              color: theme.colors.text,
+            }}
+          >
             {label}
-            {required && <span style={{ color: theme.colors.error, marginLeft: '4px' }}>*</span>}
+            {required && <span style={{ color: theme.colors.error }}> *</span>}
           </label>
         )}
 
+        {/* Select box */}
         <div
+          onClick={handleToggle}
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: `${sizeStyles.padding}px ${sizeStyles.padding * 2}px`,
-            fontSize: sizeStyles.fontSize,
-            borderRadius: theme.borderRadius.sm,
-            backgroundColor: theme.colors.background,
-            border: `1px solid ${theme.colors.border}`,
-            cursor: disabled ? 'not-allowed' : 'pointer',
-            color: theme.colors.text,
-            userSelect: 'none',
-            minHeight: '38px',
+            height: currentSize.height,
+            fontSize: currentSize.fontSize,
+            padding: currentSize.padding,
+            borderRadius: "6px",
+            backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
+            cursor: disabled ? "not-allowed" : "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
-          onClick={() => !disabled && setIsOpen(!isOpen)}
         >
-          <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {selectedItems.length > 0
-              ? selectedItems.length === options.length
-                ? `${selectedItems.slice(0, 4).map(s => s.label).join(', ')}${selectedItems.length > 4 ? ', ...' : ''}`
-                : selectedItems.map(s => s.label).join(', ')
-              : title}
+          <span style={{ color: selectedValues.length ? "#000" : "#888" }}>
+            {selectedLabels}
           </span>
 
-          <svg
-            width={sizeStyles.fontSize + 2}
-            height={sizeStyles.fontSize + 2}
-            style={{
-              transform: isOpen ? 'rotate(180deg)' : 'rotate(0)',
-              transition: theme.transitions.normal,
-            }}
-            fill="none"
-            stroke={theme.colors.text}
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
+          {isOpen ? <ChevronUp size={20} color="#888" /> : <ChevronDown size={20} color="#888" />}
         </div>
 
-        {isOpen && (
+        {/* Dropdown */}
+        {isOpen && !disabled && (
           <div
             style={{
-              position: 'absolute',
-              top: 'calc(100% + 4px)',
+              position: "absolute",
+              top: openUpward ? "auto" : "102%",
+              bottom: openUpward ? "102%" : "auto",
               left: 0,
-              width: '100%',
-              maxHeight: sizeStyles.dropdownHeight,
-              overflowY: 'auto',
-              border: `1px solid ${theme.colors.border}`,
-              borderRadius: theme.borderRadius.sm,
-              backgroundColor: theme.colors.background,
-              boxShadow: theme.shadows.md,
-              zIndex: 999,
-              padding: `${sizeStyles.padding}px`,
+              right: 0,
+              backgroundColor: "#fff",
+              border: "1px solid #ccc",
+              borderRadius: "6px",
+              zIndex: 20,
+              maxHeight: "300px",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
             }}
           >
-            <div style={{ position: 'relative', marginBottom: sizeStyles.padding }}>
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchText}
-                onChange={handleSearchLocal}
-                autoFocus
+            {/* Search */}
+            {searchable && (
+              <div
                 style={{
-                  width: '100%',
-                  padding: `${sizeStyles.padding}px ${sizeStyles.padding * 2 + 24}px`,
-                  border: `1px solid ${theme.colors.border}`,
-                  borderRadius: theme.borderRadius.sm,
-                  outline: 'none',
-                  fontSize: sizeStyles.fontSize,
-                  backgroundColor: theme.colors.background,
-                  color: theme.colors.text,
-                  boxSizing: 'border-box',
+                  padding: "8px 12px",
+                  borderBottom: "1px solid #eee",
+                  display: "flex",
+                  alignItems: "center",
+                  backgroundColor: "#fff",
                 }}
-              />
-              <Search
-                size={sizeStyles.fontSize + 2}
-                color={theme.colors.textSecondary}
-                style={{
-                  position: 'absolute',
-                  left: sizeStyles.padding,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  pointerEvents: 'none',
-                }}
-              />
-              {searchText.trim() && (
-                <X
-                  size={sizeStyles.fontSize + 2}
-                  color="#000"
+              >
+                <Search size={16} color="#888" style={{ marginRight: "8px" }} />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  autoFocus
                   style={{
-                    position: 'absolute',
-                    right: sizeStyles.padding,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    cursor: 'pointer',
+                    width: "100%",
+                    border: "none",
+                    outline: "none",
                   }}
-                  onClick={clearSearch}
                 />
-              )}
-            </div>
+              </div>
+            )}
 
+            {/* Select All / Clear All */}
             <div
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginBottom: sizeStyles.padding / 2,
+                display: "flex",
+                justifyContent: "space-between",
+                padding: "8px 12px",
+                borderBottom: "1px solid #eee",
+                backgroundColor: "#fafafa",
               }}
             >
               <button
                 onClick={handleSelectAll}
-                disabled={disabled || loading || options.length === 0}
                 style={{
-                  background: 'none',
-                  border: 'none',
+                  border: "none",
+                  background: "none",
                   color: theme.colors.primary1,
-                  cursor: 'pointer',
-                  fontSize: sizeStyles.fontSize - 2,
+                  cursor: "pointer",
+                  fontSize: theme.fontSize.sm,
                 }}
               >
                 Select All
               </button>
+
               <button
                 onClick={handleClearAll}
-                disabled={disabled || loading || selectedItems.length === 0}
                 style={{
-                  background: 'none',
-                  border: 'none',
+                  border: "none",
+                  background: "none",
                   color: theme.colors.error,
-                  cursor: 'pointer',
-                  fontSize: sizeStyles.fontSize - 2,
+                  cursor: "pointer",
+                  fontSize: theme.fontSize.sm,
                 }}
               >
                 Clear All
               </button>
             </div>
 
-            {loading ? (
-              <div style={{ textAlign: 'center', padding: sizeStyles.padding }}>Loading...</div>
-            ) : options.length > 0 ? (
-              options.map(item => {
-                const selected = selectedItems.some(s => s.value === item.value)
-                return (
-                  <div
-                    key={item.value}
-                    onClick={() => !disabled && handleSelect(item)}
-                    style={getOptionStyles(selected)}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selected}
-                      readOnly
-                      style={{
-                        marginRight: 8,
-                        accentColor: theme.colors.text,
-                        cursor: 'pointer',
-                      }}
-                    />
-                    {item.label}
-                  </div>
-                )
-              })
-            ) : (
-              <div style={{ textAlign: 'center', padding: sizeStyles.padding, color: theme.colors.textLight }}>
-                {noDataText}
-              </div>
-            )}
+            {/* Options */}
+            <div style={{ overflowY: "auto", flex: 1 }}>
+              {filteredOptions.map((opt: any, idx: number) => (
+                <div
+                  key={idx}
+                  onClick={() => toggleSelection(opt[valueKey])}
+                  style={{
+                    padding: "10px 14px",
+                    borderBottom: "1px solid #f3f3f3",
+                    cursor: "pointer",
+                    backgroundColor: selectedValues.includes(opt[valueKey])
+                      ? theme.colors.hover
+                      : theme.colors.background,
+                    color: selectedValues.includes(opt[valueKey])
+                      ? theme.colors.text
+                      : theme.colors.textSecondary,
+                    borderRadius: theme.borderRadius.sm,
+                    transition: theme.transitions.normal,
+                    display: "flex",
+                    gap: "8px",
+                    alignItems: "center",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedValues.includes(opt[valueKey])}
+                    readOnly
+                    style={{
+                      marginRight: 8,
+                      accentColor: theme.colors.primary1,
+                      cursor: "pointer",
+                    }}
+                  />
+                  {opt[labelKey]}
+                </div>
+
+              ))}
+
+              {filteredOptions.length === 0 && (
+                <div style={{ padding: "12px", textAlign: "center", color: "#999" }}>
+                  No results found
+                </div>
+              )}
+            </div>
           </div>
         )}
 
+        {/* Error */}
         {error && (
-          <p style={{ color: theme.colors.error, fontSize: sizeStyles.fontSize - 2, marginTop: theme.spacing.xs }}>
+          <div
+            style={{
+              marginTop: theme.spacing.sm,
+              fontSize: theme.fontSize.sm,
+              color: theme.colors.error,
+            }}
+          >
             {error}
-          </p>
+          </div>
         )}
       </div>
-    )
+    );
   }
-)
+);
 
-MultiSelectDropdown.displayName = 'MultiSelectDropdown'
+MultiSelectDropdown.displayName = "MultiSelectDropdown";

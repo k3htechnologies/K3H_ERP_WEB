@@ -18,7 +18,7 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
       value,
       onChange,
       disabled = false,
-      placeholder = "Select...",
+      placeholder = "Select",
       labelKey = "label",
       valueKey = "value",
       searchable = true,
@@ -92,7 +92,7 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
       const windowHeight = window.innerHeight;
 
       if (rect) {
-        const dropdownHeight = 300; // approx height
+        const dropdownHeight = 300; 
 
         if (rect.bottom + dropdownHeight > windowHeight) {
           setOpenUpward(true);

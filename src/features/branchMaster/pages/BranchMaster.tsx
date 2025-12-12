@@ -365,9 +365,9 @@ export const BranchMaster: React.FC = () => {
               text={value || 'N/A'}
               maxWidth="250px"
               tooltipThreshold={25}
-              onClick={() => handleViewBranchDetails(row)} 
-             />
-             
+              onClick={() => handleViewBranchDetails(row)}
+            />
+
           </div>
         )
       },
@@ -581,7 +581,6 @@ export const BranchMaster: React.FC = () => {
   //#endregion
 
   //#region CLEAR FILTER 
-
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
@@ -591,9 +590,14 @@ export const BranchMaster: React.FC = () => {
   //#endregion
 
   //#region HANDLE FILTER CHNAGE
-
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
+  };
+
+  //#region HANDLE RESET FORM
+  const handleResetForm = () => {
+    setFormData(initialFormState());
+    setErrors({});
   };
 
   //#endregion
@@ -643,7 +647,7 @@ export const BranchMaster: React.FC = () => {
 
     if (formData.Location.trim() === "") {
       newErrors.Location = "Location is required";
-    } 
+    }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -888,6 +892,7 @@ export const BranchMaster: React.FC = () => {
           onSubmit={handleAddUpdateBranchMaster}
           saveText={editingBranchMasterData ? 'Update Branch' : 'Save Branch'}
           resetText='Reset'
+          onreset={handleResetForm}
           loading={isLoading}
           size='xl'
         >

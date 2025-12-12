@@ -75,12 +75,16 @@ export const HolidayMaster: React.FC = () => {
   // ADD UPDATE HOLIDAY URL
   const [HolidayURLFiles, setHolidayURLFiles] = useState<(File | string)[]>([]);
 
+  // REMOVE HOLIDAY URL
+  const [removeHolidayURL, setRemoveHolidayURL] = useState<string[]>([]);
+
   // EDIT HOLIDAY MASTER
   const [editingHolidayMasterData, setEditingHolidayMasterData] = useState<HolidayMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
   //ADD UPDATE HOLIDAY MASTER
   const [formData, setFormData] = useState<AddUpdateHolidayMasterRequest>(() => initialFormState());
+
 
   //DELETE HOLIDAY MASTER STATES
 
@@ -122,13 +126,14 @@ export const HolidayMaster: React.FC = () => {
           HolidayMasterId: editingHolidayMasterData.HolidayMasterId,
           Uniquekey: editingHolidayMasterData.Uniquekey || initialFormState().Uniquekey,
           HolidayName: editingHolidayMasterData.HolidayName || "",
-          HolidayURL: null,
+          HolidayURL: editingHolidayMasterData.HolidayURL || "",
           RemoveHolidayURL: '',
         });
 
       } else {
         setFormData(initialFormState());
         setHolidayURLFiles([]);
+        setRemoveHolidayURL([]);
       }
       setErrors({});
     }
@@ -482,7 +487,6 @@ export const HolidayMaster: React.FC = () => {
       </Modal>
     )
   }
-
   //#endregion
 
   //#region FILTER MODAL HELPERS
@@ -494,7 +498,6 @@ export const HolidayMaster: React.FC = () => {
   //#endregion
 
   //#region CLEAR FILTER
-
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
@@ -504,7 +507,6 @@ export const HolidayMaster: React.FC = () => {
   //#endregion
 
   //#region HANDLE FILTER CHNAGE
-
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
@@ -539,8 +541,8 @@ export const HolidayMaster: React.FC = () => {
 
     const newErrors: { [key: string]: string } = {}
 
-    if (!formData.HolidayName) {
-      newErrors.HolidayName = "Holiday Name is required.";
+    if (!formData.HolidayName?.trim()) {
+      newErrors.HolidayName = "Holiday name is required";
     }
 
     const hasFile = formData.HolidayURL || HolidayURLFiles.length > 0 || editingHolidayMasterData?.HolidayURL;
@@ -553,14 +555,20 @@ export const HolidayMaster: React.FC = () => {
     };
   }
 
-  const PushHolidayFormData = (): AddUpdateHolidayMasterRequest => {
-    return {
-      HolidayMasterId: formData.HolidayMasterId,
-      Uniquekey: formData.Uniquekey,
-      HolidayName: formData.HolidayName,
-      HolidayURL: formData.HolidayURL,
-      RemoveHolidayURL: formData.RemoveHolidayURL
-    };
+  const PushHolidayFormData = (): FormData => {
+
+    const fd = new FormData();
+    fd.append('HolidayMasterId', formData.HolidayMasterId.toString());
+    fd.append('Uniquekey', formData.Uniquekey ?? '');
+    fd.append('HolidayName', formData.HolidayName.trim() ?? '');
+    HolidayURLFiles.forEach(file => {
+      if (file instanceof File) {
+        fd.append('HolidayURL', file);
+      }
+    });
+
+    fd.append('RemoveHolidayURL', removeHolidayURL.join(','));
+    return fd;
   };
 
 
@@ -813,11 +821,9 @@ export const HolidayMaster: React.FC = () => {
                     "image/jpeg",
                     "image/png",
                     "application/pdf",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                   ]}
                   maxFiles={5}
-                  maxSizeMB={10}
+                  maxSizeMB={50}
                 />
               </div>
             </div>
@@ -900,5 +906,3 @@ export const HolidayMaster: React.FC = () => {
 }
 
 export default HolidayMaster
-
-

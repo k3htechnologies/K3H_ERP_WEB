@@ -46,6 +46,7 @@ export const LeaveTypeMaster: React.FC = () => {
   const [leaveTypeMasterList, setLeaveTypeMasterList] = useState<LeaveTypeMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [prevMaxCarryForward, setPrevMaxCarryForward] = useState<number>(0);
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
@@ -115,25 +116,28 @@ export const LeaveTypeMaster: React.FC = () => {
     }
   }, [debouncedSearch])
 
-  useEffect(() => {
-    if (isAddUpdateModalOpen) {
-      if (editingLeaveTypeMasterData) {
-        setFormData({
-          LeaveTypeMasterId: editingLeaveTypeMasterData.LeaveTypeMasterId,
-          Uniquekey: editingLeaveTypeMasterData.Uniquekey || initialFormState().Uniquekey,
-          LeaveType: editingLeaveTypeMasterData.LeaveType || '',
-          LeaveTypeCode: editingLeaveTypeMasterData.LeaveTypeCode || '',
-          IsCarryForward: editingLeaveTypeMasterData.IsCarryForward || false,
-          MaxCarryForward: editingLeaveTypeMasterData.MaxCarryForward || 0,
-          IsEncashable: editingLeaveTypeMasterData.IsEncashable || false
-        });
-      } else {
-        setFormData(initialFormState());
-      }
-      setErrors({});
-    }
-  }, [isAddUpdateModalOpen, editingLeaveTypeMasterData]);
 
+  useEffect(() => {
+  if (isAddUpdateModalOpen) {
+    if (editingLeaveTypeMasterData) {
+      setFormData({
+        LeaveTypeMasterId: editingLeaveTypeMasterData.LeaveTypeMasterId,
+        Uniquekey: editingLeaveTypeMasterData.Uniquekey || initialFormState().Uniquekey,
+        LeaveType: editingLeaveTypeMasterData.LeaveType || '',
+        LeaveTypeCode: editingLeaveTypeMasterData.LeaveTypeCode || '',
+        IsCarryForward: editingLeaveTypeMasterData.IsCarryForward || false,
+        MaxCarryForward: editingLeaveTypeMasterData.MaxCarryForward || 0,
+        IsEncashable: editingLeaveTypeMasterData.IsEncashable || false
+      });
+
+      setPrevMaxCarryForward(editingLeaveTypeMasterData.MaxCarryForward || 0);
+    } else {
+      setFormData(initialFormState());
+      setPrevMaxCarryForward(0);
+    }
+    setErrors({});
+  }
+}, [isAddUpdateModalOpen, editingLeaveTypeMasterData]);
   //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
@@ -368,8 +372,7 @@ export const LeaveTypeMaster: React.FC = () => {
         label: 'Leave Type Code',
         width: '20',
         sortable: false,
-        fixed: 'left',
-        align: 'left',
+        align: 'center',
         render: (value) => (
           <TooltipText
             text={value}
@@ -587,13 +590,28 @@ export const LeaveTypeMaster: React.FC = () => {
   //#region ADD UPDATE EDIT LEAVE TYPE MASTER
 
   const handleFieldChange = (field: keyof AddUpdateLeaveTypeMasterRequest, value: any) => {
+    setFormData((prev) => {
+      const updated = { ...prev, [field]: value };
 
-    setFormData((prev) => ({ ...prev, [field]: value }));
+      if (field === "IsCarryForward") {
+        if (!value) {
+          // When unchecked, store old value and reset to 0
+          setPrevMaxCarryForward(prev.MaxCarryForward || 0);
+          updated.MaxCarryForward = 0;
+        } else {
+          // When checked again, restore old value
+          updated.MaxCarryForward = prevMaxCarryForward;
+        }
+      }
+
+      return updated;
+    });
 
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
+
 
   const handleAddLeaveTypeModal = () => {
     setEditingLeaveTypeMasterData(null);
@@ -640,7 +658,7 @@ export const LeaveTypeMaster: React.FC = () => {
       LeaveType: formData.LeaveType || "",
       LeaveTypeCode: formData.LeaveTypeCode || "",
       IsCarryForward: formData.IsCarryForward || false,
-      MaxCarryForward: formData.MaxCarryForward || 0,
+      MaxCarryForward: formData.IsCarryForward ? formData.MaxCarryForward || 0 : 0,
       IsEncashable: formData.IsEncashable || false
     };
   };
@@ -860,7 +878,7 @@ export const LeaveTypeMaster: React.FC = () => {
             setFormData(initialFormState());
             setErrors({});
           }}
-          title={editingLeaveTypeMasterData ? 'Update Leave Type' : 'Add Leave Type Master Details'}
+          title={editingLeaveTypeMasterData ? 'Update Leave Type' : 'Add Leave Type'}
           onSubmit={handleAddUpdateLeaveTypeMaster}
           saveText="Save"
           resetText='Reset'
@@ -886,10 +904,10 @@ export const LeaveTypeMaster: React.FC = () => {
                 <Input
                   type="text"
                   label='Leave Type Code'
-                  value={formData.LeaveTypeCode ?? ""}
+                  value={formData.LeaveTypeCode.toUpperCase() ?? ""}
                   onChange={(e) => handleFieldChange("LeaveTypeCode", e.target.value)}
                   required
-                  maxLength={20}
+                  maxLength={4}
                   placeholder="Enter Leave Type Code"
                   error={errors.LeaveTypeCode}
                 />
@@ -906,7 +924,7 @@ export const LeaveTypeMaster: React.FC = () => {
                 <div>
                   <Input
                     type="text"
-                    label='MaxCarryForward'
+                    label='Max Carry Forward'
                     value={formData.MaxCarryForward ?? ""}
                     onChange={(e) => handleFieldChange("MaxCarryForward", e.target.value)}
                     required

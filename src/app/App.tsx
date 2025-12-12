@@ -43,7 +43,6 @@ import  { AddUpdateWeekOffMaster } from '@/features/weekOffMaster/pages/AddUpdat
 import AddUpdateAssetMappingMaster  from '@/features/assetMappingMaster/pages/AddUpdateAssetMappingMaster';
 import AddUpdateDeductionMaster  from '@/features/deductionMaster/pages/AddUpdateDeductionMaster';
 import AddUpdateShiftMaster  from '@/features/shiftMaster/pages/AddUpdateShiftMaster';
-import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
 import ViewAssetMappingMaster from '@/features/assetMappingMaster/pages/ViewAssetMappingMaster';
 import ViewShiftMaster from '@/features/shiftMaster/pages/ViewShiftMaster';
 import ViewDeductionMaster from '@/features/deductionMaster/pages/ViewDeductionMaster';

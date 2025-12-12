@@ -11,7 +11,8 @@ import React from "react";
 import type { AddUpdateWeekOffMasterRequest, FilterWithPaginationWeekOffMasterRequest } from "../models/WeekOffMasterModel";
 import { WeekOffMasterService } from "../services/WeekOffMasterService";
 import { MultiSelectDropdown } from "@/ui/components/DropDown/MultiSelectDropdown";
-import { MONTHS_OPTIONS } from "@/core/constants";
+import { DAYS_OPTIONS, MONTHS_OPTIONS} from "@/core/constants";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 
 const initialFormState = (): AddUpdateWeekOffMasterRequest => ({
   WeekOffPolicyMasterId: 0,
@@ -49,8 +50,15 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
   //#endregion
 
+  //DROPDOWN SET UP
+  const [dropdownLabels, setDropdownLabels] = useState<{
+    weeklyOff?: string
+    weeklyOff2?: string
+  }>({});
+
   //#region HANDLE FIELD CHANGE EVENT
   const handleFieldChange = (field: keyof AddUpdateWeekOffMasterRequest, value: any) => {
+    
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     if (errors[field]) {
@@ -61,7 +69,9 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
 
   //#region INITIALIZATION
   useEffect(() => {
+
     if (!isAddMode) {
+
       fetchWeekOffMasterDetails();
     }
   }, [WeekOffId]);
@@ -104,6 +114,10 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
               WeeklyOff2Type: e.WeeklyOff2Type ?? prev.WeeklyOff2Type,
               NotApplicableForMonths: e.NotApplicableForMonths ?? prev.NotApplicableForMonths
             }));
+            setDropdownLabels({
+              weeklyOff: e.WeeklyOff || "",
+              weeklyOff2: e.WeeklyOff2 || ""
+            });
           }
         } else {
           addToast({ type: 'error', title: response.left.message });
@@ -132,41 +146,40 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.WeekOffPolicyName?.trim()) {
-      newErrors.WeekOffPolicyName = 'WeekOff Name is required.';
+      newErrors.WeekOffPolicyName = 'Week Off Name is required.';
+
     } else if (formData.WeekOffPolicyName.trim().length > 50) {
-      newErrors.WeekOffPolicyName = 'WeekOff Name must be at most 50 characters';
+      newErrors.WeekOffPolicyName = 'Week Off Name must be at most 50 characters';
     }
 
     if (!formData.WeekOffPolicyCode?.trim()) {
-      newErrors.WeekOffPolicyCode = 'WeekOff Code is required.';
+      newErrors.WeekOffPolicyCode = 'Week Off Code is required.';
+
     } else if (formData.WeekOffPolicyCode.trim().length > 5) {
-      newErrors.WeekOffPolicyCode = 'WeekOff Code must be at most 4 characters';
+      newErrors.WeekOffPolicyCode = 'Week Off Code must be at most 4 characters';
     }
 
     if (!formData.WeekDays) {
-      newErrors.WeekDays = 'WeekOff Day is required.';
+      newErrors.WeekDays = 'Week Off Day is required.';
     }
 
     if (!formData.WeeklyOff?.trim()) {
-      newErrors.WeeklyOff = "WeekOff  is required";
+      newErrors.WeeklyOff = "Week Off  is required";
+    }
+
+    if (formData.WeeklyOff2){
+      if(!formData.WeeklyOff2Type?.trim()){
+        newErrors.WeeklyOff2Type="Weekly Off2 Type is required";
+      }
     }
 
     if (!formData.WeekDaysStartsOn) {
       newErrors.WeekDaysStartsOn = "Week Days Starts On is required";
     }
 
-    if (!formData.WeeklyOff2?.trim()) {
-      newErrors.WeeklyOff2 = 'Weekly Off2 is required.';
-    }
-
-    if (!formData.WeeklyOff2Type?.trim()) {
-      newErrors.WeeklyOff2Type = "Weekly Off2 Type is required";
-    }
-
     if (!formData.NotApplicableForMonths) {
       newErrors.NotApplicableForMonths = "Not Applicable For Months is required";
     }
-
 
 
     return {
@@ -272,7 +285,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
 
         <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-        <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+        <div className="flex-1 space-y-2 px-6 py-3 pb-40 overflow-y-auto thin-scroll ">
 
           <form onSubmit={handleAddUpdateWeekOffMaster}>
 
@@ -299,10 +312,10 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
                     type="text"
                     required
                     label='Week Off Code'
-                    value={formData.WeekOffPolicyCode ?? ""}
+                    value={formData.WeekOffPolicyCode.toUpperCase() ?? ""}
                     onChange={(e) => handleFieldChange("WeekOffPolicyCode", e.target.value)}
                     placeholder="Enter WeekOff Code"
-                    maxLength={250}
+                    maxLength={4}
                     error={errors.WeekOffPolicyCode}
                   />
                 </div>
@@ -312,50 +325,45 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                 <div>
                   <Input
-                    type="text"
-                    required
                     label='Week Days'
-                    value={formData.WeekDays ?? ""}
-                    onChange={(e) => handleFieldChange("WeekDays", e.target.value)}
-                    placeholder="Enter Week Days"
-                    maxLength={250}
+                    required
                     error={errors.WeekDays}
+                    type="text"
+                    value={formData.WeekDays ?? ''}
+                    maxLength={4}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, '');
+                      handleFieldChange('WeekDays', digits === '' ? 0 : Number(digits));
+                    }}
                   />
                 </div>
 
                 <div>
-                  <Input
-                    type="text"
+                  <SinglePageSelection
+                    label="Weekly Off"
                     required
-                    label='Weekly Off'
-                    value={formData.WeeklyOff ?? ""}
-                    onChange={(e) => handleFieldChange("WeeklyOff", e.target.value)}
-                    placeholder="Enter Weekly Off"
-                    maxLength={250}
+                    value={formData.WeeklyOff}
+                    onChange={(value) => handleFieldChange("WeeklyOff", value)}
+                    options={DAYS_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
                     error={errors.WeeklyOff}
                   />
                 </div>
-
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                 <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Week Off2'
-                    value={formData.WeeklyOff2 ?? ""}
-                    onChange={(e) => handleFieldChange("WeeklyOff2", e.target.value)}
-                    placeholder="Enter Weekly Off2"
-                    maxLength={250}
-                    error={errors.WeeklyOff2}
+                  <SinglePageSelection
+                    label="Weekly Off2"
+                    value={formData.WeeklyOff2}
+                    onChange={(value) => handleFieldChange("WeeklyOff2", value)}
+                    options={DAYS_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                    error={errors.weeklyOff2}
                   />
                 </div>
 
                 <div>
                   <Input
                     type="text"
-                    required
                     label='Weekly Off2 Type'
                     value={formData.WeeklyOff2Type ?? ""}
                     onChange={(e) => handleFieldChange("WeeklyOff2Type", e.target.value)}
@@ -384,21 +392,15 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
                 <div>
                   <MultiSelectDropdown
                     label="Not Applicable For Months"
-                    title="Select"
-                    required
-                    dataList={MONTHS_OPTIONS.map(opt => ({ label: opt.name, value: opt.id, }))}
-                    initialValues={Array.isArray(formData.NotApplicableForMonths)? MONTHS_OPTIONS
-                          .filter(opt =>
-                            formData.NotApplicableForMonths.includes(opt.name)
-                          )  
-                          .map(opt => ({label: opt.name, value: opt.id}))
-                        : []
+                    options={MONTHS_OPTIONS.map(m => ({ label: m.name, value: m.id }))}
+                    selectedValues={Array.isArray(formData.NotApplicableForMonths) ? formData.NotApplicableForMonths : []}
+                    onChange={(values) =>
+                      handleFieldChange("NotApplicableForMonths", values)
                     }
-                    onSelected={(selectedItems) => {
-                      handleFieldChange("NotApplicableForMonths", selectedItems.map(item => item.value))
-                    }}
+                    required
                     error={errors.NotApplicableForMonths}
                   />
+
                 </div>
               </div>
             </div>

@@ -6,7 +6,7 @@ import { useToast } from "@/core/hooks/useToast";
 import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
 import ToastContainer from "@/ui/components/Toast/ToastContainer";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
 import React from "react";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
@@ -61,7 +61,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
   //DROPDOWN SET UP
   const [dropdownLabels, setDropdownLabels] = useState<{
     branchName?: string;
-    Gender?: string;
+    gender?: string;
     StateName?: string
   }>({});
 
@@ -98,6 +98,8 @@ export const AddUpdateDeductionMaster: React.FC = () => {
 
   //#region FETCH  DEDUCTION MASTER DETAILS
   const fetchDeductionMasterDetails = async () => {
+
+
     await runApiWithLoader(
 
       setIsLoading,
@@ -109,7 +111,8 @@ export const AddUpdateDeductionMaster: React.FC = () => {
         const params: FilterWithPaginationDeductionMasterRequest = {
           PageNumber: 1,
           PageSize: 1,
-          DeductionMasterId: DeductionId
+          DeductionMasterId: DeductionId,
+          SortBy: ''
         };
 
         const response = await DeductionMasterService.apiCallPullDeductionMaster(params);
@@ -136,7 +139,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
 
             setDropdownLabels({
               branchName: e.BranchName || "",
-              Gender: e.Gender || "",
+              gender: e.Gender || "",
               StateName: e.StateName || ""
             });
             setSelectedStateId(e.StateMasterId || null);
@@ -174,20 +177,20 @@ export const AddUpdateDeductionMaster: React.FC = () => {
       newErrors.BranchMasterId = 'Branch Name is required.';
     }
 
-    if (!formData.Type?.trim()) {
+    if (!formData.Type) {
       newErrors.Type = 'Type is required.';
     }
 
-    if (!formData.Value) {
+    if (!formData.Value || Number(formData.Value) <= 0) {
       newErrors.Value = "Value is required";
     }
 
-    if (!formData.MaxSalary) {
-      newErrors.MaxSalary = "Max Salarys required";
+    if (!formData.MaxSalary || Number(formData.MaxSalary) <= 0) {
+      newErrors.MaxSalary = "Max Salary is required";
     }
 
-    if (!formData.MinSalary) {
-      newErrors.MinSalary = 'Min Salary is required.';
+    if (!formData.MinSalary || Number(formData.MinSalary) <= 0) {
+      newErrors.MinSalary = "Min Salary is required";
     }
 
     if (!formData.Gender?.trim()) {
@@ -209,7 +212,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
       DeductionMasterId: formData.DeductionMasterId,
       Uniquekey: formData.Uniquekey,
       Name: formData.Name,
-      Type: formData.Type,
+      Type: Array.isArray(formData.Type) ? formData.Type.join(',') : formData.Type,
       Value: formData.Value,
       BranchMasterId: formData.BranchMasterId,
       MinSalary: formData.MinSalary,
@@ -298,7 +301,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
 
         <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-        <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+        <div className="flex-1 space-y-2 px-6 py-3 pb-40 overflow-y-auto thin-scroll ">
 
           <form onSubmit={handleAddUpdateDeductionMaster}>
 
@@ -324,17 +327,10 @@ export const AddUpdateDeductionMaster: React.FC = () => {
                 <div>
                   <MultiSelectDropdown
                     label="Type"
-                    title="Select Type"
+                    options={DEDUCTION_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                    selectedValues={Array.isArray(formData.Type) ? formData.Type : formData.Type ? [formData.Type] : []}
+                    onChange={(values) => handleFieldChange("Type", values)}
                     required
-                    dataList={DEDUCTION_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id, }))}
-                    initialValues={DEDUCTION_TYPE_OPTIONS.filter(opt => 
-                      formData.Type.includes(opt.id)).map(opt => ({
-                      label: opt.name,
-                      value: opt.id,
-                    }))}
-                    onSelected={(selectedItem) => {
-                      handleFieldChange("Type", selectedItem.map(item => item.value))
-                    }}
                     error={errors.Type}
                   />
                 </div>
@@ -343,14 +339,17 @@ export const AddUpdateDeductionMaster: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                 <div>
                   <Input
-                    type="text"
-                    required
                     label='Value'
-                    value={formData.Value ?? ""}
-                    onChange={(e) => handleFieldChange("Value", e.target.value)}
-                    placeholder="Enter Value"
-                    maxLength={250}
+                    required
                     error={errors.Value}
+                    type="text"
+                    value={formData.Value ?? ''}
+                    maxLength={10}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, '');
+                      handleFieldChange('Value', digits === '' ? 0 : Number(digits));
+                    }}
+                    placeholder="Enter Value"
                   />
                 </div>
 
@@ -402,31 +401,38 @@ export const AddUpdateDeductionMaster: React.FC = () => {
 
                 <div>
                   <Input
-                    type="text"
-                    required
                     label='Min Salary'
-                    value={formData.MinSalary ?? ""}
-                    onChange={(e) => handleFieldChange("MinSalary", e.target.value)}
-                    placeholder="Enter Min Salary"
-                    maxLength={250}
+                    required
                     error={errors.MinSalary}
+                    type="text"
+                    value={formData.MinSalary ?? ''}
+                    maxLength={10}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, '');
+                      handleFieldChange('MinSalary', digits === '' ? 0 : Number(digits));
+                    }}
+                    placeholder="Enter Min Salary"
                   />
                 </div>
 
                 <div>
                   <Input
-                    type="text"
-                    required
                     label='Max Salary'
-                    value={formData.MaxSalary ?? ""}
-                    onChange={(e) => handleFieldChange("MaxSalary", e.target.value)}
-                    placeholder="Enter Max Salary"
-                    maxLength={250}
+                    required
                     error={errors.MaxSalary}
+                    type="text"
+                    value={formData.MaxSalary ?? ''}
+                    maxLength={10}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, '');
+                      handleFieldChange('MaxSalary', digits === '' ? 0 : Number(digits));
+                    }}
+                    placeholder="Enter Max Salary"
                   />
                 </div>
 
               </div>
+
             </div>
           </form>
         </div>
@@ -437,7 +443,9 @@ export const AddUpdateDeductionMaster: React.FC = () => {
             color="transparent"
             variant='transparent_border'
             size="sm"
-            onClick={() => { navigate(-1); }}
+            onClick={() => {
+              navigate(-1);
+            }}
             className="px-6"
           >
             Cancel

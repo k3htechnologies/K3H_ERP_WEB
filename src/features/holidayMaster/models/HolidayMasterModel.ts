@@ -28,7 +28,7 @@ export interface AddUpdateHolidayMasterRequest {
     HolidayMasterId: number | 0
     Uniquekey: string | null
     HolidayName: string | ''
-    HolidayURL: File | null
+    HolidayURL: string | null
     RemoveHolidayURL: string | ''
 }
 

@@ -609,9 +609,10 @@ export const EarningMaster: React.FC = () => {
       newErrors.Type = "Type is required";
     }
 
-    if (formData.Value === 0) {
+    if (!formData.Value || Number(formData.Value) <= 0) {
       newErrors.Value = "Value is required";
     }
+
     if (formData.BranchMasterId === 0) {
       newErrors.BranchMasterId = "Branch is required";
     }
@@ -877,15 +878,19 @@ export const EarningMaster: React.FC = () => {
               </div>
               <div>
                 <Input
-                  type="text"
                   label='Value'
-                  value={formData.Value ?? ""}
-                  onChange={(e) => handleFieldChange("Value", e.target.value)}
                   required
-                  maxLength={20}
-                  placeholder="Enter Value"
                   error={errors.Value}
+                  type="text"
+                  value={formData.Value ?? ''}
+                  maxLength={10}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '');
+                    handleFieldChange('Value', digits === '' ? 0 : Number(digits));
+                  }}
+                  placeholder="Enter Value"
                 />
+                
               </div>
               <div>
                 <SingleSelectDropdownWithPagination

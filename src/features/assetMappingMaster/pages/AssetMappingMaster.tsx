@@ -332,7 +332,7 @@ export const AssetMappingMaster: React.FC = () => {
       label: 'Assigned Date',
       width: '15',
       sortable: false,
-      align: 'left',
+      align: 'center',
       render: (value) => 
         value ? formatDate_dd_MonthName_yy(value) : '-'
     },
@@ -350,7 +350,7 @@ export const AssetMappingMaster: React.FC = () => {
       label: 'Condition On Issue',
       width: '12',
       sortable: false,
-      align: 'left',
+      align: 'center',
       render: (value) => (
         <TooltipText
           text={value || 'N/A'}

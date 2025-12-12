@@ -17,7 +17,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
@@ -32,6 +32,7 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import { fetchBranchMasterDropdown } from '@/features/branchMaster/branchMasterDropDown';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import { fetchHolidayMasterDropdown } from '../HolidayMasterDropDown';
+import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 
 const initialFormState = (): AddUpdateHolidayMappingMasterRequest => ({
   HolidayMappingMasterId: 0,
@@ -462,7 +463,8 @@ export const HolidayMappingMaster: React.FC = () => {
 
             <FieldItem label="Holiday Name" value={data.HolidayName} isRow withBorder={true} className='font-medium text-blue-900 ' />
             <FieldItem label="Branch Name" value={data.BranchName} isRow withBorder={true} />
-            <FieldItem label="Holiday Date" value={data.HolidayDate} isRow withBorder={true} />
+            <FieldItem label="Assigned Date" value={data.HolidayDate ? formatDate_dd_MonthName_yy(data.HolidayDate) : ""} isRow />
+            
             <div className="space-y-4">
               <h4 className="text-lg font-semibold pb-2">
                 Action Details
@@ -623,7 +625,7 @@ export const HolidayMappingMaster: React.FC = () => {
         const payload = PushWeekHolidayMappingFormData();
 
         const response = await HolidayMappingMasterService.apiCallAddUpdateHolidayMappingMaster(payload);
-        
+
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
@@ -853,14 +855,11 @@ export const HolidayMappingMaster: React.FC = () => {
             </div>
 
             <div>
-              <Input
-                type="date"
-                label='Holiday Date'
-                value={formData.HolidayDate?.substring(0, 10)}
-                onChange={(e) => handleFieldChange("HolidayDate", e.target.value)}
+              <DatePickerInput
+                label="Holiday Date"
+                value={formatDate_dd_mm_yyyy(formData.HolidayDate)}
+                onChange={(val) => handleFieldChange('HolidayDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                 required
-                maxLength={20}
-                placeholder="Enter Holiday Date"
                 error={errors.HolidayDate}
               />
             </div>

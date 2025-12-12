@@ -375,7 +375,7 @@ export const WeekOffMappingMaster: React.FC = () => {
         label: 'Department Name',
         width: '18',
         sortable: true,
-        align: 'left',
+        align: 'center',
         render: (value) => (
           <TooltipText
             text={value || 'N/A'}
@@ -389,7 +389,7 @@ export const WeekOffMappingMaster: React.FC = () => {
         label: 'Employee Name',
         width: '18',
         sortable: true,
-        align: 'left',
+        align: 'center',
         render: (value) => (
           <TooltipText
             text={value || 'N/A'}
@@ -903,7 +903,7 @@ export const WeekOffMappingMaster: React.FC = () => {
                 error={errors.EmployeeId}
               />
             </div>
-            
+
             <div>
               <SingleSelectDropdownWithPagination
                 label="Department"

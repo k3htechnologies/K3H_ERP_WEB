@@ -114,7 +114,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
   const fetchLeaveEncashmentList = async (page: number = pagination.currentPage) => {
     return await loadLeaveEncashments(page);
-    
+
   }
 
   const loadLeaveEncashments = async (page: number) => {
@@ -252,7 +252,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
   const leaveEncashmentListForTable = useMemo(() => leaveEncashmentMasterList, [leaveEncashmentMasterList]);
   //#endregion
 
-  
+
   //#region VIEW EDIT LEAVE ENCASHMENT
   const handleViewLeaveEncashmentDetails = useCallback((row: LeaveEncashmentMasterData) => {
     setViewLeaveEncashmentMasterDetailsData(row)
@@ -502,16 +502,14 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
     const newErrors: { [key: string]: string } = {}
 
-    if (!formData.EncashmentRate) {
-      newErrors.EncashmentRate = "Encashment Rate is required.";
+    if (!formData.EncashmentRate || Number(formData.EncashmentRate) <= 0) {
+      newErrors.EncashmentRate = "Encashment Rate is required";
     }
-
-    if (!formData.MinSalary) {
-      newErrors.MinSalary = "Min Salary is required.";
+    if (!formData.MinSalary || Number(formData.MinSalary) <= 0) {
+      newErrors.MinSalary = "Min Salary required";
     }
-
-    if (!formData.MaxSalary) {
-      newErrors.MaxSalary = "Max Salary is required.";
+    if (!formData.MaxSalary || Number(formData.MaxSalary) <= 0) {
+      newErrors.MaxSalary = "Max Salary is required";
     }
 
     return {
@@ -746,41 +744,47 @@ export const LeaveEncashmentMaster: React.FC = () => {
           <div className="space-y-6 p-6 bg-blue-100">
             <div className='space-y-4'>
               <div>
+               
                 <Input
-                  type="text"
-                  required
                   label='Encashment Rate'
-                  value={formData.EncashmentRate ?? ""}
+                  required
+                  error={errors.EncashmentRate}
+                  value={formData.EncashmentRate ?? ''}
+                  maxLength={4}
                   onChange={(e) => handleFieldChange("EncashmentRate", e.target.value)}
                   placeholder="Enter Encashment Rate"
-                  maxLength={250}
-                  error={errors.EncashmentRate}
                 />
               </div>
 
               <div>
                 <Input
-                  type="text"
                   label='Min Salary'
-                  value={formData.MinSalary ?? ""}
-                  onChange={(e) => handleFieldChange("MinSalary", e.target.value)}
                   required
-                  maxLength={20}
-                  placeholder="Enter Min Salary"
                   error={errors.MinSalary}
+                  type="text"
+                  value={formData.MinSalary ?? ''}
+                  maxLength={10}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '');
+                    handleFieldChange('MinSalary', digits === '' ? 0 : Number(digits));
+                  }}
+                  placeholder="Enter Min Salary"
                 />
               </div>
 
               <div>
                 <Input
-                  type="text"
-                  label='MaxSalary'
-                  value={formData.MaxSalary ?? ""}
-                  onChange={(e) => handleFieldChange("MaxSalary", e.target.value)}
+                  label='Max Salary'
                   required
-                  placeholder="Enter MaxSalary"
-                  maxLength={250}
                   error={errors.MaxSalary}
+                  type="text"
+                  value={formData.MaxSalary ?? ''}
+                  maxLength={10}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '');
+                    handleFieldChange('MaxSalary', digits === '' ? 0 : Number(digits));
+                  }}
+                  placeholder="Enter MaxSalary"
                 />
               </div>
             </div>

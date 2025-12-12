@@ -222,6 +222,12 @@ export const BranchAssociationsMaster: React.FC = () => {
   }
   //#endregion
 
+  
+  const handleResetForm = () => {
+    setFormData(initialFormState());   
+    setErrors({});                    
+  };
+
   //#region CLEAR BRANCH ASSOCIATIONS 
   const clearsearchBranchAssociations = () => {
     setSearchTerm('');
@@ -579,11 +585,11 @@ export const BranchAssociationsMaster: React.FC = () => {
     return {
       BranchAssociationsId: formData.BranchAssociationsId,
       Uniquekey: formData.Uniquekey,
-      BranchMasterId: formData.BranchMasterId,
+      BranchMasterId: formData.BranchMasterId ? String(formData.BranchMasterId) : "",
       EmployeeId: formData.EmployeeId
     };
-
   };
+
 
   const handleAddUpdateBranchAssociationsMaster = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -709,7 +715,6 @@ export const BranchAssociationsMaster: React.FC = () => {
           exportLoading={isLoading}
         />
 
-
         {/* DATA TABLE BRANCH ASSOCIATIONS */}
         <DataTable
           data={branchAssociationsListForTable}
@@ -731,6 +736,8 @@ export const BranchAssociationsMaster: React.FC = () => {
           }}
           data={viewBranchAssociationsMasterDetailsData}
         />
+
+        {/* ADD BRANCH ASSOCIATIONS MODAL */}
 
         <Modal
           isOpen={isAddUpdateModalOpen}

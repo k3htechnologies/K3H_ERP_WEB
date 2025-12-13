@@ -328,14 +328,15 @@ export const Tenant: React.FC = () => {
             filters,
             sortInfo,
             searchTerm,
+            tenantId: row.TenantId,
             buildingId: row.BuildingId,
-            ProjectId,
-            buildingName,
+            projectId: ProjectId,
+            tenantName: row.FlatNumber,
   
           },
         },
       });
-    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm,buildingId, buildingName]);
+    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm, ProjectId]);
     //#endregion
 
   //#region TABLE COLUMN

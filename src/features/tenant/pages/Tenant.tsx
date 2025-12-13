@@ -20,10 +20,11 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, type Location, useNavigate } from 'react-router-dom';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { fetchBuildingDropdown } from '@/features/building/buildingDropdown';
+import { FileText } from 'lucide-react';
 
 var ProjectId = 1;
 export const Tenant: React.FC = () => {
@@ -315,6 +316,28 @@ export const Tenant: React.FC = () => {
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm, buildingId, buildingName]);
   //#endregion
 
+  //#region VIEW TENANT DOCUMENT
+  
+    const handleViewTenantDocument = useCallback((row: TenantData) => {
+      navigate('/tenant/document', {
+        state: {
+          editBuildingData: row,
+          fromList: true,
+          listState: {
+            page: pagination.currentPage,
+            filters,
+            sortInfo,
+            searchTerm,
+            buildingId: row.BuildingId,
+            ProjectId,
+            buildingName,
+  
+          },
+        },
+      });
+    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm,buildingId, buildingName]);
+    //#endregion
+
   //#region TABLE COLUMN
   const tenantColumns = useMemo<TableColumn[]>(
     () => [
@@ -446,8 +469,41 @@ export const Tenant: React.FC = () => {
         align: 'center',
         render: value => value || 'N/A'
       },
+       {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                   handleViewTenantDocument(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'green',
+                  padding: '4px 8px'
+                }}
+                title="Tenant Document"
+              >
+                <FileText className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+
+
+        )
+      }
     ],
-    [handleViewTenantDetails]
+    [handleViewTenantDetails,handleViewTenantDocument]
 
   );
   //#endregion

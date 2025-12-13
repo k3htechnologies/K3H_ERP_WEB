@@ -1,14 +1,577 @@
-import React from 'react'
+import { useLocation, useNavigate } from "react-router-dom";
+import { Input } from "@/ui/components/forms/Input";
+import * as E from "fp-ts/Either";
+import { runApiWithLoader } from "@/core/utils";
+import { buildingService } from "@/features/building/services/BuildingService";
+import { useToast } from "@/core/hooks/useToast";
+import { Loader } from "@/core/utils/loader";
+import { useEffect, useState } from "react";
+import React from "react";
+import { filterNumbersWithDecimal, filterMobile, filterEmail, filterLetters } from "@/core/utils/fileValidation";
+import type { AddUpdateBuildingDetailsRequest, FilterWithPaginationBuildingDetailsRequest, BuildingKeyContactDetails } from "@/features/building/models/BuildingModel";
+import BottomActionBar from "@/ui/components/forms/BottomActionBar";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+
+
+const initialFormState = (): AddUpdateBuildingDetailsRequest => ({
+  BuildingId: 0,
+  ProjectId: 0,
+  GrossPlotAreaSqFt: 0,
+  PlotAreaPhysicalSurveySqFt: undefined,
+  PlotAreaOldApprovedPlanSqFt: undefined,
+  PlotAreaConveyanceSqFt: undefined,
+  PlotAreaPRCardSqFt: undefined,
+  TotalBuiltUpAreaSqFt: 0,
+  TotalResidentialUnits: undefined,
+  TotalResidentialCarpetAreaSqFt: undefined,
+  TotalCommercialUnits: undefined,
+  TotalCommercialCarpetAreaSqFt: undefined,
+  BuildingKeyContactDetailsJSON: undefined
+});
 
 const BuildingDescription: React.FC = () => {
-  return (
-    <div className="w-full">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Dashboard</h2>
-        <p className="text-gray-600">Welcome to your dashboard. Select a menu item from the sidebar to get started.</p>
-      </div>
-    </div>
-  )
-}
+  //#region STATE MANAGEMENT
+  const [formData, setFormData] = useState<AddUpdateBuildingDetailsRequest>(() => initialFormState());
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
 
-export default BuildingDescription
+  // NAVIGATE
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const locationStateDetails = useLocation() as {
+    state?: {
+      buildingId?: number;
+      projectId?: number;
+      listState?: {
+        page?: number;
+        filters?: any;
+        sortInfo?: any;
+        searchTerm?: string;
+        buildingId?: number;
+        projectId?: number;
+        buildingName?: string;
+      };
+    };
+  };
+
+  const preservedListState = locationStateDetails.state?.listState;
+  const buildingId = preservedListState?.buildingId || 0;
+  const projectId = preservedListState?.projectId || 0;
+  const buildingName = preservedListState?.buildingName || 0;
+
+  // TOAST
+  const { addToast } = useToast();
+
+  //ERROR SET UP
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+
+  //#region BUILDING KEY CONTACT DETAILS
+  const [contactDetailsList, setContactDetailsList] = useState<Omit<BuildingKeyContactDetails, 'BuildingId' | 'ProjectId' | 'CreatedById' | 'CreatedBy' | 'CreatedDate' | 'ModifiedById' | 'ModifiedBy' | 'ModifiedDate' | 'LastModifiedBy' | 'LastModifiedDate'>[]>([]);
+  const [contactDetailsErrors, setContactDetailsErrors] = useState<{ [key: number]: { [k: string]: string } }>({});
+
+  //#endregion
+
+  //#region MENU PERMISSIONS
+  const { canAction } = useMenuPermissions('/building');
+  //#endregion
+
+  //#region HANDLE FILED CHNAGE EVENT
+  const handleFieldChange = (field: keyof AddUpdateBuildingDetailsRequest, value: any) => {
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+  //#endregion
+
+  //#region INITIALIZATION
+  useEffect(() => {
+    if (buildingId && buildingId > 0) {
+      fetchBuildingDetailsDetails();
+      return;
+    }
+
+
+  }, [buildingId]);
+  //#endregion
+
+  //#region FETCH BUILDING DETAILS DETAILS
+  const fetchBuildingDetailsDetails = async () => {
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const params: FilterWithPaginationBuildingDetailsRequest = {
+          ProjectId: projectId,
+          BuildingId: buildingId
+        }
+
+        const response = await buildingService.apiCallPullBuildingDetails(params);
+
+        if (E.isRight(response)) {
+
+          const row = response.right.Data?.[0];
+
+          if (row) {
+            setFormData(prev => ({
+              ...prev,
+              BuildingId: buildingId,
+              ProjectId: projectId,
+              GrossPlotAreaSqFt: row.GrossPlotAreaSqFt ?? prev.GrossPlotAreaSqFt ?? 0,
+              PlotAreaPhysicalSurveySqFt: row.PlotAreaPhysicalSurveySqFt ?? prev.PlotAreaPhysicalSurveySqFt,
+              PlotAreaOldApprovedPlanSqFt: row.PlotAreaOldApprovedPlanSqFt ?? prev.PlotAreaOldApprovedPlanSqFt,
+              PlotAreaConveyanceSqFt: row.PlotAreaConveyanceSqFt ?? prev.PlotAreaConveyanceSqFt,
+              PlotAreaPRCardSqFt: row.PlotAreaPRCardSqFt ?? prev.PlotAreaPRCardSqFt,
+              TotalBuiltUpAreaSqFt: row.TotalBuiltUpAreaSqFt ?? prev.TotalBuiltUpAreaSqFt ?? 0,
+              TotalResidentialUnits: row.TotalResidentialUnits ?? prev.TotalResidentialUnits,
+              TotalResidentialCarpetAreaSqFt: row.TotalResidentialCarpetAreaSqFt ?? prev.TotalResidentialCarpetAreaSqFt,
+              TotalCommercialUnits: row.TotalCommercialUnits ?? prev.TotalCommercialUnits,
+              TotalCommercialCarpetAreaSqFt: row.TotalCommercialCarpetAreaSqFt ?? prev.TotalCommercialCarpetAreaSqFt
+            }));
+
+            // Parse contact details from JSON
+            if (row.BuildingKeyContactDetailsData && row.BuildingKeyContactDetailsData.length > 0) {
+
+              const contacts = row.BuildingKeyContactDetailsData.map(contact => ({
+                BuildingKeyContactDetailsId: contact.BuildingKeyContactDetailsId ?? 0,
+                Uniquekey: contact.Uniquekey ?? null,
+                ContactType: contact.ContactType ?? '',
+                ContactName: contact.ContactName ?? '',
+                MobileNumber: contact.MobileNumber ?? '',
+                EmailId: contact.EmailId ?? ''
+              }));
+
+              setContactDetailsList(contacts);
+
+            } else {
+
+              setContactDetailsList([]);
+            }
+          }
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+        }
+
+        return response
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message })
+      },
+      undefined,
+      'Loading Building Details Data'
+    )
+  }
+  //#endregion
+
+  //#region [VALIDATION FUNCTION]
+
+  const validateAddBuildingDetailsForm = (): {
+
+    isValid: boolean
+
+    errors: { [key: string]: string }
+
+  } => {
+
+    const newErrors: { [key: string]: string } = {}
+
+    if (formData.GrossPlotAreaSqFt === null || formData.GrossPlotAreaSqFt === undefined || formData.GrossPlotAreaSqFt <= 0) {
+      newErrors.GrossPlotAreaSqFt = "Gross Plot Area is required.";
+    }
+
+    if (formData.TotalBuiltUpAreaSqFt === null || formData.TotalBuiltUpAreaSqFt === undefined || formData.TotalBuiltUpAreaSqFt <= 0) {
+      newErrors.TotalBuiltUpAreaSqFt = "Total Built Up Area is required.";
+    }
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors
+    }
+  }
+  //#endregion
+
+  //#region ADD UPDATE BUILDING DETAILS
+  const PushBuildingDetailsFormData = (): AddUpdateBuildingDetailsRequest => {
+    // Convert contact details list to JSON string
+    const contactDetailsJSON = contactDetailsList.length > 0
+      ? JSON.stringify(contactDetailsList.map(contact => ({
+        BuildingKeyContactDetailsId: contact.BuildingKeyContactDetailsId ?? 0,
+        Uniquekey: contact.Uniquekey ?? null,
+        ContactType: contact.ContactType ?? '',
+        ContactName: contact.ContactName ?? '',
+        MobileNumber: contact.MobileNumber ?? '',
+        EmailId: contact.EmailId ?? ''
+      })))
+      : '';
+
+    return {
+      BuildingId: buildingId,
+      ProjectId: projectId,
+      GrossPlotAreaSqFt: formData.GrossPlotAreaSqFt ?? 0,
+      PlotAreaPhysicalSurveySqFt: formData.PlotAreaPhysicalSurveySqFt ?? undefined,
+      PlotAreaOldApprovedPlanSqFt: formData.PlotAreaOldApprovedPlanSqFt ?? undefined,
+      PlotAreaConveyanceSqFt: formData.PlotAreaConveyanceSqFt ?? undefined,
+      PlotAreaPRCardSqFt: formData.PlotAreaPRCardSqFt ?? undefined,
+      TotalBuiltUpAreaSqFt: formData.TotalBuiltUpAreaSqFt ?? 0,
+      TotalResidentialUnits: formData.TotalResidentialUnits ?? undefined,
+      TotalResidentialCarpetAreaSqFt: formData.TotalResidentialCarpetAreaSqFt ?? undefined,
+      TotalCommercialUnits: formData.TotalCommercialUnits ?? undefined,
+      TotalCommercialCarpetAreaSqFt: formData.TotalCommercialCarpetAreaSqFt ?? undefined,
+      BuildingKeyContactDetailsJSON: contactDetailsJSON
+    };
+
+  };
+
+  const handleSubmit = async () => {
+
+    setErrors({})
+
+
+    const validation = validateAddBuildingDetailsForm()
+
+    if (!validation.isValid) {
+
+      setErrors(validation.errors)
+
+      return
+    }
+
+    await runApiWithLoader(
+      setIsLoading,
+
+      setLoadingMessage,
+      async () => {
+
+        const payload = PushBuildingDetailsFormData();
+
+        const response = await buildingService.apiCallAddUpdateBuildingDetails(payload);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: "success", title: formData.BuildingId && formData.BuildingId > 0 ? "Building details updated successfully" : "Building details added successfully" });
+
+          const locationState = location.state as {
+            listState?: {
+              page?: number;
+              filters?: any;
+              sortInfo?: any;
+              searchTerm?: string;
+              buildingId?: number;
+              buildingName?: string;
+            };
+          } | null;
+
+          const listState = locationState?.listState || {
+            page: 1,
+            filters: {},
+            sortInfo: undefined,
+            searchTerm: '',
+            buildingId: buildingId,
+            buildingName: buildingName
+
+          };
+
+          navigate("/building", {
+            state: { listState }
+          });
+
+
+        } else {
+
+          addToast({ type: "error", title: response.left?.message });
+
+        }
+        return response;
+      },
+      undefined,
+      (error: any) => {
+
+        addToast({ type: 'error', title: error.message })
+      },
+      undefined,
+
+      formData.BuildingId && formData.BuildingId > 0 ? 'Update Building Details' : 'Add Building Details'
+    )
+
+  };
+
+  //#endregion
+
+  return (
+
+
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+
+
+      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+        <form onSubmit={handleSubmit}>
+          {/* ============================================================= [BUILDING PLOT AREA] ============================================================================================= */}
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Building Plot Area</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <Input
+                  label="Gross Plot Area SqFt"
+                  required
+                  error={errors.GrossPlotAreaSqFt}
+                  type="text"
+                  value={formData.GrossPlotAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('GrossPlotAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  placeholder="Enter gross plot area"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Plot Area Physical Survey SqFt"
+                  type="text"
+                  value={formData.PlotAreaPhysicalSurveySqFt || ''}
+                  onChange={(e) => {
+                    const val = filterNumbersWithDecimal(e.target.value);
+                    handleFieldChange('PlotAreaPhysicalSurveySqFt', val ? Number(val) : undefined);
+                  }}
+                  placeholder="Enter physical survey area"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Plot Area Old Approved Plan SqFt"
+                  type="text"
+                  value={formData.PlotAreaOldApprovedPlanSqFt || ''}
+                  onChange={(e) => {
+                    const val = filterNumbersWithDecimal(e.target.value);
+                    handleFieldChange('PlotAreaOldApprovedPlanSqFt', val ? Number(val) : undefined);
+                  }}
+                  placeholder="Enter old approved plan area"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Plot Area Conveyance SqFt"
+                  type="text"
+                  value={formData.PlotAreaConveyanceSqFt || ''}
+                  onChange={(e) => {
+                    const val = filterNumbersWithDecimal(e.target.value);
+                    handleFieldChange('PlotAreaConveyanceSqFt', val ? Number(val) : undefined);
+                  }}
+                  placeholder="Enter conveyance area"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Plot Area PR Card SqFt"
+                  type="text"
+                  value={formData.PlotAreaPRCardSqFt || ''}
+                  onChange={(e) => {
+                    const val = filterNumbersWithDecimal(e.target.value);
+                    handleFieldChange('PlotAreaPRCardSqFt', val ? Number(val) : undefined);
+                  }}
+                  placeholder="Enter PR card area"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ============================================================= [BUILDING CONSTRUCTION DETAILS] ============================================================================================= */}
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Building Construction Details</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <Input
+                  label="Total Built Up Area SqFt"
+                  required
+                  error={errors.TotalBuiltUpAreaSqFt}
+                  type="text"
+                  value={formData.TotalBuiltUpAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('TotalBuiltUpAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  placeholder="Enter total built up area"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Total Residential Units"
+                  type="text"
+                  value={formData.TotalResidentialUnits || ''}
+                  onChange={(e) => {
+                    const val = filterNumbersWithDecimal(e.target.value);
+                    handleFieldChange('TotalResidentialUnits', val ? Number(val) : undefined);
+                  }}
+                  placeholder="Enter residential units"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Total Residential Carpet Area SqFt"
+                  type="text"
+                  value={formData.TotalResidentialCarpetAreaSqFt || ''}
+                  onChange={(e) => {
+                    const val = filterNumbersWithDecimal(e.target.value);
+                    handleFieldChange('TotalResidentialCarpetAreaSqFt', val ? Number(val) : undefined);
+                  }}
+                  placeholder="Enter residential carpet area"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Total Commercial Units"
+                  type="text"
+                  value={formData.TotalCommercialUnits || ''}
+                  onChange={(e) => {
+                    const val = filterNumbersWithDecimal(e.target.value);
+                    handleFieldChange('TotalCommercialUnits', val ? Number(val) : undefined);
+                  }}
+                  placeholder="Enter commercial units"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Total Commercial Carpet Area SqFt"
+                  type="text"
+                  value={formData.TotalCommercialCarpetAreaSqFt || ''}
+                  onChange={(e) => {
+                    const val = filterNumbersWithDecimal(e.target.value);
+                    handleFieldChange('TotalCommercialCarpetAreaSqFt', val ? Number(val) : undefined);
+                  }}
+                  placeholder="Enter commercial carpet area"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ============================================================= [BUILDING KEY CONTACT DETAILS] ============================================================================================= */}
+          <div className="space-y-4 pb-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Building Key Contact Details</h3>
+
+            </div>
+
+            <div className="space-y-6">
+              {contactDetailsList.map((contact, index) => (
+                <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-base font-medium text-blue-600">Contact Person :  {contact.ContactType}</h4>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="hidden">
+                      <Input
+                        label="Contact Type"
+                        type="text"
+                        value={contact.ContactType || ''}
+                        onChange={(e) => {
+                          const updatedList = [...contactDetailsList];
+                          updatedList[index] = { ...updatedList[index], ContactType: filterLetters(e.target.value) };
+                          setContactDetailsList(updatedList);
+                          if (contactDetailsErrors[index]?.ContactType) {
+                            setContactDetailsErrors(prev => ({
+                              ...prev,
+                              [index]: { ...prev[index], ContactType: '' }
+                            }));
+                          }
+                        }}
+                        placeholder="e.g., Chairman, Secretary"
+                        error={contactDetailsErrors[index]?.ContactType}
+                      />
+                    </div>
+                    <div>
+                      <Input
+                        label="Contact Name"
+                        type="text"
+                        value={contact.ContactName || ''}
+                        onChange={(e) => {
+                          const updatedList = [...contactDetailsList];
+                          updatedList[index] = { ...updatedList[index], ContactName: filterLetters(e.target.value) };
+                          setContactDetailsList(updatedList);
+                          if (contactDetailsErrors[index]?.ContactName) {
+                            setContactDetailsErrors(prev => ({
+                              ...prev,
+                              [index]: { ...prev[index], ContactName: '' }
+                            }));
+                          }
+                        }}
+                        placeholder="Enter contact name"
+                        error={contactDetailsErrors[index]?.ContactName}
+                      />
+                    </div>
+                    <div>
+                      <Input
+                        label="Mobile Number"
+                        type="text"
+                        value={contact.MobileNumber || ''}
+                        onChange={(e) => {
+                          const updatedList = [...contactDetailsList];
+                          updatedList[index] = { ...updatedList[index], MobileNumber: filterMobile(e.target.value) };
+                          setContactDetailsList(updatedList);
+                          if (contactDetailsErrors[index]?.MobileNumber) {
+                            setContactDetailsErrors(prev => ({
+                              ...prev,
+                              [index]: { ...prev[index], MobileNumber: '' }
+                            }));
+                          }
+                        }}
+                        placeholder="Enter mobile number"
+                        maxLength={10}
+                        error={contactDetailsErrors[index]?.MobileNumber}
+                      />
+                    </div>
+                    <div className="md:col-span-2 lg:col-span-1">
+                      <Input
+                        label="Email ID"
+                        type="text"
+                        value={contact.EmailId || ''}
+                        onChange={(e) => {
+                          const updatedList = [...contactDetailsList];
+                          updatedList[index] = { ...updatedList[index], EmailId: filterEmail(e.target.value) };
+
+                          setContactDetailsList(updatedList);
+
+                          if (contactDetailsErrors[index]?.EmailId) {
+
+                            setContactDetailsErrors(prev => ({
+
+                              ...prev,
+
+                              [index]: { ...prev[index], EmailId: '' }
+
+                            }));
+                          }
+                        }}
+                        placeholder="Enter email id"
+                        error={contactDetailsErrors[index]?.EmailId}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <BottomActionBar
+        cancelText="Cancel"
+        saveText={formData.BuildingId && formData.BuildingId > 0 ? "Update" : "Add"}
+        onCancel={() => navigate(-1)}
+        canAction={canAction}
+        onSave={() => {
+          handleSubmit();
+        }}
+        isLoading={isLoading}
+      />
+
+
+    </div>
+  );
+};
+
+export default BuildingDescription;

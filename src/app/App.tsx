@@ -199,7 +199,7 @@ function App() {
             <Route path="building/view" element={<ViewBuilding />} />
             <Route path="building/add/:buildingId?" element={<AddUpdateBuilding />} />
             <Route path="building/description/:buildingId?" element={<BuildingDescription />} />
-            <Route path="building/document/:buildingId?" element={<BuildingDocument />} />
+            <Route path="building/document" element={<BuildingDocument />} />
             <Route path="tenant" element={<Tenant />} />
             <Route path="tenant/view" element={<ViewTenant />} />
             <Route path="tenant/add/:tenantId?" element={<AddUpdateTenant />} />

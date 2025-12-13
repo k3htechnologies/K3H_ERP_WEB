@@ -6,8 +6,8 @@ export const BuildingApi = {
     PULL_BUILDING_DETAILS: '/BuildingDetails/PullBuildingDetails',
     ADD_UPDATE_BUILDING_DETAILS: '/BuildingDetails/AddUpdateBuildingDetails',
 
-    PULL_BUILDING_DOCUMENT: '/api/BuildingDocument/PullBuildingDocument',
-    ADD_UPDATE_BUILDING_DOCUMENT: '/api/BuildingDocument/AddUpdateBuildingDocument',
+    PULL_BUILDING_DOCUMENT: '/BuildingDocument/PullBuildingDocument',
+    ADD_UPDATE_BUILDING_DOCUMENT: '/BuildingDocument/AddUpdateBuildingDocument',
     DELETE_BUILDING_DOCUMENT: '/BuildingDocument/DeleteBuildingDocument',
 
 } as const

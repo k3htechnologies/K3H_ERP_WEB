@@ -5,7 +5,7 @@ import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type { BuildingData, FilterWithPaginationBuildingRequest } from '@/features/building/models/BuildingModel';
-import {buildingService } from '@/features/building/services/BuildingService';
+import { buildingService } from '@/features/building/services/BuildingService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -18,7 +18,7 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { useLocation, type Location, useNavigate } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
-import { FileText, Info, Trash2 } from 'lucide-react';
+import { FileText, Info } from 'lucide-react';
 
 var ProjectId = 1;
 
@@ -282,6 +282,50 @@ export const Building: React.FC = () => {
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
   //#endregion
 
+  //#region VIEW BUILDING DOCUMENT
+
+  const handleViewBuildingDocument = useCallback((row: BuildingData) => {
+    navigate('/building/document', {
+      state: {
+        editBuildingData: row,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm,
+          buildingId: row.BuildingId,
+          projectId: row.ProjectId,
+          buildingName: row.BuildingName,
+
+        },
+      },
+    });
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  //#endregion
+
+  //#region VIEW BUILDING DOCUMENT
+
+  const handleViewBuildingDescription = useCallback((row: BuildingData) => {
+    navigate('/building/description', {
+      state: {
+        editBuildingData: row,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm,
+          buildingId: row.BuildingId,
+          projectId: row.ProjectId,
+          buildingName: row.BuildingName,
+
+        },
+      },
+    });
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  //#endregion
+
   //#region TABLE COLUMN
   const buildingColumns = useMemo<TableColumn[]>(
     () => [
@@ -305,11 +349,6 @@ export const Building: React.FC = () => {
               </div>
             </div>
 
-            {canAction && (
-              <div className="flex items-center gap-2">
-                {/* reserved for future action buttons */}
-              </div>
-            )}
           </div>
         )
       },
@@ -323,7 +362,7 @@ export const Building: React.FC = () => {
           <TooltipText text={value || 'N/A'} maxWidth="220px" tooltipThreshold={22} />
         )
       },
-     {
+      {
         key: 'RoadWidth',
         label: 'Road Width',
         width: '14',
@@ -331,7 +370,7 @@ export const Building: React.FC = () => {
         align: 'left',
         render: value => value || 'N/A'
       },
-     
+
       {
         key: 'TotalPlotAreaSqFt',
         label: 'Total Plot Area (sqft)',
@@ -366,7 +405,7 @@ export const Building: React.FC = () => {
           <TooltipText text={value || 'N/A'} maxWidth="200px" tooltipThreshold={20} />
         )
       },
-       {
+      {
         key: 'DistrictName',
         label: 'District',
         width: '14',
@@ -406,7 +445,7 @@ export const Building: React.FC = () => {
         align: 'center',
         render: value => (value ? 'Yes' : 'No')
       },
-         {
+      {
         key: 'actions',
         label: 'Actions',
         width: '12',
@@ -420,7 +459,7 @@ export const Building: React.FC = () => {
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  // handleConfirmationDialogBoxOpen(row as VendorData)
+                   handleViewBuildingDescription(row)
                 }}
                 color='transparent'
                 isborderRadius
@@ -431,14 +470,14 @@ export const Building: React.FC = () => {
                 }}
                 title="Building Details"
               >
-                <Info  className="h-4 w-4" />
+                <Info className="h-4 w-4" />
               </Button>
 
               <Button
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  // handleConfirmationDialogBoxOpen(row as VendorData)
+                   handleViewBuildingDocument(row)
                 }}
                 color='transparent'
                 isborderRadius
@@ -449,16 +488,16 @@ export const Building: React.FC = () => {
                 }}
                 title="Building Document"
               >
-                <FileText   className="h-4 w-4" />
+                <FileText className="h-4 w-4" />
               </Button>
             </div>
           ) : null
 
-          
+
         )
       }
     ],
-    [canAction, handleViewBuildingDetails]
+    [canAction, handleViewBuildingDetails,handleViewBuildingDocument]
   );
   //#endregion
 

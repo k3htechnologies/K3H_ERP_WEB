@@ -19,8 +19,7 @@ import { useLocation, type Location, useNavigate } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { FileText, Info } from 'lucide-react';
-
-var ProjectId = 1;
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 export const Building: React.FC = () => {
   //#region STATE
@@ -33,6 +32,8 @@ export const Building: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   const { addToast } = useToast();
+
+  const { projectId } = useProject()
 
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -63,6 +64,9 @@ export const Building: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
+
+    if (!projectId) return;
+
     const incoming = location.state?.listState as
       | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string }
       | undefined;
@@ -89,13 +93,21 @@ export const Building: React.FC = () => {
     }
 
     loadBuildings(listState.page ?? 1, listState.filters ?? {});
-  }, [location.state]);
+  }, [location.state, projectId]);
 
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.();
     };
   }, [debouncedSearch]);
+
+  
+  useEffect(() => {
+    if (!projectId) return;
+    setFilters({});
+    setTempFilters({});
+  }, [projectId]);
+
   //#endregion
 
   //#region DATA LOAD
@@ -122,7 +134,7 @@ export const Building: React.FC = () => {
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           BuildingId: filterParams.BuildingId ? Number(filterParams.BuildingId) : undefined,
-          ProjectId: ProjectId,
+          ProjectId: projectId ?? undefined,
           BuildingName: filterParams.BuildingName?.trim() || undefined,
           CTSNumber: filterParams.CTSNumber?.trim() || undefined,
           SortBy: sortByParam
@@ -208,6 +220,7 @@ export const Building: React.FC = () => {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
+          ProjectId: projectId ?? undefined,
           BuildingName: filters.BuildingName?.trim() || undefined,
           CTSNumber: filters.CTSNumber?.trim() || undefined,
           SortBy: sortByParam,
@@ -459,7 +472,7 @@ export const Building: React.FC = () => {
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                   handleViewBuildingDescription(row)
+                  handleViewBuildingDescription(row)
                 }}
                 color='transparent'
                 isborderRadius
@@ -477,7 +490,7 @@ export const Building: React.FC = () => {
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                   handleViewBuildingDocument(row)
+                  handleViewBuildingDocument(row)
                 }}
                 color='transparent'
                 isborderRadius
@@ -497,7 +510,7 @@ export const Building: React.FC = () => {
         )
       }
     ],
-    [canAction, handleViewBuildingDetails,handleViewBuildingDocument]
+    [canAction, handleViewBuildingDetails, handleViewBuildingDocument]
   );
   //#endregion
 

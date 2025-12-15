@@ -33,8 +33,6 @@ export const Building: React.FC = () => {
 
   const { addToast } = useToast();
 
-  const { projectId } = useProject()
-
   const [searchTerm, setSearchTerm] = useState('');
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
@@ -59,6 +57,12 @@ export const Building: React.FC = () => {
       };
     };
   };
+
+  //#endregion
+
+  //#region PROJECT SELECTION GET ID
+
+  const { projectId } = useProject()
 
   //#endregion
 

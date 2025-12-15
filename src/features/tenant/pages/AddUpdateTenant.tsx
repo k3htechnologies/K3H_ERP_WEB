@@ -24,8 +24,8 @@ import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleS
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
 
-var ProjectId = 1;
 
 const initialFormState = (): AddUpdateTenantRequest => ({
   TenantId: 0,
@@ -156,6 +156,12 @@ const AddUpdateTenant: React.FC = () => {
 
   //#endregion
 
+  //#region PROJECT SELECTION GET ID
+
+  const { projectId } = useProject()
+
+  //#endregion
+
   //#region  TENANT APPLICANT
 
   //SET DROP DOWN 
@@ -261,7 +267,7 @@ const AddUpdateTenant: React.FC = () => {
           PageSize: 1,
           IsCheckPermission: false,
           TenantId: Number(tenantId),
-          ProjectId: ProjectId,
+          ProjectId: Number(projectId),
           BuildingId: preservedListState?.buildingId
         }
 
@@ -978,7 +984,7 @@ const AddUpdateTenant: React.FC = () => {
     // top-level tenant fields
     fd.append('TenantId', String(formData.TenantId ?? 0));
     fd.append('Uniquekey', String(formData.Uniquekey ?? ''));
-    fd.append('ProjectId', String(ProjectId ?? 0));
+    fd.append('ProjectId', String(projectId ?? 0));
     fd.append('BuildingId', String(preservedListState?.buildingId));
     fd.append('FlatNumber', formData.FlatNumber ?? '');
     fd.append('FlatCarpetAreaSqFt', String(formData.FlatCarpetAreaSqFt ?? ''));
@@ -1020,7 +1026,7 @@ const AddUpdateTenant: React.FC = () => {
       const prefix = `AddUpdateTenantApplicants[${index}]`;
 
       fd.append(`${prefix}.BuildingId`, String(preservedListState?.buildingId));
-      fd.append(`${prefix}.ProjectId`, String(app.ProjectId ?? ProjectId));
+      fd.append(`${prefix}.ProjectId`, String(app.ProjectId ?? projectId));
       fd.append(`${prefix}.ApplicantType`, String(app.ApplicantType ?? ''));
       fd.append(`${prefix}.TenantId`, String(app.TenantId ?? formData.TenantId ?? 0));
       fd.append(`${prefix}.TenantApplicantId`, String(app.TenantApplicantId ?? 0));

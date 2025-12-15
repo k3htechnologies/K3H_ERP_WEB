@@ -11,7 +11,8 @@ import { ArrowLeft, Edit } from 'lucide-react';
 import { Button } from '@/ui/components/forms';
 import { buildingService } from '@/features/building/services/BuildingService';
 import type { FilterWithPaginationBuildingRequest } from '../models/BuildingModel';
-var ProjectId = 1;
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
+
 export const ViewBuilding: React.FC = () => {
 
     //#region STATE MANAGEMENT
@@ -39,6 +40,13 @@ export const ViewBuilding: React.FC = () => {
     const preservedListState = location.state?.listState;
 
     //#endregion
+
+    //#region PROJECT SELECTION GET ID
+
+    const { projectId } = useProject()
+
+    //#endregion
+
     //#region Get BUILDING DATA FROM LOCATION STATE
     const incomingBuildingData = (location.state?.editBuildingData ?? null) as BuildingData | null;
     //#endregion
@@ -68,7 +76,7 @@ export const ViewBuilding: React.FC = () => {
                     PageSize: 1,
                     BuildingId: preservedListState.filters.BuildingId,
                     IsCheckPermission: false,
-                    ProjectId: ProjectId
+                    ProjectId: Number(projectId)
                 };
 
                 const response = await buildingService.apiCallPullBuilding(params);

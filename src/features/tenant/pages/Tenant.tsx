@@ -26,7 +26,6 @@ import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleS
 import { fetchBuildingDropdown } from '@/features/building/buildingDropdown';
 import { FileText } from 'lucide-react';
 
-var ProjectId = 1;
 export const Tenant: React.FC = () => {
   //#region STATE
   const [tenantList, setTenantList] = useState<TenantData[]>([]);
@@ -72,6 +71,12 @@ export const Tenant: React.FC = () => {
 
 
   //#endregion
+
+  //#region PROJECT SELECTION GET ID
+  
+    const { projectId } = useProject()
+  
+    //#endregion
 
   //#region INIT
   useEffect(() => {
@@ -148,7 +153,7 @@ export const Tenant: React.FC = () => {
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           TenantId: filterParams.TenantId ? Number(filterParams.TenantId) : undefined,
-          ProjectId: ProjectId,
+          ProjectId: projectId,
           BuildingId: buildingId,
           FlatNumber: filterParams.FlatNumber?.trim() || undefined,
           FlatConfiguration: filterParams.FlatConfiguration?.trim() || undefined,
@@ -330,13 +335,13 @@ export const Tenant: React.FC = () => {
             searchTerm,
             tenantId: row.TenantId,
             buildingId: row.BuildingId,
-            projectId: ProjectId,
+            projectId: projectId,
             tenantName: row.FlatNumber,
   
           },
         },
       });
-    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm, ProjectId]);
+    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm, projectId]);
     //#endregion
 
   //#region TABLE COLUMN

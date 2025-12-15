@@ -16,8 +16,7 @@ import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryS
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { LAND_OWNERSHIP_TYPE } from "@/core/constants";
 import Checkbox from "@/ui/components/forms/Checkbox";
-
-var ProjectId = 1;
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
 
 const initialFormState = (): AddUpdateBuildingRequest => ({
   BuildingId: null,
@@ -64,6 +63,12 @@ const AddUpdateBuilding: React.FC = () => {
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
+
+  //#endregion
+
+  //#region PROJECT SELECTION GET ID
+
+  const { projectId } = useProject()
 
   //#endregion
 
@@ -153,7 +158,7 @@ const AddUpdateBuilding: React.FC = () => {
           PageSize: 1,
           IsCheckPermission: false,
           BuildingId: Number(buildingId),
-          ProjectId:Number(ProjectId)
+          ProjectId: Number(projectId)
         }
 
         const response = await buildingService.apiCallPullBuilding(params);
@@ -167,7 +172,7 @@ const AddUpdateBuilding: React.FC = () => {
               ...prev,
               BuildingId: e.BuildingId ?? prev.BuildingId,
               Uniquekey: e.Uniquekey ?? prev.Uniquekey,
-              ProjectId: e.ProjectId ?? prev.ProjectId,
+              ProjectId: projectId,
               BuildingName: e.BuildingName ?? prev.BuildingName,
               CTSNumber: e.CTSNumber ?? prev.CTSNumber,
               TotalPlotAreaSqFt: e.TotalPlotAreaSqFt ?? prev.TotalPlotAreaSqFt,
@@ -261,7 +266,7 @@ const AddUpdateBuilding: React.FC = () => {
     return {
       BuildingId: formData.BuildingId,
       Uniquekey: formData.Uniquekey,
-      ProjectId: formData.ProjectId,
+      ProjectId: projectId,
       BuildingName: formData.BuildingName,
       CTSNumber: formData.CTSNumber,
       TotalPlotAreaSqFt: formData.TotalPlotAreaSqFt,

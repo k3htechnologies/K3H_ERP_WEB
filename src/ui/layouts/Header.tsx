@@ -13,6 +13,7 @@ import * as E from 'fp-ts/Either';
 import useToast from '@/core/hooks/useToast'
 import { COLORS } from '@/core/constants'
 import { SinglePageSelection } from '../components/DropDown/SinglePageSelection'
+import { useProject } from '@/features/projectMaster/context/ProjectContext'
 
 interface HeaderProps {
     isSidebarOpen: boolean
@@ -46,6 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
 
     // PAGINATION STATE
     const { pagination, setPagination } = usePagination(20);
+
 
     //#region HEADER BAR EMPLOYEE PROFILE ICON CLICK
     const handleEmployeeProfileClick = () => {
@@ -165,9 +167,7 @@ export const Header: React.FC<HeaderProps> = ({
     //#endregion
 
     //#region Project Selection
-    const [selectedProject, setSelectedProject] = useState<number | string | null>(
-        emp?.ProjectData?.[0]?.ProjectId ?? null
-    );
+    const { projectId, setProjectId } = useProject()
     //#endregion
     return (
         <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex-shrink-0 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40">
@@ -196,15 +196,18 @@ export const Header: React.FC<HeaderProps> = ({
                     <SinglePageSelection
                         required={false}
                         size="md"
-                        options={(emp?.ProjectData ?? []).map(opt => ({ label: opt.ProjectName, value: opt.ProjectId }))}
-                        value={selectedProject ?? undefined}
+                        options={(emp?.ProjectData ?? []).map(opt => ({
+                            label: opt.ProjectName,
+                            value: opt.ProjectId
+                        }))}
+                        value={projectId ?? undefined}
                         onChange={(value: string | number) => {
-                            setSelectedProject(value);
+                            setProjectId(Number(value))
                         }}
                         placeholder="Select Project"
-                        selectedTextColor='#135BEC'
-                        
+                        selectedTextColor="#135BEC"
                     />
+
 
                 </div>
                 {/* Notifications - Hidden on small mobile */}

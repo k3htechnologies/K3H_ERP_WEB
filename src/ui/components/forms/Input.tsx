@@ -99,6 +99,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         cursor: 'wait',
         opacity: 0.8,
       }),
+      ...(props.readOnly && !disabled && {
+        cursor: 'pointer',
+      }),
     }
 
     const focusStyles = {

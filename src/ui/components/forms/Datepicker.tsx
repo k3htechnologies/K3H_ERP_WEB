@@ -51,24 +51,35 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
 
   // 'bottom' means popup below input (default), 'top' means popup above input
   const [openPosition, setOpenPosition] = useState<'bottom' | 'top'>('bottom')
+  
+  // State to track popup position for fixed positioning
+  const [popupPosition, setPopupPosition] = useState<{ top?: number; bottom?: number; left?: number; right?: number }>({})
 
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      if (
+        wrapperRef.current && 
+        !wrapperRef.current.contains(target) &&
+        popupRef.current &&
+        !popupRef.current.contains(target)
+      ) {
         setIsOpen(false)
       }
     }
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setIsOpen(false)
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('keydown', handleKey)
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleKey)
+    }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('keydown', handleKey)
     }
-  }, [])
+  }, [isOpen])
 
   // Keep state in sync with external value
   useEffect(() => {
@@ -141,65 +152,189 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
 
   const displayValue = selectedDate ? formatDdMmYyyy(selectedDate) : ''
 
-  // Decide open position (above/below) whenever popup open state changes or on resize/scroll
+  // Decide open position (above/below) and calculate fixed positioning
   const computeAndSetPosition = () => {
     const wrapper = wrapperRef.current
     const popup = popupRef.current
     if (!wrapper) return
-    // If popup not rendered yet, assume bottom; will re-evaluate after next paint
-    if (!popup) {
-      setOpenPosition('bottom')
-      return
-    }
-
+    
     const rect = wrapper.getBoundingClientRect()
-    const popupHeight = popup.offsetHeight || 240 // fallback estimate
+    const popupHeight = popup?.offsetHeight || 280 // fallback estimate (increased for better calculation)
     const spaceBelow = window.innerHeight - rect.bottom
     const spaceAbove = rect.top
 
-    // prefer below if enough, otherwise above if enough; otherwise choose the one with more space
+    // Determine position (above or below)
+    let position: 'bottom' | 'top' = 'bottom'
     if (spaceBelow >= popupHeight + 8) {
-      setOpenPosition('bottom')
+      position = 'bottom'
     } else if (spaceAbove >= popupHeight + 8) {
-      setOpenPosition('top')
+      position = 'top'
     } else {
-      setOpenPosition(spaceBelow >= spaceAbove ? 'bottom' : 'top')
+      position = spaceBelow >= spaceAbove ? 'bottom' : 'top'
     }
+
+    setOpenPosition(position)
+    
+    // Calculate fixed positioning relative to viewport
+    const popupWidth = 320 // Fixed width of the popup
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+    
+    // Calculate horizontal position - try to align with input's right edge
+    let leftPos: number | undefined = undefined
+    let rightPos: number | undefined = undefined
+    
+    // Try to align right edge of popup with right edge of input
+    const inputRight = rect.right
+    const rightSpace = viewportWidth - inputRight
+    
+    if (rightSpace >= popupWidth) {
+      // Enough space on the right, align right edges
+      rightPos = viewportWidth - inputRight
+    } else {
+      // Not enough space on right, try left alignment
+      const inputLeft = rect.left
+      if (inputLeft >= popupWidth) {
+        // Enough space on left, align left edges
+        leftPos = inputLeft
+      } else {
+        // Not enough space on either side, center or use available space
+        leftPos = Math.max(8, Math.min(inputLeft, viewportWidth - popupWidth - 8))
+      }
+    }
+    
+    // Calculate vertical position
+    let topPos: number | undefined = undefined
+    let bottomPos: number | undefined = undefined
+    
+    if (position === 'bottom') {
+      topPos = rect.bottom + 8
+      // Ensure it doesn't go below viewport
+      if (topPos + popupHeight > viewportHeight) {
+        topPos = Math.max(8, viewportHeight - popupHeight - 8)
+      }
+    } else {
+      bottomPos = viewportHeight - rect.top + 8
+      // Ensure it doesn't go above viewport
+      if (bottomPos + popupHeight > viewportHeight) {
+        bottomPos = undefined
+        topPos = 8
+      }
+    }
+    
+    setPopupPosition({
+      top: topPos,
+      bottom: bottomPos,
+      left: leftPos,
+      right: rightPos
+    })
   }
 
   // Compute position when opening
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || !wrapperRef.current) return
 
-    // run after next paint so popupRef.offsetHeight is accurate
-    const raf = requestAnimationFrame(() => {
-      computeAndSetPosition()
-    })
+    // Initial position calculation
+    const updatePosition = () => {
+      // Use double RAF to ensure popup is rendered and measured
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          computeAndSetPosition()
+        })
+      })
+    }
+
+    updatePosition()
 
     // also recompute on scroll/resize while open
-    const onScroll = () => computeAndSetPosition()
+    const onScroll = () => {
+      if (wrapperRef.current) {
+        computeAndSetPosition()
+      }
+    }
     window.addEventListener('resize', onScroll, { passive: true })
-    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('scroll', onScroll, { passive: true, capture: true })
 
     return () => {
-      cancelAnimationFrame(raf)
       window.removeEventListener('resize', onScroll)
-      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('scroll', onScroll, { capture: true })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, currentMonth, selectedDate]) // re-check when calendar size/content might change
 
-  // Also recompute when popup first mounts (popupRef becomes available)
-  useEffect(() => {
-    if (!isOpen) return
-    computeAndSetPosition()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [popupRef.current])
-
   // Toggle open with disabled guard
   const handleToggleOpen = () => {
     if (disabled) return
-    setIsOpen(prev => !prev)
+    const willOpen = !isOpen
+    setIsOpen(willOpen)
+    
+    // If opening, calculate position immediately
+    if (willOpen && wrapperRef.current) {
+      // Use setTimeout to ensure state update is processed
+      setTimeout(() => {
+        const rect = wrapperRef.current?.getBoundingClientRect()
+        if (rect) {
+          const popupHeight = 280
+          const spaceBelow = window.innerHeight - rect.bottom
+          const spaceAbove = rect.top
+          
+          let position: 'bottom' | 'top' = 'bottom'
+          if (spaceBelow >= popupHeight + 8) {
+            position = 'bottom'
+          } else if (spaceAbove >= popupHeight + 8) {
+            position = 'top'
+          } else {
+            position = spaceBelow >= spaceAbove ? 'bottom' : 'top'
+          }
+          
+          setOpenPosition(position)
+          
+          const popupWidth = 320
+          const viewportWidth = window.innerWidth
+          const viewportHeight = window.innerHeight
+          
+          let leftPos: number | undefined = undefined
+          let rightPos: number | undefined = undefined
+          
+          const inputRight = rect.right
+          const rightSpace = viewportWidth - inputRight
+          
+          if (rightSpace >= popupWidth) {
+            rightPos = viewportWidth - inputRight
+          } else {
+            const inputLeft = rect.left
+            if (inputLeft >= popupWidth) {
+              leftPos = inputLeft
+            } else {
+              leftPos = Math.max(8, Math.min(inputLeft, viewportWidth - popupWidth - 8))
+            }
+          }
+          
+          let topPos: number | undefined = undefined
+          let bottomPos: number | undefined = undefined
+          
+          if (position === 'bottom') {
+            topPos = rect.bottom + 8
+            if (topPos + popupHeight > viewportHeight) {
+              topPos = Math.max(8, viewportHeight - popupHeight - 8)
+            }
+          } else {
+            bottomPos = viewportHeight - rect.top + 8
+            if (bottomPos + popupHeight > viewportHeight) {
+              bottomPos = undefined
+              topPos = 8
+            }
+          }
+          
+          setPopupPosition({
+            top: topPos,
+            bottom: bottomPos,
+            left: leftPos,
+            right: rightPos
+          })
+        }
+      }, 0)
+    }
   }
 
   return (
@@ -225,15 +360,12 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
         <div
           ref={popupRef}
           style={{
-            position: 'absolute',
-            // If openPosition is bottom, place below: top = 100% + margin
-            // If openPosition is top, place above: bottom = 100% + margin
-            top: openPosition === 'bottom' ? '100%' : undefined,
-            bottom: openPosition === 'top' ? '100%' : undefined,
-            marginTop: openPosition === 'bottom' ? 8 : undefined,
-            marginBottom: openPosition === 'top' ? 8 : undefined,
-            right: 0,
-            zIndex: 50,
+            position: 'fixed',
+            top: popupPosition.top !== undefined ? `${popupPosition.top}px` : undefined,
+            bottom: popupPosition.bottom !== undefined ? `${popupPosition.bottom}px` : undefined,
+            left: popupPosition.left !== undefined ? `${popupPosition.left}px` : undefined,
+            right: popupPosition.right !== undefined ? `${popupPosition.right}px` : undefined,
+            zIndex: 9999,
             width: 320,
             backgroundColor: theme.colors.background,
             borderRadius: theme.borderRadius.lg,

@@ -39,7 +39,22 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
             if (params.EmployeeId) queryParams.append('EmployeeId', params.EmployeeId.toString());
             if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.BranchName?.trim()) queryParams.append('BranchName', params.BranchName.trim());
-            if (params.DepartmentName?.trim()) queryParams.append('DepartmentName', params.DepartmentName.trim());
+            if (params.DepartmentName?.trim()) {
+                // Decode if already URL-encoded (e.g., "Information+Technology+%28IT%29" -> "Information Technology (IT)")
+                // URLSearchParams will then encode it properly for the URL
+                let departmentName = params.DepartmentName.trim();
+                try {
+                    // Check if it looks like URL-encoded (contains % or +)
+                    if (departmentName.includes('%') || departmentName.includes('+')) {
+                        // Replace + with space first, then decode
+                        departmentName = decodeURIComponent(departmentName.replace(/\+/g, ' '));
+                    }
+                } catch (e) {
+                    // If decoding fails, use original value (it's probably not encoded)
+                    departmentName = params.DepartmentName.trim();
+                }
+                queryParams.append('DepartmentName', departmentName);
+            }
             if (params.DesignationName?.trim()) queryParams.append('DesignationName', params.DesignationName.trim());
             if (params.EmailId?.trim()) queryParams.append('EmailId', params.EmailId.trim());
             if (params.MobileNumber?.trim()) queryParams.append('MobileNumber', params.MobileNumber.trim());

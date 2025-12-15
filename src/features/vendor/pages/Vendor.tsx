@@ -374,55 +374,55 @@ export const Vendor: React.FC = () => {
         align: 'center',
         render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       },
-      {
-        key: 'actions',
-        label: 'Actions',
-        width: '12',
-        fixed: 'right',
-        align: 'center',
-        render: (_value, row) => (
-          canAction ? (
-            <div className="flex items-center justify-center gap-2">
-              <Button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleEditVendor(row as VendorData);
-                }}
-                color='transparent'
-                isborderRadius
-                size='sm'
-                title="Edit Vendor"
-                style={{
-                  color: '#0B3251',
-                  padding: '4px 8px'
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleConfirmationDialogBoxOpen(row as VendorData)
-                }}
-                color='transparent'
-                isborderRadius
-                size='sm'
-                style={{
-                  color: 'red',
-                  padding: '4px 8px'
-                }}
-                title="Delete Vendor"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : null
-        )
-      }
+      // {
+      //   key: 'actions',
+      //   label: 'Actions',
+      //   width: '12',
+      //   fixed: 'right',
+      //   align: 'center',
+      //   render: (_value, row) => (
+      //     canAction ? (
+      //       <div className="flex items-center justify-center gap-2">
+      //         <Button
+      //           onClick={(e) => {
+      //             e.preventDefault()
+      //             e.stopPropagation()
+      //             handleEditVendor(row as VendorData);
+      //           }}
+      //           color='transparent'
+      //           isborderRadius
+      //           size='sm'
+      //           title="Edit Vendor"
+      //           style={{
+      //             color: '#0B3251',
+      //             padding: '4px 8px'
+      //           }}
+      //           onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')}
+      //           onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')}
+      //         >
+      //           <Edit className="h-4 w-4" />
+      //         </Button>
+      //         <Button
+      //           onClick={(e) => {
+      //             e.preventDefault()
+      //             e.stopPropagation()
+      //             handleConfirmationDialogBoxOpen(row as VendorData)
+      //           }}
+      //           color='transparent'
+      //           isborderRadius
+      //           size='sm'
+      //           style={{
+      //             color: 'red',
+      //             padding: '4px 8px'
+      //           }}
+      //           title="Delete Vendor"
+      //         >
+      //           <Trash2 className="h-4 w-4" />
+      //         </Button>
+      //       </div>
+      //     ) : null
+      //   )
+      // }
     ],
     [canAction, handleViewVendorDetails, handleEditVendor, handleConfirmationDialogBoxOpen]
   )

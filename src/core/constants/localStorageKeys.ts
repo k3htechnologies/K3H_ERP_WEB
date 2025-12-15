@@ -30,4 +30,5 @@ export const LOCAL_STORAGE_KEYS = {
     PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectRERADocumentCategoryMaster.selectedColumns',
     MENU_MODULE: 'menuModule',
     COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER: 'country_state_district_city_village_data',
+    OUTDOOR_SELECTED_COLUMNS:'outdoor.selectedColumns'
 } as const

@@ -34,9 +34,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   const [dropdownLabels, setDropdownLabels] = useState<{
     departmentName?: string;
   }>({});
-  const [accompaniedByInitialValues, setAccompaniedByInitialValues] = useState<{ label: string; value: string | number }[]>([]);
   const [selectedDepartmentName, setSelectedDepartmentName] = useState<string>("");
-  const [accompaniedOptions, setAccompaniedOptions] = useState<DropdownOptions[]>([]);
   const [selectedAccompaniedValues, setSelectedAccompaniedValues] = useState<(string | number)[]>([]);
   const hasFetchedOutDoor = useRef(false);
 
@@ -155,46 +153,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
             }));
           }
 
-          if (outdoor.AccompaniedById) {
-            const employeeIds = outdoor.AccompaniedById.split(',').map((id: string) => id.trim()).filter((id: string) => id);
-            if (employeeIds.length > 0) {
-              const fetchEmployeeNames = async () => {
-                try {
-                  const uniqueIds = Array.from(new Set(employeeIds));
-                  const employeePromises = uniqueIds.map(async (id: string) => {
-                    try {
-                      const response = await employeeMasterService.apiCallPullEmployeeMaster({
-                        PageNumber: 1,
-                        PageSize: 1,
-                        EmployeeId: Number(id),
-                        IsCheckPermission: false,
-                      });
-                      if (E.isRight(response) && response.right.Data && response.right.Data.length > 0) {
-                        const employee = response.right.Data[0];
-                        return {
-                          label: employee.FullName || id,
-                          value: String(employee.EmployeeId || id),
-                        };
-                      }
-                    } catch {
-                      // Silently fail for individual employee fetch
-                    }
-                    return { label: id, value: id };
-                  });
-                  const employeeValues = await Promise.all(employeePromises);
-                  setAccompaniedByInitialValues(employeeValues);
-                } catch (error) {
-                  console.error("Error fetching employee names:", error);
-                  setAccompaniedByInitialValues(
-                    employeeIds.map((id: string) => ({ label: id, value: id }))
-                  );
-                }
-              };
-              fetchEmployeeNames();
-            }
-          } else {
-            setAccompaniedByInitialValues([]);
-          }
         } else {
           addToast({ type: "error", title: "Outdoor record not found" });
         }
@@ -244,7 +202,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       });
       setSelectedTime("00:00");
       setSelectedDepartmentName("");
-      setAccompaniedByInitialValues([]);
       setDropdownLabels({});
       initialVisitingCardUrlsRef.current = [];
       setRemovedVisitingCardUrls([]);
@@ -267,37 +224,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
     [selectedDepartmentName] 
   );
 
-  const loadAccompaniedOptions = useCallback(async () => {
-    try {
-      const response = await fetchEmployeeMasterDropdownWithDepartment(1, {});
-      const items = (response?.itemList ?? []).map((opt: { label: string; value: string | number }) => ({
-        label: opt.label ?? String(opt.value),
-        value: opt.value,
-      }));
-      setAccompaniedOptions(items);
-    } catch (error) {
-      console.error("Error loading accompanied options:", error);
-    }
-  }, [fetchEmployeeMasterDropdownWithDepartment]);
-
-  useEffect(() => {
-    loadAccompaniedOptions();
-  }, [loadAccompaniedOptions]);
-
-  useEffect(() => {
-    if (accompaniedByInitialValues.length === 0) return;
-    setAccompaniedOptions(prev => {
-      const existing = new Set(prev.map(opt => String(opt.value)));
-      const merged = [...prev];
-      accompaniedByInitialValues.forEach(item => {
-        if (!existing.has(String(item.value))) {
-          merged.push({ label: item.label, value: item.value });
-        }
-      });
-      return merged;
-    });
-  }, [accompaniedByInitialValues]);
-
   const handleDepartmentSelected = useCallback((item: { label: string; value: string | number | null }) => {
     const departmentId = item.value ? Number(item.value) : 0;
     const departmentName = item.label || "";
@@ -317,6 +243,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       }
       return prev;
     });
+    // Options will reload automatically via useEffect when selectedDepartmentName changes
   }, [handleFieldChange]);
 
   const validateForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
@@ -497,9 +424,10 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
             <div className="space-y-1">
               <MultiSelectPagination
+                key={`accompanied-by-${outdoorFormData.DepartmentId}-${selectedDepartmentName}`}
                 label="Accompanied By" 
                 required
-                options={accompaniedOptions}
+                dataFetchCallBack={fetchEmployeeMasterDropdownWithDepartment}
                 selectedValues={selectedAccompaniedValues}
                 onChange={handleAccompaniedChange}
                 disabled={!outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}

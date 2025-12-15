@@ -226,7 +226,7 @@ export const ViewVendor: React.FC = () => {
                         <MultiImageViewer
                           images={[editVendorData.AadharCardURL]}
                           title="Aadhar Card"
-                          size="large-half"
+                          size="md"
                         />
                       </div>
                     </div>
@@ -238,7 +238,7 @@ export const ViewVendor: React.FC = () => {
                         <MultiImageViewer
                           images={[editVendorData.PanCardURL]}
                           title="PAN Card"
-                          size="large-half"
+                          size="md"
                         />
                       </div>
                     </div>
@@ -250,7 +250,7 @@ export const ViewVendor: React.FC = () => {
                         <MultiImageViewer
                           images={[editVendorData.GSTCertificateURL]}
                           title="GST Certificate"
-                          size="large-half"
+                          size="md"
                         />
                       </div>
                     </div>

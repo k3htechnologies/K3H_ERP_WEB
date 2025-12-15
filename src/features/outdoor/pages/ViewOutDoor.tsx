@@ -8,6 +8,7 @@ import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { ArrowLeft, Edit } from 'lucide-react';
 import { Button } from '@/ui/components/forms';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
 
 export const ViewOutDoor: React.FC = () => {
   const [isLoading] = useState(false);
@@ -159,9 +160,9 @@ export const ViewOutDoor: React.FC = () => {
               <h4 className="font-semibold mb-3">Visiting Card</h4>
               <div className="flex justify-center">
                 <MultiImageViewer
-                  images={[editOutDoorData.VisitingCardURL]}
+                  images={parseDocumentUrls(editOutDoorData.VisitingCardURL)}
                   title="Visiting Card"
-                  size="large-half"
+                  size="xl"
                 />
               </div>
             </div>

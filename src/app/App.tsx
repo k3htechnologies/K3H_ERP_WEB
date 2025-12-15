@@ -39,10 +39,10 @@ import ViewProjectMaster from '@/features/projectMaster/pages/ViewProjectMaster'
 import AddUpdateProjectMaster from '@/features/projectMaster/pages/AddUpdateProjectMaster';
 import { AddUpdateAssetMaster } from '@/features/assetMaster/pages/AddUpdateAssetMaster';
 import ViewAssetMaster from '@/features/assetMaster/pages/ViewAssetMaster';
-import  { AddUpdateWeekOffMaster } from '@/features/weekOffMaster/pages/AddUpdateWeekOffMaster';
-import AddUpdateAssetMappingMaster  from '@/features/assetMappingMaster/pages/AddUpdateAssetMappingMaster';
-import AddUpdateDeductionMaster  from '@/features/deductionMaster/pages/AddUpdateDeductionMaster';
-import AddUpdateShiftMaster  from '@/features/shiftMaster/pages/AddUpdateShiftMaster';
+import { AddUpdateWeekOffMaster } from '@/features/weekOffMaster/pages/AddUpdateWeekOffMaster';
+import AddUpdateAssetMappingMaster from '@/features/assetMappingMaster/pages/AddUpdateAssetMappingMaster';
+import AddUpdateDeductionMaster from '@/features/deductionMaster/pages/AddUpdateDeductionMaster';
+import AddUpdateShiftMaster from '@/features/shiftMaster/pages/AddUpdateShiftMaster';
 import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
 import ViewAssetMappingMaster from '@/features/assetMappingMaster/pages/ViewAssetMappingMaster';
 import ViewShiftMaster from '@/features/shiftMaster/pages/ViewShiftMaster';
@@ -56,10 +56,13 @@ import ProjectRERADocumentCategoryMaster from '@/features/projectRERADocumentCat
 import ProjectRERADocument from '@/features/projectRERADocument/pages/ProjectRERADocument';
 import ViewCompantMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
 import Inventory from '@/features/inventory/pages/Inventory';
-import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
 import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor';
 import { OutDoor } from '@/features/outdoor/pages/OutDoor';
 import { ViewVendor } from '@/features/vendor/pages/ViewVendor';
+import { CompOff } from '@/features/compOff/pages/compOff';
+import Leave from '@/features/leave/pages/Leave';
+import LeaveCreditDebit from '@/features/leaveCreditDebit/pages/LeaveCreditDebit';
+import AddUpdateLeaveCreditDebit from '@/features/leaveCreditDebit/pages/AddUpdateLeaveCreditDebit';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -109,6 +112,11 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
           <Route path="companyMaster/addCompany" element={<AddCompany />} />
+          <Route path="compoff" element={<CompOff />} />
+          <Route path="leave" element={<Leave />} />
+          <Route path="leaveCreditDebit" element={<LeaveCreditDebit />} />
+          <Route path="AddUpdateleaveCreditDebit" element={<AddUpdateLeaveCreditDebit />} />
+
 
           {/* Protected Routes with Layout */}
           <Route
@@ -130,6 +138,7 @@ function App() {
             <Route path="employeeMaster/add/:employeeId??" element={<AddUpdateEmployeeMaster />} />
             <Route path="/outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
             <Route path="outdoor" element={<OutDoor />} />
+            <Route path="compoff" element={<CompOff />} />
             <Route path="companyMaster" element={<CompanyMaster />} />
             <Route path="companyMaster/view" element={<ViewCompantMaster />} />
             <Route path="companyMaster/add/:companyId?" element={<AddCompany />} />
@@ -141,10 +150,10 @@ function App() {
             <Route path="assetMaster/view" element={<ViewAssetMaster />} />
             <Route path="assetMaster/add/:AssetMasterId??" element={<AddUpdateAssetMaster />} />
             <Route path="assetMappingMaster" element={<AssetMappingMaster />} />
-            <Route path="assetMappingMaster/view" element={< ViewAssetMappingMaster/>} />
+            <Route path="assetMappingMaster/view" element={< ViewAssetMappingMaster />} />
             <Route path="assetMappingMaster/add/:AssetMasterMappingId?" element={<AddUpdateAssetMappingMaster />} />
             <Route path="deductionMaster" element={<DeductionMaster />} />
-            <Route path="deductionMaster/view" element={< ViewDeductionMaster/>} />
+            <Route path="deductionMaster/view" element={< ViewDeductionMaster />} />
             <Route path="deductionMaster/add/:DeductionMasterId?" element={<AddUpdateDeductionMaster />} />
             <Route path="earningMaster" element={<EarningMaster />} />
             <Route path="holidayMaster" element={<HolidayMaster />} />
@@ -152,7 +161,7 @@ function App() {
             <Route path="leaveEncashmentMaster" element={<LeaveEncashmentMaster />} />
             <Route path="leaveTypeMaster" element={<LeaveTypeMaster />} />
             <Route path="shiftMaster" element={<ShiftMaster />} />
-            <Route path="shiftMaster/view" element={< ViewShiftMaster/>} />
+            <Route path="shiftMaster/view" element={< ViewShiftMaster />} />
             <Route path="shiftMaster/add/:ShiftManagementMasterId?" element={<AddUpdateShiftMaster />} />
             <Route path="shiftMappingMaster" element={<ShiftMappingMaster />} />
             <Route path="weekOffMaster" element={<WeekOffMasterMaster />} />
@@ -160,13 +169,13 @@ function App() {
             <Route path="WeekOffMaster/add/:WeekOffMasterId??" element={<AddUpdateWeekOffMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
             <Route path="vendor" element={<Vendor />} />
-            <Route path="vendor/view" element={<ViewVendor/>} />
+            <Route path="vendor/view" element={<ViewVendor />} />
             <Route path="projectMaster" element={<ProjectMaster />} />
             <Route path="projectMaster/view" element={<ViewProjectMaster />} />
             <Route path="/projectMaster/add/:projectId??" element={<AddUpdateProjectMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
-            <Route path="materialMaster" element={<MaterialMaster  />} />
-            <Route path="inventory" element={<Inventory></Inventory>}/>
+            <Route path="materialMaster" element={<MaterialMaster />} />
+            <Route path="inventory" element={<Inventory></Inventory>} />
             <Route path="subMaterialMaster" element={<SubMaterialMaster />} />
             <Route path="uomMaster" element={<UomMaster />} />
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />

@@ -575,13 +575,13 @@ export const DepartmentMaster: React.FC = () => {
     }
   };
 
+
   const handleAddDepartmentModal = () => {
     setEditingDepartmentMasterData(null);
     setFormData(initialFormState());
     setErrors({});
     setIsAddUpdateModalOpen(true);
   }
-
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddDepartmentMasterForm = (): {
 

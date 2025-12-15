@@ -137,6 +137,16 @@ export const convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd = (date?: string | null) => {
 };
 
 /**
+ * Format date for display: "DD Month YYYY" or "-" if invalid
+ * @param value - Date string in YYYY-MM-DD format or null/undefined
+ * @returns Formatted date string or "-"
+ */
+export const formatDateDisplay = (value?: string | null): string => {
+  const formatted = formatDate_dd_MonthName_yy(value || '');
+  return formatted || '-';
+};
+
+/**
  * Extract time from datetime string and format to "HH:MM AM/PM" format
  * @param dateTimeString - DateTime string in ISO format (e.g., "2025-12-03T15:26:50.513" or "2025-12-03T15:26:50.513Z")
  * @returns Formatted time string (e.g., "3:26 PM") or empty string if invalid

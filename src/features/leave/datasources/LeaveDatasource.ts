@@ -1,0 +1,107 @@
+import baseClient from '@/core/config/baseClient';
+import { TokenExpiredException } from '@/core/config/baseClientexceptions';
+import { LeaveApi } from '@/features/leave/api/LeaveApi';
+import type {
+  AddUpdateLeaveRequest,
+  DeleteLeaveRequest,
+  FilterWithPaginationLeaveRequest,
+  LeaveDeleteResponse,
+  LeaveListResponse,
+  LeaveSaveResponse,
+} from '@/features/leave/models/LeaveModel';
+
+export abstract class LeaveDatasource {
+  abstract pullLeave(params: FilterWithPaginationLeaveRequest, signal?: AbortSignal): Promise<LeaveListResponse>;
+  abstract addUpdateLeave(data: AddUpdateLeaveRequest): Promise<LeaveSaveResponse>;
+  abstract deleteLeave(params: DeleteLeaveRequest): Promise<LeaveDeleteResponse>;
+}
+
+export class LeaveDatasourceImpl implements LeaveDatasource {
+  private get k3hHttpClient() {
+    return baseClient;
+  }
+
+  async pullLeave(params: FilterWithPaginationLeaveRequest, signal?: AbortSignal): Promise<LeaveListResponse> {
+    try {
+      const queryParams = new URLSearchParams({
+        PageSize: (params.PageSize ?? 10).toString(),
+        PageNumber: (params.PageNumber ?? 1).toString(),
+      });
+
+      if (params.LeaveId) queryParams.append('LeaveId', params.LeaveId.toString());
+      if (params.LeaveTypeMasterId) queryParams.append('LeaveTypeMasterId', params.LeaveTypeMasterId.toString());
+      if (params.LeaveType?.trim()) queryParams.append('LeaveType', params.LeaveType.trim());
+      if (params.StartDate?.trim()) queryParams.append('StartDate', params.StartDate.trim());
+      if (params.EndDate?.trim()) queryParams.append('EndDate', params.EndDate.trim());
+      if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
+      if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+
+      const response = await this.k3hHttpClient.getRequestWithAuthentication(
+        `${LeaveApi.PULL}?${queryParams.toString()}`,
+        { signal },
+      );
+      return response;
+    } catch (error: any) {
+      console.error('ERROR: PULL LEAVE :', error);
+      if (error === TokenExpiredException) {
+        await this.pullLeave(params);
+      }
+      throw error;
+    }
+  }
+
+  async addUpdateLeave(params: AddUpdateLeaveRequest): Promise<LeaveSaveResponse> {
+    try {
+      const formData = new FormData();
+
+      formData.append('LeaveId', String(params.LeaveId ?? 0));
+      formData.append('Uniquekey', params.Uniquekey ?? '');
+      formData.append('LeaveTypeMasterId', String(params.LeaveTypeMasterId ?? 0));
+      formData.append('StartDate', params.StartDate ?? '');
+      formData.append('EndDate', params.EndDate ?? '');
+      formData.append('StartDateLeaveDuration', params.StartDateLeaveDuration ?? '');
+      formData.append('EndDateLeaveDuration', params.EndDateLeaveDuration ?? '');
+      formData.append('Reason', params.Reason ?? '');
+
+      if (params.LeaveDocumentFiles && params.LeaveDocumentFiles.length > 0) {
+        params.LeaveDocumentFiles.forEach((file) => formData.append('LeaveDocumentURL', file));
+      }
+
+      const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
+        LeaveApi.ADD_UPDATE,
+        formData,
+      );
+      return response;
+    } catch (error) {
+      console.error('ERROR: ADD UPDATE LEAVE :', error);
+      if (error === TokenExpiredException) {
+        await this.addUpdateLeave(params);
+      }
+      throw error;
+    }
+  }
+
+  async deleteLeave(params: DeleteLeaveRequest): Promise<LeaveDeleteResponse> {
+    try {
+      const queryParams = new URLSearchParams({
+        LeaveId: (params.LeaveId ?? 0).toString(),
+        Uniquekey: params.Uniquekey ?? '',
+      });
+
+      const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+        `${LeaveApi.DELETE}?${queryParams.toString()}`,
+      );
+      return response;
+    } catch (error) {
+      console.error('ERROR: DELETE LEAVE :', error);
+      if (error === TokenExpiredException) {
+        await this.deleteLeave(params);
+      }
+      throw error;
+    }
+  }
+}
+
+
+
+

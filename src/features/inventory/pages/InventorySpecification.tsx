@@ -1,16 +1,17 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import { Input, Button } from '@/ui/components/forms';
 import { TextArea } from '@/ui/components/forms/Textarea';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { useLocation } from 'react-router-dom';
-import type { InventoryFlatData } from '../models/InventoryMasterModel';
+import type { InventoryFlatData, InventoryFlatSpecificationDatum } from '../models/InventoryMasterModel';
 import { InventoryService } from '../services/InventoryServices';
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
 import { ToastContainer } from "@/ui/components/Toast";
 import { Modal } from '@/ui/components/Modal/Modal';
+import { MASTER_DATA, } from '@/core/constants';
 
 interface UnitLayout {
   id: string;
@@ -21,13 +22,22 @@ interface UnitLayout {
   note: string;
 }
 
+// Convert InventoryFlatSpecificationData to UnitLayout format
+const convertSpecificationDataToUnitLayouts = (specData: InventoryFlatSpecificationDatum[]): UnitLayout[] => {
+  if (!specData || specData.length === 0) return [];
+  return specData.map((spec) => ({
+    id: spec.InventoryFlatSpecificationId.toString() || spec.Uniquekey,
+    unitLayout: spec.FlatLayout || '',
+    area: spec.FlatLayoutAreaSqFt?.toString() || '0.00',
+    length: spec.FlatLayoutLengthSqFt?.toString() || '0.00',
+    width: spec.FlatLayoutWidthSqFt?.toString() || '0.00',
+    note: spec.Note || '',
+  }));
+};
+
 const InventorySpecification: React.FC = () => {
-  const [unitLayouts, setUnitLayouts] = useState<UnitLayout[]>([
-    { id: '1', unitLayout: 'Bedroom 1', area: '0.00', length: '0.00', width: '0.00', note: '' },
-    { id: '2', unitLayout: 'Kitchen', area: '0.00', length: '0.00', width: '0.00', note: '' },
-    { id: '3', unitLayout: 'Common Toilet', area: '0.00', length: '0.00', width: '0.00', note: '' },
-    { id: '4', unitLayout: 'Bedroom 2', area: '0.00', length: '0.00', width: '0.00', note: '' },
-  ]);
+  // Initialize unitLayouts from flatData.InventoryFlatSpecificationData
+  const [unitLayouts, setUnitLayouts] = useState<UnitLayout[]>([]);
 
   // Modal state
   const [isAddUnitSpecificationModalOpen, setIsAddUnitSpecificationModalOpen] = useState(false);
@@ -55,28 +65,22 @@ const InventorySpecification: React.FC = () => {
   const [flatData, setFlatData] = useState<InventoryFlatData>(state.flat);
   const projectId: number = state.projectId;
 
-  // Initialize flatData from state when component mounts
+  // Initialize flatData and unitLayouts from state when component mounts
   useEffect(() => {
     setFlatData(state.flat);
+    // Convert existing specification data to unitLayouts
+    if (state.flat.InventoryFlatSpecificationData && state.flat.InventoryFlatSpecificationData.length > 0) {
+      const layouts = convertSpecificationDataToUnitLayouts(state.flat.InventoryFlatSpecificationData);
+      setUnitLayouts(layouts);
+    } else {
+      setUnitLayouts([]);
+    }
   }, [state.flat])
-
-  // Mock options for dropdowns
-  const typeOptions = [
-    { label: 'Residential', value: 'Residential' },
-    { label: 'Commercial', value: 'Commercial' },
-  ];
-
-  const facingOptions = [
-    { label: 'North', value: 'North' },
-    { label: 'South', value: 'South' },
-    { label: 'East', value: 'East' },
-    { label: 'West', value: 'West' },
-  ];
 
   const statusOptions = [
     { label: 'Available', value: 'Available' },
-    { label: 'Sold', value: 'sold' },
-    { label: 'Hold', value: 'hold' },
+    { label: 'Sell', value: 'Sold' },
+    { label: 'Hold', value: 'Hold' },
     { label: 'Block', value: 'Blocked' },
   ];
 
@@ -94,21 +98,46 @@ const InventorySpecification: React.FC = () => {
 
   const handleSaveUnitSpecification = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate required field
     if (!unitSpecificationForm.unitLayout.trim()) {
       addToast({ type: 'error', title: 'Unit Layout is required' });
       return;
     }
 
-    const newLayout: UnitLayout = {
-      ...unitSpecificationForm,
-      id: Date.now().toString(),
-    };
-    setUnitLayouts([...unitLayouts, newLayout]);
-    setIsAddUnitSpecificationModalOpen(false);
-    addToast({ type: 'success', title: 'Unit specification added successfully' });
+    let updatedUnitLayouts: UnitLayout[];
     
+    // Check if editing existing layout or adding new one
+    if (unitSpecificationForm.id && unitLayouts.some(layout => layout.id === unitSpecificationForm.id)) {
+      // Editing existing layout
+      updatedUnitLayouts = unitLayouts.map(layout =>
+        layout.id === unitSpecificationForm.id ? unitSpecificationForm : layout
+      );
+      addToast({ type: 'success', title: 'Unit specification updated successfully' });
+    } else {
+      // Adding new layout
+      const newLayout: UnitLayout = {
+        ...unitSpecificationForm,
+        id: Date.now().toString(),
+      };
+      updatedUnitLayouts = [...unitLayouts, newLayout];
+      addToast({ type: 'success', title: 'Unit specification added successfully' });
+    }
+    
+    // Calculate total area from all unit layouts
+    const totalArea = updatedUnitLayouts.reduce((sum, item) => {
+      return sum + parseFloat(item.area || '0');
+    }, 0);
+    
+    setUnitLayouts(updatedUnitLayouts);
+    setIsAddUnitSpecificationModalOpen(false);
+    
+    // Update flatData with the calculated total area
+    setFlatData({
+      ...flatData,
+      RERACarpetAreaSqFt: totalArea
+    });
+
     // Reset form
     setUnitSpecificationForm({
       id: '',
@@ -132,17 +161,86 @@ const InventorySpecification: React.FC = () => {
     });
   };
 
-  const handleEditUnitLayout = (id: string) => {
-    console.log('Edit unit layout:', id);
-  };
+  const handleEditUnitLayout = useCallback((id: string) => {
+    const layoutToEdit = unitLayouts.find(layout => layout.id === id);
+    if (layoutToEdit) {
+      setUnitSpecificationForm(layoutToEdit);
+      setIsAddUnitSpecificationModalOpen(true);
+    }
+  }, [unitLayouts]);
 
-  const handleDeleteUnitLayout = (id: string) => {
-    setUnitLayouts(unitLayouts.filter(layout => layout.id !== id));
+  const handleDeleteUnitLayout = useCallback((id: string | number) => {
+    if (!id && id !== 0) {
+      addToast({ type: 'error', title: 'Unable to delete: Invalid item ID' });
+      return;
+    }
+    
+    // Convert id to string for comparison (since UnitLayout.id is string)
+    const idToDelete = String(id);
+    
+    // Filter out the item with matching id - use strict comparison
+    const updatedLayouts = unitLayouts.filter(layout => {
+      const layoutId = String(layout.id);
+      return layoutId !== idToDelete;
+    });
+    
+    // Verify that an item was actually removed
+    if (updatedLayouts.length === unitLayouts.length) {
+      addToast({ type: 'error', title: 'Item not found for deletion' });
+      return;
+    }
+    
+    setUnitLayouts(updatedLayouts);
+    
+    // Recalculate total area
+    const totalArea = updatedLayouts.reduce((sum, item) => {
+      return sum + parseFloat(item.area || '0');
+    }, 0);
+    
+    setFlatData(prevFlatData => ({
+      ...prevFlatData,
+      RERACarpetAreaSqFt: totalArea
+    }));
+    
+    addToast({ type: 'success', title: 'Unit specification deleted successfully' });
+  }, [unitLayouts, flatData, addToast]);
+
+  // Convert unitLayouts to InventoryFlatSpecificationData format
+  const convertUnitLayoutsToSpecificationData = (layouts: UnitLayout[]): InventoryFlatSpecificationDatum[] => {
+    return layouts.map((layout) => {
+      // Check if this is an existing item (has numeric ID from backend) or new item (timestamp string)
+      const existingSpec = flatData.InventoryFlatSpecificationData?.find(
+        spec => spec.InventoryFlatSpecificationId.toString() === layout.id || 
+                spec.Uniquekey === layout.id
+      );
+
+      return {
+        InventoryFlatSpecificationId: existingSpec?.InventoryFlatSpecificationId || 0,
+        Uniquekey: existingSpec?.Uniquekey || layout.id,
+        InventoryBuildingId: flatData.InventoryBuildingId,
+        InventoryFlatFloorBasementPodiumWingId: flatData.InventoryFlatFloorBasementPodiumWingId,
+        InventoryFloorId: flatData.InventoryFloorId,
+        InventoryFlatId: flatData.InventoryFlatId,
+        FlatLayout: layout.unitLayout,
+        FlatLayoutAreaSqFt: parseFloat(layout.area || '0'),
+        FlatLayoutLengthSqFt: parseFloat(layout.length || '0'),
+        FlatLayoutWidthSqFt: parseFloat(layout.width || '0'),
+        Note: layout.note || '',
+      };
+    });
   };
 
   const handleSave = async () => {
-    // flatData is already updated through state, so we can use it directly
-    const result = await InventoryService.apiCallUpdateInventoryFlat(projectId, flatData);
+    // Convert unitLayouts to InventoryFlatSpecificationData format
+    const specificationData = convertUnitLayoutsToSpecificationData(unitLayouts);
+    
+    // Update flatData with the specification data
+    const updatedFlatData: InventoryFlatData = {
+      ...flatData,
+      InventoryFlatSpecificationData: specificationData,
+    };
+    
+    const result = await InventoryService.apiCallUpdateInventoryFlat(projectId, updatedFlatData);
     if (E.isRight(result)) {
       // Handle success
       addToast({ type: 'success', title: result.right.SuccessMessage[0] });
@@ -204,43 +302,52 @@ const InventorySpecification: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (_, row) => (
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleEditUnitLayout(row.id);
-            }}
-            color="transparent"
-            isborderRadius
-            size="sm"
-            title="Edit"
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleDeleteUnitLayout(row.id);
-            }}
-            color="transparent"
-            isborderRadius
-            size="sm"
-            title="Delete"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      )
+      render: (_, row: UnitLayout) => {
+        // Ensure we have a valid row with id
+        if (!row || row.id === undefined || row.id === null || row.id === '') {
+          return <div className="flex items-center justify-center gap-2">—</div>;
+        }
+        
+        const rowId = String(row.id);
+        
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleEditUnitLayout(rowId);
+              }}
+              color="transparent"
+              isborderRadius
+              size="sm"
+              title="Edit"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleDeleteUnitLayout(rowId);
+              }}
+              color="transparent"
+              isborderRadius
+              size="sm"
+              title="Delete"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        );
+      }
     }
-  ], []);
+  ], [handleEditUnitLayout, handleDeleteUnitLayout, addToast]);
 
   return (
     <>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast}></ToastContainer>
-      
+
       {/* Form Fields */}
       <div className="space-y-6">
         {/* First Row: Unit and Area */}
@@ -270,6 +377,7 @@ const InventorySpecification: React.FC = () => {
             </div>
             <div>
               <Input
+                readOnly
                 label="Area (sq.ft)"
                 type="text"
                 value={flatData.RERACarpetAreaSqFt.toString()}
@@ -286,16 +394,16 @@ const InventorySpecification: React.FC = () => {
                   // Prevent non-numeric characters
                   const char = e.key;
                   const currentValue = (e.target as HTMLInputElement).value;
-                  
+
                   // Allow: numbers, single decimal point (if not already present), and control keys
                   if (char === '.' && currentValue.includes('.')) {
                     e.preventDefault(); // Prevent multiple decimal points
-                  } else if (!/[0-9.]/.test(char) && 
-                             char !== 'Backspace' && 
-                             char !== 'Delete' && 
-                             char !== 'ArrowLeft' && 
-                             char !== 'ArrowRight' &&
-                             char !== 'Tab') {
+                  } else if (!/[0-9.]/.test(char) &&
+                    char !== 'Backspace' &&
+                    char !== 'Delete' &&
+                    char !== 'ArrowLeft' &&
+                    char !== 'ArrowRight' &&
+                    char !== 'Tab') {
                     e.preventDefault(); // Prevent letters and special characters
                   }
                 }}
@@ -312,7 +420,10 @@ const InventorySpecification: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Type"
-                options={typeOptions}
+                options={MASTER_DATA.flat_unit_Type.map((e) => ({
+                  label: e,
+                  value: e
+                }))}
                 value={flatData.FlatType}
                 onChange={(value) => {
                   setFlatData({ ...flatData, FlatType: value as string });
@@ -324,7 +435,12 @@ const InventorySpecification: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Facing"
-                options={facingOptions}
+                options={
+                  MASTER_DATA.flat_unit_facing.map((e) => ({
+                    label: e,
+                    value: e
+                  }))
+                }
                 value={flatData.FlatFacing}
                 onChange={(value) => {
                   setFlatData({ ...flatData, FlatFacing: value as string });
@@ -411,6 +527,7 @@ const InventorySpecification: React.FC = () => {
             </div>
             <div>
               <Input
+
                 label="Area (sq.ft)"
                 type="text"
                 value={unitSpecificationForm.area}
@@ -467,8 +584,8 @@ const InventorySpecification: React.FC = () => {
           </div>
         </div>
       </Modal>
-      
-      </>
+
+    </>
   );
 };
 

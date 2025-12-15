@@ -5,6 +5,7 @@ import type { InventoryFlatData } from "../models/InventoryMasterModel";
 const inventoryDatasource = new InventoryDatasourceImpl
 
 export const InventoryService = {
+    
     apiCallPullInventory: async (projectId: number) => {
         try {
             return E.right(await inventoryDatasource.apiCallToFetchInventory(projectId))
@@ -26,7 +27,16 @@ export const InventoryService = {
             return E.right(await inventoryDatasource.apiCallToUpdateInventoryFlat(flatDetails, projectId))
         } catch (error: any) {
             return E.left({ message: error.message })
+        }
+    },
 
+    apiCallDeleteInventoryFlat : async (projectId : number, flatDetails : InventoryFlatData) => {
+        try{
+            return E.right(await inventoryDatasource.apiCallToDeleteInventoryFlat(flatDetails,projectId))
+        }catch(error : any){
+            return E.left({
+                message : error.message
+            })
         }
     }
 }

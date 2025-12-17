@@ -76,6 +76,10 @@ import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
 import ChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/ChannelPartnerMaster';
 import AddUpdateChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/AddUpdateChannelPartnerMaster';
 import ViewChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/ViewChannelPartnerMaster';
+import BuildingDescription from '@/features/building/pages/BuildingDescription';
+import BuildingDocument from '@/features/building/pages/BuildingDocument';
+import TenantDocument from '@/features/tenant/pages/TenantDocument';
+import ProposedOffer from '@/features/proposedOffer/pages/ProposedOffer';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (

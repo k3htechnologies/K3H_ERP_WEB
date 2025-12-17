@@ -153,7 +153,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
       newErrors.AssetType = "Asset Type is required";
     }
 
-   if (!formData.AssetCost || Number(formData.AssetCost) <= 0) {
+    if (!formData.AssetCost || Number(formData.AssetCost) <= 0) {
       newErrors.AssetCost = "Asset Cost is required";
     }
 
@@ -272,178 +272,178 @@ export const AddUpdateAssetMaster: React.FC = () => {
   return (
 
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        {/* Loader */}
+      {/* Loader */}
 
       <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+      <div className="flex-1 space-y-2 px-6 py-3 pb-30 overflow-y-auto thin-scroll ">
 
         <form onSubmit={handleAddUpdateAssetMaster}>
 
           {/* Basic Asset Details */}
 
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Asset Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Asset Name'
-                    value={formData.AssetName ?? ""}
-                    onChange={(e) => handleFieldChange("AssetName", e.target.value)}
-                    placeholder="Enter Asset Name"
-                    maxLength={250}
-                    error={errors.AssetName}
-                  />
-                </div>
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Asset Code'
-                    value={formData.AssetCode?.toUpperCase() ?? ""}
-                    onChange={(e) => handleFieldChange("AssetCode", e.target.value)}
-                    placeholder="Enter Asset Code"
-                    maxLength={4}
-                    error={errors.AssetCode}
-                  />
-                </div>
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Asset Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Name'
+                  value={formData.AssetName ?? ""}
+                  onChange={(e) => handleFieldChange("AssetName", e.target.value)}
+                  placeholder="Enter Asset Name"
+                  maxLength={250}
+                  error={errors.AssetName}
+                />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <Input
-                    label='Asset Cost'
-                    required
-                    error={errors.AssetCost}
-                    type="text"
-                    value={formData.AssetCost ?? ''}
-                    maxLength={4}
-                    onChange={(e) => {
-                      const digits = e.target.value.replace(/\D/g, '');
-                      handleFieldChange('AssetCost', digits === '' ? 0 : Number(digits));
-                    }}
-                    placeholder="Enter Asset Cost"
-                  />
-                </div>
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Asset Brand'
-                    value={formData.AssetBrand ?? ""}
-                    onChange={(e) => handleFieldChange("AssetBrand", e.target.value)}
-                    placeholder="Enter Asset Brand"
-                    maxLength={250}
-                    error={errors.AssetBrand}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Asset Model'
-                    value={formData.AssetModel ?? ""}
-                    onChange={(e) => handleFieldChange("AssetModel", e.target.value)}
-                    placeholder="Enter Asset Model"
-                    maxLength={250}
-                    error={errors.AssetModel}
-                  />
-                </div>
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='AssetType'
-                    value={formData.AssetType ?? ""}
-                    onChange={(e) => handleFieldChange("AssetType", e.target.value)}
-                    placeholder="Enter AssetType"
-                    maxLength={250}
-                    error={errors.AssetType}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Supplier Name'
-                    value={formData.SupplierName ?? ""}
-                    onChange={(e) => handleFieldChange("SupplierName", e.target.value)}
-                    placeholder="Enter Supplier Name"
-                    maxLength={250}
-                    error={errors.SupplierName}
-                  />
-                </div>
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Serial Number'
-                    value={formData.SerialNumber ?? ""}
-                    onChange={(e) => handleFieldChange("SerialNumber", e.target.value)}
-                    placeholder="Enter Serial Number"
-                    maxLength={250}
-                    error={errors.SerialNumber}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <DatePickerInput
-                    label="Purchase Date"
-                    value={formatDate_dd_mm_yyyy(formData.PurchaseDate)}
-                    onChange={(val) => handleFieldChange('PurchaseDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                    required
-                    error={errors.PurchaseDate}
-                  />
-                </div>
-
-                <div>
-                  <DatePickerInput
-                    label="Warranty Expiry Date"
-                    value={formatDate_dd_mm_yyyy(formData.WarrantyExpiryDate)}
-                    onChange={(val) => handleFieldChange('WarrantyExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                    required
-                    error={errors.WarrantyExpiryDate}
-                  />
-                </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Code'
+                  value={formData.AssetCode?.toUpperCase() ?? ""}
+                  onChange={(e) => handleFieldChange("AssetCode", e.target.value)}
+                  placeholder="Enter Asset Code"
+                  maxLength={4}
+                  error={errors.AssetCode}
+                />
               </div>
             </div>
-          </form>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  label='Asset Cost'
+                  required
+                  error={errors.AssetCost}
+                  type="text"
+                  value={formData.AssetCost ?? ''}
+                  maxLength={4}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '');
+                    handleFieldChange('AssetCost', digits === '' ? 0 : Number(digits));
+                  }}
+                  placeholder="Enter Asset Cost"
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Brand'
+                  value={formData.AssetBrand ?? ""}
+                  onChange={(e) => handleFieldChange("AssetBrand", e.target.value)}
+                  placeholder="Enter Asset Brand"
+                  maxLength={250}
+                  error={errors.AssetBrand}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Model'
+                  value={formData.AssetModel ?? ""}
+                  onChange={(e) => handleFieldChange("AssetModel", e.target.value)}
+                  placeholder="Enter Asset Model"
+                  maxLength={250}
+                  error={errors.AssetModel}
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='AssetType'
+                  value={formData.AssetType ?? ""}
+                  onChange={(e) => handleFieldChange("AssetType", e.target.value)}
+                  placeholder="Enter AssetType"
+                  maxLength={250}
+                  error={errors.AssetType}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Supplier Name'
+                  value={formData.SupplierName ?? ""}
+                  onChange={(e) => handleFieldChange("SupplierName", e.target.value)}
+                  placeholder="Enter Supplier Name"
+                  maxLength={250}
+                  error={errors.SupplierName}
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Serial Number'
+                  value={formData.SerialNumber ?? ""}
+                  onChange={(e) => handleFieldChange("SerialNumber", e.target.value)}
+                  placeholder="Enter Serial Number"
+                  maxLength={250}
+                  error={errors.SerialNumber}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <DatePickerInput
+                  label="Purchase Date"
+                  value={formatDate_dd_mm_yyyy(formData.PurchaseDate)}
+                  onChange={(val) => handleFieldChange('PurchaseDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={errors.PurchaseDate}
+                />
+              </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
-          <Button
-            color="transparent"
-            variant='transparent_border'
-            size="sm"
-            onClick={() => { navigate(-1); }}
-            className="px-6"
-          >
-            Cancel
-          </Button>
-
-          <Button
-            color="green"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              handleAddUpdateAssetMaster(e);
-            }}
-            className="px-6"
-            disabled={isLoading}
-          >
-            {isAddMode ? "Add Asset" : "Update Asset"}
-          </Button>
-        </div>
+              <div>
+                <DatePickerInput
+                  label="Warranty Expiry Date"
+                  value={formatDate_dd_mm_yyyy(formData.WarrantyExpiryDate)}
+                  onChange={(val) => handleFieldChange('WarrantyExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={errors.WarrantyExpiryDate}
+                />
+              </div>
+            </div>
+          </div>
+        </form>
       </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
+        <Button
+          color="transparent"
+          variant='transparent_border'
+          size="sm"
+          onClick={() => { navigate(-1); }}
+          className="px-6"
+        >
+          Cancel
+        </Button>
+
+        <Button
+          color="green"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            handleAddUpdateAssetMaster(e);
+          }}
+          className="px-6"
+          disabled={isLoading}
+        >
+          {isAddMode ? "Add Asset" : "Update Asset"}
+        </Button>
+      </div>
+    </div>
   );
 };
 

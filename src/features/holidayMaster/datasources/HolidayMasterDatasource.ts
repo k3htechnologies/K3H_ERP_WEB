@@ -3,7 +3,6 @@ import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { HolidayMasterApi } from '@/features/holidayMaster/api/HolidayMasterApi'
 import type {
     FilterWithPaginationHolidayMasterRequest,
-    AddUpdateHolidayMasterRequest,
     DeleteHolidayMasterRequest,
     HolidayMasterListResponse,
     HolidayMasterSaveResponse,

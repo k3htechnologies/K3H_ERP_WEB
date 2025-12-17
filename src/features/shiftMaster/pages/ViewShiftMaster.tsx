@@ -68,7 +68,10 @@ const ViewShiftMaster: React.FC = () => {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-                    navigate("/ShiftMaster", { state: { listState } });
+                    navigate("/ShiftMaster",
+                        {
+                            state: {listState}
+                        });
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -237,7 +240,7 @@ const ViewShiftMaster: React.FC = () => {
 
                     </div>
                 </div>
-                
+
                 {/* DELETE CONFIRMATION  SHIFT MODAL */}
                 <ConfirmationDialogBox
                     isOpen={isConfirmationDialogBoxOpen}

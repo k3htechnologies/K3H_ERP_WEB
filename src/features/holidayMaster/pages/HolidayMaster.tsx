@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   HolidayMasterData,
@@ -52,7 +51,7 @@ export const HolidayMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const {addToast } = useToast()
+  const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -555,6 +554,8 @@ export const HolidayMaster: React.FC = () => {
     };
   }
 
+  //#region PUSH DATA
+
   const PushHolidayFormData = (): FormData => {
 
     const fd = new FormData();
@@ -570,7 +571,9 @@ export const HolidayMaster: React.FC = () => {
     fd.append('RemoveHolidayURL', removeHolidayURL.join(','));
     return fd;
   };
+  //#endregion
 
+  //#region HANDLE ADD AND UPDATE HOLIDAY MASTER
 
   const handleAddUpdateHolidayMaster = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -648,7 +651,6 @@ export const HolidayMaster: React.FC = () => {
     )
   }
 
-
   //#endregion 
 
   //#region DELETE HOLIDAY MASTER
@@ -706,200 +708,200 @@ export const HolidayMaster: React.FC = () => {
   }
   //#endregion
   return (
-    
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        {/* COMMAN LOADER FOR PAGE */}
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      {/* COMMAN LOADER FOR PAGE */}
 
-        {/* COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW */}
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Holiday Name"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchHolidays}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeHolidayMasterColumnsModal(true)}
+      {/* COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW */}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add holiday"
-          onAdd={handleAddHolidayMasterModal}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Holiday Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchHolidays}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeHolidayMasterColumnsModal(true)}
 
-          // IMPORT
-          isShowImportButton={false}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddHolidayMasterModal}
 
-          // EXPORT 
-          isShowExportButton={canExport}
-          onExportExcel={handleExportHolidayExcel}
-          onExportPdf={handleExportHolidayPdf}
-          exportLoading={isLoading}
-        />
+        // IMPORT
+        isShowImportButton={false}
 
-        {/* DATA TABLE HOLIDAY */}
+        // EXPORT 
+        isShowExportButton={canExport}
+        onExportExcel={handleExportHolidayExcel}
+        onExportPdf={handleExportHolidayPdf}
+        exportLoading={isLoading}
+      />
 
-        <DataTable
-          data={holidayListForTable}
-          columns={visibleHolidayMasterColumns}
-          pagination={holidayMasterPaginationInfo}
-          emptyMessage="No Holidays Data Found"
-          fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      {/* DATA TABLE HOLIDAY */}
 
-        {/* VIEW HOLIDAY MODAL */}
-        <ViewHolidayDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewHolidayMasterDetailsData(null)
-          }}
-          data={viewHolidayMasterDetailsData}
-        />
+      <DataTable
+        data={holidayListForTable}
+        columns={visibleHolidayMasterColumns}
+        pagination={holidayMasterPaginationInfo}
+        emptyMessage="No Holidays Data Found"
+        fixedHeight={true}
+        maxHeight="calc(100vh - 200px)"
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        {/*  ADD EDIT UPDATE HOLIDAY MODAL */}
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingHolidayMasterData(null)
-            setFormData(initialFormState());
-            setErrors({})
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingHolidayMasterData(null)
-            setFormData(initialFormState());
-          }}
-          title={editingHolidayMasterData ? 'Update holiday ' : 'Add holiday'}
-          onSubmit={handleAddUpdateHolidayMaster}
-          saveText={editingHolidayMasterData ? 'Update holiday' : 'Save holiday'}
-          resetText='Reset'
-          loading={isLoading}
-          size="xl"
-        >
-          <div className="space-y-6 p-6 bg-blue-100">
-            <div className='space-y-4'>
-              <div>
-                <Input
-                  type="text"
-                  label='Holiday Name'
-                  value={formData.HolidayName ?? ''}
-                  onChange={(e) => handleFieldChange("HolidayName", e.target.value)}
-                  required
-                  maxLength={20}
-                  placeholder="Enter Holiday Name"
-                  error={errors.HolidayName}
-                />
-              </div>
-              <div>
-                <MultiFilePicker
-                  label='Holiday URL'
-                  required
-                  error={errors.HolidayURL}
-                  value={HolidayURLFiles}
-                  onChange={setHolidayURLFiles}
-                  availableFilesURL={editingHolidayMasterData?.HolidayURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
-                    "image/png",
-                    "application/pdf",
-                  ]}
-                  maxFiles={5}
-                  maxSizeMB={50}
-                />
-              </div>
+      {/* VIEW HOLIDAY MODAL */}
+      <ViewHolidayDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewHolidayMasterDetailsData(null)
+        }}
+        data={viewHolidayMasterDetailsData}
+      />
+
+      {/*  ADD EDIT UPDATE HOLIDAY MODAL */}
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false)
+          setEditingHolidayMasterData(null)
+          setFormData(initialFormState());
+          setErrors({})
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false)
+          setEditingHolidayMasterData(null)
+          setFormData(initialFormState());
+        }}
+        title={editingHolidayMasterData ? 'Update holiday ' : 'Add holiday'}
+        onSubmit={handleAddUpdateHolidayMaster}
+        saveText={editingHolidayMasterData ? 'Update holiday' : 'Save holiday'}
+        resetText='Reset'
+        loading={isLoading}
+        size="xl"
+      >
+        <div className="space-y-6 p-6 bg-blue-100">
+          <div className='space-y-4'>
+            <div>
+              <Input
+                type="text"
+                label='Holiday Name'
+                value={formData.HolidayName ?? ''}
+                onChange={(e) => handleFieldChange("HolidayName", e.target.value)}
+                required
+                maxLength={20}
+                placeholder="Enter Holiday Name"
+                error={errors.HolidayName}
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label='Holiday URL'
+                required
+                error={errors.HolidayURL}
+                value={HolidayURLFiles}
+                onChange={setHolidayURLFiles}
+                availableFilesURL={editingHolidayMasterData?.HolidayURL ?? ""}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf",
+                ]}
+                maxFiles={5}
+                maxSizeMB={50}
+              />
             </div>
           </div>
+        </div>
 
-        </Modal>
-        {/* CUSTOMIZE COLUMNS MODAL */}
+      </Modal>
+      {/* CUSTOMIZE COLUMNS MODAL */}
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeHolidayMasterColumnsModal}
-          onClose={() => setIsShowCustomizeHolidayMasterColumnsModal(false)}
-          onApply={(keys) => {
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeHolidayMasterColumnsModal}
+        onClose={() => setIsShowCustomizeHolidayMasterColumnsModal(false)}
+        onApply={(keys) => {
 
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredHolidayMasterColumnKeys])
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredHolidayMasterColumnKeys])
+          )
+
+          setSelectedHolidayMasterColumnKeys(withRequired)
+
+          try {
+            LocalStorageHelper.storeHolidayMasterTableColumns(
+              JSON.stringify(withRequired)
             )
+          } catch { }
+        }}
+        columns={holidayMasterColumns}
+        selectedKeys={selectedHolidayMasterColumnKeys}
+        requiredKeys={requiredHolidayMasterColumnKeys}
+        title="Customize Holiday Master Table Columns"
+      />
 
-            setSelectedHolidayMasterColumnKeys(withRequired)
+      {/* FILTER HOLIDAY MODAL */}
 
-            try {
-              LocalStorageHelper.storeHolidayMasterTableColumns(
-                JSON.stringify(withRequired)
-              )
-            } catch { }
-          }}
-          columns={holidayMasterColumns}
-          selectedKeys={selectedHolidayMasterColumnKeys}
-          requiredKeys={requiredHolidayMasterColumnKeys}
-          title="Customize Holiday Master Table Columns"
-        />
-
-        {/* FILTER HOLIDAY MODAL */}
-
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Holiday Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Holiday Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.HolidayName || ''}
-                  onChange={(e) => handleFilterChange('HolidayName', e.target.value)}
-                  placeholder="Enter holiday name"
-                />
-              </div>
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Holiday Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Holiday Name</label>
+              <Input
+                type="text"
+                value={tempFilters.HolidayName || ''}
+                onChange={(e) => handleFilterChange('HolidayName', e.target.value)}
+                placeholder="Enter holiday name"
+              />
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        {/* DELETE CONFIRMATION HOLIDAY MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteHolidayMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteHolidayMaster}
-          title="You are about to delete a holiday?"
-          message="Deleting this holiday will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
-      </div>
+      {/* DELETE CONFIRMATION HOLIDAY MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteHolidayMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteHolidayMaster}
+        title="You are about to delete a holiday?"
+        message="Deleting this holiday will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+    </div>
   )
 }
 

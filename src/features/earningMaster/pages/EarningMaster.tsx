@@ -789,7 +789,7 @@ export const EarningMaster: React.FC = () => {
 
           // ADD
           isShowAddButton={canAction}
-          addTitle='Add Earning'
+          addTitle='Add'
           onAdd={handleAddEarningModal}
 
           // IMPORT

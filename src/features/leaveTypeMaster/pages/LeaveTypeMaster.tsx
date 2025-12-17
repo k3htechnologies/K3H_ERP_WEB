@@ -54,7 +54,7 @@ export const LeaveTypeMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const {addToast } = useToast()
+  const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -117,26 +117,26 @@ export const LeaveTypeMaster: React.FC = () => {
 
 
   useEffect(() => {
-  if (isAddUpdateModalOpen) {
-    if (editingLeaveTypeMasterData) {
-      setFormData({
-        LeaveTypeMasterId: editingLeaveTypeMasterData.LeaveTypeMasterId,
-        Uniquekey: editingLeaveTypeMasterData.Uniquekey || initialFormState().Uniquekey,
-        LeaveType: editingLeaveTypeMasterData.LeaveType || '',
-        LeaveTypeCode: editingLeaveTypeMasterData.LeaveTypeCode || '',
-        IsCarryForward: editingLeaveTypeMasterData.IsCarryForward || false,
-        MaxCarryForward: editingLeaveTypeMasterData.MaxCarryForward || 0,
-        IsEncashable: editingLeaveTypeMasterData.IsEncashable || false
-      });
+    if (isAddUpdateModalOpen) {
+      if (editingLeaveTypeMasterData) {
+        setFormData({
+          LeaveTypeMasterId: editingLeaveTypeMasterData.LeaveTypeMasterId,
+          Uniquekey: editingLeaveTypeMasterData.Uniquekey || initialFormState().Uniquekey,
+          LeaveType: editingLeaveTypeMasterData.LeaveType || '',
+          LeaveTypeCode: editingLeaveTypeMasterData.LeaveTypeCode || '',
+          IsCarryForward: editingLeaveTypeMasterData.IsCarryForward || false,
+          MaxCarryForward: editingLeaveTypeMasterData.MaxCarryForward || 0,
+          IsEncashable: editingLeaveTypeMasterData.IsEncashable || false
+        });
 
-      setPrevMaxCarryForward(editingLeaveTypeMasterData.MaxCarryForward || 0);
-    } else {
-      setFormData(initialFormState());
-      setPrevMaxCarryForward(0);
+        setPrevMaxCarryForward(editingLeaveTypeMasterData.MaxCarryForward || 0);
+      } else {
+        setFormData(initialFormState());
+        setPrevMaxCarryForward(0);
+      }
+      setErrors({});
     }
-    setErrors({});
-  }
-}, [isAddUpdateModalOpen, editingLeaveTypeMasterData]);
+  }, [isAddUpdateModalOpen, editingLeaveTypeMasterData]);
   //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
@@ -650,6 +650,8 @@ export const LeaveTypeMaster: React.FC = () => {
     }
   }
 
+  //#region PUSH DATA
+
   const PushLeaveTypeMasterFormData = (): AddUpdateLeaveTypeMasterRequest => {
     return {
       LeaveTypeMasterId: formData.LeaveTypeMasterId || 0,
@@ -661,6 +663,9 @@ export const LeaveTypeMaster: React.FC = () => {
       IsEncashable: formData.IsEncashable || false
     };
   };
+  //#endregion
+
+  //#region HANDLE ADD AND UPDATE LEAVE TYPE MASTER
 
   const handleAddUpdateLeaveTypeMaster = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -798,211 +803,211 @@ export const LeaveTypeMaster: React.FC = () => {
 
   return (
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        {/* ============================================================================
+      {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        {/* ============================================================================
+      {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Leave Type"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchLeaveTypes}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeLeaveTypeMasterColumnsModal(true)}
-          isShowAddButton={canAction}
-          addTitle='Add LeaveType'
-          onAdd={handleAddLeaveTypeModal}
-          isShowImportButton={false}
-          isShowExportButton={canExport}
-          onExportExcel={handleExportLeaveTypeExcel}
-          onExportPdf={handleExportLeaveTypePdf}
-          exportLoading={isLoading}
-        />
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Leave Type"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchLeaveTypes}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeLeaveTypeMasterColumnsModal(true)}
+        isShowAddButton={canAction}
+        addTitle='Add'
+        onAdd={handleAddLeaveTypeModal}
+        isShowImportButton={false}
+        isShowExportButton={canExport}
+        onExportExcel={handleExportLeaveTypeExcel}
+        onExportPdf={handleExportLeaveTypePdf}
+        exportLoading={isLoading}
+      />
 
 
-        {/* DATA TABLE LEAVE TYPE */}
-        <DataTable
-          data={leaveTypeListForTable}
-          columns={visibleLeaveTypeMasterColumns}
-          pagination={leaveTypeMasterPaginationInfo}
-          emptyMessage="No Leave Types Data Found"
-          fixedHeight={true}
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      {/* DATA TABLE LEAVE TYPE */}
+      <DataTable
+        data={leaveTypeListForTable}
+        columns={visibleLeaveTypeMasterColumns}
+        pagination={leaveTypeMasterPaginationInfo}
+        emptyMessage="No Leave Types Data Found"
+        fixedHeight={true}
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        {/* VIEW LEAVE TYPE MODAL */}
-        <ViewLeaveTypeDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewLeaveTypeMasterDetailsData(null)
-          }}
-          data={viewLeaveTypeMasterDetailsData}
-        />
+      {/* VIEW LEAVE TYPE MODAL */}
+      <ViewLeaveTypeDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewLeaveTypeMasterDetailsData(null)
+        }}
+        data={viewLeaveTypeMasterDetailsData}
+      />
 
-        {/*  ADD EDIT UPDATE LEAVE TYPE MODAL */}
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingLeaveTypeMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingLeaveTypeMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          title={editingLeaveTypeMasterData ? 'Update Leave Type' : 'Add Leave Type'}
-          onSubmit={handleAddUpdateLeaveTypeMaster}
-          saveText="Save"
-          resetText='Reset'
-          loading={isLoading}
-          size="xl"
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4" >
+      {/*  ADD EDIT UPDATE LEAVE TYPE MODAL */}
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingLeaveTypeMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingLeaveTypeMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        title={editingLeaveTypeMasterData ? 'Update Leave Type' : 'Add Leave Type'}
+        onSubmit={handleAddUpdateLeaveTypeMaster}
+        saveText="Save"
+        resetText='Reset'
+        loading={isLoading}
+        size="xl"
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4" >
+            <div>
+              <Input
+                type="text"
+                required
+                label='Leave Type'
+                value={formData.LeaveType ?? ""}
+                onChange={(e) => handleFieldChange("LeaveType", e.target.value)}
+                placeholder="Enter Leave Type"
+                maxLength={250}
+                error={errors.LeaveType}
+              />
+            </div>
+
+            <div>
+              <Input
+                type="text"
+                label='Leave Type Code'
+                value={formData.LeaveTypeCode.toUpperCase() ?? ""}
+                onChange={(e) => handleFieldChange("LeaveTypeCode", e.target.value)}
+                required
+                maxLength={4}
+                placeholder="Enter Leave Type Code"
+                error={errors.LeaveTypeCode}
+              />
+
+            </div>
+            <div>
+              <Checkbox
+                label="Carry Forward"
+                checked={formData.IsCarryForward ?? false}
+                onChange={(e) => handleFieldChange("IsCarryForward", e.target.checked)}
+              />
+            </div>
+            {formData.IsCarryForward && (
               <div>
                 <Input
                   type="text"
+                  label='Max Carry Forward'
+                  value={formData.MaxCarryForward ?? ""}
+                  onChange={(e) => handleFieldChange("MaxCarryForward", e.target.value)}
                   required
-                  label='Leave Type'
-                  value={formData.LeaveType ?? ""}
-                  onChange={(e) => handleFieldChange("LeaveType", e.target.value)}
-                  placeholder="Enter Leave Type"
+                  placeholder="Enter Max Carry Forward"
                   maxLength={250}
-                  error={errors.LeaveType}
+                  error={errors.MaxCarryForward}
                 />
               </div>
+            )}
 
-              <div>
-                <Input
-                  type="text"
-                  label='Leave Type Code'
-                  value={formData.LeaveTypeCode.toUpperCase() ?? ""}
-                  onChange={(e) => handleFieldChange("LeaveTypeCode", e.target.value)}
-                  required
-                  maxLength={4}
-                  placeholder="Enter Leave Type Code"
-                  error={errors.LeaveTypeCode}
-                />
+            <div>
+              <Checkbox
+                label="Encashable"
+                checked={formData.IsEncashable ?? false}
+                onChange={(e) => handleFieldChange("IsEncashable", e.target.checked)}
+              />
+            </div>
 
-              </div>
-              <div>
-                <Checkbox
-                  label="Carry Forward"
-                  checked={formData.IsCarryForward ?? false}
-                  onChange={(e) => handleFieldChange("IsCarryForward", e.target.checked)}
-                />
-              </div>
-              {formData.IsCarryForward && (
-                <div>
-                  <Input
-                    type="text"
-                    label='Max Carry Forward'
-                    value={formData.MaxCarryForward ?? ""}
-                    onChange={(e) => handleFieldChange("MaxCarryForward", e.target.value)}
-                    required
-                    placeholder="Enter Max Carry Forward"
-                    maxLength={250}
-                    error={errors.MaxCarryForward}
-                  />
-                </div>
-              )}
+          </div>
+        </div>
+      </Modal >
 
-              <div>
-                <Checkbox
-                  label="Encashable"
-                  checked={formData.IsEncashable ?? false}
-                  onChange={(e) => handleFieldChange("IsEncashable", e.target.checked)}
-                />
-              </div>
-
+      {/* CUSTOMIZE COLUMNS MODAL */}
+      < CustomizeColumnsModal
+        isOpen={isShowCustomizeLeaveTypeMasterColumnsModal}
+        onClose={() => setIsShowCustomizeLeaveTypeMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(new Set([...keys, ...requiredLeaveTypeMasterColumnKeys]))
+          setSelectedLeaveTypeMasterColumnKeys(withRequired)
+          try {
+            LocalStorageHelper.storeLeaveTypeMasterTableColumns(JSON.stringify(withRequired))
+          } catch { }
+        }}
+        columns={leaveTypeMasterColumns}
+        selectedKeys={selectedLeaveTypeMasterColumnKeys}
+        requiredKeys={requiredLeaveTypeMasterColumnKeys}
+        title="Customize Leave Type Master Table Columns"
+      />
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Leave Type Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Leave Type</label>
+              <Input
+                type="text"
+                value={tempFilters.LeaveType || ''}
+                onChange={(e) => handleFilterChange('LeaveType', e.target.value)}
+                placeholder="Enter leave type"
+              />
             </div>
           </div>
-        </Modal >
-
-        {/* CUSTOMIZE COLUMNS MODAL */}
-        < CustomizeColumnsModal
-          isOpen={isShowCustomizeLeaveTypeMasterColumnsModal}
-          onClose={() => setIsShowCustomizeLeaveTypeMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(new Set([...keys, ...requiredLeaveTypeMasterColumnKeys]))
-            setSelectedLeaveTypeMasterColumnKeys(withRequired)
-            try {
-              LocalStorageHelper.storeLeaveTypeMasterTableColumns(JSON.stringify(withRequired))
-            } catch { }
-          }}
-          columns={leaveTypeMasterColumns}
-          selectedKeys={selectedLeaveTypeMasterColumnKeys}
-          requiredKeys={requiredLeaveTypeMasterColumnKeys}
-          title="Customize Leave Type Master Table Columns"
-        />
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Leave Type Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Leave Type</label>
-                <Input
-                  type="text"
-                  value={tempFilters.LeaveType || ''}
-                  onChange={(e) => handleFilterChange('LeaveType', e.target.value)}
-                  placeholder="Enter leave type"
-                />
-              </div>
-            </div>
-          </div>
-        </Modal>
-        {/* DELETE CONFIRMATION LEAVE TYPE MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteLeaveTypeMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteLeaveTypeMaster}
-          title="You are about to delete a Leave Type?"
-          message="Deleting this Leave Type will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
-      </div>
+        </div>
+      </Modal>
+      {/* DELETE CONFIRMATION LEAVE TYPE MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteLeaveTypeMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteLeaveTypeMaster}
+        title="You are about to delete a Leave Type?"
+        message="Deleting this Leave Type will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+    </div>
   )
 }
 

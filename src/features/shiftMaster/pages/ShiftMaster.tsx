@@ -490,7 +490,7 @@ export const ShiftMaster: React.FC = () => {
 
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Shift"
+          addTitle="Add"
           onAdd={handleAddShiftModal}
 
 

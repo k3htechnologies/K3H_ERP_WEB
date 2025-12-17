@@ -501,7 +501,7 @@ export const DeductionMaster: React.FC = () => {
 
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Deduction"
+          addTitle="Add"
           onAdd={handleAddDeductionModal}
 
 

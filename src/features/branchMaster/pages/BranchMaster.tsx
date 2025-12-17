@@ -836,7 +836,7 @@ export const BranchMaster: React.FC = () => {
 
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Branch"
+          addTitle="Add"
           onAdd={handleAddBranchMasterModal}
 
           // IMPORT

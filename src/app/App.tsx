@@ -58,7 +58,6 @@ import Inventory from '@/features/inventory/pages/Inventory';
 import InventorySpecification from '@/features/inventory/pages/InventorySpecification';
 import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor';
 import { OutDoor } from '@/features/outdoor/pages/OutDoor';
-
 import { ViewVendor } from '@/features/vendor/pages/ViewVendor';
 import SiteProgress from '@/features/siteProgress/pages/SiteProgress';
 import SiteProgressSubConstruction from '@/features/siteProgress/pages/SiteProgressSubConstruction';
@@ -74,6 +73,9 @@ import Tenant from '@/features/tenant/pages/Tenant';
 import AddUpdateTenant from '@/features/tenant/pages/AddUpdateTenant';
 import ViewTenant from '@/features/tenant/pages/ViewTenant';
 import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
+import ChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/ChannelPartnerMaster';
+import AddUpdateChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/AddUpdateChannelPartnerMaster';
+import ViewChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/ViewChannelPartnerMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -120,6 +122,10 @@ function App() {
           {/* Public Routes */}
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
+          <Route path="channelPartnerMaster" element={<ChannelPartnerMaster />} />
+          <Route path="channelPartnerMaster/add/" element={<AddUpdateChannelPartnerMaster />} />
+          <Route path="channelPartnerMaster/view" element={<ViewChannelPartnerMaster />} />
+
 
           {/* Protected Routes with Layout */}
           <Route
@@ -170,6 +176,9 @@ function App() {
             <Route path="WeekOffMaster/view" element={<ViewWeekOffMaster />} />
             <Route path="WeekOffMaster/add/:WeekOffMasterId?" element={<AddUpdateWeekOffMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
+            <Route path="channelPartnerMaster" element={<ChannelPartnerMaster />} />
+            <Route path="channelPartnerMaster/view" element={<ViewChannelPartnerMaster />} />
+            <Route path="channelPartnerMaster/add/:ChannelPartnerId" element={<AddUpdateChannelPartnerMaster />} />
             <Route path="vendor" element={<Vendor />} />
             <Route path="vendor/view" element={<ViewVendor />} />
             <Route path="projectMaster" element={<ProjectMaster />} />

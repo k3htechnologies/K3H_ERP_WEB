@@ -2,7 +2,6 @@ import type { Failure } from '@/core/api/FailureResponse';
 import { HolidayMasterDatasourceImpl } from '@/features/holidayMaster/datasources/HolidayMasterDatasource'
 import type {
     FilterWithPaginationHolidayMasterRequest,
-    AddUpdateHolidayMasterRequest,
     DeleteHolidayMasterRequest,
     HolidayMasterListResponse,
     HolidayMasterSaveResponse,

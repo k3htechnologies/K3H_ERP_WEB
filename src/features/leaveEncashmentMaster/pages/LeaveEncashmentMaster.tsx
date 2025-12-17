@@ -678,7 +678,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add LeaveEncashment"
+          addTitle="Add"
           onAdd={handleAddLeaveEncashmentMasterModal}
 
           // IMPORT

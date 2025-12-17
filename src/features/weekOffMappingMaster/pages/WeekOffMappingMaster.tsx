@@ -815,7 +815,7 @@ export const WeekOffMappingMaster: React.FC = () => {
 
           // ADD
           isShowAddButton={canAction}
-          addTitle='Add Week Off'
+          addTitle='Add'
           onAdd={handleAddWeekOffMappingMasterModal}
 
           // IMPORT

@@ -704,7 +704,7 @@ export const BranchAssociationsMaster: React.FC = () => {
           isShowCustomizeButton
           onCustomize={() => setIsShowCustomizeBranchAssociationsMasterColumnsModal(true)}
           isShowAddButton={canAction}
-          addTitle='Add BranchAssociation'
+          addTitle='Add'
           onAdd={handleAddBranchAssociationsMaster}
           isShowImportButton={false}
           isShowExportButton={canExport}

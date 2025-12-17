@@ -60,6 +60,8 @@ export const MASTER_DATA = {
 
     applicant_type: ['Applicant','Co - Applicant'],
 
+    speciality_type:['Commercial Sale','Commercial Leasing','Residential Sale','Office Sale','Office Leasing ']
+
 } as const
 
 // ============================================================================
@@ -105,3 +107,4 @@ export const RESIDENTIAL_FLAT_CONFIGURATION = toOptions(MASTER_DATA.residential_
 export const COMMERCIAL_FLAT_CONFIGURATION = toOptions(MASTER_DATA.commercial_flat_configuration_Type)
 export const FLAT_UNIT_FACING = toOptions(MASTER_DATA.flat_unit_facing)
 export const APPLICANT_TYPE = toOptions(MASTER_DATA.applicant_type)
+export const SPECIALITY_TYPE=toOptions(MASTER_DATA.speciality_type)

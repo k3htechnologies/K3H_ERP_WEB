@@ -469,7 +469,7 @@ export const AssetMappingMaster: React.FC = () => {
 
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add AssetMapping"
+          addTitle="Add"
           onAdd={handleAddAssetMappingModal}
 
 

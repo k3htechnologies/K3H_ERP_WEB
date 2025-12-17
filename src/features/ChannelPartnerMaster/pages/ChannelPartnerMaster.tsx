@@ -5,9 +5,9 @@ import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type {
-  WeekOffMasterData,
-  FilterWithPaginationWeekOffMasterRequest,
-} from '@/features/weekOffMaster/models/WeekOffMasterModel'
+  ChannelPartnerMasterData,
+  FilterWithPaginationChannelPartnerMasterRequest
+} from '@/features/ChannelPartnerMaster/models/ChannelPartnerMasterModel';
 
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
@@ -20,14 +20,16 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { WeekOffMasterService } from '../services/WeekOffMasterService';
+import { ChannelPartnerMasterService } from '../services/ChannelPartnerMasterService';
 import { updateFilter } from '@/core/utils/filterHelper';
+import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
+import { technicalService } from '@/features/technical/services/TechnicalService';
 
 
-export const WeekOffOffMasterMaster: React.FC = () => {
+export const ChannelPartnerMaster: React.FC = () => {
 
   //#region STATE MANAGEMENT
-  const [WeekOffOffMasterList, setWeekOffOffMasterList] = useState<WeekOffMasterData[]>([]);
+  const [channelPartnerMasterList, setChannelPartnerMasterList] = useState<ChannelPartnerMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
 
@@ -45,9 +47,8 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
-
   const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchWeekOff(value)
+    searchChannelPartnerMaster(value)
   }, 350);
 
   //FILTER STATES
@@ -56,7 +57,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeWeekOffColumnsModal, setIsShowCustomizeWeekOffOffColumnsModal] = useState(false);
+  const [isShowCustomizeChannelPartnerColumnsModal, setIsShowCustomizeChannelPartnerColumnsModal] = useState(false);
 
   //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
@@ -84,11 +85,11 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     setSearchTerm(listState.searchTerm ?? '');
 
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadWeekOff(listState.page ?? 1, { WeekOffOffName: String(listState.searchTerm).trim() });
+      loadChannelPartnerMaster(listState.page ?? 1, { Name: String(listState.searchTerm).trim() });
       return;
     }
 
-    loadWeekOff(listState.page ?? 1, listState.filters ?? {});
+    loadChannelPartnerMaster(listState.page ?? 1, listState.filters ?? {});
   }, [location.state]);
 
   //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
@@ -101,11 +102,11 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchWeekOffMasterList = async (page: number = pagination.currentPage) => {
-    return await loadWeekOff(page, filters);
+  const fetchChannelPartnerMasterList = async (page: number = pagination.currentPage) => {
+    return await loadChannelPartnerMaster(page, filters);
   }
 
-  const loadWeekOff = async (page: number, filterParams: FilterInfo) => {
+  const loadChannelPartnerMaster = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -114,24 +115,23 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
         if (sortInfo) {
 
-          const column = WeekOffMasterColumns.find(col => col.key === sortInfo.column);
+          const column = ChannelPartnerMasterColumns.find(col => col.key === sortInfo.column);
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
-        const params: FilterWithPaginationWeekOffMasterRequest = {
+        const params: FilterWithPaginationChannelPartnerMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          WeekOffPolicyMasterId: filterParams.WeekOffPolicyMasterId ? Number(filterParams.WeekOffPolicyMasterId) : undefined,
-          WeekOffPolicyName: filterParams.WeekOffPolicyName?.trim() || undefined,
+          ChannelPartnerId: filterParams.ChannelPartnerMasterId ? Number(filterParams.ChannelPartnerMasterId) : undefined,
+          Name: filterParams.Name?.trim() || undefined,
           SortBy: sortByParam
         };
 
-        const response = await WeekOffMasterService.apiCallPullWeekOffMaster(params);
-
+        const response = await ChannelPartnerMasterService.apiCallPullChannelPartnerMaster(params);
         if (E.isRight(response)) {
 
-          setWeekOffOffMasterList(response.right.Data);
+          setChannelPartnerMasterList(response.right.Data);
 
           setPagination({
             currentPage: page,
@@ -147,34 +147,34 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       undefined,
       (error: any) => addToast({ type: 'error', title: error.message }),
       undefined,
-      'Loading WeekOff Data'
+      'Loading Channel Patner Data'
     );
   };
   //#endregion
 
-  //#region SEARCH & CLEAR WEEK OFF MASTER
-  const searchWeekOff = async (searchValue: string) => {
+  //#region SEARCH & CLEAR
+  const searchChannelPartnerMaster = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
 
-      fetchWeekOffMasterList();
+      fetchChannelPartnerMasterList();
 
       return
     }
 
     const filterParams: FilterInfo = {
-      WeekOffPolicyName: searchValue.trim(),
+      Name: searchValue.trim(),
     };
 
-    await loadWeekOff(1, filterParams);
+    await loadChannelPartnerMaster(1, filterParams);
   };
 
   //#endregion
 
-  //#region CLEAR WEEK OFF MASTER 
-  const clearSearchWeekOff = () => {
+  //#region CLEAR CHANNEL PARTNER MASTER 
+  const clearSearchChannelPartnerMaster = () => {
     setSearchTerm('');
 
     debouncedSearch.cancel?.();
@@ -182,7 +182,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     setFilters({});
     setTempFilters({});
     setPagination({ currentPage: 1 });
-    loadWeekOff(1, {});
+    loadChannelPartnerMaster(1, {});
     try {
       navigate(location.pathname, { replace: true, state: {} });
     } catch {
@@ -191,34 +191,30 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   //#endregion
 
   //#region EXPORT / IMPORT EXCEL AND PDF
-  const handleExportWeekOffs = async (exportType: 'Excel' | 'PDF') => {
+  const handleExportChannelPartnerMaster = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
         // Find the column label for sorting
         let sortByParam = undefined
-
         if (sortInfo) {
-
-          const column = WeekOffMasterColumns.find(col => col.key === sortInfo.column);
-
+          const column = ChannelPartnerMasterColumns.find(col => col.key === sortInfo.column);
           if (column) {
-
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
-        const params: FilterWithPaginationWeekOffMasterRequest = {
+        const params: FilterWithPaginationChannelPartnerMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
-          WeekOffPolicyName: filters.WeekOffPolicyName?.trim() || undefined,
+          Name: filters.Name?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         };
 
-        const response = await getWeekOff(params);
+        const response = await getChannelPartnerMaster(params);
 
-        handleExportFile(response, exportType, 'WeekOff Master', addToast);
+        handleExportFile(response, exportType, 'Channel Partner Master', addToast);
 
         return response;
       },
@@ -229,22 +225,78 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     );
   };
 
-  const handleExportWeekOffExcel = () => handleExportWeekOffs('Excel')
-  const handleExportWeekOffPdf = () => handleExportWeekOffs('PDF')
+  const handleExportChannelPartnerExcel = () => handleExportChannelPartnerMaster('Excel')
+  const handleExportChannelPartnerPdf = () => handleExportChannelPartnerMaster('PDF')
   //#endregion
 
+  //#region IMPORT EXCEL | DOWNLOAD
 
-  //#region API | SERVICES CALL TO GET WEEK OFF
-  const getWeekOff = async (filterParams: FilterWithPaginationWeekOffMasterRequest) => {
+  const excelImportChannelPartnerMaster = async () => {
 
-    return await WeekOffMasterService.apiCallPullWeekOffMaster(filterParams);
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setIsLoadingMessage,
+
+      async () => {
+
+
+        return null;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Import failed' })
+      },
+      undefined,
+      'Preparing Import'
+    )
+  }
+
+
+  const downloadExcelSampleChannelPartnerMaster = async () => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+        // Find the column label for sorting
+
+        const params: FilterPullExcelSample = {
+          TableName: 'CHANNEL PATNER MASTER'
+        }
+
+        const response = await technicalService.apiCallPullExcelSample(params);
+
+        handleExportFile(response, 'Excel', 'Channel Partner Master', addToast, 'Sample file download successfully')
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Export failed' })
+      },
+      undefined,
+      'Preparing Downloading'
+    )
+  }
+
+  const handleExcelImportChannelPartnerMaster = () => excelImportChannelPartnerMaster()
+  const handleDownloadExcelSampleChannelPartnerMaster = () => downloadExcelSampleChannelPartnerMaster()
+
+
+
+  //#endregion
+  //#region API | SERVICES CALL TO GET CHANNEL PARTNER
+  const getChannelPartnerMaster = async (filterParams: FilterWithPaginationChannelPartnerMasterRequest) => {
+
+    return await ChannelPartnerMasterService.apiCallPullChannelPartnerMaster(filterParams);
   }
   //#endregion
 
 
   //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = useCallback((page: number) => {
-    fetchWeekOffMasterList(page);
+    fetchChannelPartnerMasterList(page);
   }, []);
 
   //#region TABLE SORT COLUMN
@@ -252,13 +304,13 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
     setSortInfo(sortInfo);
 
-    fetchWeekOffMasterList(1);
+    fetchChannelPartnerMasterList(1);
 
   }, []);
   //#endregion
 
   //#region TABLE PAGINATION INFO
-  const WeekOffPaginationInfo: PaginationInfo = useMemo(
+  const ChannelPartnerPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
       totalPages: pagination.totalPages,
@@ -269,14 +321,14 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     [pagination, handlePageChange]
   );
 
-  const WeekOffsForTable = useMemo(() => WeekOffOffMasterList, [WeekOffOffMasterList]);
+  const ChannelPartnerMasterForTable = useMemo(() => channelPartnerMasterList, [channelPartnerMasterList]);
   //#endregion
 
-  //#region NAVIGATE TO  VIEW WEEK OFF VIEW PAGE
-  const handleNavigateToView = (row: WeekOffMasterData) => {
-    navigate('/WeekOffMaster/view', {
+  //#region NAVIGATE TO  VIEW CHANNEL PARTNER
+  const handleNavigateToView = (row: ChannelPartnerMasterData) => {
+    navigate('/channelPartnerMaster/view', {
       state: {
-        WeekOffData: row,
+        editChannelPartnerData: row,
         listState: {
           page: pagination.currentPage,
           filters,
@@ -287,9 +339,9 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     });
   };
 
-  //#region NAVIGATE TO ADD WEEK OFF
-  const handleAddWeekOffModal = useCallback(() => {
-    navigate('/WeekOffMaster/add', {
+  //#region NAVIGATE TO ADD CHANNEL PARTNER
+  const handleAddChannelPartnerModal = useCallback(() => {
+    navigate('/channelPartnerMaster/add', {
       state: {
         fromList: true,
         listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
@@ -300,10 +352,10 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE COLUMNS
-  const WeekOffMasterColumns = useMemo<TableColumn[]>(() => [
+  const ChannelPartnerMasterColumns = useMemo<TableColumn[]>(() => [
     {
-      key: 'WeekOffPolicyName',
-      label: 'Week Off Name',
+      key: 'Name',
+      label: 'Full Name',
       width: '20',
       sortable: true,
       fixed: 'left',
@@ -318,8 +370,8 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       )
     },
     {
-      key: 'WeekOffPolicyCode',
-      label: 'Week Off Code',
+      key: 'CompanyName',
+      label: 'Company Name',
       width: '15',
       sortable: false,
       align: 'center',
@@ -332,8 +384,8 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       )
     },
     {
-      key: 'WeekDays',
-      label: 'Week Days',
+      key: 'EmailId',
+      label: 'Email Id',
       width: '15',
       sortable: false,
       align: 'center',
@@ -346,121 +398,122 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       )
     },
     {
-      key: 'WeekDaysStartsOn',
-      label: 'Week Days Starts On',
+      key: 'MobileNumber',
+      label: 'Mobile Number',
       width: '15',
       sortable: false,
-      align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
+      align: 'left',
+      render: (value) => value ? `+91 ${value}`:'-'
     },
-    {
-      key: 'WeeklyOff',
-      label: 'Weekly Off',
-      width: '15',
-      sortable: false,
-      align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
-    },
-    {
-      key: 'WeeklyOff2',
-      label: 'Weekly Off2',
-      width: '15',
-      sortable: false,
-      align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
-    },
-    {
-      key: 'WeeklyOff2Type',
-      label: 'Weekly Off2 Type',
-      width: '15',
-      sortable: false,
-      align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
-    },
-    {
-      key: 'NotApplicableForMonths',
-      label: 'Not Applicable For Months',
-      width: '15',
-      sortable: false,
-      align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
-    },
-  ], [handleNavigateToView]);
 
+    {
+      key: 'OfficeAddress',
+      label: 'Office Address',
+      width: '12',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || '-'
+    },
+
+    {
+      key: 'PanNumber',
+      label: 'Pan Number',
+      width: '12',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="120px"
+          tooltipThreshold={12}
+        />
+      )
+    },
+    {
+      key: 'AadharCardNumber',
+      label: 'Aadhar Card Number',
+      width: '12',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="120px"
+          tooltipThreshold={12}
+        />
+      )
+    },
+    {
+      key: 'GSTNumber',
+      label: 'GST Number',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="150px"
+          tooltipThreshold={15}
+        />
+      )
+    },
+    {
+      key: 'RERANumber',
+      label: 'RERA Number',
+      width: '12',
+      sortable: false,
+      align: 'center',
+      render: (value) => (
+        <TooltipText
+          text={value || 'N/A'}
+          maxWidth="120px"
+          tooltipThreshold={12}
+        />
+      )
+    }
+
+  ], [handleNavigateToView]);
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
-  const requiredWeekOffColumnKeys: string[] = ['WeekOffPolicyName'];
+  const requiredChannelPartnerColumnKeys: string[] = ['Name'];
 
-  const allWeekOffColumnKeys: string[] = WeekOffMasterColumns.map(c => c.key);
+  const allChannelPartnerColumnKeys: string[] = ChannelPartnerMasterColumns.map(c => c.key);
 
-  const [selectedWeekOffColumnKeys, setSelectedWeekOffColumnKeys] = useState<string[]>(() => {
+  const [selectedChannelPartnerColumnKeys, setSelectedChannelPartnerColumnKeys] = useState<string[]>(() => {
     try {
 
-      const saved = LocalStorageHelper.getWeekOffMasterTableColumns?.();
+      const saved = LocalStorageHelper.getChannelPartnerMasterTableColumns?.();
 
       if (saved) {
 
         const parsed = JSON.parse(saved) as string[]
         // Ensure required columns are always present
 
-        const withRequired = Array.from(new Set([...parsed, ...requiredWeekOffColumnKeys]));
+        const withRequired = Array.from(new Set([...parsed, ...requiredChannelPartnerColumnKeys]));
 
         // Filter out any keys that no longer exist
-        return withRequired.filter(k => allWeekOffColumnKeys.includes(k));
+        return withRequired.filter(k => allChannelPartnerColumnKeys.includes(k));
       }
     } catch { }
-    return allWeekOffColumnKeys;
+    return allChannelPartnerColumnKeys;
   });
 
   useEffect(() => {
-    setSelectedWeekOffColumnKeys(prev => Array.from(new Set([...prev, ...requiredWeekOffColumnKeys])).filter(k => allWeekOffColumnKeys.includes(k)));
+    setSelectedChannelPartnerColumnKeys(prev => Array.from(new Set([...prev, ...requiredChannelPartnerColumnKeys])).filter(k => allChannelPartnerColumnKeys.includes(k)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ChannelPartnerMasterColumns.length])
 
-  }, [WeekOffMasterColumns.length])
-
-  const visibleWeekOffColumns = useMemo(
-
-    () => WeekOffMasterColumns.filter(col => selectedWeekOffColumnKeys.includes(col.key)),
-
-    [WeekOffMasterColumns, selectedWeekOffColumnKeys]
+  const visibleChannelPartnerColumns = useMemo(
+    () => ChannelPartnerMasterColumns.filter(col => selectedChannelPartnerColumnKeys.includes(col.key)),
+    [ChannelPartnerMasterColumns, selectedChannelPartnerColumnKeys]
   );
   //#endregion
 
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
     setFilters(tempFilters);
-    loadWeekOff(1, tempFilters);
+    loadChannelPartnerMaster(1, tempFilters);
     setShowFilterPopup(false);
   };
   //#endregion
@@ -474,7 +527,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     setPagination({ currentPage: 1 });
 
     // load empty filters
-    loadWeekOff(1, {});
+    loadChannelPartnerMaster(1, {});
 
     setShowFilterPopup(false);
     // clear router state (very important)
@@ -491,27 +544,21 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   //#endregion
 
   return (
-
-
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-      {/* LOADER */}
+      {/* Loader */}
 
       <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
-
-      {/* ============================================================================
-          COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
-           ============================================================================ */}
 
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By WeekOff Name"
+        searchPlaceholder="Search By Channel Partner Name"
         onSearchChange={v => {
           setSearchTerm(v);
           debouncedSearch(v);
         }}
-        onClearSearch={clearSearchWeekOff}
+        onClearSearch={clearSearchChannelPartnerMaster}
         isShowFilterButton
         filters={filters}
         onOpenFilter={() => {
@@ -519,28 +566,32 @@ export const WeekOffOffMasterMaster: React.FC = () => {
           setShowFilterPopup(true);
         }}
         isShowCustomizeButton
-        onCustomize={() => setIsShowCustomizeWeekOffOffColumnsModal(true)}
+        onCustomize={() => setIsShowCustomizeChannelPartnerColumnsModal(true)}
 
         // ADD
         isShowAddButton={canAction}
         addTitle="Add"
-        onAdd={handleAddWeekOffModal}
+        onAdd={handleAddChannelPartnerModal}
 
+        // IMPORT
+        isShowImportButton={canAction}
+        onUploadExcel={handleExcelImportChannelPartnerMaster}
+        onDownloadSampleExcel={handleDownloadExcelSampleChannelPartnerMaster}
 
         // EXPORT
         isShowExportButton={canExport}
-        onExportExcel={handleExportWeekOffExcel}
-        onExportPdf={handleExportWeekOffPdf}
+        onExportExcel={handleExportChannelPartnerExcel}
+        onExportPdf={handleExportChannelPartnerPdf}
         exportLoading={isLoading}
       />
 
-      {/* DATA TABLE WEEK OFF */}
+      {/* DATA TABLE CHANNEL PARTNER*/}
 
       <DataTable
-        data={WeekOffsForTable}
-        columns={visibleWeekOffColumns}
-        pagination={WeekOffPaginationInfo}
-        emptyMessage="No WeekOff found"
+        data={ChannelPartnerMasterForTable}
+        columns={visibleChannelPartnerColumns}
+        pagination={ChannelPartnerPaginationInfo}
+        emptyMessage="No Channel Partner found"
         fixedHeight
         recordsPerPage={20}
         className="flex-1"
@@ -551,34 +602,34 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       {/* CUSTOMIZE COLUMNS MODAL */}
 
       <CustomizeColumnsModal
-        isOpen={isShowCustomizeWeekOffColumnsModal}
-        onClose={() => setIsShowCustomizeWeekOffOffColumnsModal(false)}
+        isOpen={isShowCustomizeChannelPartnerColumnsModal}
+        onClose={() => setIsShowCustomizeChannelPartnerColumnsModal(false)}
         onApply={keys => {
           const withRequired = Array.from(
 
-            new Set([...keys, ...requiredWeekOffColumnKeys])
+            new Set([...keys, ...requiredChannelPartnerColumnKeys])
           );
-          setSelectedWeekOffColumnKeys(withRequired);
+          setSelectedChannelPartnerColumnKeys(withRequired);
 
           try {
-            LocalStorageHelper.storeWeekOffMasterTableColumns?.(
+            LocalStorageHelper.storeChannelPartnerMasterTableColumns?.(
 
               JSON.stringify(withRequired)
             );
           } catch { }
         }}
-        columns={WeekOffMasterColumns}
-        selectedKeys={selectedWeekOffColumnKeys}
-        requiredKeys={requiredWeekOffColumnKeys}
+        columns={ChannelPartnerMasterColumns}
+        selectedKeys={selectedChannelPartnerColumnKeys}
+        requiredKeys={requiredChannelPartnerColumnKeys}
         title="Customize Table Columns"
       />
 
-      {/* FILTER WEEK OFF MODAL */}
+      {/* FILTER CHANNEL PARTNER MODAL */}
 
       <Modal
         isOpen={showFilterPopup}
         onClose={() => setShowFilterPopup(false)}
-        title="Filter - WeekOff Master"
+        title="Filter - Channel Partner Master"
         onSubmit={e => {
           e.preventDefault();
           applyFilters();
@@ -592,15 +643,16 @@ export const WeekOffOffMasterMaster: React.FC = () => {
         <div className="space-y-6">
           <div className="space-y-4">
             <Input type="text"
-              label='WeekOff Name'
-              value={tempFilters?.WeekOffPolicyName ?? ''}
-              onChange={e => handleFilterChange('WeekOffPolicyName', e.target.value)}
-              placeholder="Enter WeekOff Name" />
+              label='Channel Partner Name'
+              value={tempFilters?.Name ?? ''}
+              onChange={e => handleFilterChange('Name', e.target.value)}
+              placeholder="Enter Channel Partner Name" />
           </div>
         </div>
       </Modal>
     </div>
+
   );
 };
 
-export default WeekOffOffMasterMaster;
+export default ChannelPartnerMaster;

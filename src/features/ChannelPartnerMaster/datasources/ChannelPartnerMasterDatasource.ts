@@ -3,7 +3,6 @@ import { TokenExpiredException } from "@/core/config/baseClientexceptions"
 import { ChannelPartnerMasterApi } from '@/features/ChannelPartnerMaster/api/ChannelPartnerMasterApi'
 import type {
     FilterWithPaginationChannelPartnerMasterRequest,
-    AddUpdateChannelPartnerMasterRequest,
     DeleteChannelPartnerMasterRequest,
     ChannelPartnerMasterListResponse,
     ChannelPartnerMasterSaveResponse,
@@ -12,7 +11,7 @@ import type {
 export abstract class ChannelPartnerMasterDatasource {
 
     abstract pullChannelPartnerMaster(params: FilterWithPaginationChannelPartnerMasterRequest, signal?: AbortSignal): Promise<ChannelPartnerMasterListResponse>;
-    abstract addUpdateChannelPartnerMaster(data: AddUpdateChannelPartnerMasterRequest): Promise<ChannelPartnerMasterSaveResponse>;
+    abstract addUpdateChannelPartnerMaster(data: FormData): Promise<ChannelPartnerMasterSaveResponse>;
     abstract deleteChannelPartnerMasterRequest(params: DeleteChannelPartnerMasterRequest): Promise<ChannelPartnerMasterSaveResponse>;
 }
 

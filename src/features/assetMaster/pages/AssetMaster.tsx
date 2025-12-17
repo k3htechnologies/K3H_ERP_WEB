@@ -502,7 +502,7 @@ export const AssetMaster: React.FC = () => {
 
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Asset"
+          addTitle="Add"
           onAdd={handleAddAssetModal}
 
 

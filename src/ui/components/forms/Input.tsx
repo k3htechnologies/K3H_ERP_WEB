@@ -89,7 +89,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
     const inputStyles = {
       ...getVariantStyles(),
-      ...(disabled && {
+      ...(disabled  && {
         backgroundColor: theme.colors.backgroundSecondary,
         color: theme.colors.textLight,
         cursor: 'not-allowed',

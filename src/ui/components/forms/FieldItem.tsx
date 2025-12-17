@@ -19,15 +19,13 @@ export const FieldItem: React.FC<{
   urls = null,
 }) => {
   const displayValue = value !== undefined && value !== null && value !== '' ? String(value) : '-';
-  const borderClass = withBorder ? 'border-b border-gray-200' : '';
+  const borderClass = withBorder ? 'border-b border-[#135bec2e]' : '';
 
   // parse urls (returns [])
   const imageUrls = parseDocumentUrls(urls);
   const hasDocs = imageUrls.length > 0;
 
-  // Grid style for row layout: Label | ":" | Value
-  // If you want different label width, change '180px' here.
-  const rowGridStyle: React.CSSProperties = {
+   const rowGridStyle: React.CSSProperties = {
     display: 'grid',
     gridTemplateColumns: '180px 16px 1fr',
     gap: 8,

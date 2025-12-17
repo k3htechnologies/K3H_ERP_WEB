@@ -760,6 +760,7 @@ export const TncMaster: React.FC = () => {
         <Tabs
           tabs={tncTabList}
           defaultActive={activeTab}
+          islarge={true}
           onTabChange={(t) => {
             setActiveTab(t.id);
 
@@ -769,6 +770,7 @@ export const TncMaster: React.FC = () => {
             };
 
             loadTnc(1, newFilters);
+            
           }}
         />
 

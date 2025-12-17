@@ -164,7 +164,7 @@ export const EmployeeMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Employee Data'
+      'Loading Employee'
     );
   };
 
@@ -677,7 +677,6 @@ export const EmployeeMaster: React.FC = () => {
   //#endregion
 
   return (
-    
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <Loader loading={isLoading} title={loadingMessage}>
           <div></div>

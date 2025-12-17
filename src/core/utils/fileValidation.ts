@@ -137,20 +137,69 @@ export const isValidIFSC = (ifsc: string): boolean => {
 // 🔹 FILTER ONLY NUMBERS AND DECIMAL
 // ----------------------------------
 
-export const filterNumbersWithDecimal = (value: string): string => {
- value = value.replace(/[^0-9.]/g, "");
+    export const filterNumbersWithDecimal = (value: string): string => {
+    // remove invalid characters
+    value = value.replace(/[^0-9.]/g, "");
 
-  const firstDotIndex = value.indexOf(".");
-  if (firstDotIndex !== -1) {
-    const beforeDot = value.slice(0, firstDotIndex + 1);
-    const afterDot = value.slice(firstDotIndex + 1).replace(/\./g, ""); // remove extra dots
-    value = beforeDot + afterDot;
-  }
+    // allow only ONE dot
+    const parts = value.split(".");
+    if (parts.length > 2) {
+        value = parts[0] + "." + parts.slice(1).join("");
+    }
 
-  if (firstDotIndex !== -1) {
-    const [intPart, decimalPart = ""] = value.split(".");
-    value = intPart + "." + decimalPart.substring(0, 2);
-  }
+    // limit to 2 decimal places
+    if (value.includes(".")) {
+        const [intPart, decimalPart = ""] = value.split(".");
+        value = intPart + "." + decimalPart.slice(0, 2);
+    }
 
-  return value;
+    return value;
+    };
+
+
+
+// ----------------------------------
+// PERCENTAGE
+// ----------------------------------
+
+export const filterPercentage = (value: string): string =>
+  value
+    .replace(/[^0-9.]/g, '')          // allow digits & dot
+    .replace(/(\..*)\./g, '$1')       // only one dot
+    .slice(0, 6);                     // e.g. 100.00
+
+export const isValidPercentage = (value: string): boolean => {
+  if (!value) return false;
+
+  const num = Number(value);
+  if (isNaN(num)) return false;
+
+  return num >= 0 && num <= 100;
 };
+
+// ----------------------------------
+// CALCULATE PERCENTAGE
+// ----------------------------------
+
+export const calculatePercentageAmount = (
+  amount: number | null | undefined,
+  percentage: number | null | undefined,
+  decimals = 2
+): number | null => {
+  if (
+    amount == null ||
+    percentage == null ||
+    isNaN(amount) ||
+    isNaN(percentage)
+  ) {
+    return null;
+  }
+
+  const result = (amount * percentage) / 100;
+
+  return (
+    Math.round(result * Math.pow(10, decimals)) /
+    Math.pow(10, decimals)
+  );
+};
+

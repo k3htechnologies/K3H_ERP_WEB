@@ -4,7 +4,7 @@ import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type Ta
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import type { BuildingData, FilterWithPaginationBuildingRequest } from '@/features/building/models/BuildingModel';
+import type { BuildingData, DeleteBuildingRequest, FilterWithPaginationBuildingRequest } from '@/features/building/models/BuildingModel';
 import { buildingService } from '@/features/building/services/BuildingService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
@@ -18,8 +18,9 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { useLocation, type Location, useNavigate } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
-import { FileText, Info } from 'lucide-react';
+import { FileText, Info, Trash2 } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 
 export const Building: React.FC = () => {
   //#region STATE
@@ -57,6 +58,10 @@ export const Building: React.FC = () => {
       };
     };
   };
+
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+
+  const [deleteBuildingData, setDeleteBuildingData] = useState<BuildingData | null>(null)
 
   //#endregion
 
@@ -105,7 +110,7 @@ export const Building: React.FC = () => {
     };
   }, [debouncedSearch]);
 
-  
+
   useEffect(() => {
     if (!projectId) return;
     setFilters({});
@@ -164,7 +169,7 @@ export const Building: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Building Data'
+      'Loading Building'
     );
   };
 
@@ -281,7 +286,7 @@ export const Building: React.FC = () => {
   const buildingsForTable = useMemo(() => buildingList, [buildingList]);
   //#endregion
 
-  //#region VIEW BUILDING MASTER
+  //#region VIEW BUILDING DETAILS
 
   const handleViewBuildingDetails = useCallback((row: BuildingData) => {
     navigate('/building/view', {
@@ -293,6 +298,9 @@ export const Building: React.FC = () => {
           filters,
           sortInfo,
           searchTerm,
+          buildingId: row.BuildingId,
+          projectId: row.ProjectId,
+          buildingName: row.BuildingName
         },
       },
     });
@@ -341,6 +349,15 @@ export const Building: React.FC = () => {
       },
     });
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  //#endregion
+
+  //#region CONFIRMATION DIALOG BOX
+
+  const handleConfirmationDialogBoxOpen = useCallback((row : BuildingData) => {
+    setDeleteBuildingData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
+
   //#endregion
 
   //#region TABLE COLUMN
@@ -471,6 +488,23 @@ export const Building: React.FC = () => {
         render: (_value, row) => (
           canAction ? (
             <div className="flex items-center justify-center gap-2">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Vendor"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
 
               <Button
                 onClick={(e) => {
@@ -514,7 +548,7 @@ export const Building: React.FC = () => {
         )
       }
     ],
-    [canAction, handleViewBuildingDetails, handleViewBuildingDocument]
+    [canAction, handleViewBuildingDetails, handleViewBuildingDocument, handleConfirmationDialogBoxOpen]
   );
   //#endregion
 
@@ -590,6 +624,63 @@ export const Building: React.FC = () => {
 
   //#endregion
 
+  //#region  DELETE VENDOR EVENT
+  const handleDeleteBuilding = async () => {
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteBuildingData) return
+
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+
+        const params: DeleteBuildingRequest = {
+          BuildingId: deleteBuildingData.BuildingId,
+          UniqueKey: deleteBuildingData.Uniquekey ?? "",
+          ProjectId: Number(projectId)
+        }
+
+        const response = await buildingService.apiCallDeleteBuilding(params);
+
+        if (E.isRight(response)) {
+
+          setBuildingList(prevData => prevData.filter(item => item.BuildingId !== deleteBuildingData.BuildingId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteBuildingData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+        }
+
+        return response
+      },
+      undefined,
+      (error: unknown) => {
+        const err = error as { message?: string };
+        addToast({ type: 'error', title: err.message || 'An error occurred' })
+      },
+      undefined,
+      'Delete Building'
+    )
+  }
+
+  //#endregion
+
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <Loader loading={isLoading} title={loadingMessage}>
@@ -656,6 +747,22 @@ export const Building: React.FC = () => {
         selectedKeys={selectedBuildingColumnKeys}
         requiredKeys={requiredBuildingColumnKeys}
         title="Customize Table Columns"
+      />
+
+      {/* DELETE CONFIRMATION MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteBuildingData(null)
+        }}
+        onConfirm={handleDeleteBuilding}
+        title="You are about to delete a building?"
+        message="Deleting this building will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
       />
 
       <Modal

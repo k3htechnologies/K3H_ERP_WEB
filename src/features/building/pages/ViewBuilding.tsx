@@ -1,24 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
-import type { BuildingData } from '../models/BuildingModel';
+import type { BuildingData, BuildingDetailsData, BuildingDocumentData, BuildingKeyContactDetails, FilterWithPaginationBuildingDetailsRequest, FilterWithPaginationBuildingDocumentRequest } from '@/features/building/models/BuildingModel';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import Accordion from '@/ui/components/Card/Accordion';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import { ArrowLeft, Edit } from 'lucide-react';
-import { Button } from '@/ui/components/forms';
 import { buildingService } from '@/features/building/services/BuildingService';
 import type { FilterWithPaginationBuildingRequest } from '../models/BuildingModel';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
+import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
+import Tabs from '@/ui/components/Tab/Tab';
+import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
+import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 
 export const ViewBuilding: React.FC = () => {
 
     //#region STATE MANAGEMENT
     const [buildingData, setBuildingData] = useState<BuildingData | null>(null);
+    const [buildingDocumentList, setBuildingDocumentList] = useState<BuildingDocumentData[]>([]);
+    const [contactDetailsList, setContactDetailsList] = useState<Omit<BuildingKeyContactDetails, 'BuildingId' | 'ProjectId' | 'CreatedById' | 'CreatedBy' | 'CreatedDate' | 'ModifiedById' | 'ModifiedBy' | 'ModifiedDate' | 'LastModifiedBy' | 'LastModifiedDate'>[]>([]);
+    const [buildingDetailsList, setBuildingDetailsList] = useState<BuildingDetailsData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
+    const { canAction } = useMenuPermissions();
     // TOAST
     const { addToast } = useToast();
 
@@ -34,6 +43,9 @@ export const ViewBuilding: React.FC = () => {
                 filters: any;
                 sortInfo?: any;
                 searchTerm?: string;
+                buildingId?: number;
+                projectId?: number;
+                buildingName?: string;
             };
         };
     };
@@ -51,21 +63,48 @@ export const ViewBuilding: React.FC = () => {
     const incomingBuildingData = (location.state?.editBuildingData ?? null) as BuildingData | null;
     //#endregion
 
+    //#region TAB ACTIVITY
+    const buildingTabList = [
+        { id: "Overview", label: "Overview" },
+        { id: "Details", label: "Details" },
+        { id: "Document", label: "Document" },
+    ];
+
+    const [activeTab, setActiveTab] = useState<string>(buildingTabList[0].id);
+
+    //#endregion
+    
     //#region INIT
     useEffect(() => {
+
         if (incomingBuildingData) {
+
             setBuildingData(incomingBuildingData);
+
             return;
         }
 
-        loadBuildingFromServer();
+        if (activeTab === 'Overview') {
+
+            loadBuildingFromServer();
+
+        } else if (activeTab === 'Document') {
+
+            loadBuildingDocumentFromServer();
+
+        }
+        else if (activeTab === 'Details') {
+
+            loadBuildingDetailsFromServer();
+
+        }
     }, []);
 
     //#endregion
 
-    //#region DATA LOAD
+    //#region DATA LOAD OVERVIEW
     const loadBuildingFromServer = async () => {
-        if (!preservedListState?.filters?.BuildingId) return;
+        if (!preservedListState?.filters?.buildingId) return;
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
@@ -74,7 +113,7 @@ export const ViewBuilding: React.FC = () => {
                 const params: FilterWithPaginationBuildingRequest = {
                     PageNumber: 1,
                     PageSize: 1,
-                    BuildingId: preservedListState.filters.BuildingId,
+                    BuildingId: preservedListState.buildingId,
                     IsCheckPermission: false,
                     ProjectId: Number(projectId)
                 };
@@ -82,7 +121,9 @@ export const ViewBuilding: React.FC = () => {
                 const response = await buildingService.apiCallPullBuilding(params);
 
                 if (E.isRight(response)) {
+
                     setBuildingData(response.right.Data?.[0] ?? null);
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -99,6 +140,155 @@ export const ViewBuilding: React.FC = () => {
     };
 
     //#endregion 
+
+    //#region DATA LOAD DOCUMENT
+    const loadBuildingDocumentFromServer = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationBuildingDocumentRequest = {
+                    PageNumber: 1,
+                    PageSize: 1000,
+                    IsCheckPermission: true,
+                    ProjectId: Number(projectId),
+                    BuildingId: preservedListState?.buildingId
+                }
+
+                const response = await buildingService.apiCallPullBuildingDocument(params);
+
+                if (E.isRight(response)) {
+
+                    setBuildingDocumentList(response.right.Data);
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Building Data'
+        );
+    };
+
+    const buildingDocumentColumns = useMemo<TableColumn[]>(
+        () => [
+            {
+                key: 'DocumentName',
+                label: 'Document Name',
+                width: '33',
+                sortable: true,
+                fixed: 'left',
+                align: 'left',
+                render: (value) => value || 'N/A'
+            },
+            {
+                key: 'DocumentURL',
+                label: 'Document',
+                width: '20',
+                sortable: false,
+                align: 'center',
+                render: (value: string) => {
+                    const urls = parseDocumentUrls(value);
+                    if (urls.length === 0) return '-';
+                    return (
+                        <MultiImageViewer
+                            images={urls}
+                            title="Building Document"
+                            triggerLabel={`View (${urls.length})`}
+                        />
+                    );
+                }
+
+            },
+            {
+                key: 'CreatedBy',
+                label: 'Last Modified By',
+                width: '33',
+                sortable: true,
+                align: 'center',
+                render: (value) => value || 'N/A'
+            },
+            {
+                key: 'CreatedDate',
+                label: 'Last Modified Date',
+                width: '33',
+                sortable: true,
+                align: 'center',
+                render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+            }
+        ],
+
+        [canAction]
+    )
+
+    //#endregion 
+
+    //#region DATA LOAD Description
+    const loadBuildingDetailsFromServer = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationBuildingDetailsRequest = {
+                    ProjectId: Number(projectId),
+                    BuildingId: preservedListState?.buildingId
+                }
+
+                const response = await buildingService.apiCallPullBuildingDetails(params);
+
+                if (E.isRight(response)) {
+
+                    setBuildingDetailsList(response.right.Data);
+
+                    const row = response.right.Data?.[0];
+
+                    if (row.BuildingKeyContactDetailsData && row.BuildingKeyContactDetailsData.length > 0) {
+
+                        const contacts = row.BuildingKeyContactDetailsData.map(contact => ({
+                            BuildingKeyContactDetailsId: contact.BuildingKeyContactDetailsId ?? 0,
+                            Uniquekey: contact.Uniquekey ?? null,
+                            ContactType: contact.ContactType ?? '',
+                            ContactName: contact.ContactName ?? '',
+                            MobileNumber: contact.MobileNumber ?? '',
+                            EmailId: contact.EmailId ?? ''
+                        }));
+
+                        setContactDetailsList(contacts);
+
+                    } else {
+
+                        setContactDetailsList([]);
+                    }
+
+
+                } else {
+                    addToast({
+                        type: 'error', title: response.left.message
+                    });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Building'
+        );
+    };
+
+    //#endregion 
+
     //#region EDIT BUILDING
 
     const handleEditBuilding = (row: BuildingData) => {
@@ -114,6 +304,49 @@ export const ViewBuilding: React.FC = () => {
 
     //#endregion
 
+    //#region EDIT BUILDING DOCUMENT
+
+    const handleViewBuildingDocument = (row: BuildingDocumentData) => {
+        navigate('/building/document', {
+            state: {
+                buildingId: row.BuildingId,
+                projectId: row.ProjectId,
+                listState: {
+                    page: preservedListState?.page,
+                    filters: preservedListState?.filters,
+                    sortInfo: preservedListState?.sortInfo,
+                    searchTerm: preservedListState?.searchTerm,
+                    buildingId: row.BuildingId,
+                    projectId: row.ProjectId,
+                    buildingName: preservedListState?.buildingName,
+                }
+            }
+        });
+    };
+    //#endregion
+
+    //#region EDIT BUILDING Description
+
+    const handleViewBuildingDescription = (row: BuildingDetailsData) => {
+        navigate('/building/description', {
+            state: {
+                buildingId: row.BuildingId,
+                projectId: row.ProjectId,
+                listState: {
+                    page: preservedListState?.page,
+                    filters: preservedListState?.filters,
+                    sortInfo: preservedListState?.sortInfo,
+                    searchTerm: preservedListState?.searchTerm,
+                    buildingId: row.BuildingId,
+                    projectId: row.ProjectId,
+                    buildingName: preservedListState?.buildingName,
+                }
+            }
+        });
+    };
+
+    //#endregion
+
     //#region BACK BUILDING PAGE
     const handleBackToListBuilding = () => {
         navigate('/building', {
@@ -121,155 +354,302 @@ export const ViewBuilding: React.FC = () => {
         });
     };
     //#endregion
+
     return (
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>
 
-            <div className="grid grid-cols-12 gap-6">
-                {/* Left column: profile card */}
-                <div className="col-span-5">
-                    <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-                        <div className="pt-10 px-2 pb-2">
-                            <div className="text-center">
-                                <h3 className="text-lg font-semibold text-gray-900">{buildingData?.BuildingName} <span className="inline-block ml-2 text-green-500">●</span></h3>
-                                <div className="mt-2 flex justify-center gap-2">
-                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">{buildingData?.CTSNumber}</span>
-                                </div>
-                            </div>
+            <HeaderActionBar
+                titleText={`Building ${activeTab}`}
+                cancelText="Cancel"
+                EditText="Edit"
+                onCancel={() => handleBackToListBuilding()}
+                canAction={canAction}
+                onEdit={() => {
 
-                            {/* Basic Info box */}
-                            <div className="mt-6 rounded border border-gray-200">
+                    if (activeTab === "Overview") {
 
-                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                    <h4 className="font-semibold text-sm text-gray-800">
-                                        Basic information
-                                    </h4>
-                                </div>
+                        if (buildingData) handleEditBuilding(buildingData);
+                    }
 
+                    else if (activeTab === "Document") {
+                        const doc = buildingDocumentList?.[0];
+                        if (buildingDocumentList) handleViewBuildingDocument(doc)
+                    }
 
-                                <div className="p-4">
-                                    <FieldItem label="Building Name" value={buildingData?.BuildingName ?? '-'} isRow />
-                                    <FieldItem label="CTS Number" value={buildingData?.CTSNumber ?? '-'} isRow />
-                                    <FieldItem label="Road Width" value={buildingData?.RoadWidth ?? '-'} isRow />
-                                    <FieldItem label="Land Ownership" value={buildingData?.LandOwnershipType ?? '-'} isRow />
-                                    <FieldItem label="Litigation" value={buildingData?.IsLitigation ? 'Yes' : 'No'} isRow />
-                                    <FieldItem label="Litigation Remarks" value={buildingData?.LitigationRemarks ?? '-'} isRow />
-                                </div>
-                            </div>
+                    else if (activeTab === "Details") {
+                        const details = buildingDetailsList?.[0];
+                        if (buildingDetailsList) handleViewBuildingDescription(details)
+                    }
+                }}
 
-                            <div className="mt-4 flex gap-3">
-                                <Button
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        if (buildingData) {
-                                            handleEditBuilding(buildingData)
-                                        }
-                                    }}
-                                    color='blue'
-                                    fullWidth
-                                    size='sm'
-                                    title="Edit Info">
-                                    <Edit className="w-4 h-4" /> Edit Info
-                                </Button>
-                                <Button
+                isLoading={isLoading}
+            />
 
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        handleBackToListBuilding()
-                                    }}
-                                    color='transparent'
-                                    variant='transparent_border'
-                                    fullWidth
-                                    size='sm'
-                                    title="Back">
-                                    <ArrowLeft className="w-4 h-4" />  Cancel
-                                </Button>
-                            </div>
-                            {/* LOCATION */}
-                            <div className="mt-6 rounded border border-gray-200">
+            <div className='pt-3'>
 
-                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                    <h4 className="font-semibold text-sm text-gray-800">
-                                        Location Details
-                                    </h4>
-                                </div>
+                <Tabs
+                    tabs={buildingTabList}
+                    defaultActive={activeTab}
+                    onTabChange={(t) => {
 
+                        setActiveTab(t.id);
 
-                                <div className="p-4">
-                                    <FieldItem label="Country" value={buildingData?.CountryName ?? '-'} isRow />
-                                    <FieldItem label="State" value={buildingData?.StateName ?? '-'} isRow />
-                                    <FieldItem label="District" value={buildingData?.DistrictName ?? '-'} isRow />
-                                    <FieldItem label="City" value={buildingData?.CityName ?? '-'} isRow />
-                                </div>
-                            </div>
+                        if (t.id === "Overview") {
 
-                        </div>
-                    </div>
-                </div>
+                            loadBuildingFromServer()
+                        }
 
-                {/* Right column: details and accordions */}
-                <div className="col-span-7 space-y-4">
+                        else if (t.id === "Document") {
 
-                    <div className="grid grid-cols-1 gap-4">
+                            loadBuildingDocumentFromServer()
+                        }
 
-                        <div className="bg-white border border-gray-200 rounded p-4 shadow-sm">
-                            <h4 className="font-semibold mb-3">Property Information</h4>
+                        else if (t.id === "Details") {
 
-                            <FieldItem label="Total Plot Area (sqft)" value={buildingData?.TotalPlotAreaSqFt ?? '-'} isRow withBorder />
-                            <FieldItem label="Utilized Area (sqft)" value={buildingData?.TotalUnitsAreaUtilizedSqFt ?? '-'} isRow withBorder />
-                            <FieldItem label="Total Units" value={buildingData?.TotalNumberOfUnits ?? '-'} isRow withBorder />
-                            <FieldItem label="Floors" value={buildingData?.NumberOfFloors ?? '-'} isRow />
-                        </div>
-                    </div>
+                            loadBuildingDetailsFromServer()
+                        }
 
-                    {/* accordion cards */}
-                    <div className="space-y-3">
-                        <Accordion
-                            items={[
-                                {
-                                    key: "garden",
-                                    title: "Garden Information",
-                                    defaultOpen: true,
-                                    content: (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Is Garden" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
-                                            <FieldItem label="Garden Area (sqft)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
-                                        </div>
-                                    )
-                                },
-                                {
-                                    key: "religious",
-                                    title: "Religious Structure",
-                                    defaultOpen: true,
-                                    content: (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Is Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
-                                            <FieldItem label="Structure Area (sqft)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
-                                        </div>
-                                    )
-                                },
-                                {
-                                    key: "fsi",
-                                    title: "FSI / TDR",
-                                    defaultOpen: true,
-                                    content: (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="FSI / TDR Utilization (sqft)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />
-                                            <FieldItem label="Property Age (Years)" value={buildingData?.PropertyAgeYears ?? '-'} />
-                                        </div>
-                                    )
-                                }
-                            ]}
-                        />
-
-                    </div>
-
-                </div>
+                    }}
+                />
             </div>
+            
+            {activeTab === 'Overview' && (
+                <div className="grid grid-cols-12 gap-6 mt-6">
+                    {/* Left column: profile card */}
+                    <div className="col-span-5">
+                        <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+                            <div className="pt-10 px-2 pb-2">
+                                <div className="text-center">
+                                    <h3 className="text-lg font-semibold text-gray-900">{buildingData?.BuildingName} <span className="inline-block ml-2 text-green-500">●</span></h3>
+                                    <div className="mt-2 flex justify-center gap-2">
+                                        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">{buildingData?.CTSNumber}</span>
+                                    </div>
+                                </div>
+
+                                {/* Basic Info box */}
+                                <div className="mt-6 rounded border border-gray-200">
+
+                                    <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
+                                        <h4 className="font-semibold text-sm text-gray-800">
+                                            Basic information
+                                        </h4>
+                                    </div>
+
+
+                                    <div className="p-4">
+                                        <FieldItem label="Building Name" value={buildingData?.BuildingName ?? '-'} isRow />
+                                        <FieldItem label="CTS Number" value={buildingData?.CTSNumber ?? '-'} isRow />
+                                        <FieldItem label="Road Width" value={buildingData?.RoadWidth ?? '-'} isRow />
+                                        <FieldItem label="Land Ownership" value={buildingData?.LandOwnershipType ?? '-'} isRow />
+                                        <FieldItem label="Litigation" value={buildingData?.IsLitigation ? 'Yes' : 'No'} isRow />
+                                        <FieldItem label="Litigation Remarks" value={buildingData?.LitigationRemarks ?? '-'} isRow />
+                                    </div>
+                                </div>
+
+
+                                {/* LOCATION */}
+                                <div className="mt-6 rounded border border-gray-200">
+
+                                    <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
+                                        <h4 className="font-semibold text-sm text-gray-800">
+                                            Location Details
+                                        </h4>
+                                    </div>
+
+
+                                    <div className="p-4">
+                                        <FieldItem label="Country" value={buildingData?.CountryName ?? '-'} isRow />
+                                        <FieldItem label="State" value={buildingData?.StateName ?? '-'} isRow />
+                                        <FieldItem label="District" value={buildingData?.DistrictName ?? '-'} isRow />
+                                        <FieldItem label="City" value={buildingData?.CityName ?? '-'} isRow />
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right column: details and accordions */}
+                    <div className="col-span-7 space-y-4">
+
+                        <div className="grid grid-cols-1 gap-4">
+
+                            <div className="bg-white border border-gray-200 rounded p-4 shadow-sm">
+                                <h4 className="font-semibold mb-3">Property Information</h4>
+
+                                <FieldItem label="Total Plot Area (sqft)" value={buildingData?.TotalPlotAreaSqFt ?? '-'} isRow withBorder />
+                                <FieldItem label="Utilized Area (sqft)" value={buildingData?.TotalUnitsAreaUtilizedSqFt ?? '-'} isRow withBorder />
+                                <FieldItem label="Total Units" value={buildingData?.TotalNumberOfUnits ?? '-'} isRow withBorder />
+                                <FieldItem label="Floors" value={buildingData?.NumberOfFloors ?? '-'} isRow />
+                            </div>
+                        </div>
+
+                        {/* accordion cards */}
+                        <div className="space-y-3">
+                            <Accordion
+                                items={[
+                                    {
+                                        key: "garden",
+                                        title: "Garden Information",
+                                        defaultOpen: true,
+                                        content: (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Is Garden" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
+                                                <FieldItem label="Garden Area (sqft)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
+                                            </div>
+                                        )
+                                    },
+                                    {
+                                        key: "religious",
+                                        title: "Religious Structure",
+                                        defaultOpen: true,
+                                        content: (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Is Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
+                                                <FieldItem label="Structure Area (sqft)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
+                                            </div>
+                                        )
+                                    },
+                                    {
+                                        key: "fsi",
+                                        title: "FSI / TDR",
+                                        defaultOpen: true,
+                                        content: (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="FSI / TDR Utilization (sqft)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />
+                                                <FieldItem label="Property Age (Years)" value={buildingData?.PropertyAgeYears ?? '-'} />
+                                            </div>
+                                        )
+                                    }
+                                ]}
+                            />
+
+                        </div>
+
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'Document' && (
+                <DataTable
+                    data={buildingDocumentList}
+                    columns={buildingDocumentColumns}
+                    emptyMessage="No Building Documents Data Found"
+                    fixedHeight={true}
+                    recordsPerPage={20}
+                    className="flex-1"
+                    loading={isLoading}
+                />
+            )}
+
+            {activeTab === 'Details' && (
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-3 space-y-6">
+
+                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Building Plot Area
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem
+                                            label="Gross Plot Area SqFt"
+                                            value={buildingDetailsList?.[0]?.GrossPlotAreaSqFt ?? 0}
+                                        />
+
+                                        <FieldItem
+                                            label="Physical Survey Area SqFt"
+                                            value={buildingDetailsList?.[0]?.PlotAreaPhysicalSurveySqFt ?? 0}
+                                        />
+
+                                        <FieldItem
+                                            label="Old Approved Plan Area SqFt"
+                                            value={buildingDetailsList?.[0]?.PlotAreaOldApprovedPlanSqFt ?? 0}
+                                        />
+                                    </div>
+                                </div>
+
+
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                                        <FieldItem
+                                            label="Conveyance Area SqFt"
+                                            value={buildingDetailsList?.[0]?.PlotAreaConveyanceSqFt ?? 0}
+                                        />
+
+                                        <FieldItem
+                                            label="PR Card Area SqFt"
+                                            value={buildingDetailsList?.[0]?.PlotAreaPRCardSqFt ?? 0}
+                                        />
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </section>
+
+                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Building Construction Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Total Built Up Area SqFt" value={buildingDetailsList?.[0]?.TotalBuiltUpAreaSqFt ?? 0} />
+                                        <FieldItem label="Total Residential Units" value={buildingDetailsList?.[0]?.TotalResidentialUnits ?? 0} />
+                                        <FieldItem label="Residential Carpet Area SqFt" value={buildingDetailsList?.[0]?.TotalResidentialCarpetAreaSqFt ?? 0} />
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Total Commercial Units" value={buildingDetailsList?.[0]?.TotalCommercialUnits ?? 0} />
+                                        <FieldItem label="Commercial Carpet Area SqFt" value={buildingDetailsList?.[0]?.TotalCommercialCarpetAreaSqFt ?? 0} />
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] pt-5">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Building Key Contact Details
+                            </h4>
+
+                            <div className="space-y-4">
+
+
+                                {contactDetailsList.map((contact, index) => (
+                                    <div
+                                        key={index}
+                                        className="border-b border-[#135bec2e] p-4 space-y-3"
+                                    >
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                                            <FieldItem label="Contact Type" value={contact.ContactType} />
+                                            <FieldItem label="Contact Name" value={contact.ContactName} />
+                                            <FieldItem label="Mobile Number" value={`+91 ${contact.MobileNumber}`} />
+                                            <FieldItem label="Email ID" value={contact.EmailId} />
+
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+            )}
+
+
 
         </div >
     );

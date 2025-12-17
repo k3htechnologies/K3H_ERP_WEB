@@ -1611,6 +1611,7 @@ export const ViewProjectMaster: React.FC = () => {
                             <Tabs
                                 tabs={TabList}
                                 defaultActive={activeTab}
+                                islarge={true}
                                 onTabChange={(t) => {
                                     setActiveTab(t.id);
 

@@ -130,10 +130,12 @@ export const ViewEmployeeMaster: React.FC = () => {
     };
     //#endregion
     return (
+        
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>
+
 
             <div className="grid grid-cols-12 gap-6">
                 {/* Left column: profile card */}

@@ -194,7 +194,7 @@ export const DesignationMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Designation Master Data'
+      'Loading Designation'
     )
   }
 

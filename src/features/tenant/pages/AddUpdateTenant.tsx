@@ -1082,15 +1082,16 @@ const AddUpdateTenant: React.FC = () => {
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
 
-      <div className="flex-1 space-y-2 px-6 py-3 pb-20">
+      <div className="flex-1 space-y-2 px-6 py-3">
         <form onSubmit={handleSubmit}>
           {/* ============================================================= [FLAT DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
             <div className="flex items-center justify-between">
-
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-                Applicant Details
-              </h3>
+              <div className="flex-1 border-b border-gray-300 pb-2">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Applicant Details
+                </h3>
+              </div>
 
               <div className="ml-4">
                 <Button
@@ -1154,7 +1155,9 @@ const AddUpdateTenant: React.FC = () => {
                   value={formData.FlatNumber}
                   required
                   onChange={e => handleFieldChange('FlatNumber', e.target.value)}
-                  error={errors.FlatNumber} />
+                  error={errors.FlatNumber}
+                  placeholder="Enter Unit Number"
+                />
               </div>
               <div>
                 <Input
@@ -1163,6 +1166,7 @@ const AddUpdateTenant: React.FC = () => {
                   required
                   onChange={e => handleFieldChange('FlatCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
                   error={errors.FlatCarpetAreaSqFt}
+                  placeholder="Enter Carpet Area SqFt"
                 />
               </div>
               <div>
@@ -1173,6 +1177,7 @@ const AddUpdateTenant: React.FC = () => {
                   onChange={(e) => handleFieldChange('FlatType', String(e))}
                   options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
                   error={errors.FlatType}
+                  placeholder="Enter Unit Type"
                 />
               </div>
 
@@ -1217,10 +1222,13 @@ const AddUpdateTenant: React.FC = () => {
               </div>
 
               <div>
-                <Input label="Free Area Offered (%)"
+                <Input
+                  label="Free Area Offered (%)"
                   value={formData.FreeAreaOfferedPercent ?? ''}
                   onChange={(e) => handleFieldChange("FreeAreaOfferedPercent", filterNumbersWithDecimal(e.target.value))}
-                  error={errors.FreeAreaOfferedPercent} />
+                  error={errors.FreeAreaOfferedPercent}
+                  placeholder="Enter Free Area Offered (%)"
+                />
               </div>
               <div>
                 <Input
@@ -1228,6 +1236,7 @@ const AddUpdateTenant: React.FC = () => {
                   value={formData.ExtraAreaPurchasedSqFt ?? ''}
                   onChange={(e) => handleFieldChange("ExtraAreaPurchasedSqFt", filterNumbersWithDecimal(e.target.value))}
                   error={errors.ExtraAreaPurchasedSqFt}
+                  placeholder="Enter Extra Area Purchased SqFt"
                 />
               </div>
               <div>
@@ -1236,6 +1245,7 @@ const AddUpdateTenant: React.FC = () => {
                   value={formData.TotalAreaSqFt ?? ''}
                   onChange={(e) => handleFieldChange("TotalAreaSqFt", filterNumbersWithDecimal(e.target.value))}
                   error={errors.TotalAreaSqFt}
+                  placeholder="Enter Total Area SqFt"
                 />
               </div>
             </div>
@@ -1245,7 +1255,7 @@ const AddUpdateTenant: React.FC = () => {
 
       <BottomActionBar
         cancelText="Cancel"
-        saveText={(formData.TenantId && formData.TenantId > 0) ? 'Update Tenant' : 'Add Tenant'}
+        saveText={(formData.TenantId && formData.TenantId > 0) ? 'Update' : 'Add'}
         onCancel={() => navigate(-1)}
         canAction={canAction}
         onSave={() => {
@@ -1314,6 +1324,7 @@ const AddUpdateTenant: React.FC = () => {
                 type="text"
                 value={formDataForApplicant.ApplicantMobileNumber ?? ""}
                 maxLength={10}
+                leftIcon="+91"
                 onChange={e =>
                   handleFieldChangeTenantApplicant('ApplicantMobileNumber', filterMobile(e.target.value))
                 }
@@ -1563,13 +1574,17 @@ const AddUpdateTenant: React.FC = () => {
                 value={formDataForApplicant.AccountNumber ?? ""}
                 maxLength={18}
                 onChange={(e) => handleFieldChangeTenantApplicant("AccountNumber", filterNumbers(e.target.value))}
-                error={errorsTenantApplicant.AccountNumber} />
+                error={errorsTenantApplicant.AccountNumber}
+                placeholder="Enter Account Number"
+                />
             </div>
             <div>
               <Input label="IFSC Code"
                 value={formDataForApplicant.IFSCCode ?? ""}
                 onChange={(e) => handleFieldChangeTenantApplicant("IFSCCode", filterIFSC(e.target.value))}
-                error={errorsTenantApplicant.IFSCCode} />
+                error={errorsTenantApplicant.IFSCCode} 
+                placeholder="Enter IFSC Code"
+                />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

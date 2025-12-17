@@ -22,8 +22,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
     
     <div className="flex justify-end gap-3">
       <Button
-        color="transparent"
-        variant="transparent_border"
+        color="cancel"
         size="md"
         onClick={onCancel}
       >
@@ -32,7 +31,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
 
       {canAction && (
         <Button
-          color="green"
+          color="blue"
           size="md"
           onClick={onSave}
           disabled={isLoading}

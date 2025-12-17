@@ -6,7 +6,7 @@ import NoDataView from '@/ui/components/NoDataView/NoDataView'
 export interface TableColumn {
   key: string
   label: string
-  render?: (value: any, row: any) => React.ReactNode
+  render?: (value: any, row: any, index: number) => React.ReactNode
   sortable?: boolean
   width?: string
   fixed?: 'left' | 'right'
@@ -232,7 +232,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                 data.map((row, index) => (
                   <tr key={index} className="hover:bg-gray-50 h-10 border-b border-gray-200">
                     {columns.map((column) => {
-                      const cellValue = column.render ? column.render(row[column.key], row) : row[column.key]
+                      const cellValue = column.render ?  column.render(row[column.key], row, index): row[column.key]
 
                       return (
                         <td

@@ -188,7 +188,7 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
         error={error}
         helperText={helperText}
         onClick={() => !disabled && setIsOpen(p => !p)}
-        leftIcon={<CalendarIcon size={18} />}
+        rightIcon={<CalendarIcon size={18} />}
         placeholder="DD-MM-YYYY"
       />
 

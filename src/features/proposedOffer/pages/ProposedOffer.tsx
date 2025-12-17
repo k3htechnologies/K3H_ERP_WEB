@@ -51,13 +51,13 @@ import { filterNumbersWithDecimal, filterNumbers, isValidPercentage, calculatePe
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { Edit, Trash2, Plus } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Checkbox } from '@/ui/components/forms/Checkbox';
 import { CARPET_AREA_TYPE, FLAT_UNIT_TYPE, TENURE, UNIT_SQFT_LUMPSUM } from '@/core/constants';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { fetchBuildingDropdown } from '@/features/building/buildingDropdown';
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from '@/core/utils/dateFormat';
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
 
 //#region INITIAL FORM STATE - EXTRA CARPET AREA
@@ -104,6 +104,7 @@ const initialFormStateCorpusPaymentStage = (): ProposedOfferCorpusDetailsWithPay
   ModifiedDate: null,
   LastModifiedBy: '',
   LastModifiedDate: null
+
 });
 //#endregion
 
@@ -159,6 +160,7 @@ const initialFormStateShiftingPaymentStage = (): ProposedOfferShiftingDetailsWit
   Type: '',
   Stage: '',
   StagePercentage: 0,
+  StagePercentageText: '',
   Amount: 0,
   CreatedById: 0,
   CreatedBy: '',
@@ -329,6 +331,7 @@ export const ProposedOffer: React.FC = () => {
   //DELETE CORPUS PAYMENT STAGE STATES
   const [isConfirmationDialogBoxOpenCorpusPaymentStage, setIsConfirmationDialogBoxOpenCorpusPaymentStage] = useState(false);
   const [deleteCorpusPaymentStageData, setDeleteCorpusPaymentStageData] = useState<{ row: ProposedOfferCorpusDetailsWithPaymentStageData; index: number } | null>(null);
+
   // ADD UPDATE SECURITY DEPOSIT DETAILS
   const [formDataSecurityDepositDetails, setFormDataSecurityDepositDetails] = useState<AddUpdateProposedOfferSecurityDepositDetailsRequest>(() => initialFormStateSecurityDepositDetails());
 
@@ -336,13 +339,13 @@ export const ProposedOffer: React.FC = () => {
   const [securityDepositPaymentStageList, setSecurityDepositPaymentStageList] = useState<ProposedOfferSecurityDepositDetailsWithPaymentStageData[]>([]);
 
   // EDIT SECURITY DEPOSIT PAYMENT STAGE
-  const [editingSecurityDepositPaymentStageData, setEditingSecurityDepositPaymentStageData] = useState<ProposedOfferSecurityDepositDetailsWithPaymentStageData | null>(null);
+  const [editingSecurityDepositPaymentStageData, setEditingSecurityDepositPaymentStageData] = useState<{ row: ProposedOfferSecurityDepositDetailsWithPaymentStageData; index: number } | null>(null);
   const [isAddUpdateSecurityDepositPaymentStageModalOpen, setIsAddUpdateSecurityDepositPaymentStageModalOpen] = useState(false);
   const [formDataSecurityDepositPaymentStage, setFormDataSecurityDepositPaymentStage] = useState<ProposedOfferSecurityDepositDetailsWithPaymentStageData>(() => initialFormStateSecurityDepositPaymentStage());
 
   //DELETE SECURITY DEPOSIT PAYMENT STAGE STATES
   const [isConfirmationDialogBoxOpenSecurityDepositPaymentStage, setIsConfirmationDialogBoxOpenSecurityDepositPaymentStage] = useState(false);
-  const [deleteSecurityDepositPaymentStageData, setDeleteSecurityDepositPaymentStageData] = useState<ProposedOfferSecurityDepositDetailsWithPaymentStageData | null>(null);
+  const [deleteSecurityDepositPaymentStageData, setDeleteSecurityDepositPaymentStageData] = useState<{ row: ProposedOfferSecurityDepositDetailsWithPaymentStageData; index: number } | null>(null);
 
   // ADD UPDATE SHIFTING DETAILS
   const [formDataShiftingDetails, setFormDataShiftingDetails] = useState<AddUpdateProposedOfferShiftingDetailsRequest>(() => initialFormStateShiftingDetails());
@@ -351,13 +354,13 @@ export const ProposedOffer: React.FC = () => {
   const [shiftingPaymentStageList, setShiftingPaymentStageList] = useState<ProposedOfferShiftingDetailsWithPaymentStageData[]>([]);
 
   // EDIT SHIFTING PAYMENT STAGE
-  const [editingShiftingPaymentStageData, setEditingShiftingPaymentStageData] = useState<ProposedOfferShiftingDetailsWithPaymentStageData | null>(null);
+  const [editingShiftingPaymentStageData, setEditingShiftingPaymentStageData] = useState<{ row: ProposedOfferShiftingDetailsWithPaymentStageData; index: number } | null>(null);
   const [isAddUpdateShiftingPaymentStageModalOpen, setIsAddUpdateShiftingPaymentStageModalOpen] = useState(false);
   const [formDataShiftingPaymentStage, setFormDataShiftingPaymentStage] = useState<ProposedOfferShiftingDetailsWithPaymentStageData>(() => initialFormStateShiftingPaymentStage());
 
   //DELETE SHIFTING PAYMENT STAGE STATES
   const [isConfirmationDialogBoxOpenShiftingPaymentStage, setIsConfirmationDialogBoxOpenShiftingPaymentStage] = useState(false);
-  const [deleteShiftingPaymentStageData, setDeleteShiftingPaymentStageData] = useState<ProposedOfferShiftingDetailsWithPaymentStageData | null>(null);
+  const [deleteShiftingPaymentStageData, setDeleteShiftingPaymentStageData] = useState<{ row: ProposedOfferShiftingDetailsWithPaymentStageData; index: number } | null>(null);
 
   // ADD UPDATE LIEN TO SOCIETY DETAILS
   const [formDataLienToSocietyDetails, setFormDataLienToSocietyDetails] = useState<AddUpdateProposedOfferLienToSocietyDetailsRequest>(() => initialFormStateLienToSocietyDetails());
@@ -387,13 +390,13 @@ export const ProposedOffer: React.FC = () => {
   const [lienToSocietyPaymentStageList, setLienToSocietyPaymentStageList] = useState<ProposedOfferLienToSocietyDetailsWithPaymentStageData[]>([]);
 
   // EDIT LIEN TO SOCIETY PAYMENT STAGE
-  const [editingLienToSocietyPaymentStageData, setEditingLienToSocietyPaymentStageData] = useState<ProposedOfferLienToSocietyDetailsWithPaymentStageData | null>(null);
+  const [editingLienToSocietyPaymentStageData, setEditingLienToSocietyPaymentStageData] = useState<{ row: ProposedOfferLienToSocietyDetailsWithPaymentStageData; index: number } | null>(null);
   const [isAddUpdateLienToSocietyPaymentStageModalOpen, setIsAddUpdateLienToSocietyPaymentStageModalOpen] = useState(false);
   const [formDataLienToSocietyPaymentStage, setFormDataLienToSocietyPaymentStage] = useState<ProposedOfferLienToSocietyDetailsWithPaymentStageData>(() => initialFormStateLienToSocietyPaymentStage());
 
   //DELETE LIEN TO SOCIETY PAYMENT STAGE STATES
   const [isConfirmationDialogBoxOpenLienToSocietyPaymentStage, setIsConfirmationDialogBoxOpenLienToSocietyPaymentStage] = useState(false);
-  const [deleteLienToSocietyPaymentStageData, setDeleteLienToSocietyPaymentStageData] = useState<ProposedOfferLienToSocietyDetailsWithPaymentStageData | null>(null);
+  const [deleteLienToSocietyPaymentStageData, setDeleteLienToSocietyPaymentStageData] = useState<{ row: ProposedOfferLienToSocietyDetailsWithPaymentStageData; index: number } | null>(null);
 
 
   //#endregion
@@ -958,7 +961,7 @@ export const ProposedOffer: React.FC = () => {
       Type: row.Type || '',
       Stage: row.Stage || '',
       StagePercentage: row.StagePercentage || 0,
-      StagePercentageText: row.StagePercentageText || '',
+      StagePercentageText: String(row.StagePercentage) || '',
       Amount: row.Amount || 0
     });
     setErrorsCorpusPaymentStage({});
@@ -975,17 +978,6 @@ export const ProposedOffer: React.FC = () => {
 
     if (!formDataCorpusPaymentStage.Type?.trim()) {
       newErrors.Type = "Type is required"
-    }
-
-    // Commercial
-    if (formDataCorpusPaymentStage.Type === 'commercial') {
-      if (
-        formDataCorpusDetails.CorpusOfferedToCommercialAmount == null ||
-        formDataCorpusDetails.CorpusOfferedToCommercialAmount <= 0
-      ) {
-        newErrors.CorpusOfferedToCommercialAmount =
-          'Commercial Corpus Amount is required';
-      }
     }
 
     if (!formDataCorpusPaymentStage.Stage?.trim()) {
@@ -1048,8 +1040,6 @@ export const ProposedOffer: React.FC = () => {
 
     }
 
-
-
     const paymentStageToSave: ProposedOfferCorpusDetailsWithPaymentStageData = {
       ...formDataCorpusPaymentStage,
       ProposedOfferCorpusDetailsWithPaymentStageId: editingCorpusPaymentStageData?.row.ProposedOfferCorpusDetailsWithPaymentStageId ?? 0,
@@ -1057,15 +1047,14 @@ export const ProposedOffer: React.FC = () => {
       BuildingId: Number(buildingId)
     };
 
-    setCorpusPaymentStageList(prevList => {
+    setCorpusPaymentStageList(prev => {
       if (editingCorpusPaymentStageData) {
-        return prevList.map((item, i) =>
-          i === editingCorpusPaymentStageData.index
-            ? paymentStageToSave
-            : item
-        );
+        const updated = [...prev];
+        updated[editingCorpusPaymentStageData.index] = paymentStageToSave;
+        return updated;
       }
-      return [...prevList, paymentStageToSave];
+
+      return [...prev, paymentStageToSave];
     });
 
     setIsAddUpdateCorpusPaymentStageModalOpen(false);
@@ -1075,9 +1064,7 @@ export const ProposedOffer: React.FC = () => {
   };
 
   const handleConfirmationDialogBoxOpenCorpusPaymentStage = useCallback((row: ProposedOfferCorpusDetailsWithPaymentStageData, index: number) => {
-
     setDeleteCorpusPaymentStageData({ row, index });
-
     setIsConfirmationDialogBoxOpenCorpusPaymentStage(true);
 
   }, []);
@@ -1094,13 +1081,13 @@ export const ProposedOffer: React.FC = () => {
 
       setDeleteCorpusPaymentStageData(null);
 
-      addToast({ type: 'error', title: 'Unable to find the selected applicant to delete' });
+      addToast({ type: 'error', title: 'Unable to find the selected record to delete' });
 
       return;
 
     }
 
-    console.log(removeIndex);
+
     setCorpusPaymentStageList(prev => prev.filter((_, i) => i !== removeIndex));
 
     setIsConfirmationDialogBoxOpenCorpusPaymentStage(false);
@@ -1153,7 +1140,7 @@ export const ProposedOffer: React.FC = () => {
         sortable: false,
         fixed: 'right',
         align: 'center',
-        render: (_value, row) => (
+        render: (_value, row, index) => (
           <div className="flex items-center justify-center gap-2">
             {canAction && (
               <>
@@ -1162,13 +1149,7 @@ export const ProposedOffer: React.FC = () => {
                     e.preventDefault();
                     e.stopPropagation();
 
-                    const idx = corpusPaymentStageList.findIndex(a =>
-                      (a.ProposedOfferCorpusDetailsWithPaymentStageId != null && row.ProposedOfferCorpusDetailsWithPaymentStageId != null)
-                        ? a.ProposedOfferCorpusDetailsWithPaymentStageId === row.ProposedOfferCorpusDetailsWithPaymentStageId
-                        : a === row
-                    );
-
-                    handleEditCorpusPaymentStage(row, idx >= 0 ? idx : 0);
+                    handleEditCorpusPaymentStage(row, index);
 
                   }}
                   color="transparent"
@@ -1182,14 +1163,7 @@ export const ProposedOffer: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-
-                    const idx = corpusPaymentStageList.findIndex(a =>
-                      (a.ProposedOfferCorpusDetailsWithPaymentStageId != null && row.ProposedOfferCorpusDetailsWithPaymentStageId != null)
-                        ? a.ProposedOfferCorpusDetailsWithPaymentStageId === row.ProposedOfferCorpusDetailsWithPaymentStageId
-                        : a === row
-                    );
-
-                    handleConfirmationDialogBoxOpenCorpusPaymentStage(row, idx >= 0 ? idx : 0);
+                    handleConfirmationDialogBoxOpenCorpusPaymentStage(row, index);
                   }}
                   color="transparent"
                   isborderRadius
@@ -1206,6 +1180,40 @@ export const ProposedOffer: React.FC = () => {
       }
     ],
     [canAction, handleEditCorpusPaymentStage, handleConfirmationDialogBoxOpenCorpusPaymentStage]
+  );
+
+  const recalculateCorpusPaymentAmount = useCallback(
+    (
+      type: string | null | undefined,
+      percentage: number | null | undefined
+    ) => {
+      if (!type || percentage == null) {
+        handleFieldChangeCorpusPaymentStage('Amount', null);
+        return;
+      }
+
+      const upperType = type.toUpperCase();
+
+      const baseAmount =
+        upperType === 'RESIDENTIAL'
+          ? formDataCorpusDetails.CorpusOfferedToResidentialAmount
+          : upperType === 'COMMERCIAL'
+            ? formDataCorpusDetails.CorpusOfferedToCommercialAmount
+            : null;
+
+      if (!baseAmount || baseAmount <= 0) {
+        handleFieldChangeCorpusPaymentStage('Amount', null);
+        return;
+      }
+
+      const calculatedAmount = calculatePercentageAmount(
+        baseAmount,
+        percentage
+      );
+
+      handleFieldChangeCorpusPaymentStage('Amount', calculatedAmount);
+    },
+    [formDataCorpusDetails]
   );
 
 
@@ -1400,8 +1408,8 @@ export const ProposedOffer: React.FC = () => {
     setIsAddUpdateSecurityDepositPaymentStageModalOpen(true);
   };
 
-  const handleEditSecurityDepositPaymentStage = useCallback((row: ProposedOfferSecurityDepositDetailsWithPaymentStageData) => {
-    setEditingSecurityDepositPaymentStageData(row);
+  const handleEditSecurityDepositPaymentStage = useCallback((row: ProposedOfferSecurityDepositDetailsWithPaymentStageData, index: number) => {
+    setEditingSecurityDepositPaymentStageData({ row, index });
     setFormDataSecurityDepositPaymentStage({
       ...row,
       Type: row.Type || '',
@@ -1425,22 +1433,24 @@ export const ProposedOffer: React.FC = () => {
       return;
     }
 
-    const idToUse = editingSecurityDepositPaymentStageData?.ProposedOfferSecurityDepositDetailsWithPaymentStageId ?? 0;
-
     const paymentStageToSave: ProposedOfferSecurityDepositDetailsWithPaymentStageData = {
       ...formDataSecurityDepositPaymentStage,
-      ProposedOfferSecurityDepositDetailsWithPaymentStageId: idToUse,
+      ProposedOfferSecurityDepositDetailsWithPaymentStageId: editingSecurityDepositPaymentStageData?.row.ProposedOfferSecurityDepositDetailsWithPaymentStageId ?? 0,
       ProjectId: Number(projectId),
       BuildingId: buildingId
     };
 
-    setSecurityDepositPaymentStageList(prevList => {
-      if (editingSecurityDepositPaymentStageData && editingSecurityDepositPaymentStageData.ProposedOfferSecurityDepositDetailsWithPaymentStageId) {
-        return prevList.map(p => (p.ProposedOfferSecurityDepositDetailsWithPaymentStageId === idToUse ? paymentStageToSave : p));
-      } else {
-        return [...prevList, paymentStageToSave];
+    setSecurityDepositPaymentStageList(prev => {
+      if (editingSecurityDepositPaymentStageData) {
+        const updated = [...prev];
+        updated[editingSecurityDepositPaymentStageData.index] = paymentStageToSave;
+        return updated;
       }
+
+      return [...prev, paymentStageToSave];
     });
+
+
 
     setIsAddUpdateSecurityDepositPaymentStageModalOpen(false);
     setEditingSecurityDepositPaymentStageData(null);
@@ -1448,20 +1458,34 @@ export const ProposedOffer: React.FC = () => {
     setErrorsSecurityDepositPaymentStage({});
   };
 
-  const handleConfirmationDialogBoxOpenSecurityDepositPaymentStage = useCallback((row: ProposedOfferSecurityDepositDetailsWithPaymentStageData) => {
-    setDeleteSecurityDepositPaymentStageData(row);
+  const handleConfirmationDialogBoxOpenSecurityDepositPaymentStage = useCallback((row: ProposedOfferSecurityDepositDetailsWithPaymentStageData, index: number) => {
+    setDeleteSecurityDepositPaymentStageData({ row, index });
     setIsConfirmationDialogBoxOpenSecurityDepositPaymentStage(true);
   }, []);
 
   const handleDeleteSecurityDepositPaymentStage = () => {
     if (!deleteSecurityDepositPaymentStageData) return;
 
-    setSecurityDepositPaymentStageList(prev => prev.filter(item =>
-      item.ProposedOfferSecurityDepositDetailsWithPaymentStageId !== deleteSecurityDepositPaymentStageData.ProposedOfferSecurityDepositDetailsWithPaymentStageId
-    ));
+    const removeIndex = deleteSecurityDepositPaymentStageData.index;
+
+    if (removeIndex < 0) {
+
+      setIsConfirmationDialogBoxOpenSecurityDepositPaymentStage(false);
+
+      setDeleteSecurityDepositPaymentStageData(null);
+
+      addToast({ type: 'error', title: 'Unable to find the selected record to delete' });
+
+      return;
+
+    }
+
+    setSecurityDepositPaymentStageList(prev => prev.filter((_, i) => i !== removeIndex));
 
     setIsConfirmationDialogBoxOpenSecurityDepositPaymentStage(false);
+
     setDeleteSecurityDepositPaymentStageData(null);
+
     addToast({ type: 'success', title: 'Security Deposit Payment Stage Removed' });
   };
 
@@ -1497,7 +1521,7 @@ export const ProposedOffer: React.FC = () => {
         width: '25',
         sortable: false,
         align: 'center',
-        render: (_value, row) => (
+        render: (_value, row, index) => (
           <div className="flex items-center justify-center gap-2">
             {canAction && (
               <>
@@ -1505,7 +1529,8 @@ export const ProposedOffer: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleEditSecurityDepositPaymentStage(row);
+                    handleEditSecurityDepositPaymentStage(row, index);
+
                   }}
                   color="transparent"
                   isborderRadius
@@ -1518,7 +1543,7 @@ export const ProposedOffer: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleConfirmationDialogBoxOpenSecurityDepositPaymentStage(row);
+                    handleConfirmationDialogBoxOpenSecurityDepositPaymentStage(row, index);
                   }}
                   color="transparent"
                   isborderRadius
@@ -1604,12 +1629,12 @@ export const ProposedOffer: React.FC = () => {
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (formDataShiftingDetails.ShiftingOfferedToResidentialAmount === null || formDataShiftingDetails.ShiftingOfferedToResidentialAmount === undefined || formDataShiftingDetails.ShiftingOfferedToResidentialAmount < 0) {
-      newErrors.ShiftingOfferedToResidentialAmount = "Residential Shifting Amount is required and must be greater than or equal to 0"
+    if (!formDataShiftingDetails.ShiftingOfferedToResidentialAmount) {
+      newErrors.ShiftingOfferedToResidentialAmount = "Residential Shifting Amount is required "
     }
 
-    if (formDataShiftingDetails.ShiftingOfferedToCommercialAmount === null || formDataShiftingDetails.ShiftingOfferedToCommercialAmount === undefined || formDataShiftingDetails.ShiftingOfferedToCommercialAmount < 0) {
-      newErrors.ShiftingOfferedToCommercialAmount = "Commercial Shifting Amount is required and must be greater than or equal to 0"
+    if (!formDataShiftingDetails.ShiftingOfferedToCommercialAmount) {
+      newErrors.ShiftingOfferedToCommercialAmount = "Commercial Shifting Amount is required"
     }
 
     return {
@@ -1617,8 +1642,6 @@ export const ProposedOffer: React.FC = () => {
       errors: newErrors
     }
   }
-
-
 
   const handleSaveShiftingDetails = async () => {
 
@@ -1628,7 +1651,7 @@ export const ProposedOffer: React.FC = () => {
     }
 
     else if (shiftingPaymentStageList.length === 0) {
-      addToast({ type: "error", title: "Please add atleast one SHifting details" });
+      addToast({ type: "error", title: "Please add atleast one Shifting details" });
       return
     }
 
@@ -1670,23 +1693,35 @@ export const ProposedOffer: React.FC = () => {
           const isAdd = formDataShiftingDetails.ProposedOfferShiftingDetailsId === 0;
 
           if (isAdd) {
+
             const newRecord = response.right.Data[0] as ProposedOfferShiftingDetailsData;
+
             setShiftingDetailsData(newRecord);
+
             setFormDataShiftingDetails({
               ...formDataShiftingDetails,
               ProposedOfferShiftingDetailsId: newRecord.ProposedOfferShiftingDetailsId || 0,
               Uniquekey: newRecord.Uniquekey || formDataShiftingDetails.Uniquekey
             });
+
             if (newRecord.ProposedOfferShiftingDetailsWithPaymentStageData) {
               setShiftingPaymentStageList(newRecord.ProposedOfferShiftingDetailsWithPaymentStageData);
             }
+
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
           } else {
+
             const updatedRecord = response.right.Data[0] as ProposedOfferShiftingDetailsData;
+
             setShiftingDetailsData(updatedRecord);
+
             if (updatedRecord.ProposedOfferShiftingDetailsWithPaymentStageData) {
+
               setShiftingPaymentStageList(updatedRecord.ProposedOfferShiftingDetailsWithPaymentStageData);
+
             }
+
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
         } else {
@@ -1717,10 +1752,11 @@ export const ProposedOffer: React.FC = () => {
       newErrors.Stage = "Stage is required"
     }
 
-
     if (!formDataShiftingPaymentStage.StagePercentage) {
       newErrors.StagePercentage = 'Stage Percentage is required'
     } else if (!isValidPercentage(String(formDataShiftingPaymentStage.StagePercentage))) {
+      newErrors.StagePercentage = 'Enter a valid percentage'
+    } else if (formDataShiftingPaymentStage.StagePercentage === undefined) {
       newErrors.StagePercentage = 'Enter a valid percentage'
     }
 
@@ -1741,13 +1777,14 @@ export const ProposedOffer: React.FC = () => {
     setIsAddUpdateShiftingPaymentStageModalOpen(true);
   };
 
-  const handleEditShiftingPaymentStage = useCallback((row: ProposedOfferShiftingDetailsWithPaymentStageData) => {
-    setEditingShiftingPaymentStageData(row);
+  const handleEditShiftingPaymentStage = useCallback((row: ProposedOfferShiftingDetailsWithPaymentStageData, index: number) => {
+    setEditingShiftingPaymentStageData({ row, index });
     setFormDataShiftingPaymentStage({
       ...row,
       Type: row.Type || '',
       Stage: row.Stage || '',
       StagePercentage: row.StagePercentage || 0,
+      StagePercentageText: String(row.StagePercentage) || '',
       Amount: row.Amount || 0
     });
     setErrorsShiftingPaymentStage({});
@@ -1758,6 +1795,33 @@ export const ProposedOffer: React.FC = () => {
     e.preventDefault();
     setErrorsShiftingPaymentStage({});
 
+    if (formDataShiftingPaymentStage.Type?.toUpperCase() === 'RESIDENTIAL' &&
+      (
+        formDataShiftingDetails.ShiftingOfferedToResidentialAmount == null ||
+        formDataShiftingDetails.ShiftingOfferedToResidentialAmount <= 0
+      )
+    ) {
+      addToast({
+        type: 'error',
+        title: 'Residential Shifting Amount is required'
+      });
+      return;
+    }
+
+
+    else if (formDataShiftingPaymentStage.Type?.toUpperCase() === 'COMMERCIAL' &&
+      (
+        formDataShiftingDetails.ShiftingOfferedToCommercialAmount == null ||
+        formDataShiftingDetails.ShiftingOfferedToCommercialAmount <= 0
+      )
+    ) {
+      addToast({
+        type: 'error',
+        title: 'Commercial Shifting Amount is required'
+      });
+      return;
+    }
+
     const validation = validateShiftingPaymentStageForm();
 
     if (!validation.isValid) {
@@ -1765,21 +1829,21 @@ export const ProposedOffer: React.FC = () => {
       return;
     }
 
-    const idToUse = editingShiftingPaymentStageData?.ProposedOfferShiftingDetailsWithPaymentStageId ?? 0;
-
     const paymentStageToSave: ProposedOfferShiftingDetailsWithPaymentStageData = {
       ...formDataShiftingPaymentStage,
-      ProposedOfferShiftingDetailsWithPaymentStageId: idToUse,
+      ProposedOfferShiftingDetailsWithPaymentStageId: editingShiftingPaymentStageData?.row.ProposedOfferShiftingDetailsWithPaymentStageId ?? 0,
       ProjectId: Number(projectId),
-      BuildingId: formDataShiftingDetails.BuildingId || 0
+      BuildingId: Number(buildingId)
     };
 
     setShiftingPaymentStageList(prevList => {
-      if (editingShiftingPaymentStageData && editingShiftingPaymentStageData.ProposedOfferShiftingDetailsWithPaymentStageId) {
-        return prevList.map(p => (p.ProposedOfferShiftingDetailsWithPaymentStageId === idToUse ? paymentStageToSave : p));
-      } else {
-        return [...prevList, paymentStageToSave];
+      if (editingShiftingPaymentStageData) {
+        const updated = [...prevList];
+        updated[editingShiftingPaymentStageData.index] = paymentStageToSave;
+        return updated;
       }
+
+      return [...prevList, paymentStageToSave];
     });
 
     setIsAddUpdateShiftingPaymentStageModalOpen(false);
@@ -1789,17 +1853,30 @@ export const ProposedOffer: React.FC = () => {
   };
 
 
-  const handleConfirmationDialogBoxOpenShiftingPaymentStage = useCallback((row: ProposedOfferShiftingDetailsWithPaymentStageData) => {
-    setDeleteShiftingPaymentStageData(row);
+  const handleConfirmationDialogBoxOpenShiftingPaymentStage = useCallback((row: ProposedOfferShiftingDetailsWithPaymentStageData, index: number) => {
+    setDeleteShiftingPaymentStageData({ row, index });
     setIsConfirmationDialogBoxOpenShiftingPaymentStage(true);
   }, []);
 
   const handleDeleteShiftingPaymentStage = () => {
     if (!deleteShiftingPaymentStageData) return;
 
-    setShiftingPaymentStageList(prev => prev.filter(item =>
-      item.ProposedOfferShiftingDetailsWithPaymentStageId !== deleteShiftingPaymentStageData.ProposedOfferShiftingDetailsWithPaymentStageId
-    ));
+
+    const removeIndex = deleteShiftingPaymentStageData.index;
+
+    if (removeIndex < 0) {
+
+      setIsConfirmationDialogBoxOpenShiftingPaymentStage(false);
+
+      setDeleteShiftingPaymentStageData(null);
+
+      addToast({ type: 'error', title: 'Unable to find the selected record to delete' });
+
+      return;
+
+    }
+
+    setShiftingPaymentStageList(prev => prev.filter((_, i) => i !== removeIndex));
 
     setIsConfirmationDialogBoxOpenShiftingPaymentStage(false);
     setDeleteShiftingPaymentStageData(null);
@@ -1846,7 +1923,7 @@ export const ProposedOffer: React.FC = () => {
         width: '20',
         sortable: false,
         align: 'center',
-        render: (_value, row) => (
+        render: (_value, row, index) => (
           <div className="flex items-center justify-center gap-2">
             {canAction && (
               <>
@@ -1854,7 +1931,9 @@ export const ProposedOffer: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleEditShiftingPaymentStage(row);
+
+
+                    handleEditShiftingPaymentStage(row, index);
                   }}
                   color="transparent"
                   isborderRadius
@@ -1867,7 +1946,7 @@ export const ProposedOffer: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleConfirmationDialogBoxOpenShiftingPaymentStage(row);
+                    handleConfirmationDialogBoxOpenShiftingPaymentStage(row, index);
                   }}
                   color="transparent"
                   isborderRadius
@@ -1878,19 +1957,52 @@ export const ProposedOffer: React.FC = () => {
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </>
-            )}
-          </div>
+            )
+            }
+          </div >
         )
       }
     ],
     [canAction, handleEditShiftingPaymentStage, handleConfirmationDialogBoxOpenShiftingPaymentStage]
   );
 
+  const recalculateShiftingPaymentAmount = useCallback(
+    (
+      type: string | null | undefined,
+      percentage: number | null | undefined
+    ) => {
+      if (!type || percentage == null) {
+        handleFieldChangeShiftingPaymentStage('Amount', null);
+        return;
+      }
 
+      const upperType = type.toUpperCase();
+
+      const baseAmount =
+        upperType === 'RESIDENTIAL'
+          ? formDataShiftingDetails.ShiftingOfferedToResidentialAmount
+          : upperType === 'COMMERCIAL'
+            ? formDataShiftingDetails.ShiftingOfferedToCommercialAmount
+            : null;
+
+      if (!baseAmount || baseAmount <= 0) {
+        handleFieldChangeShiftingPaymentStage('Amount', null);
+        return;
+      }
+
+      const calculatedAmount = calculatePercentageAmount(
+        baseAmount,
+        percentage
+      );
+
+      handleFieldChangeShiftingPaymentStage('Amount', calculatedAmount);
+    },
+    [formDataShiftingDetails]
+  );
 
   //#endregion
 
-  //#region LIEN TO SOCIETY DETAILS
+  //#region LIEN TO SOCIETY setCorpusPaymentStageList
 
   const fetchLienToSocietyDetailsData = async () => {
     await runApiWithLoader(
@@ -1923,8 +2035,9 @@ export const ProposedOffer: React.FC = () => {
 
             // Load payment stage list
             if (data.ProposedOfferSecurityDepositDetailsWithPaymentStageData && data.ProposedOfferSecurityDepositDetailsWithPaymentStageData.length > 0) {
-              // Note: The property name is ProposedOfferSecurityDepositDetailsWithPaymentStageData but the type is ProposedOfferLienToSocietyDetailsWithPaymentStageData[]
+
               setLienToSocietyPaymentStageList(data.ProposedOfferSecurityDepositDetailsWithPaymentStageData);
+
             } else {
               setLienToSocietyPaymentStageList([]);
             }
@@ -1956,20 +2069,20 @@ export const ProposedOffer: React.FC = () => {
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (formDataLienToSocietyDetails.ResidentialAreaSqFt === null || formDataLienToSocietyDetails.ResidentialAreaSqFt === undefined || formDataLienToSocietyDetails.ResidentialAreaSqFt < 0) {
-      newErrors.ResidentialAreaSqFt = "Residential Area is required and must be greater than or equal to 0"
+    if (!formDataLienToSocietyDetails.ResidentialAreaSqFt) {
+      newErrors.ResidentialAreaSqFt = "Residential Area is required"
     }
 
-    if (formDataLienToSocietyDetails.CommercialAreaSqFt === null || formDataLienToSocietyDetails.CommercialAreaSqFt === undefined || formDataLienToSocietyDetails.CommercialAreaSqFt < 0) {
-      newErrors.CommercialAreaSqFt = "Commercial Area is required and must be greater than or equal to 0"
+    if (!formDataLienToSocietyDetails.CommercialAreaSqFt) {
+      newErrors.CommercialAreaSqFt = "Commercial Area is required"
     }
 
-    if (formDataLienToSocietyDetails.NumberOfResidentialLienUnits === null || formDataLienToSocietyDetails.NumberOfResidentialLienUnits === undefined || formDataLienToSocietyDetails.NumberOfResidentialLienUnits < 0) {
-      newErrors.NumberOfResidentialLienUnits = "Number of Residential Lien Units is required and must be greater than or equal to 0"
+    if (!formDataLienToSocietyDetails.NumberOfResidentialLienUnits) {
+      newErrors.NumberOfResidentialLienUnits = "Number of Residential Lien Units is required"
     }
 
-    if (formDataLienToSocietyDetails.NumberOfCommercialLienUnits === null || formDataLienToSocietyDetails.NumberOfCommercialLienUnits === undefined || formDataLienToSocietyDetails.NumberOfCommercialLienUnits < 0) {
-      newErrors.NumberOfCommercialLienUnits = "Number of Commercial Lien Units is required and must be greater than or equal to 0"
+    if (!formDataLienToSocietyDetails.NumberOfCommercialLienUnits) {
+      newErrors.NumberOfCommercialLienUnits = "Number of Commercial Lien Units is required"
     }
 
     return {
@@ -2074,8 +2187,8 @@ export const ProposedOffer: React.FC = () => {
     setIsAddUpdateLienToSocietyPaymentStageModalOpen(true);
   };
 
-  const handleEditLienToSocietyPaymentStage = useCallback((row: ProposedOfferLienToSocietyDetailsWithPaymentStageData) => {
-    setEditingLienToSocietyPaymentStageData(row);
+  const handleEditLienToSocietyPaymentStage = useCallback((row: ProposedOfferLienToSocietyDetailsWithPaymentStageData, index: number) => {
+    setEditingLienToSocietyPaymentStageData({ row, index });
     setFormDataLienToSocietyPaymentStage({
       ...row,
       Type: row.Type || '',
@@ -2093,16 +2206,16 @@ export const ProposedOffer: React.FC = () => {
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (formDataLienToSocietyPaymentStage.Type?.trim() === "") {
+    if (!formDataLienToSocietyPaymentStage.Type?.trim()) {
       newErrors.Type = "Type is required"
     }
 
-    if (formDataLienToSocietyPaymentStage.Stage?.trim() === "") {
+    if (!formDataLienToSocietyPaymentStage.Stage?.trim()) {
       newErrors.Stage = "Stage is required"
     }
 
-    if (formDataLienToSocietyPaymentStage.CarpetAreaSqFt === null || formDataLienToSocietyPaymentStage.CarpetAreaSqFt === undefined || formDataLienToSocietyPaymentStage.CarpetAreaSqFt < 0) {
-      newErrors.CarpetAreaSqFt = "Carpet Area is required and must be greater than or equal to 0"
+    if (!formDataLienToSocietyPaymentStage.CarpetAreaSqFt) {
+      newErrors.CarpetAreaSqFt = "Carpet Area is required"
     }
 
     return {
@@ -2122,21 +2235,21 @@ export const ProposedOffer: React.FC = () => {
       return;
     }
 
-    const idToUse = editingLienToSocietyPaymentStageData?.ProposedOfferLienToSocietyDetailsWithPaymentStageId ?? 0;
-
     const paymentStageToSave: ProposedOfferLienToSocietyDetailsWithPaymentStageData = {
       ...formDataLienToSocietyPaymentStage,
-      ProposedOfferLienToSocietyDetailsWithPaymentStageId: idToUse,
+      ProposedOfferLienToSocietyDetailsWithPaymentStageId: editingLienToSocietyPaymentStageData?.row.ProposedOfferLienToSocietyDetailsWithPaymentStageId ?? 0,
       ProjectId: Number(projectId),
-      BuildingId: formDataLienToSocietyDetails.BuildingId || 0
+      BuildingId: Number(buildingId)
     };
 
     setLienToSocietyPaymentStageList(prevList => {
-      if (editingLienToSocietyPaymentStageData && editingLienToSocietyPaymentStageData.ProposedOfferLienToSocietyDetailsWithPaymentStageId) {
-        return prevList.map(p => (p.ProposedOfferLienToSocietyDetailsWithPaymentStageId === idToUse ? paymentStageToSave : p));
-      } else {
-        return [...prevList, paymentStageToSave];
+      if (editingLienToSocietyPaymentStageData) {
+        const updated = [...prevList];
+        updated[editingLienToSocietyPaymentStageData.index] = paymentStageToSave;
+        return updated;
       }
+
+      return [...prevList, paymentStageToSave];
     });
 
     setIsAddUpdateLienToSocietyPaymentStageModalOpen(false);
@@ -2145,17 +2258,29 @@ export const ProposedOffer: React.FC = () => {
     setErrorsLienToSocietyPaymentStage({});
   };
 
-  const handleConfirmationDialogBoxOpenLienToSocietyPaymentStage = useCallback((row: ProposedOfferLienToSocietyDetailsWithPaymentStageData) => {
-    setDeleteLienToSocietyPaymentStageData(row);
+  const handleConfirmationDialogBoxOpenLienToSocietyPaymentStage = useCallback((row: ProposedOfferLienToSocietyDetailsWithPaymentStageData, index: number) => {
+    setDeleteLienToSocietyPaymentStageData({ row, index });
     setIsConfirmationDialogBoxOpenLienToSocietyPaymentStage(true);
   }, []);
 
   const handleDeleteLienToSocietyPaymentStage = () => {
     if (!deleteLienToSocietyPaymentStageData) return;
 
-    setLienToSocietyPaymentStageList(prev => prev.filter(item =>
-      item.ProposedOfferLienToSocietyDetailsWithPaymentStageId !== deleteLienToSocietyPaymentStageData.ProposedOfferLienToSocietyDetailsWithPaymentStageId
-    ));
+    const removeIndex = deleteLienToSocietyPaymentStageData.index;
+
+    if (removeIndex < 0) {
+
+      setIsConfirmationDialogBoxOpenLienToSocietyPaymentStage(false);
+
+      setDeleteLienToSocietyPaymentStageData(null);
+
+      addToast({ type: 'error', title: 'Unable to find the selected record to delete' });
+
+      return;
+
+    }
+
+    setLienToSocietyPaymentStageList(prev => prev.filter((_, i) => i !== removeIndex));
 
     setIsConfirmationDialogBoxOpenLienToSocietyPaymentStage(false);
     setDeleteLienToSocietyPaymentStageData(null);
@@ -2202,7 +2327,7 @@ export const ProposedOffer: React.FC = () => {
         width: '20',
         sortable: false,
         align: 'center',
-        render: (_value, row) => (
+        render: (_value, row, index) => (
           <div className="flex items-center justify-center gap-2">
             {canAction && (
               <>
@@ -2210,7 +2335,8 @@ export const ProposedOffer: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleEditLienToSocietyPaymentStage(row);
+
+                    handleEditLienToSocietyPaymentStage(row, index);
                   }}
                   color="transparent"
                   isborderRadius
@@ -2223,7 +2349,7 @@ export const ProposedOffer: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleConfirmationDialogBoxOpenLienToSocietyPaymentStage(row);
+                    handleConfirmationDialogBoxOpenLienToSocietyPaymentStage(row, index);
                   }}
                   color="transparent"
                   isborderRadius
@@ -2298,8 +2424,8 @@ export const ProposedOffer: React.FC = () => {
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (formDataParkingAllotment.NumberOfParkingAllottedToMembers === null || formDataParkingAllotment.NumberOfParkingAllottedToMembers === undefined || formDataParkingAllotment.NumberOfParkingAllottedToMembers < 0) {
-      newErrors.NumberOfParkingAllottedToMembers = "Number of Parking Allotted to Members is required and must be greater than or equal to 0"
+    if (!formDataParkingAllotment.NumberOfParkingAllottedToMembers) {
+      newErrors.NumberOfParkingAllottedToMembers = "Number of Parking Allotted to Members is required"
     }
 
     if (!formDataParkingAllotment.TotalParkingPercentageAllottedToSociety) {
@@ -2569,12 +2695,12 @@ export const ProposedOffer: React.FC = () => {
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (formDataProjectCompletion.CompletionTimelineMonths === null || formDataProjectCompletion.CompletionTimelineMonths === undefined || formDataProjectCompletion.CompletionTimelineMonths < 0) {
-      newErrors.CompletionTimelineMonths = "Completion Timeline (Months) is required and must be greater than or equal to 0"
+    if (!formDataProjectCompletion.CompletionTimelineMonths) {
+      newErrors.CompletionTimelineMonths = "Completion Timeline (Months) is required"
     }
 
-    if (formDataProjectCompletion.GracePeriodMonths === null || formDataProjectCompletion.GracePeriodMonths === undefined || formDataProjectCompletion.GracePeriodMonths < 0) {
-      newErrors.GracePeriodMonths = "Grace Period (Months) is required and must be greater than or equal to 0"
+    if (!formDataProjectCompletion.GracePeriodMonths) {
+      newErrors.GracePeriodMonths = "Grace Period (Months) is required"
     }
 
     return {
@@ -2704,16 +2830,16 @@ export const ProposedOffer: React.FC = () => {
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (formDataProposedPlan.TotalNumberOfFloors === null || formDataProposedPlan.TotalNumberOfFloors === undefined || formDataProposedPlan.TotalNumberOfFloors < 0) {
-      newErrors.TotalNumberOfFloors = "Total Number of Floors is required and must be greater than or equal to 0"
+    if (!formDataProposedPlan.TotalNumberOfFloors) {
+      newErrors.TotalNumberOfFloors = "Total Number of Floors is required"
     }
 
-    if (formDataProposedPlan.TotalUnits === null || formDataProposedPlan.TotalUnits === undefined || formDataProposedPlan.TotalUnits < 0) {
-      newErrors.TotalUnits = "Total Units is required and must be greater than or equal to 0"
+    if (!formDataProposedPlan.TotalUnits) {
+      newErrors.TotalUnits = "Total Units is required"
     }
 
-    if (formDataProposedPlan.TotalParking === null || formDataProposedPlan.TotalParking === undefined || formDataProposedPlan.TotalParking < 0) {
-      newErrors.TotalParking = "Total Parking is required and must be greater than or equal to 0"
+    if (!formDataProposedPlan.TotalParking) {
+      newErrors.TotalParking = "Total Parking is required"
     }
 
     return {
@@ -3021,7 +3147,7 @@ export const ProposedOffer: React.FC = () => {
       },
       {
         key: 'UnitSqFtLumsum',
-        label: 'Unit/Sq Ft/Lumsum',
+        label: 'Unit / Sq Ft / Lumsum',
         width: '15',
         sortable: false,
         align: 'left',
@@ -3041,7 +3167,7 @@ export const ProposedOffer: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-        render: (value) => value ? new Date(value).toLocaleDateString() : '-'
+        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       },
       {
         key: 'RentEndDate',
@@ -3049,7 +3175,7 @@ export const ProposedOffer: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-        render: (value) => value ? new Date(value).toLocaleDateString() : '-'
+        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       },
       {
         key: 'IsAdditionalRent',
@@ -3250,6 +3376,7 @@ export const ProposedOffer: React.FC = () => {
                     label="Residential Corpus Amount (₹)"
                     required
                     type="text"
+                    rightIcon="₹"
                     value={formDataCorpusDetails.CorpusOfferedToResidentialAmount || ''}
                     onChange={(e) =>
 
@@ -3268,6 +3395,7 @@ export const ProposedOffer: React.FC = () => {
                     label="Commercial Corpus Amount (₹)"
                     required
                     type="text"
+                    rightIcon="₹"
                     value={formDataCorpusDetails.CorpusOfferedToCommercialAmount || ''}
 
                     onChange={(e) => handleFieldChangeCorpusDetails('CorpusOfferedToCommercialAmount',
@@ -3298,7 +3426,7 @@ export const ProposedOffer: React.FC = () => {
                     size="sm"
                     title="Add Corpus"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+
                     Add Corpus
                   </Button>
                 )}
@@ -3362,10 +3490,23 @@ export const ProposedOffer: React.FC = () => {
                 label="Type"
                 required
                 value={formDataCorpusPaymentStage.Type || ''}
-                onChange={(e) => handleFieldChangeCorpusPaymentStage('Type', String(e))}
-                options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                onChange={(e) => {
+                  const rawType = String(e);
+
+                  handleFieldChangeCorpusPaymentStage('Type', rawType);
+
+                  recalculateCorpusPaymentAmount(
+                    rawType,
+                    formDataCorpusPaymentStage.StagePercentage
+                  );
+                }}
+                options={FLAT_UNIT_TYPE.map(opt => ({
+                  label: opt.name,
+                  value: opt.id
+                }))}
                 error={errorsCorpusPaymentStage.Type}
               />
+
             </div>
             <div>
               <Input
@@ -3383,9 +3524,12 @@ export const ProposedOffer: React.FC = () => {
                 label="Stage Percentage (%)"
                 required
                 type="text"
-                value={formDataCorpusPaymentStage.StagePercentageText ?? ''}
+                rightIcon="%"
+                value={
+                  formDataCorpusPaymentStage.StagePercentageText ??
+                  formDataCorpusPaymentStage.StagePercentage
+                }
                 onChange={(e) => {
-
                   const raw = filterNumbersWithDecimal(e.target.value);
 
                   handleFieldChangeCorpusPaymentStage('StagePercentageText', raw);
@@ -3397,37 +3541,27 @@ export const ProposedOffer: React.FC = () => {
                   }
 
                   const percent = Number(raw);
-
                   handleFieldChangeCorpusPaymentStage('StagePercentage', percent);
 
-                  const baseAmount =
-                    formDataCorpusPaymentStage.Type?.toLowerCase() === 'residential'
-                      ? formDataCorpusDetails.CorpusOfferedToResidentialAmount
-                      : formDataCorpusDetails.CorpusOfferedToCommercialAmount;
-
-                  // ✅ CALL COMMON FUNCTION HERE
-                  const calculatedAmount = calculatePercentageAmount(
-                    baseAmount,
+                  recalculateCorpusPaymentAmount(
+                    formDataCorpusPaymentStage.Type,
                     percent
                   );
-
-                  handleFieldChangeCorpusPaymentStage('Amount', calculatedAmount);
                 }}
                 error={errorsCorpusPaymentStage.StagePercentage}
                 placeholder="Enter Stage Percentage"
               />
-
-
             </div>
             <div>
               <Input
                 label="Amount (₹)"
                 required
                 type="text"
+                rightIcon="₹"
                 disabled
                 value={formDataCorpusPaymentStage.Amount || ''}
                 error={errorsCorpusPaymentStage.Amount}
-                placeholder="Enter Amount"
+                placeholder="Calculated Amount"
                 onChange={(e) => handleFieldChangeCorpusPaymentStage('Amount', e.target.value)}
               />
             </div>
@@ -3489,7 +3623,7 @@ export const ProposedOffer: React.FC = () => {
                     size="sm"
                     title="Add Security Deposit"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+
                     Add Security Deposit
                   </Button>
                 )}
@@ -3618,6 +3752,7 @@ export const ProposedOffer: React.FC = () => {
                     label="Residential Shifting Amount (₹)"
                     required
                     type="text"
+                    rightIcon="₹"
                     value={formDataShiftingDetails.ShiftingOfferedToResidentialAmount || ''}
                     onChange={(e) => handleFieldChangeShiftingDetails('ShiftingOfferedToResidentialAmount', filterNumbersWithDecimal(e.target.value))}
                     error={errorsShiftingDetails.ShiftingOfferedToResidentialAmount}
@@ -3629,6 +3764,7 @@ export const ProposedOffer: React.FC = () => {
                     label="Commercial Shifting Amount (₹)"
                     required
                     type="text"
+                    rightIcon="₹"
                     value={formDataShiftingDetails.ShiftingOfferedToCommercialAmount || ''}
                     onChange={(e) => handleFieldChangeShiftingDetails('ShiftingOfferedToCommercialAmount', filterNumbersWithDecimal(e.target.value))}
                     error={errorsShiftingDetails.ShiftingOfferedToCommercialAmount}
@@ -3653,7 +3789,7 @@ export const ProposedOffer: React.FC = () => {
                     size="sm"
                     title="Add Shifting"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+
                     Add Shifting
                   </Button>
                 )}
@@ -3718,7 +3854,18 @@ export const ProposedOffer: React.FC = () => {
                 label="Type"
                 required
                 value={formDataShiftingPaymentStage.Type || ''}
-                onChange={(e) => handleFieldChangeShiftingPaymentStage('Type', String(e))}
+
+                onChange={(e) => {
+                  const rawType = String(e);
+
+                  handleFieldChangeShiftingPaymentStage('Type', rawType);
+
+                  recalculateShiftingPaymentAmount(
+                    rawType,
+                    formDataShiftingPaymentStage.StagePercentage
+                  );
+                }}
+
                 options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
                 error={errorsShiftingPaymentStage.Type}
               />
@@ -3739,27 +3886,48 @@ export const ProposedOffer: React.FC = () => {
                 label="Stage Percentage (%)"
                 required
                 type="text"
-                value={formDataShiftingPaymentStage.StagePercentage || ''}
+                rightIcon="%"
+                value={
+                  formDataShiftingPaymentStage.StagePercentageText ??
+                  formDataShiftingPaymentStage.StagePercentage
+                }
                 onChange={(e) => {
-                  const val = filterNumbersWithDecimal(e.target.value);
-                  handleFieldChangeShiftingPaymentStage('StagePercentage', val);
+
+                  const raw = filterNumbersWithDecimal(e.target.value);
+
+                  handleFieldChangeShiftingPaymentStage('StagePercentageText', raw);
+
+                  if (raw === '') {
+                    handleFieldChangeShiftingPaymentStage('StagePercentage', null);
+                    handleFieldChangeShiftingPaymentStage('Amount', null);
+                    return;
+                  }
+
+                  const percent = Number(raw);
+
+                  handleFieldChangeShiftingPaymentStage('StagePercentage', percent);
+
+                  recalculateShiftingPaymentAmount(
+                    formDataShiftingPaymentStage.Type,
+                    percent
+                  );
                 }}
                 error={errorsShiftingPaymentStage.StagePercentage}
                 placeholder="Enter Stage Percentage"
               />
+
             </div>
             <div>
               <Input
                 label="Amount (₹)"
                 required
                 type="text"
+                rightIcon="₹"
+                disabled
                 value={formDataShiftingPaymentStage.Amount || ''}
-                onChange={(e) => {
-                  const val = filterNumbersWithDecimal(e.target.value);
-                  handleFieldChangeShiftingPaymentStage('Amount', val);
-                }}
-                error={errorsShiftingPaymentStage.Amount}
-                placeholder="Enter Amount"
+                onChange={(e) => handleFieldChangeShiftingPaymentStage('Amount', e.target.value)}
+                error={errorsShiftingDetails.Amount}
+                placeholder="Calculated Amount"
               />
             </div>
           </div>
@@ -3854,7 +4022,7 @@ export const ProposedOffer: React.FC = () => {
                     size="sm"
                     title="Add Lien Details"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+
                     Add Lien Details
                   </Button>
                 )}
@@ -4000,8 +4168,9 @@ export const ProposedOffer: React.FC = () => {
                     label="Total Parking Percentage Allotted to Society (%)"
                     required
                     type="text"
+                    rightIcon="%"
                     value={formDataParkingAllotment.TotalParkingPercentageAllottedToSociety || ''}
-                    onChange={(e) => handleFieldChangeParkingAllotment('TotalParkingPercentageAllottedToSociety', filterNumbersWithDecimal(e.target.value) ? Number(filterNumbersWithDecimal(e.target.value)) : 0)}
+                    onChange={(e) => handleFieldChangeParkingAllotment('TotalParkingPercentageAllottedToSociety', filterNumbersWithDecimal(e.target.value))}
                     error={errorsParkingAllotment.TotalParkingPercentageAllottedToSociety}
                     placeholder="Enter Total Parking Percentage"
                   />
@@ -4041,8 +4210,9 @@ export const ProposedOffer: React.FC = () => {
                     label="GST on Area by Member (%)"
                     required
                     type="text"
+                    rightIcon="%"
                     value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent || ''}
-                    onChange={(e) => handleFieldChangeGSTonExistingPlusFreeArea('GSTOnAreaByMemberPercent', filterNumbersWithDecimal(e.target.value) ? Number(filterNumbersWithDecimal(e.target.value)) : 0)}
+                    onChange={(e) => handleFieldChangeGSTonExistingPlusFreeArea('GSTOnAreaByMemberPercent', filterNumbersWithDecimal(e.target.value))}
                     error={errorsGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent}
                     placeholder="Enter GST on Area by Member Percent"
                   />
@@ -4052,8 +4222,9 @@ export const ProposedOffer: React.FC = () => {
                     label="GST on Area by Developer (%)"
                     required
                     type="text"
+                    rightIcon="%"
                     value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent || ''}
-                    onChange={(e) => handleFieldChangeGSTonExistingPlusFreeArea('GSTOnAreaByDeveloperPercent', filterNumbersWithDecimal(e.target.value) ? Number(filterNumbersWithDecimal(e.target.value)) : 0)}
+                    onChange={(e) => handleFieldChangeGSTonExistingPlusFreeArea('GSTOnAreaByDeveloperPercent', filterNumbersWithDecimal(e.target.value))}
                     error={errorsGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent}
                     placeholder="Enter GST on Area by Developer Percent"
                   />
@@ -4149,7 +4320,7 @@ export const ProposedOffer: React.FC = () => {
                   size="sm"
                   title="Add Rent Details"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+
                   Add Rent Details
                 </Button>
               )}
@@ -4249,6 +4420,7 @@ export const ProposedOffer: React.FC = () => {
                 label="Amount (₹)"
                 required
                 type="text"
+                rightIcon="₹"
                 value={formDataRentDetails.Amount || ''}
                 onChange={(e) => {
                   const val = filterNumbersWithDecimal(e.target.value);

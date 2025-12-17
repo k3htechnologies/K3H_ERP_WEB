@@ -374,6 +374,25 @@ export const COLOR_MAP = {
       hover: { backgroundColor: '#f6f3f4' },
     },
   },
+
+   cancel: {
+    solid: {
+      light: {
+        backgroundColor: '#D0D7DE',
+        color: '#1D1D1D50',
+        border: '1px solid #D0D7DE',
+        hover: { backgroundColor: '#D0D7DE' },
+      },
+      
+      dark: {
+        backgroundColor: '#D0D7DE',
+        color: '#1D1D1D50',
+        border: '1px solid #D0D7DE',
+        hover: { backgroundColor: '#D0D7DE' },
+      },
+    },
+  },
+
 } as const
 
 export type ColorMapType = typeof COLOR_MAP

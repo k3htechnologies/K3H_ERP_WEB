@@ -49,6 +49,7 @@ const initialFormState = (): AddUpdateCompanyMasterRequest => ({
   RemoveCompanyLetterheadHeaderURL: '',
   CompanyLetterheadFooterURL: null,
   RemoveCompanyLetterheadFooterURL: ''
+
 });
 
 const initialFormStateCompanyPartner = (): AddUpdateCompanyPartnerRequest => ({
@@ -70,6 +71,15 @@ const initialFormStateCompanyPartner = (): AddUpdateCompanyPartnerRequest => ({
   PhotoURL: null,
   RemovePhotoURL: ''
 });
+
+type PartnerDetailsWithFiles = CompanyPartnerData & {
+  _photoFiles?: (File | string)[];
+  _aadharCardFiles?: (File | string)[];
+  _panCardFiles?: (File | string)[];
+  RemovePhotoURL?: string;
+  RemoveAadharCardURL?: string;
+  RemovePanCardURL?: string;
+};
 
 const AddCompany: React.FC = () => {
 
@@ -114,24 +124,22 @@ const AddCompany: React.FC = () => {
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
   //COMPANY PARTNER LIST
-  const [companyPartnerList, setCompanyPartnerList] = useState<CompanyPartnerData[]>([]);
+  const [companyPartnerList, setCompanyPartnerList] = useState<PartnerDetailsWithFiles[]>([]);
   const [formDataCompanyPartner, setFormDataCompanyPartner] = useState<AddUpdateCompanyPartnerRequest>(() => initialFormStateCompanyPartner());
 
-  const [editingCompanyPartnerMasterData, setEditingCompanyPartnerMasterData] = useState<CompanyPartnerData | null>(null)
+  const [editingCompanyPartnerMasterData, setEditingCompanyPartnerMasterData] = useState<PartnerDetailsWithFiles | null>(null)
   const [isAddUpdateCompanyPartnerModalOpen, setIsAddUpdateCompanyPartnerModalOpen] = useState(false)
 
   const [companyPartnerAadhaarCardURLFiles, setCompanyPartnerAadhaarCardURLFiles] = useState<(File | string)[]>([]);
   const [removedCompanyPartnerAadhaarCardURLs, setRemovedCompanyPartnerAadhaarCardURLs] = useState<string[]>([]);
-  const [companyPartnerAadhaarCardURL, setCompanyPartnerAadhaarCardURL] = useState<string>();
+
 
   const [companyPartnerPANURLFiles, setCompanyPartnerPANURLFiles] = useState<(File | string)[]>([]);
   const [removedCompanyPartnerPANURLs, setRemovedCompanyPartnerPANURLs] = useState<string[]>([]);
-  const [companyPartnerPANURL, setCompanyPartnerPANURL] = useState<string>();
 
 
   const [companyPartnerPhotoURLFiles, setCompanyPartnerPhotoURLFiles] = useState<(File | string)[]>([]);
   const [removedCompanyPartnerPhotoURLs, setRemovedCompanyPartnerPhotoURLs] = useState<string[]>([]);
-  const [companyPartnerPhotoURL, setCompanyPartnerPhotoURL] = useState<string>();
 
   //ERROR SET UP
   const [errorsCompanyPartner, setErrorsCompanyPartner] = useState<{ [k: string]: string }>({});
@@ -259,11 +267,8 @@ const AddCompany: React.FC = () => {
               RemoveCompanyLetterheadHeaderURL: '',
               CompanyLetterheadFooterURL: null,
               RemoveCompanyLetterheadFooterURL: ''
-
-
             }));
 
-            setCompanyPartnerList(row.CompanyPartnerData);
 
             setGSTCertificateFiles([]);
             setGSTCertificateURL(row.GSTCertificateURL)
@@ -277,7 +282,6 @@ const AddCompany: React.FC = () => {
             setCinURL(row.CINURL)
             setRemovedCinUrls([]);
 
-
             setCompanyLetterHeadHeaderFiles([]);
             setCompanyLetterHeadHeaderURL(row.CompanyLetterheadHeaderURL)
             setRemovedCompanyLetterHeadHeaderUrls([]);
@@ -290,6 +294,16 @@ const AddCompany: React.FC = () => {
             setSelectedStateId(row.StateMasterId ?? null);
             setSelectedDistrictId(row.DistrictMasterId ?? null);
             setSelectedCityId(row.CityMasterId ?? null);
+
+
+            const partnerWithFiles = (row?.CompanyPartnerData || []).map(a => ({
+              ...a,
+              _photoFiles: parseDocumentUrls(a.PhotoURL ?? ''),
+              _aadharFiles: parseDocumentUrls(a.AadharCardURL ?? ''),
+              _panFiles: parseDocumentUrls(a.PanCardURL ?? '')
+            }));
+
+            setCompanyPartnerList(partnerWithFiles);
 
           }
         } else {
@@ -880,751 +894,751 @@ const AddCompany: React.FC = () => {
   //#endregion
 
   return (
-    
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
-        {/* ✅ Fixed HEADER */}
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
-          {/* ============================================================= [BASIC COMPANY DETAILS] ============================================================================================= */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Company Details</h3>
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      {/* ✅ Fixed HEADER */}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
+      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+        {/* ============================================================= [BASIC COMPANY DETAILS] ============================================================================================= */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Company Details</h3>
 
-                <Input
-                  label='Company Name'
-                  required
-                  error={errors.CompanyName}
-                  type="text"
-                  value={formData.CompanyName}
-                  onChange={(e) => {
-                    handleFieldChange('CompanyName', e.target.value)
-                  }}
-                  minLength={5}
-                  maxLength={50}
-                  placeholder="Enter company name"
-                />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
 
-              </div>
-              <div>
+              <Input
+                label='Company Name'
+                required
+                error={errors.CompanyName}
+                type="text"
+                value={formData.CompanyName}
+                onChange={(e) => {
+                  handleFieldChange('CompanyName', e.target.value)
+                }}
+                minLength={5}
+                maxLength={50}
+                placeholder="Enter company name"
+              />
 
-                <SinglePageSelection
-                  label='Company Type'
-                  required
-                  error={errors.CompanyType}
-                  value={formData.CompanyType}
-                  onChange={(e) => {
-                    handleFieldChange('CompanyType', String(e))
-                  }}
-
-                  options={COMPANY_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
-
-
-              </div>
-              <div>
-
-                <Input
-                  label='Mobile Number'
-                  required
-                  error={errors.MobileNumber}
-                  type="text"
-                  value={formData.MobileNumber}
-                  maxLength={10}
-                  leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                  onChange={(e) => {
-                    const mobileNumber = filterMobile(e.target.value);
-                    handleFieldChange('MobileNumber', mobileNumber)
-                  }}
-                  placeholder="Enter valid mobile number"
-                />
-
-              </div>
-              <div>
-
-                <Input
-                  label='Contact Person'
-                  required
-                  error={errors.ContactPerson}
-                  type="text"
-                  value={formData.ContactPerson}
-                  leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                  minLength={5}
-                  maxLength={50}
-                  onChange={(e) => {
-                    const contactPerson = filterLetters(e.target.value);
-                    handleFieldChange('ContactPerson', contactPerson)
-                  }}
-                  placeholder="Enter contact person name"
-                />
-
-              </div>
-              <div>
-
-                <Input
-                  label='Email Id'
-                  required
-                  type="text"
-                  value={formData.EmailId}
-                  error={errors.EmailId}
-                  leftIcon={<Mail className="h-4 w-4 text-gray-400" />}
-                  onChange={(e) => {
-                    const emailId = filterEmail(e.target.value);
-                    handleFieldChange('EmailId', emailId)
-                  }}
-                  placeholder="Enter valid email id"
-                />
-
-              </div>
-              <div>
-
-                <Input
-                  label='Land Line Number'
-                  required
-                  type="text"
-                  value={formData.LandLineNumber}
-                  error={errors.LandLineNumber}
-                  leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                  onChange={(e) => {
-                    const landLineNumber = filterLandline(e.target.value);
-                    handleFieldChange('LandLineNumber', landLineNumber)
-                  }}
-                  placeholder="Enter land line number"
-                />
-
-              </div>
             </div>
-          </div>
-          {/* ============================================================= [GOVERNMENT IDENTIFIERS] ============================================================================================= */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Government Identifiers</h3>
+            <div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
+              <SinglePageSelection
+                label='Company Type'
+                required
+                error={errors.CompanyType}
+                value={formData.CompanyType}
+                onChange={(e) => {
+                  handleFieldChange('CompanyType', String(e))
+                }}
 
-                <Input
-                  label='GST Number'
-                  required
-                  type="text"
-                  value={formData.GSTNumber}
-                  error={errors.GSTNumber}
-                  onChange={(e) => {
-                    const gstNumber = filterGST(e.target.value);
-                    handleFieldChange('GSTNumber', gstNumber)
-                  }}
-                  placeholder="Enter valid GST Number"
-                />
-
-              </div>
-              <div>
-
-                <MultiFilePicker
-                  label="GST Certificate"
-                  required
-                  error={errors.GSTCertificateURL}
-                  value={gstGSTCertificateFiles}
-                  onChange={setGSTCertificateFiles}
-                  availableFilesURL={gSTCertificateURL ?? ""}
-                  allowedTypes={["image/jpeg",
-                    "image/png",
-                    "image/jpg",
-                    "application/pdf",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                  ]}
-                  maxFiles={5}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => {
-                    setRemovedGSTCertificateUrls((prev) => [...prev, url])
-                  }}
-                />
-
-              </div>
-              <div>
-
-                <Input
-                  label='PAN Number'
-                  required
-                  type="text"
-                  value={formData.PanNumber}
-                  error={errors.PanNumber}
-                  onChange={(e) => {
-                    const panNumber = filterPAN(e.target.value);
-                    handleFieldChange('PanNumber', panNumber)
-                  }}
-                  placeholder="Enter valid PAN number"
-                />
-
-              </div>
-              <div>
-
-                <MultiFilePicker
-                  label="PAN Card"
-                  required
-                  error={errors.PanCardURL}
-                  value={panURLFiles}
-                  onChange={setPANURLFiles}
-                  availableFilesURL={panURL ?? ""}
-                  allowedTypes={["image/jpeg",
-                    "image/png",
-                    "image/jpg",
-                    "application/pdf",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                  ]}
-                  maxFiles={5}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => {
-                    setRemovedPanUrls((prev) => [...prev, url])
-                  }}
-                />
-
-              </div>
-              <div>
-
-                <Input
-                  label='CIN Number'
-                  required
-                  type="text"
-                  value={formData.CINNumber}
-                  error={errors.CINNumber}
-                  maxLength={21}
-                  onChange={(e) => {
-                    const cinNumber = filterCIN(e.target.value);
-                    handleFieldChange('CINNumber', cinNumber)
-                  }}
-                  placeholder="Enter valid CIN Number"
-                />
-
-              </div>
-              <div>
+                options={COMPANY_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
 
 
-                <MultiFilePicker
-                  label='CIN'
-                  value={cinURLFiles}
-                  error={errors.CINURL}
-                  onChange={setCINURLFiles}
-                  availableFilesURL={cinURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
-                    "image/png",
-                    "application/pdf",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  ]}
-                  maxFiles={5}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => {
-                    setRemovedCinUrls((prev) => [...prev, url])
-                  }}
-                />
-
-              </div>
-
-              <div>
-
-                <Input
-                  label='RERA Number'
-                  required
-                  type="text"
-                  value={formData.RERANumber}
-                  error={errors.RERANumber}
-                  maxLength={20}
-                  onChange={(e) => {
-                    const reraNumber = filterRERA(e.target.value);
-                    handleFieldChange('RERANumber', reraNumber)
-                  }}
-                  placeholder="Enter valid RERA Number"
-                />
-
-              </div>
             </div>
-          </div>
+            <div>
 
-          {/* ============================================================= [ADDRESS] ============================================================================================= */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Address</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Input
+                label='Mobile Number'
+                required
+                error={errors.MobileNumber}
+                type="text"
+                value={formData.MobileNumber}
+                maxLength={10}
+                leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                onChange={(e) => {
+                  const mobileNumber = filterMobile(e.target.value);
+                  handleFieldChange('MobileNumber', mobileNumber)
+                }}
+                placeholder="Enter valid mobile number"
+              />
 
-              <div>
+            </div>
+            <div>
 
-                <SinglePageSelection
-                  label='Country'
-                  required
-                  value={selectedCountryId || ''}
-                  error={errors.CountryMasterId}
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedCountryId(id)
-                    setSelectedStateId(null)
-                    setSelectedDistrictId(null)
-                    setSelectedCityId(null)
+              <Input
+                label='Contact Person'
+                required
+                error={errors.ContactPerson}
+                type="text"
+                value={formData.ContactPerson}
+                leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                minLength={5}
+                maxLength={50}
+                onChange={(e) => {
+                  const contactPerson = filterLetters(e.target.value);
+                  handleFieldChange('ContactPerson', contactPerson)
+                }}
+                placeholder="Enter contact person name"
+              />
 
-                    handleFieldChange('CountryMasterId', id)
-                  }}
-                  disabled={isLocationLoading}
-                  options={countryOptions}
-                />
+            </div>
+            <div>
 
-              </div>
+              <Input
+                label='Email Id'
+                required
+                type="text"
+                value={formData.EmailId}
+                error={errors.EmailId}
+                leftIcon={<Mail className="h-4 w-4 text-gray-400" />}
+                onChange={(e) => {
+                  const emailId = filterEmail(e.target.value);
+                  handleFieldChange('EmailId', emailId)
+                }}
+                placeholder="Enter valid email id"
+              />
 
-              <div>
+            </div>
+            <div>
 
-                <SinglePageSelection
-                  label='State'
-                  required
-                  value={selectedStateId ?? ''}
-                  error={errors.StateMasterId}
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedStateId(id)
-                    setSelectedDistrictId(null)
-                    setSelectedCityId(null)
-
-                    handleFieldChange('StateMasterId', id)
-                  }}
-                  disabled={!selectedCountryId || stateOptions.length === 0}
-                  options={stateOptions}
-                />
-
-              </div>
-
-              <div>
-
-                <SinglePageSelection
-                  label='District'
-                  required
-                  value={selectedDistrictId ?? ''}
-                  error={errors.DistrictMasterId}
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedDistrictId(id)
-                    setSelectedCityId(null)
-
-                    handleFieldChange('DistrictMasterId', id)
-                  }}
-                  disabled={!selectedStateId || districtOptions.length === 0}
-                  options={districtOptions}
-                />
-
-
-              </div>
-
-              <div>
-
-                <SinglePageSelection
-                  label='City'
-                  required
-                  value={selectedCityId ?? ''}
-                  error={errors.CityMasterId}
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedCityId(id)
-                    handleFieldChange('CityMasterId', id)
-                  }}
-                  disabled={!selectedDistrictId || cityOptions.length === 0}
-                  options={cityOptions}
-                />
-
-
-              </div>
+              <Input
+                label='Land Line Number'
+                required
+                type="text"
+                value={formData.LandLineNumber}
+                error={errors.LandLineNumber}
+                leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                onChange={(e) => {
+                  const landLineNumber = filterLandline(e.target.value);
+                  handleFieldChange('LandLineNumber', landLineNumber)
+                }}
+                placeholder="Enter land line number"
+              />
 
             </div>
           </div>
+        </div>
+        {/* ============================================================= [GOVERNMENT IDENTIFIERS] ============================================================================================= */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Government Identifiers</h3>
 
-          {/* ============================================================= [COMPANY VERIFICATION] ============================================================================================= */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Company Verification</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Input
+                label='GST Number'
+                required
+                type="text"
+                value={formData.GSTNumber}
+                error={errors.GSTNumber}
+                onChange={(e) => {
+                  const gstNumber = filterGST(e.target.value);
+                  handleFieldChange('GSTNumber', gstNumber)
+                }}
+                placeholder="Enter valid GST Number"
+              />
 
-              <div>
+            </div>
+            <div>
 
-                <MultiFilePicker
-                  label='Company Letterhead Header'
-                  required
-                  error={errors.CompanyLetterheadHeaderURL}
-                  value={companyLetterHeadHeaderFiles}
-                  onChange={setCompanyLetterHeadHeaderFiles}
-                  availableFilesURL={companyLetterHeadHeaderURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
-                    "image/png",
-                    "application/pdf",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  ]}
-                  maxFiles={5}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => {
-                    setRemovedCompanyLetterHeadHeaderUrls((prev) => [...prev, url])
-                  }}
-                />
+              <MultiFilePicker
+                label="GST Certificate"
+                required
+                error={errors.GSTCertificateURL}
+                value={gstGSTCertificateFiles}
+                onChange={setGSTCertificateFiles}
+                availableFilesURL={gSTCertificateURL ?? ""}
+                allowedTypes={["image/jpeg",
+                  "image/png",
+                  "image/jpg",
+                  "application/pdf",
+                  "application/vnd.ms-excel",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ]}
+                maxFiles={5}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => {
+                  setRemovedGSTCertificateUrls((prev) => [...prev, url])
+                }}
+              />
+
+            </div>
+            <div>
+
+              <Input
+                label='PAN Number'
+                required
+                type="text"
+                value={formData.PanNumber}
+                error={errors.PanNumber}
+                onChange={(e) => {
+                  const panNumber = filterPAN(e.target.value);
+                  handleFieldChange('PanNumber', panNumber)
+                }}
+                placeholder="Enter valid PAN number"
+              />
+
+            </div>
+            <div>
+
+              <MultiFilePicker
+                label="PAN Card"
+                required
+                error={errors.PanCardURL}
+                value={panURLFiles}
+                onChange={setPANURLFiles}
+                availableFilesURL={panURL ?? ""}
+                allowedTypes={["image/jpeg",
+                  "image/png",
+                  "image/jpg",
+                  "application/pdf",
+                  "application/vnd.ms-excel",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ]}
+                maxFiles={5}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => {
+                  setRemovedPanUrls((prev) => [...prev, url])
+                }}
+              />
+
+            </div>
+            <div>
+
+              <Input
+                label='CIN Number'
+                required
+                type="text"
+                value={formData.CINNumber}
+                error={errors.CINNumber}
+                maxLength={21}
+                onChange={(e) => {
+                  const cinNumber = filterCIN(e.target.value);
+                  handleFieldChange('CINNumber', cinNumber)
+                }}
+                placeholder="Enter valid CIN Number"
+              />
+
+            </div>
+            <div>
 
 
-              </div>
+              <MultiFilePicker
+                label='CIN'
+                value={cinURLFiles}
+                error={errors.CINURL}
+                onChange={setCINURLFiles}
+                availableFilesURL={cinURL ?? ""}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf",
+                  "application/vnd.ms-excel",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ]}
+                maxFiles={5}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => {
+                  setRemovedCinUrls((prev) => [...prev, url])
+                }}
+              />
 
-              <div>
+            </div>
 
-                <MultiFilePicker
-                  label='Company Letterhead Footer'
-                  required
-                  value={companyLetterHeadFooterFiles}
-                  error={errors.CompanyLetterheadFooterURL}
-                  onChange={setCompanyLetterHeadFooterFiles}
-                  availableFilesURL={companyLetterHeadFooterURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
-                    "image/png",
-                    "application/pdf",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  ]}
-                  maxFiles={5}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => {
-                    setRemovedCompanyLetterHeadFooterUrls((prev) => [...prev, url])
-                  }}
-                />
+            <div>
 
-              </div>
+              <Input
+                label='RERA Number'
+                required
+                type="text"
+                value={formData.RERANumber}
+                error={errors.RERANumber}
+                maxLength={20}
+                onChange={(e) => {
+                  const reraNumber = filterRERA(e.target.value);
+                  handleFieldChange('RERANumber', reraNumber)
+                }}
+                placeholder="Enter valid RERA Number"
+              />
+
             </div>
           </div>
+        </div>
 
+        {/* ============================================================= [ADDRESS] ============================================================================================= */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Address</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-          {/* ============================================================= [COMPANY PARTNER ] ============================================================================================= */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b pb-2">
-              <h3 className="text-lg font-medium text-gray-900">
-                Company Partner
-              </h3>
+            <div>
 
-              <Button
-                color="blue"
-                size="sm"
-                onClick={handleAddCompanyPartnerModal}
-              >
-                Add Partner
-              </Button>
+              <SinglePageSelection
+                label='Country'
+                required
+                value={selectedCountryId || ''}
+                error={errors.CountryMasterId}
+                onChange={val => {
+                  const id = Number(val)
+                  setSelectedCountryId(id)
+                  setSelectedStateId(null)
+                  setSelectedDistrictId(null)
+                  setSelectedCityId(null)
+
+                  handleFieldChange('CountryMasterId', id)
+                }}
+                disabled={isLocationLoading}
+                options={countryOptions}
+              />
+
             </div>
 
+            <div>
 
-            <DataTable
-              data={companyListForTable ?? []}
-              columns={companyPartnerColumns}
-              emptyMessage="No company Partner found"
-              fixedHeight={true}
-              maxHeight="calc(100vh - 200px)"
-              recordsPerPage={20}
-              className="flex-1"
-            />
+              <SinglePageSelection
+                label='State'
+                required
+                value={selectedStateId ?? ''}
+                error={errors.StateMasterId}
+                onChange={val => {
+                  const id = Number(val)
+                  setSelectedStateId(id)
+                  setSelectedDistrictId(null)
+                  setSelectedCityId(null)
+
+                  handleFieldChange('StateMasterId', id)
+                }}
+                disabled={!selectedCountryId || stateOptions.length === 0}
+                options={stateOptions}
+              />
+
+            </div>
+
+            <div>
+
+              <SinglePageSelection
+                label='District'
+                required
+                value={selectedDistrictId ?? ''}
+                error={errors.DistrictMasterId}
+                onChange={val => {
+                  const id = Number(val)
+                  setSelectedDistrictId(id)
+                  setSelectedCityId(null)
+
+                  handleFieldChange('DistrictMasterId', id)
+                }}
+                disabled={!selectedStateId || districtOptions.length === 0}
+                options={districtOptions}
+              />
+
+
+            </div>
+
+            <div>
+
+              <SinglePageSelection
+                label='City'
+                required
+                value={selectedCityId ?? ''}
+                error={errors.CityMasterId}
+                onChange={val => {
+                  const id = Number(val)
+                  setSelectedCityId(id)
+                  handleFieldChange('CityMasterId', id)
+                }}
+                disabled={!selectedDistrictId || cityOptions.length === 0}
+                options={cityOptions}
+              />
+
+
+            </div>
+
           </div>
+        </div>
 
-          {/* ✅ Fixed Bottom  */}
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-            style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
-            <Button
-              color="transparent"
-              variant='transparent_border'
-              size="sm"
-              onClick={() => {
-                navigate(-1);
-              }}
-              className="px-6"
-            >
-              Cancel
-            </Button>
-            <Button
-              color="green"
-              size="sm"
-              onClick={handleAddUpdateCompanyMaster}
-              className="px-6"
-            >
-              Save
-            </Button>
+        {/* ============================================================= [COMPANY VERIFICATION] ============================================================================================= */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Company Verification</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <div>
+
+              <MultiFilePicker
+                label='Company Letterhead Header'
+                required
+                error={errors.CompanyLetterheadHeaderURL}
+                value={companyLetterHeadHeaderFiles}
+                onChange={setCompanyLetterHeadHeaderFiles}
+                availableFilesURL={companyLetterHeadHeaderURL ?? ""}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf",
+                  "application/vnd.ms-excel",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ]}
+                maxFiles={5}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => {
+                  setRemovedCompanyLetterHeadHeaderUrls((prev) => [...prev, url])
+                }}
+              />
+
+
+            </div>
+
+            <div>
+
+              <MultiFilePicker
+                label='Company Letterhead Footer'
+                required
+                value={companyLetterHeadFooterFiles}
+                error={errors.CompanyLetterheadFooterURL}
+                onChange={setCompanyLetterHeadFooterFiles}
+                availableFilesURL={companyLetterHeadFooterURL ?? ""}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf",
+                  "application/vnd.ms-excel",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ]}
+                maxFiles={5}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => {
+                  setRemovedCompanyLetterHeadFooterUrls((prev) => [...prev, url])
+                }}
+              />
+
+            </div>
           </div>
         </div>
 
 
-        {/*  ADD EDIT UPDATE COMPANY PARTNER MODAL */}
+        {/* ============================================================= [COMPANY PARTNER ] ============================================================================================= */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b pb-2">
+            <h3 className="text-lg font-medium text-gray-900">
+              Company Partner
+            </h3>
 
-        <Modal
-          isOpen={isAddUpdateCompanyPartnerModalOpen}
-          onClose={() => {
-            setIsAddUpdateCompanyPartnerModalOpen(false)
-            setEditingCompanyPartnerMasterData(null)
-            setFormDataCompanyPartner(initialFormStateCompanyPartner());
-            setErrorsCompanyPartner({});
+            <Button
+              color="blue"
+              size="sm"
+              onClick={handleAddCompanyPartnerModal}
+            >
+              Add Partner
+            </Button>
+          </div>
 
-          }}
-          onCancel={() => {
-            setIsAddUpdateCompanyPartnerModalOpen(false)
-            setEditingCompanyPartnerMasterData(null)
-            setFormDataCompanyPartner(initialFormStateCompanyPartner());
-            setErrorsCompanyPartner({});
 
-          }}
-          title={editingCompanyPartnerMasterData ? 'Update Company Partner' : 'Add Company Partner'}
-          onSubmit={handleAddUpdateCompanyPartner}
-          saveText={editingCompanyPartnerMasterData ? 'Update' : 'Save'}
-          cancelText="Cancel"
-          loading={isLoading}
-          size='large-half'
-        >
-          <div className="space-y-6">
+          <DataTable
+            data={companyListForTable ?? []}
+            columns={companyPartnerColumns}
+            emptyMessage="No company Partner found"
+            fixedHeight={true}
+            maxHeight="calc(100vh - 200px)"
+            recordsPerPage={20}
+            className="flex-1"
+          />
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
+        {/* ✅ Fixed Bottom  */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
+          <Button
+            color="transparent"
+            variant='transparent_border'
+            size="sm"
+            onClick={() => {
+              navigate(-1);
+            }}
+            className="px-6"
+          >
+            Cancel
+          </Button>
+          <Button
+            color="green"
+            size="sm"
+            onClick={handleAddUpdateCompanyMaster}
+            className="px-6"
+          >
+            Save
+          </Button>
+        </div>
+      </div>
 
-                <Input
-                  label='First Name'
-                  required
-                  error={errorsCompanyPartner.FirstName}
-                  type="text"
-                  value={formDataCompanyPartner.FirstName}
-                  maxLength={50}
-                  onChange={e =>
-                    handleFieldChangeCompanyPartner('FirstName', filterLetters(e.target.value))
-                  }
-                  placeholder="Enter first name"
-                />
-              </div>
 
-              <div>
+      {/*  ADD EDIT UPDATE COMPANY PARTNER MODAL */}
 
-                <Input
-                  label='Last Name'
-                  required
-                  error={errorsCompanyPartner.LastName}
-                  type="text"
-                  value={formDataCompanyPartner.LastName}
-                  maxLength={50}
-                  onChange={e =>
-                    handleFieldChangeCompanyPartner('LastName', filterLetters(e.target.value))
-                  }
-                  placeholder="Enter last name"
-                />
+      <Modal
+        isOpen={isAddUpdateCompanyPartnerModalOpen}
+        onClose={() => {
+          setIsAddUpdateCompanyPartnerModalOpen(false)
+          setEditingCompanyPartnerMasterData(null)
+          setFormDataCompanyPartner(initialFormStateCompanyPartner());
+          setErrorsCompanyPartner({});
 
-              </div>
+        }}
+        onCancel={() => {
+          setIsAddUpdateCompanyPartnerModalOpen(false)
+          setEditingCompanyPartnerMasterData(null)
+          setFormDataCompanyPartner(initialFormStateCompanyPartner());
+          setErrorsCompanyPartner({});
 
-              <div>
+        }}
+        title={editingCompanyPartnerMasterData ? 'Update Company Partner' : 'Add Company Partner'}
+        onSubmit={handleAddUpdateCompanyPartner}
+        saveText={editingCompanyPartnerMasterData ? 'Update' : 'Save'}
+        cancelText="Cancel"
+        loading={isLoading}
+        size='large-half'
+      >
+        <div className="space-y-6">
 
-                <Input
-                  label='Middle Name'
-                  required
-                  error={errorsCompanyPartner.MiddleName}
-                  type="text"
-                  value={formDataCompanyPartner.MiddleName}
-                  maxLength={50}
-                  onChange={e =>
-                    handleFieldChangeCompanyPartner('MiddleName', filterLetters(e.target.value))
-                  }
-                  placeholder="Enter middle name"
-                />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
 
-              </div>
+              <Input
+                label='First Name'
+                required
+                error={errorsCompanyPartner.FirstName}
+                type="text"
+                value={formDataCompanyPartner.FirstName}
+                maxLength={50}
+                onChange={e =>
+                  handleFieldChangeCompanyPartner('FirstName', filterLetters(e.target.value))
+                }
+                placeholder="Enter first name"
+              />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
+            <div>
 
-                <DatePickerInput
-                  label='Date of Birth'
-                  required
-                  error={errorsCompanyPartner.DateOfBirth}
-                  value={formDataCompanyPartner.DateOfBirth || ''}
-                  onChange={(val) => handleFieldChangeCompanyPartner('DateOfBirth', val)}
-                />
+              <Input
+                label='Last Name'
+                required
+                error={errorsCompanyPartner.LastName}
+                type="text"
+                value={formDataCompanyPartner.LastName}
+                maxLength={50}
+                onChange={e =>
+                  handleFieldChangeCompanyPartner('LastName', filterLetters(e.target.value))
+                }
+                placeholder="Enter last name"
+              />
 
-              </div>
-
-              <div>
-
-                <SinglePageSelection
-                  label='Gender'
-                  required
-                  error={errorsCompanyPartner.Gender}
-                  value={formDataCompanyPartner.Gender}
-                  onChange={(e) => {
-                    handleFieldChangeCompanyPartner('Gender', String(e))
-                  }}
-
-                  options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
-
-              </div>
-
-              <div>
-
-                <Input
-                  label='Share (%)'
-                  required
-                  error={errorsCompanyPartner.PartnerPercentage}
-                  type="text"
-                  value={formDataCompanyPartner.PartnerPercentage ?? 0}
-                  onChange={e =>
-                    handleFieldChangeCompanyPartner('PartnerPercentage', Number(e.target.value || 0))
-                  }
-                  placeholder="Enter share %"
-                />
-
-              </div>
             </div>
 
+            <div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              <Input
+                label='Middle Name'
+                required
+                error={errorsCompanyPartner.MiddleName}
+                type="text"
+                value={formDataCompanyPartner.MiddleName}
+                maxLength={50}
+                onChange={e =>
+                  handleFieldChangeCompanyPartner('MiddleName', filterLetters(e.target.value))
+                }
+                placeholder="Enter middle name"
+              />
 
-                <Input
-                  label='Mobile Number'
-                  required
-                  error={errorsCompanyPartner.MobileNumber}
-                  type="text"
-                  value={formDataCompanyPartner.MobileNumber}
-                  maxLength={10}
-                  onChange={e =>
-                    handleFieldChangeCompanyPartner('MobileNumber', filterMobile(e.target.value))
-                  }
-                  placeholder="Enter mobile number"
-                />
-
-              </div>
-
-              <div>
-
-                <Input
-                  label='Email Id'
-                  required
-                  error={errorsCompanyPartner.EmailId}
-                  type="text"
-                  value={formDataCompanyPartner.EmailId}
-                  onChange={e =>
-                    handleFieldChangeCompanyPartner('EmailId', filterEmail(e.target.value))
-                  }
-                  placeholder="Enter email id"
-                />
-
-              </div>
-            </div>
-
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-
-                <Input
-                  label='PAN Number'
-                  required
-                  error={errorsCompanyPartner.PanNumber}
-                  type="text"
-                  value={formDataCompanyPartner.PanNumber}
-                  maxLength={10}
-                  onChange={e =>
-                    handleFieldChangeCompanyPartner('PanNumber', filterPAN(e.target.value).toUpperCase()
-                    )
-                  }
-                  placeholder="Enter PAN number"
-                />
-
-              </div>
-
-              <div>
-
-                <Input
-                  label='Aadhar Number'
-                  required
-                  error={errorsCompanyPartner.AadharCardNumber}
-                  type="text"
-                  value={formDataCompanyPartner.AadharCardNumber}
-                  maxLength={12}
-                  onChange={e => handleFieldChangeCompanyPartner('AadharCardNumber', e.target.value)
-                  }
-                  placeholder="Enter Aadhar number"
-                />
-
-              </div>
-            </div>
-
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <MultiFilePicker
-                  label='PAN Card'
-                  required
-                  error={errorsCompanyPartner.PanCardURL}
-                  value={companyPartnerPANURLFiles}
-                  onChange={setCompanyPartnerPANURLFiles}
-                  availableFilesURL={editingCompanyPartnerMasterData?.PanCardURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
-                    "image/png",
-                    "application/pdf",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  ]}
-                  maxFiles={5}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => {
-                    setRemovedCompanyPartnerPANURLs((prev) => [...prev, url])
-                  }}
-                />
-
-              </div>
-
-              <div>
-
-                <MultiFilePicker
-                  label='Aadhaar Card'
-                  required
-                  error={errorsCompanyPartner.AadharCardURL}
-                  value={companyPartnerAadhaarCardURLFiles}
-                  onChange={setCompanyPartnerAadhaarCardURLFiles}
-                  availableFilesURL={editingCompanyPartnerMasterData?.AadharCardURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
-                    "image/png",
-                    "application/pdf",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  ]}
-                  maxFiles={5}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => {
-                    setRemovedCompanyPartnerAadhaarCardURLs((prev) => [...prev, url])
-                  }}
-                />
-
-              </div>
-
-              <div>
-                <MultiFilePicker
-                  label='Photo'
-                  required
-                  error={errorsCompanyPartner.PhotoURL}
-                  value={companyPartnerPhotoURLFiles}
-                  onChange={setCompanyPartnerPhotoURLFiles}
-                  availableFilesURL={editingCompanyPartnerMasterData?.PhotoURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
-                    "image/png",
-                    "application/pdf",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  ]}
-                  maxFiles={1}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => {
-                    setRemovedCompanyPartnerPhotoURLs((prev) => [...prev, url])
-                  }}
-
-                />
-              </div>
             </div>
           </div>
-        </Modal>
 
-      </div >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+
+              <DatePickerInput
+                label='Date of Birth'
+                required
+                error={errorsCompanyPartner.DateOfBirth}
+                value={formDataCompanyPartner.DateOfBirth || ''}
+                onChange={(val) => handleFieldChangeCompanyPartner('DateOfBirth', val)}
+              />
+
+            </div>
+
+            <div>
+
+              <SinglePageSelection
+                label='Gender'
+                required
+                error={errorsCompanyPartner.Gender}
+                value={formDataCompanyPartner.Gender}
+                onChange={(e) => {
+                  handleFieldChangeCompanyPartner('Gender', String(e))
+                }}
+
+                options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
+
+            </div>
+
+            <div>
+
+              <Input
+                label='Share (%)'
+                required
+                error={errorsCompanyPartner.PartnerPercentage}
+                type="text"
+                value={formDataCompanyPartner.PartnerPercentage ?? 0}
+                onChange={e =>
+                  handleFieldChangeCompanyPartner('PartnerPercentage', Number(e.target.value || 0))
+                }
+                placeholder="Enter share %"
+              />
+
+            </div>
+          </div>
+
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+
+              <Input
+                label='Mobile Number'
+                required
+                error={errorsCompanyPartner.MobileNumber}
+                type="text"
+                value={formDataCompanyPartner.MobileNumber}
+                maxLength={10}
+                onChange={e =>
+                  handleFieldChangeCompanyPartner('MobileNumber', filterMobile(e.target.value))
+                }
+                placeholder="Enter mobile number"
+              />
+
+            </div>
+
+            <div>
+
+              <Input
+                label='Email Id'
+                required
+                error={errorsCompanyPartner.EmailId}
+                type="text"
+                value={formDataCompanyPartner.EmailId}
+                onChange={e =>
+                  handleFieldChangeCompanyPartner('EmailId', filterEmail(e.target.value))
+                }
+                placeholder="Enter email id"
+              />
+
+            </div>
+          </div>
+
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+
+              <Input
+                label='PAN Number'
+                required
+                error={errorsCompanyPartner.PanNumber}
+                type="text"
+                value={formDataCompanyPartner.PanNumber}
+                maxLength={10}
+                onChange={e =>
+                  handleFieldChangeCompanyPartner('PanNumber', filterPAN(e.target.value).toUpperCase()
+                  )
+                }
+                placeholder="Enter PAN number"
+              />
+
+            </div>
+
+            <div>
+
+              <Input
+                label='Aadhar Number'
+                required
+                error={errorsCompanyPartner.AadharCardNumber}
+                type="text"
+                value={formDataCompanyPartner.AadharCardNumber}
+                maxLength={12}
+                onChange={e => handleFieldChangeCompanyPartner('AadharCardNumber', e.target.value)
+                }
+                placeholder="Enter Aadhar number"
+              />
+
+            </div>
+          </div>
+
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <MultiFilePicker
+                label='PAN Card'
+                required
+                error={errorsCompanyPartner.PanCardURL}
+                value={companyPartnerPANURLFiles}
+                onChange={setCompanyPartnerPANURLFiles}
+                availableFilesURL={editingCompanyPartnerMasterData?.PanCardURL ?? ""}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf",
+                  "application/vnd.ms-excel",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ]}
+                maxFiles={5}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => {
+                  setRemovedCompanyPartnerPANURLs((prev) => [...prev, url])
+                }}
+              />
+
+            </div>
+
+            <div>
+
+              <MultiFilePicker
+                label='Aadhaar Card'
+                required
+                error={errorsCompanyPartner.AadharCardURL}
+                value={companyPartnerAadhaarCardURLFiles}
+                onChange={setCompanyPartnerAadhaarCardURLFiles}
+                availableFilesURL={editingCompanyPartnerMasterData?.AadharCardURL ?? ""}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf",
+                  "application/vnd.ms-excel",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ]}
+                maxFiles={5}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => {
+                  setRemovedCompanyPartnerAadhaarCardURLs((prev) => [...prev, url])
+                }}
+              />
+
+            </div>
+
+            <div>
+              <MultiFilePicker
+                label='Photo'
+                required
+                error={errorsCompanyPartner.PhotoURL}
+                value={companyPartnerPhotoURLFiles}
+                onChange={setCompanyPartnerPhotoURLFiles}
+                availableFilesURL={editingCompanyPartnerMasterData?.PhotoURL ?? ""}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf",
+                  "application/vnd.ms-excel",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ]}
+                maxFiles={1}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => {
+                  setRemovedCompanyPartnerPhotoURLs((prev) => [...prev, url])
+                }}
+
+              />
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+    </div >
   )
 }
 

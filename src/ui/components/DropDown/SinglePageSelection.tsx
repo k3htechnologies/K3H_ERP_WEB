@@ -219,7 +219,7 @@ export const SinglePageSelection = forwardRef<
         >
           <span
             style={{
-              color: selectedTextColor ? chosenSelectedColor : "#888",
+              color: selectedTextColor ? chosenSelectedColor : "#000",
               fontWeight: selectedTextColor ? "700" : "400",
             }}
           >

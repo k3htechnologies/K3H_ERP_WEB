@@ -9,6 +9,8 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
   searchable?: boolean;
   error?: string;
   required?: boolean;
+  className?: string;
+  selectedTextColor?: string;
 }
 >(
   (
@@ -25,6 +27,8 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
       size = "md",
       required = false,
       error,
+      className,
+      selectedTextColor,
     },
     ref
   ) => {
@@ -92,7 +96,7 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
       const windowHeight = window.innerHeight;
 
       if (rect) {
-        const dropdownHeight = 300; 
+        const dropdownHeight = 300;
 
         if (rect.bottom + dropdownHeight > windowHeight) {
           setOpenUpward(true);
@@ -104,10 +108,13 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
       setIsOpen(!isOpen);
     };
 
+    const chosenSelectedColor = selectedTextColor ?? theme.colors.primary ?? "#0b5fff";
+
     return (
       <div
         ref={ref || containerRef}
         style={{ width: "100%", position: "relative" }}
+        className={className}
       >
         {/* Label */}
         {label && (
@@ -142,7 +149,7 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
 
           }}
         >
-          <span style={{ color: value ? "#000" : "#888" }}>{selectedLabel}</span>
+          <span style={{ color: selectedTextColor ? chosenSelectedColor : "#888",fontWeight: selectedTextColor  ? '700' : '400'}}>{selectedLabel}</span>
           {isOpen ? (
             <ChevronUp size={20} color="#888" />
           ) : (

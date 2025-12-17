@@ -205,10 +205,13 @@ function App() {
             <Route path="building" element={<Building />} />
             <Route path="building/view" element={<ViewBuilding />} />
             <Route path="building/add/:buildingId?" element={<AddUpdateBuilding />} />
-
+            <Route path="building/description" element={<BuildingDescription />} />
+            <Route path="building/document" element={<BuildingDocument />} />
             <Route path="tenant" element={<Tenant />} />
             <Route path="tenant/view" element={<ViewTenant />} />
             <Route path="tenant/add/:tenantId?" element={<AddUpdateTenant />} />
+            <Route path="tenant/document" element={<TenantDocument />} />
+            <Route path="proposedOffer" element={<ProposedOffer />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

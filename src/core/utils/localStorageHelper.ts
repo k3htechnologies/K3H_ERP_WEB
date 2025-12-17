@@ -788,6 +788,29 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE SELECTED PROJECT
+    storeSelectedProject: (projectId: number): void => {
+        try {
+            localStorage.setItem(
+                LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID,
+                String(projectId)
+            );
+        } catch (error) {
+            console.error('Error storing selected project:', error);
+        }
+    },
+    //#endregion
+    //#region GET SELECTED PROJECT
+    getSelectedProject: (): number | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
+        if (stored) {
+            const parsed = Number(stored);
+            return isNaN(parsed) ? null : parsed;
+        }
+        return null;
+    },
+    //#endregion
+
     //#region CLEAR LOCAL STORAGE 
     clearLocalStorageData: (): void => {
         try {
@@ -822,6 +845,8 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
+
         } catch (error) {
             console.error('ERROR : CLEARING LOCAL STORAGE:', error)
         }

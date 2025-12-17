@@ -5,7 +5,7 @@ import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type { BuildingData, FilterWithPaginationBuildingRequest } from '@/features/building/models/BuildingModel';
-import {buildingService } from '@/features/building/services/BuildingService';
+import { buildingService } from '@/features/building/services/BuildingService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -16,10 +16,10 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, type Location, useNavigate } from 'react-router-dom';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
-
-var ProjectId = 1;
+import { FileText, Info } from 'lucide-react';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 export const Building: React.FC = () => {
   //#region STATE
@@ -60,8 +60,17 @@ export const Building: React.FC = () => {
 
   //#endregion
 
+  //#region PROJECT SELECTION GET ID
+
+  const { projectId } = useProject()
+
+  //#endregion
+
   //#region INIT
   useEffect(() => {
+
+    if (!projectId) return;
+
     const incoming = location.state?.listState as
       | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string }
       | undefined;
@@ -88,13 +97,21 @@ export const Building: React.FC = () => {
     }
 
     loadBuildings(listState.page ?? 1, listState.filters ?? {});
-  }, [location.state]);
+  }, [location.state, projectId]);
 
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.();
     };
   }, [debouncedSearch]);
+
+  
+  useEffect(() => {
+    if (!projectId) return;
+    setFilters({});
+    setTempFilters({});
+  }, [projectId]);
+
   //#endregion
 
   //#region DATA LOAD
@@ -121,7 +138,7 @@ export const Building: React.FC = () => {
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           BuildingId: filterParams.BuildingId ? Number(filterParams.BuildingId) : undefined,
-          ProjectId: ProjectId,
+          ProjectId: projectId ?? undefined,
           BuildingName: filterParams.BuildingName?.trim() || undefined,
           CTSNumber: filterParams.CTSNumber?.trim() || undefined,
           SortBy: sortByParam
@@ -207,6 +224,7 @@ export const Building: React.FC = () => {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
+          ProjectId: projectId ?? undefined,
           BuildingName: filters.BuildingName?.trim() || undefined,
           CTSNumber: filters.CTSNumber?.trim() || undefined,
           SortBy: sortByParam,
@@ -281,6 +299,50 @@ export const Building: React.FC = () => {
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
   //#endregion
 
+  //#region VIEW BUILDING DOCUMENT
+
+  const handleViewBuildingDocument = useCallback((row: BuildingData) => {
+    navigate('/building/document', {
+      state: {
+        editBuildingData: row,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm,
+          buildingId: row.BuildingId,
+          projectId: row.ProjectId,
+          buildingName: row.BuildingName,
+
+        },
+      },
+    });
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  //#endregion
+
+  //#region VIEW BUILDING DOCUMENT
+
+  const handleViewBuildingDescription = useCallback((row: BuildingData) => {
+    navigate('/building/description', {
+      state: {
+        editBuildingData: row,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm,
+          buildingId: row.BuildingId,
+          projectId: row.ProjectId,
+          buildingName: row.BuildingName,
+
+        },
+      },
+    });
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  //#endregion
+
   //#region TABLE COLUMN
   const buildingColumns = useMemo<TableColumn[]>(
     () => [
@@ -304,11 +366,6 @@ export const Building: React.FC = () => {
               </div>
             </div>
 
-            {canAction && (
-              <div className="flex items-center gap-2">
-                {/* reserved for future action buttons */}
-              </div>
-            )}
           </div>
         )
       },
@@ -322,7 +379,7 @@ export const Building: React.FC = () => {
           <TooltipText text={value || 'N/A'} maxWidth="220px" tooltipThreshold={22} />
         )
       },
-     {
+      {
         key: 'RoadWidth',
         label: 'Road Width',
         width: '14',
@@ -330,7 +387,7 @@ export const Building: React.FC = () => {
         align: 'left',
         render: value => value || 'N/A'
       },
-     
+
       {
         key: 'TotalPlotAreaSqFt',
         label: 'Total Plot Area (sqft)',
@@ -365,7 +422,7 @@ export const Building: React.FC = () => {
           <TooltipText text={value || 'N/A'} maxWidth="200px" tooltipThreshold={20} />
         )
       },
-       {
+      {
         key: 'DistrictName',
         label: 'District',
         width: '14',
@@ -405,8 +462,59 @@ export const Building: React.FC = () => {
         align: 'center',
         render: value => (value ? 'Yes' : 'No')
       },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleViewBuildingDescription(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'blue',
+                  padding: '4px 8px'
+                }}
+                title="Building Details"
+              >
+                <Info className="h-4 w-4" />
+              </Button>
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleViewBuildingDocument(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'green',
+                  padding: '4px 8px'
+                }}
+                title="Building Document"
+              >
+                <FileText className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+
+
+        )
+      }
     ],
-    [canAction, handleViewBuildingDetails]
+    [canAction, handleViewBuildingDetails, handleViewBuildingDocument]
   );
   //#endregion
 

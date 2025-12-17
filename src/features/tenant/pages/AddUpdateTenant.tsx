@@ -24,9 +24,8 @@ import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleS
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
 
-var BuildingId = 1;
-var ProjectId = 1;
 
 const initialFormState = (): AddUpdateTenantRequest => ({
   TenantId: 0,
@@ -130,6 +129,22 @@ const AddUpdateTenant: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const locationStateDetails = useLocation() as {
+    state?: {
+      editTenantData?: TenantData | null;
+      fromList?: boolean;
+      listState?: {
+        page: number;
+        filters: any;
+        sortInfo?: any;
+        searchTerm?: string;
+        buildingId?: number;
+        buildingName?: string;
+      };
+    };
+  };
+  const preservedListState = locationStateDetails.state?.listState;
+
   //GET VALUE FROM URL :EMPLOYEEID
   const { tenantId } = useParams<{ tenantId?: string }>();
 
@@ -138,6 +153,12 @@ const AddUpdateTenant: React.FC = () => {
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
+
+  //#endregion
+
+  //#region PROJECT SELECTION GET ID
+
+  const { projectId } = useProject()
 
   //#endregion
 
@@ -246,8 +267,8 @@ const AddUpdateTenant: React.FC = () => {
           PageSize: 1,
           IsCheckPermission: false,
           TenantId: Number(tenantId),
-          ProjectId: ProjectId,
-          BuildingId: BuildingId
+          ProjectId: Number(projectId),
+          BuildingId: preservedListState?.buildingId
         }
 
         const response = await tenantService.apiCallPullTenant(params);
@@ -261,7 +282,7 @@ const AddUpdateTenant: React.FC = () => {
               ...prev,
               TenantId: tenant.TenantId ?? prev.TenantId,
               Uniquekey: tenant.Uniquekey ?? prev.Uniquekey,
-              BuildingId: BuildingId,
+              BuildingId: Number(preservedListState?.buildingId),
               ProjectId: tenant.ProjectId ?? prev.ProjectId,
               FlatNumber: tenant.FlatNumber ?? prev.FlatNumber,
               FlatCarpetAreaSqFt: tenant.FlatCarpetAreaSqFt ?? prev.FlatCarpetAreaSqFt,
@@ -332,14 +353,6 @@ const AddUpdateTenant: React.FC = () => {
       newErrors.FlatType = 'Flat Type is required.'
     }
 
-    if (!formData.BuildingId || formData.BuildingId <= 0) {
-      newErrors.BuildingId = 'Building Id is required.'
-    }
-
-    if (!formData.ProjectId || formData.ProjectId <= 0) {
-      newErrors.ProjectId = 'Project Id is required.'
-    }
-
     if (formData.FlatCarpetAreaSqFt != null && formData.FlatCarpetAreaSqFt < 0) {
       newErrors.FlatCarpetAreaSqFt = 'Carpet area must be positive';
     }
@@ -355,6 +368,23 @@ const AddUpdateTenant: React.FC = () => {
   }
 
   const handleSubmit = async () => {
+
+    const countPrimaryApplicants = () =>
+      applicantList.filter(a =>
+        String(a.ApplicantType ?? '').toUpperCase() === 'APPLICANT'
+      ).length;
+
+    if (applicantList.length === 0) {
+      addToast({ type: 'error', title: "Atleast one applicant is required" });
+      return
+    }
+    else if (countPrimaryApplicants() === 0) {
+
+      addToast({ type: 'error', title: "In Applicant List - One Applicant is required" });
+      return
+
+    }
+
 
     setErrors({})
 
@@ -389,6 +419,8 @@ const AddUpdateTenant: React.FC = () => {
               filters?: any;
               sortInfo?: any;
               searchTerm?: string;
+              buildingId?: number;
+              buildingName?: string;
             };
           } | null;
 
@@ -397,6 +429,8 @@ const AddUpdateTenant: React.FC = () => {
             filters: {},
             sortInfo: undefined,
             searchTerm: '',
+            buildingId: 0,
+            buildingName: ''
           };
 
           navigate("/tenant", {
@@ -431,7 +465,7 @@ const AddUpdateTenant: React.FC = () => {
     const applicantData: AddUpdateTenantApplicant = {
       TenantApplicantId: row.TenantApplicantId ?? 0,
       TenantId: row.TenantId ?? 0,
-      BuildingId: row.BuildingId ?? 0,
+      BuildingId: Number(preservedListState?.buildingId),
       ProjectId: row.ProjectId ?? 0,
       ApplicantType: row.ApplicantType || '',
       ApplicantName: row.ApplicantName || '',
@@ -502,7 +536,7 @@ const AddUpdateTenant: React.FC = () => {
     setRemovedChequeURLs([]);
 
     setIsAddUpdateApplicantModalOpen(true);
-  }, []);
+  }, [preservedListState]);
   //#endregion
   //#region DELETE TENANT APPLICANT CONFIRMATION DIALOG
   const handleConfirmationDialogBoxOpen = (row: TenantApplicantWithFiles, index: number) => {
@@ -766,8 +800,14 @@ const AddUpdateTenant: React.FC = () => {
     const countPrimaryApplicants = () =>
       applicantList.filter(a =>
         String(a.ApplicantType ?? '').toUpperCase() === 'APPLICANT'
-      ).length
+      ).length;
 
+
+    if (String(formDataForApplicant.ApplicantType ?? '').toUpperCase() === "APPLICANT") {
+      if (countPrimaryApplicants() >= 1) {
+        newErrorsTenantApplicant.ApplicantType = "Only one primary applicant is allowed.";
+      }
+    }
 
     if (!formDataForApplicant.ApplicantType?.trim()) {
       newErrorsTenantApplicant.ApplicantType = 'Applicant Type is required'
@@ -784,11 +824,6 @@ const AddUpdateTenant: React.FC = () => {
     if (!applicantPhotoFiles.length) {
       newErrorsTenantApplicant.PhotoURL = "Applicant Photo is required";
     }
-
-    if (countPrimaryApplicants() > 0) {
-      newErrorsTenantApplicant.ApplicantType = 'Only one primary applicant is allowed'
-    }
-
 
     return {
       isValid: Object.keys(newErrorsTenantApplicant).length === 0,
@@ -949,8 +984,8 @@ const AddUpdateTenant: React.FC = () => {
     // top-level tenant fields
     fd.append('TenantId', String(formData.TenantId ?? 0));
     fd.append('Uniquekey', String(formData.Uniquekey ?? ''));
-    fd.append('ProjectId', String(ProjectId ?? 0));
-    fd.append('BuildingId', String(formData.BuildingId ?? 0));
+    fd.append('ProjectId', String(projectId ?? 0));
+    fd.append('BuildingId', String(preservedListState?.buildingId));
     fd.append('FlatNumber', formData.FlatNumber ?? '');
     fd.append('FlatCarpetAreaSqFt', String(formData.FlatCarpetAreaSqFt ?? ''));
     fd.append('Facing', formData.Facing ?? '');
@@ -969,7 +1004,6 @@ const AddUpdateTenant: React.FC = () => {
     ) => {
       if (!fileArray || fileArray.length === 0) return;
 
-      // existing filenames as CSV (only non-empty strings)
       const existingNames = fileArray
         .filter(x => typeof x === 'string' && String(x).trim().length > 0)
         .map(x => String(x).trim())
@@ -979,10 +1013,10 @@ const AddUpdateTenant: React.FC = () => {
         fdLocal.append(`${prefix}.${fieldKey}`, existingNames);
       }
 
-      // append actual File objects as repeated file parts
+
       fileArray.forEach(item => {
         if (item instanceof File) {
-          // append with explicit filename (helps some server bindings)
+
           fdLocal.append(`${prefix}.${fieldKey}`, item, item.name);
         }
       });
@@ -991,8 +1025,8 @@ const AddUpdateTenant: React.FC = () => {
     applicantList.forEach((app, index) => {
       const prefix = `AddUpdateTenantApplicants[${index}]`;
 
-      fd.append(`${prefix}.BuildingId`, String(app.BuildingId ?? formData.BuildingId ?? BuildingId));
-      fd.append(`${prefix}.ProjectId`, String(app.ProjectId ?? ProjectId));
+      fd.append(`${prefix}.BuildingId`, String(preservedListState?.buildingId));
+      fd.append(`${prefix}.ProjectId`, String(app.ProjectId ?? projectId));
       fd.append(`${prefix}.ApplicantType`, String(app.ApplicantType ?? ''));
       fd.append(`${prefix}.TenantId`, String(app.TenantId ?? formData.TenantId ?? 0));
       fd.append(`${prefix}.TenantApplicantId`, String(app.TenantApplicantId ?? 0));
@@ -1012,7 +1046,6 @@ const AddUpdateTenant: React.FC = () => {
       fd.append(`${prefix}.AccountNumber`, app.AccountNumber ?? '');
       fd.append(`${prefix}.IFSCCode`, app.IFSCCode ?? '');
 
-      // Remove CSV lists (only append non-empty)
       const appendIfNonEmpty = (key: string, val?: string) => {
         if (val && String(val).trim().length > 0) fd.append(`${prefix}.${key}`, String(val));
       };
@@ -1026,7 +1059,6 @@ const AddUpdateTenant: React.FC = () => {
       appendIfNonEmpty('RemoveGSTNumberURL', (app as any).RemoveGSTNumberURL);
       appendIfNonEmpty('RemoveChequeURL', (app as any).RemoveChequeURL);
 
-      // Use the helper to append existing filenames + File objects
       const realApp: any = app;
 
       addFilesWithExisting(fd, prefix, realApp._photoFiles, 'PhotoURL');
@@ -1132,10 +1164,8 @@ const AddUpdateTenant: React.FC = () => {
                   onChange={e => handleFieldChange('FlatCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
                   error={errors.FlatCarpetAreaSqFt}
                 />
-
               </div>
               <div>
-
                 <SinglePageSelection
                   label="Unit Type"
                   required
@@ -1146,8 +1176,9 @@ const AddUpdateTenant: React.FC = () => {
                 />
               </div>
 
-              <div>
-                {formData.FlatType.toUpperCase() === "RESIDENTIAL" ?
+
+              {formData.FlatType.toUpperCase() === "RESIDENTIAL" ?
+                <div>
                   <SinglePageSelection
                     label="Unit Configuration"
                     required
@@ -1156,9 +1187,11 @@ const AddUpdateTenant: React.FC = () => {
                     options={RESIDENTIAL_FLAT_CONFIGURATION.map((opt) => ({ label: opt.name, value: opt.id }))}
                     error={errors.FlatConfiguration}
                   />
-                  : ""}
+                </div>
+                : ""}
 
-                {formData.FlatType.toUpperCase() === "COMMERCIAL" ?
+              {formData.FlatType.toUpperCase() === "COMMERCIAL" ?
+                <div>
                   <SinglePageSelection
                     label="Unit Configuration"
                     required
@@ -1167,8 +1200,9 @@ const AddUpdateTenant: React.FC = () => {
                     options={COMMERCIAL_FLAT_CONFIGURATION.map((opt) => ({ label: opt.name, value: opt.id }))}
                     error={errors.FlatConfiguration}
                   />
-                  : ""}
-              </div>
+                </div>
+                : ""}
+
 
               <div>
 

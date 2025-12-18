@@ -7,6 +7,7 @@ import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { CollapseCard } from "@/ui/components/Card/CollapseCard";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 export const ViewCompantMaster: React.FC = () => {
     //#region STATE MANAGEMENT
@@ -79,136 +80,112 @@ export const ViewCompantMaster: React.FC = () => {
                 }}
                 isLoading={isLoading}
             />
-            <div className='pt-3'>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
 
+                {/* ================= LEFT (2/3 WIDTH) ================= */}
+                <div className="lg:col-span-2 space-y-6">
 
-                <div className="min-w-0">
-                    <h1 className="text-2xl font-semibold truncate">{editCompanyData!.CompanyName || 'Company'}</h1>
-                    <div className="mt-1 text-sm text-gray-500">{editCompanyData!.CompanyType || '-'}</div>
-                </div>
-                {/* Quick meta */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <FieldItem label="Contact Person" value={editCompanyData!.ContactPerson || '-'} isRow={false} />
-                    </div>
-
-                    <div>
-                        <FieldItem label="Mobile Number" value={editCompanyData!.MobileNumber || '-'} isRow={false} />
-                    </div>
-
-                    <div>
-                        <FieldItem label="Email" value={editCompanyData!.EmailId || '-'} isRow={false} />
-                    </div>
-                </div>
-
-                {/* Main grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                    <div className="space-y-4">
-
-                        <div className="mt-6 rounded border border-gray-200">
-
-                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                <h4 className="font-semibold text-sm text-gray-800">
-                                    General
-                                </h4>
-                            </div>
-
-
-                            <div className="p-4">
-
-                                <FieldItem label="PAN Number" value={editCompanyData?.PANNumber ?? '-'} urls={editCompanyData?.PanCardURL} isRow withBorder />
-                                <FieldItem label="GST Number" value={editCompanyData?.GSTNumber ?? '-'} urls={editCompanyData?.GSTCertificateURL} isRow withBorder />
-                                <FieldItem label="CIN Number" value={editCompanyData?.CINNumber ?? '-'} urls={editCompanyData?.CINURL} isRow withBorder />
-                                <FieldItem label="RERA Number" value={editCompanyData?.RERANumber ?? '-'} isRow withBorder />
-
-                                <FieldItem
-                                    label="Company Letter Head"
-                                    value={editCompanyData?.CompanyLetterheadHeaderURL !== "" ? "Company Letter Head" : "-"}
-                                    urls={editCompanyData?.CompanyLetterheadHeaderURL}
-                                    isRow
-                                    withBorder
-                                />
-
-                                <FieldItem
-                                    label="Company Letter Footer"
-                                    value={editCompanyData?.CompanyLetterheadFooterURL !== "" ? "Company Letter Footer" : "-"}
-                                    urls={editCompanyData?.CompanyLetterheadFooterURL}
-                                    isRow
-
-                                />
-
-                            </div>
-                        </div>
-
-                        <div className="mt-6 rounded border border-gray-200">
-
-                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                <h4 className="font-semibold text-sm text-gray-800">
-                                    Address
-                                </h4>
-                            </div>
-
-
-                            <div className="p-4">
-                                <FieldItem label="Country" value={editCompanyData?.CountryName ?? '-'} isRow withBorder />
-                                <FieldItem label="State" value={editCompanyData?.StateName ?? '-'} isRow withBorder />
-                                <FieldItem label="District" value={editCompanyData?.DistrictName ?? '-'} isRow withBorder />
-                                <FieldItem label="City" value={editCompanyData?.CityName ?? '-'} isRow />
-                            </div>
-                        </div>
-
-                    </div>
-
-                    {/* Right: Meta & Partners */}
-                    <div className="space-y-4">
-
-                        <div className="mt-6 rounded border border-gray-200">
-
-                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                <h4 className="font-semibold text-sm text-gray-800">
-                                    Contact & Meta
-                                </h4>
-                            </div>
-
-
-                            <div className="p-4">
-                                <FieldItem label="Contact Person" value={editCompanyData?.ContactPerson ?? '-'} isRow withBorder />
-                                <FieldItem label="Mobile Number" value={editCompanyData?.MobileNumber ?? '-'} isRow withBorder />
-                                <FieldItem label="Email" value={editCompanyData?.EmailId ?? '-'} isRow withBorder />
-                                <FieldItem label="Landline" value={editCompanyData?.LandLineNumber ?? '-'} isRow />
-
-                            </div>
-                        </div>
-                        <div className="mt-6 rounded border border-gray-200">
-
-                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                <h4 className="font-semibold text-sm text-gray-800">
-                                    Action Details
-                                </h4>
-                            </div>
-
-
-                            <div className="p-4">
-                                <FieldItem label="Created By" value={editCompanyData?.CreatedBy ?? '-'} isRow withBorder />
-                                <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(editCompanyData?.CreatedDate ?? '-')} isRow withBorder />
-                                <FieldItem label="Modified By" value={editCompanyData?.ModifiedBy ?? '-'} isRow withBorder />
-                                <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(editCompanyData?.ModifiedDate ?? '-')} isRow />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div className="mt-6 rounded border border-gray-200">
-
-                    <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                        <h4 className="font-semibold text-sm text-gray-800">
-                            Partners ({editCompanyData.CompanyPartnerData.length ?? 0})
+                    {/* ================= BASIC DETAILS ================= */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Basic Information
                         </h4>
-                    </div>
-                    {editCompanyData.CompanyPartnerData && editCompanyData.CompanyPartnerData.length > 0 ? (
-                        <div className="p-4">
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <FieldItem label="Company Name" value={editCompanyData?.CompanyName ?? '-'} />
+                            <FieldItem label="Company Type" value={editCompanyData?.CompanyType ?? '-'} />
+                            <FieldItem label="Contact Person" value={editCompanyData?.ContactPerson ?? '-'} />
+                            <FieldItem label="Mobile Number" value={editCompanyData?.MobileNumber ?? '-'} />
+                            <FieldItem label="Email" value={editCompanyData?.EmailId ?? '-'} />
+                            <FieldItem label="Landline" value={editCompanyData?.LandLineNumber ?? '-'} />
+                        </div>
+                    </section>
+
+                    {/* ================= GENERAL / REGISTRATION ================= */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Registration & Compliance
+                        </h4>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <FieldItem label="PAN Number" value={editCompanyData?.PANNumber ?? '-'} urls={editCompanyData?.PanCardURL} />
+                            <FieldItem label="GST Number" value={editCompanyData?.GSTNumber ?? '-'} urls={editCompanyData?.GSTCertificateURL} />
+                            <FieldItem label="CIN Number" value={editCompanyData?.CINNumber ?? '-'} urls={editCompanyData?.CINURL} />
+                            <FieldItem label="RERA Number" value={editCompanyData?.RERANumber ?? '-'} />
+
+                            <FieldItem
+                                label="Company Letter Head"
+                                value={editCompanyData?.CompanyLetterheadHeaderURL ? 'View Letter Head' : '-'}
+                                urls={editCompanyData?.CompanyLetterheadHeaderURL}
+                            />
+
+                            <FieldItem
+                                label="Company Letter Footer"
+                                value={editCompanyData?.CompanyLetterheadFooterURL ? 'View Letter Footer' : '-'}
+                                urls={editCompanyData?.CompanyLetterheadFooterURL}
+                            />
+                        </div>
+                    </section>
+
+
+
+
+
+
+
+                </div>
+
+                {/* ================= RIGHT (1/3 WIDTH) ================= */}
+                <div className="lg:col-span-1 space-y-6">
+
+
+                    {/* ================= ADDRESS ================= */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Address Details
+                        </h4>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <FieldItem label="Country" value={editCompanyData?.CountryName ?? '-'} />
+                            <FieldItem label="State" value={editCompanyData?.StateName ?? '-'} />
+                            <FieldItem label="District" value={editCompanyData?.DistrictName ?? '-'} />
+                            <FieldItem label="City" value={editCompanyData?.CityName ?? '-'} />
+                        </div>
+                    </section>
+
+                    {/* ================= ACTION DETAILS ================= */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Action Details
+                        </h4>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <FieldItem label="Created By" value={editCompanyData?.CreatedBy ?? '-'} />
+                            <FieldItem
+                                label="Created Date"
+                                value={formatDate_dd_MonthName_yy(editCompanyData?.CreatedDate ?? '-')}
+                            />
+                            <FieldItem label="Modified By" value={editCompanyData?.ModifiedBy ?? '-'} />
+                            <FieldItem
+                                label="Modified Date"
+                                value={formatDate_dd_MonthName_yy(editCompanyData?.ModifiedDate ?? '-')}
+                            />
+                        </div>
+                    </section>
+
+                </div>
+
+            </div>
+
+            <div className="lg:col-span-1 space-y-6 pt-5">
+                {/* ================= PARTNERS ================= */}
+                <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                        Partners ({editCompanyData?.CompanyPartnerData?.length ?? 0})
+                    </h4>
+
+                    {editCompanyData?.CompanyPartnerData?.length ? (
+                        <div className="space-y-3">
                             {editCompanyData.CompanyPartnerData.map((partner, idx) => (
                                 <CollapseCard
                                     key={partner.CompanyPartnerId ?? idx}
@@ -216,36 +193,24 @@ export const ViewCompantMaster: React.FC = () => {
                                     mobileNumber={partner.MobileNumber || '-'}
                                     partnershipPercent={partner.PartnerPercentage ?? '-'}
                                     gender={partner.Gender || '-'}
-                                    defaultOpen={false}
                                 >
-
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(partner.DateOfBirth || '-')} isRow={false} withBorder={false} />
-                                        <FieldItem label="Email" value={partner.EmailId} isRow={false} withBorder={false} />
-                                        <FieldItem label="Pan Number" value={partner.PanNumber} isRow={false} withBorder={false} />
-                                        <FieldItem label="Aadhar Card" value={partner.AadharCardNumber} isRow={false} withBorder={false} />
+                                        <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(partner.DateOfBirth ?? '-')} />
+                                        <FieldItem label="Email" value={partner.EmailId ?? '-'} />
+                                        <FieldItem label="PAN Number" value={partner.PanNumber ?? '-'} />
+                                        <FieldItem label="Aadhar Card" value={partner.AadharCardNumber ?? '-'} />
                                     </div>
                                 </CollapseCard>
                             ))}
                         </div>
-                    )
+                    ) : (
+                        <div className="flex flex-col items-center justify-center text-center py-10">
+                            <NoDataView message="No Partner Data Available" />
+                        </div>
+                    )}
+                </section>
 
-                        :
-                        <div className="flex flex-col items-center justify-center text-center">
-                            <img
-                                src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png"
-                                alt="No Data"
-                                className="w-32 h-32 opacity-80"
-                            />
-                            <p className="mt-4 text-gray-600 text-sm">
-                                {"No Partner Data Found"}
-                            </p>
-                        </div>}
-
-                </div>
-            </div>
-
-
+            </div >
         </div >
     );
 };

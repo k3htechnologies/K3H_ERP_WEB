@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import type { AddUpdateProjectMasterWithBankDetailsRequest, DeleteProjectMasterWithBankDetailsRequest, ProjectMasterData, ProjectWithBankDetails } from '../models/ProjectMasterModel';
+import type { AddUpdateProjectMasterWithBankDetailsRequest, DeleteProjectMasterWithBankDetailsRequest, ProjectWithBankDetails } from '@/features/projectMaster/models/ProjectMasterModel';
 import useToast from '@/core/hooks/useToast';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Loader } from '@/core/utils/loader';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import { ProjectMasterService } from '../services/ProjectMasterService';
+import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
@@ -49,21 +49,21 @@ const Bank: React.FC = () => {
 
   const location = useLocation() as {
     state?: {
-      editProjectMasterData?: ProjectMasterData | null;
-      fromList?: boolean;
       listState?: {
-        page: number;
-        filters: any;
+        page?: number;
+        filters?: any;
         sortInfo?: any;
-        searchTermForEmployee?: string;
+        searchTerm?: string;
+        projectId?: number;
+        uniquekey?: string;
       };
     };
   };
   const preservedListState = location.state?.listState;
+  const projectId = preservedListState?.projectId || 0;
+  //#endregion
 
   //#region PROJECT MASTER WITH BANK DETAILS MODULE
-
-  //ADD UPDATE PROJECT MASTER WITH BANK DETAILS
 
   //SET DROP DOWN 
   const [dropdownLabels, setDropdownLabels] = useState<{
@@ -83,18 +83,15 @@ const Bank: React.FC = () => {
 
   const [deleteProjectMasterWithBankDetailsData, setDeleteProjectMasterWithBankDetailsData] = useState<ProjectWithBankDetails | null>(null)
   //#endregion
-  //#endregion
+
   //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions('/projectMaster');
-
-  //#region Get PROJECT MASTER DATA FROM LOCATION STATE
-  const editProjectData = (location.state?.editProjectMasterData ?? null) as ProjectMasterData | null;
   //#endregion
 
   //#region INIT
   useEffect(() => {
 
-    loadProjectMasterWithBankDetails(editProjectData!.ProjectId);
+    loadProjectMasterWithBankDetails(projectId);
 
   }, []);
 
@@ -126,6 +123,7 @@ const Bank: React.FC = () => {
   }, [isAddUpdateModalOpenForBankDetails, editingProjectMasterWithBankDetailsData]);
   //#endregion
 
+  //#region FETCH PROJECT MASTER WITH BANK
   const loadProjectMasterWithBankDetails = async (ProjectId: number) => {
     await runApiWithLoader(
       setIsLoading,
@@ -152,12 +150,14 @@ const Bank: React.FC = () => {
       'Loading Bank Details'
     );
   };
-
+  //#endregion
+  //#region  BACK TO PROJECT MASTER PAGE
   const handleBackToListProjectMaster = () => {
     navigate('/projectMaster', {
       state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTermForEmployee: '' } }
     });
   };
+  //#endregion
 
   //#region PROJECT MASTER WITH BANK DETAILS
 
@@ -179,6 +179,7 @@ const Bank: React.FC = () => {
     setDeleteProjectMasterWithBankDetailsData(row)
     setIsConfirmationDialogBoxOpenForBankDetails(true)
   }, [])
+  //#endregion
 
   //#region TABLE COLUMN
 
@@ -368,7 +369,7 @@ const Bank: React.FC = () => {
     return {
       ProjectWithBankDetailsId: formDataForBankDetails.ProjectWithBankDetailsId,
       Uniquekey: formDataForBankDetails.Uniquekey,
-      ProjectId: editProjectData?.ProjectId ?? 0,
+      ProjectId: projectId,
       BeneficiaryAccountHolderName: formDataForBankDetails.BeneficiaryAccountHolderName,
       BankListMasterId: formDataForBankDetails.BankListMasterId,
       AccountNumber: formDataForBankDetails.AccountNumber,
@@ -502,7 +503,7 @@ const Bank: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete department master data...'
+      'Delete Bank'
     )
   }
   //#endregion
@@ -517,14 +518,30 @@ const Bank: React.FC = () => {
       </Loader>
 
       <HeaderActionBar
-        titleText={'Project Master Bank Details'}
+        titleText={'Add Update Project Master With Bank Details'}
         cancelText="Cancel"
-        EditText="Edit"
+        EditText="Add"
         onCancel={() => handleBackToListProjectMaster()}
         canAction={canAction}
+        onEdit={() => {
+          handleAddProjectMasterWithBankDetailsModal();
 
+        }}
         isLoading={isLoading}
       />
+      <div className='pt-5'>
+        <DataTable
+          data={projectWithBankDetailsList}
+          columns={projectMasterBankDetailsColumns}
+          emptyMessage="No Bank Data Found"
+          fixedHeight={true}
+          maxHeight="calc(100vh - 255px)"
+          recordsPerPage={20}
+          className="flex-1"
+          loading={isLoading}
+        />
+      </div>
+
       {/*  ADD EDIT UPDATE PROJECT MASTER WITH BANK DETAILS MODAL */}
       <Modal
         isOpen={isAddUpdateModalOpenForBankDetails}
@@ -614,7 +631,7 @@ const Bank: React.FC = () => {
               <Input label="IFSC Code"
                 required
                 value={formDataForBankDetails.IFSCCode}
-                maxLength={10}
+                maxLength={11}
                 onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
                 error={errorsForBankDetails.IFSCCode} />
             </div>
@@ -637,16 +654,7 @@ const Bank: React.FC = () => {
         loading={isLoading}
         variant="danger"
       />
-      <DataTable
-        data={projectWithBankDetailsList}
-        columns={projectMasterBankDetailsColumns}
-        emptyMessage="No Bank Data Found"
-        fixedHeight={true}
-        maxHeight="calc(100vh - 255px)"
-        recordsPerPage={20}
-        className="flex-1"
-        loading={isLoading}
-      />
+
     </div >
   )
 }

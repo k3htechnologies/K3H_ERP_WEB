@@ -222,10 +222,6 @@ export const BranchAssociationsMaster: React.FC = () => {
   //#endregion
 
   
-  const handleResetForm = () => {
-    setFormData(initialFormState());   
-    setErrors({});                    
-  };
 
   //#region CLEAR BRANCH ASSOCIATIONS 
   const clearsearchBranchAssociations = () => {

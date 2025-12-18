@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   HolidayMasterData,

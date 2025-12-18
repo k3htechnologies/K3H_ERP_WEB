@@ -1,12 +1,11 @@
 import useToast from "@/core/hooks/useToast";
 import { OutDoorDataService } from "@/features/outdoor/services/OutDoorDataService";
-import { useEffect, useRef, useState, useCallback, useMemo, memo } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import * as E from "fp-ts/Either";
 import type {
   FilterWithPaginationOutDoor,
   OutDoorMasterData,
 } from "../models/OutDoorModel";
-import { ToastContainer } from "@/ui/components/Toast";
 import { Loader } from "@/core/utils/loader";
 import { formatDate_dd_MonthName_yy, formatTimeFromDateTime } from "@/core/utils/dateFormat";
 import type { FilterInfo } from "@/ui/components/DataTable/DataTable";
@@ -21,8 +20,6 @@ import {
   Users,
   User,
   FileText,
-  ChevronDown,
-  ChevronUp,
   ExternalLink,
   Fingerprint,
   Plus,
@@ -40,7 +37,7 @@ import { MultiImageViewer } from "@/ui/components/ImageViewer/ImageViewer";
 import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
 
 export const OutDoor: React.FC = () => {
-  const { toasts, removeToast, addToast } = useToast();
+  const {  addToast } = useToast();
   const navigate = useNavigate();
   const [OutDoorList, setOutDoorList] = useState<OutDoorMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +45,7 @@ export const OutDoor: React.FC = () => {
   const { pagination, setPagination } = usePagination(10);
   const isUIRendered = useRef(false);
   const isLoadingRef = useRef(false);
-  const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
+  const [, setExpandedCards] = useState<Set<number>>(new Set());
   const [punchingItemId, setPunchingItemId] = useState<number | null>(null);
   const [conclusionModalOpen, setConclusionModalOpen] = useState(false);
   const [selectedOutdoorItem, setSelectedOutdoorItem] = useState<OutDoorMasterData | null>(null);
@@ -111,17 +108,6 @@ export const OutDoor: React.FC = () => {
     loadOutDoor(page);
   }, [loadOutDoor, pagination.totalPages]);
 
-  const toggleCard = useCallback((outdoorId: number) => {
-    setExpandedCards(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(outdoorId)) {
-        newSet.delete(outdoorId);
-      } else {
-        newSet.add(outdoorId);
-      }
-      return newSet;
-    });
-  }, []);
 
   const canPunchInOut = useCallback((outdoorDate: string, outdoorTime: string): boolean => {
     if (!outdoorDate || !outdoorTime) return false;

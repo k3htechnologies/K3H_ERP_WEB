@@ -61,8 +61,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
   availableFilesURL,
   onChange,
   placeholder = "Select file(s)...",
-  error,
-  onRemoveExisting,
+  error
 }) => {
   const theme = THEME;
 

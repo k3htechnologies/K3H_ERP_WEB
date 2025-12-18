@@ -55,6 +55,8 @@ const SiteProgressSubConstruction: React.FC = () => {
       setIsLoadingMessage,
       async () => {
 
+        if (term) { }
+
         const params: FilterWithPaginationSiteProgressSubConstructionRequest = {
           ProjectId: location.state.projectId,
           InventoryBuildingId: location.state.inventoryBuildingId,

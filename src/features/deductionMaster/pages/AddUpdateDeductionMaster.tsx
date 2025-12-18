@@ -38,7 +38,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
   const [formData, setFormData] = useState<AddUpdateDeductionMasterRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [selectedCountryId, setSelectedCountryId] = React.useState<number | null>(1)
+  const [selectedCountryId] = React.useState<number | null>(1)
   const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null)
 
   // NAVIGATE

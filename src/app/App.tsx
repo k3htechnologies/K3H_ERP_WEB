@@ -57,7 +57,7 @@ import ViewCompantMaster from '@/features/companyMaster/pages/ViewCompanyMaster'
 import Inventory from '@/features/inventory/pages/Inventory';
 import InventorySpecification from '@/features/inventory/pages/InventorySpecification';
 import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor';
-import { OutDoor } from '@/features/outdoor/pages/OutDoor';
+import OutDoor from '@/features/outdoor/pages/OutDoor';
 
 import { ViewVendor } from '@/features/vendor/pages/ViewVendor';
 import SiteProgress from '@/features/siteProgress/pages/SiteProgress';

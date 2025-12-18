@@ -10,7 +10,7 @@ import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/ui/components/forms';
-import { ChevronLeft, MoveLeftIcon } from 'lucide-react';
+import { ChevronLeft} from 'lucide-react';
 import { COLORS } from '@/core/constants';
 
 export const Profile: React.FC = () => {

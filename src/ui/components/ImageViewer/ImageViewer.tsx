@@ -10,7 +10,7 @@ interface MultiImageViewerProps {
   images: Array<string>; // array of image URLs (only images)
   title?: string;
   triggerLabel?: React.ReactNode;
-  size?: PanelSize; // only sm/md/lg/xl supported
+  size?: PanelSize;
   closeOnOverlayClick?: boolean;
   overlayZIndex?: number; // optional override
 }

@@ -49,6 +49,7 @@ const SiteProgress: React.FC = () => {
       setIsLoadingMessage,
       async () => {
 
+        if (term) { }
 
         const params: FilterWithPaginationSiteProgressConstructionRequest = {
           ProjectId: storedProjectId

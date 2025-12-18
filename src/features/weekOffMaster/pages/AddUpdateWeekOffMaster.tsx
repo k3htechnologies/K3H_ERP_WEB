@@ -49,12 +49,6 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
   //#endregion
 
-  //DROPDOWN SET UP
-  const [dropdownLabels, setDropdownLabels] = useState<{
-    weeklyOff?: string
-    weeklyOff2?: string
-  }>({});
-
   //#region HANDLE FIELD CHANGE EVENT
   const handleFieldChange = (field: keyof AddUpdateWeekOffMasterRequest, value: any) => {
     
@@ -113,10 +107,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
               WeeklyOff2Type: e.WeeklyOff2Type ?? prev.WeeklyOff2Type,
               NotApplicableForMonths: e.NotApplicableForMonths ?? prev.NotApplicableForMonths
             }));
-            setDropdownLabels({
-              weeklyOff: e.WeeklyOff || "",
-              weeklyOff2: e.WeeklyOff2 || ""
-            });
+           
           }
         } else {
           addToast({ type: 'error', title: response.left.message });

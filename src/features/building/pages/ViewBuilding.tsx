@@ -394,6 +394,7 @@ export const ViewBuilding: React.FC = () => {
                 <Tabs
                     tabs={buildingTabList}
                     defaultActive={activeTab}
+                    islarge={true}
                     onTabChange={(t) => {
 
                         setActiveTab(t.id);

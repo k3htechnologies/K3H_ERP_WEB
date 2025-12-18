@@ -1,7 +1,6 @@
 import React from "react";
 import { Button } from "./Button";
 import { ArrowLeft, Edit } from "lucide-react";
-import { COLORS } from "@/core/constants";
 
 interface HeaderActionBarProps {
     titleText?: string;
@@ -30,7 +29,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
 
             <div className="flex items-center gap-2">
                 <Button
-                    color="transparent"
+                    color="cancel"
                     size="sm"
                     className="hover:bg-gray-100 rounded-md"
                     onClick={onCancel}

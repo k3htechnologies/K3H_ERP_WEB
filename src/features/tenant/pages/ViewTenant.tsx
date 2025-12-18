@@ -464,6 +464,7 @@ export const ViewTenant: React.FC = () => {
                 <Tabs
                     tabs={tenantTabList}
                     defaultActive={activeTab}
+                    islarge={true}
                     onTabChange={(t) => {
 
                         setActiveTab(t.id);

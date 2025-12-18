@@ -18,6 +18,7 @@ import Checkbox from "@/ui/components/forms/Checkbox";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
+import { Phone } from "lucide-react";
 
 const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ProjectId: 0,
@@ -418,7 +419,7 @@ const AddUpdateProjectMaster: React.FC = () => {
             <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
                 <form onSubmit={handleSubmit}>
                     <div className="space-y-4 pb-4">
-                        <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Details</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div>
                                 <Input
@@ -566,7 +567,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                     {/* Scheme & Scope Details */}
                     <div className="space-y-4 pb-4">
-                        <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Scheme & Scope Details</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Scheme & Scope Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <Input
@@ -600,7 +601,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                     {/* Project Documentation */}
                     <div className="space-y-4 pb-4">
-                        <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Project Documentation</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Documentation</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <Input
@@ -631,7 +632,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                     {/* Project Financials */}
                     <div className="space-y-4 pb-4">
-                        <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Project Financials</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Financials</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <Input
@@ -665,7 +666,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                     {/* Timeline */}
                     <div className="space-y-4 pb-4">
-                        <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Timeline</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Timeline</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <DatePickerInput
@@ -693,7 +694,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                     {/* Contact Information */}
                     <div className="space-y-4 pb-4">
-                        <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Contact Information</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Contact Information</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <Input
@@ -710,6 +711,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     error={errors.SiteContactMobileNumber}
                                     type="text"
                                     value={formData.SiteContactMobileNumber}
+                                    rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                                     maxLength={10}
                                     onChange={(e) => handleFieldChange('SiteContactMobileNumber', filterMobile(e.target.value))}
                                     placeholder="Enter mobile number"

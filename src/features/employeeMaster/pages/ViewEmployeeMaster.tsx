@@ -163,7 +163,7 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                 <div className="p-4">
                                     <FieldItem label="Mobile Number" value={`+91 ${editEmployeeData?.PersonalMobileNumber ?? ''}`} isRow />
-                                    <FieldItem label="Email ID" value={editEmployeeData!.EmailId} isRow />
+                                    <FieldItem label="Email ID" value={editEmployeeData!.EmailId ?? ""} isRow />
                                     <FieldItem label="Gender" value={editEmployeeData!.Gender} isRow />
                                     <FieldItem label="DOB"
                                         value={editEmployeeData!.DateOfBirth ? formatDate_dd_MonthName_yy(editEmployeeData!.DateOfBirth) : ''}

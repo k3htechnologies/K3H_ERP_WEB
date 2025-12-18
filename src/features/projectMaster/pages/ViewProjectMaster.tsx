@@ -31,6 +31,7 @@ import { filterIFSC, filterNumbers, isValidIFSC } from '@/core/utils/fileValidat
 import { BANK_ACCOUNT_TYPE } from '@/core/constants';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
+import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 
 const initialFormState = (): AddUpdateProjectMasterWithBankDetailsRequest => ({
 
@@ -1412,638 +1413,628 @@ export const ViewProjectMaster: React.FC = () => {
 
     //#endregion
     return (
-       
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <Loader loading={isLoading} title={loadingMessage}>
-                    <div></div>
-                </Loader>
 
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <Loader loading={isLoading} title={loadingMessage}>
+                <div></div>
+            </Loader>
 
-                <div className="space-y-6">
-                    <div className="flex flex-wrap items-start gap-8">
+            <HeaderActionBar
+                titleText={'Project Details'}
+                cancelText="Cancel"
+                EditText="Edit"
+                onCancel={() => handleBackToListProjectMaster()}
+                canAction={canAction}
+                onEdit={() => {
 
-                        {/* LEFT: IMAGE + BUTTONS */}
-                        <div className="shrink-0">
-                            <div className="px-4 pt-4">
-                                <div className="w-full max-w-[300px] mx-auto bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
-                                    <ImageCarousel
-                                        images={editProjectData?.ProjectPhotoURL ?? ""}
-                                        thumbHeight="h-50"
-                                        containerStyle={{ width: 220, height: 140 }}
-                                    />
-                                </div>
-                            </div>
+                    if (editProjectData) handleEditProjectMaster(editProjectData);
 
-                            {/* BUTTONS BELOW IMAGE */}
-                            <div className="flex gap-2 mt-3 px-2">
-                                <Button
-                                    type="button"
-                                    color="transparent"
-                                    variant="transparent_border"
-                                    size="sm"
-                                    onClick={handleBackToListProjectMaster}
-                                >
-                                    Back
-                                </Button>
-                                {canAction ?
-                                    <Button
-                                        type="button"
-                                        color="blue"
-                                        size="sm"
-                                        onClick={() => handleEditProjectMaster(editProjectData!)}
-                                    >
-                                        Edit
-                                    </Button> : ""
-                                }
+                }}
+                isLoading={isLoading}
+            />
+            <div className='pt-3'>
+                <div className="flex flex-wrap items-start gap-8">
+
+                    {/* LEFT: IMAGE + BUTTONS */}
+                    <div className="shrink-0">
+                        <div className="px-4 pt-4">
+                            <div className="w-full max-w-[300px] mx-auto bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
+                                <ImageCarousel
+                                    images={editProjectData?.ProjectPhotoURL ?? ""}
+                                    thumbHeight="h-50"
+                                    containerStyle={{ width: 220, height: 140 }}
+                                />
                             </div>
                         </div>
 
-                        {/* RIGHT: DETAILS */}
-                        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                            <FieldItem
-                                label="Project Name"
-                                value={editProjectData?.ProjectName ?? "—"}
-                                isRow={false}
-                            />
-
-                            <FieldItem
-                                label="CTS Number"
-                                value={editProjectData?.CTSNumber || "-"}
-                                isRow={false}
-                            />
-
-                            <FieldItem
-                                label="Business Category"
-                                value={editProjectData?.BussinessCategory || "-"}
-                                isRow={false}
-                            />
-
-                            <FieldItem
-                                label="Project Area in Sq.ft"
-                                value={editProjectData?.ProjectAreaInSqft?.toString() || "0.00"}
-                                isRow={false}
-                            />
-
-                            <FieldItem
-                                label="Project Location"
-                                value={editProjectData?.ProjectLocation || "-"}
-                                isRow={false}
-                            />
-
-                        </div>
-                    </div>
-                    {/* Quick meta */}
-
-
-                    {/* Main grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                        <div className="space-y-4">
-
-                            {/* Location */}
-
-                            <div className="mt-6 rounded border border-gray-200">
-
-                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                    <h4 className="font-semibold text-sm text-gray-800">
-                                        Location Details
-                                    </h4>
-                                </div>
-
-
-                                <div className="p-4">
-                                    <FieldItem label="Country" value={editProjectData?.CountryName ?? '-'} isRow />
-                                    <FieldItem label="State" value={editProjectData?.StateName ?? '-'} isRow />
-                                    <FieldItem label="District" value={editProjectData?.DistrictName ?? '-'} isRow />
-                                    <FieldItem label="City" value={editProjectData?.CityName ?? '-'} isRow />
-                                    <FieldItem label="PIN Code" value={editProjectData?.ZipCode ?? '-'} isRow />
-                                </div>
-                            </div>
-
-                            {/* Documentation */}
-
-                            <div className="mt-6 rounded border border-gray-200">
-
-                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                    <h4 className="font-semibold text-sm text-gray-800">
-                                        Project Documentation
-                                    </h4>
-                                </div>
-
-
-                                <div className="p-4">
-                                    <FieldItem label="RERA Number" value={editProjectData?.RERANumber ?? '-'} isRow />
-                                    <FieldItem label="RERA Certificate Date" value={editProjectData?.RERACertificateDate ? formatDate_dd_MonthName_yy(editProjectData!.RERACertificateDate) : '-'} isRow />
-                                    <FieldItem label="RERA Completion Date" value={editProjectData?.RERAComplitionDate ? formatDate_dd_MonthName_yy(editProjectData!.RERAComplitionDate) : '-'} isRow />
-                                </div>
-                            </div>
-
-
-                        </div>
-
-                        {/* Right: Meta & Partners */}
-                        <div className="space-y-4">
-
-                            {/* Financials */}
-
-                            <div className="mt-6 rounded border border-gray-200">
-
-                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                    <h4 className="font-semibold text-sm text-gray-800">
-                                        Project Financials
-                                    </h4>
-                                </div>
-
-
-                                <div className="p-4">
-                                    <FieldItem label="Project Estimate Cost" value={editProjectData?.ProjectEstimateCost?.toString() ?? '-'} isRow />
-                                    <FieldItem label="On Going Budget Cost" value={editProjectData?.OnGoingBudgetCost?.toString() ?? '-'} isRow />
-                                    <FieldItem label="Project Area in Sqft" value={editProjectData?.ProjectAreaInSqft?.toString() ?? '-'} isRow />
-                                </div>
-                            </div>
-                            {/* Timeline */}
-                            <div className="mt-6 rounded border border-gray-200">
-
-                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                    <h4 className="font-semibold text-sm text-gray-800">
-                                        Project TimeLine
-                                    </h4>
-                                </div>
-
-
-                                <div className="p-4">
-                                    <FieldItem label="Survey Date" value={editProjectData?.SurveyDate ? formatDate_dd_MonthName_yy(editProjectData!.SurveyDate) : '-'} isRow />
-                                    <FieldItem label="Expected Start Date" value={editProjectData?.ExpectedStartDate ? formatDate_dd_MonthName_yy(editProjectData!.ExpectedStartDate) : '-'} isRow />
-                                    <FieldItem label="Execution Start Date" value={editProjectData?.ExecutionStartDate ? formatDate_dd_MonthName_yy(editProjectData!.ExecutionStartDate) : '-'} isRow />
-                                </div>
-                            </div>
-
-                            {/* Contact */}
-
-                            <div className="mt-6 rounded border border-gray-200">
-
-                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                    <h4 className="font-semibold text-sm text-gray-800">
-                                        Contact Information
-                                    </h4>
-                                </div>
-
-
-                                <div className="p-4">
-                                    <FieldItem label="Site Contact Name" value={editProjectData?.SiteContactName ?? '-'} isRow />
-                                    <FieldItem label="Site Contact Mobile Number" value={editProjectData?.SiteContactMobileNumber ?? '-'} isRow />
-                                </div>
-                            </div>
-
-                        </div>
                     </div>
 
+                    {/* RIGHT: DETAILS */}
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                    <div className="mt-6 rounded border border-gray-200">
+                        <FieldItem
+                            label="Project Name"
+                            value={editProjectData?.ProjectName ?? "—"}
+                            isRow={false}
+                        />
 
-                        <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                            <h4 className="font-semibold text-sm text-gray-800">
-                                Setting
-                            </h4>
+                        <FieldItem
+                            label="CTS Number"
+                            value={editProjectData?.CTSNumber || "-"}
+                            isRow={false}
+                        />
+
+                        <FieldItem
+                            label="Business Category"
+                            value={editProjectData?.BussinessCategory || "-"}
+                            isRow={false}
+                        />
+
+                        <FieldItem
+                            label="Project Area in Sq.ft"
+                            value={editProjectData?.ProjectAreaInSqft?.toString() || "0.00"}
+                            isRow={false}
+                        />
+
+                        <FieldItem
+                            label="Project Location"
+                            value={editProjectData?.ProjectLocation || "-"}
+                            isRow={false}
+                        />
+
+                    </div>
+                </div>
+                {/* Quick meta */}
+
+
+                {/* Main grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                    <div className="space-y-4">
+
+                        {/* Location */}
+
+                        <div className="mt-6 rounded border border-gray-200">
+
+                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
+                                <h4 className="font-semibold text-sm text-gray-800">
+                                    Location Details
+                                </h4>
+                            </div>
+
+
+                            <div className="p-4">
+                                <FieldItem label="Country" value={editProjectData?.CountryName ?? '-'} isRow />
+                                <FieldItem label="State" value={editProjectData?.StateName ?? '-'} isRow />
+                                <FieldItem label="District" value={editProjectData?.DistrictName ?? '-'} isRow />
+                                <FieldItem label="City" value={editProjectData?.CityName ?? '-'} isRow />
+                                <FieldItem label="PIN Code" value={editProjectData?.ZipCode ?? '-'} isRow />
+                            </div>
                         </div>
-                        <div className="p-4 flex items-center justify-between">
-                            <Tabs
-                                tabs={TabList}
-                                defaultActive={activeTab}
-                                islarge={true}
-                                onTabChange={(t) => {
-                                    setActiveTab(t.id);
 
-                                }}
-                            />
+                        {/* Documentation */}
 
-                            {canAction && activeTab !== 'Set Approval' && (
-                                <Button
-                                    color='blue'
-                                    size='sm'
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        if (activeTab === "Employee") {
+                        <div className="mt-6 rounded border border-gray-200">
 
-                                            handleAddUpdateProjectMasterWithEmployeeModal()
-                                        }
-                                        else if (activeTab === "Bank Details") {
+                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
+                                <h4 className="font-semibold text-sm text-gray-800">
+                                    Project Documentation
+                                </h4>
+                            </div>
 
-                                            handleAddProjectMasterWithBankDetailsModal()
-                                        }
-                                        else if (activeTab === "Company") {
 
-                                            handleAddUpdateProjectMasterWithCompanyModal()
-                                        }
-                                    }}
-                                >
-                                    Add
-                                </Button>
-                            )}
+                            <div className="p-4">
+                                <FieldItem label="RERA Number" value={editProjectData?.RERANumber ?? '-'} isRow />
+                                <FieldItem label="RERA Certificate Date" value={editProjectData?.RERACertificateDate ? formatDate_dd_MonthName_yy(editProjectData!.RERACertificateDate) : '-'} isRow />
+                                <FieldItem label="RERA Completion Date" value={editProjectData?.RERAComplitionDate ? formatDate_dd_MonthName_yy(editProjectData!.RERAComplitionDate) : '-'} isRow />
+                            </div>
                         </div>
-                        <div className="mt-1">
-                            {activeTab === 'Employee' && (
-                                <div className="space-y-4 p-4">
-
-                                    <DataTable
-                                        data={employeeMasterList}
-                                        columns={projectMasterWithEmployeeColumns}
-                                        emptyMessage="No Employee Data Found"
-                                        fixedHeight={true}
-                                        maxHeight="calc(100vh - 255px)"
-                                        recordsPerPage={20}
-                                        className="flex-1"
-                                        loading={isLoading}
-                                    />
-                                </div>
-                            )}
-
-                            {activeTab === "Bank Details" && (
-
-                                <div className="space-y-3 p-4">
-                                    <DataTable
-                                        data={projectWithBankDetailsList}
-                                        columns={projectMasterBankDetailsColumns}
-                                        emptyMessage="No Bank Data Found"
-                                        fixedHeight={true}
-                                        maxHeight="calc(100vh - 255px)"
-                                        recordsPerPage={20}
-                                        className="flex-1"
-                                        loading={isLoading}
-                                    />
-
-                                </div>
-                            )}
-
-                            {activeTab === "Company" && (
-                                <div className="space-y-4 p-4">
 
 
-                                    <DataTable
-                                        data={compantMasterList}
-                                        columns={projectMasterWithCompanyColumns}
-                                        emptyMessage="No Company Data Found"
-                                        fixedHeight={true}
-                                        maxHeight="calc(100vh - 255px)"
-                                        recordsPerPage={20}
-                                        className="flex-1"
-                                        loading={isLoading}
-                                    />
-                                </div>
-                            )}
+                    </div>
 
+                    {/* Right: Meta & Partners */}
+                    <div className="space-y-4">
+
+                        {/* Financials */}
+
+                        <div className="mt-6 rounded border border-gray-200">
+
+                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
+                                <h4 className="font-semibold text-sm text-gray-800">
+                                    Project Financials
+                                </h4>
+                            </div>
+
+
+                            <div className="p-4">
+                                <FieldItem label="Project Estimate Cost" value={editProjectData?.ProjectEstimateCost?.toString() ?? '-'} isRow />
+                                <FieldItem label="On Going Budget Cost" value={editProjectData?.OnGoingBudgetCost?.toString() ?? '-'} isRow />
+                                <FieldItem label="Project Area in Sqft" value={editProjectData?.ProjectAreaInSqft?.toString() ?? '-'} isRow />
+                            </div>
+                        </div>
+                        {/* Timeline */}
+                        <div className="mt-6 rounded border border-gray-200">
+
+                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
+                                <h4 className="font-semibold text-sm text-gray-800">
+                                    Project TimeLine
+                                </h4>
+                            </div>
+
+
+                            <div className="p-4">
+                                <FieldItem label="Survey Date" value={editProjectData?.SurveyDate ? formatDate_dd_MonthName_yy(editProjectData!.SurveyDate) : '-'} isRow />
+                                <FieldItem label="Expected Start Date" value={editProjectData?.ExpectedStartDate ? formatDate_dd_MonthName_yy(editProjectData!.ExpectedStartDate) : '-'} isRow />
+                                <FieldItem label="Execution Start Date" value={editProjectData?.ExecutionStartDate ? formatDate_dd_MonthName_yy(editProjectData!.ExecutionStartDate) : '-'} isRow />
+                            </div>
+                        </div>
+
+                        {/* Contact */}
+
+                        <div className="mt-6 rounded border border-gray-200">
+
+                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
+                                <h4 className="font-semibold text-sm text-gray-800">
+                                    Contact Information
+                                </h4>
+                            </div>
+
+
+                            <div className="p-4">
+                                <FieldItem label="Site Contact Name" value={editProjectData?.SiteContactName ?? '-'} isRow />
+                                <FieldItem label="Site Contact Mobile Number" value={editProjectData?.SiteContactMobileNumber ?? '-'} isRow />
+                            </div>
                         </div>
 
                     </div>
                 </div>
 
 
-                {/* IN PROJECT MASTER WTTH EMPLOYEE MODAL */}
-                <Modal
-                    isOpen={isOpenAddProjectMasterWithEmployee}
-                    onClose={() => setIsOpenAddProjectMasterWithEmployee(false)}
-                    title="Add Employee"
-                    onSubmit={handleAddUpdateProjectMasterWithEmployee}
-                    saveText="Save"
-                    resetText=""
-                    size="large75"
-                >
-                    <div className="space-y-4">
+                <div className="mt-6 rounded border border-gray-200">
 
-                        <div className="px-2 py-2 border-b">
-                            <div className="flex items-center gap-3 w-full">
-
-                                {/* Select ALL */}
-                                <Checkbox
-
-                                    id="select-all-employees"
-                                    checked={isAllEmployeeVisibleSelected}
-                                    onChange={() => toggleEmployeeSelectAllVisible()}
-                                />
-                                <div className="relative min-w-0 w-[526px]">
-                                    <Input
-                                        type="text"
-                                        value={searchTermForEmployee}
-                                        onChange={(e) => {
-                                            const v = e.target.value;
-                                            setSearchTermForEmployee(v);
-                                            debouncedEmployeeSearch(v);
-                                        }}
-                                        placeholder="Search By Employee"
-                                        leftIcon={<Search className="h-4 w-4 text-gray-400" />}
-
-                                    />
-                                </div>
-
-
-                                <span className="text-sm text-gray-600 whitespace-nowrap right">
-                                    {selectedEmployeeIds.length} selected
-                                </span>
-
-                            </div>
-                        </div>
-
-
-                        <div className="space-y-4">
-                            <div
-                                className="flex-1 min-h-0 overflow-auto thin-scroll divide-y divide-gray-200"
-                                onScroll={handleEmployeeListScrollInProjectMasterWithEmployee}
-                                style={{ maxHeight: '55vh' }}>
-                                {employeeForProject.length > 0 ? (
-
-                                    employeeForProject.map((n, i) => {
-
-                                        const id = n.EmployeeId ?? i;
-                                        const checked = selectedEmployeeIds.includes(id);
-
-                                        return (
-                                            <div key={id}
-                                                className="flex items-start gap-3 py-3 hover:bg-gray-50 transition-colors duration-150 cursor-pointer px-2"
-                                                onClick={(ev) => {
-                                                    if ((ev.target as HTMLElement).tagName.toLowerCase() === 'input') return;
-                                                    toggleEmployeeSelection(id);
-                                                }}>
-                                                <div className="flex items-center">
-
-                                                    <Checkbox
-                                                        checked={checked}
-                                                        onChange={() => toggleEmployeeSelection(id)}
-                                                        onClick={(ev) => ev.stopPropagation()}
-                                                        aria-label={`Select ${n.FullName}`}
-                                                    />
-
-                                                </div>
-
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between gap-3 mt-1">
-                                                        <p className="text-sm text-gray-800 whitespace-normal break-words">
-                                                            {n.FullName}
-                                                        </p>
-
-                                                        <div className="text-xs text-gray-500">
-                                                            {n.EmployeeCode ? n.EmployeeCode : null}
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center justify-between gap-3 mt-1">
-                                                        <p className="text-xs text-gray-500 flex-1 whitespace-normal break-words">
-                                                            Department : {n.Department}
-                                                        </p>
-
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <NoDataView />
-                                )}
-
-                                {isFetchingMoreEmployee && (
-
-                                    <div className="py-3 text-center text-gray-400 text-sm">Loading more...</div>
-                                )}
-                            </div>
-                        </div>
+                    <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
+                        <h4 className="font-semibold text-sm text-gray-800">
+                            Setting
+                        </h4>
                     </div>
-                </Modal>
+                    <div className="p-4 flex items-center justify-between">
+                        <Tabs
+                            tabs={TabList}
+                            defaultActive={activeTab}
+                            islarge={true}
+                            onTabChange={(t) => {
+                                setActiveTab(t.id);
 
-                {/* IN PROJECT MASTER WTTH COMPANY MODAL */}
-                <Modal
-                    isOpen={isOpenAddProjectMasterWithCompany}
-                    onClose={() => setIsOpenAddProjectMasterWithCompany(false)}
-                    title="Add Company"
-                    onSubmit={handleAddUpdateProjectMasterWithCompany}
-                    saveText="Save"
-                    resetText=""
-                    size="large-half"
-                >
-                    <div className="space-y-4">
+                            }}
+                        />
 
-                        <div className="px-2 py-2 border-b">
-                            <div className="flex items-center gap-3 w-full">
+                        {canAction && activeTab !== 'Set Approval' && (
+                            <Button
+                                color='blue'
+                                size='sm'
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    if (activeTab === "Employee") {
 
-                                {/* Select ALL */}
-                                <Checkbox
+                                        handleAddUpdateProjectMasterWithEmployeeModal()
+                                    }
+                                    else if (activeTab === "Bank Details") {
 
-                                    id="select-all-company"
-                                    checked={isAllCompanyVisibleSelected}
-                                    onChange={() => toggleCompanySelectAllVisible()}
-                                />
-                                <div className="relative min-w-0 w-[526px]">
-                                    <Input
-                                        type="text"
-                                        value={searchTermForCompany}
-                                        onChange={(e) => {
-                                            const v = e.target.value;
-                                            setSearchTermForCompany(v);
-                                            debouncedCompanySearch(v);
-                                        }}
-                                        placeholder="Search By Company"
-                                        leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+                                        handleAddProjectMasterWithBankDetailsModal()
+                                    }
+                                    else if (activeTab === "Company") {
 
-                                    />
-                                </div>
-
-
-                                <span className="text-sm text-gray-600 whitespace-nowrap right">
-                                    {selectedCompanyIds.length} selected
-                                </span>
-
-                            </div>
-                        </div>
-
-
-                        <div className="space-y-4">
-                            <div
-                                className="flex-1 min-h-0 overflow-auto thin-scroll divide-y divide-gray-200"
-                                onScroll={handleCompanyListScrollInProjectMasterWithCompany}
-                                style={{ maxHeight: '55vh' }}>
-                                {companyMasterForProject.length > 0 ? (
-
-                                    companyMasterForProject.map((n, i) => {
-
-                                        const id = n.CompanyId ?? i;
-                                        const checked = selectedCompanyIds.includes(id);
-
-                                        return (
-                                            <div key={id}
-                                                className="flex items-start gap-3 py-3 hover:bg-gray-50 transition-colors duration-150 cursor-pointer px-2"
-                                                onClick={(ev) => {
-                                                    if ((ev.target as HTMLElement).tagName.toLowerCase() === 'input') return;
-                                                    toggleCompanySelection(id);
-                                                }}>
-                                                <div className="flex items-center">
-
-                                                    <Checkbox
-                                                        checked={checked}
-                                                        onChange={() => toggleCompanySelection(id)}
-                                                        onClick={(ev) => ev.stopPropagation()}
-                                                        aria-label={`Select ${n.CompanyName}`}
-                                                    />
-
-                                                </div>
-
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between gap-3 mt-1">
-                                                        <p className="text-sm text-gray-800 whitespace-normal break-words">
-                                                            {n.CompanyName}
-                                                        </p>
-
-                                                        <div className="text-xs text-gray-500">
-                                                            {n.ContactPerson}
-                                                        </div>
-                                                    </div>
-
-
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <NoDataView />
-                                )}
-
-                                {isFetchingMoreCompany && (
-
-                                    <div className="py-3 text-center text-gray-400 text-sm">Loading more...</div>
-                                )}
-                            </div>
-                        </div>
+                                        handleAddUpdateProjectMasterWithCompanyModal()
+                                    }
+                                }}
+                            >
+                                Add
+                            </Button>
+                        )}
                     </div>
-                </Modal>
+                    <div className="mt-1">
+                        {activeTab === 'Employee' && (
+                            <div className="space-y-4 p-4">
 
-                {/* DELETE CONFIRMATION PROJECT MASTER WTTH EMPLOYEE MODAL */}
-                <ConfirmationDialogBox
-                    isOpen={isConfirmationDialogBoxOpenForEmployee}
-                    onClose={() => {
-                        setIsConfirmationDialogBoxOpenForEmployee(false)
-                        setDeleteProjectMasterWithEmployeeData(null)
-                    }}
-                    onConfirm={handleDeleteProjectMasterWithEmployee}
-                    title="You are about to delete a employee?"
-                    message="Deleting this employee will permanently remove its contents."
-                    confirmText="Delete"
-                    cancelText="Cancel"
-                    loading={isLoading}
-                    variant="danger"
-                />
+                                <DataTable
+                                    data={employeeMasterList}
+                                    columns={projectMasterWithEmployeeColumns}
+                                    emptyMessage="No Employee Data Found"
+                                    fixedHeight={true}
+                                    maxHeight="calc(100vh - 255px)"
+                                    recordsPerPage={20}
+                                    className="flex-1"
+                                    loading={isLoading}
+                                />
+                            </div>
+                        )}
 
-                {/*  ADD EDIT UPDATE PROJECT MASTER WITH BANK DETAILS MODAL */}
-                <Modal
-                    isOpen={isAddUpdateModalOpenForBankDetails}
-                    onClose={() => {
-                        setIsAddUpdateModalOpenForBankDetails(false);
-                        setEditingProjectMasterWithBankDetailsData(null);
-                        setFormDataForBankDetails(initialFormState());
-                        setErrorsForBankDetails({});
-                    }}
-                    onCancel={() => {
-                        setIsAddUpdateModalOpenForBankDetails(false);
-                        setEditingProjectMasterWithBankDetailsData(null);
-                        setFormDataForBankDetails(initialFormState());
-                        setErrorsForBankDetails({});
-                    }}
-                    title={editingProjectMasterWithBankDetailsData ? 'Update Bank Details' : 'Add Bank Details'}
-                    onSubmit={handleAddUpdateProjectMasterWithBankDetails}
-                    saveText={editingProjectMasterWithBankDetailsData ? 'Update Bank Details' : 'Save Bank Details'}
-                    resetText='Reset'
-                    loading={isLoading}
-                    size='half-screen'
-                >
-                    <div className="space-y-10 p-6 bg-blue-100">
-                        <div className="space-y-4" >
-                            <div>
-                                <Input
-                                    label='Beneficiary Account Holder Name'
-                                    required
-                                    error={errorsForBankDetails.BeneficiaryAccountHolderName}
-                                    type="text"
-                                    value={formDataForBankDetails.BeneficiaryAccountHolderName}
-                                    maxLength={250}
-                                    onChange={(e) => handleFieldChange('BeneficiaryAccountHolderName', e.target.value)}
-                                    placeholder="Enter Account Holder Name"
+                        {activeTab === "Bank Details" && (
+
+                            <div className="space-y-3 p-4">
+                                <DataTable
+                                    data={projectWithBankDetailsList}
+                                    columns={projectMasterBankDetailsColumns}
+                                    emptyMessage="No Bank Data Found"
+                                    fixedHeight={true}
+                                    maxHeight="calc(100vh - 255px)"
+                                    recordsPerPage={20}
+                                    className="flex-1"
+                                    loading={isLoading}
                                 />
 
                             </div>
-                            <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Bank"
-                                    required
-                                    title="Select Bank"
-                                    size="lg"
-                                    dataFetchCallBack={fetchBankListMasterDropdown}
-                                    onSelected={(item) => { handleFieldChange("BankListMasterId", Number(item?.value || 0)); }}
-                                    initialValue={createDropdownInitialValue(formDataForBankDetails.BankListMasterId, dropdownLabels.bankName)}
-                                    error={errorsForBankDetails.BankListMasterId}
+                        )}
+
+                        {activeTab === "Company" && (
+                            <div className="space-y-4 p-4">
+
+
+                                <DataTable
+                                    data={compantMasterList}
+                                    columns={projectMasterWithCompanyColumns}
+                                    emptyMessage="No Company Data Found"
+                                    fixedHeight={true}
+                                    maxHeight="calc(100vh - 255px)"
+                                    recordsPerPage={20}
+                                    className="flex-1"
+                                    loading={isLoading}
                                 />
                             </div>
-                        </div>
-                        <div className=" grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+                        )}
 
-                            <div>
-                                <SinglePageSelection
-                                    label="Account Type"
-                                    required
-                                    value={formDataForBankDetails.AcType}
-                                    onChange={(e) => handleFieldChange('AcType', String(e))}
-                                    options={BANK_ACCOUNT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
-                                    error={errorsForBankDetails.AcType}
-                                />
-
-                            </div>
-
-                            <div>
-                                <Input
-                                    label='Branch Name'
-                                    required
-                                    error={errorsForBankDetails.Branch}
-                                    type="text"
-                                    value={formDataForBankDetails.Branch}
-                                    maxLength={100}
-                                    onChange={(e) => handleFieldChange('Branch', e.target.value)}
-                                    placeholder="Enter Branch"
-                                />
-
-                            </div>
-                            <div>
-                                <Input
-                                    label="Account Number"
-                                    required value={formDataForBankDetails.AccountNumber}
-                                    maxLength={18}
-                                    onChange={(e) => handleFieldChange("AccountNumber", filterNumbers(e.target.value))}
-                                    error={errorsForBankDetails.AccountNumber} />
-                            </div>
-                            <div>
-                                <Input label="IFSC Code"
-                                    required
-                                    value={formDataForBankDetails.IFSCCode}
-                                    maxLength={10}
-                                    onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
-                                    error={errorsForBankDetails.IFSCCode} />
-                            </div>
-                        </div>
                     </div>
 
-                </Modal>
-                {/* DELETE CONFIRMATION  PROJECT MASTER WTTH BANK DETAILS MODAL */}
-                <ConfirmationDialogBox
-                    isOpen={isConfirmationDialogBoxOpenForBankDetails}
-                    onClose={() => {
-                        setIsConfirmationDialogBoxOpenForBankDetails(false)
-                        setDeleteProjectMasterWithBankDetailsData(null)
-                    }}
-                    onConfirm={handleDeleteProjectMasterWithBankDetails}
-                    title="You are about to delete a bank details?"
-                    message="Deleting this bank details will permanently remove its contents."
-                    confirmText="Delete"
-                    cancelText="Cancel"
-                    loading={isLoading}
-                    variant="danger"
-                />
+                </div>
             </div>
+
+
+            {/* IN PROJECT MASTER WTTH EMPLOYEE MODAL */}
+            <Modal
+                isOpen={isOpenAddProjectMasterWithEmployee}
+                onClose={() => setIsOpenAddProjectMasterWithEmployee(false)}
+                title="Add Employee"
+                onSubmit={handleAddUpdateProjectMasterWithEmployee}
+                saveText="Save"
+                resetText=""
+                size="large75"
+            >
+                <div className="space-y-4">
+
+                    <div className="px-2 py-2 border-b">
+                        <div className="flex items-center gap-3 w-full">
+
+                            {/* Select ALL */}
+                            <Checkbox
+
+                                id="select-all-employees"
+                                checked={isAllEmployeeVisibleSelected}
+                                onChange={() => toggleEmployeeSelectAllVisible()}
+                            />
+                            <div className="relative min-w-0 w-[526px]">
+                                <Input
+                                    type="text"
+                                    value={searchTermForEmployee}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        setSearchTermForEmployee(v);
+                                        debouncedEmployeeSearch(v);
+                                    }}
+                                    placeholder="Search By Employee"
+                                    leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+
+                                />
+                            </div>
+
+
+                            <span className="text-sm text-gray-600 whitespace-nowrap right">
+                                {selectedEmployeeIds.length} selected
+                            </span>
+
+                        </div>
+                    </div>
+
+
+                    <div className="space-y-4">
+                        <div
+                            className="flex-1 min-h-0 overflow-auto thin-scroll divide-y divide-gray-200"
+                            onScroll={handleEmployeeListScrollInProjectMasterWithEmployee}
+                            style={{ maxHeight: '55vh' }}>
+                            {employeeForProject.length > 0 ? (
+
+                                employeeForProject.map((n, i) => {
+
+                                    const id = n.EmployeeId ?? i;
+                                    const checked = selectedEmployeeIds.includes(id);
+
+                                    return (
+                                        <div key={id}
+                                            className="flex items-start gap-3 py-3 hover:bg-gray-50 transition-colors duration-150 cursor-pointer px-2"
+                                            onClick={(ev) => {
+                                                if ((ev.target as HTMLElement).tagName.toLowerCase() === 'input') return;
+                                                toggleEmployeeSelection(id);
+                                            }}>
+                                            <div className="flex items-center">
+
+                                                <Checkbox
+                                                    checked={checked}
+                                                    onChange={() => toggleEmployeeSelection(id)}
+                                                    onClick={(ev) => ev.stopPropagation()}
+                                                    aria-label={`Select ${n.FullName}`}
+                                                />
+
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between gap-3 mt-1">
+                                                    <p className="text-sm text-gray-800 whitespace-normal break-words">
+                                                        {n.FullName}
+                                                    </p>
+
+                                                    <div className="text-xs text-gray-500">
+                                                        {n.EmployeeCode ? n.EmployeeCode : null}
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between gap-3 mt-1">
+                                                    <p className="text-xs text-gray-500 flex-1 whitespace-normal break-words">
+                                                        Department : {n.Department}
+                                                    </p>
+
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <NoDataView />
+                            )}
+
+                            {isFetchingMoreEmployee && (
+
+                                <div className="py-3 text-center text-gray-400 text-sm">Loading more...</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* IN PROJECT MASTER WTTH COMPANY MODAL */}
+            <Modal
+                isOpen={isOpenAddProjectMasterWithCompany}
+                onClose={() => setIsOpenAddProjectMasterWithCompany(false)}
+                title="Add Company"
+                onSubmit={handleAddUpdateProjectMasterWithCompany}
+                saveText="Save"
+                resetText=""
+                size="large-half"
+            >
+                <div className="space-y-4">
+
+                    <div className="px-2 py-2 border-b">
+                        <div className="flex items-center gap-3 w-full">
+
+                            {/* Select ALL */}
+                            <Checkbox
+
+                                id="select-all-company"
+                                checked={isAllCompanyVisibleSelected}
+                                onChange={() => toggleCompanySelectAllVisible()}
+                            />
+                            <div className="relative min-w-0 w-[526px]">
+                                <Input
+                                    type="text"
+                                    value={searchTermForCompany}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        setSearchTermForCompany(v);
+                                        debouncedCompanySearch(v);
+                                    }}
+                                    placeholder="Search By Company"
+                                    leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+
+                                />
+                            </div>
+
+
+                            <span className="text-sm text-gray-600 whitespace-nowrap right">
+                                {selectedCompanyIds.length} selected
+                            </span>
+
+                        </div>
+                    </div>
+
+
+                    <div className="space-y-4">
+                        <div
+                            className="flex-1 min-h-0 overflow-auto thin-scroll divide-y divide-gray-200"
+                            onScroll={handleCompanyListScrollInProjectMasterWithCompany}
+                            style={{ maxHeight: '55vh' }}>
+                            {companyMasterForProject.length > 0 ? (
+
+                                companyMasterForProject.map((n, i) => {
+
+                                    const id = n.CompanyId ?? i;
+                                    const checked = selectedCompanyIds.includes(id);
+
+                                    return (
+                                        <div key={id}
+                                            className="flex items-start gap-3 py-3 hover:bg-gray-50 transition-colors duration-150 cursor-pointer px-2"
+                                            onClick={(ev) => {
+                                                if ((ev.target as HTMLElement).tagName.toLowerCase() === 'input') return;
+                                                toggleCompanySelection(id);
+                                            }}>
+                                            <div className="flex items-center">
+
+                                                <Checkbox
+                                                    checked={checked}
+                                                    onChange={() => toggleCompanySelection(id)}
+                                                    onClick={(ev) => ev.stopPropagation()}
+                                                    aria-label={`Select ${n.CompanyName}`}
+                                                />
+
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between gap-3 mt-1">
+                                                    <p className="text-sm text-gray-800 whitespace-normal break-words">
+                                                        {n.CompanyName}
+                                                    </p>
+
+                                                    <div className="text-xs text-gray-500">
+                                                        {n.ContactPerson}
+                                                    </div>
+                                                </div>
+
+
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <NoDataView />
+                            )}
+
+                            {isFetchingMoreCompany && (
+
+                                <div className="py-3 text-center text-gray-400 text-sm">Loading more...</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* DELETE CONFIRMATION PROJECT MASTER WTTH EMPLOYEE MODAL */}
+            <ConfirmationDialogBox
+                isOpen={isConfirmationDialogBoxOpenForEmployee}
+                onClose={() => {
+                    setIsConfirmationDialogBoxOpenForEmployee(false)
+                    setDeleteProjectMasterWithEmployeeData(null)
+                }}
+                onConfirm={handleDeleteProjectMasterWithEmployee}
+                title="You are about to delete a employee?"
+                message="Deleting this employee will permanently remove its contents."
+                confirmText="Delete"
+                cancelText="Cancel"
+                loading={isLoading}
+                variant="danger"
+            />
+
+            {/*  ADD EDIT UPDATE PROJECT MASTER WITH BANK DETAILS MODAL */}
+            <Modal
+                isOpen={isAddUpdateModalOpenForBankDetails}
+                onClose={() => {
+                    setIsAddUpdateModalOpenForBankDetails(false);
+                    setEditingProjectMasterWithBankDetailsData(null);
+                    setFormDataForBankDetails(initialFormState());
+                    setErrorsForBankDetails({});
+                }}
+                onCancel={() => {
+                    setIsAddUpdateModalOpenForBankDetails(false);
+                    setEditingProjectMasterWithBankDetailsData(null);
+                    setFormDataForBankDetails(initialFormState());
+                    setErrorsForBankDetails({});
+                }}
+                title={editingProjectMasterWithBankDetailsData ? 'Update Bank Details' : 'Add Bank Details'}
+                onSubmit={handleAddUpdateProjectMasterWithBankDetails}
+                saveText={editingProjectMasterWithBankDetailsData ? 'Update Bank Details' : 'Save Bank Details'}
+                resetText='Reset'
+                loading={isLoading}
+                size='half-screen'
+            >
+                <div className="space-y-10 p-6 bg-blue-100">
+                    <div className="space-y-4" >
+                        <div>
+                            <Input
+                                label='Beneficiary Account Holder Name'
+                                required
+                                error={errorsForBankDetails.BeneficiaryAccountHolderName}
+                                type="text"
+                                value={formDataForBankDetails.BeneficiaryAccountHolderName}
+                                maxLength={250}
+                                onChange={(e) => handleFieldChange('BeneficiaryAccountHolderName', e.target.value)}
+                                placeholder="Enter Account Holder Name"
+                            />
+
+                        </div>
+                        <div>
+                            <SingleSelectDropdownWithPagination
+                                label="Bank"
+                                required
+                                title="Select Bank"
+                                size="lg"
+                                dataFetchCallBack={fetchBankListMasterDropdown}
+                                onSelected={(item) => { handleFieldChange("BankListMasterId", Number(item?.value || 0)); }}
+                                initialValue={createDropdownInitialValue(formDataForBankDetails.BankListMasterId, dropdownLabels.bankName)}
+                                error={errorsForBankDetails.BankListMasterId}
+                            />
+                        </div>
+                    </div>
+                    <div className=" grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+
+                        <div>
+                            <SinglePageSelection
+                                label="Account Type"
+                                required
+                                value={formDataForBankDetails.AcType}
+                                onChange={(e) => handleFieldChange('AcType', String(e))}
+                                options={BANK_ACCOUNT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                error={errorsForBankDetails.AcType}
+                            />
+
+                        </div>
+
+                        <div>
+                            <Input
+                                label='Branch Name'
+                                required
+                                error={errorsForBankDetails.Branch}
+                                type="text"
+                                value={formDataForBankDetails.Branch}
+                                maxLength={100}
+                                onChange={(e) => handleFieldChange('Branch', e.target.value)}
+                                placeholder="Enter Branch"
+                            />
+
+                        </div>
+                        <div>
+                            <Input
+                                label="Account Number"
+                                required value={formDataForBankDetails.AccountNumber}
+                                maxLength={18}
+                                onChange={(e) => handleFieldChange("AccountNumber", filterNumbers(e.target.value))}
+                                error={errorsForBankDetails.AccountNumber} />
+                        </div>
+                        <div>
+                            <Input label="IFSC Code"
+                                required
+                                value={formDataForBankDetails.IFSCCode}
+                                maxLength={10}
+                                onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
+                                error={errorsForBankDetails.IFSCCode} />
+                        </div>
+                    </div>
+                </div>
+
+            </Modal>
+            {/* DELETE CONFIRMATION  PROJECT MASTER WTTH BANK DETAILS MODAL */}
+            <ConfirmationDialogBox
+                isOpen={isConfirmationDialogBoxOpenForBankDetails}
+                onClose={() => {
+                    setIsConfirmationDialogBoxOpenForBankDetails(false)
+                    setDeleteProjectMasterWithBankDetailsData(null)
+                }}
+                onConfirm={handleDeleteProjectMasterWithBankDetails}
+                title="You are about to delete a bank details?"
+                message="Deleting this bank details will permanently remove its contents."
+                confirmText="Delete"
+                cancelText="Cancel"
+                loading={isLoading}
+                variant="danger"
+            />
+        </div>
     );
 };
 

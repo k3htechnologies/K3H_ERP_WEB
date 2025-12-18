@@ -13,14 +13,17 @@ import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
-import { Edit, Mail, Phone } from 'lucide-react';
-import { filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterRERA, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidRERA } from '@/core/utils/fileValidation';
+import { Edit, Mail, Phone, Trash2 } from 'lucide-react';
+import { filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterRERA, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidRERA } from '@/core/utils/fileValidation';
 import { runApiWithLoader } from '@/core/utils';
 import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import * as E from 'fp-ts/Either';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import BottomActionBar from '@/ui/components/forms/BottomActionBar';
+import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 
 const initialFormState = (): AddUpdateCompanyMasterRequest => ({
   CompanyId: 0,
@@ -120,6 +123,9 @@ const AddCompany: React.FC = () => {
   // TOAST
   const { addToast } = useToast()
 
+  //PERMISSION
+  const { canAction } = useMenuPermissions('/companyMaster');
+
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
@@ -127,8 +133,13 @@ const AddCompany: React.FC = () => {
   const [companyPartnerList, setCompanyPartnerList] = useState<PartnerDetailsWithFiles[]>([]);
   const [formDataCompanyPartner, setFormDataCompanyPartner] = useState<AddUpdateCompanyPartnerRequest>(() => initialFormStateCompanyPartner());
 
-  const [editingCompanyPartnerMasterData, setEditingCompanyPartnerMasterData] = useState<PartnerDetailsWithFiles | null>(null)
+  const [editingCompanyPartnerMasterData, setEditingCompanyPartnerMasterData] = useState<{ row: PartnerDetailsWithFiles; index: number } | null>(null);
   const [isAddUpdateCompanyPartnerModalOpen, setIsAddUpdateCompanyPartnerModalOpen] = useState(false)
+
+  //DELETE COMPANY PARTNER
+  const [isConfirmationDialogBoxOpenCompanyPartner, setIsConfirmationDialogBoxOpenCompanyPartner] = useState(false);
+  const [deleteCompanyPartnerData, setDeleteCompanyPartnerData] = useState<{ row: PartnerDetailsWithFiles; index: number } | null>(null);
+
 
   const [companyPartnerAadhaarCardURLFiles, setCompanyPartnerAadhaarCardURLFiles] = useState<(File | string)[]>([]);
   const [removedCompanyPartnerAadhaarCardURLs, setRemovedCompanyPartnerAadhaarCardURLs] = useState<string[]>([]);
@@ -484,6 +495,63 @@ const AddCompany: React.FC = () => {
     });
 
     fd.append('RemoveCompanyLetterheadFooterURL', removedCompanyLetterHeadFooterUrls.join(','));
+
+    // helper that appends existing CSV and File parts (with filename)
+    const addFilesWithExisting = (
+      fdLocal: FormData,
+      prefix: string,
+      fileArray: (File | string)[] | undefined,
+      fieldKey: string
+    ) => {
+      if (!fileArray || fileArray.length === 0) return;
+
+      const existingNames = fileArray
+        .filter(x => typeof x === 'string' && String(x).trim().length > 0)
+        .map(x => String(x).trim())
+        .join(',');
+
+      if (existingNames) {
+        fdLocal.append(`${prefix}.${fieldKey}`, existingNames);
+      }
+
+      fileArray.forEach(item => {
+        if (item instanceof File) {
+          fdLocal.append(`${prefix}.${fieldKey}`, item, item.name);
+        }
+      });
+    };
+
+    // Add company partner data
+    companyPartnerList.forEach((partner, index) => {
+      const prefix = `AddUpdateCompanyPartner[${index}]`;
+
+      fd.append(`${prefix}.CompanyPartnerId`, String(partner.CompanyPartnerId ?? 0));
+      fd.append(`${prefix}.FirstName`, partner.FirstName ?? '');
+      fd.append(`${prefix}.LastName`, partner.LastName ?? '');
+      fd.append(`${prefix}.MiddleName`, partner.MiddleName ?? '');
+      fd.append(`${prefix}.DateOfBirth`, partner.DateOfBirth ? String(partner.DateOfBirth) : '');
+      fd.append(`${prefix}.Gender`, partner.Gender ?? '');
+      fd.append(`${prefix}.MobileNumber`, partner.MobileNumber ?? '');
+      fd.append(`${prefix}.EmailId`, partner.EmailId ?? '');
+      fd.append(`${prefix}.PartnerPercentage`, String(partner.PartnerPercentage ?? 0));
+      fd.append(`${prefix}.PanNumber`, partner.PanNumber ?? '');
+      fd.append(`${prefix}.AadharCardNumber`, partner.AadharCardNumber ?? '');
+
+      const appendIfNonEmpty = (key: string, val?: string) => {
+        if (val && String(val).trim().length > 0) fd.append(`${prefix}.${key}`, String(val));
+      };
+
+      appendIfNonEmpty('RemovePhotoURL', partner.RemovePhotoURL);
+      appendIfNonEmpty('RemoveAadharCardURL', partner.RemoveAadharCardURL);
+      appendIfNonEmpty('RemovePanCardURL', partner.RemovePanCardURL);
+
+      const realPartner: any = partner;
+
+      addFilesWithExisting(fd, prefix, realPartner._photoFiles, 'PhotoURL');
+      addFilesWithExisting(fd, prefix, realPartner._aadharCardFiles, 'AadharCardURL');
+      addFilesWithExisting(fd, prefix, realPartner._panCardFiles, 'PanCardURL');
+    });
+
     return fd;
   };
 
@@ -558,7 +626,8 @@ const AddCompany: React.FC = () => {
 
   //#region EDIT DEPARTMENT MASTER
 
-  const handleEditCompanyPartner = useCallback((row: CompanyPartnerData) => {
+  const handleEditCompanyPartner = useCallback((row: CompanyPartnerData, index: number) => {
+
     const partnerData: AddUpdateCompanyPartnerRequest = {
       CompanyPartnerId: row.CompanyPartnerId ?? 0,
       FirstName: row.FirstName || '',
@@ -570,22 +639,44 @@ const AddCompany: React.FC = () => {
       EmailId: row.EmailId || '',
       PartnerPercentage: row.PartnerPercentage ?? 0,
       PanNumber: row.PanNumber || '',
+      PanCardURL: null,
       RemovePanCardURL: '',
       AadharCardNumber: row.AadharCardNumber || '',
+      AadharCardURL: null,
       RemoveAadharCardURL: '',
+      PhotoURL: null,
       RemovePhotoURL: ''
     };
 
 
-    setEditingCompanyPartnerMasterData(row);
+    setEditingCompanyPartnerMasterData({ row, index });
     setFormDataCompanyPartner(partnerData);
-    setCompanyPartnerPANURLFiles(parseDocumentUrls(row.PanCardURL ?? '').slice());
-    setCompanyPartnerAadhaarCardURLFiles(parseDocumentUrls(row.AadharCardURL ?? '').slice());
+
+    // PHOTO
     setCompanyPartnerPhotoURLFiles(parseDocumentUrls(row.PhotoURL ?? '').slice());
+    setRemovedCompanyPartnerPhotoURLs([]); // always reset
+
+    // AADHAR
+    setCompanyPartnerAadhaarCardURLFiles(parseDocumentUrls(row.AadharCardURL ?? '').slice());
+    setRemovedCompanyPartnerAadhaarCardURLs([]);
+
+    // PAN
+    setCompanyPartnerPANURLFiles(parseDocumentUrls(row.PanCardURL ?? '').slice());
+    setRemovedCompanyPartnerPANURLs([]);
+
     setIsAddUpdateCompanyPartnerModalOpen(true);
   }, []);
 
 
+
+  //#endregion
+
+  //#region COMPANY PARTNER DELETE CONFIRMATION DAILOG BOX
+  const handleConfirmationDialogBoxOpenCompanyPartner = useCallback((row: CompanyPartnerData, index: number) => {
+    setDeleteCompanyPartnerData({ row, index });
+    setIsConfirmationDialogBoxOpenCompanyPartner(true);
+
+  }, []);
 
   //#endregion
 
@@ -602,7 +693,7 @@ const AddCompany: React.FC = () => {
         sortable: true,
         fixed: 'left',
         align: 'left',
-        render: (value, row) => {
+        render: (value, row, index) => {
           // Get images from PhotoURL CSV
           const images: string[] = (row.PhotoURL || "")
             .split(",")
@@ -642,7 +733,7 @@ const AddCompany: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
-                    handleEditCompanyPartner(row)
+                    handleEditCompanyPartner(row, index)
                   }}
                   color='transparent'
                   fullWidth
@@ -657,6 +748,21 @@ const AddCompany: React.FC = () => {
                   onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')} // revert
                 >
                   <Edit className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleConfirmationDialogBoxOpenCompanyPartner(row, index);
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  size="sm"
+                  style={{ color: 'red' }}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </>
             </div>
@@ -741,7 +847,7 @@ const AddCompany: React.FC = () => {
 
       }
     ],
-    [handleEditCompanyPartner]
+    [handleEditCompanyPartner, handleConfirmationDialogBoxOpenCompanyPartner]
   )
   //#endregion
 
@@ -762,6 +868,12 @@ const AddCompany: React.FC = () => {
   const handleAddCompanyPartnerModal = () => {
     setEditingCompanyPartnerMasterData(null)
     setFormDataCompanyPartner(initialFormStateCompanyPartner());
+    setCompanyPartnerPANURLFiles([]);
+    setCompanyPartnerAadhaarCardURLFiles([]);
+    setCompanyPartnerPhotoURLFiles([]);
+    setRemovedCompanyPartnerPhotoURLs([]);
+    setRemovedCompanyPartnerAadhaarCardURLs([]);
+    setRemovedCompanyPartnerPANURLs([]);
     setIsAddUpdateCompanyPartnerModalOpen(true)
     setErrorsCompanyPartner({});
   }
@@ -798,11 +910,11 @@ const AddCompany: React.FC = () => {
 
     // Partner Percentage
     const percentage = Number(formDataCompanyPartner.PartnerPercentage ?? 0)
+    
     if (isNaN(percentage)) {
       newErrorsCompanyPartner.PartnerPercentage = 'Partner Percentage must be a number.'
     } else if (percentage <= 0 || percentage > 100) {
-      newErrorsCompanyPartner.PartnerPercentage =
-        'Partner Percentage must be between 1 and 100.'
+      newErrorsCompanyPartner.PartnerPercentage = 'Partner Percentage must be between 1 and 100.'
     }
 
     // PAN
@@ -847,37 +959,53 @@ const AddCompany: React.FC = () => {
       return
     }
 
-    const idToUse =
-      editingCompanyPartnerMasterData?.CompanyPartnerId ??
-      (formDataCompanyPartner.CompanyPartnerId && formDataCompanyPartner.CompanyPartnerId > 0
-        ? formDataCompanyPartner.CompanyPartnerId
-        : 0)
 
-    const partnerToSave: CompanyPartnerData = {
-      CompanyPartnerId: idToUse,
+    const partnerToSave: PartnerDetailsWithFiles = {
+      CompanyPartnerId: editingCompanyPartnerMasterData?.row.CompanyPartnerId ?? 0,
+      Uniquekey: editingCompanyPartnerMasterData?.row.Uniquekey || '',
+      CompanyId: formData.CompanyId ?? 0,
+
       FirstName: formDataCompanyPartner.FirstName || '',
-      LastName: formDataCompanyPartner.LastName || '',
       MiddleName: formDataCompanyPartner.MiddleName || '',
+      LastName: formDataCompanyPartner.LastName || '',
+      FullName: `${formDataCompanyPartner.FirstName} ${formDataCompanyPartner.MiddleName} ${formDataCompanyPartner.LastName}`.trim(),
+
       DateOfBirth: formDataCompanyPartner.DateOfBirth || null,
       Gender: formDataCompanyPartner.Gender || '',
       MobileNumber: formDataCompanyPartner.MobileNumber || '',
       EmailId: formDataCompanyPartner.EmailId || '',
       PartnerPercentage: formDataCompanyPartner.PartnerPercentage ?? 0,
+
       PanNumber: formDataCompanyPartner.PanNumber || '',
-      PanCardURL: companyPartnerPANURLFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
       AadharCardNumber: formDataCompanyPartner.AadharCardNumber || '',
-      AadharCardURL: companyPartnerAadhaarCardURLFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
-      PhotoURL: companyPartnerPhotoURLFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+
+      PhotoURL: companyPartnerPhotoURLFiles.map(f => typeof f === 'string' ? f : f.name).join(','),
+      PanCardURL: companyPartnerPANURLFiles.map(f => typeof f === 'string' ? f : f.name).join(','),
+      AadharCardURL: companyPartnerAadhaarCardURLFiles.map(f => typeof f === 'string' ? f : f.name).join(','),
+
+      _photoFiles: companyPartnerPhotoURLFiles.slice(),
+      _panCardFiles: companyPartnerPANURLFiles.slice(),
+      _aadharCardFiles: companyPartnerAadhaarCardURLFiles.slice(),
+
+      RemovePhotoURL: removedCompanyPartnerPhotoURLs.join(','),
+      RemovePanCardURL: removedCompanyPartnerPANURLs.join(','),
+      RemoveAadharCardURL: removedCompanyPartnerAadhaarCardURLs.join(','),
+
+      CreatedById: editingCompanyPartnerMasterData?.row.CreatedById ?? 0,
+      CreatedBy: editingCompanyPartnerMasterData?.row.CreatedBy || '',
+      CreatedDate: editingCompanyPartnerMasterData?.row.CreatedDate || null,
+      ModifiedById: 0,
+      ModifiedBy: '',
+      ModifiedDate: null,
     };
 
-    setCompanyPartnerList(prevList => {
-      if (editingCompanyPartnerMasterData && editingCompanyPartnerMasterData.CompanyPartnerId) {
-        // update existing partner
-        return prevList.map(p => (p.CompanyPartnerId === idToUse ? partnerToSave : p));
-      } else {
-        // add new partner
-        return [...prevList, partnerToSave];
+    setCompanyPartnerList(prev => {
+      if (editingCompanyPartnerMasterData) {
+        const updated = [...prev];
+        updated[editingCompanyPartnerMasterData.index] = partnerToSave;
+        return updated;
       }
+      return [...prev, partnerToSave];
     });
 
     // Cleanup and close modal — do this AFTER updating list
@@ -887,9 +1015,44 @@ const AddCompany: React.FC = () => {
     setCompanyPartnerPANURLFiles([]);
     setCompanyPartnerAadhaarCardURLFiles([]);
     setCompanyPartnerPhotoURLFiles([]);
+    setRemovedCompanyPartnerPhotoURLs([]);
+    setRemovedCompanyPartnerAadhaarCardURLs([]);
+    setRemovedCompanyPartnerPANURLs([]);
   };
 
+  //#endregion
 
+  //#region  DELETE COMPANY PARTNER DATA
+
+
+  const handleDeleteCompanyPartner = () => {
+
+    if (!deleteCompanyPartnerData) return;
+
+    const removeIndex = deleteCompanyPartnerData.index;
+
+    if (removeIndex < 0) {
+
+      setIsConfirmationDialogBoxOpenCompanyPartner(false);
+
+      setDeleteCompanyPartnerData(null);
+
+      addToast({ type: 'error', title: 'Unable to find the selected record to delete' });
+
+      return;
+
+    }
+
+
+    setCompanyPartnerList(prev => prev.filter((_, i) => i !== removeIndex));
+
+    setIsConfirmationDialogBoxOpenCompanyPartner(false);
+
+    setDeleteCompanyPartnerData(null);
+
+    addToast({ type: 'success', title: 'Company Partner Removed' });
+
+  };
 
   //#endregion
 
@@ -900,10 +1063,10 @@ const AddCompany: React.FC = () => {
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
       {/* ✅ Fixed HEADER */}
 
-      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         {/* ============================================================= [BASIC COMPANY DETAILS] ============================================================================================= */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Company Details</h3>
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Company Details</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
@@ -947,7 +1110,7 @@ const AddCompany: React.FC = () => {
                 type="text"
                 value={formData.MobileNumber}
                 maxLength={10}
-                leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                 onChange={(e) => {
                   const mobileNumber = filterMobile(e.target.value);
                   handleFieldChange('MobileNumber', mobileNumber)
@@ -964,7 +1127,7 @@ const AddCompany: React.FC = () => {
                 error={errors.ContactPerson}
                 type="text"
                 value={formData.ContactPerson}
-                leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                 minLength={5}
                 maxLength={50}
                 onChange={(e) => {
@@ -983,7 +1146,7 @@ const AddCompany: React.FC = () => {
                 type="text"
                 value={formData.EmailId}
                 error={errors.EmailId}
-                leftIcon={<Mail className="h-4 w-4 text-gray-400" />}
+                rightIcon={<Mail className="h-4 w-4 text-gray-400" />}
                 onChange={(e) => {
                   const emailId = filterEmail(e.target.value);
                   handleFieldChange('EmailId', emailId)
@@ -1000,7 +1163,7 @@ const AddCompany: React.FC = () => {
                 type="text"
                 value={formData.LandLineNumber}
                 error={errors.LandLineNumber}
-                leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                 onChange={(e) => {
                   const landLineNumber = filterLandline(e.target.value);
                   handleFieldChange('LandLineNumber', landLineNumber)
@@ -1013,7 +1176,7 @@ const AddCompany: React.FC = () => {
         </div>
         {/* ============================================================= [GOVERNMENT IDENTIFIERS] ============================================================================================= */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Government Identifiers</h3>
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Government Identifiers</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
@@ -1160,7 +1323,7 @@ const AddCompany: React.FC = () => {
 
         {/* ============================================================= [ADDRESS] ============================================================================================= */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Address</h3>
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             <div>
@@ -1251,7 +1414,7 @@ const AddCompany: React.FC = () => {
 
         {/* ============================================================= [COMPANY VERIFICATION] ============================================================================================= */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Company Verification</h3>
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Company Verification</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -1311,8 +1474,8 @@ const AddCompany: React.FC = () => {
 
         {/* ============================================================= [COMPANY PARTNER ] ============================================================================================= */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between border-b pb-2">
-            <h3 className="text-lg font-medium text-gray-900">
+          <div className="flex items-center justify-between border-b border-gray-300 pb-2">
+            <h3 className="text-lg font-semibold text-gray-900  pb-2">
               Company Partner
             </h3>
 
@@ -1338,28 +1501,17 @@ const AddCompany: React.FC = () => {
         </div>
 
         {/* ✅ Fixed Bottom  */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
-          <Button
-            color="transparent"
-            variant='transparent_border'
-            size="sm"
-            onClick={() => {
-              navigate(-1);
-            }}
-            className="px-6"
-          >
-            Cancel
-          </Button>
-          <Button
-            color="green"
-            size="sm"
-            onClick={handleAddUpdateCompanyMaster}
-            className="px-6"
-          >
-            Save
-          </Button>
-        </div>
+
+        <BottomActionBar
+          cancelText="Cancel"
+          saveText={formData.CompanyId ? "Update" : "Add"}
+          onCancel={() => navigate(-1)}
+          canAction={canAction}
+          onSave={() => {
+            handleAddUpdateCompanyMaster();
+          }}
+          isLoading={isLoading}
+        />
       </div>
 
 
@@ -1371,6 +1523,12 @@ const AddCompany: React.FC = () => {
           setIsAddUpdateCompanyPartnerModalOpen(false)
           setEditingCompanyPartnerMasterData(null)
           setFormDataCompanyPartner(initialFormStateCompanyPartner());
+          setCompanyPartnerPANURLFiles([]);
+          setCompanyPartnerAadhaarCardURLFiles([]);
+          setCompanyPartnerPhotoURLFiles([]);
+          setRemovedCompanyPartnerPhotoURLs([]);
+          setRemovedCompanyPartnerAadhaarCardURLs([]);
+          setRemovedCompanyPartnerPANURLs([]);
           setErrorsCompanyPartner({});
 
         }}
@@ -1378,6 +1536,12 @@ const AddCompany: React.FC = () => {
           setIsAddUpdateCompanyPartnerModalOpen(false)
           setEditingCompanyPartnerMasterData(null)
           setFormDataCompanyPartner(initialFormStateCompanyPartner());
+          setCompanyPartnerPANURLFiles([]);
+          setCompanyPartnerAadhaarCardURLFiles([]);
+          setCompanyPartnerPhotoURLFiles([]);
+          setRemovedCompanyPartnerPhotoURLs([]);
+          setRemovedCompanyPartnerAadhaarCardURLs([]);
+          setRemovedCompanyPartnerPANURLs([]);
           setErrorsCompanyPartner({});
 
         }}
@@ -1403,7 +1567,7 @@ const AddCompany: React.FC = () => {
                 onChange={e =>
                   handleFieldChangeCompanyPartner('FirstName', filterLetters(e.target.value))
                 }
-                placeholder="Enter first name"
+                placeholder="Enter First Name"
               />
             </div>
 
@@ -1419,7 +1583,7 @@ const AddCompany: React.FC = () => {
                 onChange={e =>
                   handleFieldChangeCompanyPartner('LastName', filterLetters(e.target.value))
                 }
-                placeholder="Enter last name"
+                placeholder="Enter Last Name"
               />
 
             </div>
@@ -1436,7 +1600,7 @@ const AddCompany: React.FC = () => {
                 onChange={e =>
                   handleFieldChangeCompanyPartner('MiddleName', filterLetters(e.target.value))
                 }
-                placeholder="Enter middle name"
+                placeholder="Enter Middle Name"
               />
 
             </div>
@@ -1477,11 +1641,12 @@ const AddCompany: React.FC = () => {
                 required
                 error={errorsCompanyPartner.PartnerPercentage}
                 type="text"
+                rightIcon='%'
                 value={formDataCompanyPartner.PartnerPercentage ?? 0}
                 onChange={e =>
-                  handleFieldChangeCompanyPartner('PartnerPercentage', Number(e.target.value || 0))
+                  handleFieldChangeCompanyPartner('PartnerPercentage', filterPercentage(e.target.value))
                 }
-                placeholder="Enter share %"
+                placeholder="Enter Share %"
               />
 
             </div>
@@ -1497,11 +1662,12 @@ const AddCompany: React.FC = () => {
                 error={errorsCompanyPartner.MobileNumber}
                 type="text"
                 value={formDataCompanyPartner.MobileNumber}
+                rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                 maxLength={10}
                 onChange={e =>
                   handleFieldChangeCompanyPartner('MobileNumber', filterMobile(e.target.value))
                 }
-                placeholder="Enter mobile number"
+                placeholder="Enter Mobile Number"
               />
 
             </div>
@@ -1517,7 +1683,7 @@ const AddCompany: React.FC = () => {
                 onChange={e =>
                   handleFieldChangeCompanyPartner('EmailId', filterEmail(e.target.value))
                 }
-                placeholder="Enter email id"
+                placeholder="Enter E-mail Id"
               />
 
             </div>
@@ -1538,7 +1704,7 @@ const AddCompany: React.FC = () => {
                   handleFieldChangeCompanyPartner('PanNumber', filterPAN(e.target.value).toUpperCase()
                   )
                 }
-                placeholder="Enter PAN number"
+                placeholder="Enter PAN Card Number"
               />
 
             </div>
@@ -1554,7 +1720,7 @@ const AddCompany: React.FC = () => {
                 maxLength={12}
                 onChange={e => handleFieldChangeCompanyPartner('AadharCardNumber', e.target.value)
                 }
-                placeholder="Enter Aadhar number"
+                placeholder="Enter Aadhar Card Number"
               />
 
             </div>
@@ -1569,7 +1735,7 @@ const AddCompany: React.FC = () => {
                 error={errorsCompanyPartner.PanCardURL}
                 value={companyPartnerPANURLFiles}
                 onChange={setCompanyPartnerPANURLFiles}
-                availableFilesURL={editingCompanyPartnerMasterData?.PanCardURL ?? ""}
+                availableFilesURL={editingCompanyPartnerMasterData?.row._panCardFiles ?? ""}
                 allowedTypes={[
                   "image/jpeg",
                   "image/png",
@@ -1594,7 +1760,7 @@ const AddCompany: React.FC = () => {
                 error={errorsCompanyPartner.AadharCardURL}
                 value={companyPartnerAadhaarCardURLFiles}
                 onChange={setCompanyPartnerAadhaarCardURLFiles}
-                availableFilesURL={editingCompanyPartnerMasterData?.AadharCardURL ?? ""}
+                availableFilesURL={editingCompanyPartnerMasterData?.row._aadharCardFiles ?? ""}
                 allowedTypes={[
                   "image/jpeg",
                   "image/png",
@@ -1618,7 +1784,7 @@ const AddCompany: React.FC = () => {
                 error={errorsCompanyPartner.PhotoURL}
                 value={companyPartnerPhotoURLFiles}
                 onChange={setCompanyPartnerPhotoURLFiles}
-                availableFilesURL={editingCompanyPartnerMasterData?.PhotoURL ?? ""}
+                availableFilesURL={editingCompanyPartnerMasterData?.row._photoFiles ?? ""}
                 allowedTypes={[
                   "image/jpeg",
                   "image/png",
@@ -1638,6 +1804,22 @@ const AddCompany: React.FC = () => {
         </div>
       </Modal>
 
+
+      {/* DELETE CONFIRMATION APPLICANT MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpenCompanyPartner}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpenCompanyPartner(false)
+          setDeleteCompanyPartnerData(null)
+        }}
+        onConfirm={handleDeleteCompanyPartner}
+        title="You are about to delete a company partner?"
+        message="Deleting this company partner will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
     </div >
   )
 }

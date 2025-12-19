@@ -17,7 +17,6 @@ import { filterAadhaar, filterEmail, filterGST, filterMobile, filterPAN, filterR
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { SPECIALITY_TYPE } from "@/core/constants";
 import { fetchProjectMasterDropdown } from "../services/ProjectMasterDropDown";
-import { fetchDesignationMasterDropdown } from "@/features/designationMaster/designationMasterDropDown";
 
 const initialFormState = (): AddUpdateChannelPartnerMasterRequest => ({
     ChannelPartnerId: 0,
@@ -27,7 +26,7 @@ const initialFormState = (): AddUpdateChannelPartnerMasterRequest => ({
     MobileNumber: '',
     AlternativeMobileNumber: '',
     EmailId: '',
-    AdharCardNumber: '',
+    AadharCardNumber: '',
     PanNumber: '',
     PanCardURL: null,
     RemovePanCardURL: '',
@@ -37,10 +36,9 @@ const initialFormState = (): AddUpdateChannelPartnerMasterRequest => ({
     Speciality: '',
     OfficeAddress: '',
     ProjectId: '',
-    AdharCardURL: null,
+    AadharCardURL: null,
     ProjectName: '',
-    DesignationMasterId: '',
-    DesignationName: ''
+   
 });
 
 export const AddUpdateChannelPartnerMaster: React.FC = () => {
@@ -132,9 +130,9 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                             EmailId: e.EmailId ?? prev.EmailId,
                             MobileNumber: e.MobileNumber ?? prev.MobileNumber,
                             AlternativeMobileNumber: e.AlternativeMobileNumber ?? prev.AlternativeMobileNumber,
-                            AdharCardNumber: e.AdharCardNumber ?? prev.AdharCardNumber,
+                            AadharCardNumber: e.AadharCardNumber ?? prev.AadharCardNumber,
                             PanNumber: e.PanNumber ?? prev.PanNumber,
-                            AdharCardURL: null,
+                            AadharCardURL: null,
                             RemoveAadharCardURL: '',
                             PanCardURL: null,
                             RemovePanCardURL: '',
@@ -143,18 +141,16 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                             Speciality: e.Speciality ?? prev.Speciality,
                             OfficeAddress: e.OfficeAddress ?? prev.OfficeAddress,
                             ProjectId: e.ProjectId ?? prev.ProjectId,
-                            DesignationMasterId: e.DesignationMasterId ?? prev.DesignationMasterId,
                         }));
                         setPanCardURLFiles([])
                         setPanCardURL(e.PanCardURL ? e.PanCardURL.split(",") : []);
                         setRemovePanCardUrls([])
                         setAadharCardURLFiles([]);
-                        setAadharCardURL(e.AdharCardURL ? e.AdharCardURL.split(",") : []);
+                        setAadharCardURL(e.AadharCardURL ? e.AadharCardURL.split(",") : []);
                         setRemoveAadharCardUrls([]);
 
                         setDropdownLabels({
                             projectName: e.ProjectName || '',
-                            designationName: e.DesignationName || "",
 
                         });
                     }
@@ -189,11 +185,12 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
             newErrors.Name = 'Name is required.';
         }
 
-        if (formData.EmailId?.trim() && !isValidEmail(formData.EmailId.trim())) {
-            newErrors.EmailId = 'Enter a valid email address.'
+        if (!formData.EmailId?.trim()) {
+            newErrors.EmailId = 'Email is required.';
         } else if (!isValidEmail(formData.EmailId.trim())) {
-            newErrors.EmailId = 'Enter a Valid email address.'
+            newErrors.EmailId = 'Enter a valid email address.';
         }
+
 
         if (!formData.MobileNumber?.trim()) {
             newErrors.MobileNumber = 'Mobile Number is required.'
@@ -201,10 +198,10 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
             newErrors.MobileNumber = 'Enter a valid 10-digit mobile number.'
         }
 
-        if (!formData.AdharCardNumber?.trim()) {
-            newErrors.AdharCardNumber = 'Aadhar Number is required.'
-        } else if (!isValidAadhaar(formData.AdharCardNumber.trim())) {
-            newErrors.AdharCardNumber = 'Enter a valid 12-digit Aadhar Number.'
+        if (!formData.AadharCardNumber?.trim()) {
+            newErrors.AadharCardNumber = 'Aadhar Number is required.'
+        } else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
+            newErrors.AadharCardNumber = 'Enter a valid 12-digit Aadhar Number.'
         }
 
         if (!formData.PanNumber?.trim()) {
@@ -216,9 +213,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
         if (!formData.CompanyName) {
             newErrors.CompanyName = ' Company Name is required.';
         }
-        if (!formData.DesignationMasterId) {
-            newErrors.DesignationMasterId = 'Designation Name is required.';
-        }
+       
 
         if (!formData.RERANumber) {
             newErrors.RERANumber = ' RERA Number is required.';
@@ -228,12 +223,14 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
             newErrors.GSTNumber = 'GST Number is required.';
         }
 
-        if (!panCardURLFiles.length && !panCardURL) {
+        if (!panCardURLFiles.length && !panCardURL.length) {
             newErrors.PanCardURL = "Pan Card is required.";
         }
-         if (!aadharCardURLFiles.length && !aadharCardURL) {
-            newErrors.AadharCardURL = "Pan Card is required.";
+
+        if (!aadharCardURLFiles.length && !aadharCardURL.length) {
+            newErrors.AadharCardURL = "Aadhar Card is required.";
         }
+
 
         if (!formData.Speciality) {
             newErrors.Speciality = 'Speciality is required.';
@@ -264,14 +261,13 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
         fd.append("EmailId", formData.EmailId ?? "");
         fd.append("MobileNumber", formData.MobileNumber ?? "");
         fd.append("AlternativeMobileNumber", formData.AlternativeMobileNumber ?? "");
-        fd.append("AdharCardNumber", formData.AdharCardNumber ?? "");
+        fd.append("AadharCardNumber", formData.AadharCardNumber ?? "");
         fd.append("PanNumber", formData.PanNumber ?? "");
         fd.append("RERANumber", formData.RERANumber ?? "");
         fd.append("GSTNumber", formData.GSTNumber ?? "");
         fd.append("OfficeAddress", formData.OfficeAddress ?? "");
         fd.append("Speciality", formData.Speciality ?? "");
         fd.append("ProjectId", formData.ProjectId ?? "");
-        fd.append("DesignationMasterId", formData.DesignationMasterId ?? "");
 
         panCardURLFiles.forEach(file => {
             if (file instanceof File) {
@@ -450,14 +446,14 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     type="text"
                                     required
                                     label="Aadhar Number"
-                                    value={formData.AdharCardNumber ?? ""}
+                                    value={formData.AadharCardNumber ?? ""}
                                     onChange={(e) => {
                                         const digits = e.target.value.replace(/\D/g, '');
-                                        handleFieldChange("AdharCardNumber", filterAadhaar(digits));
+                                        handleFieldChange("AadharCardNumber", filterAadhaar(digits));
                                     }}
                                     placeholder="Enter Aadhar Number"
                                     maxLength={12}
-                                    error={errors.AdharCardNumber}
+                                    error={errors.AadharCardNumber}
                                 />
                             </div>
 
@@ -487,12 +483,13 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     allowedTypes={[
                                         "image/jpeg",
                                         "image/png",
-                                        "application/pdf",
-                                    ]}
+                                        "image/jpg"]}
                                     maxFiles={5}
                                     maxSizeMB={50}
                                     onRemoveExisting={(url) => {
                                         setRemoveAadharCardUrls(prev => [...prev, url]);
+                                        setAadharCardURL(prev => prev.filter(u => u !== url));
+
                                     }}
 
                                 />
@@ -562,6 +559,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                 />
                             </div>
                         </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
 
                             <div>
@@ -576,19 +574,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     error={errors.ProjectId}
                                 />
                             </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                            <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Designation"
-                                    title="Select Designation"
-                                    size="lg"
-                                    dataFetchCallBack={fetchDesignationMasterDropdown}
-                                    onSelected={(item) => handleFieldChange("DesignationMasterId", String(item.value))}
-                                    initialValue={createDropdownInitialValue(formData.DesignationMasterId, dropdownLabels.designationName)}
-                                    error={errors.DesignationMasterId}
-                                />
-                            </div>
+
                             <div>
                                 <SinglePageSelection
                                     label="Speciality"
@@ -599,7 +585,6 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     error={errors.Speciality}
                                 />
                             </div>
-
                         </div>
 
                         <div>

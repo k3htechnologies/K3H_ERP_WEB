@@ -474,7 +474,7 @@ export const BranchAssociationsMaster: React.FC = () => {
                 :
                 ''}
             </div>
-            <div className="flex justify-between items-center pt-4">
+            <div className="flex justify-end items-center pt-4">
 
               {canAction && (
                 <>

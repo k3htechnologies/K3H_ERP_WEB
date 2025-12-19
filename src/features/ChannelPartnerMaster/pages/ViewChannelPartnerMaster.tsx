@@ -62,7 +62,7 @@ const ViewChannelPartnerMaster: React.FC = () => {
 
             {/* Header Details*/}
 
-            <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-300">
+            <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-gray-300">
 
                 <div className="flex items-center gap-8">
                     <button
@@ -110,12 +110,12 @@ const ViewChannelPartnerMaster: React.FC = () => {
 
                         {/* Basic Deatils */}
                         <div className="grid grid-cols-2 gap-x-10 gap-y-6 p-4">
-                            <FieldItem label=" Mobile Number" value={editChannelPartnerData.MobileNumber ? `+91 ${editChannelPartnerData.MobileNumber}` : '-'} />
+                            <FieldItem label="Contact No:" value={editChannelPartnerData.MobileNumber ? `+91 ${editChannelPartnerData.MobileNumber}` : '-'} />
                             <FieldItem label="E-Mail ID" value={editChannelPartnerData.EmailId} />
+                            <FieldItem label="Alternative Contact No:" value={editChannelPartnerData.AlternativeMobileNumber ? `+91 ${editChannelPartnerData.AlternativeMobileNumber}` : '-'} />
                             <FieldItem label="Speciality" value={editChannelPartnerData.Speciality} />
-                            <FieldItem label="Designation" value={editChannelPartnerData.DesignationName} />
                             <FieldItem label="PAN Number" value={editChannelPartnerData.PanNumber} />
-                            <FieldItem label="Aadhar Number" value={editChannelPartnerData.AdharCardNumber} />
+                            <FieldItem label="Aadhar Number" value={editChannelPartnerData.AadharCardNumber} />
                             <FieldItem label="GST Number" value={editChannelPartnerData.GSTNumber} />
                             <FieldItem label="RERA Number" value={editChannelPartnerData.RERANumber} />
                             <FieldItem label="Office Address" value={editChannelPartnerData.OfficeAddress} />

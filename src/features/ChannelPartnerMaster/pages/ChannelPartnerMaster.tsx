@@ -36,6 +36,7 @@ export const ChannelPartnerMaster: React.FC = () => {
   // USE NAVIGATE
   const navigate = useNavigate();
 
+
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 

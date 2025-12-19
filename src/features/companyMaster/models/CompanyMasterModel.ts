@@ -126,7 +126,7 @@ export interface AddUpdateCompanyPartnerRequest {
 
 export interface DeleteCompanyMasterRequest {
     CompanyId: number
-    UniqueKey: string
+    Uniquekey: string
 }
 
 export type CompanyMasterListResponse = ApiResponse<CompanyMasterData[]>;

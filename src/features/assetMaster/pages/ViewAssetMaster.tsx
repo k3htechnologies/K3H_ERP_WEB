@@ -62,8 +62,6 @@ const ViewAssetPage: React.FC = () => {
     //#endregion
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
-
-
             <HeaderActionBar
                 titleText={'Asset Master'}
                 cancelText="Cancel"

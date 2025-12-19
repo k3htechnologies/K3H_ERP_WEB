@@ -554,53 +554,16 @@ const AddUpdateTenant: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-        render: (value, row,index) => {
+        fixed:'left',
+        render: (value, row) => {
           return (
-            <div className="flex items-center justify-end ml-2 gap-1">
+            
               <MultiImageViewer
                 images={parseDocumentUrls(row.PhotoURL)}
                 title="Applicant Document"
                 triggerLabel={value || '-'}
               />
-              <div className="w-[34px] flex justify-center">
-
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    handleEditApplicant(row,index)
-                  }}
-                  color='transparent'
-                  isborderRadius
-                  size='sm'
-                  title="Edit Applicant"
-                  leftIcon={<Edit className="h-4 w-4" />}
-                >
-                </Button>
-              </div>
-
-
-              <div className="w-[34px] flex justify-center">
-
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                     handleConfirmationDialogBoxOpen(row, index);
-
-                  }}
-                  color="transparent"
-                  isborderRadius
-                  size="sm"
-                  style={{ color: 'red' }}
-                  title="Delete"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-
-              </div>
-
-            </div>
+            
           );
         }
       },
@@ -760,6 +723,50 @@ const AddUpdateTenant: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value) => value || '-'
+      },
+        {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row,index) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleEditApplicant(row,index)
+                  }}
+                  color='transparent'
+                  isborderRadius
+                  size='sm'
+                  title="Edit Applicant"
+                  leftIcon={<Edit className="h-4 w-4" />}
+                >
+                </Button>
+
+              <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                     handleConfirmationDialogBoxOpen(row, index);
+
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  size="sm"
+                  style={{ color: 'red' }}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+            </div>
+          ) : null
+
+
+        )
       }
 
 

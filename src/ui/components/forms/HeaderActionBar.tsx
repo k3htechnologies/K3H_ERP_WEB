@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "./Button";
-import { ArrowLeft, Edit } from "lucide-react";
+import { ArrowLeft, ChevronLeft, Edit } from "lucide-react";
 
 interface HeaderActionBarProps {
     titleText?: string;
@@ -29,12 +29,13 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
 
             <div className="flex items-center gap-2">
                 <Button
-                    color="cancel"
+                    color="primary"
                     size="sm"
-                    className="hover:bg-gray-100 rounded-md"
                     onClick={onCancel}
-                    leftIcon={ <ArrowLeft className="w-5 h-5 text-gray-700" />}
+                    leftIcon={<ChevronLeft className="w-5 h-5 text-gray-700" strokeWidth={3.0}    />}
                     title={cancelText}
+                    style={{ backgroundColor: "#DBEAFE" }}
+                    className="hover:bg-[#DBEAFE]"
                 >
                 </Button>
 
@@ -49,10 +50,8 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                     size="sm"
                     title="Edit Info"
                     onClick={onEdit}
-                    className="px-6"
                     disabled={isLoading}
-                >
-                    <Edit className="w-4 h-4" /> {EditText}
+                > {EditText}
                 </Button>
             ) : (
                 ""

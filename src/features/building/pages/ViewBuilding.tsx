@@ -3,7 +3,6 @@ import { Loader } from '@/core/utils/loader';
 import type { BuildingData, BuildingDetailsData, BuildingDocumentData, BuildingKeyContactDetails, FilterWithPaginationBuildingDetailsRequest, FilterWithPaginationBuildingDocumentRequest } from '@/features/building/models/BuildingModel';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import Accordion from '@/ui/components/Card/Accordion';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
@@ -16,7 +15,7 @@ import Tabs from '@/ui/components/Tab/Tab';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
-import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 export const ViewBuilding: React.FC = () => {
 
@@ -73,7 +72,7 @@ export const ViewBuilding: React.FC = () => {
     const [activeTab, setActiveTab] = useState<string>(buildingTabList[0].id);
 
     //#endregion
-    
+
     //#region INIT
     useEffect(() => {
 
@@ -417,122 +416,139 @@ export const ViewBuilding: React.FC = () => {
                     }}
                 />
             </div>
-            
+
             {activeTab === 'Overview' && (
-                <div className="grid grid-cols-12 gap-6 mt-6">
-                    {/* Left column: profile card */}
-                    <div className="col-span-5">
-                        <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-                            <div className="pt-10 px-2 pb-2">
-                                <div className="text-center">
-                                    <h3 className="text-lg font-semibold text-gray-900">{buildingData?.BuildingName} <span className="inline-block ml-2 text-green-500">●</span></h3>
-                                    <div className="mt-2 flex justify-center gap-2">
-                                        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">{buildingData?.CTSNumber}</span>
-                                    </div>
-                                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
 
-                                {/* Basic Info box */}
-                                <div className="mt-6 rounded border border-gray-200">
+                    {/* ================= LEFT SIDE (2/3) ================= */}
+                    <div className="lg:col-span-2 space-y-6">
 
-                                    <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                        <h4 className="font-semibold text-sm text-gray-800">
-                                            Basic information
-                                        </h4>
-                                    </div>
+                        {/* ================= HEADER / BASIC DETAILS ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Basic Details
+                            </h4>
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                                <FieldItem label="Building Name" value={buildingData?.BuildingName ?? '-'} />
+                                <FieldItem label="CTS Number" value={buildingData?.CTSNumber ?? '-'} />
+                                <FieldItem label="Road Width" value={buildingData?.RoadWidth ?? '-'} />
+                            </div>
 
-                                    <div className="p-4">
-                                        <FieldItem label="Building Name" value={buildingData?.BuildingName ?? '-'} isRow />
-                                        <FieldItem label="CTS Number" value={buildingData?.CTSNumber ?? '-'} isRow />
-                                        <FieldItem label="Road Width" value={buildingData?.RoadWidth ?? '-'} isRow />
-                                        <FieldItem label="Land Ownership" value={buildingData?.LandOwnershipType ?? '-'} isRow />
-                                        <FieldItem label="Litigation" value={buildingData?.IsLitigation ? 'Yes' : 'No'} isRow />
-                                        <FieldItem label="Litigation Remarks" value={buildingData?.LitigationRemarks ?? '-'} isRow />
-                                    </div>
-                                </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                                <FieldItem label="Land Ownership" value={buildingData?.LandOwnershipType ?? '-'} />
+                                <FieldItem label="Litigation" value={buildingData?.IsLitigation ? 'Yes' : 'No'} />
+                                <FieldItem label="Litigation Remarks" value={buildingData?.LitigationRemarks ?? '-'} />
+                            </div>
+                        </section>
 
+                        {/* ================= LOCATION DETAILS ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Location Details
+                            </h4>
 
-                                {/* LOCATION */}
-                                <div className="mt-6 rounded border border-gray-200">
-
-                                    <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                        <h4 className="font-semibold text-sm text-gray-800">
-                                            Location Details
-                                        </h4>
-                                    </div>
-
-
-                                    <div className="p-4">
-                                        <FieldItem label="Country" value={buildingData?.CountryName ?? '-'} isRow />
-                                        <FieldItem label="State" value={buildingData?.StateName ?? '-'} isRow />
-                                        <FieldItem label="District" value={buildingData?.DistrictName ?? '-'} isRow />
-                                        <FieldItem label="City" value={buildingData?.CityName ?? '-'} isRow />
-                                    </div>
-                                </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                                <FieldItem label="Country" value={buildingData?.CountryName ?? '-'} />
+                                <FieldItem label="State" value={buildingData?.StateName ?? '-'} />
+                                <FieldItem label="District" value={buildingData?.DistrictName ?? '-'} />
 
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Right column: details and accordions */}
-                    <div className="col-span-7 space-y-4">
-
-                        <div className="grid grid-cols-1 gap-4">
-
-                            <div className="bg-white border border-gray-200 rounded p-4 shadow-sm">
-                                <h4 className="font-semibold mb-3">Property Information</h4>
-
-                                <FieldItem label="Total Plot Area (sqft)" value={buildingData?.TotalPlotAreaSqFt ?? '-'} isRow withBorder />
-                                <FieldItem label="Utilized Area (sqft)" value={buildingData?.TotalUnitsAreaUtilizedSqFt ?? '-'} isRow withBorder />
-                                <FieldItem label="Total Units" value={buildingData?.TotalNumberOfUnits ?? '-'} isRow withBorder />
-                                <FieldItem label="Floors" value={buildingData?.NumberOfFloors ?? '-'} isRow />
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                                <FieldItem label="City" value={buildingData?.CityName ?? '-'} />
                             </div>
-                        </div>
+                        </section>
 
-                        {/* accordion cards */}
-                        <div className="space-y-3">
-                            <Accordion
-                                items={[
-                                    {
-                                        key: "garden",
-                                        title: "Garden Information",
-                                        defaultOpen: true,
-                                        content: (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Is Garden" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
-                                                <FieldItem label="Garden Area (sqft)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
-                                            </div>
-                                        )
-                                    },
-                                    {
-                                        key: "religious",
-                                        title: "Religious Structure",
-                                        defaultOpen: true,
-                                        content: (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Is Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
-                                                <FieldItem label="Structure Area (sqft)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
-                                            </div>
-                                        )
-                                    },
-                                    {
-                                        key: "fsi",
-                                        title: "FSI / TDR",
-                                        defaultOpen: true,
-                                        content: (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="FSI / TDR Utilization (sqft)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />
-                                                <FieldItem label="Property Age (Years)" value={buildingData?.PropertyAgeYears ?? '-'} />
-                                            </div>
-                                        )
-                                    }
-                                ]}
-                            />
+                        {/* ================= PROPERTY INFORMATION ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Property Information
+                            </h4>
 
-                        </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                                <FieldItem label="Total Plot Area (sqft)" value={buildingData?.TotalPlotAreaSqFt ?? '-'} />
+                                <FieldItem label="Utilized Area (sqft)" value={buildingData?.TotalUnitsAreaUtilizedSqFt ?? '-'} />
+                                <FieldItem label="Total Units" value={buildingData?.TotalNumberOfUnits ?? '-'} />
+
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                                <FieldItem label="Floors" value={buildingData?.NumberOfFloors ?? '-'} />
+                            </div>
+                        </section>
+
+                       
+                    </div>
+
+                    {/* ================= RIGHT SIDE (1/3) ================= */}
+                    <div className="lg:col-span-1 space-y-6">
+
+                        {/* ================= QUICK ACTIONS ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Action Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Created By" value={buildingData?.CreatedBy ?? '-'} />
+                                <FieldItem
+                                    label="Created Date"
+                                    value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.CreatedDate ?? '-')}
+                                />
+                                <FieldItem label="Modified By" value={buildingData?.ModifiedBy ?? '-'} />
+                                <FieldItem
+                                    label="Modified Date"
+                                    value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.ModifiedDate ?? '-')}
+                                />
+                            </div>
+                        </section>
+
+                         {/* ================= GARDERN INFORMATION ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Garden Information
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Is Garden Structure" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
+                                <FieldItem label="Garden Area (sqft)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
+
+                            </div>
+
+                        </section>
+
+                        {/* ================= GARDERN INFORMATION ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Religious Information
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Is Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
+                                <FieldItem label="Structure Area (sqft)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
+
+                            </div>
+
+                        </section>
+
+                        {/* ================= FSI / TDR INFORMATION ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                FSI / TDR Information
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="FSI / TDR Utilization (sqft)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />
+                                <FieldItem label="Property Age (Years)" value={buildingData?.PropertyAgeYears ?? '-'} />
+
+                            </div>
+
+                        </section>
 
                     </div>
+
                 </div>
+
             )}
 
             {activeTab === 'Document' && (

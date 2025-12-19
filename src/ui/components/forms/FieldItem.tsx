@@ -2,6 +2,7 @@ import React from 'react';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { COLORS } from '@/core/constants';
+import { Eye } from 'lucide-react';
 
 export const FieldItem: React.FC<{
   label: string;
@@ -10,6 +11,7 @@ export const FieldItem: React.FC<{
   className?: string;
   withBorder?: boolean;
   urls?: string | null;
+  isIcon?: boolean;
 }> = ({
   label,
   value,
@@ -17,6 +19,7 @@ export const FieldItem: React.FC<{
   className = '',
   withBorder = false,
   urls = null,
+  isIcon = false
 }) => {
     const displayValue = value !== undefined && value !== null && value !== '' ? String(value) : '-';
     const borderClass = withBorder ? 'border-b border-[#135bec2e]' : '';
@@ -25,6 +28,16 @@ export const FieldItem: React.FC<{
     const imageUrls = parseDocumentUrls(urls);
     const hasDocs = imageUrls.length > 0;
 
+    const EyeTrigger = (
+      <button
+        type="button"
+        className="flex items-center gap-1 text-sm font-medium p-0"
+        style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
+      >
+        <Eye size={16} />
+      </button>
+    );
+
     const rowGridStyle: React.CSSProperties = {
       display: 'grid',
       gridTemplateColumns: '180px 16px 1fr',
@@ -32,6 +45,7 @@ export const FieldItem: React.FC<{
       alignItems: 'center',
       width: '100%',
     };
+
 
     // ROW layout: label : value
     if (isRow) {
@@ -89,15 +103,22 @@ export const FieldItem: React.FC<{
           <MultiImageViewer
             images={imageUrls}
             title={label}
+            isIcon
             triggerLabel={
-              // inline button — make it able to wrap with min-w-0 + whitespace-normal
-              <button
-                type="button"
-                className="text-sm text-[#1D1D1D] font-medium text-left break-words whitespace-normal max-w-[400px] cursor-pointer p-0 min-w-0 underline"
-                style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
-              >
-                {displayValue}
-              </button>
+              isIcon === true ? (
+                <span className="flex items-center gap-2 text-sm font-medium">
+                  <span>{displayValue}</span>
+                  {EyeTrigger}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className="text-sm font-medium text-left break-words whitespace-normal max-w-[400px] cursor-pointer p-0 min-w-0 underline"
+                  style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
+                >
+                  {displayValue}
+                </button>
+              )
             }
           />
         ) : (

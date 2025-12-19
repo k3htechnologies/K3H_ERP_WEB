@@ -23,7 +23,6 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import { Edit, Trash2 } from 'lucide-react';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { updateFilter } from '@/core/utils/filterHelper';
@@ -461,7 +460,6 @@ export const HolidayMaster: React.FC = () => {
                       handleConfirmationDialogBoxOpen(data)
                     }}
                   >
-                    <Trash2 className="h-5 w-5" />
                     Delete
                   </Button>
 
@@ -475,7 +473,6 @@ export const HolidayMaster: React.FC = () => {
                       handleEditHolidayMaster(data)
                     }}
                   >
-                    <Edit className="h-5 w-5" />
                     Edit
                   </Button>
                 </>

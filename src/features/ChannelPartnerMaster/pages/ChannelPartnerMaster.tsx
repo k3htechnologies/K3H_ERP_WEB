@@ -70,8 +70,12 @@ export const ChannelPartnerMaster: React.FC = () => {
   //#region INIT
   useEffect(() => {
     const incoming = location.state?.listState;
+
     const listState = incoming ?? {
-      page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: ''
+      page: 1, filters:
+        {} as FilterInfo,
+      sortInfo: undefined,
+      searchTerm: ''
     };
 
     setPagination({ currentPage: listState.page ?? pagination.currentPage });
@@ -147,7 +151,7 @@ export const ChannelPartnerMaster: React.FC = () => {
       undefined,
       (error: any) => addToast({ type: 'error', title: error.message }),
       undefined,
-      'Loading Channel Patner Data'
+      'Loading Channel Partner Data'
     );
   };
   //#endregion
@@ -184,7 +188,10 @@ export const ChannelPartnerMaster: React.FC = () => {
     setPagination({ currentPage: 1 });
     loadChannelPartnerMaster(1, {});
     try {
-      navigate(location.pathname, { replace: true, state: {} });
+      navigate(location.pathname, {
+        replace: true,
+        state: {}
+      });
     } catch {
     }
   };
@@ -262,7 +269,7 @@ export const ChannelPartnerMaster: React.FC = () => {
         // Find the column label for sorting
 
         const params: FilterPullExcelSample = {
-          TableName: 'CHANNEL PATNER MASTER'
+          TableName: 'CHANNEL PARTNER'
         }
 
         const response = await technicalService.apiCallPullExcelSample(params);
@@ -282,17 +289,14 @@ export const ChannelPartnerMaster: React.FC = () => {
 
   const handleExcelImportChannelPartnerMaster = () => excelImportChannelPartnerMaster()
   const handleDownloadExcelSampleChannelPartnerMaster = () => downloadExcelSampleChannelPartnerMaster()
-
-
-
   //#endregion
+
   //#region API | SERVICES CALL TO GET CHANNEL PARTNER
   const getChannelPartnerMaster = async (filterParams: FilterWithPaginationChannelPartnerMasterRequest) => {
 
     return await ChannelPartnerMasterService.apiCallPullChannelPartnerMaster(filterParams);
   }
   //#endregion
-
 
   //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = useCallback((page: number) => {
@@ -326,7 +330,7 @@ export const ChannelPartnerMaster: React.FC = () => {
 
   //#region NAVIGATE TO  VIEW CHANNEL PARTNER
   const handleNavigateToView = (row: ChannelPartnerMasterData) => {
-    navigate('/channelPartnerMaster/view', {
+    navigate('/channelPartner/view', {
       state: {
         editChannelPartnerData: row,
         listState: {
@@ -341,14 +345,13 @@ export const ChannelPartnerMaster: React.FC = () => {
 
   //#region NAVIGATE TO ADD CHANNEL PARTNER
   const handleAddChannelPartnerModal = useCallback(() => {
-    navigate('/channelPartnerMaster/add', {
+    navigate('/channelPartner/add', {
       state: {
         fromList: true,
         listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
       }
     });
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
-
   //#endregion
 
   //#region TABLE COLUMNS
@@ -379,7 +382,7 @@ export const ChannelPartnerMaster: React.FC = () => {
         <TooltipText
           text={value || 'N/A'}
           maxWidth="170px"
-          tooltipThreshold={15}
+          tooltipThreshold={25}
         />
       )
     },
@@ -403,7 +406,7 @@ export const ChannelPartnerMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'left',
-      render: (value) => value ? `+91 ${value}`:'-'
+      render: (value) => value ? `+91 ${value}` : '-'
     },
 
     {

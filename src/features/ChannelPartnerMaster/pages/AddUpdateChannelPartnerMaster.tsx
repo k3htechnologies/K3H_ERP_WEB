@@ -8,7 +8,6 @@ import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateChannelPartnerMasterRequest, FilterWithPaginationChannelPartnerMasterRequest } from "../models/ChannelPartnerMasterModel";
-
 import { ChannelPartnerMasterService } from "../services/ChannelPartnerMasterService";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
@@ -18,6 +17,7 @@ import { filterAadhaar, filterEmail, filterGST, filterMobile, filterPAN, filterR
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { SPECIALITY_TYPE } from "@/core/constants";
 import { fetchProjectMasterDropdown } from "../services/ProjectMasterDropDown";
+import { fetchDesignationMasterDropdown } from "@/features/designationMaster/designationMasterDropDown";
 
 const initialFormState = (): AddUpdateChannelPartnerMasterRequest => ({
     ChannelPartnerId: 0,
@@ -27,21 +27,20 @@ const initialFormState = (): AddUpdateChannelPartnerMasterRequest => ({
     MobileNumber: '',
     AlternativeMobileNumber: '',
     EmailId: '',
-    AadharCardNumber: '',
+    AdharCardNumber: '',
     PanNumber: '',
-    PanCardURL: '',
+    PanCardURL: null,
     RemovePanCardURL: '',
     RemoveAadharCardURL: '',
     GSTNumber: '',
     RERANumber: '',
     Speciality: '',
     OfficeAddress: '',
-    VillageMasterId: 0,
     ProjectId: '',
-    AadharCardURL: '',
-    ProjectName: ''
-
-
+    AdharCardURL: null,
+    ProjectName: '',
+    DesignationMasterId: '',
+    DesignationName: ''
 });
 
 export const AddUpdateChannelPartnerMaster: React.FC = () => {
@@ -51,13 +50,15 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
-    // ADD UPDATE URL
-    const [PanCardURLFiles, setPanCardURLFiles] = useState<(File | string)[]>([]);
-    const [AadharCardURLFiles, setAadharCardURLFiles] = useState<(File | string)[]>([]);
+    // AADHAR CARD URL
+    const [panCardURLFiles, setPanCardURLFiles] = useState<(File | string)[]>([]);
+    const [panCardURL, setPanCardURL] = useState<string[]>([]);
+    const [removePanCardUrls, setRemovePanCardUrls] = useState<string[]>([]);
 
-    // REMOVE URL
-    const [removePanCardURL, setRemovePanCardURL] = useState<string[]>([]);
-    const [removeAadharCardURL, setRemoveAadharCardURL] = useState<string[]>([]);
+    // PAN CARD URL
+    const [aadharCardURLFiles, setAadharCardURLFiles] = useState<(File | string)[]>([]);
+    const [aadharCardURL, setAadharCardURL] = useState<string[]>([]);
+    const [removeAadharCardUrls, setRemoveAadharCardUrls] = useState<string[]>([]);
 
     // NAVIGATE
     const navigate = useNavigate();
@@ -75,7 +76,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     //#endregion
 
-   
+
     const [dropdownLabels, setDropdownLabels] = useState<{
         designationName?: string;
         projectName?: string
@@ -131,24 +132,30 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                             EmailId: e.EmailId ?? prev.EmailId,
                             MobileNumber: e.MobileNumber ?? prev.MobileNumber,
                             AlternativeMobileNumber: e.AlternativeMobileNumber ?? prev.AlternativeMobileNumber,
-                            AadharCardNumber: e.AadharCardNumber ?? prev.AadharCardNumber,
+                            AdharCardNumber: e.AdharCardNumber ?? prev.AdharCardNumber,
                             PanNumber: e.PanNumber ?? prev.PanNumber,
-                            AadharCardURL: e.AadharCardURL ?? prev.AadharCardURL,
-                            PanCardURL: e.PanCardURL ?? prev.PanCardURL,
+                            AdharCardURL: null,
+                            RemoveAadharCardURL: '',
+                            PanCardURL: null,
+                            RemovePanCardURL: '',
                             RERANumber: e.RERANumber ?? prev.RERANumber,
                             GSTNumber: e.GSTNumber ?? prev.GSTNumber,
                             Speciality: e.Speciality ?? prev.Speciality,
                             OfficeAddress: e.OfficeAddress ?? prev.OfficeAddress,
-                            ProjectId: e.ProjectId ?? prev.ProjectId
-
+                            ProjectId: e.ProjectId ?? prev.ProjectId,
+                            DesignationMasterId: e.DesignationMasterId ?? prev.DesignationMasterId,
                         }));
+                        setPanCardURLFiles([])
+                        setPanCardURL(e.PanCardURL ? e.PanCardURL.split(",") : []);
+                        setRemovePanCardUrls([])
                         setAadharCardURLFiles([]);
-                        setPanCardURLFiles([]);
-                        setRemoveAadharCardURL([]);
-                        setRemovePanCardURL([])
+                        setAadharCardURL(e.AdharCardURL ? e.AdharCardURL.split(",") : []);
+                        setRemoveAadharCardUrls([]);
 
                         setDropdownLabels({
-                            projectName: e.ProjectName ?? ''
+                            projectName: e.ProjectName || '',
+                            designationName: e.DesignationName || "",
+
                         });
                     }
                 } else {
@@ -176,7 +183,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
 
     } => {
         const newErrors: { [key: string]: string } = {};
-        debugger
+
 
         if (!formData.Name) {
             newErrors.Name = 'Name is required.';
@@ -184,6 +191,8 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
 
         if (formData.EmailId?.trim() && !isValidEmail(formData.EmailId.trim())) {
             newErrors.EmailId = 'Enter a valid email address.'
+        } else if (!isValidEmail(formData.EmailId.trim())) {
+            newErrors.EmailId = 'Enter a Valid email address.'
         }
 
         if (!formData.MobileNumber?.trim()) {
@@ -192,20 +201,10 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
             newErrors.MobileNumber = 'Enter a valid 10-digit mobile number.'
         }
 
-
-        if (!formData.AlternativeMobileNumber?.trim()) {
-            newErrors.AlternativeMobileNumber = 'Mobile Number is required.'
-        } else if (!isValidMobile(formData.AlternativeMobileNumber.trim())) {
-            newErrors.AlternativeMobileNumber = 'Enter a valid 10-digit mobile number.'
-        }
-
-        if (!formData.AadharCardNumber?.trim()) {
-            newErrors.AadharCardNumber = 'Aadhar Number is required.'
-        } else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
-            newErrors.AadharCardNumber = 'Enter a valid 12-digit Aadhar Number.'
-        }
-        if (!formData.AadharCardURL) {
-            newErrors.AadharCardURL = ' Aadhar Card is required.';
+        if (!formData.AdharCardNumber?.trim()) {
+            newErrors.AdharCardNumber = 'Aadhar Number is required.'
+        } else if (!isValidAadhaar(formData.AdharCardNumber.trim())) {
+            newErrors.AdharCardNumber = 'Enter a valid 12-digit Aadhar Number.'
         }
 
         if (!formData.PanNumber?.trim()) {
@@ -217,6 +216,9 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
         if (!formData.CompanyName) {
             newErrors.CompanyName = ' Company Name is required.';
         }
+        if (!formData.DesignationMasterId) {
+            newErrors.DesignationMasterId = 'Designation Name is required.';
+        }
 
         if (!formData.RERANumber) {
             newErrors.RERANumber = ' RERA Number is required.';
@@ -226,8 +228,11 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
             newErrors.GSTNumber = 'GST Number is required.';
         }
 
-        if (!formData.PanCardURL) {
-            newErrors.PanCardURL = 'Pan Card is required.';
+        if (!panCardURLFiles.length && !panCardURL) {
+            newErrors.PanCardURL = "Pan Card is required.";
+        }
+         if (!aadharCardURLFiles.length && !aadharCardURL) {
+            newErrors.AadharCardURL = "Pan Card is required.";
         }
 
         if (!formData.Speciality) {
@@ -236,6 +241,10 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
 
         if (!formData.OfficeAddress) {
             newErrors.OfficeAddress = 'Office Address is required.';
+        }
+
+        if (!formData.ProjectId) {
+            newErrors.ProjectId = 'Project Name is Required.';
         }
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -255,40 +264,38 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
         fd.append("EmailId", formData.EmailId ?? "");
         fd.append("MobileNumber", formData.MobileNumber ?? "");
         fd.append("AlternativeMobileNumber", formData.AlternativeMobileNumber ?? "");
-        fd.append("AadharCardNumber", formData.AadharCardNumber ?? "");
+        fd.append("AdharCardNumber", formData.AdharCardNumber ?? "");
         fd.append("PanNumber", formData.PanNumber ?? "");
         fd.append("RERANumber", formData.RERANumber ?? "");
         fd.append("GSTNumber", formData.GSTNumber ?? "");
         fd.append("OfficeAddress", formData.OfficeAddress ?? "");
         fd.append("Speciality", formData.Speciality ?? "");
-        fd.append("VillageMasterId", String(formData.VillageMasterId ?? 0));
         fd.append("ProjectId", formData.ProjectId ?? "");
+        fd.append("DesignationMasterId", formData.DesignationMasterId ?? "");
 
-        PanCardURLFiles.forEach(file => {
+        panCardURLFiles.forEach(file => {
             if (file instanceof File) {
                 fd.append("PanCardURL", file);
             }
         });
 
-        fd.append("RemovePanCardURL", removePanCardURL.join(","));
+        fd.append("RemovePanCardURL", removePanCardUrls.join(","));
 
-        AadharCardURLFiles.forEach(file => {
+        aadharCardURLFiles.forEach(file => {
             if (file instanceof File) {
                 fd.append("AadharCardURL", file);
             }
         });
 
-        fd.append("RemoveAadharCardURL", removeAadharCardURL.join(","));
+        fd.append("RemoveAadharCardURL", removeAadharCardUrls.join(","));
 
         return fd;
     };
-
-
     //#endregion
 
     //#region HANDLE ADD AND UPDATE CHANNEL PARTNER MASTER
     const handleAddUpdateChannelPartnerMaster = async (e: React.FormEvent) => {
-        debugger
+
         e.preventDefault();
 
         setErrors({});
@@ -310,7 +317,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
 
             async () => {
                 const payload = PushChannelPartnerMasterFormData();
-
+                console.log(payload)
                 const response = await ChannelPartnerMasterService.apiCallAddUpdateChannelPartnerMaster(payload);
 
                 if (E.isRight(response)) {
@@ -332,7 +339,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                         searchTerm: '',
                     };
 
-                    navigate("/channelPartnerMaster",
+                    navigate("/channelPartner",
                         {
                             state: { listState }
                         });
@@ -355,7 +362,6 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
 
     return (
 
-
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
             {/* Loader */}
@@ -371,7 +377,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Channel Partner Details</h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                             <div>
                                 <Input
                                     type="text"
@@ -400,6 +406,9 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     placeholder="Enter valid email id"
                                 />
                             </div>
+
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                             <div>
                                 <Input
                                     label='Mobile Number'
@@ -417,13 +426,9 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                 />
 
                             </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
-
                             <div>
                                 <Input
                                     type="text"
-                                    required
                                     label='Alternative Contact No.'
                                     value={formData.AlternativeMobileNumber ?? ""}
                                     maxLength={10}
@@ -436,30 +441,8 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     error={errors.AlternativeMobileNumber}
                                 />
                             </div>
-                            <div>
-                                <Input
-                                    type="text"
-                                    required
-                                    label='Company Name'
-                                    value={formData.CompanyName ?? ""}
-                                    onChange={(e) => handleFieldChange("CompanyName", e.target.value)}
-                                    placeholder="Enter Company Name"
-                                    maxLength={250}
-                                    error={errors.CompanyName}
-                                />
-                            </div>
-                            <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Project"
-                                    title="Select Project"
-                                    size="lg"
-                                    required
-                                    dataFetchCallBack={fetchProjectMasterDropdown}
-                                    onSelected={(item) => handleFieldChange('ProjectId', String(item.value))}
-                                    initialValue={createDropdownInitialValue(formData.ProjectId, dropdownLabels.projectName)}
-                                    error={errors.ProjectId}
-                                />
-                            </div>
+
+
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                             <div>
@@ -467,14 +450,14 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     type="text"
                                     required
                                     label="Aadhar Number"
-                                    value={formData.AadharCardNumber ?? ""}
+                                    value={formData.AdharCardNumber ?? ""}
                                     onChange={(e) => {
                                         const digits = e.target.value.replace(/\D/g, '');
-                                        handleFieldChange("AadharCardNumber", filterAadhaar(digits));
+                                        handleFieldChange("AdharCardNumber", filterAadhaar(digits));
                                     }}
                                     placeholder="Enter Aadhar Number"
                                     maxLength={12}
-                                    error={errors.AadharCardNumber}
+                                    error={errors.AdharCardNumber}
                                 />
                             </div>
 
@@ -498,9 +481,9 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     label=' Upload Aadhar Card '
                                     required
                                     error={errors.AadharCardURL}
-                                    value={AadharCardURLFiles}
+                                    value={aadharCardURLFiles}
                                     onChange={setAadharCardURLFiles}
-                                    availableFilesURL={formData?.AadharCardURL ?? ""}
+                                    availableFilesURL={aadharCardURL ?? ""}
                                     allowedTypes={[
                                         "image/jpeg",
                                         "image/png",
@@ -508,28 +491,47 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     ]}
                                     maxFiles={5}
                                     maxSizeMB={50}
+                                    onRemoveExisting={(url) => {
+                                        setRemoveAadharCardUrls(prev => [...prev, url]);
+                                    }}
+
                                 />
-                            </div>{formData?.AadharCardURL} hi jyoti
+                            </div>
                             <div>
                                 <MultiFilePicker
                                     label=' Upload Pan Card'
                                     required
                                     error={errors.PanCardURL}
-                                    value={PanCardURLFiles}
+                                    value={panCardURLFiles}
                                     onChange={setPanCardURLFiles}
-                                    availableFilesURL={formData?.PanCardURL ?? ""}
+                                    availableFilesURL={panCardURL ?? ""}
                                     allowedTypes={[
                                         "image/jpeg",
                                         "image/png",
-                                        "application/pdf",
-                                    ]}
+                                        "image/jpg"]}
                                     maxFiles={5}
                                     maxSizeMB={50}
+                                    onRemoveExisting={(url) => {
+                                        setRemovePanCardUrls(prev => [...prev, url]);
+                                    }}
                                 />
+
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+                            <div>
+                                <Input
+                                    type="text"
+                                    required
+                                    label='Company Name'
+                                    value={formData.CompanyName ?? ""}
+                                    onChange={(e) => handleFieldChange("CompanyName", e.target.value)}
+                                    placeholder="Enter Company Name"
+                                    maxLength={250}
+                                    error={errors.CompanyName}
+                                />
+                            </div>
                             <div>
                                 <Input
                                     label='RERA Number'
@@ -563,6 +565,31 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
 
                             <div>
+                                <SingleSelectDropdownWithPagination
+                                    label="Project"
+                                    title="Select Project"
+                                    size="lg"
+                                    required
+                                    dataFetchCallBack={fetchProjectMasterDropdown}
+                                    onSelected={(item) => handleFieldChange('ProjectId', String(item.value))}
+                                    initialValue={createDropdownInitialValue(formData.ProjectId, dropdownLabels.projectName)}
+                                    error={errors.ProjectId}
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                            <div>
+                                <SingleSelectDropdownWithPagination
+                                    label="Designation"
+                                    title="Select Designation"
+                                    size="lg"
+                                    dataFetchCallBack={fetchDesignationMasterDropdown}
+                                    onSelected={(item) => handleFieldChange("DesignationMasterId", String(item.value))}
+                                    initialValue={createDropdownInitialValue(formData.DesignationMasterId, dropdownLabels.designationName)}
+                                    error={errors.DesignationMasterId}
+                                />
+                            </div>
+                            <div>
                                 <SinglePageSelection
                                     label="Speciality"
                                     required
@@ -572,7 +599,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     error={errors.Speciality}
                                 />
                             </div>
-                           
+
                         </div>
 
                         <div>

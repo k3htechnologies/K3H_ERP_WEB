@@ -13,7 +13,6 @@ import type {
 
 import { BranchMasterService } from '@/features/branchMaster/services/BranchMasteService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
-import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
@@ -541,7 +540,6 @@ export const BranchMaster: React.FC = () => {
                       handleConfirmationDialogBoxOpen(data)
                     }}
                   >
-                    <Trash2 className="h-5 w-5" />
                     Delete
                   </Button>
                 ) : <div style={{ width: "120px", height: "44px" }}></div>}
@@ -556,7 +554,6 @@ export const BranchMaster: React.FC = () => {
                     handleEditBranchMaster(data)
                   }}
                 >
-                  <Edit className="h-5 w-5" />
                   Edit
                 </Button>
               </>

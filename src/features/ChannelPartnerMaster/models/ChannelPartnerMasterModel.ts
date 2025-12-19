@@ -26,12 +26,13 @@ export interface ChannelPartnerMasterData {
     RERANumber: string
     PanNumber: string
     PanCardURL: string
-    AadharCardURL: string
-    AadharCardNumber: string
+    AdharCardURL: string
+    AdharCardNumber: string
     Speciality: string
     ProjectId: string
     ProjectName: string
-    VillageMasterId: number
+    DesignationMasterId:string
+    DesignationName:string
     Status: string
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -51,17 +52,18 @@ export interface AddUpdateChannelPartnerMasterRequest {
     MobileNumber: string
     AlternativeMobileNumber: string
     EmailId: string
-    AadharCardNumber: string
+    AdharCardNumber: string
     PanNumber: string
-    PanCardURL: string
-    AadharCardURL: string
+    PanCardURL: File[] | null
+    AdharCardURL: File[] | null
     RemovePanCardURL: string | ''
     RemoveAadharCardURL: string | ''
     GSTNumber: string
     RERANumber: string
     Speciality: string
     OfficeAddress: string
-    VillageMasterId: number | 0
+    DesignationMasterId:string
+    DesignationName:string
     ProjectId: string
     ProjectName: string
 

@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   DeductionMasterData,
@@ -41,7 +40,7 @@ export const DeductionMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
@@ -104,7 +103,7 @@ export const DeductionMaster: React.FC = () => {
     return await loadDeductions(page, filters);
   }
 
-  const loadDeductions = async (page: number, filterParams: FilterInfo) => {
+  const loadDeductions = async (page: number, filterParam: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,

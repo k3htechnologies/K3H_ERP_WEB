@@ -23,7 +23,6 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
-import { Edit } from 'lucide-react';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
@@ -220,12 +219,6 @@ export const BranchAssociationsMaster: React.FC = () => {
 
   }
   //#endregion
-
-  
-  const handleResetForm = () => {
-    setFormData(initialFormState());   
-    setErrors({});                    
-  };
 
   //#region CLEAR BRANCH ASSOCIATIONS 
   const clearsearchBranchAssociations = () => {
@@ -495,7 +488,7 @@ export const BranchAssociationsMaster: React.FC = () => {
                       handleEditBranchAssociationsMaster(data)
                     }}
                   >
-                    <Edit className="h-5 w-5" />
+                   
                     Edit
                   </Button>
                 </>

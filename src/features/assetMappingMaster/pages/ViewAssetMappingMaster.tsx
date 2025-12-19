@@ -1,5 +1,4 @@
 import { Button } from "@/ui/components/forms";
-import { Edit, Trash2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { useState } from "react";
@@ -153,7 +152,7 @@ const ViewAssetMappingMaster: React.FC = () => {
                                     handleEditAssetMappingMaster(editAssetData!);
                                 }}
                             >
-                                <Edit className="w-4 h-4" /> Edit Asset
+                                 Edit Asset
                             </Button>
 
                             <Button
@@ -166,7 +165,7 @@ const ViewAssetMappingMaster: React.FC = () => {
                                     setIsConfirmationDialogBoxOpen(true);
                                 }}
                             >
-                                <Trash2 className="h-5 w-5" /> Delete
+                                 Delete
                             </Button>
 
                             <Button

@@ -24,7 +24,6 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import { Edit, Trash2 } from 'lucide-react';
 import Checkbox from '@/ui/components/forms/Checkbox';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { updateFilter } from '@/core/utils/filterHelper';
@@ -531,7 +530,6 @@ export const LeaveTypeMaster: React.FC = () => {
                       handleConfirmationDialogBoxOpen(data)
                     }}
                   >
-                    <Trash2 className="h-5 w-5" />
                     Delete
                   </Button>
 
@@ -545,7 +543,6 @@ export const LeaveTypeMaster: React.FC = () => {
                       handleEditLeaveTypeMaster(data)
                     }}
                   >
-                    <Edit className="h-5 w-5" />
                     Edit
                   </Button>
                 </>

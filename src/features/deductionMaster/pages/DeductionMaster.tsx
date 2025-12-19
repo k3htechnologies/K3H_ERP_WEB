@@ -103,7 +103,7 @@ export const DeductionMaster: React.FC = () => {
     return await loadDeductions(page, filters);
   }
 
-  const loadDeductions = async (page: number, filterParams: FilterInfo) => {
+  const loadDeductions = async (page: number, filterParam: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -500,7 +500,7 @@ export const DeductionMaster: React.FC = () => {
 
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Deduction"
+          addTitle="Add"
           onAdd={handleAddDeductionModal}
 
 

@@ -1,6 +1,6 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
-export interface FilterWithPaginationChannelPartnerMasterRequest{
+export interface FilterWithPaginationChannelPartnerMasterRequest {
     PageSize: number
     PageNumber: number
     IsCheckPermission?: boolean
@@ -20,10 +20,17 @@ export interface ChannelPartnerMasterData {
     CompanyName: string
     MobileNumber: string
     EmailId: string
-    Address: string
+    OfficeAddress: string
     AlternativeMobileNumber: string
     GSTNumber: string
-    PANNumber: string
+    RERANumber: string
+    PanNumber: string
+    PanCardURL: string
+    AadharCardURL: string
+    AadharCardNumber: string
+    Speciality: string
+    ProjectId: string
+    ProjectName: string
     Status: string
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -35,27 +42,31 @@ export interface ChannelPartnerMasterData {
     LastModifiedDate: string | null
 }
 
-export interface AddUpdateChannelPartnerMasterRequest{
+export interface AddUpdateChannelPartnerMasterRequest {
     ChannelPartnerId?: number | 0
     Uniquekey: string | null
     Name: string
     CompanyName: string
     MobileNumber: string
-    AlternativeMobileNumber:string
+    AlternativeMobileNumber: string
     EmailId: string
-    AadharCardNumber:string
-    PanNumber:string
-    PanCardURL:string
+    AadharCardNumber: string
+    PanNumber: string
+    PanCardURL: File[] | null
+    AadharCardURL: File[] | null
     RemovePanCardURL: string | ''
+    RemoveAadharCardURL: string | ''
     GSTNumber: string
-    RERANumber:string
-    Speciality:string
-    OfficeAddress:string
-    VillageMasterId:number | 0
-    ProjectId: number | 0
+    RERANumber: string
+    Speciality: string
+    OfficeAddress: string
+    ProjectId: string
+    ProjectName: string
+
+
 }
 
-export interface DeleteChannelPartnerMasterRequest{
+export interface DeleteChannelPartnerMasterRequest {
     ChannelPartnerId: number
     Uniquekey: string
 }

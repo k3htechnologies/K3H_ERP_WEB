@@ -1,4 +1,3 @@
-
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AssetMasterData } from "../models/AssetMasterModel";
 import { useState } from "react";
@@ -154,6 +153,72 @@ const ViewAssetPage: React.FC = () => {
 
                     </section>
 
+<<<<<<< HEAD
+=======
+                            <div className="p-4">
+                                <FieldItem label="Asset Brand" value={editAssetData.AssetBrand} isRow />
+                                <FieldItem label="Asset Model" value={editAssetData.AssetModel} isRow />
+                                <FieldItem label="Serial Number" value={editAssetData.SerialNumber} isRow />
+                                <FieldItem label="Status" value={editAssetData.Status} isRow />
+                            </div>
+                        </div>
+
+                        {/* ACTIONS */}
+                        <div className="flex justify-center gap-3 mt-6">
+                            <Button
+                                color='blue'
+                                size='sm'
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleEditAssetMaster(editAssetData!);
+                                }}
+                            >
+                                 Edit Asset
+                            </Button>
+
+                            <Button
+                                color="gray"
+                                variant="solid"
+                                size="sm"
+                                colorMode="light"
+                                onClick={() => {
+                                    setDeleteAssetMasterDetailsData(editAssetData);
+                                    setIsConfirmationDialogBoxOpen(true);
+                                }}
+                            >
+                                Delete
+                            </Button>
+
+                            <Button
+                                color="transparent"
+                                variant="transparent_border"
+                                size="sm"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleBackToListAssetMaster();
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+
+                        {/* PURCHASE DETAILS */}
+                        <div className="mt-6 rounded border border-gray-300 bg-white ">
+                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg">
+                                <h4 className="font-semibold text-sm text-gray-800">Purchase Details</h4>
+                            </div>
+
+                            <div className="p-4">
+                                <FieldItem label="Purchase Date" value={editAssetData.PurchaseDate ? formatDate_dd_MonthName_yy(editAssetData.PurchaseDate) : ""} isRow />
+                                <FieldItem label="Warranty Expiry Date" value={editAssetData.WarrantyExpiryDate ? formatDate_dd_MonthName_yy(editAssetData.WarrantyExpiryDate) : ""} isRow />
+                                <FieldItem label="Supplier Name" value={editAssetData.SupplierName} isRow />
+                                <FieldItem label="Asset Cost" value={editAssetData.AssetCost} isRow />
+                            </div>
+                        </div>
+                    </div>
+>>>>>>> origin/payroll_jyoti
                 </div>
 
                 {/* ================= RIGHT SIDE (1/3) ================= */}

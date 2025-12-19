@@ -282,7 +282,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
 
       <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+      <div className="flex-1 space-y-2 px-6 py-3 pb-30 overflow-y-auto thin-scroll ">
 
         <form onSubmit={handleAddUpdateAssetMaster}>
 
@@ -365,7 +365,11 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   label='AssetType'
                   value={formData.AssetType ?? ""}
                   onChange={(e) => handleFieldChange("AssetType", e.target.value)}
+<<<<<<< HEAD
                   placeholder="Enter Asset Type"
+=======
+                  placeholder="Enter AssetType"
+>>>>>>> origin/payroll_jyoti
                   maxLength={250}
                   error={errors.AssetType}
                 />
@@ -422,6 +426,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
         </form>
       </div>
 
+<<<<<<< HEAD
 
       <BottomActionBar
         cancelText="Cancel"
@@ -433,6 +438,33 @@ export const AddUpdateAssetMaster: React.FC = () => {
         }}
         isLoading={isLoading}
       />
+=======
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
+        <Button
+          color="transparent"
+          variant='transparent_border'
+          size="sm"
+          onClick={() => { navigate(-1); }}
+          className="px-6"
+        >
+          Cancel
+        </Button>
+
+        <Button
+          color="green"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            handleAddUpdateAssetMaster(e);
+          }}
+          className="px-6"
+          disabled={isLoading}
+        >
+          {isAddMode ? "Add Asset" : "Update Asset"}
+        </Button>
+      </div>
+>>>>>>> origin/payroll_jyoti
     </div>
   );
 };

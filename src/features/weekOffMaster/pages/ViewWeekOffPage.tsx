@@ -1,5 +1,4 @@
 import { Button } from "@/ui/components/forms";
-import { Edit, Trash2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
@@ -155,7 +154,6 @@ const ViewWeekOffMaster: React.FC = () => {
                                     handleEditWeekOffMaster(editWeekOffMasterData!);
                                 }}
                             >
-                                <Edit className="w-4 h-4" /> Edit WeekOff
                             </Button>
 
                             <Button
@@ -168,7 +166,6 @@ const ViewWeekOffMaster: React.FC = () => {
                                     setIsConfirmationDialogBoxOpen(true);
                                 }}
                             >
-                                <Trash2 className="h-5 w-5" /> Delete
                             </Button>
 
                             <Button

@@ -74,6 +74,9 @@ import Tenant from '@/features/tenant/pages/Tenant';
 import AddUpdateTenant from '@/features/tenant/pages/AddUpdateTenant';
 import ViewTenant from '@/features/tenant/pages/ViewTenant';
 import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
+import ChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/ChannelPartnerMaster';
+import AddUpdateChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/AddUpdateChannelPartnerMaster';
+import ViewChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/ViewChannelPartnerMaster';
 import BuildingDescription from '@/features/building/pages/BuildingDescription';
 import BuildingDocument from '@/features/building/pages/BuildingDocument';
 import TenantDocument from '@/features/tenant/pages/TenantDocument';
@@ -127,7 +130,7 @@ function App() {
           {/* Public Routes */}
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
-
+         
           {/* Protected Routes with Layout */}
           <Route
             path="/"
@@ -177,6 +180,9 @@ function App() {
             <Route path="WeekOffMaster/view" element={<ViewWeekOffMaster />} />
             <Route path="WeekOffMaster/add/:WeekOffMasterId?" element={<AddUpdateWeekOffMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
+            <Route path="channelPartner" element={<ChannelPartnerMaster />} />
+            <Route path="channelPartner/view" element={<ViewChannelPartnerMaster />} />
+            <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartnerMaster />} />
             <Route path="vendor" element={<Vendor />} />
             <Route path="vendor/view" element={<ViewVendor />} />
             <Route path="projectMaster" element={<ProjectMaster />} />

@@ -389,6 +389,29 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE CHANNEL PARTNER MASTER COLUMNS
+    storeChannelPartnerMasterTableColumns:( columns: string): void => {
+        try{
+            localStorage.setItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_MASTER_SELECTED_COLUMNS, columns);
+        }catch(error){
+            console.error('Error Channel Partner Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET CHANNEL PARTNER MASTER COLUMNS
+    getChannelPartnerMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_MASTER_SELECTED_COLUMNS);
+            }catch (error) {
+                console.error('Error reading Channel Partner Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
     //#region STORE HOLIDAY MASTER COLUMNS
     storeHolidayMasterTableColumns: (columns: string): void => {
         try {

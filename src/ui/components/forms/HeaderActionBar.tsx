@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "./Button";
-import { ArrowLeft, ChevronLeft, Edit } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 interface HeaderActionBarProps {
     titleText?: string;

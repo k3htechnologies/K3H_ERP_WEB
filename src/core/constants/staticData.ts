@@ -60,7 +60,7 @@ export const MASTER_DATA = {
 
     applicant_type: ['Applicant', 'Co - Applicant'],
 
-    speciality_type:['Commercial Sale','Commercial Leasing','Residential Sale','Office Sale','Office Leasing '],
+    speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing '],
 
     carpet_area_type: ['MOFA', 'RERA'],
 
@@ -112,3 +112,7 @@ export const RESIDENTIAL_FLAT_CONFIGURATION = toOptions(MASTER_DATA.residential_
 export const COMMERCIAL_FLAT_CONFIGURATION = toOptions(MASTER_DATA.commercial_flat_configuration_Type)
 export const FLAT_UNIT_FACING = toOptions(MASTER_DATA.flat_unit_facing)
 export const APPLICANT_TYPE = toOptions(MASTER_DATA.applicant_type)
+export const CARPET_AREA_TYPE = toOptions(MASTER_DATA.carpet_area_type)
+export const TENURE = toOptions(MASTER_DATA.tenure)
+export const UNIT_SQFT_LUMPSUM = toOptions(MASTER_DATA.unit_sqft_lumsum)
+export const SPECIALITY_TYPE = toOptions(MASTER_DATA.speciality_type)

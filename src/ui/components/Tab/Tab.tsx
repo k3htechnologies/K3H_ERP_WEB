@@ -48,7 +48,7 @@ export const Tabs: React.FC<TabsProps> = ({
               onMouseEnter={() => setHoveredTab(tab.id)}
               onMouseLeave={() => setHoveredTab(null)}
               style={{
-                flex: islarge ? "0 0 calc(25% - 8px)" : "unset",
+                flex: islarge ? "0 0 calc(20% - 10px)" : "unset",
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",

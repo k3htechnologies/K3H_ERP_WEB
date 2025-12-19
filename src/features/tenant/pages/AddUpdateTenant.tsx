@@ -171,7 +171,8 @@ const AddUpdateTenant: React.FC = () => {
 
   const [formDataForApplicant, setFormDataForApplicant] = useState<AddUpdateTenantApplicant>(() => initialFormStateApplicantDetails());
 
-  const [editingApplicantData, setEditingApplicantData] = useState<TenantApplicantWithFiles | null>(null)
+  const [editingApplicantData, setEditingApplicantData] = useState<{row: TenantApplicantWithFiles ; index: number } | null>(null);
+
   const [isAddUpdateApplicantModalOpen, setIsAddUpdateApplicantModalOpen] = useState(false)
 
 
@@ -460,7 +461,7 @@ const AddUpdateTenant: React.FC = () => {
 
   //#region EDIT TENANT APPLICANT
 
-  const handleEditApplicant = useCallback((row: TenantApplicantWithFiles) => {
+  const handleEditApplicant = useCallback((row: TenantApplicantWithFiles, index: number) => {
 
     const applicantData: AddUpdateTenantApplicant = {
       TenantApplicantId: row.TenantApplicantId ?? 0,
@@ -500,7 +501,7 @@ const AddUpdateTenant: React.FC = () => {
     };
 
 
-    setEditingApplicantData(row);
+    setEditingApplicantData({row,index});
     setFormDataForApplicant(applicantData);
 
     // PHOTO
@@ -553,7 +554,7 @@ const AddUpdateTenant: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-        render: (value, row) => {
+        render: (value, row,index) => {
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
               <MultiImageViewer
@@ -567,7 +568,7 @@ const AddUpdateTenant: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
-                    handleEditApplicant(row)
+                    handleEditApplicant(row,index)
                   }}
                   color='transparent'
                   isborderRadius
@@ -585,14 +586,7 @@ const AddUpdateTenant: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
-
-                    const idx = applicantList.findIndex(a =>
-                      (a.TenantApplicantId != null && row.TenantApplicantId != null)
-                        ? a.TenantApplicantId === row.TenantApplicantId
-                        : a === row
-                    );
-
-                    handleConfirmationDialogBoxOpen(row, idx >= 0 ? idx : 0);
+                     handleConfirmationDialogBoxOpen(row, index);
 
                   }}
                   color="transparent"
@@ -845,12 +839,7 @@ const AddUpdateTenant: React.FC = () => {
 
     }
 
-    const idToUse =
-      editingApplicantData?.TenantApplicantId ??
-      (formDataForApplicant.TenantApplicantId && formDataForApplicant.TenantApplicantId > 0
-        ? formDataForApplicant.TenantApplicantId
-        : 0);
-
+    
 
     const applicantToSave: TenantApplicant & {
       _photoFiles?: (File | string)[];
@@ -870,7 +859,7 @@ const AddUpdateTenant: React.FC = () => {
       RemoveGSTNumberURL?: string;
       RemoveChequeURL?: string;
     } = {
-      TenantApplicantId: idToUse,
+      TenantApplicantId:  editingApplicantData?.row.TenantApplicantId ?? 0,
       TenantId: formDataForApplicant.TenantId ?? 0,
       BuildingId: formDataForApplicant.BuildingId ?? 0,
       ProjectId: formDataForApplicant.ProjectId ?? 0,
@@ -926,13 +915,15 @@ const AddUpdateTenant: React.FC = () => {
       RemoveChequeURL: removedChequeURLs.join(','),
     };
 
-    setApplicantList(prevList => {
-      if (editingApplicantData && editingApplicantData.TenantApplicantId) {
-        return prevList.map(p => (p.TenantApplicantId === idToUse ? applicantToSave : p));
-      } else {
-        return [...prevList, applicantToSave];
+     setApplicantList(prev => {
+      if (editingApplicantData) {
+        const updated = [...prev];
+        updated[editingApplicantData.index] = applicantToSave;
+        return updated;
       }
+      return [...prev, applicantToSave];
     });
+
 
     setIsAddUpdateApplicantModalOpen(false);
     setEditingApplicantData(null);
@@ -954,6 +945,7 @@ const AddUpdateTenant: React.FC = () => {
   const handleDeleteApplicant = () => {
 
     if (!deleteTenantApplicantData) return;
+    
     const removeIndex = deleteTenantApplicantData.index;
 
     if (removeIndex < 0) {
@@ -1354,7 +1346,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.PhotoURL}
                 value={applicantPhotoFiles}
                 onChange={setApplicantPhotoFiles}
-                availableFilesURL={editingApplicantData?._photoFiles}
+                availableFilesURL={editingApplicantData?.row._photoFiles}
                 allowedTypes={['image/jpeg', 'image/png']}
                 maxFiles={1}
                 maxSizeMB={5}
@@ -1388,7 +1380,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.AadharCardURL}
                 value={aadharCardFiles}
                 onChange={setAadharCardFiles}
-                availableFilesURL={editingApplicantData?._aadharFiles}
+                availableFilesURL={editingApplicantData?.row._aadharFiles}
                 allowedTypes={[
                   'image/jpeg',
                   'image/png',
@@ -1426,7 +1418,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.PanCardURL}
                 value={panCardFiles}
                 onChange={setPanCardFiles}
-                availableFilesURL={editingApplicantData?._panFiles}
+                availableFilesURL={editingApplicantData?.row._panFiles}
                 allowedTypes={[
                   'image/jpeg',
                   'image/png',
@@ -1464,7 +1456,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.PassportURL}
                 value={passportFiles}
                 onChange={setPassportFiles}
-                availableFilesURL={editingApplicantData?._passportFiles}
+                availableFilesURL={editingApplicantData?.row._passportFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={3}
                 maxSizeMB={10}
@@ -1492,7 +1484,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.DrivingLicenseURL}
                 value={drivingLicenseFiles}
                 onChange={setDrivingLicenseFiles}
-                availableFilesURL={editingApplicantData?._drivingFiles}
+                availableFilesURL={editingApplicantData?.row._drivingFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={3}
                 maxSizeMB={10}
@@ -1520,7 +1512,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.VotingIdURL}
                 value={votingIdFiles}
                 onChange={setVotingIdFiles}
-                availableFilesURL={editingApplicantData?._votingFiles}
+                availableFilesURL={editingApplicantData?.row._votingFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={3}
                 maxSizeMB={10}
@@ -1548,7 +1540,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.GSTNumberURL}
                 value={gstFiles}
                 onChange={setGstFiles}
-                availableFilesURL={editingApplicantData?._gstFiles}
+                availableFilesURL={editingApplicantData?.row._gstFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={5}
                 maxSizeMB={10}
@@ -1594,7 +1586,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.ChequeURL}
                 value={chequeFiles}
                 onChange={setChequeFiles}
-                availableFilesURL={editingApplicantData?._chequeFiles}
+                availableFilesURL={editingApplicantData?.row._chequeFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={2}
                 maxSizeMB={10}

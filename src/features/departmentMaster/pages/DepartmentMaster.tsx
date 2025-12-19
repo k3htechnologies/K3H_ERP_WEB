@@ -362,8 +362,8 @@ export const DepartmentMaster: React.FC = () => {
 
             <TooltipText
               text={value || 'N/A'}
-              maxWidth="250px"
-              tooltipThreshold={30}
+              maxWidth="300px"
+              tooltipThreshold={40}
               onClick={() => handleViewDepartmentDetails(row)} // just pass a function, no need for e.preventDefault here
             />
 

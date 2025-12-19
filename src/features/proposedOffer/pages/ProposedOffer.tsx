@@ -417,7 +417,7 @@ export const ProposedOffer: React.FC = () => {
     { id: "ShiftingDetails", label: "Shifting Details" },
     { id: "LienToSocietyDetails", label: "Lien to Society Details" },
     { id: "ParkingAllotment", label: "Parking Allotment" },
-    { id: "GSTonExistingPlusFreeArea", label: "GST on Existing Plus Free Area" },
+    { id: "GSTonExistingPlusFreeArea", label: "GST on Existing + Free Area" },
     { id: "ProjectCompletion", label: "Project Completion" },
     { id: "RentDetails", label: "Rent Details" },
     { id: "ProposedPlan", label: "Proposed Plan" },

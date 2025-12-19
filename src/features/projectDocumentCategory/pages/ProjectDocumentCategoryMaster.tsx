@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -29,6 +29,7 @@ import { FieldItem } from '@/ui/components/forms/FieldItem';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { updateFilter } from '@/core/utils/filterHelper';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 const initialFormState = (): AddUpdateProjectDocumentCategoryMasterRequest => ({
   ProjectDocumentCategoryId: 0,
@@ -38,7 +39,6 @@ const initialFormState = (): AddUpdateProjectDocumentCategoryMasterRequest => ({
   OrderBy: 0
 });
 
-var projectId=2;
 
 export const ProjectDocumentCategoryMaster: React.FC = () => {
   //#region STATE MANAGEMENT
@@ -96,16 +96,17 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
   const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
+  //#region PROJECT SELECTION GET ID
+  const { projectId } = useProject();
+  //#endregion
+
   //#region INITIALIZATION
-  const hasFetchedInitialProjectDocumentCategories = useRef(false);
-
+ 
   useEffect(() => {
-    if (hasFetchedInitialProjectDocumentCategories.current) return;
-
-    hasFetchedInitialProjectDocumentCategories.current = true;
-
+     if (!projectId) return;
+    
     fetchProjectDocumentCategoryList();
-  }, []);
+  }, [projectId]);
 
   //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
@@ -120,7 +121,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
         setFormData({
           ProjectDocumentCategoryId: editingProjectDocumentCategoryMasterData.ProjectDocumentCategoryId,
           Uniquekey: editingProjectDocumentCategoryMasterData.Uniquekey || initialFormState().Uniquekey,
-          ProjectId: editingProjectDocumentCategoryMasterData.ProjectId || 0,
+          ProjectId: Number(projectId),
           ProjectDocumentCategory: editingProjectDocumentCategoryMasterData.ProjectDocumentCategoryName || '',
           OrderBy: editingProjectDocumentCategoryMasterData.OrderBy || 0
         });
@@ -157,8 +158,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
           IsCheckPermission: true,
           ProjectDocumentCategoryId: filterParams.ProjectDocumentCategoryId ? Number(filterParams.ProjectDocumentCategoryId) : 0,
           ProjectDocumentCategory: filterParams.ProjectDocumentCategory?.trim() || undefined,
-          // ProjectId: filterParams.ProjectId ? Number(filterParams.ProjectId) : undefined,
-          ProjectId: projectId,
+          ProjectId: Number(projectId),
           SortBy: sortByParam
         };
 
@@ -233,7 +233,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
           ProjectDocumentCategory: filters.ProjectDocumentCategory?.trim() || undefined,
-          ProjectId: filters.ProjectId ? Number(filters.ProjectId) : undefined,
+          ProjectId: Number(projectId),
           SortBy: sortByParam,
           ExportType: exportType
         };
@@ -305,7 +305,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
   const handleEditProjectDocumentCategoryMaster = useCallback((row: ProjectDocumentCategoryMasterData) => {
     setEditingProjectDocumentCategoryMasterData({
       ...row,
-      ProjectId: row.ProjectId || 0,
+      ProjectId: Number(projectId),
       ProjectDocumentCategoryName: row.ProjectDocumentCategoryName || '',
       OrderBy: row.OrderBy || 0
     });
@@ -549,10 +549,6 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
       newErrors.ProjectDocumentCategory = 'Project Document Category must be at least 3 characters long';
     }
 
-    if (formData.ProjectId === 0) {
-      newErrors.ProjectId = 'Project Id is required';
-    }
-
     if (formData.OrderBy === 0) {
       newErrors.OrderBy = 'Order By is required';
     }
@@ -567,7 +563,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
     return {
       ProjectDocumentCategoryId: formData.ProjectDocumentCategoryId,
       Uniquekey: formData.Uniquekey,
-      ProjectId: formData.ProjectId,
+      ProjectId: Number(projectId),
       ProjectDocumentCategory: formData.ProjectDocumentCategory,
       OrderBy: formData.OrderBy
     };
@@ -704,7 +700,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
         const params: DeleteProjectDocumentCategoryMasterRequest = {
           ProjectDocumentCategoryId: deleteProjectDocumentCategoryMasterDetailsData.ProjectDocumentCategoryId,
           Uniquekey: deleteProjectDocumentCategoryMasterDetailsData.Uniquekey,
-          ProjectId:1
+          ProjectId: Number(projectId)
         };
 
         const response =
@@ -749,216 +745,196 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
   //#endregion
 
   return (
-    
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {/* ============================================================================
+
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
 
-        <Loader loading={isLoading} title={loadingMessage}>
-          <div></div>
-        </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>
+        <div></div>
+      </Loader>
 
-        {/* ============================================================================
+      {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Project Document Category"
-          onSearchChange={v => {
-            setSearchTerm(v);
-            debouncedSearch(v);
-          }}
-          onClearSearch={clearsearchProjectDocumentCategories}
-          isShowFilterButton={false}
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters);
-            setShowFilterPopup(true);
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeProjectDocumentCategoryMasterColumnsModal(true)}
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add"
-          onAdd={handleAddProjectDocumentCategoryModal}
-          // IMPORT
-          isShowImportButton={canAction}
-          onUploadExcel={handleExcelImportProjectDocumentCategoryMaster}
-          onDownloadSampleExcel={handleDownloadExcelSampleProjectDocumentCategoryMaster}
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportProjectDocumentCategoryExcel}
-          onExportPdf={handleExportProjectDocumentCategoryPdf}
-          exportLoading={isLoading}
-        />
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Project Document Category"
+        onSearchChange={v => {
+          setSearchTerm(v);
+          debouncedSearch(v);
+        }}
+        onClearSearch={clearsearchProjectDocumentCategories}
+        isShowFilterButton={false}
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters);
+          setShowFilterPopup(true);
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeProjectDocumentCategoryMasterColumnsModal(true)}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddProjectDocumentCategoryModal}
+        // IMPORT
+        isShowImportButton={canAction}
+        onUploadExcel={handleExcelImportProjectDocumentCategoryMaster}
+        onDownloadSampleExcel={handleDownloadExcelSampleProjectDocumentCategoryMaster}
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportProjectDocumentCategoryExcel}
+        onExportPdf={handleExportProjectDocumentCategoryPdf}
+        exportLoading={isLoading}
+      />
 
-        {/* DATA TABLE PROJECT DOCUMENT CATEGORY */}
-        <DataTable
-          data={projectDocumentCategoryListForTable}
-          columns={visibleProjectDocumentCategoryMasterColumns}
-          pagination={projectDocumentCategoryMasterPaginationInfo}
-          emptyMessage="No Project Document Category Data Found"
-          fixedHeight={true}
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-          loading={isLoading}
-        />
+      {/* DATA TABLE PROJECT DOCUMENT CATEGORY */}
+      <DataTable
+        data={projectDocumentCategoryListForTable}
+        columns={visibleProjectDocumentCategoryMasterColumns}
+        pagination={projectDocumentCategoryMasterPaginationInfo}
+        emptyMessage="No Project Document Category Data Found"
+        fixedHeight={true}
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+        loading={isLoading}
+      />
 
-        {/* VIEW PROJECT DOCUMENT CATEGORY MODAL */}
-        <ViewProjectDocumentCategoryDetailsModal
-          isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false);
-            setViewProjectDocumentCategoryMasterDetailsData(null);
-          }}
-          data={viewProjectDocumentCategoryMasterDetailsData}
-        />
+      {/* VIEW PROJECT DOCUMENT CATEGORY MODAL */}
+      <ViewProjectDocumentCategoryDetailsModal
+        isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false);
+          setViewProjectDocumentCategoryMasterDetailsData(null);
+        }}
+        data={viewProjectDocumentCategoryMasterDetailsData}
+      />
 
-        {/*  ADD EDIT UPDATE PROJECT DOCUMENT CATEGORY MODAL */}
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingProjectDocumentCategoryMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingProjectDocumentCategoryMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          title={editingProjectDocumentCategoryMasterData ? 'Update Project Document Category' : 'Add Project Document Category'}
-          onSubmit={handleAddUpdateProjectDocumentCategoryMaster}
-          saveText={
-            editingProjectDocumentCategoryMasterData ? 'Update Project Document Category' : 'Save Project Document Category'
-          }
-          resetText="Reset"
-          loading={isLoading}
-          size="xl"
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4">
-              <div>
-                <Input
-                  label="Project Id"
-                  required
-                  error={errors.ProjectId}
-                  type="number"
-                  value={formData.ProjectId.toString()}
-                  onChange={e => handleFieldChange('ProjectId', Number(e.target.value))}
-                  placeholder="Enter Project Id"
-                />
-              </div>
+      {/*  ADD EDIT UPDATE PROJECT DOCUMENT CATEGORY MODAL */}
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingProjectDocumentCategoryMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingProjectDocumentCategoryMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        title={editingProjectDocumentCategoryMasterData ? 'Update Project Document Category' : 'Add Project Document Category'}
+        onSubmit={handleAddUpdateProjectDocumentCategoryMaster}
+        saveText={
+          editingProjectDocumentCategoryMasterData ? 'Update Project Document Category' : 'Save Project Document Category'
+        }
+        resetText="Reset"
+        loading={isLoading}
+        size="xl"
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4">
+            <div>
+              <Input
+                label="Project Document Category"
+                required
+                error={errors.projectDocumentCategory}
+                type="text"
+                value={formData.ProjectDocumentCategory}
+                maxLength={200}
+                onChange={e => handleFieldChange('ProjectDocumentCategory', e.target.value)}
+                placeholder="Enter Project Document Category"
+              />
+            </div>
 
-              <div>
-                <Input
-                  label="Project Document Category"
-                  required
-                  error={errors.projectDocumentCategory}
-                  type="text"
-                  value={formData.ProjectDocumentCategory}
-                  maxLength={200}
-                  onChange={e => handleFieldChange('ProjectDocumentCategory', e.target.value)}
-                  placeholder="Enter Project Document Category"
-                />
-              </div>
-
-              <div>
-                <Input
-                  label="Order By"
-                  required
-                  error={errors.OrderBy}
-                  type="number"
-                  value={formData.OrderBy.toString()}
-                  onChange={e => handleFieldChange('OrderBy', Number(e.target.value))}
-                  placeholder="Enter Order"
-                />
-              </div>
+            <div>
+              <Input
+                label="Order By"
+                required
+                error={errors.OrderBy}
+                type="number"
+                value={formData.OrderBy.toString()}
+                onChange={e => handleFieldChange('OrderBy', Number(e.target.value))}
+                placeholder="Enter Order"
+              />
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeProjectDocumentCategoryMasterColumnsModal}
-          onClose={() => setIsShowCustomizeProjectDocumentCategoryMasterColumnsModal(false)}
-          onApply={keys => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredProjectDocumentCategoryMasterColumnKeys])
-            );
+      {/* CUSTOMIZE COLUMNS MODAL */}
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeProjectDocumentCategoryMasterColumnsModal}
+        onClose={() => setIsShowCustomizeProjectDocumentCategoryMasterColumnsModal(false)}
+        onApply={keys => {
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredProjectDocumentCategoryMasterColumnKeys])
+          );
 
-            setSelectedProjectDocumentCategoryMasterColumnKeys(withRequired);
+          setSelectedProjectDocumentCategoryMasterColumnKeys(withRequired);
 
-            try {
-              LocalStorageHelper.storeProjectDocumentCategoryMasterTableColumns(JSON.stringify(withRequired));
-            } catch { }
-          }}
-          columns={projectDocumentCategoryMasterColumns}
-          selectedKeys={selectedProjectDocumentCategoryMasterColumnKeys}
-          requiredKeys={requiredProjectDocumentCategoryMasterColumnKeys}
-          title="Customize Table Columns"
-        />
+          try {
+            LocalStorageHelper.storeProjectDocumentCategoryMasterTableColumns(JSON.stringify(withRequired));
+          } catch { }
+        }}
+        columns={projectDocumentCategoryMasterColumns}
+        selectedKeys={selectedProjectDocumentCategoryMasterColumnKeys}
+        requiredKeys={requiredProjectDocumentCategoryMasterColumnKeys}
+        title="Customize Table Columns"
+      />
 
-        {/* FILTER PROJECT DOCUMENT CATEGORY MODAL */}
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Project Document Category Master"
-          onSubmit={e => {
-            e.preventDefault();
-            applyFilters();
-          }}
-          saveText="Apply Filter"
-          onCancel={() => clearFilters()}
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <Input
-                  label="Project Document Category"
-                  type="text"
-                  value={tempFilters.ProjectDocumentCategory || ''}
-                  onChange={e => handleFilterChange('ProjectDocumentCategory', e.target.value)}
-                  placeholder="Enter project document category"
-                />
-              </div>
-              <div>
-                <Input
-                  label="Project Id"
-                  type="number"
-                  value={tempFilters.ProjectId || ''}
-                  onChange={e => handleFilterChange('ProjectId', e.target.value)}
-                  placeholder="Enter project id"
-                />
-              </div>
+      {/* FILTER PROJECT DOCUMENT CATEGORY MODAL */}
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Project Document Category Master"
+        onSubmit={e => {
+          e.preventDefault();
+          applyFilters();
+        }}
+        saveText="Apply Filter"
+        onCancel={() => clearFilters()}
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <Input
+                label="Project Document Category"
+                type="text"
+                value={tempFilters.ProjectDocumentCategory || ''}
+                onChange={e => handleFilterChange('ProjectDocumentCategory', e.target.value)}
+                placeholder="Enter project document category"
+              />
             </div>
+           
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        {/* DELETE CONFIRMATION PROJECT DOCUMENT CATEGORY MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false);
-            setDeleteProjectDocumentCategoryMasterDetailsData(null);
-          }}
-          onConfirm={handleDeleteProjectDocumentCategoryMaster}
-          title="You are about to delete a project document category?"
-          message="Deleting this project document category will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
-      </div>
+      {/* DELETE CONFIRMATION PROJECT DOCUMENT CATEGORY MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false);
+          setDeleteProjectDocumentCategoryMasterDetailsData(null);
+        }}
+        onConfirm={handleDeleteProjectDocumentCategoryMaster}
+        title="You are about to delete a project document category?"
+        message="Deleting this project document category will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+    </div>
   );
 };
 

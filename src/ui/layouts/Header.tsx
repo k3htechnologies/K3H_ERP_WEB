@@ -175,6 +175,7 @@ export const Header: React.FC<HeaderProps> = ({
     //#region Project Selection
     const { projectId, setProjectId } = useProject()
     //#endregion
+    
     return (
         <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex-shrink-0 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40">
             {/* Left side - Menu toggle and title */}

@@ -116,7 +116,7 @@ export const BuildingDocument: React.FC = () => {
   //#endregion
 
   //#region MENU PERMISSIONS
-  const { canAction, canExport } = useMenuPermissions();
+  const { canAction, canExport } = useMenuPermissions('/building');
   //#endregion
 
   //#region INITIALIZATION
@@ -392,8 +392,8 @@ export const BuildingDocument: React.FC = () => {
 
             <TooltipText
               text={value || 'N/A'}
-              maxWidth="250px"
-              tooltipThreshold={30}
+              maxWidth="300px"
+              tooltipThreshold={40}
             />
 
             <div className="flex justify-between items-center">
@@ -803,7 +803,7 @@ export const BuildingDocument: React.FC = () => {
       <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
         <Button
           onClick={handleBackToListBuilding}
-          color="transparent"
+          color="cancel"
           type="button"
           size="sm"
           className="hover:bg-gray-100 rounded-md"
@@ -824,7 +824,6 @@ export const BuildingDocument: React.FC = () => {
         pagination={buildingDocumentPaginationInfo}
         emptyMessage="No Building Documents Data Found"
         fixedHeight={true}
-        maxHeight="calc(100vh - 255px)"
         recordsPerPage={20}
         className="flex-1"
         sortInfo={sortInfo}

@@ -6,6 +6,7 @@ import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type {
     CompanyMasterData,
+    DeleteCompanyMasterRequest,
     FilterWithPaginationCompanyMasterRequest
 } from '@/features/companyMaster/models/CompanyMasterModel';
 
@@ -22,10 +23,12 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { useLocation, type Location, useNavigate } from 'react-router-dom';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import { Trash2 } from 'lucide-react';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 
 export const CompanyMaster: React.FC = () => {
     //#region STATE
@@ -64,6 +67,12 @@ export const CompanyMaster: React.FC = () => {
         };
     };
 
+
+    //DELETE COMPANY MASTER STATES
+
+    const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+
+    const [deleteCompanyMasterDetailsData, setDeleteCompanyMasterDetailsData] = useState<CompanyMasterData | null>(null)
 
     //#endregion
 
@@ -295,6 +304,15 @@ export const CompanyMaster: React.FC = () => {
     }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
     //#endregion
 
+    //#region CONFIRMATION DIALOG BOX
+
+    const handleConfirmationDialogBoxOpen = (row: CompanyMasterData) => {
+        setDeleteCompanyMasterDetailsData(row)
+        setIsConfirmationDialogBoxOpen(true)
+    }
+    //#endregion
+
+
     //#region TABLE COLUMN
     const companyColumns = useMemo<TableColumn[]>(
         () => [
@@ -312,7 +330,7 @@ export const CompanyMaster: React.FC = () => {
                             text={value || 'N/A'}
                             maxWidth="250px"
                             tooltipThreshold={30}
-                            onClick={() => handleViewCompanyDetails(row)} 
+                            onClick={() => handleViewCompanyDetails(row)}
                         />
 
                     </div>
@@ -445,9 +463,40 @@ export const CompanyMaster: React.FC = () => {
                 sortable: false,
                 align: 'center',
                 render: (value) => value || '-'
+            },
+            {
+                key: 'actions',
+                label: 'Actions',
+                width: '12',
+                fixed: 'right',
+                align: 'center',
+                render: (_value, row) => (
+                    canAction && !row.NumberOfEmployee ? (
+                        <div className="flex items-center justify-center gap-2">
+
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    handleConfirmationDialogBoxOpen(row)
+                                }}
+                                color='transparent'
+                                isborderRadius
+                                size='sm'
+                                style={{
+                                    color: 'red',
+                                    padding: '4px 8px'
+                                }}
+                                title="Delete Company"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ) : null
+                )
             }
         ],
-        [canAction, handleViewCompanyDetails]
+        [canAction, handleViewCompanyDetails, handleConfirmationDialogBoxOpen]
 
     );
     //#endregion
@@ -578,119 +627,189 @@ export const CompanyMaster: React.FC = () => {
 
     //#endregion
 
+    //#region DELETE COMPANY MASTER
+
+    const handleDeleteCompanyMaster = async () => {
+        if (!deleteCompanyMasterDetailsData) return
+        await runApiWithLoader(
+
+            setIsLoading,
+            
+            setIsLoadingMessage,
+
+            async () => {
+
+                const params: DeleteCompanyMasterRequest = {
+                    CompanyId: deleteCompanyMasterDetailsData.CompanyId,
+                    Uniquekey: deleteCompanyMasterDetailsData.Uniquekey
+                }
+
+                const response = await CompanyMasterService.apiCallDeleteCompanyMaster(params);
+
+                if (E.isRight(response)) {
+
+                    setCompanyList(prevData => prevData.filter(item => item.CompanyId !== deleteCompanyMasterDetailsData.CompanyId));
+
+                    setPagination({
+                        currentPage: pagination.currentPage,
+                        totalRecords: pagination.totalRecords - 1,
+                        totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+                    });
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
+                    setIsConfirmationDialogBoxOpen(false);
+
+                    setDeleteCompanyMasterDetailsData(null);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+
+                    setIsConfirmationDialogBoxOpen(false);
+                }
+
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Delete Company'
+        )
+    }
+
+    //#endregion
+
     return (
-        
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <Loader loading={isLoading} title={loadingMessage}>
-                    <div></div>
-                </Loader>
 
-                <TableActionToolbar
-                    isShowSearchBar
-                    searchTerm={searchTerm}
-                    searchPlaceholder="Search By Company Name"
-                    onSearchChange={v => {
-                        setSearchTerm(v);
-                        debouncedSearch(v);
-                    }}
-                    onClearSearch={clearSearchCompanys}
-                    isShowFilterButton
-                    filters={filters}
-                    onOpenFilter={() => {
-                        setTempFilters(filters);
-                        setShowFilterPopup(true);
-                    }}
-                    isShowCustomizeButton
-                    onCustomize={() => setIsShowCustomizeCompanyColumnsModal(true)}
-                    // ADD
-                    isShowAddButton={canAction}
-                    addTitle="Add"
-                    onAdd={handleAddCompanyModal}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <Loader loading={isLoading} title={loadingMessage}>
+                <div></div>
+            </Loader>
 
-                    // IMPORT
-                    isShowImportButton={canAction}
-                    onUploadExcel={handleExcelImportCompanyMaster}
-                    onDownloadSampleExcel={handleDownloadExcelSampleCompanyMaster}
+            <TableActionToolbar
+                isShowSearchBar
+                searchTerm={searchTerm}
+                searchPlaceholder="Search By Company Name"
+                onSearchChange={v => {
+                    setSearchTerm(v);
+                    debouncedSearch(v);
+                }}
+                onClearSearch={clearSearchCompanys}
+                isShowFilterButton
+                filters={filters}
+                onOpenFilter={() => {
+                    setTempFilters(filters);
+                    setShowFilterPopup(true);
+                }}
+                isShowCustomizeButton
+                onCustomize={() => setIsShowCustomizeCompanyColumnsModal(true)}
+                // ADD
+                isShowAddButton={canAction}
+                addTitle="Add"
+                onAdd={handleAddCompanyModal}
 
-                    // EXPORT
-                    isShowExportButton={canExport}
-                    onExportExcel={handleExportCompanyExcel}
-                    onExportPdf={handleExportCompanyPdf}
-                    exportLoading={isLoading}
-                />
+                // IMPORT
+                isShowImportButton={canAction}
+                onUploadExcel={handleExcelImportCompanyMaster}
+                onDownloadSampleExcel={handleDownloadExcelSampleCompanyMaster}
 
-                <DataTable
-                    data={companysForTable}
-                    columns={visibleCompanyColumns}
-                    pagination={companyPaginationInfo}
-                    emptyMessage="No companys Data found"
-                    fixedHeight
-                    recordsPerPage={20}
-                    className="flex-1"
-                    sortInfo={sortInfo}
-                    onSort={handleSortColumn}
-                />
+                // EXPORT
+                isShowExportButton={canExport}
+                onExportExcel={handleExportCompanyExcel}
+                onExportPdf={handleExportCompanyPdf}
+                exportLoading={isLoading}
+            />
 
-                <CustomizeColumnsModal
-                    isOpen={isShowCustomizeCompanyColumnsModal}
-                    onClose={() => setIsShowCustomizeCompanyColumnsModal(false)}
-                    onApply={keys => {
-                        const withRequired = Array.from(new Set([...keys, ...requiredCompanyColumnKeys]));
-                        setSelectedCompanyColumnKeys(withRequired);
-                        try {
-                            LocalStorageHelper.storeCompanyMasterTableColumns?.(JSON.stringify(withRequired));
-                        } catch {
-                            // ignore
-                        }
-                    }}
-                    columns={companyColumns}
-                    selectedKeys={selectedCompanyColumnKeys}
-                    requiredKeys={requiredCompanyColumnKeys}
-                    title="Customize Table Columns"
-                />
+            <DataTable
+                data={companysForTable}
+                columns={visibleCompanyColumns}
+                pagination={companyPaginationInfo}
+                emptyMessage="No companys Data found"
+                fixedHeight
+                recordsPerPage={20}
+                className="flex-1"
+                sortInfo={sortInfo}
+                onSort={handleSortColumn}
+            />
 
-                <Modal
-                    isOpen={showFilterPopup}
-                    onClose={() => setShowFilterPopup(false)}
-                    title="Filter - Company Master"
-                    onSubmit={e => {
-                        e.preventDefault();
-                        applyFilters();
-                    }}
-                    saveText="Apply Filter"
-                    cancelText="Clear Filter"
-                    onCancel={() => clearFilters()}
-                    resetText=''
-                    size="small-half"
-                >
-                    <div className="space-y-6">
-                        <div className="space-y-4">
-                            <div>
+            <CustomizeColumnsModal
+                isOpen={isShowCustomizeCompanyColumnsModal}
+                onClose={() => setIsShowCustomizeCompanyColumnsModal(false)}
+                onApply={keys => {
+                    const withRequired = Array.from(new Set([...keys, ...requiredCompanyColumnKeys]));
+                    setSelectedCompanyColumnKeys(withRequired);
+                    try {
+                        LocalStorageHelper.storeCompanyMasterTableColumns?.(JSON.stringify(withRequired));
+                    } catch {
+                        // ignore
+                    }
+                }}
+                columns={companyColumns}
+                selectedKeys={selectedCompanyColumnKeys}
+                requiredKeys={requiredCompanyColumnKeys}
+                title="Customize Table Columns"
+            />
 
-                                <Input
-                                    label='Company Name'
-                                    type="text"
-                                    value={tempFilters.CompanyName || ''}
-                                    onChange={(e) => handleFilterChange('CompanyName', e.target.value)}
-                                    placeholder="Enter company name"
+            <Modal
+                isOpen={showFilterPopup}
+                onClose={() => setShowFilterPopup(false)}
+                title="Filter - Company Master"
+                onSubmit={e => {
+                    e.preventDefault();
+                    applyFilters();
+                }}
+                saveText="Apply Filter"
+                cancelText="Clear Filter"
+                onCancel={() => clearFilters()}
+                resetText=''
+                size="small-half"
+            >
+                <div className="space-y-6">
+                    <div className="space-y-4">
+                        <div>
 
-                                />
-                            </div>
-                            <div>
+                            <Input
+                                label='Company Name'
+                                type="text"
+                                value={tempFilters.CompanyName || ''}
+                                onChange={(e) => handleFilterChange('CompanyName', e.target.value)}
+                                placeholder="Enter company name"
 
-                                <Input
-                                    label='Company Type'
-                                    type="text"
-                                    value={tempFilters.CompanyType || ''}
-                                    onChange={(e) => handleFilterChange('CompanyType', e.target.value)}
-                                    placeholder="Enter company type"
-                                />
-                            </div>
+                            />
+                        </div>
+                        <div>
+
+                            <Input
+                                label='Company Type'
+                                type="text"
+                                value={tempFilters.CompanyType || ''}
+                                onChange={(e) => handleFilterChange('CompanyType', e.target.value)}
+                                placeholder="Enter company type"
+                            />
                         </div>
                     </div>
-                </Modal>
-            </div>
-       
+                </div>
+            </Modal>
+
+            {/* DELETE CONFIRMATION COMPANY MODAL */}
+            <ConfirmationDialogBox
+                isOpen={isConfirmationDialogBoxOpen}
+                onClose={() => {
+                    setIsConfirmationDialogBoxOpen(false)
+                    setDeleteCompanyMasterDetailsData(null)
+                }}
+                onConfirm={handleDeleteCompanyMaster}
+                title="You are about to delete a company?"
+                message="Deleting this company will permanently remove its contents."
+                confirmText="Delete"
+                cancelText="Cancel"
+                loading={isLoading}
+                variant="danger"
+            />
+        </div>
+
     );
 };
 

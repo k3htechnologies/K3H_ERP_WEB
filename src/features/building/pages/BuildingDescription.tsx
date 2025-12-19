@@ -11,7 +11,6 @@ import { filterNumbersWithDecimal, filterMobile, filterEmail, filterLetters } fr
 import type { AddUpdateBuildingDetailsRequest, FilterWithPaginationBuildingDetailsRequest, BuildingKeyContactDetails } from "@/features/building/models/BuildingModel";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 
 
 const initialFormState = (): AddUpdateBuildingDetailsRequest => ({
@@ -166,7 +165,7 @@ const BuildingDescription: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Building Details Data'
+      'Loading Building Details'
     )
   }
   //#endregion
@@ -313,7 +312,7 @@ const BuildingDescription: React.FC = () => {
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
 
-      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         <form onSubmit={handleSubmit}>
           {/* ============================================================= [BUILDING PLOT AREA] ============================================================================================= */}
           <div className="space-y-4 pb-3">
@@ -383,7 +382,7 @@ const BuildingDescription: React.FC = () => {
           </div>
 
           {/* ============================================================= [BUILDING CONSTRUCTION DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pb-3 pt-3">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Building Construction Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -450,24 +449,19 @@ const BuildingDescription: React.FC = () => {
           </div>
 
           {/* ============================================================= [BUILDING KEY CONTACT DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Building Key Contact Details</h3>
-
-            </div>
+          <div className="space-y-4 pb-3 pt-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Building Key Contact Details</h3>
 
             <div className="space-y-6">
               {contactDetailsList.map((contact, index) => (
                 <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-base font-medium text-blue-600">Contact Person :  {contact.ContactType}</h4>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="hidden">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div>
                       <Input
                         label="Contact Type"
                         type="text"
+                        readOnly
                         value={contact.ContactType || ''}
                         onChange={(e) => {
                           const updatedList = [...contactDetailsList];
@@ -522,6 +516,7 @@ const BuildingDescription: React.FC = () => {
                         }}
                         placeholder="Enter mobile number"
                         maxLength={10}
+                        leftIcon="+91"
                         error={contactDetailsErrors[index]?.MobileNumber}
                       />
                     </div>

@@ -411,7 +411,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
               overflow: "hidden",
               textOverflow: "ellipsis",
               fontWeight: "normal",
-              color: selectedItem ? theme.colors.text : "#888",
+              color: selectedItem ? theme.colors.black : "#888",
             }}
           >
             {selectedItem?.label ?? title}

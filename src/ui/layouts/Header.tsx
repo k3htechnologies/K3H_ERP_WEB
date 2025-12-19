@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Menu, Bell, User } from 'lucide-react'
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
 import { Modal } from '@/ui/components/Modal/Modal'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { FieldItem } from '@/ui/components/forms/FieldItem'
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat'
 import usePagination from '@/core/hooks/usePagination'
@@ -14,6 +14,7 @@ import useToast from '@/core/hooks/useToast'
 import { COLORS } from '@/core/constants'
 import { SinglePageSelection } from '../components/DropDown/SinglePageSelection'
 import { useProject } from '@/features/projectMaster/context/ProjectContext'
+import { shouldShowProjectSelection } from '@/core/utils/projectSelectionVisibility'
 
 interface HeaderProps {
     isSidebarOpen: boolean
@@ -30,6 +31,11 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
     //#region STATE MANAGEMENT
     const navigate = useNavigate()
+
+    //PROJECT SELECTION VISIBILITY 
+
+    const location = useLocation();
+    const showProjectSelection = shouldShowProjectSelection(location.pathname);
 
     // EMPLOYEE PROFILE MODAL
     const [isEmployeeProfileModalOpen, setIsEmployeeProfileModalOpen] = useState(false);
@@ -169,6 +175,7 @@ export const Header: React.FC<HeaderProps> = ({
     //#region Project Selection
     const { projectId, setProjectId } = useProject()
     //#endregion
+    
     return (
         <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex-shrink-0 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40">
             {/* Left side - Menu toggle and title */}
@@ -192,24 +199,26 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Right side - Project info and actions */}
             <div className="flex items-center space-x-2 lg:space-x-4 flex-shrink-0">
-                <div className="hidden sm:block w-100">
-                    <SinglePageSelection
-                        required={false}
-                        size="md"
-                        options={(emp?.ProjectData ?? []).map(opt => ({
-                            label: opt.ProjectName,
-                            value: opt.ProjectId
-                        }))}
-                        value={projectId ?? undefined}
-                        onChange={(value: string | number) => {
-                            setProjectId(Number(value))
-                        }}
-                        placeholder="Select Project"
-                        selectedTextColor="#135BEC"
-                    />
+                {showProjectSelection && (
+                    <div className="hidden sm:block w-100">
+                        <SinglePageSelection
+                            required={false}
+                            size="md"
+                            options={(emp?.ProjectData ?? []).map(opt => ({
+                                label: opt.ProjectName,
+                                value: opt.ProjectId
+                            }))}
+                            value={projectId ?? undefined}
+                            onChange={(value: string | number) => {
+                                setProjectId(Number(value))
+                            }}
+                            placeholder="Select Project"
+                            selectedTextColor="#135BEC"
+                        />
 
 
-                </div>
+                    </div>
+                )}
                 {/* Notifications - Hidden on small mobile */}
                 <button
                     onClick={handleNotificationModal}

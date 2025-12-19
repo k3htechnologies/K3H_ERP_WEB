@@ -46,6 +46,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     }
 
     const currentSize = sizeConfig[size]
+    
 
     // Variant styles
     const getVariantStyles = () => {
@@ -70,26 +71,23 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ...baseStyles,
             backgroundColor: theme.colors.backgroundSecondary,
             border: `1px solid ${theme.colors.border}`,
-            boxShadow: theme.shadows.sm,
           }
         case 'outlined':
           return {
             ...baseStyles,
             backgroundColor: 'transparent',
-            borderWidth: '2px',
           }
         default:
           return {
             ...baseStyles,
             backgroundColor: theme.colors.background,
-            boxShadow: theme.shadows.sm,
           }
       }
     }
 
     const inputStyles = {
       ...getVariantStyles(),
-      ...(disabled && {
+      ...(disabled  && {
         backgroundColor: theme.colors.backgroundSecondary,
         color: theme.colors.textLight,
         cursor: 'not-allowed',
@@ -102,8 +100,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     }
 
     const focusStyles = {
-      borderColor: error ? theme.colors.error : theme.colors.primaryLight,
-      boxShadow: error ? `0 0 0 1px ${theme.colors.error}` : `0 0 0 1px ${theme.colors.primaryLight}`,
+      borderColor: error ? theme.colors.error : theme.colors.border,
+      boxShadow: error ? `0 0 0 0.5px ${theme.colors.error}` : `0 0 0 0.5px ${theme.colors.border}`,
       backgroundColor: variant === 'filled' ? theme.colors.background : theme.colors.background,
     }
 

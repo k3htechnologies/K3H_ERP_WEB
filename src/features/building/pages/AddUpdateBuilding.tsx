@@ -19,8 +19,8 @@ import Checkbox from "@/ui/components/forms/Checkbox";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 
 const initialFormState = (): AddUpdateBuildingRequest => ({
-  BuildingId: null,
-  Uniquekey: null,
+  BuildingId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   ProjectId: null,
   BuildingName: "",
   CTSNumber: "",
@@ -213,7 +213,7 @@ const AddUpdateBuilding: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Building Data'
+      'Loading Building'
     )
   }
   //#endregion
@@ -269,24 +269,24 @@ const AddUpdateBuilding: React.FC = () => {
       ProjectId: projectId,
       BuildingName: formData.BuildingName,
       CTSNumber: formData.CTSNumber,
-      TotalPlotAreaSqFt: formData.TotalPlotAreaSqFt,
-      RoadWidth: formData.RoadWidth,
+      TotalPlotAreaSqFt: formData.TotalPlotAreaSqFt || 0,
+      RoadWidth: formData.RoadWidth ||"",
       CountryMasterId: formData.CountryMasterId,
       DistrictMasterId: formData.DistrictMasterId,
       StateMasterId: formData.StateMasterId,
       CityMasterId: formData.CityMasterId,
-      TotalNumberOfUnits: formData.TotalNumberOfUnits,
-      TotalUnitsAreaUtilizedSqFt: formData.TotalUnitsAreaUtilizedSqFt,
-      IsGarden: formData.IsGarden,
-      TotalGardenAreaSqFt: formData.TotalGardenAreaSqFt,
-      IsReligiousStructure: formData.IsReligiousStructure,
-      TotalReligiousStructureAreaSqFt: formData.TotalReligiousStructureAreaSqFt,
-      PropertyAgeYears: formData.PropertyAgeYears,
-      NumberOfFloors: formData.NumberOfFloors,
-      FSI_TDR_UtilizationSqFt: formData.FSI_TDR_UtilizationSqFt,
-      LandOwnershipType: formData.LandOwnershipType,
-      IsLitigation: formData.IsLitigation,
-      LitigationRemarks: formData.LitigationRemarks,
+      TotalNumberOfUnits: formData.TotalNumberOfUnits  || 0,
+      TotalUnitsAreaUtilizedSqFt: formData.TotalUnitsAreaUtilizedSqFt  || 0,
+      IsGarden: formData.IsGarden || false,
+      TotalGardenAreaSqFt: formData.TotalGardenAreaSqFt  || 0,
+      IsReligiousStructure: formData.IsReligiousStructure || false,
+      TotalReligiousStructureAreaSqFt: formData.TotalReligiousStructureAreaSqFt  || 0,
+      PropertyAgeYears: formData.PropertyAgeYears  || 0,
+      NumberOfFloors: formData.NumberOfFloors  || 0,
+      FSI_TDR_UtilizationSqFt: formData.FSI_TDR_UtilizationSqFt  || 0,
+      LandOwnershipType: formData.LandOwnershipType  || "",
+      IsLitigation: formData.IsLitigation || false,
+      LitigationRemarks: formData.LitigationRemarks || "",
     };
 
   };
@@ -352,7 +352,7 @@ const AddUpdateBuilding: React.FC = () => {
       },
       undefined,
 
-      Number(buildingId) === 0 ? 'Add Building' : 'Update Building'
+      Number(buildingId ?? 0) === 0 ? 'Add Building' : 'Update Building'
     )
 
   };
@@ -366,11 +366,11 @@ const AddUpdateBuilding: React.FC = () => {
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
 
-      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         <form onSubmit={handleSubmit}>
           {/* ============================================================= [BASIC BUILDING DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Building Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Building Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
@@ -379,7 +379,10 @@ const AddUpdateBuilding: React.FC = () => {
                   value={formData.BuildingName}
                   required
                   onChange={e => handleFieldChange('BuildingName', e.target.value)}
-                  error={errors.BuildingName} />
+                  error={errors.BuildingName}
+                  placeholder="Enter Building Name"
+                />
+
               </div>
               <div>
                 <Input
@@ -387,7 +390,9 @@ const AddUpdateBuilding: React.FC = () => {
                   label="CTS Number"
                   required
                   onChange={e => handleFieldChange('CTSNumber', e.target.value)}
-                  error={errors.CTSNumber} />
+                  error={errors.CTSNumber}
+                  placeholder="Enter CTS Number"
+                />
               </div>
               <div>
                 <SinglePageSelection
@@ -405,7 +410,8 @@ const AddUpdateBuilding: React.FC = () => {
                   label="Road Width"
                   required
                   onChange={e => handleFieldChange('RoadWidth', e.target.value)}
-                  error={errors.RoadWidth} />
+                  error={errors.RoadWidth}
+                  placeholder="Enter Road Width" />
               </div>
               <div>
                 <Input
@@ -413,6 +419,7 @@ const AddUpdateBuilding: React.FC = () => {
                   label="Total Plot Area (sqft)"
                   required
                   error={errors.TotalPlotAreaSqFt}
+                  placeholder="Enter Total Plot Area (sqft)"
                   onChange={e => handleFieldChange('TotalPlotAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                 />
               </div>
@@ -420,6 +427,7 @@ const AddUpdateBuilding: React.FC = () => {
                 <Input
                   value={formData.TotalUnitsAreaUtilizedSqFt ?? ''}
                   label="Utilized Units Area (sqft)"
+                  placeholder="Enter Utilized Units Area (sqft)"
                   error={errors.TotalUnitsAreaUtilizedSqFt}
                   onChange={e => handleFieldChange('TotalUnitsAreaUtilizedSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                 />
@@ -428,6 +436,7 @@ const AddUpdateBuilding: React.FC = () => {
                 <Input
                   value={formData.TotalNumberOfUnits ?? ''}
                   label="Total Units"
+                  placeholder="Enter Total Units"
                   error={errors.TotalNumberOfUnits}
                   onChange={e => handleFieldChange('TotalNumberOfUnits', filterNumbersWithDecimal(e.target.value) || 0)}
                 />
@@ -436,6 +445,7 @@ const AddUpdateBuilding: React.FC = () => {
                 <Input
                   value={formData.NumberOfFloors ?? ''}
                   label="Number Of Floors"
+                  placeholder="Enter Number Of Floors"
                   error={errors.NumberOfFloors}
                   onChange={e => handleFieldChange('NumberOfFloors', Number(filterNumbers(e.target.value) || 0))}
                 />
@@ -444,6 +454,7 @@ const AddUpdateBuilding: React.FC = () => {
                 <Input
                   value={formData.PropertyAgeYears ?? ''}
                   label="Property Age (Years)"
+                  placeholder="Enter Property Age (Years)"
                   error={errors.PropertyAgeYears}
                   onChange={e => handleFieldChange('PropertyAgeYears', filterNumbersWithDecimal(e.target.value) || 0)}
                 />
@@ -452,6 +463,7 @@ const AddUpdateBuilding: React.FC = () => {
                 <Input
                   value={formData.FSI_TDR_UtilizationSqFt ?? ''}
                   label="FSI / TDR Utilization (sqft)"
+                  placeholder="Enter FSI / TDR Utilization (sqft)"
                   error={errors.FSI_TDR_UtilizationSqFt}
                   onChange={e => handleFieldChange('FSI_TDR_UtilizationSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                 />
@@ -596,12 +608,13 @@ const AddUpdateBuilding: React.FC = () => {
             </div>
           </div>
 
+
         </form>
       </div>
 
       <BottomActionBar
         cancelText="Cancel"
-        saveText={formData.BuildingId ? "Update Building" : "Add Building"}
+        saveText={formData.BuildingId ? "Update" : "Add"}
         onCancel={() => navigate(-1)}
         canAction={canAction}
         onSave={() => {

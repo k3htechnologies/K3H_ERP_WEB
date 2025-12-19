@@ -3,7 +3,7 @@ import { Loader } from '@/core/utils/loader';
 import type { EmployeeMasterData } from '../models/EmployeeMasterModel';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import Accordion from '@/ui/components/Card/Accordion';
 import { Tabs } from '@/ui/components/Tab/Tab';
 import { runApiWithLoader } from '@/core/utils';
@@ -12,8 +12,8 @@ import { assetMappingMasterService } from '@/features/assetMappingMaster/service
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { ArrowLeft, Edit } from 'lucide-react';
-import { Button } from '@/ui/components/forms';
+import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
+import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 
 export const ViewEmployeeMaster: React.FC = () => {
 
@@ -22,6 +22,8 @@ export const ViewEmployeeMaster: React.FC = () => {
     const [projectList, setProjectList] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
+    const { canAction } = useMenuPermissions('/employeeMaster');
+
     // TOAST
     const { addToast } = useToast();
 
@@ -80,7 +82,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 100,
                     EmployeeName: FullName,
-                    
+
                 };
 
                 const response = await assetMappingMasterService.apiCallPullAssetMappingMaster(params);
@@ -129,221 +131,270 @@ export const ViewEmployeeMaster: React.FC = () => {
         });
     };
     //#endregion
+
+    const safe = (value?: any) => (value === null || value === undefined || value === '' ? '-' : value)
+
     return (
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>
+            <HeaderActionBar
+                titleText={'Employee Details'}
+                cancelText="Cancel"
+                EditText="Edit"
+                onCancel={() => handleBackToListEmployeeMaster()}
+                canAction={canAction}
+                onEdit={() => {
 
-            <div className="grid grid-cols-12 gap-6">
-                {/* Left column: profile card */}
-                <div className="col-span-5">
-                    <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-                        <div className="pt-10 px-2 pb-2">
-                            <div className="text-center">
-                                <h3 className="text-lg font-semibold text-gray-900">{editEmployeeData?.FullName} <span className="inline-block ml-2 text-green-500">●</span></h3>
-                                <div className="mt-2 flex justify-center gap-2">
-                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">{editEmployeeData?.Designation}</span>
-                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">{editEmployeeData?.Department}</span>
+                    if (editEmployeeData) handleEditEmployee(editEmployeeData);
+
+                }}
+                isLoading={isLoading}
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
+
+                {/* ================= LEFT SIDE (2/3) ================= */}
+                <div className="lg:col-span-2 space-y-6">
+
+                    {/* ================== BASIC DETAILS ================== */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Basic Details
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="First Name" value={safe(editEmployeeData!.FirstName)} />
+                                    <FieldItem label="Middle Name" value={safe(editEmployeeData!.MiddleName)} />
+                                    <FieldItem label="Last Name" value={safe(editEmployeeData!.LastName)} />
                                 </div>
                             </div>
 
 
-                            {/* Basic Info box */}
-                            <div className="mt-6 rounded border border-gray-200">
-
-                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                    <h4 className="font-semibold text-sm text-gray-800">
-                                        Basic information
-                                    </h4>
+                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="Gender" value={safe(editEmployeeData!.Gender)} />
+                                    <FieldItem label="Marital Status" value={safe(editEmployeeData!.MaritalStatus)} />
+                                    <FieldItem label="Blood Group" value={safe(editEmployeeData!.BloodGroup)} />
                                 </div>
+                            </div>
 
 
-                                <div className="p-4">
-                                    <FieldItem label="Mobile Number" value={`+91 ${editEmployeeData?.PersonalMobileNumber ?? ''}`} isRow />
-                                    <FieldItem label="Email ID" value={editEmployeeData!.EmailId} isRow />
-                                    <FieldItem label="Gender" value={editEmployeeData!.Gender} isRow />
-                                    <FieldItem label="DOB"
-                                        value={editEmployeeData!.DateOfBirth ? formatDate_dd_MonthName_yy(editEmployeeData!.DateOfBirth) : ''}
-                                        isRow
+                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(safe(editEmployeeData!.DateOfBirth))} />
+                                    <FieldItem label="Email ID" value={safe(editEmployeeData!.EmailId)} />
+                                    <FieldItem label="Personal Mobile No." value={editEmployeeData?.PersonalMobileNumber
+                                        ? `+91 ${safe(editEmployeeData?.PersonalMobileNumber)}`
+                                        : '-'}
                                     />
-
-                                    <FieldItem
-                                        label="Joining Date"
-                                        value={editEmployeeData!.JoiningDate ? formatDate_dd_MonthName_yy(editEmployeeData!.JoiningDate) : ''}
-                                        isRow
-                                    />
-                                    <FieldItem label="Reporting Person" value={editEmployeeData!.ReportPersonName} isRow />
-
                                 </div>
                             </div>
 
-                            <div className="mt-4 flex gap-3">
-                                <Button
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        handleEditEmployee(editEmployeeData!)
-                                    }}
-                                    color='blue'
-                                    fullWidth
-                                    size='sm'
-                                    title="Edit Info">
-                                    <Edit className="w-4 h-4" /> Edit Info
-                                </Button>
-                                <Button
-
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        handleBackToListEmployeeMaster()
-                                    }}
-                                    color='transparent'
-                                    variant='transparent_border'
-                                    fullWidth
-                                    size='sm'
-                                    title="Back">
-                                    <ArrowLeft className="w-4 h-4" />  Cancel
-                                </Button>
-                            </div>
-                            {/* Personal Information */}
-                            <div className="mt-6 rounded border border-gray-200">
-
-                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                    <h4 className="font-semibold text-sm text-gray-800">
-                                        Personal Information
-                                    </h4>
-                                </div>
-
-
-                                <div className="p-4">
-                                    <FieldItem label="Marital Status" value={editEmployeeData!.MaritalStatus} isRow />
-                                    <FieldItem label="Blood Group" value={editEmployeeData!.BloodGroup} isRow />
-                                    <FieldItem label="Office Email ID" value={editEmployeeData!.OfficeEmailId} isRow />
-                                    <FieldItem label="Office Mobile Number" value={`+91 ${editEmployeeData?.OfficeMobileNumber ?? ''}`} isRow />
-                                    <FieldItem label="Employment Type" value={editEmployeeData!.EmployeeType} isRow />
-
-                                </div>
-                            </div>
-
-                            {/* Emergency contact */}
-                            <div className="mt-6 rounded border border-gray-200">
-
-                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                    <h4 className="font-semibold text-sm text-gray-800">
-                                        Emergency Contact Details
-                                    </h4>
-                                </div>
-
-
-                                <div className="p-4">
-                                    <FieldItem label="Relationship" value={editEmployeeData!.EmergencyContactPersonRelationship} isRow />
-                                    <FieldItem label="Contact Number" value={`+91 ${editEmployeeData?.EmergencyMobileNumber ?? ''}`} isRow />
-                                </div>
-                            </div>
-
-                            {/* ADDRESS */}
-                            <div className="mt-6 rounded border border-gray-200">
-
-                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200">
-                                    <h4 className="font-semibold text-sm text-gray-800">
-                                        Address Details
-                                    </h4>
-                                </div>
-
-
-                                <div className="p-4">
+                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     <FieldItem
                                         label="Communication Address"
-                                        value={editEmployeeData!.CommunicationAddress}
-                                        isRow={false}
+                                        value={safe(editEmployeeData!.CommunicationAddress)}
                                     />
+                                </div>
+                            </div>
+                            <div className="lg:col-span-3  pt-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     <FieldItem
                                         label="Permanent Address"
-                                        value={editEmployeeData!.PermanentAddress}
-                                        isRow={false}
+                                        value={safe(editEmployeeData!.PermanentAddress)}
+                                    />
+                                </div>
+                            </div>
+
+
+                        </div>
+
+
+                    </section>
+
+                    {/* ================== EMPLOYEE INFO ================== */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Employee Infoformation
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="Company Name" value={safe(editEmployeeData!.CompanyName)} />
+                                    <FieldItem label="Branch" value={safe(editEmployeeData!.Branch)} />
+                                    <FieldItem label="Department" value={safe(editEmployeeData!.Department)} />
+
+                                </div>
+                            </div>
+                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="Designation" value={safe(editEmployeeData!.Designation)} />
+                                    <FieldItem
+                                        label="Joining Date"
+                                        value={formatDate_dd_MonthName_yy(safe(editEmployeeData!.JoiningDate))}
+                                    />
+                                    <FieldItem label="Reporting Person" value={safe(editEmployeeData!.ReportPersonName)} />
+                                </div>
+                            </div>
+                            <div className="lg:col-span-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="Employment Type" value={safe(editEmployeeData!.EmployeeType)} />
+
+                                    <FieldItem label="Office Number" value={editEmployeeData?.OfficeMobileNumber
+                                        ? `+91 ${safe(editEmployeeData?.OfficeMobileNumber)}`
+                                        : '-'} />
+
+                                    <FieldItem label="Office E-mail ID" value={safe(editEmployeeData!.OfficeEmailId)} />
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* ================== ADDRESS ================== */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Address
+                        </h4>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                    <FieldItem label="Country" value={safe(editEmployeeData!.CountryName)} />
+                                    <FieldItem label="State" value={safe(editEmployeeData!.StateName)} />
+
+                                </div>
+                            </div>
+                            <div className="lg:col-span-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="District" value={safe(editEmployeeData!.DistrictName)} />
+                                    <FieldItem label="City" value={safe(editEmployeeData!.CityName)} />
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* ================== BANK DETAILS ================== */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900  mb-4">
+                            Bank Details
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Bank Name" value={safe(editEmployeeData!.BankName)} />
+                                    <FieldItem label="Account Number" value={safe(editEmployeeData!.AccountNo)} />
+                                </div>
+                            </div>
+                            <div className="lg:col-span-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Bank Branch Name" value={safe(editEmployeeData!.BankBranchName)} />
+                                    <FieldItem label="IFSC Code" value={safe(editEmployeeData!.IFSCCode)} />
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* ================== FAMILY DETAILS ================== */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Family Details
+                        </h4>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                            <div className="lg:col-span-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                    <FieldItem label="Relation to Emergency Contact" value={safe(editEmployeeData!.EmergencyContactPersonRelationship)} />
+                                    <FieldItem
+                                        label="Emergency Contact Number"
+                                        value={
+                                            editEmployeeData?.EmergencyMobileNumber
+                                                ? `+91 ${safe(editEmployeeData?.EmergencyMobileNumber)}`
+                                                : '-'
+                                        }
                                     />
 
-                                    <FieldItem label="Country" value={editEmployeeData!.CountryName} isRow />
-                                    <FieldItem label="State" value={editEmployeeData!.StateName} isRow />
-                                    <FieldItem label="District" value={editEmployeeData!.DistrictName} isRow />
-                                    <FieldItem label="City" value={editEmployeeData!.CityName} isRow />
+
                                 </div>
                             </div>
 
                         </div>
-                    </div>
+                    </section>
+                    {/* ================== ACTION DETAILS ================== */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Action Details
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Created By" value={safe(editEmployeeData!.CreatedBy)} />
+                                    <FieldItem
+                                        label="Created Date"
+                                        value={formatDate_dd_MonthName_yy(safe(editEmployeeData!.CreatedDate))}
+                                    />
+                                </div>
+                            </div>
+                            <div className="lg:col-span-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Modified By" value={safe(editEmployeeData!.ModifiedBy)} />
+                                    <FieldItem
+                                        label="Modified Date"
+                                        value={formatDate_dd_MonthName_yy_hh_mm(safe(editEmployeeData!.ModifiedDate))}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
                 </div>
 
-                {/* Right column: details and accordions */}
-                <div className="col-span-7 space-y-4">
+                {/* ================= RIGHT SIDE (1/3) ================= */}
+                <div className="lg:col-span-1 space-y-6">
 
-                    <div className="grid grid-cols-1 gap-4">
+                    {/* Reporting Structure example block */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
+                            Reporting Structure
+                        </h4>
+                        <div>Right Panel Data Here</div>
+                    </section>
 
-                        <div className="bg-white border border-gray-200 rounded p-4 shadow-sm">
-                            <h4 className="font-semibold mb-3">Bank Information</h4>
+                    {/* Documents example block */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
+                            Documents
+                        </h4>
+                        <div>Documents Listing Here</div>
+                    </section>
 
-                            <FieldItem label="Bank Name" value={editEmployeeData!.BankName} isRow withBorder />
-                            <FieldItem label="Branch" value={editEmployeeData!.Branch} isRow withBorder />
-                            <FieldItem label="Account No" value={editEmployeeData!.AccountNo} isRow withBorder />
-                            <FieldItem label="IFSC Code" value={editEmployeeData!.IFSCCode} isRow />
-                        </div>
-                    </div>
-
-                    {/* accordion cards */}
-                    <div className="space-y-3">
+                    {/* ================= FAMILY / EDUCATION / EXPERIENCE ================= */}
+                    <section className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
                         <Accordion
                             items={[
-                                {
-                                    key: "family",
-                                    title: "Family Information",
-                                    defaultOpen: false,
-                                    content: (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                            <FieldItem label="Bank Name" value={editEmployeeData!.BankName} />
-                                            <FieldItem label="Branch" value={editEmployeeData!.Branch} />
-                                            <FieldItem label="Account No" value={editEmployeeData!.AccountNo} />
-                                            <FieldItem label="IFSC Code" value={editEmployeeData!.IFSCCode} />
-                                        </div>
-                                    )
-                                },
-                                {
-                                    key: "education",
-                                    title: "Education Details",
-                                    content: (
-                                        <div>
+                                { key: 'education', title: 'Education Details', content: <div /> },
+                                { key: 'experience', title: 'Experience', content: <div /> },
 
-                                        </div>
-                                    )
-                                },
-                                {
-                                    key: "experience",
-                                    title: "Experience",
-                                    content: (
-                                        <div>
-
-                                        </div>
-                                    )
-                                },
-                                {
-                                    key: "document",
-                                    title: "Document",
-                                    content: (
-                                        <div>
-
-                                        </div>
-                                    )
-                                }
                             ]}
                         />
+                    </section>
 
-                    </div>
-
-                    {/* Projects & Assets tabs */}
-                    <div className="bg-white border border-gray-200 rounded shadow-sm p-4">
+                    {/* ================= PROJECTS & ASSETS ================= */}
+                    <section className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
                         <Tabs
                             tabs={TabList}
                             defaultActive={activeTab}
+                            islarge={true}
                             onTabChange={(t) => {
 
                                 setActiveTab(t.id);
@@ -360,80 +411,78 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 }
                             }}
                         />
+                        {activeTab === 'Assets' && (
+                            <div className="space-y-4">
+                                {assetMappingMasterList.length === 0 ? (
+                                    <div className="text-sm text-gray-500 p-4">No assets found.</div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {assetMappingMasterList.map((asset) => {
 
-                        <div className="mt-1">
-                            {activeTab === 'Assets' && (
-                                <div className="space-y-4">
-                                    {assetMappingMasterList.length === 0 ? (
-                                        <div className="text-sm text-gray-500 p-4">No assets found.</div>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            {assetMappingMasterList.map((asset) => {
-
-                                                return (
-                                                    <div key={asset!.AssetMasterMappingId} className="flex items-center justify-between border border-gray-200 rounded p-3 bg-white">
-                                                        <div className="flex items-center gap-4">
-
-                                                            <div>
-                                                                <div className="font-semibold text-gray-800">{asset.AssetName} {asset.AssetModel}</div>
-                                                                {`Assigned on ${formatDate_dd_MonthName_yy(asset.AssignedDate ?? '-')}`}
-                                                                <div className="">{`Purchased on ${formatDate_dd_MonthName_yy(asset.PurchaseDate ?? '-')}`}</div>
-                                                                <div className="">{`Supplier Name on ${asset.SupplierName ?? '-'}`}</div>
-
-                                                            </div>
-
-                                                        </div>
-
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="text-xs text-gray-400 text-right">
-                                                                <div className="text-xs text-gray-500">Serial Number</div>
-                                                                <div className="font-medium text-sm">{asset.SerialNumber}</div>
-                                                            </div>
-
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {activeTab === "Project" && (
-                                <div className="space-y-4">
-                                    {projectList.length === 0 ? (
-                                        <div className="text-sm text-gray-500 p-4">No projects found.</div>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            {projectList.map((project) => (
-                                                <div key={project.ProjectId} className="border border-gray-200 p-3 rounded bg-white flex justify-between">
-
+                                            return (
+                                                <div key={asset!.AssetMasterMappingId} className="flex items-center justify-between border border-gray-200 rounded p-3 bg-white">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="w-14 h-14 bg-gray-100 rounded-full overflow-hidden">
-                                                            <img
-                                                                src={project.ProjectPhotoURL}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        </div>
 
                                                         <div>
-                                                            <div className="font-semibold">{project.ProjectName}</div>
-                                                            <div className="text-xs text-gray-500">{project.ProjectLocation}</div>
+                                                            <div className="font-semibold text-gray-800">{asset.AssetName} {asset.AssetModel}</div>
+                                                            {`Assigned on ${formatDate_dd_MonthName_yy(asset.AssignedDate ?? '-')}`}
+                                                            <div className="">{`Purchased on ${formatDate_dd_MonthName_yy(asset.PurchaseDate ?? '-')}`}</div>
+                                                            <div className="">{`Supplier Name on ${asset.SupplierName ?? '-'}`}</div>
+
                                                         </div>
+
                                                     </div>
 
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="text-xs text-gray-400 text-right">
+                                                            <div className="text-xs text-gray-500">Serial Number</div>
+                                                            <div className="font-medium text-sm">{asset.SerialNumber}</div>
+                                                        </div>
 
-                        </div>
-                    </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {activeTab === "Project" && (
+                            <div className="space-y-4">
+                                {projectList.length === 0 ? (
+                                    <div className="text-sm text-gray-500 p-4">No projects found.</div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {projectList.map((project) => (
+                                            <div key={project.ProjectId} className="border border-gray-200 p-3 rounded bg-white flex justify-between">
+
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-14 h-14 bg-gray-100 rounded-full overflow-hidden">
+                                                        <img
+                                                            src={project.ProjectPhotoURL}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <div className="font-semibold">{project.ProjectName}</div>
+                                                        <div className="text-xs text-gray-500">{project.ProjectLocation}</div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </section>
 
                 </div>
+
             </div>
+
 
         </div >
     );

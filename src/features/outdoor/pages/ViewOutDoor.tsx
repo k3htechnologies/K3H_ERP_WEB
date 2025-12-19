@@ -161,7 +161,6 @@ export const ViewOutDoor: React.FC = () => {
                 <MultiImageViewer
                   images={[editOutDoorData.VisitingCardURL]}
                   title="Visiting Card"
-                  size="large-half"
                 />
               </div>
             </div>

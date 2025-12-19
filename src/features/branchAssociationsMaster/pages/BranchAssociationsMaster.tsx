@@ -220,6 +220,8 @@ export const BranchAssociationsMaster: React.FC = () => {
   }
   //#endregion
 
+  
+
   //#region CLEAR BRANCH ASSOCIATIONS 
   const clearsearchBranchAssociations = () => {
     setSearchTerm('');

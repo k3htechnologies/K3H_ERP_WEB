@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   Paperclip,
   Eye,
@@ -22,7 +23,6 @@ interface MultiFilePickerProps {
   maxSizeMB?: number;
   maxFiles?: number;
   value: FileValue[];
-  /** Accepts CSV string, array of strings, or array mixed with File objects from your internal model */
   availableFilesURL?: string | (string | File)[] | null;
   onChange: (files: FileValue[]) => void;
   placeholder?: string;
@@ -30,22 +30,27 @@ interface MultiFilePickerProps {
   onRemoveExisting?: (url: string) => void;
 }
 
-const normalizeAvailableFiles = (input?: string | (string | File)[] | null): string[] | undefined => {
+/* ================= Helpers ================= */
+
+const normalizeAvailableFiles = (
+  input?: string | (string | File)[] | null,
+): string[] | undefined => {
   if (!input) return undefined;
 
   if (typeof input === "string") {
-    const trimmed = input.trim();
-    if (trimmed === "") return undefined;
-    return trimmed.split(",").map(s => s.trim()).filter(Boolean);
+    const t = input.trim();
+    return t ? t.split(",").map(s => s.trim()).filter(Boolean) : undefined;
   }
 
   if (Array.isArray(input)) {
-    const onlyStrings = input.filter(item => typeof item === "string") as string[];
-    return onlyStrings.length ? onlyStrings.map(s => s.trim()).filter(Boolean) : undefined;
+    const onlyStrings = input.filter(i => typeof i === "string") as string[];
+    return onlyStrings.length ? onlyStrings : undefined;
   }
 
   return undefined;
 };
+
+/* ================= Component ================= */
 
 export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
   label,
@@ -56,104 +61,136 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
   availableFilesURL,
   onChange,
   placeholder = "Select file(s)...",
-  error,
-  onRemoveExisting,
+  error
 }) => {
+  const theme = THEME;
+
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const theme = THEME;
-  const [isListOpen, setIsListOpen] = useState(false);
-  const [openUpwards, setOpenUpwards] = useState(false);
 
-  // Normalize incoming availableFilesURL into string[] or undefined
+  const [isListOpen, setIsListOpen] = useState(false);
+
+  /* ===== PORTAL POSITION STATE (ONLY ADDITION) ===== */
+
+  const DRAWER_HEIGHT = 260;
+
+  const [portalPos, setPortalPos] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
+
+  const updatePortalPosition = useCallback(() => {
+    const node = containerRef.current;
+    if (!node) return;
+
+    const rect = node.getBoundingClientRect();
+    const vh = window.innerHeight;
+
+    const spaceBelow = vh - rect.bottom;
+    const spaceAbove = rect.top;
+
+    const openBelow =
+      spaceBelow >= DRAWER_HEIGHT + 20 || spaceBelow >= spaceAbove;
+
+    let top = openBelow
+      ? rect.bottom + 6
+      : rect.top - DRAWER_HEIGHT - 6;
+
+    top = Math.max(8, Math.min(top, vh - DRAWER_HEIGHT - 8));
+
+    setPortalPos({
+      left: rect.left,
+      top,
+      width: rect.width, // 🔒 SAME WIDTH AS INPUT
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isListOpen) return;
+
+    updatePortalPosition();
+
+    const onUpdate = () => updatePortalPosition();
+    window.addEventListener("resize", onUpdate);
+    window.addEventListener("scroll", onUpdate, true);
+
+    return () => {
+      window.removeEventListener("resize", onUpdate);
+      window.removeEventListener("scroll", onUpdate, true);
+    };
+  }, [isListOpen, updatePortalPosition]);
+
+  /* ================= Existing Logic ================= */
+
   const initialExisting = normalizeAvailableFiles(availableFilesURL) ?? [];
-  const [existingUrls, setExistingUrls] = useState<string[]>(() => initialExisting);
+  const [existingUrls, setExistingUrls] = useState<string[]>(initialExisting);
 
   const { addToast } = useToast();
 
-  // Sync state with prop changes
   useEffect(() => {
     setExistingUrls(normalizeAvailableFiles(availableFilesURL) ?? []);
   }, [availableFilesURL]);
 
-  // Auto close drawer when no files
   useEffect(() => {
-    if (existingUrls.length + value.length === 0) {
-      setIsListOpen(false);
-    }
+    if (existingUrls.length + value.length === 0) setIsListOpen(false);
   }, [existingUrls, value]);
 
-  // Click outside to close drawer
   useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (!isListOpen) return;
-      const node = containerRef.current;
-      if (!node) return;
-      if (!node.contains(e.target as Node)) {
+    const handleOutside = (e: MouseEvent) => {
+      if (
+        isListOpen &&
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setIsListOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [isListOpen]);
-
-  // Escape key closes drawer
-  useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsListOpen(false);
     };
+    document.addEventListener("mousedown", handleOutside);
     document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, []);
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [isListOpen]);
 
-  // File select handler with validation
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files;
-    if (!selected) return;
+    const files = e.target.files;
+    if (!files) return;
 
-    const newFiles: FileValue[] = [...value];
+    const updated: FileValue[] = [...value];
 
-    for (const file of Array.from(selected)) {
-      // Type validation
+    for (const file of Array.from(files)) {
       if (!allowedTypes.includes(file.type)) {
         addToast({ type: "error", title: `File type not allowed: ${file.name}` });
         continue;
       }
 
-      // Count validation
-      if (existingUrls.length + newFiles.length >= maxFiles) {
+      if (existingUrls.length + updated.length >= maxFiles) {
         addToast({ type: "error", title: `Maximum ${maxFiles} files allowed` });
         break;
       }
 
-      newFiles.push(file);
+      updated.push(file);
     }
 
-    onChange(newFiles);
-    // reset input so same file can be selected again if needed
+    onChange(updated);
     e.target.value = "";
   };
 
-  const getUrl = (item: FileValue | string) => (typeof item === "string" ? item : URL.createObjectURL(item));
+  const getUrl = (item: FileValue | string) =>
+    typeof item === "string" ? item : URL.createObjectURL(item);
 
-  const getFileLabel = (item: FileValue | string) => {
-    if (typeof item === "string") {
-      try {
-        const u = new URL(item);
-        const p = u.pathname.split("/");
-        return p[p.length - 1] || item;
-      } catch {
-        return item;
-      }
-    }
-    return item.name;
-  };
+  const getFileLabel = (item: FileValue | string) =>
+    typeof item === "string" ? item.split("/").pop() || item : item.name;
 
-  const guessMimeFromUrl = (url: string): string | undefined => {
-    const lower = url.toLowerCase();
-    if (lower.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)$/)) return "image/jpeg";
-    if (lower.endsWith(".pdf")) return "application/pdf";
-    if (lower.match(/\.(xls|xlsx|xlsm|csv)$/)) return "application/vnd.ms-excel";
+  const guessMimeFromUrl = (url: string) => {
+    const l = url.toLowerCase();
+    if (l.match(/\.(jpg|jpeg|png|gif|webp)$/)) return "image/jpeg";
+    if (l.endsWith(".pdf")) return "application/pdf";
     return undefined;
   };
 
@@ -164,41 +201,12 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
     return <FileIcon size={16} />;
   };
 
-  // Remove existing (server) file
-  const removeExisting = (index: number) => {
-    const urlToRemove = existingUrls[index];
-    setExistingUrls((prev) => prev.filter((_, i) => i !== index));
-    if (onRemoveExisting && urlToRemove) onRemoveExisting(urlToRemove);
-  };
-
-  // Remove uploaded File from value
-  const removeUploaded = (index: number) => {
-    const updated = value.filter((_, i) => i !== index);
-    onChange(updated);
-  };
-
   const totalCount = existingUrls.length + value.length;
 
-  // Drawer open up/down check
-  const toggleDrawer = () => {
-    setIsListOpen((prev) => {
-      const willOpen = !prev;
-      if (willOpen) {
-        setTimeout(() => {
-          if (!containerRef.current) return;
-          const rect = containerRef.current.getBoundingClientRect();
-          const spaceBelow = window.innerHeight - rect.bottom;
-          const drawerHeight = 260;
-          setOpenUpwards(spaceBelow < drawerHeight + 20);
-        }, 10);
-      }
-      return willOpen;
-    });
-  };
+  /* ================= Render ================= */
 
   return (
     <div ref={containerRef} style={{ width: "100%", position: "relative" }}>
-      {/* label */}
       {label && (
         <label
           style={{
@@ -214,7 +222,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
         </label>
       )}
 
-      {/* top input-like area */}
+      {/* input area */}
       <div
         style={{
           border: "1px solid #ccc",
@@ -227,153 +235,91 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
         }}
       >
         <span
-          style={{
-            fontSize: 15,
-            color: totalCount ? "#000" : "#888",
-            cursor: "pointer",
-          }}
+          style={{ fontSize: 15, color: totalCount ? "#000" : "#888", cursor: "pointer" }}
           onClick={() => inputRef.current?.click()}
         >
           {totalCount ? `${totalCount} file(s)` : placeholder}
         </span>
 
         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Paperclip size={18} style={{ cursor: "pointer" }} onClick={() => inputRef.current?.click()} />
-          {totalCount > 0 && <List size={18} style={{ cursor: "pointer" }} onClick={toggleDrawer} />}
+          <Paperclip size={18} onClick={() => inputRef.current?.click()} />
+          {totalCount > 0 && <List size={18} onClick={() => setIsListOpen(p => !p)} />}
         </span>
       </div>
 
-      {/* hidden file input */}
       <input
+        ref={inputRef}
         type="file"
         multiple
-        ref={inputRef}
         style={{ display: "none" }}
         onChange={handleFileSelect}
         accept={allowedTypes.join(",")}
       />
 
-      {/* drawer */}
-      {isListOpen && (
-        <div
-          style={{
-            position: "absolute",
-            top: openUpwards ? "auto" : "105%",
-            bottom: openUpwards ? "105%" : "auto",
-            left: 0,
-            right: 0,
-            border: "1px solid #ccc",
-            borderRadius: 6,
-            background: "#fff",
-            marginTop: openUpwards ? 0 : 6,
-            marginBottom: openUpwards ? 6 : 0,
-            overflow: "hidden",
-            zIndex: 31,
-            boxShadow: "0 5px 10px rgba(0,0,0,0.12)",
-          }}
-        >
+      {/* ===== PORTAL DRAWER (UI SAME) ===== */}
+      {isListOpen &&
+        portalPos &&
+        typeof document !== "undefined" &&
+        createPortal(
           <div
+            onMouseDown={e => e.stopPropagation()}
             style={{
-              padding: "10px",
-              borderBottom: "1px solid #eee",
-              background: "#fafafa",
-              fontWeight: 600,
-              display: "flex",
-              justifyContent: "space-between",
+              position: "fixed",
+              left: portalPos.left,
+              top: portalPos.top,
+              width: portalPos.width,
+              border: "1px solid #ccc",
+              borderRadius: 6,
+              background: "#fff",
+              overflow: "hidden",
+              zIndex: 9999,
+              boxShadow: "0 5px 10px rgba(0,0,0,0.12)",
             }}
           >
-            <span>{label || "Documents"}</span>
-            <span>{totalCount} file(s)</span>
-          </div>
+            <div
+              style={{
+                padding: "10px",
+                borderBottom: "1px solid #eee",
+                background: "#fafafa",
+                fontWeight: 600,
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <span>{label || "Documents"}</span>
+              <span>{totalCount} file(s)</span>
+            </div>
 
-          <div style={{ maxHeight: 260, overflowY: "auto" }}>
-            {/* existing (server) urls */}
-            {existingUrls.map((url, index) => {
-              const mime = guessMimeFromUrl(url);
-              return (
-                <div
-                  key={"old-" + index}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "8px 10px",
-                    borderBottom: "1px solid #f2f2f2",
-                    gap: 8,
-                  }}
-                >
-                  {getFileIcon(mime)}
-                  <span
-                    style={{
-                      flex: 1,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                    title={url}
-                  >
+            <div style={{ maxHeight: DRAWER_HEIGHT, overflowY: "auto" }}>
+              {existingUrls.map((url, i) => (
+                <div key={i} style={{ display: "flex", padding: 8, gap: 8 }}>
+                  {getFileIcon(guessMimeFromUrl(url))}
+                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
                     {getFileLabel(url)}
                   </span>
-
-                  <MultiImageViewer images={[url]} title={label || "Document"} size="xl" triggerLabel={<Eye size={18} style={{ cursor: "pointer" }} />} />
-
-                  <Trash2 size={18} color="red" style={{ cursor: "pointer" }} onClick={() => removeExisting(index)} />
+                  <MultiImageViewer images={[url]} triggerLabel={<Eye size={18} />} />
+                  <Trash2 size={18} color="red" onClick={() => setExistingUrls(p => p.filter((_, x) => x !== i))} />
                 </div>
-              );
-            })}
+              ))}
 
-            {/* new uploaded files */}
-            {value.map((item, index) => {
-              const url = getUrl(item);
-              const mime = typeof item === "string" ? guessMimeFromUrl(item) : item.type;
-
-              return (
-                <div
-                  key={"new-" + index}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "8px 10px",
-                    borderBottom: "1px solid #f2f2f2",
-                    gap: 8,
-                  }}
-                >
-                  {getFileIcon(mime)}
-                  <span
-                    style={{
-                      flex: 1,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                    title={typeof item === "string" ? item : item.name}
-                  >
+              {value.map((item, i) => (
+                <div key={i} style={{ display: "flex", padding: 8, gap: 8 }}>
+                  {getFileIcon(typeof item === "string" ? guessMimeFromUrl(item) : item.type)}
+                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
                     {getFileLabel(item)}
                   </span>
-
-                  <MultiImageViewer images={[url]} title={label || "Document"} size="sm" triggerLabel={<Eye size={18} style={{ cursor: "pointer" }} />} />
-
-                  <Trash2 size={18} color="red" style={{ cursor: "pointer" }} onClick={() => removeUploaded(index)} />
+                  <MultiImageViewer images={[getUrl(item)]} triggerLabel={<Eye size={18} />} />
+                  <Trash2 size={18} color="red" onClick={() => onChange(value.filter((_, x) => x !== i))} />
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+              ))}
+            </div>
+          </div>,
+          document.body,
+        )}
 
-      {/* error block */}
       {error && (
-        <div
-          style={{
-            marginTop: theme.spacing.sm,
-            fontSize: theme.fontSize.sm,
-            color: error ? theme.colors.error : theme.colors.textSecondary,
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
-        >
-          <InfoIcon style={{ fontSize: theme.fontSize.xs, color: error ? theme.colors.error : theme.colors.textSecondary, height: 14 }} />
-          {error}
+        <div style={{ marginTop: 6, color: theme.colors.error, display: "flex", gap: 6 }}>
+          <InfoIcon size={14} /> {error}
         </div>
       )}
     </div>

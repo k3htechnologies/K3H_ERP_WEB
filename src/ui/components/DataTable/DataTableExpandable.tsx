@@ -303,7 +303,7 @@ export const DataTableExpandable= forwardRef<DataTableExpandableRef, DataTablePr
                           )
                         }
 
-                        const value = column.render ? column.render(row[column.key], row) : row[column.key]
+                        const value = column.render ?  column.render(row[column.key], row, index): row[column.key]
                         return (
                           <td key={column.key}
                             className={`px-4 py-2 text-gray-900 border-r border-gray-200 ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'} ${column.fixed === 'left' ? 'sticky left-0 bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-100' : column.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-100' : ''}`}

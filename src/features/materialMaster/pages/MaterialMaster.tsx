@@ -377,7 +377,38 @@ export const MaterialMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value) => value || ''
-      }
+      },
+       {
+                    key: 'actions',
+                    label: 'Actions',
+                    width: '12',
+                    fixed: 'right',
+                    align: 'center',
+                    render: (_value, row) => (
+                      canAction && !row.NumberOfEmployee ? (
+                        <div className="flex items-center justify-center gap-2">
+            
+                          <Button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              handleConfirmationDialogBoxOpen(row)
+                            }}
+                            color='transparent'
+                            isborderRadius
+                            size='sm'
+                            style={{
+                              color: 'red',
+                              padding: '4px 8px'
+                            }}
+                            title="Delete Material"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : null
+                    )
+                  }
     ],
     // dependencies: include everything used inside that might change
     [canAction, handleViewMaterialDetails, handleEditMaterialMaster, handleConfirmationDialogBoxOpen]

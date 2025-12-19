@@ -15,6 +15,7 @@ import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialVa
 import { fetchAssetMasterDropdown } from "@/features/assetMaster/assetMasterDropDown";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { TextArea } from "@/ui/components/forms/Textarea";
 
 const initialFormState = (): AddUpdateAssetMappingMasterRequest => ({
   AssetMasterMappingId: 0,
@@ -259,141 +260,141 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
   //#endregion
 
   return (
-    
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        {/* Loader */}
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+      {/* Loader */}
 
-        <div className="flex-1 space-y-2 px-6 py-3 pb-40 overflow-y-auto thin-scroll ">
+      <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-          <form onSubmit={handleAddUpdateAssetMappingMaster}>
+      <div className="flex-1 space-y-2 px-6 py-3 pb-40 overflow-y-auto thin-scroll ">
 
-            {/* Basic AssetMapping Details */}
+        <form onSubmit={handleAddUpdateAssetMappingMaster}>
 
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic AssetMapping Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+          {/* Basic AssetMapping Details */}
 
-                <div>
-                  <SingleSelectDropdownWithPagination
-                    label="Asset"
-                    title="Select Asset"
-                    size="lg"
-                    required
-                    dataFetchCallBack={fetchAssetMasterDropdown}
-                    onSelected={(item) => handleFieldChange("AssetMasterId", Number(item.value))}
-                    initialValue={createDropdownInitialValue(formData.AssetMasterId, dropdownLabels.assetName)}
-                    error={errors.AssetMasterId}
-                  />
-                </div>
-                <div>
-                  <SingleSelectDropdownWithPagination
-                    label="Employee"
-                    title="Select Employee"
-                    size="lg"
-                    required
-                    dataFetchCallBack={fetchEmployeeMasterDropdown}
-                    onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
-                    initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
-                    error={errors.EmployeeId}
-                  />
-                </div>
-
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Condition On Issue'
-                    value={formData.ConditionOnIssue ?? ""}
-                    onChange={(e) => handleFieldChange("ConditionOnIssue", e.target.value)}
-                    placeholder="Enter Condition On Issue"
-                    maxLength={250}
-                    error={errors.ConditionOnIssue}
-                  />
-                </div>
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Condition On Return'
-                    value={formData.ConditionOnReturn ?? ""}
-                    onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)}
-                    placeholder="Enter Condition On Return"
-                    maxLength={250}
-                    error={errors.ConditionOnReturn}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <DatePickerInput
-                    label="Assigned Date"
-                    value={formatDate_dd_mm_yyyy(formData.AssignedDate)}
-                    onChange={(val) => handleFieldChange('AssignedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                    required
-                    error={errors.AssignedDate}
-                  />
-                </div>
-                <div>
-                  <DatePickerInput
-                    label="Return Date"
-                    value={formatDate_dd_mm_yyyy(formData.ReturnDate)}
-                    onChange={(val) => handleFieldChange('ReturnDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                    required
-                    error={errors.ReturnDate}
-                  />
-                </div>
-              </div>
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic AssetMapping Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
 
               <div>
-                <Input
-                  type="text"
+                <SingleSelectDropdownWithPagination
+                  label="Asset"
+                  title="Select Asset"
+                  size="lg"
                   required
-                  label='Remarks'
-                  value={formData.Remarks ?? ""}
-                  onChange={(e) => handleFieldChange("Remarks", e.target.value)}
-                  placeholder="Enter Remarks"
-                  maxLength={250}
-                  error={errors.Remarks}
+                  dataFetchCallBack={fetchAssetMasterDropdown}
+                  onSelected={(item) => handleFieldChange("AssetMasterId", Number(item.value))}
+                  initialValue={createDropdownInitialValue(formData.AssetMasterId, dropdownLabels.assetName)}
+                  error={errors.AssetMasterId}
+                />
+              </div>
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Employee"
+                  title="Select Employee"
+                  size="lg"
+                  required
+                  dataFetchCallBack={fetchEmployeeMasterDropdown}
+                  onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
+                  initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
+                  error={errors.EmployeeId}
                 />
               </div>
 
             </div>
-          </form>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Condition On Issue'
+                  value={formData.ConditionOnIssue ?? ""}
+                  onChange={(e) => handleFieldChange("ConditionOnIssue", e.target.value)}
+                  placeholder="Enter Condition On Issue"
+                  maxLength={250}
+                  error={errors.ConditionOnIssue}
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Condition On Return'
+                  value={formData.ConditionOnReturn ?? ""}
+                  onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)}
+                  placeholder="Enter Condition On Return"
+                  maxLength={250}
+                  error={errors.ConditionOnReturn}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <DatePickerInput
+                  label="Assigned Date"
+                  value={formatDate_dd_mm_yyyy(formData.AssignedDate)}
+                  onChange={(val) => handleFieldChange('AssignedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={errors.AssignedDate}
+                />
+              </div>
+              <div>
+                <DatePickerInput
+                  label="Return Date"
+                  value={formatDate_dd_mm_yyyy(formData.ReturnDate)}
+                  onChange={(val) => handleFieldChange('ReturnDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={errors.ReturnDate}
+                />
+              </div>
+            </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
-          <Button
-            color="transparent"
-            variant='transparent_border'
-            size="sm"
-            onClick={() => { navigate(-1); }}
-            className="px-6"
-          >
-            Cancel
-          </Button>
+            <div>
 
-          <Button
-            color="green"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              handleAddUpdateAssetMappingMaster(e);
-            }}
-            className="px-6"
-            disabled={isLoading}
-          >
-            {isAddMode ? "Add Asset" : "Update Asset"}
-          </Button>
-        </div>
+              <TextArea
+                label="Remarks"
+                required
+                className='thin-scroll'
+                value={formData.Remarks ?? ""}
+                placeholder="Enter Remarks"
+                maxLength={500}
+                onChange={(e) => handleFieldChange("Remarks", e.target.value)}
+                error={errors.Remarks} />
+            </div>
+
+          </div>
+        </form>
       </div>
-   
+
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
+        <Button
+          color="transparent"
+          variant='transparent_border'
+          size="sm"
+          onClick={() => { navigate(-1); }}
+          className="px-6"
+        >
+          Cancel
+        </Button>
+
+        <Button
+          color="green"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            handleAddUpdateAssetMappingMaster(e);
+          }}
+          className="px-6"
+          disabled={isLoading}
+        >
+          {isAddMode ? "Add Asset" : "Update Asset"}
+        </Button>
+      </div>
+    </div>
+
   );
 };
 

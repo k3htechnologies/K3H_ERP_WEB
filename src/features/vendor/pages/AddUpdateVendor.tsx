@@ -19,7 +19,7 @@ import * as E from "fp-ts/Either";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import React from "react";
 import { Tabs } from "@/ui/components/Tab/Tab";
-import { Trash2, Plus, Search } from "lucide-react";
+import { Trash2, Plus, Search, Phone, IdCard } from "lucide-react";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -567,9 +567,9 @@ export const AddUpdateVendor: React.FC = () => {
 
       <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
 
-        {/* ============================================================= [BASIC EMPLOYEE DETAILS] ============================================================================================= */}
+        {/* ============================================================= [BASIC VENDOR DETAILS] ============================================================================================= */}
         <div className="space-y-4 pb-3">
-          <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
             Basic Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -593,6 +593,7 @@ export const AddUpdateVendor: React.FC = () => {
               required
               leftIcon="+91"
               value={formData.MobileNumber}
+              rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
               maxLength={10}
               onChange={(e) => handleFieldChange("MobileNumber", filterMobile(e.target.value))}
               error={errors.MobileNumber}
@@ -621,13 +622,15 @@ export const AddUpdateVendor: React.FC = () => {
 
         {/* GOVERNMENT IDENTIFIERS */}
         <div className="space-y-4 pb-3">
-          <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
             Government Identifiers
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Input
-              label="Aadhaar Card Number" required
+              label="Aadhaar Card Number" 
+              required
               value={formData.AadharCardNumber}
+              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
               onChange={(e) => handleFieldChange("AadharCardNumber", filterAadhaar(e.target.value))}
               placeholder="Enter Aadhaar card number"
               error={errors.AadharCardNumber}
@@ -655,8 +658,10 @@ export const AddUpdateVendor: React.FC = () => {
             />
 
             <Input
-              label="PAN Card Number" required
+              label="PAN Card Number" 
+              required
               value={formData.PanCardNumber}
+              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
               onChange={(e) => handleFieldChange("PanCardNumber", filterPAN(e.target.value))}
               placeholder="Enter PAN card number"
               error={errors.PanCardNumber}
@@ -682,8 +687,10 @@ export const AddUpdateVendor: React.FC = () => {
               }}
             />
             <Input
-              label="GST Number" required
+              label="GST Number" 
+              required
               value={formData.GSTNumber}
+              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
               onChange={(e) => handleFieldChange("GSTNumber", filterGST(e.target.value))}
               placeholder="Enter GST number"
               error={errors.GSTNumber}
@@ -714,7 +721,7 @@ export const AddUpdateVendor: React.FC = () => {
 
         {/* ADDRESS */}
         <div className="space-y-4 pb-3">
-          <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
             Address
           </h3>
 

@@ -7,12 +7,28 @@ export abstract class InventoryDatasource {
     abstract apiCallToFetchInventory(projectId: number): Promise<InventoryApiPullReponse>
 
     abstract apiCallToUpdateInventoryFlat(flatDetails: InventoryFlatData, projectId: number): Promise<UpdateFlatApiResponse>
+
+    abstract apiCallToDeleteInventoryFlat(flatDetails: InventoryFlatData, projectId: number): Promise<any>
 }
 
 export class InventoryDatasourceImpl implements InventoryDatasource {
-
+  
     private get k3hHttpClient() {
         return baseClient;
+    }
+
+    async apiCallToFetchInventory(projectId: number): Promise<InventoryApiPullReponse> {
+        try {
+            const url = `${InventoryApis.PULL}?ProjectId=${projectId}`;
+            const apiResponse = await this.k3hHttpClient.getRequestWithAuthentication(url);
+
+            return apiResponse;
+        } catch (error: any) {
+            if (error === TokenExpiredException) {
+                this.apiCallToFetchInventory(projectId)
+            }
+            throw error;
+        }
     }
 
     async apiCallToUpdateInventoryFlat(flatDetails: InventoryFlatData, projectId: number): Promise<UpdateFlatApiResponse> {
@@ -49,15 +65,17 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
         }
     }
 
-    async apiCallToFetchInventory(projectId: number): Promise<InventoryApiPullReponse> {
-        try {
-            const url = `${InventoryApis.PULL}?ProjectId=${projectId}`;
-            const apiResponse = await this.k3hHttpClient.getRequestWithAuthentication(url);
+    async apiCallToDeleteInventoryFlat(flatDetails: InventoryFlatData, projectId: number) {
+        try{
+            const url = `${InventoryApis.DELETEFLAT}?ProjectId=${projectId}&InventoryBuildingId=${flatDetails.InventoryBuildingId}&InventoryFlatFloorBasementPodiumWingId=${flatDetails.InventoryFlatFloorBasementPodiumWingId}&InventoryFloorId=${flatDetails.InventoryFloorId}&InventoryFlatId=${flatDetails.InventoryFlatId}`;
 
-            return apiResponse;
-        } catch (error: any) {
+            const apiResponse = await baseClient.deleteRequestWithAuthentication(url)
+
+            return apiResponse
+
+        }catch(error){
             if (error === TokenExpiredException) {
-                this.apiCallToFetchInventory(projectId)
+               this.apiCallToDeleteInventoryFlat(flatDetails,projectId)
             }
             throw error;
         }

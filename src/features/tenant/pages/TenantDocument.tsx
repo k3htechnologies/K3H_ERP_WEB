@@ -814,7 +814,7 @@ export const TenantDocument: React.FC = () => {
       <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
         <Button
           onClick={handleBackToListTenant}
-          color="transparent"
+          color="cancel"
           type="button"
           size="sm"
           className="hover:bg-gray-100 rounded-md"

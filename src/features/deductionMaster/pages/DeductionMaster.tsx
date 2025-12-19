@@ -122,7 +122,7 @@ export const DeductionMaster: React.FC = () => {
           PageNumber: page,
           PageSize: pagination.pageSize,
           DeductionMasterId: 0,
-          Name: '',
+          Name: filterParam.Name,
           SortBy: sortByParam
         };
 

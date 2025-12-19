@@ -25,6 +25,7 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { fetchBuildingDropdown } from '@/features/building/buildingDropdown';
 import { FileText } from 'lucide-react';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 export const Tenant: React.FC = () => {
   //#region STATE
@@ -63,8 +64,10 @@ export const Tenant: React.FC = () => {
         filters?: FilterInfo;
         sortInfo?: SortInfo;
         searchTerm?: string;
+        tenantId?: number;
         buildingId?: number;
         buildingName?: string;
+        tenantName?: string;
       };
     };
   };
@@ -73,16 +76,18 @@ export const Tenant: React.FC = () => {
   //#endregion
 
   //#region PROJECT SELECTION GET ID
-  
-    const { projectId } = useProject()
-  
-    //#endregion
+
+  const { projectId } = useProject()
+
+  //#endregion
 
   //#region INIT
   useEffect(() => {
 
+    if (!projectId) return;
+
     const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string; buildingId?: number; buildingName?: string }
+      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string; tenantId?: number, buildingId?: number; buildingName?: string; tenantName?: string }
       | undefined;
 
     const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '' };
@@ -115,10 +120,9 @@ export const Tenant: React.FC = () => {
       return;
     }
 
-
     loadTenants(listState.page ?? 1, listState.filters ?? {}, Number(listState.buildingId));
 
-  }, [location.state]);
+  }, [location.state, projectId]);
 
 
 
@@ -127,6 +131,7 @@ export const Tenant: React.FC = () => {
       debouncedSearch.cancel?.();
     };
   }, [debouncedSearch]);
+
   //#endregion
 
   //#region DATA LOAD
@@ -153,7 +158,7 @@ export const Tenant: React.FC = () => {
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           TenantId: filterParams.TenantId ? Number(filterParams.TenantId) : undefined,
-          ProjectId: projectId,
+          ProjectId: Number(projectId),
           BuildingId: buildingId,
           FlatNumber: filterParams.FlatNumber?.trim() || undefined,
           FlatConfiguration: filterParams.FlatConfiguration?.trim() || undefined,
@@ -181,7 +186,7 @@ export const Tenant: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Tenant Data'
+      'Loading Tenant'
     );
   };
 
@@ -215,13 +220,13 @@ export const Tenant: React.FC = () => {
     debouncedSearch.cancel?.();
 
     setFilters({});
+
     setTempFilters({});
+
     setPagination({ currentPage: 1 });
+
     loadTenants(1, {}, buildingId);
-    try {
-      navigate(location.pathname, { replace: true, state: {} });
-    } catch {
-    }
+
   };
 
   //#endregion
@@ -302,7 +307,6 @@ export const Tenant: React.FC = () => {
   //#endregion
 
   //#region VIEW EMPLOYEE MASTER
-
   const handleViewTenantDetails = useCallback((row: TenantData) => {
     navigate('/tenant/view', {
       state: {
@@ -313,8 +317,10 @@ export const Tenant: React.FC = () => {
           filters,
           sortInfo,
           searchTerm,
+          tenantId:row.TenantId,
           buildingId,
-          buildingName
+          buildingName,
+          tenantName:row.FlatNumber,
         },
       },
     });
@@ -322,27 +328,27 @@ export const Tenant: React.FC = () => {
   //#endregion
 
   //#region VIEW TENANT DOCUMENT
-  
-    const handleViewTenantDocument = useCallback((row: TenantData) => {
-      navigate('/tenant/document', {
-        state: {
-          editBuildingData: row,
-          fromList: true,
-          listState: {
-            page: pagination.currentPage,
-            filters,
-            sortInfo,
-            searchTerm,
-            tenantId: row.TenantId,
-            buildingId: row.BuildingId,
-            projectId: projectId,
-            tenantName: row.FlatNumber,
-  
-          },
+
+  const handleViewTenantDocument = useCallback((row: TenantData) => {
+    navigate('/tenant/document', {
+      state: {
+        editBuildingData: row,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm,
+          tenantId: row.TenantId,
+          buildingId: row.BuildingId,
+          projectId: projectId,
+          tenantName: row.FlatNumber,
+
         },
-      });
-    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm, projectId]);
-    //#endregion
+      },
+    });
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm, projectId]);
+  //#endregion
 
   //#region TABLE COLUMN
   const tenantColumns = useMemo<TableColumn[]>(
@@ -475,7 +481,7 @@ export const Tenant: React.FC = () => {
         align: 'center',
         render: value => value || 'N/A'
       },
-       {
+      {
         key: 'actions',
         label: 'Actions',
         width: '12',
@@ -489,7 +495,7 @@ export const Tenant: React.FC = () => {
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                   handleViewTenantDocument(row)
+                  handleViewTenantDocument(row)
                 }}
                 color='transparent'
                 isborderRadius
@@ -509,7 +515,7 @@ export const Tenant: React.FC = () => {
         )
       }
     ],
-    [handleViewTenantDetails,handleViewTenantDocument]
+    [handleViewTenantDetails, handleViewTenantDocument]
 
   );
   //#endregion
@@ -701,10 +707,12 @@ export const Tenant: React.FC = () => {
             title="Select Building"
             size="lg"
             initialValue={
-              { label: buildingName ?? "", value: buildingId }
-
+              buildingName
+                ? { label: buildingName ?? '', value: buildingId }
+                : undefined
             }
-            dataFetchCallBack={(pageNumber) => fetchBuildingDropdown(pageNumber, { projectId: 1 })}
+
+            dataFetchCallBack={(pageNumber) => fetchBuildingDropdown(pageNumber, { projectId: Number(projectId) })}
             onSelected={(item) => {
 
               const buildingId = item && item.value ? Number(item.value) : undefined;
@@ -719,7 +727,6 @@ export const Tenant: React.FC = () => {
               setPagination({ currentPage: 1 });
 
               loadTenants(1, {}, Number(buildingId));
-
 
               try {
                 navigate(location.pathname, { replace: true, state: { listState: { page: 1, filters: {}, sortInfo, searchTerm, buildingId, buildingName } } });

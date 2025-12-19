@@ -81,8 +81,8 @@ export interface ProposedOfferCorpusDetailsWithPaymentStageData {
     Type?: string
     Stage?: string
     StagePercentage?: number
+    StagePercentageText?: string
     Amount?: number
-
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -205,8 +205,8 @@ export interface ProposedOfferShiftingDetailsWithPaymentStageData {
     Type?: string
     Stage?: string
     StagePercentage?: number
+    StagePercentageText? :string | ''
     Amount?: number
-
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

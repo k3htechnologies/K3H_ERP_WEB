@@ -171,7 +171,8 @@ const AddUpdateTenant: React.FC = () => {
 
   const [formDataForApplicant, setFormDataForApplicant] = useState<AddUpdateTenantApplicant>(() => initialFormStateApplicantDetails());
 
-  const [editingApplicantData, setEditingApplicantData] = useState<TenantApplicantWithFiles | null>(null)
+  const [editingApplicantData, setEditingApplicantData] = useState<{row: TenantApplicantWithFiles ; index: number } | null>(null);
+
   const [isAddUpdateApplicantModalOpen, setIsAddUpdateApplicantModalOpen] = useState(false)
 
 
@@ -460,7 +461,7 @@ const AddUpdateTenant: React.FC = () => {
 
   //#region EDIT TENANT APPLICANT
 
-  const handleEditApplicant = useCallback((row: TenantApplicantWithFiles) => {
+  const handleEditApplicant = useCallback((row: TenantApplicantWithFiles, index: number) => {
 
     const applicantData: AddUpdateTenantApplicant = {
       TenantApplicantId: row.TenantApplicantId ?? 0,
@@ -500,7 +501,7 @@ const AddUpdateTenant: React.FC = () => {
     };
 
 
-    setEditingApplicantData(row);
+    setEditingApplicantData({row,index});
     setFormDataForApplicant(applicantData);
 
     // PHOTO
@@ -553,60 +554,16 @@ const AddUpdateTenant: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
+        fixed:'left',
         render: (value, row) => {
           return (
-            <div className="flex items-center justify-end ml-2 gap-1">
+            
               <MultiImageViewer
                 images={parseDocumentUrls(row.PhotoURL)}
                 title="Applicant Document"
                 triggerLabel={value || '-'}
               />
-              <div className="w-[34px] flex justify-center">
-
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    handleEditApplicant(row)
-                  }}
-                  color='transparent'
-                  isborderRadius
-                  size='sm'
-                  title="Edit Applicant"
-                  leftIcon={<Edit className="h-4 w-4" />}
-                >
-                </Button>
-              </div>
-
-
-              <div className="w-[34px] flex justify-center">
-
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-
-                    const idx = applicantList.findIndex(a =>
-                      (a.TenantApplicantId != null && row.TenantApplicantId != null)
-                        ? a.TenantApplicantId === row.TenantApplicantId
-                        : a === row
-                    );
-
-                    handleConfirmationDialogBoxOpen(row, idx >= 0 ? idx : 0);
-
-                  }}
-                  color="transparent"
-                  isborderRadius
-                  size="sm"
-                  style={{ color: 'red' }}
-                  title="Delete"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-
-              </div>
-
-            </div>
+            
           );
         }
       },
@@ -766,6 +723,50 @@ const AddUpdateTenant: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value) => value || '-'
+      },
+        {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row,index) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleEditApplicant(row,index)
+                  }}
+                  color='transparent'
+                  isborderRadius
+                  size='sm'
+                  title="Edit Applicant"
+                  leftIcon={<Edit className="h-4 w-4" />}
+                >
+                </Button>
+
+              <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                     handleConfirmationDialogBoxOpen(row, index);
+
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  size="sm"
+                  style={{ color: 'red' }}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+            </div>
+          ) : null
+
+
+        )
       }
 
 
@@ -845,12 +846,7 @@ const AddUpdateTenant: React.FC = () => {
 
     }
 
-    const idToUse =
-      editingApplicantData?.TenantApplicantId ??
-      (formDataForApplicant.TenantApplicantId && formDataForApplicant.TenantApplicantId > 0
-        ? formDataForApplicant.TenantApplicantId
-        : 0);
-
+    
 
     const applicantToSave: TenantApplicant & {
       _photoFiles?: (File | string)[];
@@ -870,7 +866,7 @@ const AddUpdateTenant: React.FC = () => {
       RemoveGSTNumberURL?: string;
       RemoveChequeURL?: string;
     } = {
-      TenantApplicantId: idToUse,
+      TenantApplicantId:  editingApplicantData?.row.TenantApplicantId ?? 0,
       TenantId: formDataForApplicant.TenantId ?? 0,
       BuildingId: formDataForApplicant.BuildingId ?? 0,
       ProjectId: formDataForApplicant.ProjectId ?? 0,
@@ -926,13 +922,15 @@ const AddUpdateTenant: React.FC = () => {
       RemoveChequeURL: removedChequeURLs.join(','),
     };
 
-    setApplicantList(prevList => {
-      if (editingApplicantData && editingApplicantData.TenantApplicantId) {
-        return prevList.map(p => (p.TenantApplicantId === idToUse ? applicantToSave : p));
-      } else {
-        return [...prevList, applicantToSave];
+     setApplicantList(prev => {
+      if (editingApplicantData) {
+        const updated = [...prev];
+        updated[editingApplicantData.index] = applicantToSave;
+        return updated;
       }
+      return [...prev, applicantToSave];
     });
+
 
     setIsAddUpdateApplicantModalOpen(false);
     setEditingApplicantData(null);
@@ -954,6 +952,7 @@ const AddUpdateTenant: React.FC = () => {
   const handleDeleteApplicant = () => {
 
     if (!deleteTenantApplicantData) return;
+    
     const removeIndex = deleteTenantApplicantData.index;
 
     if (removeIndex < 0) {
@@ -1082,15 +1081,16 @@ const AddUpdateTenant: React.FC = () => {
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
 
-      <div className="flex-1 space-y-2 px-6 py-3 pb-20">
+      <div className="flex-1 space-y-2 px-6 py-3">
         <form onSubmit={handleSubmit}>
           {/* ============================================================= [FLAT DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
             <div className="flex items-center justify-between">
-
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-                Applicant Details
-              </h3>
+              <div className="flex-1 border-b border-gray-300 pb-2">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Applicant Details
+                </h3>
+              </div>
 
               <div className="ml-4">
                 <Button
@@ -1154,7 +1154,9 @@ const AddUpdateTenant: React.FC = () => {
                   value={formData.FlatNumber}
                   required
                   onChange={e => handleFieldChange('FlatNumber', e.target.value)}
-                  error={errors.FlatNumber} />
+                  error={errors.FlatNumber}
+                  placeholder="Enter Unit Number"
+                />
               </div>
               <div>
                 <Input
@@ -1163,6 +1165,7 @@ const AddUpdateTenant: React.FC = () => {
                   required
                   onChange={e => handleFieldChange('FlatCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
                   error={errors.FlatCarpetAreaSqFt}
+                  placeholder="Enter Carpet Area SqFt"
                 />
               </div>
               <div>
@@ -1173,6 +1176,7 @@ const AddUpdateTenant: React.FC = () => {
                   onChange={(e) => handleFieldChange('FlatType', String(e))}
                   options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
                   error={errors.FlatType}
+                  placeholder="Enter Unit Type"
                 />
               </div>
 
@@ -1217,10 +1221,13 @@ const AddUpdateTenant: React.FC = () => {
               </div>
 
               <div>
-                <Input label="Free Area Offered (%)"
+                <Input
+                  label="Free Area Offered (%)"
                   value={formData.FreeAreaOfferedPercent ?? ''}
                   onChange={(e) => handleFieldChange("FreeAreaOfferedPercent", filterNumbersWithDecimal(e.target.value))}
-                  error={errors.FreeAreaOfferedPercent} />
+                  error={errors.FreeAreaOfferedPercent}
+                  placeholder="Enter Free Area Offered (%)"
+                />
               </div>
               <div>
                 <Input
@@ -1228,6 +1235,7 @@ const AddUpdateTenant: React.FC = () => {
                   value={formData.ExtraAreaPurchasedSqFt ?? ''}
                   onChange={(e) => handleFieldChange("ExtraAreaPurchasedSqFt", filterNumbersWithDecimal(e.target.value))}
                   error={errors.ExtraAreaPurchasedSqFt}
+                  placeholder="Enter Extra Area Purchased SqFt"
                 />
               </div>
               <div>
@@ -1236,6 +1244,7 @@ const AddUpdateTenant: React.FC = () => {
                   value={formData.TotalAreaSqFt ?? ''}
                   onChange={(e) => handleFieldChange("TotalAreaSqFt", filterNumbersWithDecimal(e.target.value))}
                   error={errors.TotalAreaSqFt}
+                  placeholder="Enter Total Area SqFt"
                 />
               </div>
             </div>
@@ -1245,7 +1254,7 @@ const AddUpdateTenant: React.FC = () => {
 
       <BottomActionBar
         cancelText="Cancel"
-        saveText={(formData.TenantId && formData.TenantId > 0) ? 'Update Tenant' : 'Add Tenant'}
+        saveText={(formData.TenantId && formData.TenantId > 0) ? 'Update' : 'Add'}
         onCancel={() => navigate(-1)}
         canAction={canAction}
         onSave={() => {
@@ -1314,6 +1323,7 @@ const AddUpdateTenant: React.FC = () => {
                 type="text"
                 value={formDataForApplicant.ApplicantMobileNumber ?? ""}
                 maxLength={10}
+                leftIcon="+91"
                 onChange={e =>
                   handleFieldChangeTenantApplicant('ApplicantMobileNumber', filterMobile(e.target.value))
                 }
@@ -1343,7 +1353,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.PhotoURL}
                 value={applicantPhotoFiles}
                 onChange={setApplicantPhotoFiles}
-                availableFilesURL={editingApplicantData?._photoFiles}
+                availableFilesURL={editingApplicantData?.row._photoFiles}
                 allowedTypes={['image/jpeg', 'image/png']}
                 maxFiles={1}
                 maxSizeMB={5}
@@ -1377,7 +1387,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.AadharCardURL}
                 value={aadharCardFiles}
                 onChange={setAadharCardFiles}
-                availableFilesURL={editingApplicantData?._aadharFiles}
+                availableFilesURL={editingApplicantData?.row._aadharFiles}
                 allowedTypes={[
                   'image/jpeg',
                   'image/png',
@@ -1415,7 +1425,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.PanCardURL}
                 value={panCardFiles}
                 onChange={setPanCardFiles}
-                availableFilesURL={editingApplicantData?._panFiles}
+                availableFilesURL={editingApplicantData?.row._panFiles}
                 allowedTypes={[
                   'image/jpeg',
                   'image/png',
@@ -1453,7 +1463,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.PassportURL}
                 value={passportFiles}
                 onChange={setPassportFiles}
-                availableFilesURL={editingApplicantData?._passportFiles}
+                availableFilesURL={editingApplicantData?.row._passportFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={3}
                 maxSizeMB={10}
@@ -1481,7 +1491,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.DrivingLicenseURL}
                 value={drivingLicenseFiles}
                 onChange={setDrivingLicenseFiles}
-                availableFilesURL={editingApplicantData?._drivingFiles}
+                availableFilesURL={editingApplicantData?.row._drivingFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={3}
                 maxSizeMB={10}
@@ -1509,7 +1519,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.VotingIdURL}
                 value={votingIdFiles}
                 onChange={setVotingIdFiles}
-                availableFilesURL={editingApplicantData?._votingFiles}
+                availableFilesURL={editingApplicantData?.row._votingFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={3}
                 maxSizeMB={10}
@@ -1537,7 +1547,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.GSTNumberURL}
                 value={gstFiles}
                 onChange={setGstFiles}
-                availableFilesURL={editingApplicantData?._gstFiles}
+                availableFilesURL={editingApplicantData?.row._gstFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={5}
                 maxSizeMB={10}
@@ -1563,13 +1573,17 @@ const AddUpdateTenant: React.FC = () => {
                 value={formDataForApplicant.AccountNumber ?? ""}
                 maxLength={18}
                 onChange={(e) => handleFieldChangeTenantApplicant("AccountNumber", filterNumbers(e.target.value))}
-                error={errorsTenantApplicant.AccountNumber} />
+                error={errorsTenantApplicant.AccountNumber}
+                placeholder="Enter Account Number"
+                />
             </div>
             <div>
               <Input label="IFSC Code"
                 value={formDataForApplicant.IFSCCode ?? ""}
                 onChange={(e) => handleFieldChangeTenantApplicant("IFSCCode", filterIFSC(e.target.value))}
-                error={errorsTenantApplicant.IFSCCode} />
+                error={errorsTenantApplicant.IFSCCode} 
+                placeholder="Enter IFSC Code"
+                />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1579,7 +1593,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.ChequeURL}
                 value={chequeFiles}
                 onChange={setChequeFiles}
-                availableFilesURL={editingApplicantData?._chequeFiles}
+                availableFilesURL={editingApplicantData?.row._chequeFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={2}
                 maxSizeMB={10}

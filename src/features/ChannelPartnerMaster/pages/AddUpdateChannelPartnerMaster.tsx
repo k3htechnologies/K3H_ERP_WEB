@@ -488,7 +488,6 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     maxSizeMB={50}
                                     onRemoveExisting={(url) => {
                                         setRemoveAadharCardUrls(prev => [...prev, url]);
-                                        setAadharCardURL(prev => prev.filter(u => u !== url));
 
                                     }}
 

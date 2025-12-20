@@ -1,6 +1,6 @@
 import React from 'react'
 
-const InventorySpecification: React.FC = () => {
+const EmployeeDocument: React.FC = () => {
   return (
     <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -11,4 +11,4 @@ const InventorySpecification: React.FC = () => {
   )
 }
 
-export default InventorySpecification
+export default EmployeeDocument

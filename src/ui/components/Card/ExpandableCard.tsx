@@ -16,10 +16,10 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   showline,
   customizedIcon,
   child,
-  height=56,
-  expandedheight=256
+  height=40,
+  expandedheight=250
 }) => {
-  const [isExpandableOpen, setExpandableOpen] = useState(false);
+  const [isExpandableOpen, setExpandableOpen] = useState(true);
 
   return (
     <div className="bg-[#F9FAFB] border border-[#135BEC30] rounded-md shadow-md">

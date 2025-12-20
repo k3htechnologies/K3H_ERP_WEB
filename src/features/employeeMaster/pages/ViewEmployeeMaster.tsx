@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
-import type { EmployeeMasterData } from '../models/EmployeeMasterModel';
+import type { EmployeeMasterData } from '@/features/employeeMaster/models/EmployeeMasterModel';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
@@ -14,6 +14,7 @@ import { useToast } from '@/core/hooks/useToast';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
 
 export const ViewEmployeeMaster: React.FC = () => {
 
@@ -47,6 +48,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     //#endregion
     //#region Get EMPLOYEE DATA FROM LOCATION STATE
     const editEmployeeData = (location.state?.editEmployeeMasterData ?? null) as EmployeeMasterData | null;
+    const employeeReportingCycleData = editEmployeeData!.EmployeeReportingCycleData;
     //#endregion
     //#region TAB ACTIVITY
     const TabList = [
@@ -364,10 +366,52 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                     {/* Reporting Structure example block */}
                     <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                        <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
+
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
                             Reporting Structure
                         </h4>
-                        <div>Right Panel Data Here</div>
+                        <div className="space-y-4">
+                            {employeeReportingCycleData && employeeReportingCycleData.length > 0 ? (
+                                employeeReportingCycleData.map((item, index) => (
+                                    <div key={index} className="flex gap-4 relative">
+
+                                        <div className="flex flex-col items-center">
+
+                                            <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-semibold text-sm">
+                                                {item.FullName!.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
+                                            </div>
+
+                                            {index !== employeeReportingCycleData.length - 1 && (
+
+                                                <div className="w-px bg-gray-500 flex-1 mt-1"></div>
+                                            )}
+                                        </div>
+
+                                        {/* Content */}
+                                        <div className="flex-1 pb-4">
+                                            <div className="font-semibold text-gray-500">
+                                                {item.FullName || '-'}
+                                                <span className="ml-2 text-xs text-gray-300">
+                                                    ({item.EmployeeCode || '-'})
+                                                </span>
+                                            </div>
+
+                                            <div className="text-sm text-gray-500">
+                                                {item.Designation || '-'}
+                                            </div>
+                                            <div className="text-xs text-gray-400">
+                                                {item.EmailId || '-'} +91 {item.PersonalMobileNumber || '-'}
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                ))
+                            ) : (
+                                <NoDataView message='No Reporting Structure Found' />
+                            )}
+                        </div>
+
                     </section>
 
                     {/* Documents example block */}

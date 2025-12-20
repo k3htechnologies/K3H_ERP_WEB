@@ -84,6 +84,7 @@ import ProposedOffer from '@/features/proposedOffer/pages/ProposedOffer';
 import Company from '@/features/projectMaster/pages/Company';
 import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
+import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -149,6 +150,7 @@ function App() {
             <Route path="employeeMaster" element={<EmployeeMaster />} />
             <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />
             <Route path="employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
+             <Route path="employeeMaster/document" element={<EmployeeDocument />} />
             <Route path="outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
             <Route path="outdoor" element={<OutDoor />} />
             <Route path="companyMaster" element={<CompanyMaster />} />

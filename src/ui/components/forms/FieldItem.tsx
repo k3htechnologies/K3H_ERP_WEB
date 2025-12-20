@@ -12,6 +12,7 @@ export const FieldItem: React.FC<{
   withBorder?: boolean;
   urls?: string | null;
   isIcon?: boolean;
+  isUsedForInventoryFlat?: boolean;
 }> = ({
   label,
   value,
@@ -19,8 +20,10 @@ export const FieldItem: React.FC<{
   className = '',
   withBorder = false,
   urls = null,
-  isIcon = false
+  isIcon = false,
+  isUsedForInventoryFlat = false,
 }) => {
+
     const displayValue = value !== undefined && value !== null && value !== '' ? String(value) : '-';
     const borderClass = withBorder ? 'border-b border-[#135bec2e]' : '';
 
@@ -40,8 +43,9 @@ export const FieldItem: React.FC<{
 
     const rowGridStyle: React.CSSProperties = {
       display: 'grid',
-      gridTemplateColumns: '180px 16px 1fr',
-      gap: 8,
+      gridTemplateColumns: !isUsedForInventoryFlat ? '180px 16px 1fr' : '120px 16px 1fr',
+      // gap: 8,
+      gap: !isUsedForInventoryFlat ? 8 : 4,
       alignItems: 'center',
       width: '100%',
     };
@@ -50,7 +54,7 @@ export const FieldItem: React.FC<{
     // ROW layout: label : value
     if (isRow) {
       return (
-        <div className={`${borderClass} py-2`}>
+        <div className={`${borderClass} ${!isUsedForInventoryFlat? 'py-2' : 'py-0.1' }`}>
           <div style={rowGridStyle}>
             {/* Label */}
             <div className="text-sm font-medium text-[#1D1D1D80] truncate">
@@ -60,15 +64,12 @@ export const FieldItem: React.FC<{
             {/* Colon */}
             <div className="text-sm text-[#1D1D1D80] text-center select-none">:</div>
 
-            {/* Value (with optional document viewer)
-              IMPORTANT: add `min-w-0` so this grid cell can shrink and allow wrapping */}
             <div className="text-sm text-[#1D1D1D] font-medium break-words min-w-0">
               {hasDocs ? (
                 <MultiImageViewer
                   images={imageUrls}
                   title={label}
                   triggerLabel={
-                    // inline button — make it able to wrap with min-w-0 + whitespace-normal
                     <button
                       type="button"
                       className="text-sm text-[#1D1D1D] font-medium text-left break-words whitespace-normal max-w-[400px] cursor-pointer p-0 min-w-0 underline"
@@ -93,7 +94,6 @@ export const FieldItem: React.FC<{
 
     // COLUMN layout (default)
     return (
-      // ensure outer can shrink if used inside flex
       <div className={`flex flex-col ${borderClass} ${className} min-w-0`}>
         <span className="text-sm font-medium text-[#1D1D1D80] truncate">
           {label}

@@ -1,99 +1,99 @@
 import baseClient from "@/core/config/baseClient";
-import type { InventoryApiPullReponse, InventoryFlatData, UpdateFlatApiResponse, } from "../models/InventoryMasterModel";
-import { InventoryApis } from "../api/InventoryApis";
+import type { DeleteInventoryFlatRequest, FilterInventoryRequest, InventoryFlatDeleteResponse, InventoryListReponse, UpdateFlatResponse, UpdateInventoryFlatRequest, } from "@/features/inventory/models/InventoryMasterModel";
+import { InventoryApis } from "@/features/inventory/api/InventoryApis";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 
 export abstract class InventoryDatasource {
-    abstract apiCallToFetchInventory(projectId: number): Promise<InventoryApiPullReponse>
 
-    abstract apiCallToUpdateInventoryFlat(flatDetails: InventoryFlatData, projectId: number): Promise<UpdateFlatApiResponse>
+    abstract pullInventory(parms: FilterInventoryRequest, signal?: AbortSignal): Promise<InventoryListReponse>;
 
-    abstract apiCallToDeleteInventoryFlat(flatDetails: InventoryFlatData, projectId: number): Promise<any>
+    abstract updateInventoryFlat(params: UpdateInventoryFlatRequest): Promise<UpdateFlatResponse>;
+
+    abstract deleteInventoryFlat(params: DeleteInventoryFlatRequest): Promise<InventoryFlatDeleteResponse>;
 }
 
 export class InventoryDatasourceImpl implements InventoryDatasource {
-  
+
     private get k3hHttpClient() {
         return baseClient;
     }
 
-    async apiCallToFetchInventory(projectId: number): Promise<InventoryApiPullReponse> {
+    async pullInventory(params: FilterInventoryRequest, signal?: AbortSignal): Promise<InventoryListReponse> {
         try {
-            const url = `${InventoryApis.PULL}?ProjectId=${projectId}`;
-            const apiResponse = await this.k3hHttpClient.getRequestWithAuthentication(url);
 
-            return apiResponse;
+            const queryParams = new URLSearchParams({
+                ProjectId: (params.ProjectId ?? 0).toString(),
+            })
+
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${InventoryApis.PULL}?${queryParams.toString()}`, { signal }
+            )
+            return response;
+
         } catch (error: any) {
+
+            console.error('ERROR: PULL INVENTORY:', error)
+
             if (error === TokenExpiredException) {
-                this.apiCallToFetchInventory(projectId)
+
+                this.pullInventory(params)
+
             }
             throw error;
         }
     }
 
-    async apiCallToUpdateInventoryFlat(flatDetails: InventoryFlatData, projectId: number): Promise<UpdateFlatApiResponse> {
+    async updateInventoryFlat(params: UpdateInventoryFlatRequest): Promise<UpdateFlatResponse> {
         try {
-            const url = `${InventoryApis.UPDATEFLAT}`;
-            
-            // Convert InventoryFlatSpecificationData array to JSON string
-            const inventoryFlatSpecificationJSON = flatDetails.InventoryFlatSpecificationData 
-                ? JSON.stringify(flatDetails.InventoryFlatSpecificationData)
-                : "[]";
-            
-            var payload =
-            {
-                "ProjectId": projectId,
-                "InventoryBuildingId": flatDetails.InventoryBuildingId,
-                "InventoryFlatFloorBasementPodiumWingId": flatDetails.InventoryFlatFloorBasementPodiumWingId,
-                "InventoryFlatId": flatDetails.InventoryFlatId,
-                "Flat": flatDetails.Flat,
-                "FlatType": flatDetails.FlatType,
-                "RERACarpetAreaSqFt": flatDetails.RERACarpetAreaSqFt,
-                "FlatConfiguration": flatDetails.FlatConfiguration,
-                "FlatStatus": flatDetails.FlatStatus,
-                "FlatFacing": flatDetails.FlatFacing,
-                "InventoryFlatSpecificationJSON": inventoryFlatSpecificationJSON
-            };
-            
-            const apiResponse = await baseClient.postRequestWithAuthentication(url, payload)
-            return apiResponse
+            return await this.k3hHttpClient.postRequestWithAuthentication(
+                InventoryApis.UPDATE_Inventory_FLAT,
+                params
+            )
         } catch (error) {
+
+            console.error('ERROR: ADD UPDATE INVENTORY:', error)
+
             if (error === TokenExpiredException) {
-                this.apiCallToUpdateInventoryFlat(flatDetails, projectId)
+
+                await this.updateInventoryFlat(params)
             }
-            throw error;
+
+            throw error
         }
     }
 
-    async apiCallToDeleteInventoryFlat(flatDetails: InventoryFlatData, projectId: number) {
-        try{
-            const url = `${InventoryApis.DELETEFLAT}?ProjectId=${projectId}&InventoryBuildingId=${flatDetails.InventoryBuildingId}&InventoryFlatFloorBasementPodiumWingId=${flatDetails.InventoryFlatFloorBasementPodiumWingId}&InventoryFloorId=${flatDetails.InventoryFloorId}&InventoryFlatId=${flatDetails.InventoryFlatId}`;
-
-            const apiResponse = await baseClient.deleteRequestWithAuthentication(url)
-
-            return apiResponse
-
-        }catch(error){
-            if (error === TokenExpiredException) {
-               this.apiCallToDeleteInventoryFlat(flatDetails,projectId)
-            }
-            throw error;
-        }
-    }
-
-    async apiCallToExportExcelPdf(projectId: number, exportType: string) {
+    async deleteInventoryFlat(params: DeleteInventoryFlatRequest): Promise<InventoryFlatDeleteResponse> {
         try {
-            const url = `${InventoryApis.PULL}?ProjectId=${projectId}&ExportType=${exportType}`;
-            const apiResponse = await this.k3hHttpClient.getRequestWithAuthentication(url);
+            const queryParams = new URLSearchParams({
+                ProjectId: (params.ProjectId ?? 0).toString(),
+                InventoryBuildingId: (params.InventoryBuildingId ?? 0).toString(),
+                InventoryFlatFloorBasementPodiumWingId: (params.InventoryFlatFloorBasementPodiumWingId ?? 0).toString(),
+                InventoryFloorId: (params.InventoryFloorId ?? 0).toString(),
+                InventoryFlatId: (params.InventoryFlatId ?? 0).toString(),
+            })
 
-            return apiResponse;
+            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${InventoryApis.DELETE_Inventory_FLAT}?${queryParams.toString()}`
+            )
+
+            return response
+
         } catch (error) {
+
+            console.error('ERROR: DELETE INVENTORY FLAT :', error)
+
             if (error === TokenExpiredException) {
-                this.apiCallToExportExcelPdf(projectId, exportType)
+
+                await this.deleteInventoryFlat(params);
+
             }
-            throw error;
+
+            throw error
         }
     }
+
 }
 
 

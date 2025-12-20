@@ -554,7 +554,7 @@ const AddUpdateEmployeePage: React.FC = () => {
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
 
-      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         <form onSubmit={handleSubmit}>
           {/* ============================================================= [BASIC EMPLOYEE DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">

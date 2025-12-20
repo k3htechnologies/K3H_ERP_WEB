@@ -23,8 +23,9 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { useLocation, type Location, useNavigate } from 'react-router-dom';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
+import { FileText } from 'lucide-react';
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -303,6 +304,28 @@ export const EmployeeMaster: React.FC = () => {
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
   //#endregion
 
+  //#region VIEW EMPLOYEE DOCUMENT
+  
+    const handleViewEmployeeDocument = useCallback((row: EmployeeMasterData) => {
+
+      navigate('/employeeMaster/document', {
+        state: {
+          editBuildingData: row,
+          fromList: true,
+          listState: {
+            page: pagination.currentPage,
+            filters,
+            sortInfo,
+            searchTerm,
+            employeeId: row.EmployeeId,
+            employeeName: row.FullName,
+  
+          },
+        },
+      });
+    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    //#endregion
+
   //#region TABLE COLUMN
   const employeeColumns = useMemo<TableColumn[]>(
     () => [
@@ -543,9 +566,42 @@ export const EmployeeMaster: React.FC = () => {
         sortable: true,
         align: 'center',
         render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
+      },
+        {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+              
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleViewEmployeeDocument(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'green',
+                  padding: '4px 8px'
+                }}
+                title="Building Document"
+              >
+                <FileText className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+
+
+        )
       }
     ],
-    [canAction, handleViewEmployeeDetails]
+    [canAction, handleViewEmployeeDetails,handleViewEmployeeDocument]
 
   );
   //#endregion

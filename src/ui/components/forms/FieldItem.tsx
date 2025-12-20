@@ -13,6 +13,7 @@ export const FieldItem: React.FC<{
   urls?: string | null;
   isIcon?: boolean;
   isUsedForInventoryFlat?: boolean;
+  isSetValue?: boolean;
 }> = ({
   label,
   value,
@@ -22,6 +23,7 @@ export const FieldItem: React.FC<{
   urls = null,
   isIcon = false,
   isUsedForInventoryFlat = false,
+  isSetValue = true,
 }) => {
 
     const displayValue = value !== undefined && value !== null && value !== '' ? String(value) : '-';
@@ -54,8 +56,9 @@ export const FieldItem: React.FC<{
     // ROW layout: label : value
     if (isRow) {
       return (
-        <div className={`${borderClass} ${!isUsedForInventoryFlat? 'py-2' : 'py-0.1' }`}>
+        <div className={`${borderClass} ${!isUsedForInventoryFlat ? 'py-2' : 'py-0.1'}`}>
           <div style={rowGridStyle}>
+
             {/* Label */}
             <div className="text-sm font-medium text-[#1D1D1D80] truncate">
               {label}
@@ -70,13 +73,20 @@ export const FieldItem: React.FC<{
                   images={imageUrls}
                   title={label}
                   triggerLabel={
-                    <button
-                      type="button"
-                      className="text-sm text-[#1D1D1D] font-medium text-left break-words whitespace-normal max-w-[400px] cursor-pointer p-0 min-w-0 underline"
-                      style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
-                    >
-                      {displayValue}
-                    </button>
+                    isIcon === true ? (
+                      <span className="flex items-center gap-2 text-sm font-medium">
+                        {isSetValue ? <span>{displayValue}</span> : ''}
+                        {EyeTrigger}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="text-sm font-medium text-left break-words whitespace-normal max-w-[400px] cursor-pointer p-0 min-w-0 underline"
+                        style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
+                      >
+                        {displayValue}
+                      </button>
+                    )
                   }
                 />
               ) : (

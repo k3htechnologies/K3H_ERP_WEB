@@ -24,6 +24,7 @@ const initialFormState = (): AddUpdateBuildingRequest => ({
   ProjectId: null,
   BuildingName: "",
   CTSNumber: "",
+  GoogleLocation: "",
   TotalPlotAreaSqFt: null,
   RoadWidth: "",
   CountryMasterId: 1,
@@ -175,6 +176,7 @@ const AddUpdateBuilding: React.FC = () => {
               ProjectId: projectId,
               BuildingName: e.BuildingName ?? prev.BuildingName,
               CTSNumber: e.CTSNumber ?? prev.CTSNumber,
+              GoogleLocation: e.GoogleLocation ?? prev.GoogleLocation,
               TotalPlotAreaSqFt: e.TotalPlotAreaSqFt ?? prev.TotalPlotAreaSqFt,
               RoadWidth: e.RoadWidth ?? prev.RoadWidth,
               CountryMasterId: e.CountryMasterId ?? prev.CountryMasterId,
@@ -237,6 +239,11 @@ const AddUpdateBuilding: React.FC = () => {
     if (!formData.CTSNumber?.trim()) {
       newErrors.CTSNumber = 'CTS Number is required'
     }
+
+    if (!formData.GoogleLocation?.trim()) {
+      newErrors.GoogleLocation = 'Google Location is required'
+    }
+
     if (!formData.TotalPlotAreaSqFt) {
       newErrors.TotalPlotAreaSqFt = 'Total Plot Area SqFt is required'
     }
@@ -269,6 +276,7 @@ const AddUpdateBuilding: React.FC = () => {
       ProjectId: projectId,
       BuildingName: formData.BuildingName,
       CTSNumber: formData.CTSNumber,
+      GoogleLocation: formData.GoogleLocation || "",
       TotalPlotAreaSqFt: formData.TotalPlotAreaSqFt || 0,
       RoadWidth: formData.RoadWidth ||"",
       CountryMasterId: formData.CountryMasterId,
@@ -392,6 +400,16 @@ const AddUpdateBuilding: React.FC = () => {
                   onChange={e => handleFieldChange('CTSNumber', e.target.value)}
                   error={errors.CTSNumber}
                   placeholder="Enter CTS Number"
+                />
+              </div>
+               <div>
+                <Input
+                  value={formData.GoogleLocation}
+                  label="Google Location"
+                  required
+                  onChange={e => handleFieldChange('GoogleLocation', e.target.value)}
+                  error={errors.GoogleLocation}
+                  placeholder="Enter Google Location"
                 />
               </div>
               <div>

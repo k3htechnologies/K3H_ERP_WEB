@@ -19,6 +19,7 @@ export interface BuildingData {
 
   BuildingName: string;
   CTSNumber: string;
+  GoogleLocation: string;
   TotalPlotAreaSqFt: number | null;
   RoadWidth: string;
 
@@ -68,6 +69,7 @@ export interface AddUpdateBuildingRequest {
   ProjectId: number | null;
   BuildingName: string;
   CTSNumber: string;
+  GoogleLocation?: string | '';
   TotalPlotAreaSqFt: number | null;
   RoadWidth: string;
   CountryMasterId: number | null;

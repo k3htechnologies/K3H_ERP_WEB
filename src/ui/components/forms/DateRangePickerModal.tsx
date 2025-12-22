@@ -359,6 +359,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
       onreset={onReset}
       size="xl"
       loading={loading}
+      hideSaveIcon={true}
     >
       <div style={{ padding: 0 }}>
         {/* Main Content */}

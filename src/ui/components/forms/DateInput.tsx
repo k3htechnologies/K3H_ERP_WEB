@@ -222,6 +222,7 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
               cursor: disabled ? 'not-allowed' : 'pointer',
               borderColor: isActive ? '#3b82f6' : undefined,
               borderWidth: isActive ? '2px' : undefined,
+              paddingRight: showClearButton && displayValue ? '40px' : undefined,
               ...props.style
             }}
           />
@@ -233,17 +234,25 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
               style={{
                 position: 'absolute',
                 right: theme.spacing.md,
-                top: label ? '48px' : '8px',
+                top: label ? 'calc(50% + 12px)' : '50%',
+                transform: 'translateY(-50%)',
                 background: 'transparent',
                 border: 'none',
                 cursor: 'pointer',
-                fontSize: '18px',
                 color: '#ef4444',
-                padding: '4px 8px',
+                padding: '4px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 zIndex: 2,
+                borderRadius: '4px',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#fef2f2'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
               }}
               title="Clear date"
             >

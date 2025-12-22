@@ -10,10 +10,11 @@ import type { AddUpdateLeaveRequest, LeaveData } from '@/features/leave/models/L
 import { LeaveService } from '@/features/leave/services/LeaveService';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import { ToastContainer } from '@/ui/components/Toast';
-import { formatDate_dd_mm_yyyy } from '@/core/utils/dateFormat';
+import { formatDate_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
 import { DateRangePickerModal } from '@/ui/components/forms/DateRangePickerModal';
-import { Calendar, X } from 'lucide-react';
+import { DateInput } from '@/ui/components/forms/DateInput';
+import { Loader } from '@/core/utils/loader';
+import { ChevronLeft } from 'lucide-react';
 
 const LEAVE_DURATION_OPTIONS = [
   { label: 'Full Day', value: 'Full' },
@@ -37,13 +38,15 @@ export const AddUpdateLeave: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const location = useLocation() as { state?: { data?: LeaveData | null } };
   const navigate = useNavigate();
-  const { toasts, addToast, removeToast } = useToast();
+  const { addToast } = useToast();
 
   const [formData, setFormData] = useState<AddUpdateLeaveRequest>(initialFormState());
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
   const [isSaving, setIsSaving] = useState(false);
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [dropdownLabels, setDropdownLabels] = useState<{ leaveTypeName?: string }>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   useEffect(() => {
     const incoming = location.state?.data;
@@ -80,16 +83,11 @@ export const AddUpdateLeave: React.FC = () => {
     if (!formData.EndDateLeaveDuration) newErrors.EndDateLeaveDuration = 'End duration required';
     if (!formData.Reason || formData.Reason.trim() === '') newErrors.Reason = 'Reason is required';
     setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) {
-      addToast({ 
-        type: 'warning', 
-        title: 'Validation Error', 
-        message: 'Please fill in all required fields before saving.' 
-      });
-      return;
-    }
+    if (Object.keys(newErrors).length > 0) return;
 
     setIsSaving(true);
+    setIsLoading(true);
+    setLoadingMessage('Saving leave...');
     const payload: AddUpdateLeaveRequest = {
       ...formData,
       StartDate: finalStart,
@@ -98,77 +96,83 @@ export const AddUpdateLeave: React.FC = () => {
     };
     const respEither = await LeaveService.apiCallAddUpdateLeave(payload);
     if (E.isRight(respEither)) {
-      addToast({ 
-        type: 'success', 
-        title: 'Success', 
-        message: formData.LeaveId ? 'Leave updated successfully' : 'Leave created successfully' 
-      });
+      addToast({ type: 'success', title: 'Saved', message: 'Leave saved successfully' });
       navigate(-1);
     } else {
-      addToast({ 
-        type: 'error', 
-        title: 'Error', 
-        message: respEither.left.message || 'Failed to save leave. Please try again.' 
-      });
+      addToast({ type: 'error', title: 'Failed', message: respEither.left.message });
     }
     setIsSaving(false);
+    setIsLoading(false);
+    setLoadingMessage('');
   };
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="p-6 pb-24">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-        <div className="flex items-center justify-between">
+    <div className="p-6" style={{ backgroundColor: '#F9FAFB' }}>
+      <Loader loading={isLoading} title={loadingMessage}>
+        <div />
+      </Loader>
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <ChevronLeft 
+            className="w-6 h-6 text-blue-800 cursor-pointer hover:text-blue-800 transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              navigate(-1);
+            }}
+          />
           <h2 className="text-2xl font-semibold text-gray-900">
             {formData.LeaveId ? 'Update Leave' : 'Add Leave'}
           </h2>
         </div>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SingleSelectDropdownWithPagination
-              label="Leave Type"
-              title="Select Leave Type"
-              size="lg"
-              required
-              dataFetchCallBack={async (pageNumber: number, params?: { value?: string }) =>
-                fetchLeaveTypeMasterDropdown(pageNumber, params)
-              }
-              onSelected={(item) => {
-                setFormData((prev) => ({ ...prev, LeaveTypeMasterId: Number(item.value) }));
-                setDropdownLabels((prev) => ({ ...prev, leaveTypeName: item.label }));
-              }}
-              initialValue={createDropdownInitialValue(
-                formData.LeaveTypeMasterId ? String(formData.LeaveTypeMasterId) : null,
-                dropdownLabels.leaveTypeName,
-              )}
-              error={errors.LeaveTypeMasterId}
-            />
+        {/* Details Card */}
+        <div className="rounded-lg shadow-sm border border-gray-200 p-6" style={{ backgroundColor: '#FFFFFF' }}>
+          <h3 className="text-md font-medium text-gray-500 mb-4">Details</h3>
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <SingleSelectDropdownWithPagination
+                label="Leave Type"
+                title="Select Leave Type"
+                size="md"
+                required
+                dataFetchCallBack={async (pageNumber: number, params?: { value?: string }) =>
+                  fetchLeaveTypeMasterDropdown(pageNumber, params)
+                }
+                onSelected={(item) => {
+                  setFormData((prev) => ({ ...prev, LeaveTypeMasterId: Number(item.value) }));
+                  setDropdownLabels((prev) => ({ ...prev, leaveTypeName: item.label }));
+                }}
+                initialValue={createDropdownInitialValue(
+                  formData.LeaveTypeMasterId ? String(formData.LeaveTypeMasterId) : null,
+                  dropdownLabels.leaveTypeName,
+                )}
+                error={errors.LeaveTypeMasterId}
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date Range <span className="text-red-500">*</span>
+                </label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsDateModalOpen(true)}
+                  className="w-full justify-start hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                  fullWidth
+                >
+                  {formData.StartDate && formData.EndDate
+                    ? `${formatDate_dd_mm_yyyy(formData.StartDate)} - ${formatDate_dd_mm_yyyy(formData.EndDate)}`
+                    : 'Select Date Range'}
+                </Button>
+                {(errors.StartDate || errors.EndDate) && (
+                  <p className="text-sm text-red-600 mt-1">{errors.StartDate || errors.EndDate}</p>
+                )}
+              </div>
+            </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Date Range <span className="text-red-500">*</span>
-              </label>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsDateModalOpen(true)}
-                className="w-full justify-start"
-                leftIcon={<Calendar className="h-4 w-4" />}
-              >
-                {formData.StartDate && formData.EndDate
-                  ? `${formatDate_dd_mm_yyyy(formData.StartDate)} - ${formatDate_dd_mm_yyyy(formData.EndDate)}`
-                  : 'Select Date Range'}
-              </Button>
-              {(errors.StartDate || errors.EndDate) && (
-                <p className="text-sm text-red-600 mt-1">{errors.StartDate || errors.EndDate}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
               <TextArea
                 label="Reason"
                 required
@@ -181,10 +185,8 @@ export const AddUpdateLeave: React.FC = () => {
                 rows={3}
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
+            <div>
               <MultiFilePicker
                 label="Leave Documents"
                 value={formData.LeaveDocumentFiles || []}
@@ -193,25 +195,19 @@ export const AddUpdateLeave: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-3 shadow-md">
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end items-center gap-3 pt-4">
           <Button
-            variant="outline"
-            onClick={() => navigate(-1)}
-            size="sm"
-          >
-            Cancel
-          </Button>
-          <Button
+            type="button"
             color="blue"
-            size="sm"
+            size="md"
             onClick={(e) => {
               e.preventDefault();
               void handleSave();
             }}
             disabled={isSaving}
+            loading={isSaving}
+            className="min-w-[120px] font-medium"
           >
             Save
           </Button>
@@ -243,117 +239,111 @@ export const AddUpdateLeave: React.FC = () => {
         confirmText="Confirm Dates"
         cancelText="Cancel"
         showSummary={false}
-        renderChildren={({ startDate, endDate, onSelectField, onClearField }) => (
+        renderChildren={({ startDate, endDate, onSelectField, onClearField, editingField }) => (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Start Date <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Input
-                  readOnly
-                  value={startDate ? formatDate_dd_mm_yyyy(startDate) : ''}
-                  placeholder="Select start date"
-                  onClick={() => onSelectField?.('start')}
-                  className="cursor-pointer pr-8"
-                />
-                {startDate && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onClearField?.('start');
-                    }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1 hover:bg-red-50 rounded"
-                    title="Clear"
-                  >
-                    <X className="h-4 w-4 text-red-500" />
-                  </button>
-                )}
-              </div>
+              <DateInput
+                label="Start Date"
+                required
+                value={startDate ? formatDate_dd_mm_yyyy(startDate) : null}
+                onChange={(value) => {
+                  if (value) {
+                    const converted = convert_dd_mm_yyyy_To_Yyyy_mm_dd(value);
+                    if (converted) {
+                      onSelectField?.('start');
+                    }
+                  } else {
+                    onClearField?.('start');
+                  }
+                }}
+                onClear={() => {
+                  onClearField?.('start');
+                }}
+                isActive={editingField === 'start'}
+                showClearButton={true}
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                End Date <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Input
-                  readOnly
-                  value={endDate ? formatDate_dd_mm_yyyy(endDate) : ''}
-                  placeholder="Select end date"
-                  onClick={() => onSelectField?.('end')}
-                  className="cursor-pointer pr-8"
-                />
-                {endDate && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onClearField?.('end');
-                    }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1 hover:bg-red-50 rounded"
-                    title="Clear"
-                  >
-                    <X className="h-4 w-4 text-red-500" />
-                  </button>
-                )}
-              </div>
+              <DateInput
+                label="End Date"
+                required
+                value={endDate ? formatDate_dd_mm_yyyy(endDate) : null}
+                onChange={(value) => {
+                  if (value) {
+                    const converted = convert_dd_mm_yyyy_To_Yyyy_mm_dd(value);
+                    if (converted) {
+                      onSelectField?.('end');
+                    }
+                  } else {
+                    onClearField?.('end');
+                  }
+                }}
+                onClear={() => {
+                  onClearField?.('end');
+                }}
+                isActive={editingField === 'end'}
+                showClearButton={true}
+              />
             </div>
 
-            <SingleSelectDropdownWithPagination
-              label="Start Date Duration"
-              title="Select Duration"
-              size="lg"
-              required
-              dataFetchCallBack={async () => ({
-                totalNumberOfRecord: LEAVE_DURATION_OPTIONS.length,
-                itemList: LEAVE_DURATION_OPTIONS,
-              })}
-              onSelected={(item) => setFormData((prev) => ({ ...prev, StartDateLeaveDuration: String(item.value) }))}
-              initialValue={
-                formData.StartDateLeaveDuration
-                  ? {
-                      label:
-                        LEAVE_DURATION_OPTIONS.find((d) => d.value === formData.StartDateLeaveDuration)?.label ||
-                        formData.StartDateLeaveDuration,
-                      value: formData.StartDateLeaveDuration,
-                    }
-                  : null
-              }
-              error={errors.StartDateLeaveDuration}
-            />
+            <div>
+              <SingleSelectDropdownWithPagination
+                label="Start Date Duration"
+                title="Select Duration"
+                size="lg"
+                required
+                dataFetchCallBack={async () => ({
+                  totalNumberOfRecord: LEAVE_DURATION_OPTIONS.length,
+                  itemList: LEAVE_DURATION_OPTIONS,
+                })}
+                onSelected={(item) => setFormData((prev) => ({ ...prev, StartDateLeaveDuration: String(item.value) }))}
+                initialValue={
+                  formData.StartDateLeaveDuration
+                    ? {
+                        label:
+                          LEAVE_DURATION_OPTIONS.find((d) => d.value === formData.StartDateLeaveDuration)?.label ||
+                          formData.StartDateLeaveDuration,
+                        value: formData.StartDateLeaveDuration,
+                      }
+                    : null
+                }
+                error={errors.StartDateLeaveDuration}
+              />
+            </div>
 
-            <SingleSelectDropdownWithPagination
-              label="End Date Duration"
-              title="Select Duration"
-              size="lg"
-              required
-              dataFetchCallBack={async () => ({
-                totalNumberOfRecord: LEAVE_DURATION_OPTIONS.length,
-                itemList: LEAVE_DURATION_OPTIONS,
-              })}
-              onSelected={(item) => setFormData((prev) => ({ ...prev, EndDateLeaveDuration: String(item.value) }))}
-              initialValue={
-                formData.EndDateLeaveDuration
-                  ? {
-                      label:
-                        LEAVE_DURATION_OPTIONS.find((d) => d.value === formData.EndDateLeaveDuration)?.label ||
-                        formData.EndDateLeaveDuration,
-                      value: formData.EndDateLeaveDuration,
-                    }
-                  : null
-              }
-              error={errors.EndDateLeaveDuration}
-            />
+            <div>
+              <SingleSelectDropdownWithPagination
+                label="End Date Duration"
+                title="Select Duration"
+                size="lg"
+                required
+                dataFetchCallBack={async () => ({
+                  totalNumberOfRecord: LEAVE_DURATION_OPTIONS.length,
+                  itemList: LEAVE_DURATION_OPTIONS,
+                })}
+                onSelected={(item) => setFormData((prev) => ({ ...prev, EndDateLeaveDuration: String(item.value) }))}
+                initialValue={
+                  formData.EndDateLeaveDuration
+                    ? {
+                        label:
+                          LEAVE_DURATION_OPTIONS.find((d) => d.value === formData.EndDateLeaveDuration)?.label ||
+                          formData.EndDateLeaveDuration,
+                        value: formData.EndDateLeaveDuration,
+                      }
+                    : null
+                }
+                error={errors.EndDateLeaveDuration}
+              />
+            </div>
 
             <Input
               label="Total Days (auto)"
               value={
-                formData.StartDate && formData.EndDate
+                startDate && endDate
                   ? (() => {
-                      const start = new Date(formData.StartDate);
-                      const end = new Date(formData.EndDate);
+                      const start = new Date(startDate);
+                      const end = new Date(endDate);
                       if (isNaN(start.getTime()) || isNaN(end.getTime())) return '0';
                       const diff = end.getTime() - start.getTime();
                       const days = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
@@ -371,8 +361,7 @@ export const AddUpdateLeave: React.FC = () => {
           </div>
         )}
       />
-      </div>
-    </>
+    </div>
   );
 };
 

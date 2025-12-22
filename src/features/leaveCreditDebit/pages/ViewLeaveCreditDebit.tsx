@@ -225,8 +225,8 @@ export const ViewLeaveCreditDebit: React.FC = () => {
           setIsConfirmationDialogBoxOpen(false);
           void handleDeleteLeaveCreditDebit();
         }}
-        title="You are about to delete this Leave Credit / Debit?"
-        message="This action cannot be undone."
+        title="You are about to delete Leave Credit/Debit?"
+        message="Are you sure you want to proceed."
         confirmText="Delete"
         cancelText="Cancel"
         loading={isDeleting}

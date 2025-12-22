@@ -5,6 +5,7 @@ import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
 import ToastContainer from "@/ui/components/Toast/ToastContainer";
 import { useToast } from "@/core/hooks/useToast";
+import { ChevronLeft } from "lucide-react";
 import { OutDoorDataService } from "@/features/outdoor/services/OutDoorDataService";
 import type { OutDoorMasterData, AddUpdateOutDoor } from "../models/OutDoorModel";
 import * as E from "fp-ts/Either";
@@ -16,9 +17,8 @@ import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleS
 import { fetchDepartmentMasterDropdown } from "@/features/departmentMaster/departmentMasterDropdown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { MultiFilePicker, type FileValue } from "@/ui/components/ImagePicker/MultiFilePicker";
-import MultiSelectPagination, { type DropdownOptions } from "@/ui/components/DropDown/Multiselectpagination";
+import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
-import { employeeMasterService } from "@/features/employeeMaster/services/EmployeeMasterService";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { runApiWithLoader } from '@/core/utils';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
@@ -367,26 +367,31 @@ export const AddUpdateOutDoorPage: React.FC = () => {
     );
   };
 
-  const handleCancel = () => {
-    navigate("/outdoor");
-  };
-
-  if (isLoading && !hasFetchedOutDoor.current) {
-    return <Loader loading={true} title={isLoadingMessage || "Loading..."}>{null}</Loader>;
-  }
 
   return (
-    <div className="p-6">
+    <div className="p-6" style={{ backgroundColor: '#F9FAFB' }}>
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+      <Loader loading={isLoading} title={isLoadingMessage}>
+        <div />
+      </Loader>
       
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <ChevronLeft 
+            className="w-6 h-6 text-blue-600 cursor-pointer hover:text-blue-800 transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              navigate(-1);
+            }}
+          />
           <h2 className="text-2xl font-semibold text-gray-900">
             {outdoorId ? "Edit Outdoor" : "Add Outdoor"}
           </h2>
         </div>
-
-        <form onSubmit={(e) => { e.preventDefault(); handleAddUpdateOutDoor(); }} className="p-6 space-y-6">
+      
+      <div className="rounded-lg shadow-sm border border-gray-200 p-6" style={{ backgroundColor: '#FFFFFF' }}>
+        <form onSubmit={(e) => { e.preventDefault(); handleAddUpdateOutDoor(); }} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <DatePickerInput
               label="OutDoor Date"
@@ -486,18 +491,8 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
           <div className="flex justify-end gap-4 mt-6 pt-6 border-t border-gray-200">
             <Button
-              type="button"
-              color="transparent"
-              variant="transparent_border"
-              size="sm"
-              onClick={handleCancel}
-              className="px-6"
-            >
-              Cancel
-            </Button>
-            <Button
               type="submit"
-              color="green"
+              color="blue"
               size="sm"
               loading={isLoading}
               className="px-6"
@@ -506,6 +501,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
             </Button>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

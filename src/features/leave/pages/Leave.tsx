@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import * as E from 'fp-ts/Either';
 import { ToastContainer } from '@/ui/components/Toast';
@@ -43,6 +44,7 @@ const LEAVE_DURATION_OPTIONS = [
 ];
 
 export const Leave: React.FC = () => {
+  const navigate = useNavigate();
   const [leaveList, setLeaveList] = useState<LeaveData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
@@ -95,21 +97,27 @@ export const Leave: React.FC = () => {
   );
 
   const loadLeaveList = useCallback(
-    async () => {
+    async (page?: number, pageSize?: number, search?: string, sortColumn?: string) => {
       // Prevent concurrent calls
       if (isLoadingRef.current) return;
+      
+      // Use provided values or fall back to state
+      const currentPage = page ?? pagination.currentPage;
+      const currentPageSize = pageSize ?? pagination.pageSize;
+      const currentSearch = search ?? searchTerm;
+      const currentSortColumn = sortColumn ?? sortInfo?.column;
       
       try {
         isLoadingRef.current = true;
         setIsLoading(true);
         setIsLoadingMessage('Loading leave...');
         const payload: FilterWithPaginationLeaveRequest = {
-          PageNumber: pagination.currentPage,
-          PageSize: pagination.pageSize,
-          SortBy: sortInfo?.column,
+          PageNumber: currentPage,
+          PageSize: currentPageSize,
+          SortBy: currentSortColumn,
         };
-        if (searchTerm.trim()) {
-          payload.LeaveType = searchTerm.trim();
+        if (currentSearch.trim()) {
+          payload.LeaveType = currentSearch.trim();
         }
         const responseEither = await LeaveService.apiCallPullLeave(payload);
         if (E.isRight(responseEither)) {
@@ -117,20 +125,20 @@ export const Leave: React.FC = () => {
           networkErrorNotified.current = false; // reset on success
           setLeaveList(resp.Data || []);
           const totalRecords = resp.TotalNumberOfRecord ?? 0;
-          const totalPages = Math.ceil(totalRecords / pagination.pageSize) || 0;
-          // Only update pagination if values actually changed to prevent infinite loop
+          const totalPages = Math.ceil(totalRecords / currentPageSize) || 0;
+          // Only update pagination if values actually changed
           setPagination((prev) => {
             if (
-              prev.currentPage === pagination.currentPage &&
-              prev.pageSize === pagination.pageSize &&
+              prev.currentPage === currentPage &&
+              prev.pageSize === currentPageSize &&
               prev.totalPages === totalPages &&
               prev.totalRecords === totalRecords
             ) {
               return prev; // Return same object to prevent re-render
             }
             return {
-              currentPage: pagination.currentPage,
-              pageSize: pagination.pageSize,
+              currentPage,
+              pageSize: currentPageSize,
               totalPages,
               totalRecords,
             };
@@ -152,7 +160,7 @@ export const Leave: React.FC = () => {
         setIsLoadingMessage('');
       }
     },
-    [addToast, pagination.currentPage, pagination.pageSize, searchTerm, sortInfo?.column],
+    [addToast, pagination, searchTerm, sortInfo?.column],
   );
 
   const loadLeaveListRef = useRef(loadLeaveList);
@@ -179,7 +187,8 @@ export const Leave: React.FC = () => {
     }
     
     lastLoadParamsRef.current = currentParams;
-    void loadLeaveListRef.current();
+    void loadLeaveListRef.current(currentParams.page, currentParams.pageSize, currentParams.search, currentParams.sortColumn);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.currentPage, pagination.pageSize, searchTerm, sortInfo?.column]);
 
   const handleAddUpdate = async (overrideStartDate?: string | null, overrideEndDate?: string | null) => {
@@ -210,7 +219,7 @@ export const Leave: React.FC = () => {
       setEditingData(null);
       setFormData(initialFormState());
       setErrors({});
-      loadLeaveList();
+      loadLeaveListRef.current();
     } else {
       addToast({ type: 'error', title: 'Failed to save leave', message: responseEither.left.message });
     }
@@ -223,7 +232,7 @@ export const Leave: React.FC = () => {
       addToast({ type: 'success', title: 'Leave deleted', message: 'Leave deleted successfully' });
       setIsDeleteDialogOpen(false);
       setDeletePayload(null);
-      loadLeaveList();
+      loadLeaveListRef.current();
     } else {
       addToast({ type: 'error', title: 'Failed to delete leave', message: responseEither.left.message });
     }
@@ -266,44 +275,34 @@ export const Leave: React.FC = () => {
         key: 'actions',
         label: 'Actions',
         width: '160px',
-        render: (_value, row) => (
-          <div className="flex gap-2">
-            <Button
-              size="xs"
-              variant="outline"
-              onClick={() => {
-            const currentRow = row as LeaveData;
-            setEditingData(currentRow);
-                setFormData({
-              LeaveId: currentRow.LeaveId,
-              Uniquekey: currentRow.Uniquekey,
-              LeaveTypeMasterId: currentRow.LeaveTypeMasterId,
-              StartDate: currentRow.StartDate,
-              EndDate: currentRow.EndDate,
-              StartDateLeaveDuration: currentRow.StartDateLeaveDuration,
-              EndDateLeaveDuration: currentRow.EndDateLeaveDuration,
-              Reason: currentRow.Reason,
-                  LeaveDocumentFiles: [],
-                });
-                setErrors({});
-                setIsAddUpdateModalOpen(true);
-              }}
-            >
-              Edit
-            </Button>
-            <Button
-              size="xs"
-              variant="outline"
-              onClick={() => {
-                const currentRow = row as LeaveData;
-                setDeletePayload({ LeaveId: currentRow.LeaveId, Uniquekey: currentRow.Uniquekey });
-                setIsDeleteDialogOpen(true);
-              }}
-            >
-              Delete
-            </Button>
-          </div>
-        ),
+        render: (_value, row) => {
+          const currentRow = row as LeaveData;
+          return (
+            <div className="flex gap-2">
+              <Button
+                size="xs"
+                variant="outline"
+                onClick={() => {
+                  navigate(`/leave/add/${currentRow.LeaveId}`, {
+                    state: { data: currentRow },
+                  });
+                }}
+              >
+                Edit
+              </Button>
+              <Button
+                size="xs"
+                variant="outline"
+                onClick={() => {
+                  setDeletePayload({ LeaveId: currentRow.LeaveId, Uniquekey: currentRow.Uniquekey });
+                  setIsDeleteDialogOpen(true);
+                }}
+              >
+                Delete
+              </Button>
+            </div>
+          );
+        },
       },
     ],
     [],
@@ -342,18 +341,15 @@ export const Leave: React.FC = () => {
           isShowAddButton={canAction}
           addTitle="Add Leave"
           onAdd={() => {
-            setEditingData(null);
-            setFormData(initialFormState());
-            setErrors({});
-            setIsAddUpdateModalOpen(true);
+            navigate('/leave/add');
           }}
           // EXPORT
           isShowExportButton={canExport}
           onExportExcel={() => {
-            loadLeaveList();
+            loadLeaveListRef.current();
           }}
           onExportPdf={() => {
-            loadLeaveList();
+            loadLeaveListRef.current();
           }}
         />
 

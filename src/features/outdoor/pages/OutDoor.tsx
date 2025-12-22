@@ -373,6 +373,7 @@ export const OutDoor: React.FC = () => {
                 return (
                   <ExpandableCard
                     key={item.OutdoorId}
+                    expandedheight={1000}
                     title={
                       <div className="flex items-center justify-between w-full">
                         <div className="flex-1">
@@ -443,24 +444,21 @@ export const OutDoor: React.FC = () => {
                         {/* Left Column */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-3">
-                            <div className="flex items-start gap-2.5 p-2.5 bg-blue-50 rounded-lg border border-blue-100">
-                              <Building2 className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
                               <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Name</p>
                                 <p className="text-sm font-semibold text-gray-900">{item.CompanyName || 'N/A'}</p>
                               </div>
                             </div>
 
-                            <div className="flex items-start gap-2.5 p-2.5 bg-green-50 rounded-lg border border-green-100">
-                              <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
                               <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Address</p>
                                 <p className="text-sm font-semibold text-gray-900">{item.CompanyAddress || 'N/A'}</p>
                               </div>
                             </div>
 
-                            <div className="flex items-start gap-2.5 p-2.5 bg-purple-50 rounded-lg border border-purple-100">
-                              <Target className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
                               <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Purpose</p>
                                 <p className="text-sm font-semibold text-gray-900">{item.Purpose || 'N/A'}</p>
@@ -468,8 +466,7 @@ export const OutDoor: React.FC = () => {
                             </div>
 
                             {item.Conclusion && (
-                              <div className="flex items-start gap-2.5 p-2.5 bg-gray-50 rounded-lg border border-gray-200">
-                                <ClipboardCheck className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                              <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
                                 <div className="flex-1">
                                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Conclusion</p>
                                   <p className="text-sm text-gray-600">{item.Conclusion}</p>
@@ -481,8 +478,7 @@ export const OutDoor: React.FC = () => {
                           {/* Right Column */}
                           <div className="space-y-3">
                             {item.DepartmentName && (
-                              <div className="flex items-start gap-2.5 p-2.5 bg-cyan-50 rounded-lg border border-cyan-100">
-                                <Users className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                              <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
                                 <div className="flex-1">
                                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Department</p>
                                   <p className="text-sm font-semibold text-gray-900">{item.DepartmentName}</p>
@@ -490,16 +486,14 @@ export const OutDoor: React.FC = () => {
                               </div>
                             )}
 
-                            <div className="flex items-start gap-2.5 p-2.5 bg-orange-50 rounded-lg border border-orange-100">
-                              <Users className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
                               <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Accompanied By</p>
                                 <p className="text-sm font-semibold text-gray-900">{item.AccompaniedByName || 'N/A'}</p>
                               </div>
                             </div>
 
-                            <div className="flex items-start gap-2.5 p-2.5 bg-indigo-50 rounded-lg border border-indigo-100">
-                              <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
                               <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Requested By</p>
                                 <p className="text-sm font-semibold text-gray-900">{item.CreatedBy || 'N/A'}</p>

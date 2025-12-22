@@ -203,7 +203,7 @@ const ViewAssetPage: React.FC = () => {
 
                 {/*  RIGHT SIDE  */}
                 <div className="col-span-7">
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
+                    <div className="bg-red rounded-lg border border-gray-300 shadow-sm p-4 h-full">
 
                         {/* Audit Trail */}
                         <div className="mt-6 rounded border border-gray-300 bg-white ">
@@ -211,7 +211,7 @@ const ViewAssetPage: React.FC = () => {
                                 <h4 className="font-semibold text-sm text-gray-800">Audit Trail</h4>
                             </div>
 
-                            <div className="p-4">
+                            <div className="p-4 bg-pink">
                                 <FieldItem label="Created By" value={editAssetData.CreatedBy} isRow />
                                 <FieldItem label="Created Date" value={editAssetData.CreatedDate ? formatDate_dd_MonthName_yy(editAssetData.CreatedDate) : ""} isRow />
                                 <FieldItem label="Modified By" value={editAssetData.ModifiedBy} isRow />

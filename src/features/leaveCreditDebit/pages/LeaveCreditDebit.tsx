@@ -61,7 +61,7 @@ export const LeaveCreditDebit: React.FC = () => {
   const [isShowCustomizeLeaveCreditDebitColumnsModal, setIsShowCustomizeLeaveCreditDebitColumnsModal] = useState(false);
 
   const handleAddLeaveCreditDebitModal = useCallback(() => {
-    navigate('/leave-credit-debit/add');
+    navigate('/leaveCreditDebit/add');
   }, [navigate]);
 
   const handleFilterChange = useCallback((key: string, value: string) => {
@@ -127,8 +127,8 @@ export const LeaveCreditDebit: React.FC = () => {
           LeavePeriodMode: filterParams.LeavePeriodMode?.trim() || undefined,
           FYyear: filterParams.FYyear ? Number(filterParams.FYyear) : undefined,
           Month: filterParams.Month?.trim() || undefined,
-          DepartmentMasterId: filterParams.DepartmentMasterId?.trim() || undefined,
-          EmployeeId: filterParams.EmployeeId?.trim() || undefined,
+          DepartmentName: filterParams.DepartmentName?.trim() || undefined,
+          DesignationName: filterParams.DesignationName?.trim() || undefined,
           SortBy: sortByParam
         }
 
@@ -175,7 +175,7 @@ export const LeaveCreditDebit: React.FC = () => {
     }
 
     const filterParams: FilterInfo = {
-      EmployeeId: searchValue.trim(),
+      DepartmentName: searchValue.trim(),
     };
 
     await loadLeaveCreditDebits(1, filterParams)
@@ -213,8 +213,8 @@ export const LeaveCreditDebit: React.FC = () => {
           LeavePeriodMode: filters.LeavePeriodMode?.trim() || undefined,
           FYyear: filters.FYyear ? Number(filters.FYyear) : undefined,
           Month: filters.Month?.trim() || undefined,
-          DepartmentMasterId: filters.DepartmentMasterId?.trim() || undefined,
-          EmployeeId: filters.EmployeeId?.trim() || undefined,
+          DepartmentName: filters.DepartmentName?.trim() || undefined,
+          DesignationName: filters.DesignationName?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         }
@@ -281,11 +281,10 @@ export const LeaveCreditDebit: React.FC = () => {
   const leaveCreditDebitListForTable = useMemo(() => leaveCreditDebitList, [leaveCreditDebitList]);
   //#endregion
 
-  //#region VIEW EDIT
+  //#region VIEW HANDLERS
   const handleViewLeaveCreditDebitDetails = useCallback((row: LeaveCreditDebitData) => {
-    navigate('/leave-credit-debit/view', { state: { data: row } });
+    navigate('/leaveCreditDebit/view', { state: { data: row } });
   }, [navigate]);
-
   //#endregion
 
   //#region TABLE COLUMN
@@ -293,22 +292,42 @@ export const LeaveCreditDebit: React.FC = () => {
   const leaveCreditDebitColumns = useMemo<TableColumn[]>(
     () => [
       {
-        key: 'LeavePeriodMode',
-        label: 'Period Mode',
-        width: '15',
-        sortable: true,
+        key: 'DepartmentName',
+        label: 'Department',
+        width: '20',
+        sortable: false,
         fixed: 'left',
         align: 'left',
         render: (value, row) => (
-          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
-            <TooltipText
-              text={value || 'N/A'}
-              maxWidth="250px"
-              tooltipThreshold={30}
-              onClick={() => handleViewLeaveCreditDebitDetails(row)}
-            />
-          </div>
+          <TooltipText
+            text={value || '-'}
+            maxWidth="250px"
+            tooltipThreshold={30}
+            onClick={() => handleViewLeaveCreditDebitDetails(row)}
+          />
         )
+      },
+      {
+        key: 'DesignationName',
+        label: 'Designation',
+        width: '20',
+        sortable: false,
+        align: 'left',
+        render: (value) => (
+          <TooltipText
+            text={value || '-'}
+            maxWidth="250px"
+            tooltipThreshold={30}
+          />
+        )
+      },
+      {
+        key: 'LeavePeriodMode',
+        label: 'Period Mode',
+        width: '10',
+        sortable: true,
+        align: 'left',
+        render: (value) => value || '-'
       },
       {
         key: 'FYyear',
@@ -316,7 +335,7 @@ export const LeaveCreditDebit: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: (value) => value || 'N/A'
+        render: (value) => value || '-'
       },
       {
         key: 'Month',
@@ -324,23 +343,7 @@ export const LeaveCreditDebit: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'DepartmentMasterId',
-        label: 'Department',
-        width: '20',
-        sortable: false,
-        align: 'left',
-        render: (value) => value || 'N/A'
-      },
-      {
-        key: 'EmployeeId',
-        label: 'Employee',
-        width: '20',
-        sortable: false,
-        align: 'left',
-        render: (value) => value || 'N/A'
+        render: (value) => value || '-'
       }
     ],
     [canAction, handleViewLeaveCreditDebitDetails]
@@ -350,7 +353,7 @@ export const LeaveCreditDebit: React.FC = () => {
 
   //#region CUSTOMIZE TABLE COLUMNS
 
-  const requiredLeaveCreditDebitColumnKeys: string[] = ['LeavePeriodMode'];
+  const requiredLeaveCreditDebitColumnKeys: string[] = ['DepartmentMasterId'];
 
   const allLeaveCreditDebitColumnKeys: string[] = leaveCreditDebitColumns.map(c => c.key)
 
@@ -469,7 +472,7 @@ export const LeaveCreditDebit: React.FC = () => {
         <TableActionToolbar
           isShowSearchBar
           searchTerm={searchTerm}
-          searchPlaceholder="Search By Employee"
+          searchPlaceholder="Search By Department"
           onSearchChange={(v) => {
             setSearchTerm(v)
             debouncedSearch(v)
@@ -568,6 +571,24 @@ export const LeaveCreditDebit: React.FC = () => {
                   placeholder="Enter month"
                 />
               </div>
+              <div>
+                <Input
+                  label='Department'
+                  type="text"
+                  value={tempFilters.DepartmentName || ''}
+                  onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}
+                  placeholder="Enter department name"
+                />
+              </div>
+              <div>
+                <Input
+                  label='Designation'
+                  type="text"
+                  value={tempFilters.DesignationName || ''}
+                  onChange={(e) => handleFilterChange('DesignationName', e.target.value)}
+                  placeholder="Enter designation name"
+                />
+              </div>
             </div>
           </div>
         </Modal>
@@ -594,3 +615,10 @@ export const LeaveCreditDebit: React.FC = () => {
 
 export default LeaveCreditDebit;
 
+//  count = 0
+
+// function Count(){
+//   const[count,setCount] =useState(0);
+//   <button onclick()=> count ++ ></button>
+
+// }

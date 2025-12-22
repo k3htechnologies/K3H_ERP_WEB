@@ -1,42 +1,28 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import MultiSelectPagination from '@/ui/components/DropDown/Multiselectpagination';
 import { fetchDepartmentMasterDropdown } from '@/features/departmentMaster/departmentMasterDropdown';
-import { fetchEmployeeMasterDropdown } from '@/features/employeeMaster/employeeMasterDropDown';
-import { fetchLeaveTypeMasterDropdown } from '@/features/leaveCreditDebit/leaveTypeMasterDropdown';
+import { fetchDesignationMasterDropdown } from '@/features/designationMaster/designationMasterDropDown';
+import { fetchLeaveTypeMasterDropdown } from '@/features/leaveTypeMaster/leaveTypeMasterDropdown';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
+import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
 import type {
   AddUpdateLeaveCreditDebitRequest,
   LeaveBalanceType,
   LeaveCreditDebitData,
 } from '@/features/leaveCreditDebit/models/LeaveCreditDebitModel';
 import { leaveCreditDebitService } from '@/features/leaveCreditDebit/services/LeaveCreditDebitService';
+import { MONTHS_OPTIONS } from '@/core/constants/staticData';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import { formatDate_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
 import { Loader } from '@/core/utils/loader';
-import { Plus, X } from 'lucide-react';
-import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-
+import { Plus, Trash, ChevronLeft } from 'lucide-react';
 const LEAVE_PERIOD_MODES = [
   { label: 'Yearly', value: 'Yearly' },
   { label: 'Monthly', value: 'Monthly' },
-];
-
-const MONTHS = [
-  { label: 'January', value: 'January' },
-  { label: 'February', value: 'February' },
-  { label: 'March', value: 'March' },
-  { label: 'April', value: 'April' },
-  { label: 'May', value: 'May' },
-  { label: 'June', value: 'June' },
-  { label: 'July', value: 'July' },
-  { label: 'August', value: 'August' },
-  { label: 'September', value: 'September' },
-  { label: 'October', value: 'October' },
-  { label: 'November', value: 'November' },
-  { label: 'December', value: 'December' },
 ];
 
 const initialFormState = (): AddUpdateLeaveCreditDebitRequest => ({
@@ -46,7 +32,6 @@ const initialFormState = (): AddUpdateLeaveCreditDebitRequest => ({
   FYyear: new Date().getFullYear(),
   Month: '',
   DepartmentMasterId: '',
-  EmployeeId: '',
   LeaveTypebalanceJSONList: '',
 });
 
@@ -55,37 +40,128 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
   const location = useLocation() as { state?: { data?: LeaveCreditDebitData | null } };
   const navigate = useNavigate();
   const { addToast } = useToast();
-  const { canAction } = useMenuPermissions();
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
   const [formData, setFormData] = useState<AddUpdateLeaveCreditDebitRequest>(initialFormState());
   const [leaveBalanceTypes, setLeaveBalanceTypes] = useState<LeaveBalanceType[]>([]);
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-  const [dropdownLabels, setDropdownLabels] = useState<{ departmentName?: string; employeeName?: string }>({});
+  const [leaveTypeLabels, setLeaveTypeLabels] = useState<{ [index: number]: string }>({});
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string | number | null>(null);
+  const [departmentLabel, setDepartmentLabel] = useState<string>('');
+  const [designationValue, setDesignationValue] = useState<string | number | null>(null);
+  const leaveBalanceTypeRefs = useRef<{ [index: number]: HTMLDivElement | null }>({});
+  
+  // Use the multi-select hook for designations
+  const designationDropdown = useMultiSelectDropdown({
+    value: designationValue,
+    fetchCallback: fetchDesignationMasterDropdown,
+    autoFetchOptions: true,
+  });
 
   useEffect(() => {
     const incoming = location.state?.data;
     if (id && incoming) {
-      setFormData({
+      const formDataUpdate: AddUpdateLeaveCreditDebitRequest = {
         LeaveCreditDebitId: incoming.LeaveCreditDebitId,
         Uniquekey: incoming.Uniquekey || initialFormState().Uniquekey,
         LeavePeriodMode: incoming.LeavePeriodMode || '',
         FYyear: incoming.FYyear || new Date().getFullYear(),
         Month: incoming.Month || '',
-        DepartmentMasterId: incoming.DepartmentMasterId || '',
-        EmployeeId: incoming.EmployeeId || '',
+        DepartmentMasterId: String(incoming.DepartmentMasterId || ''),
         LeaveTypebalanceJSONList: '',
-      });
+      };
+      setFormData(formDataUpdate);
       setLeaveBalanceTypes(incoming.LeaveBalanceType || []);
-      setDropdownLabels({
-        departmentName: incoming.DepartmentMasterId || '',
-        employeeName: incoming.EmployeeId || '',
-      });
+      
+      // Initialize department (take first value if comma-separated, for backward compatibility)
+      if (incoming.DepartmentMasterId) {
+        const deptId = String(incoming.DepartmentMasterId).split(',')[0].trim();
+        if (deptId) {
+          setSelectedDepartmentId(deptId);
+          // Fetch department label
+          const fetchDepartmentLabel = async () => {
+            try {
+              const result = await fetchDepartmentMasterDropdown(1, { value: '' });
+              const found = result.itemList.find(item => String(item.value) === String(deptId));
+              if (found) {
+                setDepartmentLabel(found.label);
+              }
+            } catch (error) {
+              console.error('Failed to fetch department label:', error);
+            }
+          };
+          void fetchDepartmentLabel();
+        }
+      }
+      // Set designation value for the hook (use DesignationId from model)
+      // Convert to string to handle both number and comma-separated string formats
+      // The hook will automatically parse and fetch options for the selected values
+      if (incoming.DesignationId) {
+        const designationIdValue = typeof incoming.DesignationId === 'string' 
+          ? incoming.DesignationId 
+          : String(incoming.DesignationId);
+        setDesignationValue(designationIdValue);
+      } else {
+        setDesignationValue(null);
+      }
+
+      // Fetch Leave Type labels for existing items
+      const fetchLeaveTypeLabels = async () => {
+        const labels: { [index: number]: string } = {};
+        if (incoming.LeaveBalanceType && incoming.LeaveBalanceType.length > 0) {
+          // Collect unique Leave Type IDs
+          const uniqueLeaveTypeIds = Array.from(
+            new Set(
+              incoming.LeaveBalanceType
+                .map((item) => item.LeaveTypeId)
+                .filter((id) => id && id > 0)
+            )
+          );
+
+          // Fetch all pages to find the labels
+          const allOptions: { label: string; value: string }[] = [];
+          let page = 1;
+          let hasMore = true;
+          while (hasMore && uniqueLeaveTypeIds.length > 0) {
+            try {
+              const result = await fetchLeaveTypeMasterDropdown(page, { value: '' });
+              allOptions.push(...result.itemList);
+              hasMore = allOptions.length < result.totalNumberOfRecord;
+              page++;
+              // Stop if we've found all the labels we need
+              const foundIds = allOptions.map((opt) => Number(opt.value));
+              if (uniqueLeaveTypeIds.every((id) => foundIds.includes(id))) {
+                break;
+              }
+            } catch (error) {
+              console.error(`Failed to fetch Leave Type labels:`, error);
+              break;
+            }
+          }
+
+          // Map labels to indices
+          incoming.LeaveBalanceType.forEach((item, index) => {
+            if (item.LeaveTypeId && item.LeaveTypeId > 0) {
+              const found = allOptions.find(
+                (opt) => String(opt.value) === String(item.LeaveTypeId)
+              );
+              if (found) {
+                labels[index] = found.label;
+              }
+            }
+          });
+        }
+        setLeaveTypeLabels(labels);
+      };
+      void fetchLeaveTypeLabels();
     } else {
       setFormData(initialFormState());
       setLeaveBalanceTypes([]);
-      setDropdownLabels({});
+      setLeaveTypeLabels({});
+      setSelectedDepartmentId(null);
+      setDepartmentLabel('');
+      setDesignationValue(null);
     }
   }, [id, location.state]);
 
@@ -95,17 +171,69 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
   };
 
   const handleAddLeaveBalanceType = () => {
+    // Clear the "Add at least one Leave Balance Type" error if it exists
+    if (errors.LeaveBalanceTypes) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.LeaveBalanceTypes;
+        return next;
+      });
+    }
+
+    const newIndex = leaveBalanceTypes.length;
     setLeaveBalanceTypes((prev) => [
       ...prev,
-      { LeaveTypeBalanceId: 0, LeaveTypeId: 0, LeaveCredit: 0, LeaveCreditDebitId: 0 },
+      { LeaveTypeBalanceId: 0, LeaveTypeId: 0, LeaveCredit: 0, LeaveCreditDebitId: 0, LeaveTypeName: '' },
     ]);
+
+    // Scroll to the newly added item after it's rendered
+    setTimeout(() => {
+      const element = leaveBalanceTypeRefs.current[newIndex];
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 100);
   };
 
   const handleRemoveLeaveBalanceType = (index: number) => {
     setLeaveBalanceTypes((prev) => prev.filter((_, i) => i !== index));
+    setLeaveTypeLabels((prev) => {
+      const reindexed: { [index: number]: string } = {};
+      Object.keys(prev).forEach((key) => {
+        const oldIndex = Number(key);
+        if (oldIndex < index) {
+          // Keep indices before the removed one
+          reindexed[oldIndex] = prev[oldIndex];
+        } else if (oldIndex > index) {
+          // Shift indices after the removed one down by 1
+          reindexed[oldIndex - 1] = prev[oldIndex];
+        }
+        // Skip the removed index
+      });
+      return reindexed;
+    });
+    // Clean up refs
+    const newRefs: { [index: number]: HTMLDivElement | null } = {};
+    Object.keys(leaveBalanceTypeRefs.current).forEach((key) => {
+      const oldIndex = Number(key);
+      if (oldIndex < index) {
+        newRefs[oldIndex] = leaveBalanceTypeRefs.current[oldIndex];
+      } else if (oldIndex > index) {
+        newRefs[oldIndex - 1] = leaveBalanceTypeRefs.current[oldIndex];
+      }
+    });
+    leaveBalanceTypeRefs.current = newRefs;
   };
 
   const handleUpdateLeaveBalanceType = (index: number, field: keyof LeaveBalanceType, value: any) => {
+    // Clear related validation error if this field was previously invalid
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (field === 'LeaveTypeId') delete next[`LeaveBalanceType_${index}_LeaveTypeId`];
+      if (field === 'LeaveCredit') delete next[`LeaveBalanceType_${index}_LeaveCredit`];
+      return next;
+    });
+
     setLeaveBalanceTypes((prev) => prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)));
   };
 
@@ -116,15 +244,13 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
     if (formData.LeavePeriodMode === 'Monthly' && (!formData.Month || formData.Month.trim() === '')) {
       newErrors.Month = 'Month is required for Monthly mode';
     }
-    if (!formData.DepartmentMasterId || formData.DepartmentMasterId.trim() === '') {
+    if (!selectedDepartmentId) {
       newErrors.DepartmentMasterId = 'Department is required';
-    }
-    if (!formData.EmployeeId || formData.EmployeeId.trim() === '') {
-      newErrors.EmployeeId = 'Employee is required';
     }
     if (leaveBalanceTypes.length === 0) newErrors.LeaveBalanceTypes = 'Add at least one Leave Balance Type';
     leaveBalanceTypes.forEach((item, index) => {
-      if (!item.LeaveTypeId || item.LeaveTypeId === 0) {
+      const leaveTypeId = Number(item.LeaveTypeId);
+      if (!leaveTypeId || leaveTypeId === 0 || isNaN(leaveTypeId)) {
         newErrors[`LeaveBalanceType_${index}_LeaveTypeId`] = 'Leave Type is required';
       }
       if (item.LeaveCredit === undefined || item.LeaveCredit === null || item.LeaveCredit < 0) {
@@ -139,81 +265,79 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
     if (!validateForm()) return;
     setIsLoading(true);
     setIsLoadingMessage('Saving...');
-    const payload: AddUpdateLeaveCreditDebitRequest = {
-      ...formData,
-      LeaveTypebalanceJSONList: JSON.stringify(
-        leaveBalanceTypes.map((item) => ({
-          LeaveTypeBalanceId: item.LeaveTypeBalanceId || 0,
-          LeaveTypeId: item.LeaveTypeId || 0,
-          LeaveCredit: item.LeaveCredit || 0,
-          LeaveCreditDebitId: item.LeaveCreditDebitId || 0,
-        })),
-      ),
-    };
-    const responseEither = await leaveCreditDebitService.apiCallAddUpdateLeaveCreditDebit(payload);
-    if (E.isRight(responseEither)) {
-      addToast({ type: 'success', title: 'Saved', message: 'Leave Credit/Debit saved successfully' });
-      navigate(-1);
-    } else {
-      addToast({ type: 'error', title: 'Failed', message: responseEither.left.message });
+    try {
+      // Get designation IDs from the hook
+      const designationIdsString = designationDropdown.selectedValues.length > 0
+        ? designationDropdown.selectedValues.join(',')
+        : '';
+      
+      const payload: any = {
+        ...formData,
+        DepartmentMasterId: selectedDepartmentId ? String(selectedDepartmentId) : undefined,
+        DesignationMasterId: designationIdsString,
+        LeaveTypebalanceJSONList: JSON.stringify(
+          leaveBalanceTypes.map((item) => ({
+            LeaveTypeBalanceId: item.LeaveTypeBalanceId || 0,
+            LeaveTypeId: item.LeaveTypeId || 0,
+            LeaveCredit: item.LeaveCredit || 0,
+            LeaveCreditDebitId: item.LeaveCreditDebitId || formData.LeaveCreditDebitId || 0,
+          })),
+        ),
+      };
+
+      const responseEither = await leaveCreditDebitService.apiCallAddUpdateLeaveCreditDebit(payload);
+      if (E.isRight(responseEither)) {
+        addToast({ type: 'success', title: 'Saved', message: 'Leave Credit/Debit saved successfully' });
+        navigate(-1);
+      } else {
+        addToast({ type: 'error', title: 'Failed', message: responseEither.left.message });
+      }
+    } catch (error: any) {
+      addToast({ type: 'error', title: 'Failed', message: error?.message || 'Unable to save' });
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMessage('');
     }
-    setIsLoading(false);
-    setIsLoadingMessage('');
   };
 
-  const fetchEmployeeMasterDropdownWithDepartment = useCallback(
-    async (pageNumber: number, params?: { value?: string }) => {
-      return fetchEmployeeMasterDropdown(pageNumber, {
-        ...params,
-        departmentName: dropdownLabels.departmentName || '',
-      });
-    },
-    [dropdownLabels.departmentName],
-  );
-
   return (
-    <div className="p-6">
+    <div className="p-6" style={{ backgroundColor: '#F9FAFB' }}>
       <Loader loading={isLoading} title={loadingMessage}>
         <div />
       </Loader>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <ChevronLeft 
+            className="w-6 h-6 text-blue-600 cursor-pointer hover:text-blue-800 transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              navigate(-1);
+            }}
+          />
           <h2 className="text-2xl font-semibold text-gray-900">
             {formData.LeaveCreditDebitId ? 'Update Leave Credit/Debit' : 'Add Leave Credit/Debit'}
           </h2>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate(-1)} size="sm">
-              Back
-            </Button>
-            {canAction && (
-              <Button color="blue" onClick={handleSave} size="sm">
-                Save
-              </Button>
-            )}
-          </div>
         </div>
 
-        <div className="space-y-6">
+        {/* Details Card */}
+        <div className="rounded-lg shadow-sm border border-gray-200 p-6" style={{ backgroundColor: '#FFFFFF' }}>
+          <h3 className="text-md font-medium text-gray-500 mb-4">Details</h3>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SingleSelectDropdownWithPagination
+            <SinglePageSelection
               label="Leave Period Mode"
-              title="Select Leave Period Mode"
               required
-              size="lg"
-              dataFetchCallBack={async () => ({
-                totalNumberOfRecord: LEAVE_PERIOD_MODES.length,
-                itemList: LEAVE_PERIOD_MODES,
-              })}
-              onSelected={(item) => {
-                handleFieldChange('LeavePeriodMode', item.value);
-                if (item.value !== 'Monthly') handleFieldChange('Month', '');
+              options={LEAVE_PERIOD_MODES}
+              value={formData.LeavePeriodMode || ''}
+              onChange={(value) => {
+                handleFieldChange('LeavePeriodMode', String(value));
+                if (value !== 'Monthly') handleFieldChange('Month', '');
               }}
-              initialValue={
-                formData.LeavePeriodMode
-                  ? { label: formData.LeavePeriodMode, value: formData.LeavePeriodMode }
-                  : null
-              }
               error={errors.LeavePeriodMode}
+              placeholder="Select Leave Period Mode"
+              searchable
+              size="md"
             />
 
             <Input
@@ -226,122 +350,209 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
               min={1950}
               max={2100}
             />
-
-            {formData.LeavePeriodMode === 'Monthly' && (
-              <SingleSelectDropdownWithPagination
-                label="Month"
-                title="Select Month"
-                required
-                size="lg"
-                dataFetchCallBack={async () => ({
-                  totalNumberOfRecord: MONTHS.length,
-                  itemList: MONTHS,
-                })}
-                onSelected={(item) => handleFieldChange('Month', item.value)}
-                initialValue={formData.Month ? { label: formData.Month, value: formData.Month } : null}
-                error={errors.Month}
-              />
-            )}
-
-            <SingleSelectDropdownWithPagination
-              label="Department"
-              title="Select Department"
-              required
-              size="lg"
-              dataFetchCallBack={fetchDepartmentMasterDropdown}
-              onSelected={(item) => {
-                handleFieldChange('DepartmentMasterId', item.value);
-                setDropdownLabels((prev) => ({ ...prev, departmentName: item.label }));
-                handleFieldChange('EmployeeId', '');
-                setDropdownLabels((prev) => ({ ...prev, employeeName: '' }));
-              }}
-              initialValue={createDropdownInitialValue(
-                formData.DepartmentMasterId ? String(formData.DepartmentMasterId) : null,
-                dropdownLabels.departmentName,
-              )}
-              error={errors.DepartmentMasterId}
-            />
-
-            <SingleSelectDropdownWithPagination
-              label="Employee"
-              title="Select Employee"
-              required
-              size="lg"
-              dataFetchCallBack={fetchEmployeeMasterDropdownWithDepartment}
-              onSelected={(item) => {
-                handleFieldChange('EmployeeId', item.value);
-                setDropdownLabels((prev) => ({ ...prev, employeeName: item.label }));
-              }}
-              initialValue={createDropdownInitialValue(
-                formData.EmployeeId ? String(formData.EmployeeId) : null,
-                dropdownLabels.employeeName,
-              )}
-              error={errors.EmployeeId}
-              disabled={!formData.DepartmentMasterId}
-            />
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-lg font-semibold">Leave Balance Types</h4>
-              <Button type="button" color="blue" size="sm" onClick={handleAddLeaveBalanceType} leftIcon={<Plus className="h-4 w-4" />}>
-                Add Leave Type
-              </Button>
-            </div>
-            {errors.LeaveBalanceTypes && <p className="text-sm text-red-600">{errors.LeaveBalanceTypes}</p>}
-
-            {leaveBalanceTypes.length === 0 ? (
-              <div className="text-center py-6 text-gray-500 text-sm">No leave balance types added.</div>
-            ) : (
-              <div className="space-y-3">
-                {leaveBalanceTypes.map((item, index) => (
-                  <div key={index} className="p-4 bg-white rounded-lg border border-gray-200">
-                    <div className="flex items-start justify-between mb-3">
-                      <h5 className="text-sm font-medium text-gray-700">Leave Balance Type #{index + 1}</h5>
-                      <Button
-                        type="button"
-                        color="red"
-                        variant="solid"
-                        colorMode="light"
-                        size="sm"
-                        onClick={() => handleRemoveLeaveBalanceType(index)}
-                        leftIcon={<X className="h-4 w-4" />}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <SingleSelectDropdownWithPagination
-                        label="Leave Type"
-                        title="Select Leave Type"
-                        size="md"
-                        required
-                        dataFetchCallBack={fetchLeaveTypeMasterDropdown}
-                        onSelected={(selectedItem) => handleUpdateLeaveBalanceType(index, 'LeaveTypeId', Number(selectedItem.value))}
-                        initialValue={
-                          item.LeaveTypeId
-                            ? createDropdownInitialValue(String(item.LeaveTypeId), '')
-                            : null
-                        }
-                        error={errors[`LeaveBalanceType_${index}_LeaveTypeId`]}
-                      />
-                      <Input
-                        label="Leave Credit"
-                        required
-                        type="number"
-                        value={item.LeaveCredit?.toString() || '0'}
-                        onChange={(e) => handleUpdateLeaveBalanceType(index, 'LeaveCredit', Number(e.target.value))}
-                        placeholder="Enter Leave Credit"
-                        error={errors[`LeaveBalanceType_${index}_LeaveCredit`]}
-                        min={0}
-                        step={0.5}
-                      />
-                    </div>
-                  </div>
-                ))}
+          {formData.LeavePeriodMode === 'Monthly' ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <SinglePageSelection
+                  label="Month"
+                  required
+                  options={MONTHS_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                  value={formData.Month || ''}
+                  onChange={(value) => handleFieldChange('Month', String(value))}
+                  error={errors.Month}
+                  placeholder="Select month"
+                  searchable
+                  size="md"
+                />
+                <div>
+                  <SingleSelectDropdownWithPagination
+                    label="Department"
+                    title="Select Department"
+                    required
+                    size="md"
+                    dataFetchCallBack={fetchDepartmentMasterDropdown}
+                    onSelected={(selectedItem) => {
+                      setSelectedDepartmentId(selectedItem?.value || null);
+                      setDepartmentLabel(selectedItem?.label || '');
+                      if (errors.DepartmentMasterId) {
+                        setErrors((prev) => ({ ...prev, DepartmentMasterId: '' }));
+                      }
+                    }}
+                    initialValue={selectedDepartmentId ? createDropdownInitialValue(selectedDepartmentId, departmentLabel) : null}
+                    error={errors.DepartmentMasterId}
+                  />
+                  {errors.DepartmentMasterId && (
+                    <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '8px' }}>
+                      {errors.DepartmentMasterId}
+                    </p>
+                  )}
+                </div>
               </div>
-            )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Designation</label>
+                  <MultiSelectPagination
+                    label=""
+                    dataFetchCallBack={fetchDesignationMasterDropdown}
+                    selectedValues={designationDropdown.selectedValues}
+                    options={designationDropdown.initialOptions}
+                    onChange={(values) => {
+                      const { idsString } = designationDropdown.handleChange(values);
+                      setDesignationValue(idsString || null);
+                      if (errors.DesignationMasterId) {
+                        setErrors((prev) => ({ ...prev, DesignationMasterId: '' }));
+                      }
+                    }}
+                  />
+                  {errors.DesignationMasterId && (
+                    <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '8px' }}>
+                      {errors.DesignationMasterId}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Department"
+                  title="Select Department"
+                  required
+                  size="md"
+                  dataFetchCallBack={fetchDepartmentMasterDropdown}
+                  onSelected={(selectedItem) => {
+                    setSelectedDepartmentId(selectedItem?.value || null);
+                    setDepartmentLabel(selectedItem?.label || '');
+                    if (errors.DepartmentMasterId) {
+                      setErrors((prev) => ({ ...prev, DepartmentMasterId: '' }));
+                    }
+                  }}
+                  initialValue={selectedDepartmentId ? createDropdownInitialValue(selectedDepartmentId, departmentLabel) : null}
+                  error={errors.DepartmentMasterId}
+                />
+                {errors.DepartmentMasterId && (
+                  <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '8px' }}>
+                    {errors.DepartmentMasterId}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Designation</label>
+                <MultiSelectPagination
+                  label=""
+                  dataFetchCallBack={fetchDesignationMasterDropdown}
+                  selectedValues={designationDropdown.selectedValues}
+                  options={designationDropdown.initialOptions}
+                  onChange={(values) => {
+                    const { idsString } = designationDropdown.handleChange(values);
+                    setDesignationValue(idsString || null);
+                    if (errors.DesignationMasterId) {
+                      setErrors((prev) => ({ ...prev, DesignationMasterId: '' }));
+                    }
+                  }}
+                />
+                {errors.DesignationMasterId && (
+                  <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '8px' }}>
+                    {errors.DesignationMasterId}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Leave Balance Type Card */}
+        <div
+          className="rounded-lg shadow-sm border border-gray-200 p-6"
+          style={{ backgroundColor: '#FFFFFF' }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-md font-medium text-gray-500">Leave Balance Type</h3>
+            <Button 
+              type="button" 
+              color="blue" 
+              size="sm" 
+              onClick={handleAddLeaveBalanceType}
+              leftIcon={<Plus className="h-4 w-4" />}
+            >
+              Add Leave Type
+            </Button>
           </div>
+          {errors.LeaveBalanceTypes && <p className="text-sm text-red-600 mb-3">{errors.LeaveBalanceTypes}</p>}
+          {leaveBalanceTypes.length > 0 && (
+            <div className="space-y-3">
+              {leaveBalanceTypes.map((item, index) => (
+                <div
+                  key={index}
+                  ref={(el) => {
+                    leaveBalanceTypeRefs.current[index] = el;
+                  }}
+                  className="relative"
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveLeaveBalanceType(index)}
+                    title="Remove"
+                    className="absolute -top-2 right-2 bg-transparent border border-transparent text-red-500 hover:bg-red-100 transition-colors duration-200 rounded p-1"
+                  >
+                    <Trash className="h-4 w-4" />
+                  </button>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <SingleSelectDropdownWithPagination
+                      key={`leave-type-${index}-${item.LeaveTypeId}`}
+                      label="Leave Type"
+                      title="Select Leave Type"
+                      size="lg"
+                      required
+                      dataFetchCallBack={fetchLeaveTypeMasterDropdown}
+                      onSelected={(selectedItem) => {
+                        const leaveTypeId = Number(selectedItem.value);
+                        if (leaveTypeId && leaveTypeId > 0) {
+                          handleUpdateLeaveBalanceType(index, 'LeaveTypeId', leaveTypeId);
+                          setLeaveTypeLabels((prev) => ({ ...prev, [index]: selectedItem.label }));
+                        }
+                      }}
+                      initialValue={
+                        item.LeaveTypeId && item.LeaveTypeId > 0
+                          ? createDropdownInitialValue(String(item.LeaveTypeId), leaveTypeLabels[index] || '')
+                          : null
+                      }
+                      error={errors[`LeaveBalanceType_${index}_LeaveTypeId`]}
+                    />
+                    <Input
+                      label="Leave Credit"
+                      required
+                      type="number"
+                      value={item.LeaveCredit?.toString() || '0'}
+                      onChange={(e) => handleUpdateLeaveBalanceType(index, 'LeaveCredit', Number(e.target.value))}
+                      placeholder="Enter Leave Credit"
+                      error={errors[`LeaveBalanceType_${index}_LeaveCredit`]}
+                      min={0}
+                      step={0.5}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end items-center gap-3 pt-4">
+          <Button
+            color="blue"
+            size="sm"
+            onClick={(e) => {
+              e.preventDefault();
+              void handleSave();
+            }}
+            disabled={isLoading}
+          >
+            Save
+          </Button>
         </div>
       </div>
     </div>

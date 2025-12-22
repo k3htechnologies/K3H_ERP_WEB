@@ -10,17 +10,17 @@ import type {
   LeaveData,
 } from '@/features/leave/models/LeaveModel';
 import { LeaveService } from '@/features/leave/services/LeaveService';
-import { formatDateDisplay, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from '@/core/utils/dateFormat';
+import { formatDateDisplay, formatDate_dd_mm_yyyy } from '@/core/utils/dateFormat';
 import { Loader } from '@/core/utils/loader';
-import { Modal } from '@/ui/components/Modal/Modal';
-import { Button, Input, DateInput } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import { DateRangePickerModal } from '@/ui/components/forms/DateRangePickerModal';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
-import { fetchLeaveTypeMasterDropdown } from '@/features/leaveCreditDebit/leaveTypeMasterDropdown';
+import { fetchLeaveTypeMasterDropdown } from '@/features/leaveTypeMaster/leaveTypeMasterDropdown';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { usePagination } from '@/core/hooks/usePagination';
 
@@ -47,6 +47,8 @@ export const Leave: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
   const networkErrorNotified = useRef(false);
+  const isLoadingRef = useRef(false);
+  const lastLoadParamsRef = useRef<{ page: number; pageSize: number; search: string; sortColumn?: string } | null>(null);
 
   const { pagination, setPagination } = usePagination(20);
 
@@ -55,8 +57,9 @@ export const Leave: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebouncedCallback((value: string) => {
+    // When search changes, reset to first page; list will reload via effect
     setPagination({ currentPage: 1 });
-    loadLeaveList({ Search: value });
+    setSearchTerm(value);
   }, 350);
 
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
@@ -92,8 +95,12 @@ export const Leave: React.FC = () => {
   );
 
   const loadLeaveList = useCallback(
-    async (options?: { Search?: string }) => {
+    async () => {
+      // Prevent concurrent calls
+      if (isLoadingRef.current) return;
+      
       try {
+        isLoadingRef.current = true;
         setIsLoading(true);
         setIsLoadingMessage('Loading leave...');
         const payload: FilterWithPaginationLeaveRequest = {
@@ -101,8 +108,8 @@ export const Leave: React.FC = () => {
           PageSize: pagination.pageSize,
           SortBy: sortInfo?.column,
         };
-        if (options?.Search) {
-          payload.LeaveType = options.Search;
+        if (searchTerm.trim()) {
+          payload.LeaveType = searchTerm.trim();
         }
         const responseEither = await LeaveService.apiCallPullLeave(payload);
         if (E.isRight(responseEither)) {
@@ -111,11 +118,22 @@ export const Leave: React.FC = () => {
           setLeaveList(resp.Data || []);
           const totalRecords = resp.TotalNumberOfRecord ?? 0;
           const totalPages = Math.ceil(totalRecords / pagination.pageSize) || 0;
-          setPagination({
-            currentPage: pagination.currentPage,
-            pageSize: pagination.pageSize,
-            totalPages,
-            totalRecords,
+          // Only update pagination if values actually changed to prevent infinite loop
+          setPagination((prev) => {
+            if (
+              prev.currentPage === pagination.currentPage &&
+              prev.pageSize === pagination.pageSize &&
+              prev.totalPages === totalPages &&
+              prev.totalRecords === totalRecords
+            ) {
+              return prev; // Return same object to prevent re-render
+            }
+            return {
+              currentPage: pagination.currentPage,
+              pageSize: pagination.pageSize,
+              totalPages,
+              totalRecords,
+            };
           });
         } else {
           if (!networkErrorNotified.current) {
@@ -129,22 +147,49 @@ export const Leave: React.FC = () => {
           networkErrorNotified.current = true;
         }
       } finally {
+        isLoadingRef.current = false;
         setIsLoading(false);
         setIsLoadingMessage('');
       }
     },
-    [addToast, pagination.currentPage, pagination.pageSize, pagination.totalPages, pagination.totalRecords, setPagination, sortInfo?.column],
+    [addToast, pagination.currentPage, pagination.pageSize, searchTerm, sortInfo?.column],
   );
 
-  useEffect(() => {
-    loadLeaveList();
-  }, [loadLeaveList]);
+  const loadLeaveListRef = useRef(loadLeaveList);
+  loadLeaveListRef.current = loadLeaveList;
 
-  const handleAddUpdate = async () => {
+  useEffect(() => {
+    const currentParams = {
+      page: pagination.currentPage,
+      pageSize: pagination.pageSize,
+      search: searchTerm,
+      sortColumn: sortInfo?.column,
+    };
+    
+    // Only load if parameters actually changed
+    const lastParams = lastLoadParamsRef.current;
+    if (
+      lastParams &&
+      lastParams.page === currentParams.page &&
+      lastParams.pageSize === currentParams.pageSize &&
+      lastParams.search === currentParams.search &&
+      lastParams.sortColumn === currentParams.sortColumn
+    ) {
+      return; // Parameters haven't changed, skip loading
+    }
+    
+    lastLoadParamsRef.current = currentParams;
+    void loadLeaveListRef.current();
+  }, [pagination.currentPage, pagination.pageSize, searchTerm, sortInfo?.column]);
+
+  const handleAddUpdate = async (overrideStartDate?: string | null, overrideEndDate?: string | null) => {
+    const finalStartDate = overrideStartDate !== undefined ? overrideStartDate : formData.StartDate;
+    const finalEndDate = overrideEndDate !== undefined ? overrideEndDate : formData.EndDate;
+    
     const newErrors: { [key: string]: string } = {};
     if (!formData.LeaveTypeMasterId) newErrors.LeaveTypeMasterId = 'Leave Type is required';
-    if (!formData.StartDate) newErrors.StartDate = 'Start Date is required';
-    if (!formData.EndDate) newErrors.EndDate = 'End Date is required';
+    if (!finalStartDate) newErrors.StartDate = 'Start Date is required';
+    if (!finalEndDate) newErrors.EndDate = 'End Date is required';
     if (!formData.StartDateLeaveDuration) newErrors.StartDateLeaveDuration = 'Start duration required';
     if (!formData.EndDateLeaveDuration) newErrors.EndDateLeaveDuration = 'End duration required';
     if (!formData.Reason || formData.Reason.trim() === '') newErrors.Reason = 'Reason is required';
@@ -154,6 +199,8 @@ export const Leave: React.FC = () => {
     }
     const payload: AddUpdateLeaveRequest = {
       ...formData,
+      StartDate: finalStartDate,
+      EndDate: finalEndDate,
       LeaveDocumentFiles: formData.LeaveDocumentFiles || [],
     };
     const responseEither = await LeaveService.apiCallAddUpdateLeave(payload);
@@ -303,10 +350,10 @@ export const Leave: React.FC = () => {
           // EXPORT
           isShowExportButton={canExport}
           onExportExcel={() => {
-            loadLeaveList({ Search: searchTerm });
+            loadLeaveList();
           }}
           onExportPdf={() => {
-            loadLeaveList({ Search: searchTerm });
+            loadLeaveList();
           }}
         />
 
@@ -323,7 +370,7 @@ export const Leave: React.FC = () => {
           loading={isLoading}
         />
 
-        <Modal
+        <DateRangePickerModal
           isOpen={isAddUpdateModalOpen}
           onClose={() => {
             setIsAddUpdateModalOpen(false);
@@ -331,142 +378,176 @@ export const Leave: React.FC = () => {
             setFormData(initialFormState());
             setErrors({});
           }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingData(null);
-            setFormData(initialFormState());
-            setErrors({});
+          onConfirm={(startDate, endDate) => {
+            setFormData((prev) => ({ ...prev, StartDate: startDate, EndDate: endDate }));
+            // Clear date errors if dates are set
+            if (startDate && endDate) {
+              setErrors((prev) => {
+                const newErrors = { ...prev };
+                delete newErrors.StartDate;
+                delete newErrors.EndDate;
+                return newErrors;
+              });
+            }
+            // Call handleAddUpdate with the new dates
+            void handleAddUpdate(startDate, endDate);
           }}
+          startDate={formData.StartDate || null}
+          endDate={formData.EndDate || null}
           title={editingData ? 'Update Leave' : 'Add Leave'}
-          onSubmit={handleAddUpdate}
-          saveText={editingData ? 'Update Leave' : 'Save Leave'}
-          resetText="Reset"
+          confirmText={editingData ? 'Update Leave' : 'Save Leave'}
+          cancelText="Cancel"
           loading={isLoading}
-          size="xl"
-        >
-          <div className="space-y-6 p-4">
-            <SingleSelectDropdownWithPagination
-              label="Leave Type"
-              title="Select Leave Type"
-              size="lg"
-              required
-              dataFetchCallBack={async (pageNumber: number, params?: { value?: string }) => fetchLeaveTypeMasterDropdown(pageNumber, params)}
-              onSelected={(item) => handleFieldChange('LeaveTypeMasterId', Number(item.value))}
-              initialValue={
-                formData.LeaveTypeMasterId
-                  ? {
-                      label: editingData?.LeaveType || String(formData.LeaveTypeMasterId),
-                      value: String(formData.LeaveTypeMasterId),
-                    }
-                  : null
-              }
-              error={errors.LeaveTypeMasterId}
-            />
+          showSummary={false}
+          renderChildren={({ startDate, endDate, onSelectField, onClearField }) => (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Date <span className="text-red-500">*</span>
+                </label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    readOnly
+                    value={startDate ? formatDate_dd_mm_yyyy(startDate) : ''}
+                    placeholder="Select start date"
+                    onClick={() => onSelectField?.('start')}
+                    className="cursor-pointer"
+                  />
+                  {startDate && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      onClick={() => onClearField?.('start')}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+                {errors.StartDate && <p className="text-sm text-red-600 mt-1">{errors.StartDate}</p>}
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DateInput
-                label="Start Date"
-                required
-                value={formatDate_dd_mm_yyyy(formData.StartDate) || null}
-                onChange={(value) => {
-                  const converted = convert_dd_mm_yyyy_To_Yyyy_mm_dd(value);
-                  handleFieldChange('StartDate', converted);
-                }}
-                error={errors.StartDate}
-                showClearButton
-                onClear={() => handleFieldChange('StartDate', null)}
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Date <span className="text-red-500">*</span>
+                </label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    readOnly
+                    value={endDate ? formatDate_dd_mm_yyyy(endDate) : ''}
+                    placeholder="Select end date"
+                    onClick={() => onSelectField?.('end')}
+                    className="cursor-pointer"
+                  />
+                  {endDate && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      onClick={() => onClearField?.('end')}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+                {errors.EndDate && <p className="text-sm text-red-600 mt-1">{errors.EndDate}</p>}
+              </div>
 
-              <DateInput
-                label="End Date"
-                required
-                value={formatDate_dd_mm_yyyy(formData.EndDate) || null}
-                onChange={(value) => {
-                  const converted = convert_dd_mm_yyyy_To_Yyyy_mm_dd(value);
-                  handleFieldChange('EndDate', converted);
-                }}
-                error={errors.EndDate}
-                showClearButton
-                onClear={() => handleFieldChange('EndDate', null)}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SingleSelectDropdownWithPagination
-                label="Start Date Duration"
-                title="Select Duration"
+                label="Leave Type"
+                title="Select Leave Type"
                 size="lg"
                 required
-                dataFetchCallBack={async () => ({
-                  totalNumberOfRecord: LEAVE_DURATION_OPTIONS.length,
-                  itemList: LEAVE_DURATION_OPTIONS,
-                })}
-                onSelected={(item) => handleFieldChange('StartDateLeaveDuration', item.value)}
+                dataFetchCallBack={async (pageNumber: number, params?: { value?: string }) => fetchLeaveTypeMasterDropdown(pageNumber, params)}
+                onSelected={(item) => handleFieldChange('LeaveTypeMasterId', Number(item.value))}
                 initialValue={
-                  formData.StartDateLeaveDuration
+                  formData.LeaveTypeMasterId
                     ? {
-                        label:
-                          LEAVE_DURATION_OPTIONS.find((d) => d.value === formData.StartDateLeaveDuration)?.label ||
-                          formData.StartDateLeaveDuration,
-                        value: formData.StartDateLeaveDuration,
+                        label: editingData?.LeaveType || String(formData.LeaveTypeMasterId),
+                        value: String(formData.LeaveTypeMasterId),
                       }
                     : null
                 }
-                error={errors.StartDateLeaveDuration}
+                error={errors.LeaveTypeMasterId}
               />
 
-              <SingleSelectDropdownWithPagination
-                label="End Date Duration"
-                title="Select Duration"
-                size="lg"
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <SingleSelectDropdownWithPagination
+                  label="Start Date Duration"
+                  title="Select Duration"
+                  size="lg"
+                  required
+                  dataFetchCallBack={async () => ({
+                    totalNumberOfRecord: LEAVE_DURATION_OPTIONS.length,
+                    itemList: LEAVE_DURATION_OPTIONS,
+                  })}
+                  onSelected={(item) => handleFieldChange('StartDateLeaveDuration', item.value)}
+                  initialValue={
+                    formData.StartDateLeaveDuration
+                      ? {
+                          label:
+                            LEAVE_DURATION_OPTIONS.find((d) => d.value === formData.StartDateLeaveDuration)?.label ||
+                            formData.StartDateLeaveDuration,
+                          value: formData.StartDateLeaveDuration,
+                        }
+                      : null
+                  }
+                  error={errors.StartDateLeaveDuration}
+                />
+
+                <SingleSelectDropdownWithPagination
+                  label="End Date Duration"
+                  title="Select Duration"
+                  size="lg"
+                  required
+                  dataFetchCallBack={async () => ({
+                    totalNumberOfRecord: LEAVE_DURATION_OPTIONS.length,
+                    itemList: LEAVE_DURATION_OPTIONS,
+                  })}
+                  onSelected={(item) => handleFieldChange('EndDateLeaveDuration', item.value)}
+                  initialValue={
+                    formData.EndDateLeaveDuration
+                      ? {
+                          label:
+                            LEAVE_DURATION_OPTIONS.find((d) => d.value === formData.EndDateLeaveDuration)?.label ||
+                            formData.EndDateLeaveDuration,
+                          value: formData.EndDateLeaveDuration,
+                        }
+                      : null
+                  }
+                  error={errors.EndDateLeaveDuration}
+                />
+              </div>
+
+              <Input
+                label="Total Days (auto)"
+                value={computeNoOfDays(
+                  startDate || undefined,
+                  endDate || undefined,
+                  formData.StartDateLeaveDuration || undefined,
+                  formData.EndDateLeaveDuration || undefined,
+                ).toString()}
+                readOnly
+              />
+
+              <TextArea
+                label="Reason"
                 required
-                dataFetchCallBack={async () => ({
-                  totalNumberOfRecord: LEAVE_DURATION_OPTIONS.length,
-                  itemList: LEAVE_DURATION_OPTIONS,
-                })}
-                onSelected={(item) => handleFieldChange('EndDateLeaveDuration', item.value)}
-                initialValue={
-                  formData.EndDateLeaveDuration
-                    ? {
-                        label:
-                          LEAVE_DURATION_OPTIONS.find((d) => d.value === formData.EndDateLeaveDuration)?.label ||
-                          formData.EndDateLeaveDuration,
-                        value: formData.EndDateLeaveDuration,
-                      }
-                    : null
-                }
-                error={errors.EndDateLeaveDuration}
+                value={formData.Reason || ''}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange('Reason', e.target.value)}
+                error={errors.Reason}
+                placeholder="Enter reason"
+                rows={3}
+              />
+
+              <MultiFilePicker
+                label="Leave Documents"
+                value={formData.LeaveDocumentFiles || []}
+                onChange={(files) => handleFieldChange('LeaveDocumentFiles', files)}
               />
             </div>
-
-            <Input
-              label="Total Days (auto)"
-              value={computeNoOfDays(
-                formData.StartDate || undefined,
-                formData.EndDate || undefined,
-                formData.StartDateLeaveDuration || undefined,
-                formData.EndDateLeaveDuration || undefined,
-              ).toString()}
-              readOnly
-            />
-
-            <TextArea
-              label="Reason"
-              required
-              value={formData.Reason || ''}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange('Reason', e.target.value)}
-              error={errors.Reason}
-              placeholder="Enter reason"
-              rows={3}
-            />
-
-            <MultiFilePicker
-              label="Leave Documents"
-              value={formData.LeaveDocumentFiles || []}
-              onChange={(files) => handleFieldChange('LeaveDocumentFiles', files)}
-            />
-          </div>
-        </Modal>
+          )}
+        />
 
         <ConfirmationDialogBox
           isOpen={isDeleteDialogOpen}

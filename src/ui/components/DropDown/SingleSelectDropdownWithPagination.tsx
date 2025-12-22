@@ -46,6 +46,9 @@ export const SingleSelectDropdownWithPagination = forwardRef<
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
     const [isOpen, setIsOpen] = useState(false);
+    const [openUpward, setOpenUpward] = useState(false);
+    const [dropdownMaxHeight, setDropdownMaxHeight] = useState(200);
+    const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
     const isFetchingRef = useRef(false);
     const pageRef = useRef(1);
@@ -213,6 +216,72 @@ export const SingleSelectDropdownWithPagination = forwardRef<
 
     const displayError = externalError !== undefined ? externalError : error;
 
+    // CALCULATE DROPDOWN POSITION AND SIZE BASED ON VIEWPORT
+    const calculateDropdownPosition = useCallback(() => {
+      if (!containerRef.current) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const windowWidth = window.innerWidth;
+      
+      // Calculate available space
+      const spaceBelow = windowHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      
+      // Determine if dropdown should open upward
+      const prefersUpward = spaceBelow < spaceAbove && spaceBelow < 200;
+      setOpenUpward(prefersUpward);
+      
+      // Calculate max height based on available space
+      const availableSpace = prefersUpward ? spaceAbove : spaceBelow;
+      const searchHeight = 50; // Approximate search input height
+      const padding = 20; // Padding from viewport edges
+      const calculatedMaxHeight = Math.max(
+        150, // Minimum height
+        Math.min(availableSpace - searchHeight - padding, 400) // Max 400px, but respect available space
+      );
+      setDropdownMaxHeight(calculatedMaxHeight);
+      
+      // Handle horizontal positioning for smaller screens
+      const dropdownWidth = rect.width;
+      const style: React.CSSProperties = {};
+      
+      // If dropdown would overflow on the right, constrain width
+      if (rect.left + dropdownWidth > windowWidth - 10) {
+        const maxWidth = windowWidth - rect.left - 10;
+        style.maxWidth = `${Math.max(maxWidth, 200)}px`; // Minimum 200px width
+      }
+      
+      setDropdownStyle(style);
+    }, []);
+
+    // Recalculate position when dropdown opens
+    useEffect(() => {
+      if (isOpen) {
+        // Small delay to ensure DOM is updated
+        setTimeout(() => {
+          calculateDropdownPosition();
+        }, 0);
+      }
+    }, [isOpen, calculateDropdownPosition]);
+
+    // Handle window resize to recalculate position
+    useEffect(() => {
+      if (!isOpen) return;
+
+      const handleResize = () => {
+        calculateDropdownPosition();
+      };
+
+      window.addEventListener("resize", handleResize);
+      window.addEventListener("orientationchange", handleResize);
+
+      return () => {
+        window.removeEventListener("resize", handleResize);
+        window.removeEventListener("orientationchange", handleResize);
+      };
+    }, [isOpen, calculateDropdownPosition]);
+
     const getOptionStyles = (selected: boolean, hovered = false): React.CSSProperties => {
       const isActive = selected || hovered;
       return {
@@ -220,7 +289,8 @@ export const SingleSelectDropdownWithPagination = forwardRef<
         fontSize: sizeStyles.fontSize,
         borderRadius: theme.borderRadius.sm,
         cursor: disabled ? "not-allowed" : "pointer",
-        backgroundColor: isActive ? theme.colors.hover : theme.colors.background,
+        // Use same blue highlight for both hover and selected (matches SinglePageSelection)
+        backgroundColor: isActive ? "#e6f0ff" : theme.colors.background,
         color: theme.colors.textSecondary,
         transition: theme.transitions.normal,
       };
@@ -271,10 +341,10 @@ export const SingleSelectDropdownWithPagination = forwardRef<
         {label && (
           <div
             style={{
-              marginBottom: "6px",
-              fontSize: sizeStyles.fontSize,
+              marginBottom: theme.spacing.sm,
+              fontSize: theme.fontSize.sm,
               fontWeight: theme.fontWeight.medium,
-              color: theme.colors.black,
+              color: theme.colors.text,
             }}
           >
             {label}
@@ -286,7 +356,13 @@ export const SingleSelectDropdownWithPagination = forwardRef<
           role="button"
           aria-haspopup="listbox"
           aria-expanded={isOpen}
-          onClick={() => !disabled && setIsOpen(prev => !prev)}
+          onClick={() => {
+            if (disabled) return;
+            if (!isOpen) {
+              calculateDropdownPosition();
+            }
+            setIsOpen(prev => !prev);
+          }}
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -339,10 +415,13 @@ export const SingleSelectDropdownWithPagination = forwardRef<
           <div
             style={{
               position: "absolute",
-              top: "calc(100% + 4px)",
+              top: openUpward ? "auto" : "calc(100% + 4px)",
+              bottom: openUpward ? "calc(100% + 4px)" : "auto",
               left: 0,
+              right: 0,
               width: "100%",
-              maxHeight: sizeStyles.dropdownHeight,
+              ...dropdownStyle,
+              maxHeight: `${dropdownMaxHeight}px`,
               overflow: "hidden",
               border: `1px solid ${theme.colors.border}`,
               borderRadius: theme.borderRadius.sm,
@@ -422,7 +501,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
               className="thin-scroll"
               style={{
                 overflowY: "auto",
-                maxHeight: sizeStyles.dropdownHeight - 48, // leave room for search
+                maxHeight: `${dropdownMaxHeight - 48}px`, // leave room for search
                 scrollBehavior: "smooth",
                 WebkitOverflowScrolling: "touch",
                 paddingBottom: 10,          // <-- ensure last item not clipped

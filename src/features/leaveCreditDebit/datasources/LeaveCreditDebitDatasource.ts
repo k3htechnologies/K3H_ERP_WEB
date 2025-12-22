@@ -35,6 +35,8 @@ export class LeaveCreditDebitDatasourceImpl implements LeaveCreditDebitDatasourc
             if (params.FYyear) queryParams.append('FYyear', params.FYyear.toString());
             if (params.Month?.trim()) queryParams.append('Month', params.Month.trim());
             if (params.DepartmentMasterId?.trim()) queryParams.append('DepartmentMasterId', params.DepartmentMasterId.trim());
+            if (params.DepartmentName?.trim()) queryParams.append('DepartmentName', params.DepartmentName.trim());
+            if (params.DesignationName?.trim()) queryParams.append('DesignationName', params.DesignationName.trim());
             if (params.EmployeeId?.trim()) queryParams.append('EmployeeId', params.EmployeeId.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
@@ -59,13 +61,14 @@ export class LeaveCreditDebitDatasourceImpl implements LeaveCreditDebitDatasourc
 
         try {
 
-            const payLoad: AddUpdateLeaveCreditDebitRequest = {
+            const payLoad: any = {
                 LeaveCreditDebitId: params.LeaveCreditDebitId ?? 0,
                 Uniquekey: params.Uniquekey ?? '',
                 LeavePeriodMode: params.LeavePeriodMode?.trim() ?? '',
                 FYyear: params.FYyear ?? 0,
                 Month: params.Month?.trim() ?? '',
                 DepartmentMasterId: params.DepartmentMasterId?.trim() ?? '',
+                DesignationId: params.DesignationMasterId?.trim() ?? '',
                 EmployeeId: params.EmployeeId?.trim() ?? '',
                 LeaveTypebalanceJSONList: params.LeaveTypebalanceJSONList?.trim() ?? '',
             }

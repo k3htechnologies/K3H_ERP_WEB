@@ -36,6 +36,8 @@ export interface LeaveData {
   LastModifiedDate?: string | null;
 }
 
+import type { FileValue } from '@/ui/components/ImagePicker/MultiFilePicker';
+
 export interface AddUpdateLeaveRequest {
   LeaveId?: number;
   Uniquekey?: string;
@@ -45,7 +47,7 @@ export interface AddUpdateLeaveRequest {
   StartDateLeaveDuration?: string;
   EndDateLeaveDuration?: string;
   Reason?: string;
-  LeaveDocumentFiles?: File[];
+  LeaveDocumentFiles?: FileValue[];
 }
 
 export interface DeleteLeaveRequest {

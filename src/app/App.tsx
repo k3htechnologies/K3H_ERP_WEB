@@ -63,6 +63,9 @@ import { CompOff } from '@/features/compOff/pages/compOff';
 import Leave from '@/features/leave/pages/Leave';
 import LeaveCreditDebit from '@/features/leaveCreditDebit/pages/LeaveCreditDebit';
 import AddUpdateLeaveCreditDebit from '@/features/leaveCreditDebit/pages/AddUpdateLeaveCreditDebit';
+import ViewLeaveCreditDebit from '@/features/leaveCreditDebit/pages/ViewLeaveCreditDebit';
+import AddUpdateLeave from '@/features/leave/pages/AddUpdateLeave';
+import EmployeeDetailsMaster from '@/features/EmployeeDetailsMaster/pages/EmployeeDetailsMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -112,11 +115,6 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
           <Route path="companyMaster/addCompany" element={<AddCompany />} />
-          <Route path="compoff" element={<CompOff />} />
-          <Route path="leave" element={<Leave />} />
-          <Route path="leaveCreditDebit" element={<LeaveCreditDebit />} />
-          <Route path="AddUpdateleaveCreditDebit" element={<AddUpdateLeaveCreditDebit />} />
-
 
           {/* Protected Routes with Layout */}
           <Route
@@ -129,6 +127,12 @@ function App() {
           >
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+             <Route path="/employedetails" element={<EmployeeDetailsMaster/>}/>
+            <Route path="leave" element={<Leave />} />
+            <Route path="leave/add/:id?" element={<AddUpdateLeave/>}/>
+            <Route path="leaveCreditDebit" element={<LeaveCreditDebit />} />
+            <Route path="leaveCreditDebit/add/:id?" element={<AddUpdateLeaveCreditDebit />} />
+            <Route path="leaveCreditDebit/view/:id?" element={<ViewLeaveCreditDebit />} />
             <Route path="departmentMaster" element={<DepartmentMaster />} />
             <Route path="/vendor/add/:vendorId?" element={<AddUpdateVendor />} />
             <Route path="designationMaster" element={<DesignationMaster />} />

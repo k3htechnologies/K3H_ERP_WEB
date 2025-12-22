@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, forwardRef } from "react";
+import { useState, useEffect, useRef, forwardRef, useCallback } from "react";
 import { ChevronDown, ChevronUp, InfoIcon, Search } from "lucide-react";
 import type { SinglePageSelectionProps } from "@/core/types/dropDownSelectionType";
 import { THEME } from "@/core/constants/theme";
@@ -34,6 +34,8 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredOptions, setFilteredOptions] = useState(options);
     const [openUpward, setOpenUpward] = useState(false);
+    const [dropdownMaxHeight, setDropdownMaxHeight] = useState(260);
+    const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -84,25 +86,82 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
       options.find((opt: any) => opt[valueKey] === value)?.[labelKey] ||
       placeholder;
 
+    // CALCULATE DROPDOWN POSITION AND SIZE BASED ON VIEWPORT
+    const calculateDropdownPosition = useCallback(() => {
+      if (!containerRef.current) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const windowWidth = window.innerWidth;
+      
+      // Calculate available space
+      const spaceBelow = windowHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      
+      // Determine if dropdown should open upward
+      const prefersUpward = spaceBelow < spaceAbove && spaceBelow < 200;
+      setOpenUpward(prefersUpward);
+      
+      // Calculate max height based on available space
+      const availableSpace = prefersUpward ? spaceAbove : spaceBelow;
+      const searchHeight = searchable ? 50 : 0; // Approximate search input height
+      const padding = 20; // Padding from viewport edges
+      const calculatedMaxHeight = Math.max(
+        150, // Minimum height
+        Math.min(availableSpace - searchHeight - padding, 400) // Max 400px, but respect available space
+      );
+      setDropdownMaxHeight(calculatedMaxHeight);
+      
+      // Handle horizontal positioning for smaller screens
+      const dropdownWidth = rect.width;
+      const style: React.CSSProperties = {};
+      
+      // If dropdown would overflow on the right, constrain width
+      if (rect.left + dropdownWidth > windowWidth - 10) {
+        const maxWidth = windowWidth - rect.left - 10;
+        style.maxWidth = `${Math.max(maxWidth, 200)}px`; // Minimum 200px width
+      }
+      
+      setDropdownStyle(style);
+    }, [searchable]);
+
     // DETECT SPACE FOR UPWARD OPEN
     const handleToggle = () => {
       if (disabled) return;
-
-      const rect = containerRef.current?.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-
-      if (rect) {
-        const dropdownHeight = 300; // approx height
-
-        if (rect.bottom + dropdownHeight > windowHeight) {
-          setOpenUpward(true);
-        } else {
-          setOpenUpward(false);
-        }
+      
+      if (!isOpen) {
+        calculateDropdownPosition();
       }
-
+      
       setIsOpen(!isOpen);
     };
+
+    // Recalculate position when dropdown opens
+    useEffect(() => {
+      if (isOpen) {
+        // Small delay to ensure DOM is updated
+        setTimeout(() => {
+          calculateDropdownPosition();
+        }, 0);
+      }
+    }, [isOpen, calculateDropdownPosition]);
+
+    // Handle window resize to recalculate position
+    useEffect(() => {
+      if (!isOpen) return;
+
+      const handleResize = () => {
+        calculateDropdownPosition();
+      };
+
+      window.addEventListener("resize", handleResize);
+      window.addEventListener("orientationchange", handleResize);
+
+      return () => {
+        window.removeEventListener("resize", handleResize);
+        window.removeEventListener("orientationchange", handleResize);
+      };
+    }, [isOpen, calculateDropdownPosition]);
 
     return (
       <div
@@ -114,9 +173,9 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
           <label
             style={{
               display: "block",
-              marginBottom: "4px",
-              fontWeight: 500,
-              fontSize: theme.fontSize.md,
+              marginBottom: theme.spacing.sm,
+              fontWeight: theme.fontWeight.medium,
+              fontSize: theme.fontSize.sm,
               color: theme.colors.text,
             }}
           >
@@ -158,6 +217,8 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
               bottom: openUpward ? "102%" : "auto",
               left: 0,
               right: 0,
+              width: "100%",
+              ...dropdownStyle,
               backgroundColor: theme.colors.background,
               border: "1px solid #ccc",
               borderRadius: "6px",
@@ -165,7 +226,7 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
               marginBottom: openUpward ? "4px" : "0",
               zIndex: 20,
               boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-              maxHeight: "260px",
+              maxHeight: `${dropdownMaxHeight}px`,
               display: "flex",
               flexDirection: "column",
             }}
@@ -205,27 +266,36 @@ export const SinglePageSelection = forwardRef<HTMLDivElement, SinglePageSelectio
             {/* Scrollable options */}
             <div className="thin-scroll" style={{ overflowY: "auto", flex: 1 }}>
               {filteredOptions.length > 0 ? (
-                filteredOptions.map((opt: any, idx: number) => (
-                  <div
-                    key={idx}
-                    onClick={() => {
-                      onChange(opt[valueKey]);
-                      setIsOpen(false);
-                      setSearchTerm("");
-                    }}
-                    style={{
-                      padding: "10px 14px",
-                      borderBottom: "1px solid #f3f3f3",
-                      cursor: "pointer",
-                      backgroundColor:
-                        opt[valueKey] === value
+                filteredOptions.map((opt: any, idx: number) => {
+                  const isSelected = opt[valueKey] === value;
+
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => {
+                        onChange(opt[valueKey]);
+                        setIsOpen(false);
+                        setSearchTerm("");
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLDivElement).style.backgroundColor = "#e6f0ff";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLDivElement).style.backgroundColor = isSelected
                           ? "#e6f0ff"
-                          : theme.colors.background,
-                    }}
-                  >
-                    {opt[labelKey]}
-                  </div>
-                ))
+                          : theme.colors.background;
+                      }}
+                      style={{
+                        padding: "10px 14px",
+                        borderBottom: "1px solid #f3f3f3",
+                        cursor: "pointer",
+                        backgroundColor: isSelected ? "#e6f0ff" : theme.colors.background,
+                      }}
+                    >
+                      {opt[labelKey]}
+                    </div>
+                  );
+                })
               ) : (
                 <div
                   style={{

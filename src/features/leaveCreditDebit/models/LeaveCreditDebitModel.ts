@@ -8,8 +8,8 @@ export interface FilterWithPaginationLeaveCreditDebitRequest {
     LeavePeriodMode?: string
     FYyear?: number
     Month?: string
-    DepartmentMasterId?: string
-    EmployeeId?: string
+    DepartmentName?: string
+    DesignationName?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -18,6 +18,7 @@ export interface LeaveBalanceType {
     LeaveTypeBalanceId: number
     LeaveTypeId: number | 0
     LeaveCredit: number | 0
+    LeaveTypeName:string | ''
     LeaveCreditDebitId: number | 0
 }
 
@@ -27,8 +28,10 @@ export interface LeaveCreditDebitData {
     LeavePeriodMode: string | ''
     FYyear: number | 0
     Month: string | ''
-    DepartmentMasterId: string | ''
-    EmployeeId: string | ''
+    DepartmentMasterId: number | 0
+    DepartmentName:string |''
+    DesignationName:string |''
+    DesignationId:number | 0
     LeaveBalanceType: LeaveBalanceType[] | []
     CreatedById: number | 0
     CreatedBy: string | ''

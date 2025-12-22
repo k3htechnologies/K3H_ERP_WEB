@@ -51,17 +51,27 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
         setLoading(true);
         const result = await dataFetchCallBack(1, { value: term });
         const list = Array.isArray(result?.itemList) ? result.itemList : [];
-        setOptions(list);
-        setFilteredOptions(list);
+        
+        // Merge with propOptions (initialOptions) to ensure selected options are included
+        const mergedOptions: DropdownOptions[] = [...(propOptions || [])];
+        list.forEach((newOpt) => {
+          if (!mergedOptions.some((opt) => String(opt.value) === String(newOpt.value))) {
+            mergedOptions.push(newOpt);
+          }
+        });
+        
+        setOptions(mergedOptions);
+        setFilteredOptions(mergedOptions);
       } catch (err) {
         console.error("MultiSelectPagination fetch error:", err);
-        setOptions([]);
-        setFilteredOptions([]);
+        // On error, at least keep the initialOptions
+        setOptions(propOptions || []);
+        setFilteredOptions(propOptions || []);
       } finally {
         setLoading(false);
       }
     },
-    [dataFetchCallBack]
+    [dataFetchCallBack, propOptions]
   );
 
   // Filter options based on search input (local mode)
@@ -90,9 +100,32 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
     }
   }, [dataFetchCallBack, fetchOptions, isOpen, searchTerm]);
 
-  // Sync when prop options change (local mode)
+  // Sync when prop options change (local mode or merge with fetched options)
   useEffect(() => {
-    if (dataFetchCallBack) return;
+    if (dataFetchCallBack) {
+      // When using dataFetchCallBack, merge propOptions with existing options
+      if (propOptions && propOptions.length > 0) {
+        setOptions((current) => {
+          const merged = [...(propOptions || [])];
+          current.forEach((opt) => {
+            if (!merged.some((mOpt) => String(mOpt.value) === String(opt.value))) {
+              merged.push(opt);
+            }
+          });
+          return merged;
+        });
+        setFilteredOptions((current) => {
+          const merged = [...(propOptions || [])];
+          current.forEach((opt) => {
+            if (!merged.some((mOpt) => String(mOpt.value) === String(opt.value))) {
+              merged.push(opt);
+            }
+          });
+          return merged;
+        });
+      }
+      return;
+    }
     setOptions(propOptions || []);
     setFilteredOptions(propOptions || []);
   }, [propOptions, dataFetchCallBack]);
@@ -109,9 +142,11 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
 
   // Toggle selection of options
   const toggleSelect = (value: string | number) => {
-    const updated = selectedValues.includes(value)
-      ? selectedValues.filter((v) => v !== value)
-      : [...selectedValues, value];
+    // Ensure type-safe comparison
+    const isCurrentlySelected = selectedValues.some(sv => String(sv) === String(value));
+    const updated = isCurrentlySelected
+      ? selectedValues.filter((v) => String(v) !== String(value))
+      : [...selectedValues, String(value)];
 
     onChange(updated);
 
@@ -141,7 +176,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
 
   // Selected labels and visible tags (up to 4)
   const selectedLabels = options
-    .filter((opt) => selectedValues.includes(opt.value))
+    .filter((opt) => selectedValues.some(sv => String(sv) === String(opt.value)))
     .map((opt) => opt.label);
 
   const visibleTags = selectedLabels.slice(0, 4);
@@ -294,42 +329,40 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             background: theme.colors.background,
           }}
         >
-          {/* Action buttons */}
+          {/* Action links: Select All (left) and Clear All (right) */}
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              alignItems: "center",
               padding: "8px 10px",
               borderBottom: `1px solid ${theme.colors.border}`,
-              gap: "8px",
+              columnGap: "12px",
             }}
           >
-            <button
+            <span
               onClick={(e) => {
                 e.stopPropagation();
                 onChange(options.map((opt) => opt.value));
                 setError(undefined);
               }}
               style={{
-                padding: "6px 10px",
-                backgroundColor: "#3b82f6",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
+                justifySelf: "start",
                 cursor: "pointer",
                 fontSize: "13px",
+                color: "#6b7280",
                 transition: theme.transitions.fast,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#2563eb";
+                e.currentTarget.style.color = "#4b5563";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#3b82f6";
+                e.currentTarget.style.color = "#6b7280";
               }}
             >
               Select All
-            </button>
-            <button
+            </span>
+            <span
               onClick={(e) => {
                 e.stopPropagation();
                 onChange([]);
@@ -340,24 +373,21 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
                 }
               }}
               style={{
-                padding: "6px 10px",
-                backgroundColor: "#ef4444",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
+                justifySelf: "end",
                 cursor: "pointer",
                 fontSize: "13px",
+                color: "#6b7280",
                 transition: theme.transitions.fast,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#dc2626";
+                e.currentTarget.style.color = "#4b5563";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#ef4444";
+                e.currentTarget.style.color = "#6b7280";
               }}
             >
               Clear All
-            </button>
+            </span>
           </div>
 
           {/* Options list */}
@@ -374,31 +404,50 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
               </div>
             )}
             {!loading && filteredOptions.length > 0 ? (
-              filteredOptions.map((opt) => (
+              filteredOptions.map((opt) => {
+                // Ensure type matching for comparison (convert both to string)
+                const isSelected = selectedValues.some(sv => String(sv) === String(opt.value));
+                return (
                 <div
                   key={opt.value}
                   style={{
                     marginBottom: "6px",
                     display: "flex",
-                    justifyContent: "space-between",
+                      alignItems: "center",
                     padding: "8px 10px",
                     borderRadius: theme.borderRadius.sm,
-                    backgroundColor: selectedValues.includes(opt.value)
-                      ? theme.colors.hover
-                      : theme.colors.background,
+                      backgroundColor: isSelected ? "#e6f0ff" : theme.colors.background,
                     cursor: disabled ? "not-allowed" : "pointer",
-                    color: theme.colors.text,
+                      color: theme.colors.textSecondary,
                     fontSize: theme.fontSize.sm,
                     transition: theme.transitions.normal,
                   }}
                   onClick={() => !disabled && toggleSelect(opt.value)}
-                >
+                    onMouseEnter={(e) => {
+                      if (!disabled && !isSelected) {
+                        e.currentTarget.style.backgroundColor = "#e6f0ff";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!disabled && !isSelected) {
+                        e.currentTarget.style.backgroundColor = theme.colors.background;
+                      }
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      readOnly
+                      style={{
+                        marginRight: 8,
+                        accentColor: theme.colors.primary,
+                        cursor: "pointer",
+                      }}
+                    />
                   <span>{opt.label}</span>
-                  {selectedValues.includes(opt.value) && (
-                    <span style={{ color: theme.colors.primary }}>✓</span>
-                  )}
                 </div>
-              ))
+                );
+              })
             ) : !loading ? (
               <div
                 style={{

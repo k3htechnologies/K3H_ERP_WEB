@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
-import type { EmployeeMasterData } from '@/features/employeeMaster/models/EmployeeMasterModel';
+import type { EmployeeMasterData, EmployeeReportingCycle, FilterWithPaginationEmployeeMasterRequest } from '@/features/employeeMaster/models/EmployeeMasterModel';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
@@ -11,7 +11,6 @@ import type { AssetMappingMasterData, FilterWithPaginationAssetMappingMasterRequ
 import { assetMappingMasterService } from '@/features/assetMappingMaster/services/AssetMappingMasterService';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
@@ -21,15 +20,20 @@ import { ShiftMappingMasterService } from '@/features/shiftMappingMaster/service
 import type { FilterWithPaginationShiftMappingMasterRequest, ShiftMappingMasterData } from '@/features/shiftMappingMaster/models/ShiftMappingMasterModel';
 import { WeekOffMappingMasterService } from '@/features/weekOffMappingMaster/services/WeekOffMappingMasterService'
 import type { FilterWithPaginationWeekOffMappingMasterRequest, WeekOffMappingMasterData } from '@/features/weekOffMappingMaster/models/WeekOffMappingMasterModel';
+import { employeeMasterService } from '../services/EmployeeMasterService';
+import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData } from '@/features/projectMaster/models/ProjectMasterModel';
+import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 
 export const ViewEmployeeMaster: React.FC = () => {
 
     //#region STATE MANAGEMENT
+    const [employeeMasterList, setEmployeeMasterList] = useState<EmployeeMasterData[]>([]);
+    const [employeeReportingCycleList, setEmployeeReportingCycleList] = useState<EmployeeReportingCycle[]>([]);
     const [assetMappingMasterList, setAssetMappingMasterList] = useState<AssetMappingMasterData[]>([]);
     const [employeeDocumentList, setEmployeeDocumentList] = useState<EmployeeDocumentData[]>([]);
     const [shiftMappingMasterList, setShiftMappingMasterList] = useState<ShiftMappingMasterData[]>([]);
     const [weekOffMappingMasterList, setWeekOffMappingMasterList] = useState<WeekOffMappingMasterData[]>([]);
-    const [projectList, setProjectList] = useState<any[]>([]);
+    const [projectMasterList, setProjectMasterList] = useState<ProjectMasterData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
     const { canAction } = useMenuPermissions('/employeeMaster');
@@ -42,7 +46,6 @@ export const ViewEmployeeMaster: React.FC = () => {
 
     const location = useLocation() as {
         state?: {
-            editEmployeeMasterData?: EmployeeMasterData | null;
             fromList?: boolean;
             listState?: {
                 page: number;
@@ -73,40 +76,68 @@ export const ViewEmployeeMaster: React.FC = () => {
     //#endregion
 
     //#region INIT
+
     useEffect(() => {
 
-        if (activeTab === "Overview") {
+        if (activeTab === "Overview") loadEmployee();
 
-        }
+        else if (activeTab === "Document") loadEmployeeDocuments()
 
-        else if (activeTab === "Document") {
+        else if (activeTab === "Assets") loadAssetMasterMapping();
 
-            loadEmployeeDocuments()
-        }
+        else if (activeTab === 'Project') loadProjects();
 
-        else if (activeTab === "Assets") {
 
-            loadAssetMasterMapping();
-        }
-        else if (activeTab === 'Project') {
-            const stored = LocalStorageHelper.getStoredEmployeeData();
-            setProjectList(stored?.ProjectData || []);
-        }
+        else if (activeTab === 'Shift Policy') loadShiftMappings();
 
-        else if (activeTab === 'Shift Policy') {
-            loadShiftMappings();
-        }
-        else if (activeTab === 'Week Off Policy') {
+        else if (activeTab === 'Week Off Policy') loadWeekOffMappings();
 
-            loadWeekOffMappings();
-        }
-
-    }, []);
+    }, [activeTab]);
 
     //#endregion
-    //#region Get EMPLOYEE DATA FROM LOCATION STATE
-    const editEmployeeData = (location.state?.editEmployeeMasterData ?? null) as EmployeeMasterData | null;
-    const employeeReportingCycleData = editEmployeeData!.EmployeeReportingCycleData;
+    //#region DATA LOADING | FETCH |  LOAD | SEARCH  EMPLOYEE LIST
+    const loadEmployee = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                const filterParams: FilterWithPaginationEmployeeMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    IsCheckPermission: false,
+                    EmployeeId: Number(preservedListState?.employeeId)
+                }
+
+                const response = await employeeMasterService.apiCallPullEmployeeMaster(filterParams);
+
+                if (E.isRight(response)) {
+
+                    const employeeList = Array.isArray(response.right.Data) ? response.right.Data : []
+
+                    setEmployeeMasterList(employeeList);
+
+                    setEmployeeReportingCycleList(employeeList[0]?.EmployeeReportingCycleData || []);
+
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+
+                }
+
+                return response
+            },
+            undefined,
+            (error: any) => {
+
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Loading Employee'
+        )
+    }
+
     //#endregion
 
     //#region DATA LOAD FOR ASSET MAPPING TO EACH EMPLOYEE
@@ -119,8 +150,8 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                 const params: FilterWithPaginationAssetMappingMasterRequest = {
                     PageNumber: 1,
-                    PageSize: 100,
-                    EmployeeName: `${editEmployeeData!.FirstName.trim()} ${editEmployeeData!.LastName.trim()}`,
+                    PageSize: 20,
+                    EmployeeId: preservedListState!.employeeId,
 
                 };
 
@@ -160,7 +191,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 500,
                     IsCheckPermission: true,
-                    EmployeeId: editEmployeeData!.EmployeeId!,
+                    EmployeeId: preservedListState!.employeeId!,
                     DocumentName: undefined
                 }
 
@@ -202,9 +233,9 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                 const params: FilterWithPaginationShiftMappingMasterRequest = {
                     PageNumber: 1,
-                    PageSize: 100,
+                    PageSize: 20,
                     DepartmentName: undefined,
-                    EmployeeName: `${editEmployeeData!.FirstName.trim()} ${editEmployeeData!.LastName.trim()}`,
+                    EmployeeId: preservedListState!.employeeId,
                 }
 
                 const response = await ShiftMappingMasterService.apiCallPullShiftMappingMaster(params);
@@ -229,6 +260,7 @@ export const ViewEmployeeMaster: React.FC = () => {
         )
     }
     //#endregion
+
     //#region LOAD WEEK OFF MAPPING POLICY
     const loadWeekOffMappings = async () => {
         await runApiWithLoader(
@@ -240,7 +272,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 100,
                     DepartmentName: undefined,
-                    EmployeeName: `${editEmployeeData!.FirstName.trim()} ${editEmployeeData!.LastName.trim()}`,
+                    EmployeeId: preservedListState!.employeeId,
                 }
 
                 const response = await WeekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
@@ -265,6 +297,43 @@ export const ViewEmployeeMaster: React.FC = () => {
         )
     }
     //#endregion
+
+    //#region PROJECT MASTER
+    const loadProjects = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationProjectMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 1000,
+                    IsProjectAccess: false,
+                    EmployeeId: preservedListState!.employeeId,
+                }
+
+                const response = await ProjectMasterService.apiCallPullProjectMaster(params);
+
+                if (E.isRight(response)) {
+
+                    setProjectMasterList(response.right.Data);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Loading Project'
+        )
+    }
+
+    //#endregion
+    
     //#region EDIT EMPLOYEE
 
     const handleEditEmployee = (row: EmployeeMasterData) => {
@@ -311,10 +380,11 @@ export const ViewEmployeeMaster: React.FC = () => {
     };
     //#endregion
 
+    const employeeData = employeeMasterList.length > 0 ? employeeMasterList[0] : null
+
     const safe = (value?: any) => (value === null || value === undefined || value === '' ? '-' : value)
 
     return (
-
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
@@ -327,10 +397,10 @@ export const ViewEmployeeMaster: React.FC = () => {
                 canAction={canAction}
                 onEdit={() => {
                     if (activeTab === "Overview") {
-                        if (editEmployeeData) handleEditEmployee(editEmployeeData);
+                        if (employeeData) handleEditEmployee(employeeData);
                     }
                     else if (activeTab === "Document") {
-                        if (editEmployeeData) handleEditEmployeeDocument(editEmployeeData);
+                        if (employeeData) handleEditEmployeeDocument(employeeData);
                     }
                 }}
                 isLoading={isLoading}
@@ -345,36 +415,25 @@ export const ViewEmployeeMaster: React.FC = () => {
                     onTabChange={(t) => {
 
                         setActiveTab(t.id);
-                        if (t.id === "Overview") {
-                        }
 
-                        else if (t.id === "Document") {
+                        if (t.id === "Overview") loadEmployee();
 
-                            loadEmployeeDocuments()
-                        }
+                        else if (t.id === "Document") loadEmployeeDocuments()
 
-                        else if (t.id === "Assets") {
+                        else if (t.id === "Assets") loadAssetMasterMapping();
 
-                            loadAssetMasterMapping();
-                        }
-                        else if (t.id === 'Project') {
-                            const stored = LocalStorageHelper.getStoredEmployeeData();
-                            setProjectList(stored?.ProjectData || []);
-                        }
-                        else if (t.id === 'Shift Policy') {
+                        else if (t.id === 'Project') loadProjects();
 
-                            loadShiftMappings();
-                        }
-                        else if (t.id === 'Week Off Policy') {
+                        else if (t.id === 'Shift Policy') loadShiftMappings();
 
-                            loadWeekOffMappings();
-                        }
+                        else if (t.id === 'Week Off Policy') loadWeekOffMappings();
+
 
                     }}
                 />
             </div>
 
-            {activeTab === 'Overview' && (
+            {activeTab === 'Overview' && employeeData && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
 
                     {/* ================= LEFT SIDE (2/3) ================= */}
@@ -389,28 +448,28 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="First Name" value={safe(editEmployeeData!.FirstName)} />
-                                        <FieldItem label="Middle Name" value={safe(editEmployeeData!.MiddleName)} />
-                                        <FieldItem label="Last Name" value={safe(editEmployeeData!.LastName)} />
+                                        <FieldItem label="First Name" value={safe(employeeData!.FirstName)} />
+                                        <FieldItem label="Middle Name" value={safe(employeeData!.MiddleName)} />
+                                        <FieldItem label="Last Name" value={safe(employeeData!.LastName)} />
                                     </div>
                                 </div>
 
 
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Gender" value={safe(editEmployeeData!.Gender)} />
-                                        <FieldItem label="Marital Status" value={safe(editEmployeeData!.MaritalStatus)} />
-                                        <FieldItem label="Blood Group" value={safe(editEmployeeData!.BloodGroup)} />
+                                        <FieldItem label="Gender" value={safe(employeeData!.Gender)} />
+                                        <FieldItem label="Marital Status" value={safe(employeeData!.MaritalStatus)} />
+                                        <FieldItem label="Blood Group" value={safe(employeeData!.BloodGroup)} />
                                     </div>
                                 </div>
 
 
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(safe(editEmployeeData!.DateOfBirth))} />
-                                        <FieldItem label="Email ID" value={safe(editEmployeeData!.EmailId)} />
-                                        <FieldItem label="Personal Mobile No." value={editEmployeeData?.PersonalMobileNumber
-                                            ? `+91 ${safe(editEmployeeData?.PersonalMobileNumber)}`
+                                        <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(safe(employeeData!.DateOfBirth))} />
+                                        <FieldItem label="Email ID" value={safe(employeeData!.EmailId)} />
+                                        <FieldItem label="Personal Mobile No." value={employeeData?.PersonalMobileNumber
+                                            ? `+91 ${safe(employeeData?.PersonalMobileNumber)}`
                                             : '-'}
                                         />
                                     </div>
@@ -420,7 +479,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem
                                             label="Communication Address"
-                                            value={safe(editEmployeeData!.CommunicationAddress)}
+                                            value={safe(employeeData!.CommunicationAddress)}
                                         />
                                     </div>
                                 </div>
@@ -428,7 +487,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem
                                             label="Permanent Address"
-                                            value={safe(editEmployeeData!.PermanentAddress)}
+                                            value={safe(employeeData!.PermanentAddress)}
                                         />
                                     </div>
                                 </div>
@@ -448,31 +507,31 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Company Name" value={safe(editEmployeeData!.CompanyName)} />
-                                        <FieldItem label="Branch" value={safe(editEmployeeData!.Branch)} />
-                                        <FieldItem label="Department" value={safe(editEmployeeData!.Department)} />
+                                        <FieldItem label="Company Name" value={safe(employeeData!.CompanyName)} />
+                                        <FieldItem label="Branch" value={safe(employeeData!.Branch)} />
+                                        <FieldItem label="Department" value={safe(employeeData!.Department)} />
 
                                     </div>
                                 </div>
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Designation" value={safe(editEmployeeData!.Designation)} />
+                                        <FieldItem label="Designation" value={safe(employeeData!.Designation)} />
                                         <FieldItem
                                             label="Joining Date"
-                                            value={formatDate_dd_MonthName_yy(safe(editEmployeeData!.JoiningDate))}
+                                            value={formatDate_dd_MonthName_yy(safe(employeeData!.JoiningDate))}
                                         />
-                                        <FieldItem label="Reporting Person" value={safe(editEmployeeData!.ReportPersonName)} />
+                                        <FieldItem label="Reporting Person" value={safe(employeeData!.ReportPersonName)} />
                                     </div>
                                 </div>
                                 <div className="lg:col-span-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Employment Type" value={safe(editEmployeeData!.EmployeeType)} />
+                                        <FieldItem label="Employment Type" value={safe(employeeData!.EmployeeType)} />
 
-                                        <FieldItem label="Office Number" value={editEmployeeData?.OfficeMobileNumber
-                                            ? `+91 ${safe(editEmployeeData?.OfficeMobileNumber)}`
+                                        <FieldItem label="Office Number" value={employeeData?.OfficeMobileNumber
+                                            ? `+91 ${safe(employeeData?.OfficeMobileNumber)}`
                                             : '-'} />
 
-                                        <FieldItem label="Office E-mail ID" value={safe(editEmployeeData!.OfficeEmailId)} />
+                                        <FieldItem label="Office E-mail ID" value={safe(employeeData!.OfficeEmailId)} />
                                     </div>
                                 </div>
                             </div>
@@ -489,15 +548,15 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
 
-                                        <FieldItem label="Country" value={safe(editEmployeeData!.CountryName)} />
-                                        <FieldItem label="State" value={safe(editEmployeeData!.StateName)} />
+                                        <FieldItem label="Country" value={safe(employeeData!.CountryName)} />
+                                        <FieldItem label="State" value={safe(employeeData!.StateName)} />
 
                                     </div>
                                 </div>
                                 <div className="lg:col-span-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="District" value={safe(editEmployeeData!.DistrictName)} />
-                                        <FieldItem label="City" value={safe(editEmployeeData!.CityName)} />
+                                        <FieldItem label="District" value={safe(employeeData!.DistrictName)} />
+                                        <FieldItem label="City" value={safe(employeeData!.CityName)} />
                                     </div>
                                 </div>
                             </div>
@@ -511,14 +570,14 @@ export const ViewEmployeeMaster: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Bank Name" value={safe(editEmployeeData!.BankName)} />
-                                        <FieldItem label="Account Number" value={safe(editEmployeeData!.AccountNo)} />
+                                        <FieldItem label="Bank Name" value={safe(employeeData!.BankName)} />
+                                        <FieldItem label="Account Number" value={safe(employeeData!.AccountNo)} />
                                     </div>
                                 </div>
                                 <div className="lg:col-span-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Bank Branch Name" value={safe(editEmployeeData!.BankBranchName)} />
-                                        <FieldItem label="IFSC Code" value={safe(editEmployeeData!.IFSCCode)} />
+                                        <FieldItem label="Bank Branch Name" value={safe(employeeData!.BankBranchName)} />
+                                        <FieldItem label="IFSC Code" value={safe(employeeData!.IFSCCode)} />
                                     </div>
                                 </div>
                             </div>
@@ -535,12 +594,12 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 <div className="lg:col-span-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
 
-                                        <FieldItem label="Relation to Emergency Contact" value={safe(editEmployeeData!.EmergencyContactPersonRelationship)} />
+                                        <FieldItem label="Relation to Emergency Contact" value={safe(employeeData!.EmergencyContactPersonRelationship)} />
                                         <FieldItem
                                             label="Emergency Contact Number"
                                             value={
-                                                editEmployeeData?.EmergencyMobileNumber
-                                                    ? `+91 ${safe(editEmployeeData?.EmergencyMobileNumber)}`
+                                                employeeData?.EmergencyMobileNumber
+                                                    ? `+91 ${safe(employeeData?.EmergencyMobileNumber)}`
                                                     : '-'
                                             }
                                         />
@@ -559,19 +618,19 @@ export const ViewEmployeeMaster: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Created By" value={safe(editEmployeeData!.CreatedBy)} />
+                                        <FieldItem label="Created By" value={safe(employeeData!.CreatedBy)} />
                                         <FieldItem
                                             label="Created Date"
-                                            value={formatDate_dd_MonthName_yy(safe(editEmployeeData!.CreatedDate))}
+                                            value={formatDate_dd_MonthName_yy(safe(employeeData!.CreatedDate))}
                                         />
                                     </div>
                                 </div>
                                 <div className="lg:col-span-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Modified By" value={safe(editEmployeeData!.ModifiedBy)} />
+                                        <FieldItem label="Modified By" value={safe(employeeData!.ModifiedBy)} />
                                         <FieldItem
                                             label="Modified Date"
-                                            value={formatDate_dd_MonthName_yy_hh_mm(safe(editEmployeeData!.ModifiedDate))}
+                                            value={formatDate_dd_MonthName_yy_hh_mm(safe(employeeData!.ModifiedDate))}
                                         />
                                     </div>
                                 </div>
@@ -590,8 +649,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 Reporting Structure
                             </h4>
                             <div className="space-y-4">
-                                {employeeReportingCycleData && employeeReportingCycleData.length > 0 ? (
-                                    employeeReportingCycleData.map((item, index) => (
+                                {employeeReportingCycleList && employeeReportingCycleList.length > 0 ? (
+                                    employeeReportingCycleList.map((item, index) => (
                                         <div key={index} className="flex gap-4 relative">
 
                                             <div className="flex flex-col items-center">
@@ -600,7 +659,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                     {item.FullName!.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
                                                 </div>
 
-                                                {index !== employeeReportingCycleData.length - 1 && (
+                                                {index !== employeeReportingCycleList.length - 1 && (
 
                                                     <div className="w-px bg-gray-500 flex-1 mt-1"></div>
                                                 )}
@@ -657,7 +716,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                 </div>
             )}
 
-            {activeTab === 'Document' && (
+            {activeTab === 'Document' && employeeDocumentList && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-5">
 
                     {employeeDocumentList?.filter(doc => doc?.DocumentURL)?.length > 0 ? (
@@ -690,7 +749,7 @@ export const ViewEmployeeMaster: React.FC = () => {
             )}
 
 
-            {activeTab === 'Assets' && (
+            {activeTab === 'Assets' && assetMappingMasterList && (
                 <div className="space-y-4">
                     {assetMappingMasterList.length === 0 ? (
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
@@ -781,13 +840,13 @@ export const ViewEmployeeMaster: React.FC = () => {
 
             {activeTab === "Project" && (
                 <div className="space-y-4">
-                    {projectList.length === 0 ? (
+                    {projectMasterList.length === 0 ? (
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
                             <NoDataView message='No Project Found' />
                         </section>
                     ) : (
                         <div className="space-y-3">
-                            {projectList.map((project) => (
+                            {projectMasterList.map((project) => (
                                 <div key={project.ProjectId} className="border border-gray-200 p-3 rounded bg-white flex justify-between">
 
                                     <div className="flex items-center gap-4">
@@ -811,7 +870,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                 </div>
             )}
 
-            {activeTab === 'Shift Policy' && (
+            {activeTab === 'Shift Policy' && shiftMappingMasterList && (
                 <div className="space-y-4">
                     {shiftMappingMasterList.length === 0 ? (
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
@@ -856,7 +915,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                 </div>
             )}
 
-            {activeTab === 'Week Off Policy' && (
+            {activeTab === 'Week Off Policy' && weekOffMappingMasterList && (
                 <div className="space-y-4">
                     {weekOffMappingMasterList.length === 0 ? (
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >

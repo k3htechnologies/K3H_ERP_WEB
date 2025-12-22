@@ -83,9 +83,7 @@ export const HolidayMaster: React.FC = () => {
   //ADD UPDATE HOLIDAY MASTER
   const [formData, setFormData] = useState<AddUpdateHolidayMasterRequest>(() => initialFormState());
 
-
   //DELETE HOLIDAY MASTER STATES
-
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteHolidayMasterDetailsData, setDeleteHolidayMasterDetailsData] = useState<HolidayMasterData | null>(null)
 
@@ -136,7 +134,6 @@ export const HolidayMaster: React.FC = () => {
       setErrors({});
     }
   }, [isAddUpdateModalOpen, editingHolidayMasterData]);
-
   //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
@@ -191,7 +188,7 @@ export const HolidayMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Holiday Data'
+      'Loading Holiday'
     )
   }
   //#endregion
@@ -263,7 +260,6 @@ export const HolidayMaster: React.FC = () => {
 
   const handleExportHolidayExcel = () => handleExportHolidays('Excel')
   const handleExportHolidayPdf = () => handleExportHolidays('PDF')
-
   //#endregion
 
   //#region API | SERVICES CALL TO GET HOLIDAY MASTER
@@ -301,7 +297,6 @@ export const HolidayMaster: React.FC = () => {
   )
 
   const holidayListForTable = useMemo(() => holidayMasterList, [holidayMasterList]);
-
   //#endregion
 
   //#region VIEW EDIT
@@ -309,7 +304,6 @@ export const HolidayMaster: React.FC = () => {
     setViewHolidayMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
-
   //#endregion
 
   //#region EDIT HOLIDAY  MASTER
@@ -396,7 +390,6 @@ export const HolidayMaster: React.FC = () => {
     () => holidayMasterColumns.filter(col => selectedHolidayMasterColumnKeys.includes(col.key)),
     [holidayMasterColumns, selectedHolidayMasterColumnKeys]
   )
-
   //#endregion
 
   //#region VIEW HOLIDAY DETAILS MODAL COMPONENT
@@ -539,6 +532,8 @@ export const HolidayMaster: React.FC = () => {
 
     if (!formData.HolidayName?.trim()) {
       newErrors.HolidayName = "Holiday name is required";
+    }else if (formData.HolidayName.trim().length > 50) {
+      newErrors.HolidayName = 'Holiday Name must be at most 50 characters'
     }
 
     const hasFile = formData.HolidayURL || HolidayURLFiles.length > 0 || editingHolidayMasterData?.HolidayURL;
@@ -550,7 +545,6 @@ export const HolidayMaster: React.FC = () => {
       errors: newErrors,
     };
   }
-
   //#region PUSH DATA
 
   const PushHolidayFormData = (): FormData => {
@@ -700,7 +694,7 @@ export const HolidayMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Holiday Master Data'
+      'Delete Holiday Master'
     )
   }
   //#endregion
@@ -754,7 +748,7 @@ export const HolidayMaster: React.FC = () => {
         data={holidayListForTable}
         columns={visibleHolidayMasterColumns}
         pagination={holidayMasterPaginationInfo}
-        emptyMessage="No Holidays Data Found"
+        emptyMessage="No Holiday Data Found"
         fixedHeight={true}
         maxHeight="calc(100vh - 200px)"
         recordsPerPage={20}
@@ -786,9 +780,9 @@ export const HolidayMaster: React.FC = () => {
           setEditingHolidayMasterData(null)
           setFormData(initialFormState());
         }}
-        title={editingHolidayMasterData ? 'Update holiday ' : 'Add holiday'}
+        title={editingHolidayMasterData ? 'Update Holiday ' : 'Add Holiday'}
         onSubmit={handleAddUpdateHolidayMaster}
-        saveText={editingHolidayMasterData ? 'Update holiday' : 'Save holiday'}
+        saveText={editingHolidayMasterData ? 'Update Holiday' : 'Save Holiday'}
         resetText='Reset'
         loading={isLoading}
         size="xl"
@@ -876,7 +870,7 @@ export const HolidayMaster: React.FC = () => {
                 type="text"
                 value={tempFilters.HolidayName || ''}
                 onChange={(e) => handleFilterChange('HolidayName', e.target.value)}
-                placeholder="Enter holiday name"
+                placeholder="Enter Holiday Name"
               />
             </div>
           </div>
@@ -891,8 +885,8 @@ export const HolidayMaster: React.FC = () => {
           setDeleteHolidayMasterDetailsData(null)
         }}
         onConfirm={handleDeleteHolidayMaster}
-        title="You are about to delete a holiday?"
-        message="Deleting this holiday will permanently remove its contents."
+        title="You are about to delete a Holiday?"
+        message="Deleting this Holiday will permanently remove its contents."
         confirmText="Delete"
         cancelText="Cancel"
         loading={isLoading}

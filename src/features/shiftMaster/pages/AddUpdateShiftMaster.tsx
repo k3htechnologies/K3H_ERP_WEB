@@ -3,13 +3,14 @@ import { Input } from "@/ui/components/forms/Input";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
-import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateShiftMasterRequest, FilterWithPaginationShiftMasterRequest } from "../models/ShiftMasterModel";
 import { ShiftMasterService } from "../services/ShiftMasterService";
 import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 
 const initialFormState = (): AddUpdateShiftMasterRequest => ({
   ShiftManagementMasterId: 0,
@@ -50,6 +51,11 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
   // TOAST
   const { addToast } = useToast();
+
+
+  //#region MENU PERMISSIONS
+  const { canAction } = useMenuPermissions('/ShiftMaster');
+  //#endregion
 
   // ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -132,7 +138,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Shift Data'
+      'Loading Shift'
     );
   };
   //#endregion
@@ -149,7 +155,10 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
     if (!formData.ShiftName) {
       newErrors.ShiftName = 'Shift Name is required.';
+    }else if (formData.ShiftName.trim().length > 50) {
+      newErrors.ShiftName = 'Shift Name must be at most 50 characters'
     }
+
     if (!formData.ShiftCode) {
       newErrors.ShiftCode = 'Shift Code is required.';
     }
@@ -241,8 +250,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
   //#endregion
 
   //#region HANDLE ADD AND UPDATE SHIFT MASTER
-  const handleAddUpdateShiftMaster = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddUpdateShiftMaster = async () => {
 
     setErrors({});
 
@@ -308,265 +316,249 @@ export const AddUpdateShiftMaster: React.FC = () => {
   //#endregion
 
   return (
-    
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        {/* Loader */}
+      {/* Loader */}
 
-        <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-        <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+      <div className="flex-1 space-y-2 px-6 py-3  overflow-y-auto thin-scroll ">
 
-          <form onSubmit={handleAddUpdateShiftMaster}>
+        <form onSubmit={handleAddUpdateShiftMaster}>
 
-            {/* Basic Shift Details */}
+          {/* Basic Shift Details */}
 
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Shift Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Shift Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
 
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Shift Name'
-                    value={formData.ShiftName ?? ""}
-                    onChange={(e) => handleFieldChange("ShiftName", e.target.value)}
-                    placeholder="Enter Shift Name"
-                    maxLength={250}
-                    error={errors.ShiftName}
-                  />
-                </div>
-
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Shift Code '
-                    value={formData.ShiftCode.toUpperCase() ?? ""}
-                    onChange={(e) => handleFieldChange("ShiftCode", e.target.value)}
-                    placeholder="Enter Shift Code"
-                    maxLength={4}
-                    error={errors.ShiftCode}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <TimePicker
-                    label="Shift Begin Time"
-                    required
-                    size="sm"
-                    format={24}
-                    value={formData.ShiftBeginTime || ""}
-                    onChange={(val) => handleFieldChange("ShiftBeginTime", val)}
-                    error={errors.ShiftBeginTime}
-                  />
-                </div>
-
-                <div>
-                  <TimePicker
-                    label="Shift End Time"
-                    required
-                    size="sm"
-                    format={24}
-                    value={formData.ShiftEndTime || ""}
-                    onChange={(val) => handleFieldChange("ShiftEndTime", val)}
-                    error={errors.ShiftEndTime}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <TimePicker
-                    label="Shift Duration Time"
-                    required
-                    size="sm"
-                    format={24}
-                    value={formData.ShiftDurationTime || ""}
-                    onChange={(val) => handleFieldChange("ShiftDurationTime", val)}
-                    error={errors.ShiftDurationTime}
-                  />
-                </div>
-                
-                <div>
-                  <TimePicker
-                    label="Shift Work Duration Time"
-                    required
-                    size="sm"
-                    format={24}
-                    value={formData.ShiftWorkDurationTime || ""}
-                    onChange={(val) => handleFieldChange("ShiftWorkDurationTime", val)}
-                    error={errors.ShiftWorkDurationTime}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <TimePicker
-                    label="First Half Up To"
-                    required
-                    size="sm"
-                    format={24}
-                    value={formData.FirstHalfUpTo || ""}
-                    onChange={(val) => handleFieldChange("FirstHalfUpTo", val)}
-                    error={errors.FirstHalfUpTo}
-                  />
-                </div>
-                
-                <div>
-                  <TimePicker
-                    label="Absent Working Hours"
-                    required
-                    size="sm"
-                    format={24}
-                    value={formData.AbsentWorkingHours || ""}
-                    onChange={(val) => handleFieldChange("AbsentWorkingHours", val)}
-                    error={errors.AbsentWorkingHours}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <TimePicker
-                    label="Half Day Working Hours"
-                    required
-                    size="sm"
-                    format={24}
-                    value={formData.HalfDayWorkingHours || ""}
-                    onChange={(val) => handleFieldChange("HalfDayWorkingHours", val)}
-                    error={errors.HalfDayWorkingHours}
-                  />
-                </div>
-
-                <div>
-                  <TimePicker
-                    label="Half DayIn Time After"
-                    required
-                    size="sm"
-                    format={24}
-                    value={formData.HalfDayInTimeAfter || ""}
-                    onChange={(val) => handleFieldChange("HalfDayInTimeAfter", val)}
-                    error={errors.HalfDayInTimeAfter}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <TimePicker
-                    label="Half DayOut Time Before"
-                    required
-                    size="sm"
-                    format={24}
-                    value={formData.HalfDayOutTimeBefore || ""}
-                    onChange={(val) => handleFieldChange("HalfDayOutTimeBefore", val)}
-                    error={errors.HalfDayOutTimeBefore}
-                  />
-                </div>
-
-                <div>
-                  <TimePicker
-                    label="Break Begin Time"
-                    required
-                    size="sm"
-                    format={24}
-                    value={formData.BreakBeginTime || ""}
-                    onChange={(val) => handleFieldChange("BreakBeginTime", val)}
-                    error={errors.BreakBeginTime}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <TimePicker
-                    label="Break End Time"
-                    required
-                    size="sm"
-                    format={24}
-                    value={formData.BreakEndTime || ""}
-                    onChange={(val) => handleFieldChange("BreakEndTime", val)}
-                    error={errors.BreakEndTime}
-                  />
-                </div>
-
-                <div>
-                  <TimePicker
-                    label="Break Duration Time"
-                    required
-                    size="sm"
-                    format={24}
-                    value={formData.BreakDurationTime || ""}
-                    onChange={(val) => handleFieldChange("BreakDurationTime", val)}
-                    error={errors.BreakDurationTime}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Grace Time'
-                    value={formData.GraceTime ?? ""}
-                    onChange={(e) => handleFieldChange("GraceTime", e.target.value)}
-                    placeholder="Enter Grace Time"
-                    maxLength={250}
-                    error={errors.GraceTime}
-                  />
-
-                </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Shift Name'
+                  value={formData.ShiftName ?? ""}
+                  onChange={(e) => handleFieldChange("ShiftName", e.target.value)}
+                  placeholder="Enter Shift Name"
+                  maxLength={250}
+                  error={errors.ShiftName}
+                />
               </div>
 
               <div>
                 <Input
                   type="text"
                   required
-                  label='Remarks'
-                  value={formData.Remarks ?? ""}
-                  onChange={(e) => handleFieldChange("Remarks", e.target.value)}
-                  placeholder="Enter Remarks"
-                  maxLength={250}
-                  error={errors.Remarks}
+                  label='Shift Code '
+                  value={formData.ShiftCode.toUpperCase() ?? ""}
+                  onChange={(e) => handleFieldChange("ShiftCode", e.target.value)}
+                  placeholder="Enter Shift Code"
+                  maxLength={4}
+                  error={errors.ShiftCode}
                 />
               </div>
             </div>
-          </form>
-        </div >
 
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
-          <Button
-            color="transparent"
-            variant='transparent_border'
-            size="sm"
-            onClick={() => { navigate(-1); }}
-            className="px-6"
-          >
-            Cancel
-          </Button>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <TimePicker
+                  label="Shift Begin Time"
+                  required
+                  size="sm"
+                  format={24}
+                  value={formData.ShiftBeginTime || ""}
+                  onChange={(val) => handleFieldChange("ShiftBeginTime", val)}
+                  error={errors.ShiftBeginTime}
+                />
+              </div>
 
-          <Button
-            color="green"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              handleAddUpdateShiftMaster(e);
-            }}
-            className="px-6"
-            disabled={isLoading}
-          >
-            {isAddMode ? "Add Shift" : "Update Shift"}
-          </Button>
-        </div>
+              <div>
+                <TimePicker
+                  label="Shift End Time"
+                  required
+                  size="sm"
+                  format={24}
+                  value={formData.ShiftEndTime || ""}
+                  onChange={(val) => handleFieldChange("ShiftEndTime", val)}
+                  error={errors.ShiftEndTime}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <TimePicker
+                  label="Shift Duration Time"
+                  required
+                  size="sm"
+                  format={24}
+                  value={formData.ShiftDurationTime || ""}
+                  onChange={(val) => handleFieldChange("ShiftDurationTime", val)}
+                  error={errors.ShiftDurationTime}
+                />
+              </div>
+
+              <div>
+                <TimePicker
+                  label="Shift Work Duration Time"
+                  required
+                  size="sm"
+                  format={24}
+                  value={formData.ShiftWorkDurationTime || ""}
+                  onChange={(val) => handleFieldChange("ShiftWorkDurationTime", val)}
+                  error={errors.ShiftWorkDurationTime}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <TimePicker
+                  label="First Half Up To"
+                  required
+                  size="sm"
+                  format={24}
+                  value={formData.FirstHalfUpTo || ""}
+                  onChange={(val) => handleFieldChange("FirstHalfUpTo", val)}
+                  error={errors.FirstHalfUpTo}
+                />
+              </div>
+
+              <div>
+                <TimePicker
+                  label="Absent Working Hours"
+                  required
+                  size="sm"
+                  format={24}
+                  value={formData.AbsentWorkingHours || ""}
+                  onChange={(val) => handleFieldChange("AbsentWorkingHours", val)}
+                  error={errors.AbsentWorkingHours}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <TimePicker
+                  label="Half Day Working Hours"
+                  required
+                  size="sm"
+                  format={24}
+                  value={formData.HalfDayWorkingHours || ""}
+                  onChange={(val) => handleFieldChange("HalfDayWorkingHours", val)}
+                  error={errors.HalfDayWorkingHours}
+                />
+              </div>
+
+              <div>
+                <TimePicker
+                  label="Half DayIn Time After"
+                  required
+                  size="sm"
+                  format={24}
+                  value={formData.HalfDayInTimeAfter || ""}
+                  onChange={(val) => handleFieldChange("HalfDayInTimeAfter", val)}
+                  error={errors.HalfDayInTimeAfter}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <TimePicker
+                  label="Half DayOut Time Before"
+                  required
+                  size="sm"
+                  format={24}
+                  value={formData.HalfDayOutTimeBefore || ""}
+                  onChange={(val) => handleFieldChange("HalfDayOutTimeBefore", val)}
+                  error={errors.HalfDayOutTimeBefore}
+                />
+              </div>
+
+              <div>
+                <TimePicker
+                  label="Break Begin Time"
+                  required
+                  size="sm"
+                  format={24}
+                  value={formData.BreakBeginTime || ""}
+                  onChange={(val) => handleFieldChange("BreakBeginTime", val)}
+                  error={errors.BreakBeginTime}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <TimePicker
+                  label="Break End Time"
+                  required
+                  size="sm"
+                  format={24}
+                  value={formData.BreakEndTime || ""}
+                  onChange={(val) => handleFieldChange("BreakEndTime", val)}
+                  error={errors.BreakEndTime}
+                />
+              </div>
+
+              <div>
+                <TimePicker
+                  label="Break Duration Time"
+                  required
+                  size="sm"
+                  format={24}
+                  value={formData.BreakDurationTime || ""}
+                  onChange={(val) => handleFieldChange("BreakDurationTime", val)}
+                  error={errors.BreakDurationTime}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Grace Time'
+                  value={formData.GraceTime ?? ""}
+                  onChange={(e) => handleFieldChange("GraceTime", e.target.value)}
+                  placeholder="Enter Grace Time"
+                  maxLength={250}
+                  error={errors.GraceTime}
+                />
+
+              </div>
+            </div>
+
+            <div>
+              <Input
+                type="text"
+                required
+                label='Remarks'
+                value={formData.Remarks ?? ""}
+                onChange={(e) => handleFieldChange("Remarks", e.target.value)}
+                placeholder="Enter Remarks"
+                maxLength={250}
+                error={errors.Remarks}
+              />
+            </div>
+          </div>
+        </form>
       </div >
+
+      <BottomActionBar
+        cancelText="Cancel"
+        saveText={formData.ShiftManagementMasterId ? "Update" : "Add"}
+        onCancel={() => navigate(-1)}
+        canAction={canAction}
+        onSave={() => {
+          handleAddUpdateShiftMaster();
+        }}
+        isLoading={isLoading}
+      />
+    </div>
   );
 };
 

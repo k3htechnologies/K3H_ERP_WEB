@@ -3,7 +3,6 @@ import { Input } from "@/ui/components/forms/Input";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
-import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
@@ -16,6 +15,8 @@ import { fetchAssetMasterDropdown } from "@/features/assetMaster/assetMasterDrop
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { TextArea } from "@/ui/components/forms/Textarea";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 
 const initialFormState = (): AddUpdateAssetMappingMasterRequest => ({
   AssetMasterMappingId: 0,
@@ -47,6 +48,10 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
   // TOAST
   const { addToast } = useToast();
+
+  //#region MENU PERMISSIONS
+  const { canAction } = useMenuPermissions('/assetMappingMaster');
+  //#endregion
 
   // ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -128,7 +133,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Asset Mapping Data'
+      'Loading Asset Mapping'
     );
   };
   //#endregion
@@ -146,6 +151,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
     if (!formData.AssetMasterId) {
       newErrors.AssetMasterId = 'Asset Name is required.';
     }
+
     if (!formData.EmployeeId) {
       newErrors.EmployeeId = 'Employee Name is required.';
     }
@@ -194,8 +200,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
   //#endregion
 
   //#region HANDLE ADD AND UPDATE ASSET MAPPING MASTER
-  const handleAddUpdateAssetMappingMaster = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddUpdateAssetMappingMaster = async () => {
 
     setErrors({});
 
@@ -220,7 +225,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
         const response = await assetMappingMasterService.apiCallAddUpdateAssetMappingMaster(payload);
 
         if (E.isRight(response)) {
-          addToast({ type: "success", title: isAddMode ? "AssetMapping added successfully" : "AssetMapping updated successfully" });
+          addToast({ type: "success", title: isAddMode ? "Asset Mapping added successfully" : "Asset Mapping updated successfully" });
 
           const locationState = location.state as {
             listState?: {
@@ -268,7 +273,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
       <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-      <div className="flex-1 space-y-2 px-6 py-3 pb-40 overflow-y-auto thin-scroll ">
+      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
 
         <form onSubmit={handleAddUpdateAssetMappingMaster}>
 
@@ -276,8 +281,8 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
           <div className="space-y-4 pb-3">
             <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic AssetMapping Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
 
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <SingleSelectDropdownWithPagination
                   label="Asset"
@@ -290,6 +295,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                   error={errors.AssetMasterId}
                 />
               </div>
+
               <div>
                 <SingleSelectDropdownWithPagination
                   label="Employee"
@@ -302,8 +308,8 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                   error={errors.EmployeeId}
                 />
               </div>
-
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <Input
@@ -317,6 +323,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                   error={errors.ConditionOnIssue}
                 />
               </div>
+
               <div>
                 <Input
                   type="text"
@@ -330,6 +337,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                 />
               </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <DatePickerInput
@@ -340,6 +348,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                   error={errors.AssignedDate}
                 />
               </div>
+
               <div>
                 <DatePickerInput
                   label="Return Date"
@@ -352,7 +361,6 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
             </div>
 
             <div>
-
               <TextArea
                 label="Remarks"
                 required
@@ -368,33 +376,18 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
         </form>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
-        <Button
-          color="transparent"
-          variant='transparent_border'
-          size="sm"
-          onClick={() => { navigate(-1); }}
-          className="px-6"
-        >
-          Cancel
-        </Button>
 
-        <Button
-          color="green"
-          size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            handleAddUpdateAssetMappingMaster(e);
-          }}
-          className="px-6"
-          disabled={isLoading}
-        >
-          {isAddMode ? "Add Asset" : "Update Asset"}
-        </Button>
-      </div>
+      <BottomActionBar
+        cancelText="Cancel"
+        saveText={formData.AssetMasterMappingId ? "Update" : "Add"}
+        onCancel={() => navigate(-1)}
+        canAction={canAction}
+        onSave={() => {
+          handleAddUpdateAssetMappingMaster();
+        }}
+        isLoading={isLoading}
+      />
     </div>
-
   );
 };
 

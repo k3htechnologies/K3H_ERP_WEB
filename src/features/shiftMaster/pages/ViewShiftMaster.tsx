@@ -1,26 +1,16 @@
-import { Button } from "@/ui/components/forms";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { useState } from "react";
-import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
-import { runApiWithLoader } from "@/core/utils";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import * as E from "fp-ts/Either";
-import useToast from "@/core/hooks/useToast";
-import type { DeleteShiftMasterRequest, ShiftMasterData } from "../models/ShiftMasterModel";
-import { ShiftMasterService } from "../services/ShiftMasterService";
+import type { ShiftMasterData } from "../models/ShiftMasterModel";
+import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const ViewShiftMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
-    const [isLoading, setIsLoading] = useState(false);
-    const [, setIsLoadingMessage] = useState('');
-
-
-    //DELETE SHIFT MASTER
-    const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-    const [deleteShiftMasterDetailsData, setDeleteShiftMasterDetailsData] = useState<ShiftMasterData | null>(null)
+    const [isLoading] = useState(false);
 
     //LOCATION
     const location = useLocation();
@@ -28,8 +18,9 @@ const ViewShiftMaster: React.FC = () => {
     // NAVIGATION
     const navigate = useNavigate();
 
-    // TOAST
-    const { addToast } = useToast();
+    //#region MENU PERMISSIONS
+    const { canAction } = useMenuPermissions('/shiftMaster');
+    //#endregion
 
     // Selected Shift data passed from the Shift List page (via navigate state)
     const editShiftData = location.state?.ShiftData as ShiftMasterData;
@@ -40,49 +31,6 @@ const ViewShiftMaster: React.FC = () => {
 
     // MESSAGE IF DATA NOT FOUND
     if (!editShiftData) return <div>No Shift Data Found</div>;
-
-    //#region DELETE SHIFT MASTER
-    const handleDeleteShiftMaster = async () => {
-
-        setIsConfirmationDialogBoxOpen(false);
-
-        if (!deleteShiftMasterDetailsData) return;
-
-        await runApiWithLoader(
-
-            setIsLoading,
-
-            setIsLoadingMessage,
-            async () => {
-                const params: DeleteShiftMasterRequest = {
-
-                    ShiftManagementMasterId: deleteShiftMasterDetailsData.ShiftManagementMasterId || 0,
-
-                    UniqueKey: deleteShiftMasterDetailsData.Uniquekey || ""
-                };
-
-                const response = await ShiftMasterService.apiCallDeleteShiftMaster(params);
-
-                if (E.isRight(response)) {
-
-                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
-
-                    navigate("/ShiftMaster",
-                        {
-                            state: {listState}
-                        });
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) => addToast({ type: "error", title: error.message }),
-            undefined,
-            "Deleting Shift  Master Data"
-        );
-    };
 
     //#region ADD SHIFT MASTER
     const handleEditShiftMaster = (row: ShiftMasterData) => {
@@ -107,153 +55,145 @@ const ViewShiftMaster: React.FC = () => {
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+            <HeaderActionBar
+                titleText={'Shift Master'}
+                cancelText="Cancel"
+                EditText="Edit"
+                onCancel={() => handleBackToListShiftMaster()}
+                canAction={canAction}
+                onEdit={() => {
+                    if (editShiftData) handleEditShiftMaster(editShiftData!);
+                }}
+                isLoading={isLoading}
+            />
 
-            <div className="grid grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
 
-                {/* LEFT SIDE PROFILE CARD */}
+                {/* ================= LEFT SIDE (2/3) ================= */}
+                <div className="lg:col-span-2 space-y-6">
 
-                <div className="col-span-5">
+                    {/* ================= SHIFT DURATION ================= */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Shift Duration
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
+                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="Shift Begin Time" value={editShiftData.ShiftBeginTime} />
+                                    <FieldItem label="Shift End Time" value={editShiftData.ShiftEndTime} />
+                                    <FieldItem label="Shift Duration Time" value={editShiftData.ShiftDurationTime} />
 
-                        {/* HEADER  DETAILS*/}
-                        <div className="pt-6 px-2 pb-4 text-center">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                                {editShiftData.ShiftName}
-                                <span className="inline-block ml-2 text-green-500">●</span>
-                            </h3>
-
-                            <div className="mt-2 flex justify-center gap-2">
-                                <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">
-                                    {editShiftData.ShiftCode}
-                                </span>
-
+                                </div>
+                            </div>
+                            <div className="lg:col-span-3 pt-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="Shift Work Duration Time" value={editShiftData.ShiftWorkDurationTime} />
+                                    <FieldItem label="First Half Up To" value={editShiftData.FirstHalfUpTo} />
+                                </div>
                             </div>
                         </div>
+                    </section>
 
-                        {/* Shift Duration*/}
-                        <div className="mt-2 rounded border border-gray-300 bg-white ">
-                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded">
-                                <h4 className="font-semibold text-sm text-gray-800">Shift Duration</h4>
-                            </div>
-                            <div className="p-4">
-                                <FieldItem label="Shift Begin Time" value={editShiftData.ShiftBeginTime} isRow />
-                                <FieldItem label="Shift End Time" value={editShiftData.ShiftEndTime} isRow />
-                                <FieldItem label="Shift Duration " value={editShiftData.ShiftDurationTime} isRow />
-                                <FieldItem label="Shift Work Duration" value={editShiftData.ShiftWorkDurationTime} isRow />
-                                <FieldItem label="First Half Up To" value={editShiftData.FirstHalfUpTo} isRow />
-                            </div>
-                        </div>
+                    {/* ================= HALF DAY AND ABSENCE RULES================= */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Half Day And Absence Rules
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                        {/* ACTIONS */}
-                        <div className="flex justify-center gap-3 mt-6">
-                            <Button
-                                color='blue'
-                                size='sm'
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleEditShiftMaster(editShiftData!);
-                                }}
-                            >
-                            </Button>
-
-                            <Button
-                                color="gray"
-                                variant="solid"
-                                size="sm"
-                                colorMode="light"
-                                onClick={() => {
-                                    setDeleteShiftMasterDetailsData(editShiftData);
-                                    setIsConfirmationDialogBoxOpen(true);
-                                }}
-                            >
-                            </Button>
-
-                            <Button
-                                color="transparent"
-                                variant="transparent_border"
-                                size="sm"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleBackToListShiftMaster();
-                                }}
-                            >
-                                Cancel
-                            </Button>
-                        </div>
-
-                        {/* Half Day And Absence Rules */}
-                        <div className="mt-6 rounded border border-gray-300 bg-white ">
-                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg">
-                                <h4 className="font-semibold text-sm text-gray-800">Half Day And Absence Rules</h4>
+                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="Half Day Out Time Before" value={editShiftData.HalfDayOutTimeBefore} />
+                                    <FieldItem label="Half Day In Time After" value={editShiftData.HalfDayInTimeAfter} />
+                                    <FieldItem label="Half Day Working Hours" value={editShiftData.HalfDayWorkingHours} />
+                                </div>
                             </div>
 
-                            <div className="p-4">
-                                <FieldItem label="HalfDay Out Time Before" value={editShiftData.HalfDayOutTimeBefore} isRow />
-                                <FieldItem label="HalfDay In Time After" value={editShiftData.HalfDayInTimeAfter} isRow />
-                                <FieldItem label="Half Day Working Hours" value={editShiftData.HalfDayWorkingHours} isRow />
-                                <FieldItem label="Absent Working Hours" value={editShiftData.AbsentWorkingHours} isRow />
+                            <div className="lg:col-span-3 pt-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="Absent Working Hours" value={editShiftData.AbsentWorkingHours} />
+
+                                </div>
                             </div>
                         </div>
+                    </section>
 
-                    </div>
+                    {/* ================= BREAK DETAILS ================= */}
+                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Break Details
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="Break Begin Time" value={editShiftData.BreakBeginTime} />
+                                    <FieldItem label="Break End Time" value={editShiftData.BreakEndTime} />
+                                    <FieldItem label="Break Duration Time" value={editShiftData.BreakDurationTime} />
+                                </div>
+                            </div>
+
+                            <div className="lg:col-span-3 pt-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="Grace Time" value={editShiftData.GraceTime} />
+
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
 
-                {/*  RIGHT SIDE  */}
+                {/* ================= RIGHT SIDE (1/3) ================= */}
+                <div className="lg:col-span-1 space-y-6">
 
-                <div className="col-span-7">
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
+                    {/* ================= AUDIT TRAIL ================= */}
+                    <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
 
-                        {/* Break Details */}
-                        <div className="mt-6 rounded border border-gray-300 bg-white ">
-                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg">
-                                <h4 className="font-semibold text-sm text-gray-800">Break Details</h4>
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Action Details
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Created By" value={editShiftData.CreatedBy} />
+                                    <FieldItem
+                                        label="Created Date"
+                                        value={
+                                            editShiftData.CreatedDate
+                                                ? formatDate_dd_MonthName_yy(editShiftData.CreatedDate)
+                                                : "-"
+                                        }
+
+                                    />
+                                </div>
                             </div>
 
-                            <div className="p-4">
-                                <FieldItem label="Break Begin Time" value={editShiftData.BreakBeginTime} isRow />
-                                <FieldItem label="Break End Time" value={editShiftData.BreakEndTime} isRow />
-                                <FieldItem label="Break Duration Time" value={editShiftData.BreakDurationTime} isRow />
-                                <FieldItem label="Grace Time" value={editShiftData.GraceTime} isRow />
+                            <div className="lg:col-span-3 pt-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Modified By" value={editShiftData.ModifiedBy} />
+                                    <FieldItem
+                                        label="Modified Date"
+                                        value={
+                                            editShiftData.ModifiedDate
+                                                ? formatDate_dd_MonthName_yy(editShiftData.ModifiedDate)
+                                                : "-"
+                                        }
+
+                                    />
+                                </div>
                             </div>
                         </div>
+                    </section>
 
-                        {/* Audit Trail */}
-                        <div className="mt-6 rounded border border-gray-300 bg-white ">
-                            <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t-lg">
-                                <h4 className="font-semibold text-sm text-gray-800">Audit Trail</h4>
-                            </div>
-
-                            <div className="p-4">
-                                <FieldItem label="Created By" value={editShiftData.CreatedBy} isRow />
-                                <FieldItem label="Created Date" value={editShiftData.CreatedDate ? formatDate_dd_MonthName_yy(editShiftData.CreatedDate) : ""} isRow />
-                                <FieldItem label="Modified By" value={editShiftData.ModifiedBy} isRow />
-                                <FieldItem label="Modified Date" value={editShiftData.ModifiedDate ? formatDate_dd_MonthName_yy(editShiftData.ModifiedDate) : ""} isRow />
-
-                            </div>
-                        </div>
-
-                    </div>
                 </div>
-
-                {/* DELETE CONFIRMATION  SHIFT MODAL */}
-                <ConfirmationDialogBox
-                    isOpen={isConfirmationDialogBoxOpen}
-                    onClose={() => setIsConfirmationDialogBoxOpen(false)}
-                    onConfirm={handleDeleteShiftMaster}
-                    title="You are about to delete this Shift?"
-                    message="Deleting this Shift will permanently remove its data."
-                    confirmText="Delete"
-                    cancelText="Cancel"
-                    loading={isLoading}
-                    variant="danger"
-                />
 
             </div>
+
         </div>
     );
 };
+
 
 export default ViewShiftMaster;

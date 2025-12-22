@@ -85,6 +85,7 @@ import Company from '@/features/projectMaster/pages/Company';
 import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
+import Rent from '@/features/rent/pages/Rent';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -131,7 +132,7 @@ function App() {
           {/* Public Routes */}
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
-         
+
           {/* Protected Routes with Layout */}
           <Route
             path="/"
@@ -150,7 +151,7 @@ function App() {
             <Route path="employeeMaster" element={<EmployeeMaster />} />
             <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />
             <Route path="employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
-             <Route path="employeeMaster/document" element={<EmployeeDocument />} />
+            <Route path="employeeMaster/document" element={<EmployeeDocument />} />
             <Route path="outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
             <Route path="outdoor" element={<OutDoor />} />
             <Route path="companyMaster" element={<CompanyMaster />} />
@@ -220,6 +221,7 @@ function App() {
             <Route path="tenant/view" element={<ViewTenant />} />
             <Route path="tenant/add/:tenantId?" element={<AddUpdateTenant />} />
             <Route path="tenant/document" element={<TenantDocument />} />
+            <Route path="rent" element={<Rent />} />
             <Route path="proposedOffer" element={<ProposedOffer />} />
           </Route>
 

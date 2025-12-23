@@ -53,7 +53,7 @@ export const DesignationMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const {addToast } = useToast()
+  const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -357,8 +357,7 @@ export const DesignationMaster: React.FC = () => {
         fixed: 'left',
         align: 'left',
         render: (value, row) => {
-          const showKey = true
-
+          const showKey = canAction && row.NumberOfEmployee
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
               <TooltipText
@@ -882,205 +881,205 @@ export const DesignationMaster: React.FC = () => {
   //#endregion
 
   return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {/* ============================================================================
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
 
-        <Loader loading={isLoading} title={loadingMessage}><div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage}><div></div> </Loader>
 
-        {/* ============================================================================
+      {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Designation Name"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchDesignationMaster}
-          isShowFilterButton={false}
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeDesignationMasterColumnsModal(true)}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Designation Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchDesignationMaster}
+        isShowFilterButton={false}
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeDesignationMasterColumnsModal(true)}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add"
-          onAdd={handleAddDesignationModal}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddDesignationModal}
 
-          // IMPORT
-          isShowImportButton={canAction}
-          onUploadExcel={handleExcelImportDesignationMaster}
-          onDownloadSampleExcel={handleDownloadExcelSampleDesignationMaster}
+        // IMPORT
+        isShowImportButton={canAction}
+        onUploadExcel={handleExcelImportDesignationMaster}
+        onDownloadSampleExcel={handleDownloadExcelSampleDesignationMaster}
 
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportDesignationExcel}
-          onExportPdf={handleExportDesignationPdf}
-          exportLoading={isLoading}
-        />
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportDesignationExcel}
+        onExportPdf={handleExportDesignationPdf}
+        exportLoading={isLoading}
+      />
 
-        {/* DATA TABLE DESIGNATION */}
-        <DataTable
-          data={designationMasterListForTable}
-          columns={visibleDesignationMasterColumns}
-          pagination={designationMasterPaginationInfo}
-          emptyMessage="No Designation Data Found"
-          fixedHeight={true}
-          maxHeight="calc(100vh - 255px)"
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      {/* DATA TABLE DESIGNATION */}
+      <DataTable
+        data={designationMasterListForTable}
+        columns={visibleDesignationMasterColumns}
+        pagination={designationMasterPaginationInfo}
+        emptyMessage="No Designation Data Found"
+        fixedHeight={true}
+        maxHeight="calc(100vh - 255px)"
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        {/* VIEW DESIGNATION MODAL */}
-        <ViewDesignationDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewDesignationMasterDetailsData(null)
-          }}
-          data={viewDesignationMasterDetailsData}
-        />
+      {/* VIEW DESIGNATION MODAL */}
+      <ViewDesignationDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewDesignationMasterDetailsData(null)
+        }}
+        data={viewDesignationMasterDetailsData}
+      />
 
 
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingDesignationMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingDesignationMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          title={editingDesignationMasterData ? 'Update Designation' : 'Add Designation'}
-          onSubmit={handleAddUpdateDesignationMaster}
-          saveText={editingDesignationMasterData ? 'Update Designation' : 'Save Designation'}
-          resetText='Reset'
-          loading={isLoading}
-          size='xl'
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4" >
-              <div>
-                <Input
-                  label='Designation Name'
-                  required
-                  error={errors.DesignationName}
-                  type="text"
-                  value={formData.DesignationName}
-                  maxLength={100}
-                  onChange={(e) => handleFieldChange('DesignationName', e.target.value)}
-                  placeholder="Enter Designation Name"
-                />
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingDesignationMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingDesignationMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        title={editingDesignationMasterData ? 'Update Designation' : 'Add Designation'}
+        onSubmit={handleAddUpdateDesignationMaster}
+        saveText={editingDesignationMasterData ? 'Update Designation' : 'Save Designation'}
+        resetText='Reset'
+        loading={isLoading}
+        size='xl'
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4" >
+            <div>
+              <Input
+                label='Designation Name'
+                required
+                error={errors.DesignationName}
+                type="text"
+                value={formData.DesignationName}
+                maxLength={100}
+                onChange={(e) => handleFieldChange('DesignationName', e.target.value)}
+                placeholder="Enter Designation Name"
+              />
 
-              </div>
+            </div>
 
-              <div>
+            <div>
 
-                <Input
-                  label='Notice Period'
-                  required
-                  error={errors.NoticePeriod}
-                  type="text"
-                  value={formData.NoticePeriod ?? ''}
-                  maxLength={4}
-                  onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, '');
-                    handleFieldChange('NoticePeriod', digits === '' ? 0 : Number(digits));
-                  }}
-                  placeholder="Enter Notice Period"
-                />
-              </div>
+              <Input
+                label='Notice Period'
+                required
+                error={errors.NoticePeriod}
+                type="text"
+                value={formData.NoticePeriod ?? ''}
+                maxLength={4}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, '');
+                  handleFieldChange('NoticePeriod', digits === '' ? 0 : Number(digits));
+                }}
+                placeholder="Enter Notice Period"
+              />
             </div>
           </div>
+        </div>
 
-        </Modal>
+      </Modal>
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeDesignationMasterColumnsModal}
-          onClose={() => setIsShowCustomizeDesignationMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredDesignationMasterColumnKeys]),
+      {/* CUSTOMIZE COLUMNS MODAL */}
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeDesignationMasterColumnsModal}
+        onClose={() => setIsShowCustomizeDesignationMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredDesignationMasterColumnKeys]),
+          )
+
+          setSelectedDesignationMasterColumnKeys(withRequired)
+
+          try {
+            LocalStorageHelper.storeDesignationMasterTableColumns(
+              JSON.stringify(withRequired),
             )
-
-            setSelectedDesignationMasterColumnKeys(withRequired)
-
-            try {
-              LocalStorageHelper.storeDesignationMasterTableColumns(
-                JSON.stringify(withRequired),
-              )
-            } catch { }
-          }}
-          columns={designationMasterColumns}
-          selectedKeys={selectedDesignationMasterColumnKeys}
-          requiredKeys={requiredDesignationMasterColumnKeys}
-          title="Customize Table Columns"
-        />
+          } catch { }
+        }}
+        columns={designationMasterColumns}
+        selectedKeys={selectedDesignationMasterColumnKeys}
+        requiredKeys={requiredDesignationMasterColumnKeys}
+        title="Customize Table Columns"
+      />
 
 
-        {/* FILTER DESIGNATION MODAL */}
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Designation Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          onCancel={() => clearFilters()}
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
+      {/* FILTER DESIGNATION MODAL */}
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Designation Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        onCancel={() => clearFilters()}
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
 
-                <Input
-                  label='Designation Name'
-                  type="text"
-                  value={tempFilters.DesignationName || ''}
-                  onChange={(e) => handleFilterChange('DesignationName', e.target.value)}
-                  placeholder="Enter designation name"
-                />
-              </div>
+              <Input
+                label='Designation Name'
+                type="text"
+                value={tempFilters.DesignationName || ''}
+                onChange={(e) => handleFilterChange('DesignationName', e.target.value)}
+                placeholder="Enter designation name"
+              />
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        {/* DELETE CONFIRMATION DESIGNATIONT MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteDesignationMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteDesignationMaster}
-          title="You are about to delete a designation?"
-          message="Deleting this designation will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
+      {/* DELETE CONFIRMATION DESIGNATIONT MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteDesignationMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteDesignationMaster}
+        title="You are about to delete a designation?"
+        message="Deleting this designation will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
 
-      </div>
+    </div>
   )
 }
 

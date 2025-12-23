@@ -341,6 +341,7 @@ export const Tenant: React.FC = () => {
           searchTerm,
           tenantId: row.TenantId,
           buildingId: row.BuildingId,
+          buildingName,
           projectId: projectId,
           tenantName: row.FlatNumber,
 
@@ -678,7 +679,7 @@ export const Tenant: React.FC = () => {
           setTempFilters(filters);
           setShowFilterPopup(true);
         }}
-        isShowCustomizeButton
+        isShowCustomizeButton={Number(buildingId) > 0 ? true : false}
         onCustomize={() => setIsShowCustomizeTenantColumnsModal(true)}
         // ADD
         isShowAddButton={canAction && Number(buildingId) > 0 ? true : false}
@@ -687,12 +688,12 @@ export const Tenant: React.FC = () => {
         onAdd={handleAddTenantModal}
 
         // IMPORT
-        isShowImportButton={canAction}
+        isShowImportButton={false }
         onUploadExcel={handleExcelImportTenant}
         onDownloadSampleExcel={handleDownloadExcelSampleTenant}
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && Number(buildingId) > 0 && tenantsForTable.length > 0 ? true : false}
         onExportExcel={handleExportTenantExcel}
         onExportPdf={handleExportTenantPdf}
         exportLoading={isLoading}

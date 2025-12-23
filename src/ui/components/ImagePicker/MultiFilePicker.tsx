@@ -317,9 +317,26 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
           document.body,
         )}
 
-      {error && (
-        <div style={{ marginTop: 6, color: theme.colors.error, display: "flex", gap: 6 }}>
-          <InfoIcon size={14} /> {error}
+      {(error) && (
+        <div
+          style={{
+            marginTop: theme.spacing.sm,
+            fontSize: theme.fontSize.sm,
+            color: error ? theme.colors.error : theme.colors.textSecondary,
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <InfoIcon
+            style={{
+              fontSize: theme.fontSize.xs,
+              color: error ? theme.colors.error : theme.colors.textSecondary,
+              height: 14
+            }}
+          />
+
+          {error}
         </div>
       )}
     </div>

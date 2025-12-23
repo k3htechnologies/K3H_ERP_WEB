@@ -926,7 +926,7 @@ const ProjectDocument: React.FC = () => {
         isShowCustomizeButton={false}
         // ADD
         isShowAddButton={projectDocumentTabList.length > 0 ? true : false}
-        addTitle="Add Document"
+        addTitle="Add"
         onAdd={handleAddDocumentModal}
 
         // IMPORT

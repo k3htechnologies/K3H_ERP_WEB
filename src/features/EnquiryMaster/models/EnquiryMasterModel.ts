@@ -1,74 +1,84 @@
 import type { ApiResponse } from "@/core/api/ApiResponse";
 
 export interface FilterWithPaginationEnquiryMasterRequest {
-    PageSize: number
-    PageNumber: number
-    EnquiryId?: number
-    ProjectId?: number
-    Name?: string
-    SortBy?: string
-    ExportType?: 'Excel' | 'PDF'
+    PageSize: number;
+    PageNumber: number;
+    ProjectId?: number;
+    Budget?: string;
+    RequirementType?: string;
+    Source?: string;
+    FromDate?: string;   
+    ToDate?: string;     
+    MobileNumber?: string;
+    Name?: string;
+    Accommodation?: string;
+    EmployeeId?: number;
+    Stage?: string;
+    TimeDimension?: string;
+    EnquiryFollowUpDays?: string;
+    FinalStage?: string;
+    SortBy?: string;
+    ExportType?: 'Excel' | 'PDF';
 }
+
 export interface EnquiryMasterData {
-    EnquiryId: number | 0
-    Uniquekey: string | null
-    Name: string | ''
-    ProjectId: number | 0
-    EmailId: number | 0
-    MobileNumber: number | 0
-    OccupationType: string | null
-    Accommodation: string | null
-    Budget: string | null
-    IsHomeLoan: boolean
-    Requirement: string | null
-    RequirementType: string | null
-    AreaPreferred: number | 0
-    PossessionType: string | null
-    Source: string | null
-    SubSource: string | null
-    FinalStage: string | null
-    FinalStageDetail: string | null
-    NextFollowUpDate: number | 0
-    EnquiryDate: number | 0
-    Remark: string | null
-    CreatedById: number | 0
-    CreatedBy: string | ''
-    CreatedDate: string | null
-    ModifiedById: number | 0
-    ModifiedBy: string | ''
-    ModifiedDate: string | null
-    LastModifiedBy: string | ''
-    LastModifiedDate: string | null
+    EnquiryId: number;
+    Uniquekey: string;
+    ProjectId: number;
+    Name: string;
+    EmailId: string;
+    MobileNumber: string;
+    OccupationType: string | null;
+    Accommodation: string | null;
+    Budget: string | null;
+    IsHomeLoan: boolean;
+    Requirement: string | null;
+    RequirementType: string | null;
+    AreaPreferred: number;
+    PossessionType: string | null;
+    Source: string | null;
+    SubSource: string | null;
+    FinalStage: string | null;
+    FinalStageDetail: string | null;
+    NextFollowUpDate: string | null;
+    EnquiryDate: string | null;
+    Remark: string | null;
+    CreatedById?: number;
+    CreatedBy?: string;
+    CreatedDate?: string | null;
+    ModifiedById?: number;
+    ModifiedBy?: string;
+    ModifiedDate?: string | null;
 }
 
 export interface AddUpdateEnquiryMasterRequest {
-    EnquiryId: number | 0
-    Uniquekey: string | null
-    Name: string | ''
-    ProjectId: number | 0
-    EmailId: number | 0
-    MobileNumber: number | 0
-    OccupationType: string | null
-    Accommodation: string | null
-    Budget: string | null
-    IsHomeLoan: boolean
-    Requirement: string | null
-    RequirementType: string | null
-    AreaPreferred: number | 0
-    PossessionType: string | null
-    Source: string | null
-    SubSource: string | null
-    FinalStage: string | null
-    FinalStageDetail: string | null
-    NextFollowUpDate: number | 0
-    EnquiryDate: number | 0
-    Remark: string | null
+    EnquiryId: number;
+    Uniquekey: string;
+    ProjectId: number;
+    Name: string;
+    EmailId: string;
+    MobileNumber: string;
+    OccupationType?: string | null;
+    Accommodation?: string | null;
+    Budget?: string | null;
+    IsHomeLoan: boolean;
+    Requirement?: string | null;
+    RequirementType?: string | null;
+    AreaPreferred?: number;
+    PossessionType?: string | null;
+    Source?: string | null;
+    SubSource?: string | null;
+    FinalStage?: string | null;
+    FinalStageDetail?: string | null;
+    NextFollowUpDate?: string | null;
+    EnquiryDate?: string | null;
+    Remark?: string | null;
 }
 
 export interface DeleteEnquiryMasterRequest {
-    EnquiryId: number
-    UniqueKey: string
-    ProjectId: number
+    EnquiryId: number;
+    Uniquekey: string;
+    ProjectId: number;
 }
 
 export type EnquiryMasterListResponse = ApiResponse<EnquiryMasterData[]>;

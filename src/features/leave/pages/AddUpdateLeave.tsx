@@ -94,6 +94,9 @@ export const AddUpdateLeave: React.FC = () => {
       setDropdownLabels({});
     }
     setErrors({});
+    setIsSaving(false);
+    setIsLoading(false);
+    setLoadingMessage('');
     setIsDateModalOpen(false);
   };
 

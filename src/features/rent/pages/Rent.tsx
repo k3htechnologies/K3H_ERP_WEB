@@ -134,6 +134,11 @@ export const Rent: React.FC = () => {
     })();
   }, [activeTab, projectId, buildingId]);
 
+  useEffect(() => {
+    setBuildingId(0);
+    setBuildingName('');
+  }, [projectId]);
+
   //#endregion
 
   //#region DATA LOAD RENT LIST
@@ -185,7 +190,7 @@ export const Rent: React.FC = () => {
       undefined,
       e => addToast({ type: 'error', title: e.message }),
       undefined,
-      'Loading Rent'
+      'Loading ' + activeTab
     );
   }, [projectId, buildingId, filters, pagination.currentPage, pagination.pageSize, sortInfo]);
 
@@ -458,16 +463,17 @@ export const Rent: React.FC = () => {
         exportLoading={isLoading}
       />
 
-      <div className="pb-5 flex items-center gap-4 flex-nowrap">
+      <div className="flex items-center gap-4 flex-nowrap">
 
         {/* Building dropdown */}
-        <div className="relative w-[300px] flex-shrink-0">
+        <div className={`relative w-[300px] flex-shrink-0 ${selectedBuilding ? "pb-0" : "pb-5"}`}>
           <SingleSelectDropdownWithPagination
             title="Select Building"
             size="lg"
             initialValue={selectedBuilding}
             dataFetchCallBack={fetchBuildingCallback}
             onSelected={handleBuildingChange}
+            className='Bold'
           />
         </div>
 
@@ -490,27 +496,33 @@ export const Rent: React.FC = () => {
 
       </div>
 
+
       {tenureTabList.length > 0 && (
-        <Tabs
-          tabs={tenureTabList}
-          defaultActive={activeTenureTab}
-          onTabChange={t => {
-            setActiveTenureTab(t.id);
-            setPagination({ currentPage: 1 });
-            setFilters(prev => ({ ...prev, Tenure: t.id }));
-          }}
-          islarge
-        />
+        <div className='pt-1'>
+          <div className="my-3 border-b border-gray-200" />
+          <Tabs
+            tabs={tenureTabList}
+            defaultActive={activeTenureTab}
+            onTabChange={t => {
+              setActiveTenureTab(t.id);
+              setPagination({ currentPage: 1 });
+              setFilters(prev => ({ ...prev, Tenure: t.id }));
+            }}
+            islarge={false}
+            isChips={true}
+          />
+        </div>
       )}
 
-      <DataTable
-        data={tableData}
-        columns={columns}
-        pagination={paginationInfo}
-        emptyMessage="No Data Found"
-        fixedHeight
-      />
-
+      <div className='pt-5'>
+        <DataTable
+          data={tableData}
+          columns={columns}
+          pagination={paginationInfo}
+          emptyMessage="No Data Found"
+          fixedHeight
+        />
+      </div>
       <Modal
         isOpen={showFilterPopup}
         onClose={() => setShowFilterPopup(false)}
@@ -533,7 +545,7 @@ export const Rent: React.FC = () => {
                 type="text"
                 value={tempFilters.FlatNumber || ''}
                 onChange={e => handleFilterChange('FlatNumber', e.target.value)}
-                placeholder="Enter flat number"
+                placeholder="Enter Flat Number"
               />
             </div>
 
@@ -543,7 +555,7 @@ export const Rent: React.FC = () => {
                 type="text"
                 value={tempFilters.ApplicantName || ''}
                 onChange={e => handleFilterChange('ApplicantName', e.target.value)}
-                placeholder="Enter applicant name"
+                placeholder="Enter Applicant Name"
               />
             </div>
 

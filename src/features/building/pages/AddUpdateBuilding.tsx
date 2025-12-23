@@ -14,7 +14,7 @@ import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { LAND_OWNERSHIP_TYPE } from "@/core/constants";
+import { LAND_OWNERSHIP_TYPE, ROAD_WIDTH } from "@/core/constants";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 
@@ -278,21 +278,21 @@ const AddUpdateBuilding: React.FC = () => {
       CTSNumber: formData.CTSNumber,
       GoogleLocation: formData.GoogleLocation || "",
       TotalPlotAreaSqFt: formData.TotalPlotAreaSqFt || 0,
-      RoadWidth: formData.RoadWidth ||"",
+      RoadWidth: formData.RoadWidth || "",
       CountryMasterId: formData.CountryMasterId,
       DistrictMasterId: formData.DistrictMasterId,
       StateMasterId: formData.StateMasterId,
       CityMasterId: formData.CityMasterId,
-      TotalNumberOfUnits: formData.TotalNumberOfUnits  || 0,
-      TotalUnitsAreaUtilizedSqFt: formData.TotalUnitsAreaUtilizedSqFt  || 0,
+      TotalNumberOfUnits: formData.TotalNumberOfUnits || 0,
+      TotalUnitsAreaUtilizedSqFt: formData.TotalUnitsAreaUtilizedSqFt || 0,
       IsGarden: formData.IsGarden || false,
-      TotalGardenAreaSqFt: formData.TotalGardenAreaSqFt  || 0,
+      TotalGardenAreaSqFt: formData.TotalGardenAreaSqFt || 0,
       IsReligiousStructure: formData.IsReligiousStructure || false,
-      TotalReligiousStructureAreaSqFt: formData.TotalReligiousStructureAreaSqFt  || 0,
-      PropertyAgeYears: formData.PropertyAgeYears  || 0,
-      NumberOfFloors: formData.NumberOfFloors  || 0,
-      FSI_TDR_UtilizationSqFt: formData.FSI_TDR_UtilizationSqFt  || 0,
-      LandOwnershipType: formData.LandOwnershipType  || "",
+      TotalReligiousStructureAreaSqFt: formData.TotalReligiousStructureAreaSqFt || 0,
+      PropertyAgeYears: formData.PropertyAgeYears || 0,
+      NumberOfFloors: formData.NumberOfFloors || 0,
+      FSI_TDR_UtilizationSqFt: formData.FSI_TDR_UtilizationSqFt || 0,
+      LandOwnershipType: formData.LandOwnershipType || "",
       IsLitigation: formData.IsLitigation || false,
       LitigationRemarks: formData.LitigationRemarks || "",
     };
@@ -371,8 +371,7 @@ const AddUpdateBuilding: React.FC = () => {
 
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
-
+      <Loader loading={isLoading} title={loadingMessage}><div></div> </Loader>
 
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         <form onSubmit={handleSubmit}>
@@ -402,14 +401,15 @@ const AddUpdateBuilding: React.FC = () => {
                   placeholder="Enter CTS Number"
                 />
               </div>
-               <div>
-                <Input
-                  value={formData.GoogleLocation}
-                  label="Google Location"
+              <div>
+
+                <SinglePageSelection
+                  label="Road Width"
                   required
-                  onChange={e => handleFieldChange('GoogleLocation', e.target.value)}
-                  error={errors.GoogleLocation}
-                  placeholder="Enter Google Location"
+                  value={formData.RoadWidth}
+                  onChange={(e) => handleFieldChange('RoadWidth', String(e))}
+                  options={ROAD_WIDTH.map((opt) => ({ label: opt.name, value: opt.id }))}
+                  error={errors.RoadWidth}
                 />
               </div>
               <div>
@@ -422,30 +422,30 @@ const AddUpdateBuilding: React.FC = () => {
                 />
 
               </div>
-              <div>
-                <Input
-                  value={formData.RoadWidth}
-                  label="Road Width"
-                  required
-                  onChange={e => handleFieldChange('RoadWidth', e.target.value)}
-                  error={errors.RoadWidth}
-                  placeholder="Enter Road Width" />
-              </div>
+            </div>
+          </div>
+          {/* ============================================================= [PROPERTY INFORMATION] ============================================================================================= */}
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Property Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
               <div>
                 <Input
                   value={formData.TotalPlotAreaSqFt ?? ''}
-                  label="Total Plot Area (sqft)"
+                  label="Total Plot Area (SqFt)"
                   required
                   error={errors.TotalPlotAreaSqFt}
-                  placeholder="Enter Total Plot Area (sqft)"
+                  placeholder="Enter Total Plot Area"
                   onChange={e => handleFieldChange('TotalPlotAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  rightIcon="SqFt"
                 />
               </div>
               <div>
                 <Input
                   value={formData.TotalUnitsAreaUtilizedSqFt ?? ''}
-                  label="Utilized Units Area (sqft)"
-                  placeholder="Enter Utilized Units Area (sqft)"
+                  label="Utilized Units Area (SqFt)"
+                  placeholder="Enter Utilized Units Area"
+                  rightIcon="SqFt"
                   error={errors.TotalUnitsAreaUtilizedSqFt}
                   onChange={e => handleFieldChange('TotalUnitsAreaUtilizedSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                 />
@@ -468,90 +468,105 @@ const AddUpdateBuilding: React.FC = () => {
                   onChange={e => handleFieldChange('NumberOfFloors', Number(filterNumbers(e.target.value) || 0))}
                 />
               </div>
-              <div>
-                <Input
-                  value={formData.PropertyAgeYears ?? ''}
-                  label="Property Age (Years)"
-                  placeholder="Enter Property Age (Years)"
-                  error={errors.PropertyAgeYears}
-                  onChange={e => handleFieldChange('PropertyAgeYears', filterNumbersWithDecimal(e.target.value) || 0)}
-                />
-              </div>
-              <div>
-                <Input
-                  value={formData.FSI_TDR_UtilizationSqFt ?? ''}
-                  label="FSI / TDR Utilization (sqft)"
-                  placeholder="Enter FSI / TDR Utilization (sqft)"
-                  error={errors.FSI_TDR_UtilizationSqFt}
-                  onChange={e => handleFieldChange('FSI_TDR_UtilizationSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
-                />
-              </div>
-
-
-              <div className="md:col-span-2 lg:col-span-3">
-
-                <Checkbox
-                  label="Is Garden"
-                  checked={formData.IsGarden === true}
-                  onChange={(e) => handleFieldChange('IsGarden', e.target.checked ? true : false)}
-                />
-
-              </div>
-
-              {formData.IsGarden === true ?
+            </div>
+            <div className="space-y-4 pb-3">
+              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">FSI / TDR Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
                   <Input
-                    value={formData.TotalGardenAreaSqFt ?? ''}
-                    label="Garden Area (sqft)"
-                    onChange={e => handleFieldChange('TotalGardenAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
-                    error={errors.TotalGardenAreaSqFt}
+                    value={formData.PropertyAgeYears ?? ''}
+                    label="Property Age (Years)"
+                    placeholder="Enter Property Age (Years)"
+                    error={errors.PropertyAgeYears}
+                    onChange={e => handleFieldChange('PropertyAgeYears', filterNumbersWithDecimal(e.target.value) || 0)}
                   />
                 </div>
-                : ""}
-
-              <div className="md:col-span-2 lg:col-span-3">
-
-                <Checkbox
-                  label="Is Religious Structure"
-                  checked={formData.IsReligiousStructure === true}
-                  onChange={(e) => handleFieldChange('IsReligiousStructure', e.target.checked ? true : false)}
-                />
-
-              </div>
-              {formData.IsReligiousStructure === true ?
                 <div>
                   <Input
-                    value={formData.TotalReligiousStructureAreaSqFt ?? ''}
-                    label="Religious Structure Area (sqft)"
-                    onChange={e => handleFieldChange('TotalReligiousStructureAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
-                    error={errors.TotalReligiousStructureAreaSqFt}
+                    value={formData.FSI_TDR_UtilizationSqFt ?? ''}
+                    label="FSI / TDR Utilization (SqFt)"
+                    placeholder="Enter FSI / TDR Utilization"
+                    error={errors.FSI_TDR_UtilizationSqFt}
+                    rightIcon="SqFt"
+                    onChange={e => handleFieldChange('FSI_TDR_UtilizationSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   />
                 </div>
-                : ""}
-
-              <div className="md:col-span-2 lg:col-span-3">
-
-                <Checkbox
-                  label="Is Litigation"
-                  checked={formData.IsLitigation === true}
-                  onChange={(e) => handleFieldChange('IsLitigation', e.target.checked ? true : false)}
-                />
-
               </div>
-              {formData.IsLitigation === true ?
+            </div>
+
+            <div className="space-y-4 pb-3">
+              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Additional Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="md:col-span-2 lg:col-span-3">
-                  <TextArea
-                    label="Litigation Remarks"
-                    className='thin-scroll'
-                    value={formData.LitigationRemarks ?? ''}
-                    error={errors.LitigationRemarks}
-                    onChange={(e) => handleFieldChange("LitigationRemarks", e.target.value)}
+
+                  <Checkbox
+                    label="Is Garden"
+                    checked={formData.IsGarden === true}
+                    onChange={(e) => handleFieldChange('IsGarden', e.target.checked ? true : false)}
                   />
+
                 </div>
-                : ""}
+
+                {formData.IsGarden === true ?
+                  <div>
+                    <Input
+                      value={formData.TotalGardenAreaSqFt ?? ''}
+                      label="Garden Area (SqFt)"
+                      placeholder="Garden Area"
+                      onChange={e => handleFieldChange('TotalGardenAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                      error={errors.TotalGardenAreaSqFt}
+                      rightIcon="SqFt"
+                    />
+                  </div>
+                  : ""}
+
+                <div className="md:col-span-2 lg:col-span-3">
+
+                  <Checkbox
+                    label="Is Religious Structure"
+                    checked={formData.IsReligiousStructure === true}
+                    onChange={(e) => handleFieldChange('IsReligiousStructure', e.target.checked ? true : false)}
+                  />
+
+                </div>
+                {formData.IsReligiousStructure === true ?
+                  <div>
+                    <Input
+                      value={formData.TotalReligiousStructureAreaSqFt ?? ''}
+                      label="Religious Structure Area (SqFt)"
+                      placeholder="Religious Structure Area"
+                      onChange={e => handleFieldChange('TotalReligiousStructureAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                      error={errors.TotalReligiousStructureAreaSqFt}
+                       rightIcon="SqFt"
+                    />
+                  </div>
+                  : ""}
+
+                <div className="md:col-span-2 lg:col-span-3">
+
+                  <Checkbox
+                    label="Is Litigation"
+                    checked={formData.IsLitigation === true}
+                    onChange={(e) => handleFieldChange('IsLitigation', e.target.checked ? true : false)}
+                  />
+
+                </div>
+                {formData.IsLitigation === true ?
+                  <div className="md:col-span-2 lg:col-span-3">
+                    <TextArea
+                      label="Litigation Remarks"
+                      placeholder="Enter Litigation Remarks"
+                      className='thin-scroll'
+                      value={formData.LitigationRemarks ?? ''}
+                      error={errors.LitigationRemarks}
+                      onChange={(e) => handleFieldChange("LitigationRemarks", e.target.value)}
+                    />
+                  </div>
+                  : ""}
+              </div>
             </div>
           </div>
-          {/* ============================================================= [ADDRESS] ============================================================================================= */}
+          {/* ============================================================= [LOCATION] ============================================================================================= */}
           <div className="space-y-4 pb-3">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Location</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

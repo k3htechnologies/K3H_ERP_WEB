@@ -173,7 +173,7 @@ export const ViewBuilding: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Loading Building Data'
+            'Loading Building Documents'
         );
     };
 
@@ -282,7 +282,7 @@ export const ViewBuilding: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Loading Building'
+            'Loading Building Details'
         );
     };
 
@@ -426,7 +426,7 @@ export const ViewBuilding: React.FC = () => {
                         {/* ================= HEADER / BASIC DETAILS ================= */}
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Basic Details
+                                Building Details
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
@@ -437,28 +437,10 @@ export const ViewBuilding: React.FC = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
                                 <FieldItem label="Land Ownership" value={buildingData?.LandOwnershipType ?? '-'} />
-                                <FieldItem label="Litigation" value={buildingData?.IsLitigation ? 'Yes' : 'No'} />
-                                <FieldItem label="Litigation Remarks" value={buildingData?.LitigationRemarks ?? '-'} />
+
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-4">
                                 <FieldItem label="Google Location" value={buildingData?.GoogleLocation ?? '-'} />
-                            </div>
-                        </section>
-
-                        {/* ================= LOCATION DETAILS ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Location Details
-                            </h4>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
-                                <FieldItem label="Country" value={buildingData?.CountryName ?? '-'} />
-                                <FieldItem label="State" value={buildingData?.StateName ?? '-'} />
-                                <FieldItem label="District" value={buildingData?.DistrictName ?? '-'} />
-
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
-                                <FieldItem label="City" value={buildingData?.CityName ?? '-'} />
                             </div>
                         </section>
 
@@ -469,18 +451,34 @@ export const ViewBuilding: React.FC = () => {
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
-                                <FieldItem label="Total Plot Area (sqft)" value={buildingData?.TotalPlotAreaSqFt ?? '-'} />
-                                <FieldItem label="Utilized Area (sqft)" value={buildingData?.TotalUnitsAreaUtilizedSqFt ?? '-'} />
+                                <FieldItem label="Total Plot Area (sq ft)" value={buildingData?.TotalPlotAreaSqFt ?? '-'} />
+                                <FieldItem label="Utilized Units Area (sq ft" value={buildingData?.TotalUnitsAreaUtilizedSqFt ?? '-'} />
                                 <FieldItem label="Total Units" value={buildingData?.TotalNumberOfUnits ?? '-'} />
 
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
-                                <FieldItem label="Floors" value={buildingData?.NumberOfFloors ?? '-'} />
+                                <FieldItem label="Number Of Floors" value={buildingData?.NumberOfFloors ?? '-'} />
+
                             </div>
                         </section>
 
-                       
+                        {/* ================= LOCATION DETAILS ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Location Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <FieldItem label="Country" value={buildingData?.CountryName ?? '-'} />
+                                <FieldItem label="State" value={buildingData?.StateName ?? '-'} />
+                                <FieldItem label="District" value={buildingData?.DistrictName ?? '-'} />
+                                <FieldItem label="City" value={buildingData?.CityName ?? '-'} />
+                            </div>
+
+                        </section>
+
+
                     </div>
 
                     {/* ================= RIGHT SIDE (1/3) ================= */}
@@ -506,7 +504,7 @@ export const ViewBuilding: React.FC = () => {
                             </div>
                         </section>
 
-                         {/* ================= GARDERN INFORMATION ================= */}
+                        {/* ================= GARDERN INFORMATION ================= */}
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Garden Information
@@ -514,7 +512,7 @@ export const ViewBuilding: React.FC = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <FieldItem label="Is Garden Structure" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
-                                <FieldItem label="Garden Area (sqft)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
+                                <FieldItem label="Garden Area (sq ft)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
 
                             </div>
 
@@ -528,7 +526,7 @@ export const ViewBuilding: React.FC = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <FieldItem label="Is Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
-                                <FieldItem label="Structure Area (sqft)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
+                                <FieldItem label="Structure Area (sq ft)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
 
                             </div>
 
@@ -541,8 +539,22 @@ export const ViewBuilding: React.FC = () => {
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="FSI / TDR Utilization (sqft)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />
+                                <FieldItem label="FSI / TDR Utilization (sq ft)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />
                                 <FieldItem label="Property Age (Years)" value={buildingData?.PropertyAgeYears ?? '-'} />
+
+                            </div>
+
+                        </section>
+
+                        {/* ================= GARDERN INFORMATION ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Litigation
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Is Litigation" value={buildingData?.IsLitigation ? 'Yes' : 'No'} />
+                                <FieldItem label="Litigation Remarks" value={buildingData?.LitigationRemarks ?? '-'} />
 
                             </div>
 

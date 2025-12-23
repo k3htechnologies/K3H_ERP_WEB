@@ -3326,7 +3326,8 @@ export const ProposedOffer: React.FC = () => {
                     value={formDataExtraCarpetArea.ResidentialExtraCarpetPercent || ''}
                     onChange={(e) => handleFieldChangeExtraCarpetArea('ResidentialExtraCarpetPercent', filterNumbersWithDecimal(e.target.value))}
                     error={errors.ResidentialExtraCarpetPercent}
-                    placeholder="Enter Residential Extra Carpet %"
+                    placeholder="Enter Residential Extra Carpet"
+                    rightIcon="%"
                   />
                 </div>
                 <div>
@@ -3337,7 +3338,8 @@ export const ProposedOffer: React.FC = () => {
                     value={formDataExtraCarpetArea.CommercialExtraCarpetPercent || ''}
                     onChange={(e) => handleFieldChangeExtraCarpetArea('CommercialExtraCarpetPercent', filterNumbersWithDecimal(e.target.value))}
                     error={errors.CommercialExtraCarpetPercent}
-                    placeholder="Enter Commercial Extra Carpet %"
+                    placeholder="Enter Commercial Extra Carpet"
+                     rightIcon="%"
                   />
                 </div>
               </div>
@@ -3601,6 +3603,7 @@ export const ProposedOffer: React.FC = () => {
                     onChange={(e) => handleFieldChangeSecurityDepositDetails('SecurityDepositToSocietyAmount', filterNumbersWithDecimal(e.target.value))}
                     error={errorsSecurityDepositDetails.SecurityDepositToSocietyAmount}
                     placeholder="Enter Security Deposit Amount"
+                    rightIcon="₹"
                   />
                 </div>
               </div>
@@ -3713,6 +3716,7 @@ export const ProposedOffer: React.FC = () => {
                 }}
                 error={errorsSecurityDepositPaymentStage.Amount}
                 placeholder="Enter Amount"
+                rightIcon="₹"
               />
             </div>
           </div>
@@ -3959,13 +3963,14 @@ export const ProposedOffer: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
                   <Input
-                    label="Residential Area (Sq Ft)"
+                    label="Residential Area (SqFt)"
                     required
                     type="text"
                     value={formDataLienToSocietyDetails.ResidentialAreaSqFt || ''}
                     onChange={(e) => handleFieldChangeLienToSocietyDetails('ResidentialAreaSqFt', filterNumbersWithDecimal(e.target.value))}
                     error={errorsLienToSocietyDetails.ResidentialAreaSqFt}
                     placeholder="Enter Residential Area"
+                    rightIcon="SqFt"
                   />
                 </div>
                 <div>
@@ -3981,13 +3986,14 @@ export const ProposedOffer: React.FC = () => {
                 </div>
                 <div>
                   <Input
-                    label="Commercial Area (Sq Ft)"
+                    label="Commercial Area (SqFt)"
                     required
                     type="text"
                     value={formDataLienToSocietyDetails.CommercialAreaSqFt || ''}
                     onChange={(e) => handleFieldChangeLienToSocietyDetails('CommercialAreaSqFt', filterNumbersWithDecimal(e.target.value))}
                     error={errorsLienToSocietyDetails.CommercialAreaSqFt}
                     placeholder="Enter Commercial Area"
+                    rightIcon="SqFt"
                   />
                 </div>
                 <div>
@@ -4102,7 +4108,7 @@ export const ProposedOffer: React.FC = () => {
             </div>
             <div>
               <Input
-                label="Carpet Area (Sq Ft)"
+                label="Carpet Area (SqFt)"
                 required
                 type="text"
                 value={formDataLienToSocietyPaymentStage.CarpetAreaSqFt || ''}
@@ -4112,6 +4118,7 @@ export const ProposedOffer: React.FC = () => {
                 }}
                 error={errorsLienToSocietyPaymentStage.CarpetAreaSqFt}
                 placeholder="Enter Carpet Area"
+                rightIcon="SqFt"
               />
             </div>
             <div className="flex items-center">

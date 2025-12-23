@@ -810,6 +810,32 @@ export const LocalStorageHelper = {
         return null;
     },
     //#endregion
+    //#region STORE REDEVELOPMENT BUILDING COLUMNS
+    storeRedevelopmentBuildingTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.REDEVELOPMENT_BUILDING_COLUMNS, columns);
+
+        } catch (error) {
+            console.error('Error Redevelopment Building Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET REDEVELOPMENT BUILDING COLUMNS
+    getRedevelopmentBuildingTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.REDEVELOPMENT_BUILDING_COLUMNS)
+        if (stored) {
+            try {
+
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.REDEVELOPMENT_BUILDING_COLUMNS);
+
+            } catch (error) {
+                console.error('Error reading Redevelopment Building Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
 
     //#region CLEAR LOCAL STORAGE 
     clearLocalStorageData: (): void => {

@@ -321,61 +321,66 @@ const BuildingDescription: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <Input
-                  label="Gross Plot Area SqFt"
+                  label="Gross Plot Area (SqFt)"
                   required
                   error={errors.GrossPlotAreaSqFt}
                   type="text"
                   value={formData.GrossPlotAreaSqFt || ''}
                   onChange={(e) => handleFieldChange('GrossPlotAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
-                  placeholder="Enter gross plot area"
+                  placeholder="Enter gross plot Area"
+                  rightIcon="SqFt"
                 />
               </div>
               <div>
                 <Input
-                  label="Plot Area Physical Survey SqFt"
+                  label="Plot Area Physical Survey (SqFt)"
                   type="text"
                   value={formData.PlotAreaPhysicalSurveySqFt || ''}
                   onChange={(e) => {
                     const val = filterNumbersWithDecimal(e.target.value);
                     handleFieldChange('PlotAreaPhysicalSurveySqFt', val ? Number(val) : undefined);
                   }}
-                  placeholder="Enter physical survey area"
+                  placeholder="Enter Physical Survey Area"
+                  rightIcon="SqFt"
                 />
               </div>
               <div>
                 <Input
-                  label="Plot Area Old Approved Plan SqFt"
+                  label="Plot Area Old Approved Plan (SqFt)"
                   type="text"
                   value={formData.PlotAreaOldApprovedPlanSqFt || ''}
                   onChange={(e) => {
                     const val = filterNumbersWithDecimal(e.target.value);
                     handleFieldChange('PlotAreaOldApprovedPlanSqFt', val ? Number(val) : undefined);
                   }}
-                  placeholder="Enter old approved plan area"
+                  placeholder="Enter Old Approved Plan Area"
+                  rightIcon="SqFt"
                 />
               </div>
               <div>
                 <Input
-                  label="Plot Area Conveyance SqFt"
+                  label="Plot Area Conveyance (SqFt)"
                   type="text"
                   value={formData.PlotAreaConveyanceSqFt || ''}
                   onChange={(e) => {
                     const val = filterNumbersWithDecimal(e.target.value);
                     handleFieldChange('PlotAreaConveyanceSqFt', val ? Number(val) : undefined);
                   }}
-                  placeholder="Enter conveyance area"
+                  placeholder="Enter Conveyance Area"
+                  rightIcon="SqFt"
                 />
               </div>
               <div>
                 <Input
-                  label="Plot Area PR Card SqFt"
+                  label="Plot Area PR Card (SqFt)"
                   type="text"
                   value={formData.PlotAreaPRCardSqFt || ''}
                   onChange={(e) => {
                     const val = filterNumbersWithDecimal(e.target.value);
                     handleFieldChange('PlotAreaPRCardSqFt', val ? Number(val) : undefined);
                   }}
-                  placeholder="Enter PR card area"
+                  placeholder="Enter PR Card Area"
+                  rightIcon="SqFt"
                 />
               </div>
             </div>
@@ -388,13 +393,14 @@ const BuildingDescription: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <Input
-                  label="Total Built Up Area SqFt"
+                  label="Total Built Up Area (SqFt)"
                   required
                   error={errors.TotalBuiltUpAreaSqFt}
                   type="text"
                   value={formData.TotalBuiltUpAreaSqFt || ''}
                   onChange={(e) => handleFieldChange('TotalBuiltUpAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
-                  placeholder="Enter total built up area"
+                  placeholder="Enter Total Built Up Area"
+                  rightIcon="SqFt"
                 />
               </div>
               <div>
@@ -406,19 +412,20 @@ const BuildingDescription: React.FC = () => {
                     const val = filterNumbersWithDecimal(e.target.value);
                     handleFieldChange('TotalResidentialUnits', val ? Number(val) : undefined);
                   }}
-                  placeholder="Enter residential units"
+                  placeholder="Enter Residential Units"
                 />
               </div>
               <div>
                 <Input
-                  label="Total Residential Carpet Area SqFt"
+                  label="Total Residential Carpet Area (SqFt)"
                   type="text"
                   value={formData.TotalResidentialCarpetAreaSqFt || ''}
                   onChange={(e) => {
                     const val = filterNumbersWithDecimal(e.target.value);
                     handleFieldChange('TotalResidentialCarpetAreaSqFt', val ? Number(val) : undefined);
                   }}
-                  placeholder="Enter residential carpet area"
+                  placeholder="Enter Residential Carpet Area"
+                  rightIcon="SqFt"
                 />
               </div>
               <div>
@@ -430,19 +437,20 @@ const BuildingDescription: React.FC = () => {
                     const val = filterNumbersWithDecimal(e.target.value);
                     handleFieldChange('TotalCommercialUnits', val ? Number(val) : undefined);
                   }}
-                  placeholder="Enter commercial units"
+                  placeholder="Enter Commercial Units"
                 />
               </div>
               <div>
                 <Input
-                  label="Total Commercial Carpet Area SqFt"
+                  label="Total Commercial Carpet Area (SqFt)"
                   type="text"
                   value={formData.TotalCommercialCarpetAreaSqFt || ''}
                   onChange={(e) => {
                     const val = filterNumbersWithDecimal(e.target.value);
                     handleFieldChange('TotalCommercialCarpetAreaSqFt', val ? Number(val) : undefined);
                   }}
-                  placeholder="Enter commercial carpet area"
+                  placeholder="Enter Commercial Carpet Area"
+                  rightIcon="SqFt"
                 />
               </div>
             </div>
@@ -461,7 +469,7 @@ const BuildingDescription: React.FC = () => {
                       <Input
                         label="Contact Type"
                         type="text"
-                        readOnly
+                        disabled
                         value={contact.ContactType || ''}
                         onChange={(e) => {
                           const updatedList = [...contactDetailsList];
@@ -494,7 +502,7 @@ const BuildingDescription: React.FC = () => {
                             }));
                           }
                         }}
-                        placeholder="Enter contact name"
+                        placeholder="Enter Contact Name"
                         error={contactDetailsErrors[index]?.ContactName}
                       />
                     </div>
@@ -514,7 +522,7 @@ const BuildingDescription: React.FC = () => {
                             }));
                           }
                         }}
-                        placeholder="Enter mobile number"
+                        placeholder="Enter Mobile Number"
                         maxLength={10}
                         leftIcon="+91"
                         error={contactDetailsErrors[index]?.MobileNumber}
@@ -542,7 +550,7 @@ const BuildingDescription: React.FC = () => {
                             }));
                           }
                         }}
-                        placeholder="Enter email id"
+                        placeholder="Enter Email Id"
                         error={contactDetailsErrors[index]?.EmailId}
                       />
                     </div>

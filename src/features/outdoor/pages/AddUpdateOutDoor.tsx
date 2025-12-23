@@ -390,8 +390,11 @@ export const AddUpdateOutDoorPage: React.FC = () => {
           </h2>
         </div>
       
-      <div className="rounded-lg shadow-sm border border-gray-200 p-6" style={{ backgroundColor: '#FFFFFF' }}>
-        <form onSubmit={(e) => { e.preventDefault(); handleAddUpdateOutDoor(); }} className="space-y-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll">
+          <form onSubmit={(e) => { e.preventDefault(); handleAddUpdateOutDoor(); }} className="space-y-4">
+            <div className="space-y-4 pb-3">
+              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Outdoor Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <DatePickerInput
               label="OutDoor Date"
@@ -425,6 +428,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
               initialValue={createDropdownInitialValue(outdoorFormData.DepartmentId, dropdownLabels.departmentName)}
               error={errors.DepartmentId}
               required
+              disabled={!!outdoorFormData.PunchIn}
             />
 
             <div className="space-y-1">
@@ -435,7 +439,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                 dataFetchCallBack={fetchEmployeeMasterDropdownWithDepartment}
                 selectedValues={selectedAccompaniedValues}
                 onChange={handleAccompaniedChange}
-                disabled={!outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
+                disabled={!!outdoorFormData.PunchIn || !outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
               />
               {errors.AccompaniedById && (
                 <p className="text-xs text-red-600">{errors.AccompaniedById}</p>
@@ -489,18 +493,20 @@ export const AddUpdateOutDoorPage: React.FC = () => {
           </div>
 
 
-          <div className="flex justify-end gap-4 mt-6 pt-6 border-t border-gray-200">
-            <Button
-              type="submit"
-              color="blue"
-              size="sm"
-              loading={isLoading}
-              className="px-6"
-            >
-              Save
-            </Button>
+            <div className="flex justify-end gap-4 mt-6 pt-6 border-t border-gray-200">
+              <Button
+                type="submit"
+                color="blue"
+                size="sm"
+                loading={isLoading}
+                className="px-6"
+              >
+                Save
+              </Button>
+            </div>
           </div>
-        </form>
+          </form>
+        </div>
       </div>
       </div>
     </div>

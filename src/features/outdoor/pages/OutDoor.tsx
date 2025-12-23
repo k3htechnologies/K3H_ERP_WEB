@@ -36,6 +36,7 @@ import { parseOutdoorDate, parseOutdoorTime, isToday, isPreviousDate } from "../
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { MultiImageViewer } from "@/ui/components/ImageViewer/ImageViewer";
 import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 export const OutDoor: React.FC = () => {
   const { toasts, removeToast, addToast } = useToast();
@@ -74,8 +75,9 @@ export const OutDoor: React.FC = () => {
 
       const apiResponse = await OutDoorDataService.apiCallPullOutDoorData(params);
       if (E.isRight(apiResponse)) {
-        const responseData = apiResponse.right.Data || [];
-        const totalRecords = apiResponse.right.TotalNumberOfRecord || 0;
+        const response = apiResponse.right;
+        const responseData = response.Data || [];
+        const totalRecords = response.TotalNumberOfRecord || 0;
 
         setOutDoorList(responseData);
         setPagination({
@@ -83,6 +85,25 @@ export const OutDoor: React.FC = () => {
           totalRecords,
           totalPages: Math.ceil(totalRecords / pagination.pageSize),
         });
+
+        // Show API response messages if available
+        if (response.ErrorMessage && response.ErrorMessage.length > 0) {
+          addToast({ 
+            type: "error", 
+            title: response.ErrorMessage[0] || "Error Fetching Outdoor" 
+          });
+        } else if (response.WarningMessage && response.WarningMessage.length > 0) {
+          addToast({ 
+            type: "warning", 
+            title: response.WarningMessage[0] 
+          });
+        } else if (response.SuccessMessage && response.SuccessMessage.length > 0 && page === 1) {
+          // Only show success message on initial load to avoid spam
+          addToast({ 
+            type: "success", 
+            title: response.SuccessMessage[0] 
+          });
+        }
       } else {
         addToast({ type: "error", title: "Error Fetching Outdoor" });
       }
@@ -231,11 +252,23 @@ export const OutDoor: React.FC = () => {
             const apiResponse = response.right;
 
             // Check if API response has error messages
-            if (!apiResponse.IsSuccess || (apiResponse.ErrorMessage && apiResponse.ErrorMessage.length > 0)) {
-              const errorMessage = apiResponse.ErrorMessage?.[0] || apiResponse.WarningMessage?.[0] || "Failed to punch in/out";
+            if (apiResponse.ErrorMessage && apiResponse.ErrorMessage.length > 0) {
+              const errorMessage = apiResponse.ErrorMessage[0];
               addToast({
                 type: "error",
                 title: errorMessage
+              });
+            } else if (apiResponse.WarningMessage && apiResponse.WarningMessage.length > 0) {
+              const warningMessage = apiResponse.WarningMessage[0];
+              addToast({
+                type: "warning",
+                title: warningMessage
+              });
+              await loadOutDoor(pagination.currentPage);
+            } else if (!apiResponse.IsSuccess) {
+              addToast({
+                type: "error",
+                title: "Failed to punch in/out"
               });
             } else {
               await loadOutDoor(pagination.currentPage);
@@ -299,12 +332,37 @@ export const OutDoor: React.FC = () => {
         });
 
         if (E.isRight(response)) {
-          await loadOutDoor(pagination.currentPage);
-          addToast({
-            type: "success",
-            title: "Conclusion saved successfully"
-          });
-          handleCloseConclusionModal();
+          const apiResponse = response.right;
+
+          // Check if API response has error messages
+          if (apiResponse.ErrorMessage && apiResponse.ErrorMessage.length > 0) {
+            const errorMessage = apiResponse.ErrorMessage[0];
+            addToast({
+              type: "error",
+              title: errorMessage
+            });
+          } else if (apiResponse.WarningMessage && apiResponse.WarningMessage.length > 0) {
+            const warningMessage = apiResponse.WarningMessage[0];
+            addToast({
+              type: "warning",
+              title: warningMessage
+            });
+            await loadOutDoor(pagination.currentPage);
+            handleCloseConclusionModal();
+          } else if (!apiResponse.IsSuccess) {
+            addToast({
+              type: "error",
+              title: "Failed to save conclusion"
+            });
+          } else {
+            await loadOutDoor(pagination.currentPage);
+            const successMessage = apiResponse.SuccessMessage?.[0] || "Conclusion saved successfully";
+            addToast({
+              type: "success",
+              title: successMessage
+            });
+            handleCloseConclusionModal();
+          }
         } else {
           addToast({
             type: "error",
@@ -442,61 +500,67 @@ export const OutDoor: React.FC = () => {
                     child={
                       <div className="space-y-4">
                         {/* Left Column */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-3">
-                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+                          <div className="space-y-0">
+                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
                               <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Name</p>
-                                <p className="text-sm font-semibold text-gray-900">{item.CompanyName || 'N/A'}</p>
+                                <p className="text-sm font-medium text-gray-900">{item.CompanyName || 'N/A'}</p>
                               </div>
                             </div>
 
-                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
+                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
                               <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Address</p>
-                                <p className="text-sm font-semibold text-gray-900">{item.CompanyAddress || 'N/A'}</p>
+                                <p className="text-sm font-medium text-gray-900">{item.CompanyAddress || 'N/A'}</p>
                               </div>
                             </div>
 
-                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
+                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
                               <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Purpose</p>
-                                <p className="text-sm font-semibold text-gray-900">{item.Purpose || 'N/A'}</p>
+                                <div className="text-sm font-medium text-gray-900">
+                                  <TooltipText
+                                    text={item.Purpose || 'N/A'}
+                                    maxWidth="300px"
+                                    tooltipThreshold={30}
+                                  />
+                                </div>
                               </div>
                             </div>
 
                             {item.Conclusion && (
-                              <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
+                              <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
                                 <div className="flex-1">
                                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Conclusion</p>
-                                  <p className="text-sm text-gray-600">{item.Conclusion}</p>
+                                  <p className="text-sm font-medium text-gray-600">{item.Conclusion}</p>
                                 </div>
                               </div>
                             )}
                           </div>
 
                           {/* Right Column */}
-                          <div className="space-y-3">
+                          <div className="space-y-0">
                             {item.DepartmentName && (
-                              <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
+                              <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
                                 <div className="flex-1">
                                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Department</p>
-                                  <p className="text-sm font-semibold text-gray-900">{item.DepartmentName}</p>
+                                  <p className="text-sm font-medium text-gray-900">{item.DepartmentName}</p>
                                 </div>
                               </div>
                             )}
 
-                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
+                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
                               <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Accompanied By</p>
-                                <p className="text-sm font-semibold text-gray-900">{item.AccompaniedByName || 'N/A'}</p>
+                                <p className="text-sm font-medium text-gray-900">{item.AccompaniedByName || 'N/A'}</p>
                               </div>
                             </div>
 
-                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg">
+                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
                               <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Requested By</p>
-                                <p className="text-sm font-semibold text-gray-900">{item.CreatedBy || 'N/A'}</p>
+                                <p className="text-sm font-medium text-gray-900">{item.CreatedBy || 'N/A'}</p>
                               </div>
                             </div>
 
@@ -576,11 +640,9 @@ export const OutDoor: React.FC = () => {
                             </div>
                             {item.VisitingCardURL ? (() => {
                               const cardUrls = parseDocumentUrls(item.VisitingCardURL);
-                              const images = cardUrls.map(url => ({ url }));
                               return (
                                 <MultiImageViewer
-                                  images={images}
-                                  
+                                  images={cardUrls}
                                   title="Visiting Card"
                                   triggerLabel={
                                     <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm">

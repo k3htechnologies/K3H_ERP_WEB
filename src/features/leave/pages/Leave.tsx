@@ -24,6 +24,7 @@ import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleS
 import { fetchLeaveTypeMasterDropdown } from '@/features/leaveTypeMaster/leaveTypeMasterDropdown';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { usePagination } from '@/core/hooks/usePagination';
+import TooltipText from '@/ui/components/Tooltip/TooltipText';
 
 const initialFormState = (): AddUpdateLeaveRequest => ({
   LeaveId: 0,
@@ -126,7 +127,6 @@ export const Leave: React.FC = () => {
           setLeaveList(resp.Data || []);
           const totalRecords = resp.TotalNumberOfRecord ?? 0;
           const totalPages = Math.ceil(totalRecords / currentPageSize) || 0;
-          // Only update pagination if values actually changed
           setPagination((prev) => {
             if (
               prev.currentPage === currentPage &&
@@ -238,74 +238,44 @@ export const Leave: React.FC = () => {
     }
   };
 
+  const handleViewLeaveDetails = useCallback((row: LeaveData) => {
+    navigate('/leave/view', { state: { data: row } });
+  }, [navigate]);
+
   const columns: TableColumn[] = useMemo(
     () => [
       {
         key: 'LeaveType',
         label: 'Leave Type',
-        width: '180px',
+        render: (value, row) => (
+          <TooltipText
+            text={value || '-'}
+            maxWidth="250px"
+            tooltipThreshold={30}
+            onClick={() => handleViewLeaveDetails(row)}
+          />
+        )
       },
       {
         key: 'StartDate',
         label: 'Start Date',
-          render: (value) => formatDateDisplay(value as string),
+        render: (value) => formatDateDisplay(value as string),
       },
       {
         key: 'EndDate',
         label: 'End Date',
-          render: (value) => formatDateDisplay(value as string),
+        render: (value) => formatDateDisplay(value as string),
       },
       {
         key: 'NoOfDays',
         label: 'No Of Days',
-        width: '120px',
       },
       {
         key: 'Reason',
         label: 'Reason',
-        width: '240px',
-      },
-      {
-        key: 'CreatedDate',
-        label: 'Created On',
-          render: (value) => formatDateDisplay(value as string),
-        width: '160px',
-      },
-      {
-        key: 'actions',
-        label: 'Actions',
-        width: '160px',
-        render: (_value, row) => {
-          const currentRow = row as LeaveData;
-          return (
-            <div className="flex gap-2">
-              <Button
-                size="xs"
-                variant="outline"
-                onClick={() => {
-                  navigate(`/leave/add/${currentRow.LeaveId}`, {
-                    state: { data: currentRow },
-                  });
-                }}
-              >
-                Edit
-              </Button>
-              <Button
-                size="xs"
-                variant="outline"
-                onClick={() => {
-                  setDeletePayload({ LeaveId: currentRow.LeaveId, Uniquekey: currentRow.Uniquekey });
-                  setIsDeleteDialogOpen(true);
-                }}
-              >
-                Delete
-              </Button>
-            </div>
-          );
-        },
       },
     ],
-    [],
+    [handleViewLeaveDetails],
   );
 
   const leaveListForTable = useMemo(() => leaveList ?? [], [leaveList]);

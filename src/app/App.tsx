@@ -65,6 +65,7 @@ import LeaveCreditDebit from '@/features/leaveCreditDebit/pages/LeaveCreditDebit
 import AddUpdateLeaveCreditDebit from '@/features/leaveCreditDebit/pages/AddUpdateLeaveCreditDebit';
 import ViewLeaveCreditDebit from '@/features/leaveCreditDebit/pages/ViewLeaveCreditDebit';
 import AddUpdateLeave from '@/features/leave/pages/AddUpdateLeave';
+import ViewLeave from '@/features/leave/pages/ViewLeave';
 import EmployeeDetailsMaster from '@/features/EmployeeDetailsMaster/pages/EmployeeDetailsMaster';
 
 // Loading component for Suspense fallback
@@ -130,6 +131,7 @@ function App() {
              <Route path="/employedetails" element={<EmployeeDetailsMaster/>}/>
             <Route path="leave" element={<Leave />} />
             <Route path="leave/add/:id?" element={<AddUpdateLeave/>}/>
+            <Route path="leave/view/:id?" element={<ViewLeave />} />
             <Route path="leaveCreditDebit" element={<LeaveCreditDebit />} />
             <Route path="leaveCreditDebit/add/:id?" element={<AddUpdateLeaveCreditDebit />} />
             <Route path="leaveCreditDebit/view/:id?" element={<ViewLeaveCreditDebit />} />

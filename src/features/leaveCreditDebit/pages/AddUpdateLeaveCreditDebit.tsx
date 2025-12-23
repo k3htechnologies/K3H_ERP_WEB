@@ -79,6 +79,9 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
         const deptId = String(incoming.DepartmentMasterId).split(',')[0].trim();
         if (deptId) {
           setSelectedDepartmentId(deptId);
+          if (incoming.DepartmentName) {
+            setDepartmentLabel(incoming.DepartmentName);
+          }
           // Fetch department label
           const fetchDepartmentLabel = async () => {
             try {
@@ -288,7 +291,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
       const responseEither = await leaveCreditDebitService.apiCallAddUpdateLeaveCreditDebit(payload);
       if (E.isRight(responseEither)) {
         addToast({ type: 'success', title: 'Saved', message: 'Leave Credit/Debit saved successfully' });
-        navigate(-1);
+        navigate('/leaveCreditDebit');
       } else {
         addToast({ type: 'error', title: 'Failed', message: responseEither.left.message });
       }

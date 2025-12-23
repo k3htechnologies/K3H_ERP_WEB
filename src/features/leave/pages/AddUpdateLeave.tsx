@@ -72,6 +72,31 @@ export const AddUpdateLeave: React.FC = () => {
     setErrors({});
   }, [id, location.state]);
 
+  const handleReset = () => {
+    const incoming = location.state?.data;
+    if (id && incoming) {
+      setFormData({
+        LeaveId: incoming.LeaveId,
+        Uniquekey: incoming.Uniquekey || initialFormState().Uniquekey,
+        LeaveTypeMasterId: incoming.LeaveTypeMasterId,
+        StartDate: incoming.StartDate,
+        EndDate: incoming.EndDate,
+        StartDateLeaveDuration: incoming.StartDateLeaveDuration || 'Full',
+        EndDateLeaveDuration: incoming.EndDateLeaveDuration || 'Full',
+        Reason: incoming.Reason || '',
+        LeaveDocumentFiles: [],
+      });
+      setDropdownLabels({
+        leaveTypeName: incoming.LeaveType || '',
+      });
+    } else {
+      setFormData(initialFormState());
+      setDropdownLabels({});
+    }
+    setErrors({});
+    setIsDateModalOpen(false);
+  };
+
   const handleSave = async () => {
     const newErrors: { [k: string]: string } = {};
     if (!formData.LeaveTypeMasterId) newErrors.LeaveTypeMasterId = 'Leave Type is required';
@@ -127,90 +152,105 @@ export const AddUpdateLeave: React.FC = () => {
         </div>
 
         {/* Details Card */}
-        <div className="rounded-lg shadow-sm border border-gray-200 p-6" style={{ backgroundColor: '#FFFFFF' }}>
-          <h3 className="text-md font-medium text-gray-500 mb-4">Details</h3>
-          
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SingleSelectDropdownWithPagination
-                label="Leave Type"
-                title="Select Leave Type"
-                size="md"
-                required
-                dataFetchCallBack={async (pageNumber: number, params?: { value?: string }) =>
-                  fetchLeaveTypeMasterDropdown(pageNumber, params)
-                }
-                onSelected={(item) => {
-                  setFormData((prev) => ({ ...prev, LeaveTypeMasterId: Number(item.value) }));
-                  setDropdownLabels((prev) => ({ ...prev, leaveTypeName: item.label }));
-                }}
-                initialValue={createDropdownInitialValue(
-                  formData.LeaveTypeMasterId ? String(formData.LeaveTypeMasterId) : null,
-                  dropdownLabels.leaveTypeName,
-                )}
-                error={errors.LeaveTypeMasterId}
-              />
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll">
+            <form onSubmit={(e) => { e.preventDefault(); void handleSave(); }} className="space-y-4">
+              <div className="space-y-4 pb-3">
+                <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Leave Details</h3>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Date Range <span className="text-red-500">*</span>
-                </label>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <SingleSelectDropdownWithPagination
+                      label="Leave Type"
+                      title="Select Leave Type"
+                      size="md"
+                      required
+                      dataFetchCallBack={async (pageNumber: number, params?: { value?: string }) =>
+                        fetchLeaveTypeMasterDropdown(pageNumber, params)
+                      }
+                      onSelected={(item) => {
+                        setFormData((prev) => ({ ...prev, LeaveTypeMasterId: Number(item.value) }));
+                        setDropdownLabels((prev) => ({ ...prev, leaveTypeName: item.label }));
+                      }}
+                      initialValue={createDropdownInitialValue(
+                        formData.LeaveTypeMasterId ? String(formData.LeaveTypeMasterId) : null,
+                        dropdownLabels.leaveTypeName,
+                      )}
+                      error={errors.LeaveTypeMasterId}
+                    />
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Date Range <span className="text-red-500">*</span>
+                      </label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsDateModalOpen(true)}
+                        className="w-full justify-start hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                        fullWidth
+                      >
+                        {formData.StartDate && formData.EndDate
+                          ? `${formatDate_dd_mm_yyyy(formData.StartDate)} - ${formatDate_dd_mm_yyyy(formData.EndDate)}`
+                          : 'Select Date Range'}
+                      </Button>
+                      {(errors.StartDate || errors.EndDate) && (
+                        <p className="text-sm text-red-600 mt-1">{errors.StartDate || errors.EndDate}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <TextArea
+                      label="Reason"
+                      required
+                      value={formData.Reason || ''}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                        setFormData((prev) => ({ ...prev, Reason: e.target.value }))
+                      }
+                      error={errors.Reason}
+                      placeholder="Enter reason"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <MultiFilePicker
+                      label="Leave Documents"
+                      value={formData.LeaveDocumentFiles || []}
+                      onChange={(files) => setFormData((prev) => ({ ...prev, LeaveDocumentFiles: files }))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end items-center gap-3 pt-4">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsDateModalOpen(true)}
-                  className="w-full justify-start hover:bg-blue-50 hover:border-blue-200 transition-colors"
-                  fullWidth
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleReset();
+                  }}
+                  disabled={isSaving}
                 >
-                  {formData.StartDate && formData.EndDate
-                    ? `${formatDate_dd_mm_yyyy(formData.StartDate)} - ${formatDate_dd_mm_yyyy(formData.EndDate)}`
-                    : 'Select Date Range'}
+                  Reset
                 </Button>
-                {(errors.StartDate || errors.EndDate) && (
-                  <p className="text-sm text-red-600 mt-1">{errors.StartDate || errors.EndDate}</p>
-                )}
+                <Button
+                  color="blue"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    void handleSave();
+                  }}
+                  disabled={isSaving}
+                >
+                  Save
+                </Button>
               </div>
-            </div>
-
-            <div>
-              <TextArea
-                label="Reason"
-                required
-                value={formData.Reason || ''}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  setFormData((prev) => ({ ...prev, Reason: e.target.value }))
-                }
-                error={errors.Reason}
-                placeholder="Enter reason"
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <MultiFilePicker
-                label="Leave Documents"
-                value={formData.LeaveDocumentFiles || []}
-                onChange={(files) => setFormData((prev) => ({ ...prev, LeaveDocumentFiles: files }))}
-              />
-            </div>
+            </form>
           </div>
-        </div>
-
-        <div className="flex justify-end items-center gap-3 pt-4">
-          <Button
-            type="button"
-            color="blue"
-            size="md"
-            onClick={(e) => {
-              e.preventDefault();
-              void handleSave();
-            }}
-            disabled={isSaving}
-            loading={isSaving}
-            className="min-w-[120px] font-medium"
-          >
-            Save
-          </Button>
         </div>
       </div>
 
@@ -339,6 +379,7 @@ export const AddUpdateLeave: React.FC = () => {
 
             <Input
               label="Total Days (auto)"
+              disabled
               value={
                 startDate && endDate
                   ? (() => {

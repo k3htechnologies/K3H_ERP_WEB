@@ -96,7 +96,7 @@ const ViewAssetMappingMaster: React.FC = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     <FieldItem label="Asset Name" value={editAssetData.AssetName} />
                                     <FieldItem label="Asset Code" value={editAssetData.AssetCode} />
-                                    <FieldItem label="Serial Type" value={editAssetData.AssetType} />
+                                    <FieldItem label="Asset Type" value={editAssetData.AssetType} />
 
                                 </div>
                             </div>

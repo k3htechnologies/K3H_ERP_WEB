@@ -16,7 +16,6 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
-import { useLocation, type Location, useNavigate } from 'react-router-dom';
 import { Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
@@ -24,7 +23,6 @@ import { fetchBuildingDropdown } from '@/features/building/buildingDropdown';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import Tabs, { type TabItem } from '@/ui/components/Tab/Tab';
-import type { FilterWithPaginationProposedOfferRentDetailsRequest } from '@/features/proposedOffer/models/ProposedOfferModel';
 import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 
 type PivotRentRow = {
@@ -43,48 +41,26 @@ type PivotRentRow = {
 };
 
 export const Rent: React.FC = () => {
+
   //#region STATE
-  const [tenantApplicantChargesList, setTenantApplicantChargesList] = useState<TenantApplicantCharges[]>([]);
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
-  const navigate = useNavigate();
-
-  const { pagination, setPagination } = usePagination(20);
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-
+  const { projectId } = useProject();
   const { addToast } = useToast();
-
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const [buildingId, setBuildingId] = useState(0);
-
-  const [buildingName, setBuildingName] = useState('');
-
-  const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchRents(value);
-  }, 350);
-
-  const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
-  const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-
-
   const { canExport } = useMenuPermissions();
 
-  const location = useLocation() as Location & {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: FilterInfo;
-        sortInfo?: SortInfo;
-        searchTerm?: string;
-        buildingId?: number;
-        buildingName?: string;
-      };
-    };
-  };
+  const { pagination, setPagination } = usePagination(20);
+  const [sortInfo] = useState<SortInfo | undefined>();
 
+  const [tenantApplicantChargesList, setTenantApplicantChargesList] = useState<TenantApplicantCharges[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+
+  const [buildingId, setBuildingId] = useState(0);
+  const [buildingName, setBuildingName] = useState('');
+
+  const [filters, setFilters] = useState<FilterInfo>({});
+  const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
 
   //#endregion
 
@@ -97,11 +73,10 @@ export const Rent: React.FC = () => {
     { id: "Shifting", label: "Shifting" }
   ];
 
-  const [activeTab, setActiveTab] = useState<string>(rentTabList[0].id);
-
+  const [activeTab, setActiveTab] = useState(rentTabList[0].id);
   const [tenureTabList, setTenureTabList] = useState<TabItem[]>([]);
+  const [activeTenureTab, setActiveTenureTab] = useState('');
 
-  const [activeForTenureTab, setActiveForTenureTab] = useState<string>('');
 
   const isMonthBasedTab = ['Rent', 'Additional Rent', 'Brokerage'].includes(activeTab);
   const isStageBasedTab = ['Corpus', 'Shifting'].includes(activeTab);
@@ -109,260 +84,219 @@ export const Rent: React.FC = () => {
 
   //#endregion
 
-  //#region PROJECT SELECTION GET ID
-
-  const { projectId } = useProject();
-
-  //#endregion
-
-  //#region INIT
-
-  useEffect(() => {
-    if (!projectId || !buildingId) return;
-
-    if (activeTab === 'Rent' || activeTab === 'Brokerage') {
-
-      fetchProposedOfferRentDetailsData();
-    }
-    else {
-
-      setTenureTabList([]);
-      setActiveForTenureTab('');
-    }
-
-
-  }, [activeTab, projectId, buildingId]);
-
+  //#region BUILDING DROPDOWN
   const selectedBuilding = useMemo(() => {
     if (!projectId || !buildingId) return null;
     return { label: buildingName, value: buildingId };
   }, [buildingId, buildingName]);
 
-  const fetchBuildingCallback = useCallback(
-    (pageNumber: number) =>
-      fetchBuildingDropdown(pageNumber, { projectId: Number(projectId) }),
+  const fetchBuildingCallback = useCallback((pageNumber: number) =>
+    fetchBuildingDropdown(pageNumber, { projectId: Number(projectId) }),
     [projectId]
   );
+  //#endregion
 
+  //#region DEBOUNCE SEARCH
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    setPagination({ currentPage: 1 });
+    setFilters(prev => ({ ...prev, FlatNumber: value.trim() }));
+  }, 350);
+  //#endregion
+
+  //#region TENURE FETCH
   useEffect(() => {
-    setBuildingId(0);
-    setBuildingName('');
-  }, [projectId]);
-
-
-  useEffect(() => {
-    if (!projectId) return;
-
-    const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string; buildingId?: number; buildingName?: string }
-      | undefined;
-
-    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '' };
-
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
-    setBuildingId(listState.buildingId ?? 0);
-
-    setBuildingName(listState.buildingName ?? '');
-
-    if (listState.searchTerm && String(listState.searchTerm).trim()) {
-
-      setSearchTerm(String(listState.searchTerm));
-
-      setBuildingId(Number(listState.buildingId));
-
-      setBuildingName(String(listState.buildingName));
-
-      loadRents(listState.page ?? 1, { FlatNumber: String(listState.searchTerm).trim() });
-
+    if (!projectId || buildingId <= 0) return;
+    if (!['Rent', 'Brokerage'].includes(activeTab)) {
+      setTenureTabList([]);
+      setActiveTenureTab('');
       return;
     }
 
-    loadRents(listState.page ?? 1, listState.filters ?? {});
+    (async () => {
+      const response = await ProposedOfferService.apiCallPullRentDetails({
+        ProjectId: Number(projectId),
+        BuildingId: buildingId
+      });
 
-  }, [location.state, projectId]);
+      if (E.isRight(response)) {
+        const tenures = Array.from(
+          new Set(response.right.Data?.map((d: any) => d?.Tenure).filter(Boolean))
+        );
 
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel?.();
-    };
-  }, [debouncedSearch]);
+        const tabs = tenures.map(t => ({ id: t, label: t }));
+        setTenureTabList(tabs);
+
+        if (tabs.length > 0) {
+          setActiveTenureTab(tabs[0].id);
+          setFilters(prev => ({ ...prev, Tenure: tabs[0].id }));
+        }
+      }
+    })();
+  }, [activeTab, projectId, buildingId]);
 
   //#endregion
 
   //#region DATA LOAD RENT LIST
-  const fetchRentList = async (page: number = pagination.currentPage) => {
-    return await loadRents(page, filters);
-  };
 
-  const loadRents = async (page: number, filterParams: FilterInfo) => {
+  const loadRents = useCallback(async () => {
+
+    if (!projectId || buildingId <= 0) return;
+
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
 
         if (sortInfo) {
-          const column = rentColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
+          const col = columns.find(c => c.key === sortInfo.column);
+          if (col) {
+            sortByParam = `${col.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
 
         const params: FilterWithPaginationTenantApplicantChargesRequest = {
-          PageNumber: page,
+          PageNumber: pagination.currentPage,
           PageSize: pagination.pageSize,
           ProjectId: Number(projectId),
-          BuildingId: buildingId > 0 ? buildingId : undefined,
-          TenantId: filterParams.TenantId ? Number(filterParams.TenantId) : undefined,
-          TenantApplicantChargesId: filterParams.TenantApplicantChargesId ? Number(filterParams.TenantApplicantChargesId) : undefined,
-          Tenure: filterParams.Tenure?.trim() || undefined,
-          ChargeType: filterParams.ChargeType?.trim() || undefined,
-          ApplicantType: filterParams.ApplicantType?.trim() || undefined,
-          ApplicantName: filterParams.ApplicantName?.trim() || undefined,
-          FlatNumber: filterParams.FlatNumber?.trim() || undefined,
-          FlatCarpetAreaSqFt: filterParams.FlatCarpetAreaSqFt ? Number(filterParams.FlatCarpetAreaSqFt) : undefined,
-          FlatType: filterParams.FlatType?.trim() || undefined,
-          FlatConfiguration: filterParams.FlatConfiguration?.trim() || undefined,
+          BuildingId: buildingId,
+          ...filters,
           SortBy: sortByParam
         };
 
-        const response = await getRents(params);
+        const response = await rentService.apiCallPullTenantApplicantCharges(params);
 
         if (E.isRight(response)) {
 
           setTenantApplicantChargesList(response.right.Data);
 
           setPagination({
-            currentPage: page,
+            currentPage: pagination.currentPage,
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize)
           });
-        } else {
-          addToast({ type: 'error', title: response.left.message });
-        }
 
-        return response;
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+        }
       },
       undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message });
-      },
+      e => addToast({ type: 'error', title: e.message }),
       undefined,
-      'Loading Data'
+      'Loading Rent'
     );
+  }, [projectId, buildingId, filters, pagination.currentPage, pagination.pageSize, sortInfo]);
+
+
+  useEffect(() => {
+    loadRents();
+  }, [loadRents]);
+  //#endregion
+
+  //#region HANLDE BUILDING CHANGE EVENT
+
+  const handleBuildingChange = (item: { label: string; value: number | string | null }) => {
+    if (!item?.value) return;
+    const id = Number(item.value);
+    if (isNaN(id)) return;
+
+    setBuildingId(id);
+    setBuildingName(item.label);
+    setSearchTerm('');
+    setPagination({ currentPage: 1 });
+    setFilters({ ChargeType: activeTab });
+    setTenantApplicantChargesList([]);
   };
 
   //#endregion
 
-  //#region PROPOSED OFFER RENT TENURE DETAILS FETCH
+  //#region DYANMIC HEADERS & TABLE DATA
+  const dynamicHeaders = useMemo(() => {
+    const headers = new Set<string>();
 
-  const fetchProposedOfferRentDetailsData = async () => {
-    await runApiWithLoader(
-      setIsLoading,
-      setIsLoadingMessage,
-      async () => {
-        const params: FilterWithPaginationProposedOfferRentDetailsRequest = {
-          ProjectId: Number(projectId),
-          BuildingId: buildingId
-        };
+    tenantApplicantChargesList.forEach(item => {
+      if (isMonthBasedTab && item.Date) {
+        headers.add(formatDate_dd_MonthName_yy(item.Date));
+      }
 
-        const response = await ProposedOfferService.apiCallPullRentDetails(params);
+      if (isStageBasedTab && item.Stage) {
+        headers.add(item.Stage);
+      }
+    });
 
-        if (E.isRight(response)) {
+    const sorted = Array.from(headers).sort((a, b) => {
+      if (isMonthBasedTab) {
+        return new Date(`01 ${a}`).getTime() - new Date(`01 ${b}`).getTime();
+      }
+      return a.localeCompare(b);
+    });
 
-          const data = response.right.Data ?? [];
-
-          // DISTINCT Tenure
-          const distinctTenures = Array.from(
-            new Set(
-              data
-                .map((d: any) => d?.Tenure)
-                .filter((t: any) => t && t.trim() !== '')
-            )
-          );
-
-          const tabs: TabItem[] = distinctTenures.map((tenure) => ({
-            id: String(tenure),
-            label: String(tenure),
-          }));
-
-          setTenureTabList(tabs);
-
-          if (tabs.length === 0) {
-            setActiveForTenureTab('');
-            return response;
-          }
-
-          const firstTenure = tabs[0].id;
-          setActiveForTenureTab(firstTenure);
-
-
-          const updatedFilters: FilterInfo = {
-            ...filters,
-            Tenure: firstTenure,
-          };
-
-          setFilters(updatedFilters);
-
-        } else {
-          addToast({ type: 'error', title: response.left.message });
-        }
-
-        return response;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message });
-      },
-      undefined,
-      'Loading Proposed Offer Rent Details'
-    );
-  };
-  //#endregion
-  //#region SEARCH RENT FILTER
-  const searchRents = async (searchValue: string) => {
-    setSearchTerm(searchValue);
-
-    if (searchValue.trim() === '') {
-
-      fetchRentList();
-
-      return;
+    // ✅ ALWAYS ADD TOTAL COLUMNS
+    if (tenantApplicantChargesList.length > 0) {
+      sorted.push('Total', 'Paid Total');
     }
 
-    const filterParams: FilterInfo = {
-      FlatNumber: searchValue.trim()
-    };
+    return sorted;
+  }, [tenantApplicantChargesList, isMonthBasedTab, isStageBasedTab]);
 
-    await loadRents(1, filterParams);
-  };
+  const tableData = useMemo<PivotRentRow[]>(() => {
+    const map = new Map<string, PivotRentRow>();
 
-  //#endregion
+    tenantApplicantChargesList.forEach(item => {
+      if (!item.FlatNumber) return;
 
-  //#region CLEAR SEARCH RENT
-  const clearSearchRents = () => {
+      if (!map.has(item.FlatNumber)) {
+        const row: PivotRentRow = {
+          FlatNumber: item.FlatNumber,
+          ApplicantName: item.ApplicantName,
+          ApplicantType: item.ApplicantType,
+          FlatCarpetAreaSqFt: Number(item.FlatCarpetAreaSqFt) || 0,
+          FlatType: item.FlatType,
+          Unit: item.Unit,
+          ProposedOfferAmount: Number(item.ProposedOfferAmount) || 0,
+          Total: 0,
+          'Paid Total': 0
+        };
 
-    setSearchTerm('');
+        dynamicHeaders.forEach(h => {
+          if (!(h in row)) row[h] = '-';
+        });
 
-    debouncedSearch.cancel?.();
+        map.set(item.FlatNumber, row);
+      }
 
-    setFilters({});
+      const row = map.get(item.FlatNumber)!;
+      const amount = Number(item.Amount || 0);
 
-    setTempFilters({});
+      // MONTH BASED
+      if (isMonthBasedTab && item.Date) {
+        const key = formatDate_dd_MonthName_yy(item.Date);
+        row[key] = amount ? `₹${amount}` : '-';
+        row['Total'] += amount;
+      }
 
-    setPagination({ currentPage: 1 });
+      // STAGE BASED
+      if (isStageBasedTab && item.Stage) {
+        row[item.Stage] = amount;
+        row['Total'] += amount;
+      }
 
-    loadRents(1, {});
-  };
+      // PAID TOTAL (future ready)
+      if ((item as any).IsPaid) {
+        row['Paid Total'] += amount;
+      }
+
+    });
+
+    return Array.from(map.values()).map(row => ({
+      ...row,
+      Total: row.Total ? `₹${row.Total}` : '-',
+      'Paid Total': row['Paid Total'] ? `₹${row['Paid Total']}` : '-'
+    }));
+  }, [tenantApplicantChargesList, dynamicHeaders, isMonthBasedTab, isStageBasedTab]);
+
 
   //#endregion
 
@@ -370,11 +304,11 @@ export const Rent: React.FC = () => {
   const handleExportRents = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
         if (sortInfo) {
-          const column = rentColumns.find(col => col.key === sortInfo.column);
+          const column = columns.find(col => col.key === sortInfo.column);
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
@@ -399,7 +333,7 @@ export const Rent: React.FC = () => {
           ExportType: exportType
         };
 
-        const response = await getRents(params);
+        const response = await rentService.apiCallPullTenantApplicantCharges(params);
 
         handleExportFile(response, exportType, 'Rent', addToast);
 
@@ -419,161 +353,8 @@ export const Rent: React.FC = () => {
 
   //#endregion
 
-  //#region PULL RENT
-  const getRents = async (filterParams: FilterWithPaginationTenantApplicantChargesRequest) => {
-    return await rentService.apiCallPullTenantApplicantCharges(filterParams);
-  };
-  //#endregion
-
-  //#region TABLE CONFIG
-  const handlePageChange = useCallback((page: number) => {
-    fetchRentList(page);
-  }, [fetchRentList]);
-
-
-
-  const rentPaginationInfo: PaginationInfo = useMemo(
-    () => ({
-      currentPage: pagination.currentPage,
-      totalPages: pagination.totalPages,
-      totalRecords: pagination.totalRecords,
-      pageSize: pagination.pageSize,
-      onPageChange: handlePageChange
-    }),
-    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize]
-  );
-
-
-  //#endregion
-
-  //#region MONTH HEADERS
-
-  //#region MONTH AND STAGES HEADERS
-  const dynamicHeaders = useMemo(() => {
-    const headers = new Set<string>();
-    let hasTotal = false;
-    let hasPaidTotal = false;
-
-    tenantApplicantChargesList.forEach(item => {
-
-      // MONTH BASED
-      if (isMonthBasedTab && item.Date) {
-        const d = new Date(item.Date);
-        d.setHours(0, 0, 0, 0);
-
-        if (d.getFullYear() === 1997 && d.getMonth() === 0 && d.getDate() === 1) {
-          hasTotal = true;
-          return;
-        }
-
-        if (d.getFullYear() === 1997 && d.getMonth() === 0 && d.getDate() === 2) {
-          hasPaidTotal = true;
-          return;
-        }
-
-        headers.add(formatDate_dd_MonthName_yy(d.toISOString()));
-      }
-
-      // STAGE BASED
-      if (isStageBasedTab && item.Stage && item.Stage.trim()) {
-        headers.add(item.Stage.trim());
-      }
-    });
-
-    // SORT
-    const sortedHeaders = Array.from(headers).sort((a, b) => {
-      if (['Total', 'Paid Total'].includes(a)) return 1;
-      if (['Total', 'Paid Total'].includes(b)) return -1;
-
-      if (isMonthBasedTab) {
-        return new Date(`01 ${a}`).getTime() - new Date(`01 ${b}`).getTime();
-      }
-      return a.localeCompare(b);
-    });
-
-
-    // ALWAYS ADD for STAGE TABS
-    if (isStageBasedTab && tenantApplicantChargesList.length > 0) {
-      sortedHeaders.push('Total', 'Paid Total');
-    }
-
-    // MONTH TABS → add only if detected
-    if (isMonthBasedTab) {
-      if (hasTotal) sortedHeaders.push('Total');
-      if (hasPaidTotal) sortedHeaders.push('Paid Total');
-    }
-
-    return sortedHeaders;
-  }, [tenantApplicantChargesList, isMonthBasedTab, isStageBasedTab]);
-
-
-  //#endregion
-
-  //#region PIVOT DATA (ONE ROW)
-
-  const rentsForTable = useMemo<PivotRentRow[]>(() => {
-    const map = new Map<string, PivotRentRow>();
-
-    tenantApplicantChargesList.forEach(item => {
-      if (!item.FlatNumber) return;
-
-      if (!map.has(item.FlatNumber)) {
-        const row: PivotRentRow = {
-          FlatNumber: item.FlatNumber,
-          ApplicantName: item.ApplicantName,
-          ApplicantType: item.ApplicantType,
-          FlatCarpetAreaSqFt: Number(item.FlatCarpetAreaSqFt) || 0,
-          FlatConfiguration: item.FlatConfiguration,
-          FlatType: item.FlatType,
-          Unit: item.Unit,
-          ProposedOfferAmount: Number(item.ProposedOfferAmount),
-        };
-
-        dynamicHeaders.forEach(h => (row[h] = '-'));
-        map.set(item.FlatNumber, row);
-      }
-
-      const row = map.get(item.FlatNumber)!;
-
-      // MONTH BASED VALUE
-      if (isMonthBasedTab && item.Date) {
-        const d = new Date(item.Date);
-        const key =
-          d.getFullYear() === 1997 && d.getMonth() === 0 && d.getDate() === 1
-            ? 'Total'
-            : d.getFullYear() === 1997 && d.getMonth() === 0 && d.getDate() === 2
-              ? 'Paid Total'
-              : formatDate_dd_MonthName_yy(d.toISOString());
-
-        row[key] = item.Amount ? `₹${item.Amount}` : '-';
-      }
-
-      // STAGE BASED VALUE
-      // STAGE BASED VALUE
-      if (isStageBasedTab && item.Stage) {
-        const amount = Number(item.Amount || 0);
-
-        // Stage value
-        row[item.Stage] = amount;
-
-        // Total
-        row['Total'] = (Number(row['Total']) || 0) + amount;
-
-        // Paid Total (same logic for now)
-        row['Paid Total'] = (Number(row['Paid Total']) || 0);
-      }
-
-
-    });
-
-    return Array.from(map.values());
-  }, [tenantApplicantChargesList, dynamicHeaders, activeTab]);
-
-
-  //#endregion
-
   //#region COLUMNS
-  const rentColumns = useMemo<TableColumn[]>(() => {
+  const columns = useMemo<TableColumn[]>(() => {
     const baseColumns: TableColumn[] = [
       { key: 'FlatNumber', label: 'Flat / Unit No.', fixed: 'left', width: '14' },
       { key: 'ApplicantName', label: 'Applicant', width: '18' },
@@ -587,41 +368,58 @@ export const Rent: React.FC = () => {
     const dynamicColumns: TableColumn[] = dynamicHeaders.map(h => ({
       key: h,
       label: h,
-      width: '12',
-      align: 'right'
+      width: h === 'Total' || h === 'Paid Total' ? '16' : '12',
+      align: 'right' as const
     }));
 
     return [...baseColumns, ...dynamicColumns];
   }, [dynamicHeaders]);
 
 
-  //#endregion
-
-  //#region FILTER HELPERS
-  const applyFilters = () => {
-    setFilters(tempFilters);
-    loadRents(1, tempFilters);
-    setShowFilterPopup(false);
+  const paginationInfo: PaginationInfo = {
+    ...pagination,
+    onPageChange: p => setPagination({ currentPage: p })
   };
 
-  const clearFilters = () => {
-    setTempFilters({});
-    setFilters({});
+  //#endregion
 
-    // reset page
+  //#region  CLAER SEARCH & FILTERS
+  const clearSearchRents = () => {
+    setSearchTerm('');
+    debouncedSearch.cancel?.();
+
     setPagination({ currentPage: 1 });
 
-    // load empty filters
-    loadRents(1, {});
-
-    setShowFilterPopup(false);
-
-    // clear router state (very important)
-    navigate(location.pathname, { replace: true, state: {} });
+    setFilters(prev => ({
+      ...prev,
+      FlatNumber: ''
+    }));
   };
   //#endregion
 
-  //#region HANDLE CHANGE EVENT
+  //#region APPLY & CLEAR FILTERS
+
+  const applyFilters = () => {
+    setFilters(tempFilters);
+    setPagination({ currentPage: 1 });
+    setShowFilterPopup(false);
+  };
+
+
+  const clearFilters = () => {
+    const resetFilters: FilterInfo = {
+      ChargeType: activeTab,
+      Tenure: activeTenureTab || ''
+    };
+
+    setTempFilters(resetFilters);
+    setFilters(resetFilters);
+    setPagination({ currentPage: 1 });
+    setShowFilterPopup(false);
+    setSearchTerm('');
+    debouncedSearch.cancel?.();
+  };
+
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
@@ -669,11 +467,7 @@ export const Rent: React.FC = () => {
             size="lg"
             initialValue={selectedBuilding}
             dataFetchCallBack={fetchBuildingCallback}
-            onSelected={(item) => {
-              if (!item) return;
-              setBuildingId(Number(item.value));
-              setBuildingName(item.label);
-            }}
+            onSelected={handleBuildingChange}
           />
         </div>
 
@@ -683,21 +477,11 @@ export const Rent: React.FC = () => {
             <Tabs
               tabs={rentTabList}
               defaultActive={activeTab}
-              onTabChange={(t) => {
-
-                setActiveTab(t.id)
-
-                setActiveForTenureTab('')
-
-                const newFilters: FilterInfo = {
-                  ...filters,
-                  ChargeType: t.id,
-                  Tenure: '',
-                };
-                setFilters(newFilters);
-
-                loadRents(1, newFilters);
-
+              onTabChange={t => {
+                setActiveTab(t.id);
+                setActiveTenureTab('');
+                setPagination({ currentPage: 1 });
+                setFilters(prev => ({ ...prev, ChargeType: t.id, Tenure: '' }));
               }}
               islarge
             />
@@ -706,35 +490,24 @@ export const Rent: React.FC = () => {
 
       </div>
 
-      {tenureTabList.length > 0 && (activeTab === 'Rent' || activeTab === 'Brokerage') && (
+      {tenureTabList.length > 0 && (
         <Tabs
           tabs={tenureTabList}
-          defaultActive={activeForTenureTab}
-          onTabChange={(t) => {
-
-            setActiveForTenureTab(t.id)
-
-            const newFilters: FilterInfo = {
-              ...filters,
-              Tenure: t.id,
-            };
-
-            setFilters(newFilters);
-
-            loadRents(1, newFilters);
+          defaultActive={activeTenureTab}
+          onTabChange={t => {
+            setActiveTenureTab(t.id);
+            setPagination({ currentPage: 1 });
+            setFilters(prev => ({ ...prev, Tenure: t.id }));
           }}
-
-
           islarge
         />
       )}
 
       <DataTable
-        data={rentsForTable}
-        columns={rentColumns}
-        pagination={rentPaginationInfo}
-        emptyMessage={`No ${activeTab}${activeForTenureTab ? ` (${activeForTenureTab})` : ''} Data Found`}
-
+        data={tableData}
+        columns={columns}
+        pagination={paginationInfo}
+        emptyMessage="No Data Found"
         fixedHeight
       />
 
@@ -788,7 +561,7 @@ export const Rent: React.FC = () => {
               <Input
                 label='Tenure'
                 type="text"
-                readOnly
+                disabled
                 value={tempFilters.Tenure || ''}
                 onChange={e => handleFilterChange('Tenure', e.target.value)}
                 placeholder="Enter Tenure"
@@ -799,7 +572,7 @@ export const Rent: React.FC = () => {
               <Input
                 label='Charge Type'
                 type="text"
-                readOnly
+                disabled
                 value={tempFilters.ChargeType || ''}
                 onChange={e => handleFilterChange('ChargeType', e.target.value)}
                 placeholder="Enter Charge Type"

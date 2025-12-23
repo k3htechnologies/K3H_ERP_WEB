@@ -57,8 +57,8 @@ export const formatDate_dd_MonthName_yy_hh_mm = (dateString: string, timeString?
  * @param dateString - Date string in YYYY-MM-DD format
  * @returns Formatted date string (e.g., "07 July 2025")
  */
-export const formatDate_dd_MonthName_yy = (dateString: string): string => {
-  if (!dateString || dateString.trim() === '') {
+export const formatDate_dd_MonthName_yy = (dateString: string | Date): string => {
+  if (!dateString || dateString === '') {
     return ''
   }
 

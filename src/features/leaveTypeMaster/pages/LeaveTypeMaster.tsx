@@ -70,8 +70,7 @@ export const LeaveTypeMaster: React.FC = () => {
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-
-  //EDIT LEAVETYPE MASTER
+  //EDIT LEAVE TYPE MASTER
   const [editingLeaveTypeMasterData, setEditingLeaveTypeMasterData] = useState<LeaveTypeMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
@@ -81,14 +80,12 @@ export const LeaveTypeMaster: React.FC = () => {
   //ADD UPDATE LEAVE TYPE MASTER
   const [formData, setFormData] = useState<AddUpdateLeaveTypeMasterRequest>(() => initialFormState());
 
-
   //DELETE LEAVETYPE MASTER
   const [deleteLeaveTypeMasterDetailsData, setDeleteLeaveTypeMasterDetailsData] = useState<LeaveTypeMasterData | null>(null);
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeLeaveTypeMasterColumnsModal, setIsShowCustomizeLeaveTypeMasterColumnsModal] = useState(false);
-
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -139,7 +136,6 @@ export const LeaveTypeMaster: React.FC = () => {
   //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
-
   const fetchLeaveTypeList = async (page: number = pagination.currentPage) => {
     return await loadLeaveTypes(page, filters);
   }
@@ -273,7 +269,6 @@ export const LeaveTypeMaster: React.FC = () => {
 
     return await LeaveTypeMasterService.apiCallPullLeaveTypeMaster(filterParams);
   }
-
   //#endregion
 
   //#region HANDLE PAGE CHNAGE EVENT
@@ -281,7 +276,6 @@ export const LeaveTypeMaster: React.FC = () => {
   const handlePageChange = (page: number) => {
     fetchLeaveTypeList(page);
   };
-
   //#endregion
 
   //#region TABLE SORT COLUMN
@@ -329,8 +323,6 @@ export const LeaveTypeMaster: React.FC = () => {
     setIsAddUpdateModalOpen(true);
 
   }, [])
-
-
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
@@ -339,7 +331,6 @@ export const LeaveTypeMaster: React.FC = () => {
     setDeleteLeaveTypeMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
-
   //#endregion
 
   //#region TABLE COLUMN
@@ -553,7 +544,6 @@ export const LeaveTypeMaster: React.FC = () => {
       </Modal>
     )
   }
-
   //#endregion
 
   //#region FILTER MODAL HELPERS
@@ -562,26 +552,32 @@ export const LeaveTypeMaster: React.FC = () => {
     loadLeaveTypes(1, tempFilters)
     setShowFilterPopup(false)
   }
-
   //#endregion
 
   //#region CLEAR FILTER
   const clearFilters = () => {
     setTempFilters({})
+
     setFilters({})
+
     loadLeaveTypes(1, {})
+
     setShowFilterPopup(false)
   }
 
   //#region HANDLE FILTER CHNAGE
-
   const handleFilterChange = (key: string, value: string) => {
+
     setTempFilters(prev => updateFilter(prev, key, value));
   };
-
   //#endregion
 
-
+  //#region HANDLE RESET FORM
+  const handleResetForm = () => {
+    setFormData(initialFormState());
+    setErrors({});
+  };
+  //#endregion
 
   //#region ADD UPDATE EDIT LEAVE TYPE MASTER
 
@@ -591,11 +587,16 @@ export const LeaveTypeMaster: React.FC = () => {
 
       if (field === "IsCarryForward") {
         if (!value) {
+
           // When unchecked, store old value and reset to 0
+
           setPrevMaxCarryForward(prev.MaxCarryForward || 0);
+
           updated.MaxCarryForward = 0;
         } else {
+
           // When checked again, restore old value
+
           updated.MaxCarryForward = prevMaxCarryForward;
         }
       }
@@ -607,7 +608,6 @@ export const LeaveTypeMaster: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
-
 
   const handleAddLeaveTypeModal = () => {
     setEditingLeaveTypeMasterData(null);
@@ -793,7 +793,7 @@ export const LeaveTypeMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Leave Type master data...'
+      'Delete Leave Type'
     )
   }
   //#endregion
@@ -839,7 +839,6 @@ export const LeaveTypeMaster: React.FC = () => {
         exportLoading={isLoading}
       />
 
-
       {/* DATA TABLE LEAVE TYPE */}
       <DataTable
         data={leaveTypeListForTable}
@@ -881,6 +880,7 @@ export const LeaveTypeMaster: React.FC = () => {
         onSubmit={handleAddUpdateLeaveTypeMaster}
         saveText="Save"
         resetText='Reset'
+        onreset={handleResetForm}
         loading={isLoading}
         size="xl"
       >
@@ -989,6 +989,7 @@ export const LeaveTypeMaster: React.FC = () => {
           </div>
         </div>
       </Modal>
+
       {/* DELETE CONFIRMATION LEAVE TYPE MODAL */}
       <ConfirmationDialogBox
         isOpen={isConfirmationDialogBoxOpen}

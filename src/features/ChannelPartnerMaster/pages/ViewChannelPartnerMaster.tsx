@@ -1,9 +1,9 @@
-import { Button } from "@/ui/components/forms";
-import { ChevronLeft } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { ChannelPartnerMasterData } from "../models/ChannelPartnerMasterModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const ViewChannelPartnerMaster: React.FC = () => {
 
@@ -12,6 +12,8 @@ const ViewChannelPartnerMaster: React.FC = () => {
 
     // NAVIGATION
     const navigate = useNavigate();
+
+    const { canAction } = useMenuPermissions('/channelPartner');
 
     // Selected ChannelPartner data passed from the ChannelPartner List page (via navigate state)
     const editChannelPartnerData = location.state?.editChannelPartnerData as ChannelPartnerMasterData;
@@ -61,35 +63,21 @@ const ViewChannelPartnerMaster: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
 
             {/* Header Details*/}
+            <HeaderActionBar
+                titleText={'Channel Partner Master'}
+                cancelText="Cancel"
+                EditText="Edit"
+                onCancel={() => handleBackToListChannelPartnerMaster()}
+                canAction={canAction}
+                onEdit={() => {
 
-            <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-gray-300">
+                    if (editChannelPartnerData) handleEditChannelPartnerMaster(editChannelPartnerData!);
 
-                <div className="flex items-center gap-8">
-                    <button
-                        onClick={handleBackToListChannelPartnerMaster}
-                        className="flex items-center justify-center w-6 h-6 rounded-sm bg-blue-100 hover:bg-blue-200 transition"
-                        aria-label="Back"
-                    >
-                        <ChevronLeft className="w-5 h-5 text-black-600" />
-                    </button>
+                }}
+                isLoading={false}
+            />
 
-                    <span className="text-lg font-semibold-800 text-gray-900">
-                        {editChannelPartnerData.Name || '-'}
-                    </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <Button
-                        size="sm"
-                        onClick={() => handleEditChannelPartnerMaster(editChannelPartnerData)}
-                    >
-                        Edit CP Details
-                    </Button>
-
-                </div>
-            </div>
-
-            <div className="grid grid-cols-12 gap-4">
+            <div className="grid grid-cols-12 gap-4 pt-5">
 
                 {/* LEFT SIDE PROFILE CARD */}
                 <div className="col-span-6">
@@ -109,6 +97,7 @@ const ViewChannelPartnerMaster: React.FC = () => {
                         </div>
 
                         {/* Basic Deatils */}
+                        
                         <div className="grid grid-cols-2 gap-x-10 gap-y-6 p-4">
                             <FieldItem label="Contact No:" value={editChannelPartnerData.MobileNumber ? `+91 ${editChannelPartnerData.MobileNumber}` : '-'} />
                             <FieldItem label="E-Mail ID" value={editChannelPartnerData.EmailId} />

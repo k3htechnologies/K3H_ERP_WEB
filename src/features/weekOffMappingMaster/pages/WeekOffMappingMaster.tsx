@@ -55,7 +55,7 @@ export const WeekOffMappingMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const {addToast } = useToast()
+  const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -85,6 +85,9 @@ export const WeekOffMappingMaster: React.FC = () => {
   //DELETE WEEKOFF MAPPING MASTER
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteWeekOffMappingMasterDetailsData, setDeleteWeekOffMappingMasterDetailsData] = useState<WeekOffMappingMasterData | null>(null)
+
+  //DROP DOWN RESET KEY
+  const [dropdownResetKey, setDropdownResetKey] = useState(0);
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeWeekOffMappingMasterColumnsModal, setIsShowCustomizeWeekOffMappingMasterColumnsModal] = useState(false);
@@ -140,9 +143,7 @@ export const WeekOffMappingMaster: React.FC = () => {
       setErrors({});
     }
   }, [isAddUpdateModalOpen, editingWeekOffMappingMasterData]);
-
   //#endregion
-
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
@@ -225,8 +226,11 @@ export const WeekOffMappingMaster: React.FC = () => {
 
   //#region CLEAR SERACH WEEK OFF MAPPING
   const clearsearchWeekOffMappings = () => {
+
     setSearchTerm('');
+
     debouncedSearch.cancel?.();
+
     fetchWeekOffMappingList();
   }
   //#endregion 
@@ -238,9 +242,13 @@ export const WeekOffMappingMaster: React.FC = () => {
       setIsLoadingMessage,
       async () => {
         // Find the column label for sorting
+
         let sortByParam = undefined
+
         if (sortInfo) {
+
           const column = weekOffMappingMasterColumns.find(col => col.key === sortInfo.column)
+
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
@@ -313,7 +321,6 @@ export const WeekOffMappingMaster: React.FC = () => {
   )
 
   const weekOffMappingListForTable = useMemo(() => weekOffMappingMasterList, [weekOffMappingMasterList]);
-
   //#endregion
 
   //#region VIEW EDIT WEEKOFF MAPPING
@@ -321,11 +328,9 @@ export const WeekOffMappingMaster: React.FC = () => {
     setViewWeekOffMappingMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
-
   //#endregion
 
   //#region EDIT WEEK OFF MAPPING  MASTER
-
   const handleEditWeekOffMappingMaster = useCallback((row: WeekOffMappingMasterData) => {
     setEditingWeekOffMappingMasterData({
       ...row,
@@ -560,7 +565,6 @@ export const WeekOffMappingMaster: React.FC = () => {
       </Modal>
     )
   }
-
   //#endregion
 
   //#region FILTER MODAL HELPERS
@@ -569,7 +573,6 @@ export const WeekOffMappingMaster: React.FC = () => {
     loadWeekOffMappings(1, tempFilters)
     setShowFilterPopup(false)
   }
-
   //#endregion
 
   //#region CLEAR FILTER
@@ -587,7 +590,6 @@ export const WeekOffMappingMaster: React.FC = () => {
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
-
   //#endregion
 
   //#region ADD UPDATE WEEK OFF MAPPING MASTER
@@ -601,6 +603,15 @@ export const WeekOffMappingMaster: React.FC = () => {
     }
   };
 
+  // RESET FORM DATA
+  const handleResetForm = () => {
+    setFormData(initialFormState());
+    setDropdownLabels({});
+    setErrors({});
+    setDropdownResetKey(prev => prev + 1);
+  };
+
+  //#endregion
   const handleAddWeekOffMappingMasterModal = () => {
     setEditingWeekOffMappingMasterData(null);
     setFormData(initialFormState());
@@ -637,6 +648,7 @@ export const WeekOffMappingMaster: React.FC = () => {
     };
   }
 
+  //#region PUSH DATA
   const PushWeekWeekOffMappingFormData = (): AddUpdateWeekOffMappingMasterRequest => {
     return {
       WeekOffPolicyMasterMappingId: formData.WeekOffPolicyMasterMappingId,
@@ -648,6 +660,7 @@ export const WeekOffMappingMaster: React.FC = () => {
 
   };
 
+  //#region ADD UPDATE WEEK OF MAPPING MASTER
   const handleAddUpdateWeekOffMappingMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -723,7 +736,7 @@ export const WeekOffMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
-      formData.WeekOffPolicyMasterMappingId === 0 ? 'Add Week Off Mapping' : 'Update Week Off Mapping...'
+      formData.WeekOffPolicyMasterMappingId === 0 ? 'Add Week Off Mapping' : 'Update Week Off Mapping'
     )
   };
 
@@ -777,232 +790,227 @@ export const WeekOffMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Week Off Mapping master data'
+      'Delete Week Off Mapping'
     )
   }
   //#endregion
   return (
-    
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        {/* COMMAN LOADER FOR PAGE */}
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      {/* COMMAN LOADER FOR PAGE */}
 
-        {/* COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW */}
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Week Off Policy Name..."
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchWeekOffMappings}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeWeekOffMappingMasterColumnsModal(true)}
+      {/* COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW */}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle='Add'
-          onAdd={handleAddWeekOffMappingMasterModal}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Week Off Policy Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchWeekOffMappings}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeWeekOffMappingMasterColumnsModal(true)}
 
-          // IMPORT
-          isShowImportButton={false}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle='Add'
+        onAdd={handleAddWeekOffMappingMasterModal}
 
-          // EXPORT 
-          isShowExportButton={canExport}
-          onExportExcel={handleExportWeekOffMappingExcel}
-          onExportPdf={handleExportWeekOffMappingPdf}
-          exportLoading={isLoading}
-        />
+        // IMPORT
+        isShowImportButton={false}
 
-        {/* DATA TABLE WEEK OFF MAPPING */}
+        // EXPORT 
+        isShowExportButton={canExport}
+        onExportExcel={handleExportWeekOffMappingExcel}
+        onExportPdf={handleExportWeekOffMappingPdf}
+        exportLoading={isLoading}
+      />
 
-        <DataTable
-          data={weekOffMappingListForTable}
-          columns={visibleWeekOffMappingMasterColumns}
-          pagination={weekOffMappingMasterPaginationInfo}
-          emptyMessage="No week off mappings found"
-          fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      {/* DATA TABLE WEEK OFF MAPPING */}
 
-        {/* VIEW WEEK OFF MAPPING MODAL */}
+      <DataTable
+        data={weekOffMappingListForTable}
+        columns={visibleWeekOffMappingMasterColumns}
+        pagination={weekOffMappingMasterPaginationInfo}
+        emptyMessage="No Week Off Mappings Found"
+        fixedHeight={true}
+        maxHeight="calc(100vh - 200px)"
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        <ViewWeekOffMappingDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewWeekOffMappingMasterDetailsData(null)
-          }}
-          data={viewWeekOffMappingMasterDetailsData}
-        />
+      {/* VIEW WEEK OFF MAPPING MODAL */}
 
-        {/*  ADD EDIT UPDATE WEEK OFF MAPPING MODAL */}
+      <ViewWeekOffMappingDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewWeekOffMappingMasterDetailsData(null)
+        }}
+        data={viewWeekOffMappingMasterDetailsData}
+      />
 
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingWeekOffMappingMasterData(null)
-            setFormData(initialFormState());
-            setErrors({})
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingWeekOffMappingMasterData(null)
-            setFormData(initialFormState());
-          }}
-          title={editingWeekOffMappingMasterData ? 'Update Week Off Mapping ' : 'Add Week Off Mapping'}
-          onSubmit={handleAddUpdateWeekOffMappingMaster}
-          saveText={editingWeekOffMappingMasterData ? 'Update Week Off Mapping' : 'Save Week Off Mapping'}
-          resetText='Reset'
-          loading={isLoading}
-          size="xl"
-        >
-          <div className="space-y-6 p-6 bg-blue-100">
-            <div className='space-y-4'>
-              <div>
-                <SingleSelectDropdownWithPagination
-                  label="Week Off Policy Name"
-                  title="Select Week Off Policy Name "
-                  size="lg"
-                  required
-                  dataFetchCallBack={fetchWeekOffMasterDropdown}
-                  onSelected={(item) => handleFieldChange("WeekOffPolicyMasterId", Number(item.value))}
-                  initialValue={createDropdownInitialValue(formData.WeekOffPolicyMasterId, dropdownLabels.weekOffPolicyName)}
-                  error={errors.WeekOffPolicyMasterId}
-                />
-              </div>
+      {/*  ADD EDIT UPDATE WEEK OFF MAPPING MODAL */}
 
-              <SingleSelectDropdownWithPagination
-                label="Employee"
-                title="Select Employee"
-                size="lg"
-                required
-                dataFetchCallBack={fetchEmployeeMasterDropdown}
-                onSelected={(item) => handleFieldChange("EmployeeId", item.value)}
-                initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
-                error={errors.EmployeeId}
-              />
-            </div>
-
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false)
+          setEditingWeekOffMappingMasterData(null)
+          setFormData(initialFormState());
+          setErrors({})
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false)
+          setEditingWeekOffMappingMasterData(null)
+          setFormData(initialFormState());
+        }}
+        title={editingWeekOffMappingMasterData ? 'Update Week Off Mapping ' : 'Add Week Off Mapping'}
+        onSubmit={handleAddUpdateWeekOffMappingMaster}
+        saveText={editingWeekOffMappingMasterData ? 'Update Week Off Mapping' : 'Save Week Off Mapping'}
+        resetText='Reset'
+        onreset={handleResetForm}
+        loading={isLoading}
+        size="xl"
+      >
+        <div className="space-y-6 p-6 bg-blue-100">
+          <div className='space-y-4'>
             <div>
               <SingleSelectDropdownWithPagination
-                label="Department"
-                title="Select Department"
+                key={dropdownResetKey}
+                label="Week Off Policy Name"
+                title="Select Week Off Policy Name "
                 size="lg"
                 required
-                dataFetchCallBack={fetchDepartmentMasterDropdown}
-                onSelected={(item) => handleFieldChange("DepartmentMasterId", item.value)}
-                initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
-                error={errors.DepartmentMasterId}
+                dataFetchCallBack={fetchWeekOffMasterDropdown}
+                onSelected={(item) => handleFieldChange("WeekOffPolicyMasterId", Number(item.value))}
+                initialValue={createDropdownInitialValue(formData.WeekOffPolicyMasterId, dropdownLabels.weekOffPolicyName)}
+                error={errors.WeekOffPolicyMasterId}
+              />
+            </div>
+
+            <SingleSelectDropdownWithPagination
+              label="Employee"
+              key={dropdownResetKey}
+              title="Select Employee"
+              size="lg"
+              required
+              dataFetchCallBack={fetchEmployeeMasterDropdown}
+              onSelected={(item) => handleFieldChange("EmployeeId", item.value)}
+              initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
+              error={errors.EmployeeId}
+            />
+          </div>
+
+          <div>
+            <SingleSelectDropdownWithPagination
+              label="Department"
+              key={dropdownResetKey}
+              title="Select Department"
+              size="lg"
+              required
+              dataFetchCallBack={fetchDepartmentMasterDropdown}
+              onSelected={(item) => handleFieldChange("DepartmentMasterId", item.value)}
+              initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
+              error={errors.DepartmentMasterId}
+            />
+          </div>
+        </div>
+      </Modal >
+
+      {/* CUSTOMIZE COLUMNS MODAL */}
+
+      < CustomizeColumnsModal
+        isOpen={isShowCustomizeWeekOffMappingMasterColumnsModal}
+        onClose={() => setIsShowCustomizeWeekOffMappingMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredWeekOffMappingMasterColumnKeys]),
+          )
+
+          setSelectedWeekOffMappingMasterColumnKeys(withRequired)
+
+          try {
+            LocalStorageHelper.storeWeekOffMappingMasterTableColumns(
+              JSON.stringify(withRequired)
+            )
+          } catch { }
+        }}
+        columns={weekOffMappingMasterColumns}
+        selectedKeys={selectedWeekOffMappingMasterColumnKeys}
+        requiredKeys={requiredWeekOffMappingMasterColumnKeys}
+        title="Customize Week Off Mapping Master Table Columns"
+      />
+
+      {/* FILTER WEEK OFF MAPPING MODAL */}
+      < Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Week Off Mapping Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        resetText=''
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Week Off Policy Name</label>
+              <Input
+                type="text"
+                value={tempFilters.WeekOffPolicyName || ''}
+                onChange={(e) => handleFilterChange('WeekOffPolicyName', e.target.value)}
+                placeholder="Enter Week Off Policy Name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Department Name</label>
+              <Input
+                type="text"
+                value={tempFilters.DepartmentName || ''}
+                onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}
+                placeholder="Enter Department Name"
               />
             </div>
           </div>
-        </Modal >
+        </div>
+      </Modal >
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
+      {/* DELETE CONFIRMATION  WEEK OFF MAPPING MODAL */}
+      < ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteWeekOffMappingMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteWeekOffMappingMaster}
+        title="You are about to delete a  Week Off Mapping?"
+        message="Deleting this  Week Off Mapping will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
 
-        < CustomizeColumnsModal
-          isOpen={isShowCustomizeWeekOffMappingMasterColumnsModal}
-          onClose={() => setIsShowCustomizeWeekOffMappingMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredWeekOffMappingMasterColumnKeys]),
-            )
-
-            setSelectedWeekOffMappingMasterColumnKeys(withRequired)
-
-            try {
-              LocalStorageHelper.storeWeekOffMappingMasterTableColumns(
-                JSON.stringify(withRequired)
-              )
-            } catch { }
-          }}
-          columns={weekOffMappingMasterColumns}
-          selectedKeys={selectedWeekOffMappingMasterColumnKeys}
-          requiredKeys={requiredWeekOffMappingMasterColumnKeys}
-          title="Customize Week Off Mapping Master Table Columns"
-        />
-
-        {/* FILTER WEEK OFF MAPPING MODAL */}
-        < Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Week Off Mapping Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          resetText=''
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Week Off Policy Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.WeekOffPolicyName || ''}
-                  onChange={(e) => handleFilterChange('WeekOffPolicyName', e.target.value)}
-                  placeholder="Enter week off policy name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Department Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.DepartmentName || ''}
-                  onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}
-                  placeholder="Enter department name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Employee Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.EmployeeName || ''}
-                  onChange={(e) => handleFilterChange('EmployeeName', e.target.value)}
-                  placeholder="Enter employee name"
-                />
-              </div>
-            </div>
-          </div>
-        </Modal >
-
-        {/* DELETE CONFIRMATION  WEEK OFF MAPPING MODAL */}
-        < ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteWeekOffMappingMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteWeekOffMappingMaster}
-          title="You are about to delete a  Week Off Mapping?"
-          message="Deleting this  Week Off Mapping will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
-
-      </div>
+    </div>
   )
 }
 

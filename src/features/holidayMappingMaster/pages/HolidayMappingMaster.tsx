@@ -62,7 +62,7 @@ export const HolidayMappingMaster: React.FC = () => {
     searchHolidayMappings(value)
   }, 350)
 
-  //VIEW WEEKOFF MAPPING MASTER MODAL STATES
+  //VIEW HOLIDAY MAPPING MASTER MODAL STATES
   const [viewHolidayMappingMasterDetailsData, setViewHolidayMappingMasterDetailsData] = useState<HolidayMappingMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
@@ -78,16 +78,20 @@ export const HolidayMappingMaster: React.FC = () => {
   const [editingHolidayMappingMasterData, setEditingHolidayMappingMasterData] = useState<HolidayMappingMasterData | null>(null)
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  //ADD UPDATE HOLIDAY MAPPING MASTER
+  //ADD UPDATE HOLIDAY MAPPING MASTER STATES
   const [formData, setFormData] = useState<AddUpdateHolidayMappingMasterRequest>(() => initialFormState());
 
   //DELETE  HOLIDAY MAPPING MASTER STATES
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteHolidayMappingMasterDetailsData, setDeleteHolidayMappingMasterDetailsData] = useState<HolidayMappingMasterData | null>(null)
 
+  //DROP DOWN RESET KEY
+  const [dropdownResetKey, setDropdownResetKey] = useState(0);
+
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeHolidayMappingMasterColumnsModal, setIsShowCustomizeHolidayMappingMasterColumnsModal] = useState(false);
 
+  //#region DROP DOWN LABELS
   const [dropdownLabels, setDropdownLabels] = useState<{
     branchName?: string;
     holidayName?: string;
@@ -193,12 +197,12 @@ export const HolidayMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Holiday Mapping Data'
+      'Loading Holiday Mapping'
     )
   }
   //#endregion
 
-  //#region SEARCH WEEK OFF MAPPING 
+  //#region SEARCH HOLIDAY MAPPING 
   const searchHolidayMappings = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -277,7 +281,6 @@ export const HolidayMappingMaster: React.FC = () => {
   //#endregion
 
   //#region HANDLE PAGE CHNAGE EVENT
-
   const handlePageChange = (page: number) => {
     fetchHolidayMappingList(page);
   };
@@ -306,7 +309,6 @@ export const HolidayMappingMaster: React.FC = () => {
   )
 
   const holidayMappingListForTable = useMemo(() => holidayMappingMasterList, [holidayMappingMasterList]);
-
   //#endregion
 
   //#region VIEW EDIT
@@ -425,7 +427,6 @@ export const HolidayMappingMaster: React.FC = () => {
     () => holidayMappingMasterColumns.filter(col => selectedHolidayMappingMasterColumnKeys.includes(col.key)),
     [holidayMappingMasterColumns, selectedHolidayMappingMasterColumnKeys]
   )
-
   //#endregion
 
   //#region VIEW HOLIDAY MAPPING DETAILS MODAL COMPONENT
@@ -513,7 +514,6 @@ export const HolidayMappingMaster: React.FC = () => {
       </Modal>
     )
   }
-
   //#endregion
 
   //#region FILTER MODAL HELPERS
@@ -522,7 +522,6 @@ export const HolidayMappingMaster: React.FC = () => {
     loadHolidayMappings(1, tempFilters)
     setShowFilterPopup(false)
   }
-
   //#endregion
 
   //#region CLEAR FILTER
@@ -535,7 +534,6 @@ export const HolidayMappingMaster: React.FC = () => {
   //#endregion
 
   //#region HANDLE FILTER CHNAGE
-
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
@@ -543,7 +541,6 @@ export const HolidayMappingMaster: React.FC = () => {
   //#endregion
 
   //#region ADD UPDATE HOLIDAY MAPPING MASTER
-
   const handleFieldChange = (field: keyof AddUpdateHolidayMappingMasterRequest, value: any) => {
 
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -553,10 +550,23 @@ export const HolidayMappingMaster: React.FC = () => {
     }
   };
 
-  const handleAddHolidayMappingMasterModal = () => {
-    setEditingHolidayMappingMasterData(null);
+  // RESET FORM DATA
+  const handleResetForm = () => {
     setFormData(initialFormState());
+    setDropdownLabels({});
     setErrors({});
+    setDropdownResetKey(prev => prev + 1);
+  };
+  //#endregion
+
+  const handleAddHolidayMappingMasterModal = () => {
+
+    setEditingHolidayMappingMasterData(null);
+
+    setFormData(initialFormState());
+
+    setErrors({});
+
     setIsAddUpdateModalOpen(true);
   }
 
@@ -603,7 +613,6 @@ export const HolidayMappingMaster: React.FC = () => {
   //#endregion
 
   //#region HANDLE ADD AND UPDATE HOLIDAY MAPPING MASTER
-
   const handleAddUpdateHolidayMappingMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -678,7 +687,7 @@ export const HolidayMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
-      formData.HolidayMappingMasterId === 0 ? 'Add Holiday Mapping' : 'Update Holiday Mapping...'
+      formData.HolidayMappingMasterId === 0 ? 'Add Holiday Mapping' : 'Update Holiday Mapping'
     )
   }
   //#endregion
@@ -729,12 +738,12 @@ export const HolidayMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Holiday Mapping Master data'
+      'Delete Holiday Mapping'
     )
   }
   //#endregion
-  return (
 
+  return (
 
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
@@ -783,7 +792,7 @@ export const HolidayMappingMaster: React.FC = () => {
         data={holidayMappingListForTable}
         columns={visibleHolidayMappingMasterColumns}
         pagination={holidayMappingMasterPaginationInfo}
-        emptyMessage="No Holiday Mappings Data Found"
+        emptyMessage="No Holiday Mapping Data Found"
         fixedHeight={true}
         maxHeight="calc(100vh - 200px)"
         recordsPerPage={20}
@@ -793,7 +802,6 @@ export const HolidayMappingMaster: React.FC = () => {
       />
 
       {/* VIEW WEEK OFF MAPPING MODAL */}
-
       <ViewHolidayMappingDetailsModal isOpen={isViewModalOpen}
         onClose={() => {
           setIsViewModalOpen(false)
@@ -801,9 +809,8 @@ export const HolidayMappingMaster: React.FC = () => {
         }}
         data={viewHolidayMappingMasterDetailsData}
       />
-      
-      {/*  ADD EDIT UPDATE WEEK OFF MAPPING MODAL */}
 
+      {/*  ADD EDIT UPDATE WEEK OFF MAPPING MODAL */}
       <Modal
         isOpen={isAddUpdateModalOpen}
         onClose={() => {
@@ -821,6 +828,7 @@ export const HolidayMappingMaster: React.FC = () => {
         onSubmit={handleAddUpdateHolidayMappingMaster}
         saveText={editingHolidayMappingMasterData ? 'Update Holiday Mapping' : 'Save Holiday Mapping'}
         resetText='Reset'
+        onreset={handleResetForm}
         loading={isLoading}
         size="xl"
       >
@@ -830,6 +838,7 @@ export const HolidayMappingMaster: React.FC = () => {
             <div>
               <SingleSelectDropdownWithPagination
                 label="Holiday"
+                key={dropdownResetKey}
                 title="Select Holiday"
                 size="lg"
                 required
@@ -842,6 +851,7 @@ export const HolidayMappingMaster: React.FC = () => {
             <div>
               <SingleSelectDropdownWithPagination
                 label="Branch"
+                key={dropdownResetKey}
                 title="Select Branch "
                 size="lg"
                 required
@@ -912,7 +922,7 @@ export const HolidayMappingMaster: React.FC = () => {
                 type="text"
                 value={tempFilters.HolidayName || ''}
                 onChange={(e) => handleFilterChange('HolidayName', e.target.value)}
-                placeholder="Enter holiday name"
+                placeholder="Enter Holiday Name"
               />
             </div>
             <div>
@@ -921,7 +931,7 @@ export const HolidayMappingMaster: React.FC = () => {
                 type="text"
                 value={tempFilters.BranchName || ''}
                 onChange={(e) => handleFilterChange('BranchName', e.target.value)}
-                placeholder="Enter branch name"
+                placeholder="Enter Branch Name"
               />
             </div>
           </div>

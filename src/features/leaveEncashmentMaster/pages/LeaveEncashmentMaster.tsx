@@ -47,7 +47,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const {addToast } = useToast()
+  const { addToast } = useToast()
 
   //VIEW LEAVE ENCASHMENT MASTER MODAL STATES
   const [viewLeaveEncashmentMasterDetailsData, setViewLeaveEncashmentMasterDetailsData] = useState<LeaveEncashmentMasterData | null>(null)
@@ -160,7 +160,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Leave Encashment Data'
+      'Loading Leave Encashment'
     )
   }
   //#endregion
@@ -212,12 +212,9 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
     return await LeaveEncashmentMasterService.apiCallPullLeaveEncashmentMaster(filterParams);
   }
-
   //#endregion
 
-
   //#region HANDLE PAGE CHNAGE EVENT
-
   const handlePageChange = (page: number) => {
     fetchLeaveEncashmentList(page);
   };
@@ -233,9 +230,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
   }
   //#endregion
 
-
   //#region TABLE PAGINATION INFO
-
   const leaveEncashmentMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
@@ -376,7 +371,6 @@ export const LeaveEncashmentMaster: React.FC = () => {
     () => leaveEncashmentMasterColumns.filter(col => selectedLeaveEncashmentMasterColumnKeys.includes(col.key)),
     [leaveEncashmentMasterColumns, selectedLeaveEncashmentMasterColumnKeys]
   )
-
   //#endregion
 
   //#region VIEW LEAVE ENCASHMENT DETAILS MODAL COMPONENT
@@ -466,7 +460,6 @@ export const LeaveEncashmentMaster: React.FC = () => {
       </Modal>
     );
   };
-
   //#endregion
 
   //#region ADD UPDATE LEAVE ENCASHMENT MASTER
@@ -479,6 +472,13 @@ export const LeaveEncashmentMaster: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
+
+  //#region HANDLE RESET FORM
+  const handleResetForm = () => {
+    setFormData(initialFormState());
+    setErrors({});
+  };
+  //#endregion
 
   const handleAddLeaveEncashmentMasterModal = () => {
     setEditingLeaveEncashmentMasterData(null);
@@ -598,7 +598,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
-      formData.LeaveEncashmentMasterSlabsId === 0 ? 'Add Leave Encashment' : 'Update Leave Encashment...'
+      formData.LeaveEncashmentMasterSlabsId === 0 ? 'Add Leave Encashment' : 'Update Leave Encashment'
     )
   };
   //#endregion 
@@ -651,181 +651,182 @@ export const LeaveEncashmentMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Leave Encashment Master Data'
+      'Delete Leave Encashment'
     )
   }
 
   //#endregion
   return (
-    
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        {/* COMMAN LOADER FOR PAGE */}
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      {/* COMMAN LOADER FOR PAGE */}
 
-        {/* COMBINED IMPORT , EXPORT ROW */}
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        <TableActionToolbar
-          isShowSearchBar={false}
-          isShowFilterButton={false}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeLeaveEncashmentMasterColumnsModal(true)}
+      {/* COMBINED IMPORT , EXPORT ROW */}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add"
-          onAdd={handleAddLeaveEncashmentMasterModal}
+      <TableActionToolbar
+        isShowSearchBar={false}
+        isShowFilterButton={false}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeLeaveEncashmentMasterColumnsModal(true)}
 
-          // IMPORT
-          isShowImportButton={false}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddLeaveEncashmentMasterModal}
 
-          // EXPORT 
-          isShowExportButton={canExport}
-          onExportExcel={handleExportLeaveEncashmentExcel}
-          onExportPdf={handleExportLeaveEncashmentPdf}
-          exportLoading={isLoading}
-        />
+        // IMPORT
+        isShowImportButton={false}
 
-        {/* DATA TABLE LEAVE ENCASHMENT */}
+        // EXPORT 
+        isShowExportButton={canExport}
+        onExportExcel={handleExportLeaveEncashmentExcel}
+        onExportPdf={handleExportLeaveEncashmentPdf}
+        exportLoading={isLoading}
+      />
 
-        <DataTable
-          data={leaveEncashmentListForTable}
-          columns={visibleLeaveEncashmentMasterColumns}
-          pagination={leaveEncashmentMasterPaginationInfo}
-          emptyMessage="No leave encashment found"
-          fixedHeight={true}
-          maxHeight="calc(100vh - 255px)"
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      {/* DATA TABLE LEAVE ENCASHMENT */}
 
-        {/* VIEW LEAVE ENCASHMENT  MODAL */}
+      <DataTable
+        data={leaveEncashmentListForTable}
+        columns={visibleLeaveEncashmentMasterColumns}
+        pagination={leaveEncashmentMasterPaginationInfo}
+        emptyMessage="No Leave Encashment Found"
+        fixedHeight={true}
+        maxHeight="calc(100vh - 255px)"
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        <ViewLeaveEncashmentDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewLeaveEncashmentMasterDetailsData(null)
-          }}
-          data={viewLeaveEncashmentMasterDetailsData}
-        />
+      {/* VIEW LEAVE ENCASHMENT  MODAL */}
 
-        {/*  ADD EDIT UPDATE LEAVE ENCASHMENT MODAL */}
+      <ViewLeaveEncashmentDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewLeaveEncashmentMasterDetailsData(null)
+        }}
+        data={viewLeaveEncashmentMasterDetailsData}
+      />
 
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingLeaveEncashmentMasterData(null)
-            setFormData(initialFormState());
-            setErrors({})
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingLeaveEncashmentMasterData(null)
-            setFormData(initialFormState());
-            setErrors({})
-          }}
-          title={editingLeaveEncashmentMasterData ? 'Update LeaveEncashment Master Details' : 'Add LeaveEncashment Master Details'}
-          onSubmit={handleAddUpdateLeaveEncashmentMaster}
-          saveText={editingLeaveEncashmentMasterData ? 'Update LeaveEncashment' : 'Save LeaveEncashment'}
-          resetText='Reset'
-          loading={isLoading}
-          size="xl"
-        >
-          <div className="space-y-6 p-6 bg-blue-100">
-            <div className='space-y-4'>
-              <div>
-               
-                <Input
-                  label='Encashment Rate'
-                  required
-                  error={errors.EncashmentRate}
-                  value={formData.EncashmentRate ?? ''}
-                  maxLength={4}
-                  onChange={(e) => handleFieldChange("EncashmentRate", e.target.value)}
-                  placeholder="Enter Encashment Rate"
-                />
-              </div>
+      {/*  ADD EDIT UPDATE LEAVE ENCASHMENT MODAL */}
 
-              <div>
-                <Input
-                  label='Min Salary'
-                  required
-                  error={errors.MinSalary}
-                  type="text"
-                  value={formData.MinSalary ?? ''}
-                  maxLength={10}
-                  onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, '');
-                    handleFieldChange('MinSalary', digits === '' ? 0 : Number(digits));
-                  }}
-                  placeholder="Enter Min Salary"
-                />
-              </div>
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false)
+          setEditingLeaveEncashmentMasterData(null)
+          setFormData(initialFormState());
+          setErrors({})
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false)
+          setEditingLeaveEncashmentMasterData(null)
+          setFormData(initialFormState());
+          setErrors({})
+        }}
+        title={editingLeaveEncashmentMasterData ? 'Update LeaveEncashment Master' : 'Add LeaveEncashment Master'}
+        onSubmit={handleAddUpdateLeaveEncashmentMaster}
+        saveText={editingLeaveEncashmentMasterData ? 'Update LeaveEncashment' : 'Save LeaveEncashment'}
+        resetText='Reset'
+        onreset={handleResetForm}
+        loading={isLoading}
+        size="xl"
+      >
+        <div className="space-y-6 p-6 bg-blue-100">
+          <div className='space-y-4'>
+            <div>
 
-              <div>
-                <Input
-                  label='Max Salary'
-                  required
-                  error={errors.MaxSalary}
-                  type="text"
-                  value={formData.MaxSalary ?? ''}
-                  maxLength={10}
-                  onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, '');
-                    handleFieldChange('MaxSalary', digits === '' ? 0 : Number(digits));
-                  }}
-                  placeholder="Enter MaxSalary"
-                />
-              </div>
+              <Input
+                label='Encashment Rate'
+                required
+                error={errors.EncashmentRate}
+                value={formData.EncashmentRate ?? ''}
+                maxLength={4}
+                onChange={(e) => handleFieldChange("EncashmentRate", e.target.value)}
+                placeholder="Enter Encashment Rate"
+              />
+            </div>
+
+            <div>
+              <Input
+                label='Min Salary'
+                required
+                error={errors.MinSalary}
+                type="text"
+                value={formData.MinSalary ?? ''}
+                maxLength={10}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, '');
+                  handleFieldChange('MinSalary', digits === '' ? 0 : Number(digits));
+                }}
+                placeholder="Enter Min Salary"
+              />
+            </div>
+
+            <div>
+              <Input
+                label='Max Salary'
+                required
+                error={errors.MaxSalary}
+                type="text"
+                value={formData.MaxSalary ?? ''}
+                maxLength={10}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, '');
+                  handleFieldChange('MaxSalary', digits === '' ? 0 : Number(digits));
+                }}
+                placeholder="Enter MaxSalary"
+              />
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
+      {/* CUSTOMIZE COLUMNS MODAL */}
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeLeaveEncashmentMasterColumnsModal}
-          onClose={() => setIsShowCustomizeLeaveEncashmentMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredLeaveEncashmentMasterColumnKeys])
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeLeaveEncashmentMasterColumnsModal}
+        onClose={() => setIsShowCustomizeLeaveEncashmentMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredLeaveEncashmentMasterColumnKeys])
+          )
+
+          setSelectedLeaveEncashmentMasterColumnKeys(withRequired)
+
+          try {
+            LocalStorageHelper.storeLeaveEncashmentMasterTableColumns(
+              JSON.stringify(withRequired)
             )
+          } catch { }
+        }}
+        columns={leaveEncashmentMasterColumns}
+        selectedKeys={selectedLeaveEncashmentMasterColumnKeys}
+        requiredKeys={requiredLeaveEncashmentMasterColumnKeys}
+        title="Customize Leave Encashment Master Table Columns"
+      />
 
-            setSelectedLeaveEncashmentMasterColumnKeys(withRequired)
-
-            try {
-              LocalStorageHelper.storeLeaveEncashmentMasterTableColumns(
-                JSON.stringify(withRequired)
-              )
-            } catch { }
-          }}
-          columns={leaveEncashmentMasterColumns}
-          selectedKeys={selectedLeaveEncashmentMasterColumnKeys}
-          requiredKeys={requiredLeaveEncashmentMasterColumnKeys}
-          title="Customize Leave Encashment Master Table Columns"
-        />
-
-        {/* DELETE CONFIRMATION LEAVE ENCASHMENT MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteLeaveEncashmentMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteLeaveEncashmentMaster}
-          title="You are about to delete a Leave Encashment?"
-          message="Deleting this Leave Encashment will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
-      </div>
+      {/* DELETE CONFIRMATION LEAVE ENCASHMENT MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteLeaveEncashmentMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteLeaveEncashmentMaster}
+        title="You are about to delete a Leave Encashment?"
+        message="Deleting this Leave Encashment will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+    </div>
   )
 }
 

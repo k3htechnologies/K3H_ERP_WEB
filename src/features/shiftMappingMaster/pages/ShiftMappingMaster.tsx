@@ -85,6 +85,9 @@ export const ShiftMappingMaster: React.FC = () => {
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteShiftMappingMasterDetailsData, setDeleteShiftMappingMasterDetailsData] = useState<ShiftMappingMasterData | null>(null)
 
+  //DROP DOWN RESET KEY
+  const [dropdownResetKey, setDropdownResetKey] = useState(0);
+
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeShiftMappingMasterColumnsModal, setIsShowCustomizeShiftMappingMasterColumnsModal] = useState(false);
 
@@ -196,7 +199,7 @@ export const ShiftMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Shift Mapping Data'
+      'Loading Shift Mapping'
     )
   }
   //#endregion
@@ -310,7 +313,6 @@ export const ShiftMappingMaster: React.FC = () => {
   )
 
   const shiftMappingListForTable = useMemo(() => shiftMappingMasterList, [shiftMappingMasterList]);
-
   //#endregion
 
   //#region VIEW EDIT SHIFT MAPPING  MASTER
@@ -318,7 +320,6 @@ export const ShiftMappingMaster: React.FC = () => {
     setViewShiftMappingMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
-
   //#endregion
 
   //#region EDIT SHIFT MAPPING  MASTER
@@ -341,7 +342,6 @@ export const ShiftMappingMaster: React.FC = () => {
     setDeleteShiftMappingMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
-
   //#endregion
 
   //#region TABLE COLUMN
@@ -467,7 +467,6 @@ export const ShiftMappingMaster: React.FC = () => {
     () => shiftMappingMasterColumns.filter(col => selectedShiftMappingMasterColumnKeys.includes(col.key)),
     [shiftMappingMasterColumns, selectedShiftMappingMasterColumnKeys]
   )
-
   //#endregion
 
   //#region VIEW SHIFT MAPPING DETAILS MODAL COMPONENT
@@ -561,7 +560,6 @@ export const ShiftMappingMaster: React.FC = () => {
       </Modal>
     )
   }
-
   //#endregion
 
   //#region FILTER MODAL HELPERS
@@ -570,26 +568,22 @@ export const ShiftMappingMaster: React.FC = () => {
     loadShiftMappings(1, tempFilters)
     setShowFilterPopup(false)
   }
-
   //#endregion
 
   //#region CLEAR FILTER
-
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
     loadShiftMappings(1, {})
     setShowFilterPopup(false)
   }
-
   //#endregion
 
   //#region HANDLE FILTER CHNAGE
-
   const handleFilterChange = (key: string, value: string) => {
+
     setTempFilters(prev => updateFilter(prev, key, value));
   };
-
   //#endregion
 
   //#region ADD UPDATE SHIFT MASTER
@@ -602,6 +596,15 @@ export const ShiftMappingMaster: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
+
+  // RESET FORM DATA
+  const handleResetForm = () => {
+    setFormData(initialFormState());
+    setDropdownLabels({});
+    setErrors({});
+    setDropdownResetKey(prev => prev + 1);
+  };
+  //#endregion
 
   const handleAddShiftMappingMasterModal = () => {
     setEditingShiftMappingMasterData(null);
@@ -725,7 +728,7 @@ export const ShiftMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
-      formData.ShiftManagementMasterMappingId === 0 ? 'Add Shift Mapping' : 'Update Shift Mapping...'
+      formData.ShiftManagementMasterMappingId === 0 ? 'Add Shift Mapping' : 'Update Shift Mapping'
     )
   };
 
@@ -779,212 +782,216 @@ export const ShiftMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Shift Mapping master data'
+      'Delete Shift Mapping'
     )
   }
 
 
   return (
-    
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        {/* COMMAN LOADER FOR PAGE */}
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      {/* COMMAN LOADER FOR PAGE */}
 
-        {/* COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW */}
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Shift Name"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchShiftMappings}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeShiftMappingMasterColumnsModal(true)}
+      {/* COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW */}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle='Add'
-          onAdd={handleAddShiftMappingMasterModal}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Shift Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchShiftMappings}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeShiftMappingMasterColumnsModal(true)}
 
-          // IMPORT
-          isShowImportButton={false}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle='Add'
+        onAdd={handleAddShiftMappingMasterModal}
 
-          // EXPORT 
-          isShowExportButton={canExport}
-          onExportExcel={handleExportShiftMappingExcel}
-          onExportPdf={handleExportShiftMappingPdf}
-          exportLoading={isLoading}
-        />
+        // IMPORT
+        isShowImportButton={false}
 
-        {/* DATA TABLE SHIFT MAPPING  MASTER */}
+        // EXPORT 
+        isShowExportButton={canExport}
+        onExportExcel={handleExportShiftMappingExcel}
+        onExportPdf={handleExportShiftMappingPdf}
+        exportLoading={isLoading}
+      />
 
-        <DataTable
-          data={shiftMappingListForTable}
-          columns={visibleShiftMappingMasterColumns}
-          pagination={shiftMappingMasterPaginationInfo}
-          emptyMessage="No shift mappings found"
-          fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      {/* DATA TABLE SHIFT MAPPING  MASTER */}
 
-        {/* VIEW SHIFT MAPPING  MASTER MODAL */}
+      <DataTable
+        data={shiftMappingListForTable}
+        columns={visibleShiftMappingMasterColumns}
+        pagination={shiftMappingMasterPaginationInfo}
+        emptyMessage="No Shift Mappings Found"
+        fixedHeight={true}
+        maxHeight="calc(100vh - 200px)"
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        <ViewShiftMappingDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewShiftMappingMasterDetailsData(null)
-          }}
-          data={viewShiftMappingMasterDetailsData}
-        />
+      {/* VIEW SHIFT MAPPING  MASTER MODAL */}
 
-        {/*  ADD EDIT UPDATE SHIFT MAPPING  MASTER MODAL */}
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingShiftMappingMasterData(null)
-            setFormData(initialFormState());
-            setErrors({})
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingShiftMappingMasterData(null)
-            setFormData(initialFormState());
-          }}
-          title={editingShiftMappingMasterData ? 'Update Shift Mapping ' : 'Add Shift Mapping'}
-          onSubmit={handleAddUpdateShiftMappingMaster}
-          saveText={editingShiftMappingMasterData ? 'Update Shift Mapping' : 'Save Shift Mapping'}
-          resetText='Reset'
-          loading={isLoading}
-          size="xl"
-        >
-          <div className="space-y-6 p-6 bg-blue-100">
-            <div className='space-y-4'>
-              <div>
-                <SingleSelectDropdownWithPagination
-                  label="Week Off Policy Name"
-                  title="Select Week Off Policy Name "
-                  size="lg"
-                  required
-                  dataFetchCallBack={fetchShiftMasterDropdown}
-                  onSelected={(item) => handleFieldChange("ShiftManagementMasterId", Number(item.value))}
-                  initialValue={createDropdownInitialValue(formData.ShiftManagementMasterId, dropdownLabels.shiftName)}
-                  error={errors.ShiftManagementMasterId}
-                />
-              </div>
+      <ViewShiftMappingDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewShiftMappingMasterDetailsData(null)
+        }}
+        data={viewShiftMappingMasterDetailsData}
+      />
 
-              <SingleSelectDropdownWithPagination
-                label="Employee"
-                title="Select Employee"
-                size="lg"
-                required
-                dataFetchCallBack={fetchEmployeeMasterDropdown}
-                onSelected={(item) => handleFieldChange("EmployeeId", item.value)}
-                initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.EmployeeName)}
-                error={errors.EmployeeId}
-              />
-            </div>
-
+      {/*  ADD EDIT UPDATE SHIFT MAPPING  MASTER MODAL */}
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false)
+          setEditingShiftMappingMasterData(null)
+          setFormData(initialFormState());
+          setErrors({})
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false)
+          setEditingShiftMappingMasterData(null)
+          setFormData(initialFormState());
+        }}
+        title={editingShiftMappingMasterData ? 'Update Shift Mapping ' : 'Add Shift Mapping'}
+        onSubmit={handleAddUpdateShiftMappingMaster}
+        saveText={editingShiftMappingMasterData ? 'Update Shift Mapping' : 'Save Shift Mapping'}
+        resetText='Reset'
+        onreset={handleResetForm}
+        loading={isLoading}
+        size="xl"
+      >
+        <div className="space-y-6 p-6 bg-blue-100">
+          <div className='space-y-4'>
             <div>
               <SingleSelectDropdownWithPagination
-                label="Department"
-                title="Select Department"
+                label="Shift Name"
+                key={dropdownResetKey}
+                title="Select Shift Name "
                 size="lg"
                 required
-                dataFetchCallBack={fetchDepartmentMasterDropdown}
-                onSelected={(item) => handleFieldChange("DepartmentMasterId", item.value)}
-                initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
-                error={errors.DepartmentMasterId}
+                dataFetchCallBack={fetchShiftMasterDropdown}
+                onSelected={(item) => handleFieldChange("ShiftManagementMasterId", Number(item.value))}
+                initialValue={createDropdownInitialValue(formData.ShiftManagementMasterId, dropdownLabels.shiftName)}
+                error={errors.ShiftManagementMasterId}
+              />
+            </div>
+
+            <SingleSelectDropdownWithPagination
+              label="Employee"
+              key={dropdownResetKey}
+              title="Select Employee"
+              size="lg"
+              required
+              dataFetchCallBack={fetchEmployeeMasterDropdown}
+              onSelected={(item) => handleFieldChange("EmployeeId", item.value)}
+              initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.EmployeeName)}
+              error={errors.EmployeeId}
+            />
+          </div>
+
+          <div>
+            <SingleSelectDropdownWithPagination
+              label="Department"
+              key={dropdownResetKey}
+              title="Select Department"
+              size="lg"
+              required
+              dataFetchCallBack={fetchDepartmentMasterDropdown}
+              onSelected={(item) => handleFieldChange("DepartmentMasterId", item.value)}
+              initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
+              error={errors.DepartmentMasterId}
+            />
+          </div>
+        </div>
+      </Modal >
+
+      {/* CUSTOMIZE COLUMNS MODAL */}
+
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeShiftMappingMasterColumnsModal}
+        onClose={() => setIsShowCustomizeShiftMappingMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredShiftMappingMasterColumnKeys]),
+          )
+
+          setSelectedShiftMappingMasterColumnKeys(withRequired)
+
+          try {
+            LocalStorageHelper.storeShiftMappingMasterTableColumns(
+              JSON.stringify(withRequired)
+            )
+          } catch { }
+        }}
+        columns={shiftMappingMasterColumns}
+        selectedKeys={selectedShiftMappingMasterColumnKeys}
+        requiredKeys={requiredShiftMappingMasterColumnKeys}
+        title="Customize Shift Mapping Master Table Columns"
+      />
+
+      {/* FILTER SHIFT MAPPING  MASTER MODAL */}
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Shift Mapping Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Shift Name</label>
+              <Input
+                type="text"
+                value={tempFilters.ShiftName || ''}
+                onChange={(e) => handleFilterChange('ShiftName', e.target.value)}
+                placeholder="Enter Shift Name"
               />
             </div>
           </div>
-        </Modal >
+        </div>
+      </Modal>
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
-
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeShiftMappingMasterColumnsModal}
-          onClose={() => setIsShowCustomizeShiftMappingMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredShiftMappingMasterColumnKeys]),
-            )
-
-            setSelectedShiftMappingMasterColumnKeys(withRequired)
-
-            try {
-              LocalStorageHelper.storeShiftMappingMasterTableColumns(
-                JSON.stringify(withRequired)
-              )
-            } catch { }
-          }}
-          columns={shiftMappingMasterColumns}
-          selectedKeys={selectedShiftMappingMasterColumnKeys}
-          requiredKeys={requiredShiftMappingMasterColumnKeys}
-          title="Customize Shift Mapping Master Table Columns"
-        />
-
-        {/* FILTER SHIFT MAPPING  MASTER MODAL */}
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Shift Mapping Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          size="half-screen"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Shift Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.ShiftName || ''}
-                  onChange={(e) => handleFilterChange('ShiftName', e.target.value)}
-                  placeholder="Enter shift name"
-                />
-              </div>
-            </div>
-          </div>
-        </Modal>
-
-        {/* DELETE CONFIRMATION  SHIFT MAPPING MODAL */}
-        < ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteShiftMappingMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteShiftMappingMaster}
-          title="You are about to delete a  Shift Mapping?"
-          message="Deleting this  Shift Mapping will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
-      </div>
+      {/* DELETE CONFIRMATION  SHIFT MAPPING MODAL */}
+      < ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteShiftMappingMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteShiftMappingMaster}
+        title="You are about to delete a  Shift Mapping?"
+        message="Deleting this  Shift Mapping will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+    </div>
   )
 }
 

@@ -298,16 +298,13 @@ export const AssetMaster: React.FC = () => {
       }
     });
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
-
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
-
   const handleConfirmationDialogBoxOpen = useCallback((row: AssetMasterData) => {
     setDeleteAssetMasterData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
-
   //#endregion
 
   //#region TABLE COLUMNS
@@ -440,7 +437,7 @@ export const AssetMaster: React.FC = () => {
                 color: 'red',
                 padding: '4px 8px'
               }}
-              title="Delete Vendor"
+              title="Delete Asset"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -491,7 +488,9 @@ export const AssetMaster: React.FC = () => {
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
     setFilters(tempFilters);
+
     loadAssets(1, tempFilters);
+
     setShowFilterPopup(false);
   };
   //#endregion
@@ -624,7 +623,7 @@ export const AssetMaster: React.FC = () => {
         data={AssetsForTable}
         columns={visibleAssetColumns}
         pagination={AssetPaginationInfo}
-        emptyMessage="No Assets Data Found"
+        emptyMessage="No Assets Found"
         fixedHeight
         recordsPerPage={20}
         className="flex-1"
@@ -699,7 +698,7 @@ export const AssetMaster: React.FC = () => {
         }}
         onConfirm={handleDeleteAssetMaster}
         title="You are about to delete a Asset?"
-        message="Deleting this asset will permanently remove its contents."
+        message="Deleting this Asset will permanently remove its contents."
         confirmText="Delete"
         cancelText="Cancel"
         loading={isLoading}

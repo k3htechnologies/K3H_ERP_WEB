@@ -86,6 +86,7 @@ import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
+import EnquiryMaster from '@/features/EnquiryMaster/pages/EnquiryMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -186,6 +187,7 @@ function App() {
             <Route path="channelPartner" element={<ChannelPartnerMaster />} />
             <Route path="channelPartner/view" element={<ViewChannelPartnerMaster />} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartnerMaster />} />
+            <Route path="enquiry" element={<EnquiryMaster />} />
             <Route path="vendor" element={<Vendor />} />
             <Route path="vendor/view" element={<ViewVendor />} />
             <Route path="projectMaster" element={<ProjectMaster />} />

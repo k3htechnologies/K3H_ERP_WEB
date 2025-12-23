@@ -123,7 +123,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Asset Data'
+      'Loading Asset'
     );
   };
   //#endregion
@@ -162,7 +162,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
       newErrors.AssetCost = "Asset Cost is required";
     }
 
-    if (!formData.SerialNumber?.trim()) {
+    if (!formData.SerialNumber) {
       newErrors.SerialNumber = 'Serial Number is required.';
     }
 
@@ -174,7 +174,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
       newErrors.AssetBrand = "Asset Brand is required";
     }
 
-    if (!formData.PurchaseDate?.trim()) {
+    if (!formData.PurchaseDate) {
       newErrors.PurchaseDate = "Purchase Date is required";
     }
 
@@ -282,7 +282,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
 
       <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-      <div className="flex-1 space-y-2 px-6 py-3 pb-30 overflow-y-auto thin-scroll ">
+      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
 
         <form onSubmit={handleAddUpdateAssetMaster}>
 
@@ -316,6 +316,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
                 />
               </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <Input
@@ -345,6 +346,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
                 />
               </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <Input
@@ -371,6 +373,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
                 />
               </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <Input
@@ -389,14 +392,15 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   type="text"
                   required
                   label='Serial Number'
-                  value={formData.SerialNumber ?? ""}
+                  value={formData.SerialNumber?.toUpperCase() ?? ""}
                   onChange={(e) => handleFieldChange("SerialNumber", e.target.value)}
                   placeholder="Enter Serial Number"
-                  maxLength={250}
+                  maxLength={100}
                   error={errors.SerialNumber}
                 />
               </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <DatePickerInput
@@ -421,7 +425,6 @@ export const AddUpdateAssetMaster: React.FC = () => {
           </div>
         </form>
       </div>
-
 
       <BottomActionBar
         cancelText="Cancel"

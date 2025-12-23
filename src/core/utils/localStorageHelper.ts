@@ -412,6 +412,29 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE ENQUIRY MASTER COLUMNS
+    storeEnquiryMasterTableColumns:( columns: string): void => {
+        try{
+            localStorage.setItem(LOCAL_STORAGE_KEYS.ENQUIRY_MASTER_SELECTED_COLUMNS, columns);
+        }catch(error){
+            console.error('Error Enquiry Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET ENQUIRY MASTER COLUMNS
+    getEnquiryMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ENQUIRY_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.ENQUIRY_MASTER_SELECTED_COLUMNS);
+            }catch (error) {
+                console.error('Error reading Enquiry Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
     //#region STORE HOLIDAY MASTER COLUMNS
     storeHolidayMasterTableColumns: (columns: string): void => {
         try {

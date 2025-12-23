@@ -3,7 +3,6 @@ import { Input } from "@/ui/components/forms/Input";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
-import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
@@ -12,11 +11,13 @@ import { ChannelPartnerMasterService } from "../services/ChannelPartnerMasterSer
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
-import { Mail, Phone } from "lucide-react";
+import { Mail } from "lucide-react";
 import { filterAadhaar, filterEmail, filterGST, filterMobile, filterPAN, filterRERA, isValidAadhaar, isValidEmail, isValidMobile, isValidPAN } from "@/core/utils/fileValidation";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { SPECIALITY_TYPE } from "@/core/constants";
 import { fetchProjectMasterDropdown } from "../services/ProjectMasterDropDown";
+import BottomActionBar from "@/ui/components/forms/BottomActionBar";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const initialFormState = (): AddUpdateChannelPartnerMasterRequest => ({
     ChannelPartnerId: 0,
@@ -38,7 +39,7 @@ const initialFormState = (): AddUpdateChannelPartnerMasterRequest => ({
     ProjectId: '',
     AadharCardURL: null,
     ProjectName: '',
-   
+
 });
 
 export const AddUpdateChannelPartnerMaster: React.FC = () => {
@@ -74,6 +75,9 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     //#endregion
 
+    //#region MENU PERMISSIONS
+    const { canAction } = useMenuPermissions('/channelPartner');
+    //#endregion
 
     const [dropdownLabels, setDropdownLabels] = useState<{
         designationName?: string;
@@ -165,7 +169,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Loading Channel Partner Data'
+            'Loading Channel Partner'
         );
     };
     //#endregion
@@ -188,32 +192,32 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
         if (!formData.EmailId?.trim()) {
             newErrors.EmailId = 'Email is required.';
         } else if (!isValidEmail(formData.EmailId.trim())) {
-            newErrors.EmailId = 'Enter a valid email address.';
+            newErrors.EmailId = 'Enter a Valid email address.';
         }
 
 
         if (!formData.MobileNumber?.trim()) {
             newErrors.MobileNumber = 'Mobile Number is required.'
         } else if (!isValidMobile(formData.MobileNumber.trim())) {
-            newErrors.MobileNumber = 'Enter a valid 10-digit mobile number.'
+            newErrors.MobileNumber = 'Enter a Valid 10-digit mobile number.'
         }
 
         if (!formData.AadharCardNumber?.trim()) {
             newErrors.AadharCardNumber = 'Aadhar Number is required.'
         } else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
-            newErrors.AadharCardNumber = 'Enter a valid 12-digit Aadhar Number.'
+            newErrors.AadharCardNumber = 'Enter a Valid 12-digit Aadhar Number.'
         }
 
         if (!formData.PanNumber?.trim()) {
             newErrors.PanNumber = 'PAN Number is required.'
         } else if (!isValidPAN(formData.PanNumber.trim())) {
-            newErrors.PanNumber = 'Enter a valid PAN Number.'
+            newErrors.PanNumber = 'Enter a Valid PAN Number.'
         }
 
         if (!formData.CompanyName) {
             newErrors.CompanyName = ' Company Name is required.';
         }
-       
+
 
         if (!formData.RERANumber) {
             newErrors.RERANumber = ' RERA Number is required.';
@@ -290,9 +294,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
     //#endregion
 
     //#region HANDLE ADD AND UPDATE CHANNEL PARTNER MASTER
-    const handleAddUpdateChannelPartnerMaster = async (e: React.FormEvent) => {
-
-        e.preventDefault();
+    const handleAddUpdateChannelPartnerMaster = async () => {
 
         setErrors({});
 
@@ -364,7 +366,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
 
             <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-            <div className="flex-1 space-y-2 px-6 py-3 pb-40 overflow-y-auto thin-scroll ">
+            <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
 
                 <form onSubmit={handleAddUpdateChannelPartnerMaster}>
 
@@ -374,6 +376,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                         <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Channel Partner Details</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+
                             <div>
                                 <Input
                                     type="text"
@@ -381,7 +384,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     label='Full Name'
                                     value={formData.Name ?? ""}
                                     onChange={(e) => handleFieldChange("Name", e.target.value)}
-                                    placeholder="Enter channel partner name"
+                                    placeholder="Enter Channel Partner Name"
                                     maxLength={250}
                                     error={errors.Name}
                                 />
@@ -394,52 +397,42 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     type="text"
                                     value={formData.EmailId}
                                     error={errors.EmailId}
-                                    leftIcon={<Mail className="h-4 w-4 text-gray-400" />}
+                                    rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
                                     onChange={(e) => {
                                         const emailId = filterEmail(e.target.value);
                                         handleFieldChange('EmailId', emailId)
                                     }}
-                                    placeholder="Enter valid email id"
+                                    placeholder="Enter Valid Email id"
                                 />
                             </div>
 
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+
                             <div>
                                 <Input
-                                    label='Mobile Number'
+                                    leftIcon="+91"
+                                    label=" Mobile Number"
                                     required
-                                    error={errors.MobileNumber}
-                                    type="text"
-                                    value={formData.MobileNumber}
                                     maxLength={10}
-                                    leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                                    onChange={(e) => {
-                                        const mobileNumber = filterMobile(e.target.value);
-                                        handleFieldChange('MobileNumber', mobileNumber)
-                                    }}
-                                    placeholder="Enter valid mobile number"
-                                />
-
+                                    value={formData.MobileNumber}
+                                    onChange={(e) => handleFieldChange("MobileNumber", filterMobile(e.target.value))}
+                                    placeholder="Enter Valid Mobile Number"
+                                    error={errors.MobileNumber} />
                             </div>
                             <div>
                                 <Input
-                                    type="text"
-                                    label='Alternative Contact No.'
-                                    value={formData.AlternativeMobileNumber ?? ""}
+                                    leftIcon="+91"
+                                    label="Alternative Mobile Number"
+                                    required
                                     maxLength={10}
-                                    leftIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                                    onChange={(e) => {
-                                        const AlternativeMobileNumber = filterMobile(e.target.value);
-                                        handleFieldChange('AlternativeMobileNumber', AlternativeMobileNumber)
-                                    }}
-                                    placeholder="Enter Alternative Contact Number"
-                                    error={errors.AlternativeMobileNumber}
-                                />
+                                    value={formData.AlternativeMobileNumber}
+                                    onChange={(e) => handleFieldChange("AlternativeMobileNumber", filterMobile(e.target.value))}
+                                    placeholder="Enter Valid Mobile Number"
+                                    error={errors.AlternativeMobileNumber} />
                             </div>
-
-
                         </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                             <div>
                                 <Input
@@ -488,7 +481,6 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                     maxSizeMB={50}
                                     onRemoveExisting={(url) => {
                                         setRemoveAadharCardUrls(prev => [...prev, url]);
-                                        setAadharCardURL(prev => prev.filter(u => u !== url));
 
                                     }}
 
@@ -541,7 +533,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                         const reraNumber = filterRERA(e.target.value);
                                         handleFieldChange('RERANumber', reraNumber)
                                     }}
-                                    placeholder="Enter valid RERA Number"
+                                    placeholder="Enter Valid RERA Number"
                                 />
                             </div>
                             <div>
@@ -555,7 +547,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                                         const gstNumber = filterGST(e.target.value);
                                         handleFieldChange('GSTNumber', gstNumber)
                                     }}
-                                    placeholder="Enter valid GST Number"
+                                    placeholder="Enter Valid GST Number"
                                 />
                             </div>
                         </div>
@@ -604,33 +596,17 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                 </form>
             </div>
 
-            <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-                style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
-                <Button
-                    color="transparent"
-                    variant='transparent_border'
-                    size="sm"
-                    onClick={() => { navigate(-1); }}
-                    className="px-6"
-                >
-                    Cancel
-                </Button>
-
-                <Button
-                    color="green"
-                    size="sm"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        handleAddUpdateChannelPartnerMaster(e);
-                    }}
-                    className="px-6"
-                    disabled={isLoading}
-                >
-                    {isAddMode ? "Save" : "Update"}
-                </Button>
-            </div>
+            <BottomActionBar
+                cancelText="Cancel"
+                saveText={formData.ChannelPartnerId ? "Update" : "Add"}
+                onCancel={() => navigate(-1)}
+                canAction={canAction}
+                onSave={() => {
+                    handleAddUpdateChannelPartnerMaster();
+                }}
+                isLoading={isLoading}
+            />
         </div>
-
     );
 };
 

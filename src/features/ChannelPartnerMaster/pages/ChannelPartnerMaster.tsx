@@ -6,6 +6,7 @@ import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   ChannelPartnerMasterData,
+  DeleteChannelPartnerMasterRequest,
   FilterWithPaginationChannelPartnerMasterRequest
 } from '@/features/ChannelPartnerMaster/models/ChannelPartnerMasterModel';
 
@@ -14,7 +15,7 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -24,6 +25,8 @@ import { ChannelPartnerMasterService } from '../services/ChannelPartnerMasterSer
 import { updateFilter } from '@/core/utils/filterHelper';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { Trash2 } from 'lucide-react';
 
 
 export const ChannelPartnerMaster: React.FC = () => {
@@ -36,7 +39,6 @@ export const ChannelPartnerMaster: React.FC = () => {
   // USE NAVIGATE
   const navigate = useNavigate();
 
-
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
@@ -48,7 +50,9 @@ export const ChannelPartnerMaster: React.FC = () => {
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
+
   const debouncedSearch = useDebouncedCallback((value: string) => {
+
     searchChannelPartnerMaster(value)
   }, 350);
 
@@ -56,6 +60,10 @@ export const ChannelPartnerMaster: React.FC = () => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
+  //DELETE ChannelPartner MASTER
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+  const [deleteChannelPartnerMasterDetailsData, setDeleteChannelPartnerMasterDetailsData] = useState<ChannelPartnerMasterData | null>(null)
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeChannelPartnerColumnsModal, setIsShowCustomizeChannelPartnerColumnsModal] = useState(false);
@@ -65,7 +73,6 @@ export const ChannelPartnerMaster: React.FC = () => {
   //#endregion
 
   const location = useLocation() as any;
-
   //#endregion
 
   //#region INIT
@@ -152,7 +159,7 @@ export const ChannelPartnerMaster: React.FC = () => {
       undefined,
       (error: any) => addToast({ type: 'error', title: error.message }),
       undefined,
-      'Loading Channel Partner Data'
+      'Loading Channel Partner'
     );
   };
   //#endregion
@@ -267,8 +274,8 @@ export const ChannelPartnerMaster: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        // Find the column label for sorting
 
+        // Find the column label for sorting
         const params: FilterPullExcelSample = {
           TableName: 'CHANNEL PARTNER'
         }
@@ -353,6 +360,13 @@ export const ChannelPartnerMaster: React.FC = () => {
       }
     });
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  //#endregion
+
+  //#region CONFIRMATION DIALOG BOX
+  const handleConfirmationDialogBoxOpen = useCallback((row: ChannelPartnerMasterData) => {
+    setDeleteChannelPartnerMasterDetailsData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
   //#endregion
 
   //#region TABLE COLUMNS
@@ -474,13 +488,43 @@ export const ChannelPartnerMaster: React.FC = () => {
           tooltipThreshold={12}
         />
       )
-    }
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: '12',
+      fixed: 'right',
+      align: 'center',
+      render: (_value, row) => (
+        canAction ? (
+          <div className="flex items-center justify-center gap-2">
 
-  ], [handleNavigateToView]);
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleConfirmationDialogBoxOpen(row)
+              }}
+              color='transparent'
+              isborderRadius
+              size='sm'
+              style={{
+                color: 'red',
+                padding: '4px 8px'
+              }}
+              title="Delete Channel Partner"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : null
+      )
+    }
+  ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
-  const requiredChannelPartnerColumnKeys: string[] = ['Name'];
+  const requiredChannelPartnerColumnKeys: string[] = ['Name','actions'];
 
   const allChannelPartnerColumnKeys: string[] = ChannelPartnerMasterColumns.map(c => c.key);
 
@@ -505,11 +549,14 @@ export const ChannelPartnerMaster: React.FC = () => {
 
   useEffect(() => {
     setSelectedChannelPartnerColumnKeys(prev => Array.from(new Set([...prev, ...requiredChannelPartnerColumnKeys])).filter(k => allChannelPartnerColumnKeys.includes(k)));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ChannelPartnerMasterColumns.length])
 
   const visibleChannelPartnerColumns = useMemo(
+
     () => ChannelPartnerMasterColumns.filter(col => selectedChannelPartnerColumnKeys.includes(col.key)),
+
     [ChannelPartnerMasterColumns, selectedChannelPartnerColumnKeys]
   );
   //#endregion
@@ -517,7 +564,9 @@ export const ChannelPartnerMaster: React.FC = () => {
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
     setFilters(tempFilters);
+
     loadChannelPartnerMaster(1, tempFilters);
+
     setShowFilterPopup(false);
   };
   //#endregion
@@ -547,6 +596,58 @@ export const ChannelPartnerMaster: React.FC = () => {
   }
   //#endregion
 
+  //#region DELETE CHANNEL PARTNER MASTER
+  const handleDeleteChannelPartnerMaster = async () => {
+
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteChannelPartnerMasterDetailsData) return;
+
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setIsLoadingMessage,
+      async () => {
+        const params: DeleteChannelPartnerMasterRequest = {
+
+          ChannelPartnerId: deleteChannelPartnerMasterDetailsData.ChannelPartnerId || 0,
+
+          Uniquekey: deleteChannelPartnerMasterDetailsData.Uniquekey || ""
+        };
+
+        const response = await ChannelPartnerMasterService.apiCallDeleteChannelPartnerMaster(params);
+
+        if (E.isRight(response)) {
+
+          setChannelPartnerMasterList(prevData => prevData.filter(item => item.ChannelPartnerId !== deleteChannelPartnerMasterDetailsData.ChannelPartnerId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteChannelPartnerMasterDetailsData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+        }
+        return response;
+      },
+      undefined,
+      (error: any) => addToast({ type: "error", title: error.message }),
+      undefined,
+      "Deleting Channel Partner"
+    );
+  };
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
@@ -590,7 +691,6 @@ export const ChannelPartnerMaster: React.FC = () => {
       />
 
       {/* DATA TABLE CHANNEL PARTNER*/}
-
       <DataTable
         data={ChannelPartnerMasterForTable}
         columns={visibleChannelPartnerColumns}
@@ -654,6 +754,20 @@ export const ChannelPartnerMaster: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      {/* DELETE CONFIRMATION  ChannelPartner MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => setIsConfirmationDialogBoxOpen(false)}
+        onConfirm={handleDeleteChannelPartnerMaster}
+        title="You are about to delete this Channel Partner?"
+        message="Deleting this Channel Partner will permanently remove its data."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+
     </div>
 
   );

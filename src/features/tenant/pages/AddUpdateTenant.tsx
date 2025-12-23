@@ -1160,12 +1160,13 @@ const AddUpdateTenant: React.FC = () => {
               </div>
               <div>
                 <Input
-                  label="Carpet Area SqFt"
+                  label="Carpet Area (SqFt)"
                   value={formData.FlatCarpetAreaSqFt ?? ''}
                   required
                   onChange={e => handleFieldChange('FlatCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
                   error={errors.FlatCarpetAreaSqFt}
-                  placeholder="Enter Carpet Area SqFt"
+                  placeholder="Enter Carpet Area"
+                  rightIcon="SqFt"
                 />
               </div>
               <div>
@@ -1226,25 +1227,28 @@ const AddUpdateTenant: React.FC = () => {
                   value={formData.FreeAreaOfferedPercent ?? ''}
                   onChange={(e) => handleFieldChange("FreeAreaOfferedPercent", filterNumbersWithDecimal(e.target.value))}
                   error={errors.FreeAreaOfferedPercent}
-                  placeholder="Enter Free Area Offered (%)"
+                  placeholder="Enter Free Area Offered"
+                  rightIcon="%"
                 />
               </div>
               <div>
                 <Input
-                  label="Extra Area Purchased SqFt"
+                  label="Extra Area Purchased (SqFt)"
                   value={formData.ExtraAreaPurchasedSqFt ?? ''}
                   onChange={(e) => handleFieldChange("ExtraAreaPurchasedSqFt", filterNumbersWithDecimal(e.target.value))}
                   error={errors.ExtraAreaPurchasedSqFt}
-                  placeholder="Enter Extra Area Purchased SqFt"
+                  placeholder="Enter Extra Area Purchased"
+                  rightIcon="SqFt"
                 />
               </div>
               <div>
                 <Input
-                  label="Total Area SqFt"
+                  label="Total Area (SqFt)"
                   value={formData.TotalAreaSqFt ?? ''}
                   onChange={(e) => handleFieldChange("TotalAreaSqFt", filterNumbersWithDecimal(e.target.value))}
                   error={errors.TotalAreaSqFt}
-                  placeholder="Enter Total Area SqFt"
+                  placeholder="Enter Total Area"
+                  rightIcon="SqFt"
                 />
               </div>
             </div>

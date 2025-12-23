@@ -513,7 +513,7 @@ export const EnquiryMaster: React.FC = () => {
                     EnquiryId: deleteEnquiryMasterData.EnquiryId || 0,
 
                     ProjectId: deleteEnquiryMasterData.ProjectId || 0,
-                    
+
                     Uniquekey: deleteEnquiryMasterData.Uniquekey || ""
                 };
 
@@ -546,7 +546,7 @@ export const EnquiryMaster: React.FC = () => {
             undefined,
             (error: any) => addToast({ type: "error", title: error.message }),
             undefined,
-            "Deleting Asset Mapping"
+            "Deleting Enquiry"
         );
     };
 

@@ -11,13 +11,15 @@ interface TabsProps {
   defaultActive?: string;
   onTabChange?: (tab: TabItem) => void;
   islarge?: boolean
+  isChips?: boolean;
 }
 
 export const Tabs: React.FC<TabsProps> = ({
   tabs,
   defaultActive,
   onTabChange,
-  islarge=false
+  islarge = false,
+  isChips = false
 }) => {
 
   const [active, setActive] = useState(defaultActive || tabs[0].id);
@@ -28,6 +30,37 @@ export const Tabs: React.FC<TabsProps> = ({
     onTabChange?.(tab);
   };
 
+  if (isChips) {
+    return (
+      <div className="w-full border-b border-gray-200 pb-2">
+        <div className="flex gap-8">
+          {tabs.map((tab) => {
+            const isActive = active === tab.id;
+
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleChange(tab)}
+                className={`relative pb-2 text-sm font-medium transition-all duration-200
+                ${isActive
+                    ? "text-blue-600 font-medium text-[16px] leading-[140%] tracking-[0.01em]"
+                    : "text-gray-400  font-normal text-[14px] leading-[140%] tracking-[0.01em] hover:text-blue-500"
+                  }
+              `}>
+                {tab.label}
+
+                {/* underline */}
+                {isActive && (
+                  <span className="absolute left-0 bottom-0 w-full h-[2px] bg-blue-600 rounded-full"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   return (
 
@@ -59,7 +92,7 @@ export const Tabs: React.FC<TabsProps> = ({
                 border: islarge ? `0.5px solid #135bec63` : isActive ? `1px solid ${COLORS.primary1}` : "2px solid transparent",
                 color: islarge && isActive ? '#135BEC' : isActive ? COLORS.black : isHovered ? COLORS.primary1 : "#4B5563",
                 fontWeight: isActive || isHovered ? 600 : 400,
-                backgroundColor:isActive  ? "#135bec29" : ""
+                backgroundColor: isActive ? "#135bec29" : ""
               }}
             >
               {tab.label}

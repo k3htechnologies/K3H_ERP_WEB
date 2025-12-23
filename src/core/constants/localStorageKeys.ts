@@ -34,4 +34,6 @@ export const LOCAL_STORAGE_KEYS = {
     MENU_MODULE: 'menuModule',
     COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER: 'country_state_district_city_village_data',
     SELECTED_PROJECT_ID: 'selectedProjectId',
+
+    REDEVELOPMENT_BUILDING_COLUMNS: 'redevelopmentBuilding.selectedColumns',
 } as const

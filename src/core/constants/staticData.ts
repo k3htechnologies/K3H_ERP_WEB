@@ -73,6 +73,8 @@ export const MASTER_DATA = {
     project_scheme: ['BMC', 'MHADA', 'SRA', 'SLUM', 'TDR', 'Other'],
 
     project_sub_scheme: ['33 (20) B', '33 (19)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
+
+     road_width: ['6.10 M', '9.15 M', '12.20 M','13.40 M','18.3 M', '27.45 M','36.6 M'],
 } as const
 
 // ============================================================================
@@ -125,4 +127,5 @@ export const SPECIALITY_TYPE = toOptions(MASTER_DATA.speciality_type)
 export const BUSINESS_CATEGORY = toOptions(MASTER_DATA.business_category)
 export const PROJECT_SCHEME = toOptions(MASTER_DATA.project_scheme)
 export const PROJECT_SUB_SCHEME = toOptions(MASTER_DATA.project_sub_scheme)
+export const ROAD_WIDTH = toOptions(MASTER_DATA.road_width)
 

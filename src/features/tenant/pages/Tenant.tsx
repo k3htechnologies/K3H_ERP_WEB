@@ -362,7 +362,7 @@ export const Tenant: React.FC = () => {
         align: 'left',
         render: (value, row) => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="160px"
             tooltipThreshold={16}
             onClick={() => handleViewTenantDetails(row)}
@@ -377,7 +377,7 @@ export const Tenant: React.FC = () => {
         align: 'left',
         render: (value) => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="160px"
             tooltipThreshold={16}
 
@@ -390,7 +390,7 @@ export const Tenant: React.FC = () => {
         width: '18',
         sortable: true,
         align: 'left',
-        render: value => <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+        render: value => <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
       },
       {
         key: 'FlatCarpetAreaSqFt',
@@ -406,7 +406,7 @@ export const Tenant: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'left',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'FreeAreaOfferedPercent',
@@ -414,7 +414,7 @@ export const Tenant: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'left',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
 
       {
@@ -423,7 +423,7 @@ export const Tenant: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'TotalAreaSqFt',
@@ -439,7 +439,7 @@ export const Tenant: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'Floor',
@@ -447,7 +447,7 @@ export const Tenant: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'RERACarpetAreaSqFt',
@@ -455,7 +455,7 @@ export const Tenant: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'InventoryFlatType',
@@ -463,7 +463,7 @@ export const Tenant: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'InventoryFlatConfiguration',
@@ -471,7 +471,7 @@ export const Tenant: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'ParkingNumber',
@@ -479,7 +479,7 @@ export const Tenant: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'actions',

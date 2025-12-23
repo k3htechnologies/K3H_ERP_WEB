@@ -407,7 +407,7 @@ export const Building: React.FC = () => {
 
       {
         key: 'TotalPlotAreaSqFt',
-        label: 'Total Plot Area (sqft)',
+        label: 'Total Plot Area (SqFt)',
         width: '18',
         sortable: true,
         align: 'center',
@@ -559,7 +559,7 @@ export const Building: React.FC = () => {
 
   const [selectedBuildingColumnKeys, setSelectedBuildingColumnKeys] = useState<string[]>(() => {
     try {
-      const saved = LocalStorageHelper.getEmployeeMasterTableColumns?.();
+      const saved = LocalStorageHelper.getRedevelopmentBuildingTableColumns?.();
       if (saved) {
         const parsed = JSON.parse(saved) as string[];
         const withRequired = Array.from(new Set([...parsed, ...requiredBuildingColumnKeys]));
@@ -738,7 +738,7 @@ export const Building: React.FC = () => {
           const withRequired = Array.from(new Set([...keys, ...requiredBuildingColumnKeys]));
           setSelectedBuildingColumnKeys(withRequired);
           try {
-            LocalStorageHelper.storeEmployeeMasterTableColumns?.(JSON.stringify(withRequired));
+            LocalStorageHelper.storeRedevelopmentBuildingTableColumns?.(JSON.stringify(withRequired));
           } catch {
             // ignore
           }

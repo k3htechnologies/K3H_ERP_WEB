@@ -242,7 +242,7 @@ export const EnquiryMaster: React.FC = () => {
     //#endregion
 
 
-    //#region API | SERVICES CALL TO GET ASSET MAPPING
+    //#region API | SERVICES CALL TO GET ENQUIRY
     const getEnquiry = async (filterParams: FilterWithPaginationEnquiryMasterRequest) => {
 
         return await EnquiryMasterService.apiCallPullEnquiryMaster(filterParams);
@@ -251,9 +251,7 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
-
         fetchEnquiryMasterList(page);
-
     }, []);
 
     //#region TABLE SORT COLUMN
@@ -429,18 +427,24 @@ export const EnquiryMaster: React.FC = () => {
 
     const [selectedEnquiryColumnKeys, setSelectedEnquiryColumnKeys] = useState<string[]>(() => {
         try {
+
             const saved = LocalStorageHelper.getEnquiryMasterTableColumns?.();
+
             if (saved) {
+
                 const parsed = JSON.parse(saved) as string[]
                 // Ensure required columns are always present
 
                 const withRequired = Array.from(new Set([...parsed, ...requiredEnquiryColumnKeys]));
+
                 // Filter out any keys that no longer exist
+
                 return withRequired.filter(k => allEnquiryColumnKeys.includes(k));
             }
         } catch { }
         return allEnquiryColumnKeys;
     });
+
     useEffect(() => {
         setSelectedEnquiryColumnKeys(prev => Array.from(new Set([...prev, ...requiredEnquiryColumnKeys])).filter(k => allEnquiryColumnKeys.includes(k)));
 
@@ -487,12 +491,11 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region HANDLE FILTER CHNAGE
     const handleFilterChange = (key: string, value: string) => {
-
         setTempFilters(prev => updateFilter(prev, key, value));
     }
     //#endregion
 
-    //#region DELETE ASSET MAPPING MASTER
+    //#region DELETE ENQUIRY MASTER
     const handleDeleteEnquiryMaster = async () => {
 
         setIsConfirmationDialogBoxOpen(false);
@@ -508,7 +511,9 @@ export const EnquiryMaster: React.FC = () => {
                 const params: DeleteEnquiryMasterRequest = {
 
                     EnquiryId: deleteEnquiryMasterData.EnquiryId || 0,
+
                     ProjectId: deleteEnquiryMasterData.ProjectId || 0,
+                    
                     Uniquekey: deleteEnquiryMasterData.Uniquekey || ""
                 };
 

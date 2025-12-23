@@ -768,7 +768,7 @@ export const EmployeeMaster: React.FC = () => {
         onDownloadSampleExcel={handleDownloadExcelSampleEmployeeMaster}
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && employeesForTable.length > 0}
         onExportExcel={handleExportEmployeeExcel}
         onExportPdf={handleExportEmployeePdf}
         exportLoading={isLoading}

@@ -644,7 +644,7 @@ export const ProjectMaster: React.FC = () => {
         isShowImportButton={canAction}
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && projectListForTable.length > 0}
         onExportExcel={handleExportProjectExcel}
         onExportPdf={handleExportProjectPdf}
         exportLoading={isLoading}

@@ -922,7 +922,7 @@ export const DesignationMaster: React.FC = () => {
         onDownloadSampleExcel={handleDownloadExcelSampleDesignationMaster}
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && designationMasterListForTable.length > 0}
         onExportExcel={handleExportDesignationExcel}
         onExportPdf={handleExportDesignationPdf}
         exportLoading={isLoading}

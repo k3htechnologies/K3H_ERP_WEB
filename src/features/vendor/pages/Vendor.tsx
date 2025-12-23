@@ -631,7 +631,7 @@ export const Vendor: React.FC = () => {
           onDownloadSampleExcel={handleDownloadExcelSampleVendor}
 
            // EXPORT
-          isShowExportButton={canExport}
+          isShowExportButton={canExport && vendorListForTable.length > 0}
           onExportExcel={handleExportVendorExcel}
           onExportPdf={handleExportVendorPdf}
           exportLoading={isLoading}

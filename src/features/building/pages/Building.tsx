@@ -713,7 +713,7 @@ export const Building: React.FC = () => {
         isShowImportButton={false}
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && buildingsForTable.length > 0}
         onExportExcel={handleExportBuildingExcel}
         onExportPdf={handleExportBuildingPdf}
         exportLoading={isLoading}

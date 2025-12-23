@@ -1,6 +1,6 @@
 import useToast from "@/core/hooks/useToast";
 import { OutDoorDataService } from "@/features/outdoor/services/OutDoorDataService";
-import { useEffect, useRef, useState, useCallback, useMemo, memo } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import * as E from "fp-ts/Either";
 import type {
   FilterWithPaginationOutDoor,
@@ -15,11 +15,7 @@ import { Pagination, type PaginationInfo } from "@/ui/components/Pagination/Pagi
 import { useNavigate } from "react-router-dom";
 import {
   Clock,
-  Building2,
   MapPin,
-  Target,
-  Users,
-  User,
   FileText,
   ExternalLink,
   Fingerprint,
@@ -47,7 +43,6 @@ export const OutDoor: React.FC = () => {
   const { pagination, setPagination } = usePagination(10);
   const isUIRendered = useRef(false);
   const isLoadingRef = useRef(false);
-  const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
   const [punchingItemId, setPunchingItemId] = useState<number | null>(null);
   const [conclusionModalOpen, setConclusionModalOpen] = useState(false);
   const [selectedOutdoorItem, setSelectedOutdoorItem] = useState<OutDoorMasterData | null>(null);

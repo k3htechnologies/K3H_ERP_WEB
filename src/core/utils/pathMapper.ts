@@ -42,8 +42,13 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/uommaster': '/uomMaster',
         '/category': '/category',
         '/document': '/document',
-        '/reracategory':'/reraCategory',
-        '/rera':'/rera'
+        '/reracategory': '/reraCategory',
+        '/rera': '/rera',
+        '/siteprogress': '/siteProgress',
+        '/building': '/building',
+        '/tenant': '/tenant',
+        '/proposedoffer': '/proposedOffer',
+        '/rent': '/rent'
     }
 
     // If a mapped route exists, return it (normalized)

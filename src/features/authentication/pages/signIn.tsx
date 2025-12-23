@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import useToast from '@/core/hooks/useToast';
+import { useToast } from '@/core/hooks/useToast';
 import { ToastContainer } from '@/ui/components/Toast';
 import { Input } from '@/ui/components/forms/Input';
 import { Button } from '@/ui/components/forms/Button';
@@ -22,7 +22,7 @@ export function SignIn() {
     const [isVerified, setIsVerified] = useState(false)
     const { toasts, removeToast, showSuccess, showError, addToast } = useToast()
     const navigate = useNavigate();
-    
+
     //#region  SEND OTP
     const handleSendOTP = async () => {
         await runApiWithLoader(
@@ -244,14 +244,19 @@ export function SignIn() {
                                     type="text"
                                     placeholder="Enter OTP"
                                     value={otp}
-                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                                    maxLength={4}
-                                    size="lg"
-                                    variant="filled"
-
+                                    inputMode="numeric"
+                                    autoComplete="one-time-code"
+                                    data-testid="otp-input"
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/\D/g, '').slice(0, 4)
+                                        setOtp(value)
+                                    }}
                                 />
 
+
+
                                 <Button
+                                    data-testid="verify-otp-btn"
                                     onClick={handleVerifyOTP}
                                     type="submit"
                                     disabled={isLoading || isVerified || otp.length !== 4}
@@ -265,6 +270,7 @@ export function SignIn() {
                                 >
                                     Verify OTP
                                 </Button>
+
 
                                 <div style={{ textAlign: 'center', marginTop: '16px' }}>
                                     <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>

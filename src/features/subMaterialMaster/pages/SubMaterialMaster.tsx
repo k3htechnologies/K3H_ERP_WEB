@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AddUpdateSubMaterialMasterRequest,
@@ -59,7 +58,7 @@ export const SubMaterialMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -406,6 +405,37 @@ export const SubMaterialMaster: React.FC = () => {
         align: 'center',
         render: (value) => value || '0'
 
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction && !row.NumberOfEmployee ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Sub Material"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )
       }
     ],
     // dependencies: include everything used inside that might change
@@ -836,218 +866,216 @@ export const SubMaterialMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {/* ============================================================================
+
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        {/* ============================================================================
+      {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Sub Material Name"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchSubMaterials}
-          isShowFilterButton={false}
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeSubMaterialMasterColumnsModal(true)}
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add Sub Material"
-          onAdd={handleAddSubMaterialModal}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Sub Material Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchSubMaterials}
+        isShowFilterButton={false}
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeSubMaterialMasterColumnsModal(true)}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddSubMaterialModal}
 
-          // IMPORT
-          isShowImportButton={canAction}
-          onUploadExcel={handleExcelImportSubMaterialMaster}
-          onDownloadSampleExcel={handleDownloadExcelSampleSubMaterialMaster}
+        // IMPORT
+        isShowImportButton={canAction}
+        onUploadExcel={handleExcelImportSubMaterialMaster}
+        onDownloadSampleExcel={handleDownloadExcelSampleSubMaterialMaster}
 
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportSubMaterialExcel}
-          onExportPdf={handleExportSubMaterialPdf}
-          exportLoading={isLoading}
-        />
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportSubMaterialExcel}
+        onExportPdf={handleExportSubMaterialPdf}
+        exportLoading={isLoading}
+      />
 
 
-        {/* DATA TABLE SUB MATERIAL */}
-        <DataTable
-          data={subMaterialListForTable}
-          columns={visibleSubMaterialMasterColumns}
-          pagination={subMaterialMasterPaginationInfo}
-          emptyMessage="No Sub Materials Data Found"
-          fixedHeight={true}
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-          loading={isLoading}
-        />
+      {/* DATA TABLE SUB MATERIAL */}
+      <DataTable
+        data={subMaterialListForTable}
+        columns={visibleSubMaterialMasterColumns}
+        pagination={subMaterialMasterPaginationInfo}
+        emptyMessage="No Sub Materials Data Found"
+        fixedHeight={true}
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+        loading={isLoading}
+      />
 
-        {/* VIEW SUB MATERIAL MODAL */}
-        <ViewSubMaterialDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewSubMaterialMasterDetailsData(null)
-          }}
-          data={viewSubMaterialMasterDetailsData}
-        />
+      {/* VIEW SUB MATERIAL MODAL */}
+      <ViewSubMaterialDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewSubMaterialMasterDetailsData(null)
+        }}
+        data={viewSubMaterialMasterDetailsData}
+      />
 
-        {/*  ADD EDIT UPDATE SUB MATERIAL MODAL */}
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingSubMaterialMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingSubMaterialMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          title={editingSubMaterialMasterData ? 'Update Sub Material' : 'Add Sub Material'}
-          onSubmit={handleAddUpdateSubMaterialMaster}
-          saveText={editingSubMaterialMasterData ? 'Update Sub Material' : 'Save Sub Material'}
-          resetText='Reset'
-          loading={isLoading}
-          size='xl'
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4" >
-              <div>
-                <Input
-                  label='Sub Material Name'
-                  required
-                  error={errors.SubMaterialName}
-                  type="text"
-                  value={formData.SubMaterialName}
-                  maxLength={100}
-                  onChange={(e) => handleFieldChange('SubMaterialName', e.target.value)}
-                  placeholder="Enter Sub Material Name"
-                />
+      {/*  ADD EDIT UPDATE SUB MATERIAL MODAL */}
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingSubMaterialMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingSubMaterialMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        title={editingSubMaterialMasterData ? 'Update Sub Material' : 'Add Sub Material'}
+        onSubmit={handleAddUpdateSubMaterialMaster}
+        saveText={editingSubMaterialMasterData ? 'Update Sub Material' : 'Save Sub Material'}
+        resetText='Reset'
+        loading={isLoading}
+        size='xl'
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4" >
+            <div>
+              <Input
+                label='Sub Material Name'
+                required
+                error={errors.SubMaterialName}
+                type="text"
+                value={formData.SubMaterialName}
+                maxLength={100}
+                onChange={(e) => handleFieldChange('SubMaterialName', e.target.value)}
+                placeholder="Enter Sub Material Name"
+              />
 
-              </div>
+            </div>
 
-              <div>
+            <div>
 
-                <SingleSelectDropdownWithPagination
-                  required
-                  label="Material"
-                  title="Select Material"
-                  size="lg"
-                  dataFetchCallBack={fetchMaterialMasterDropdown}
-                  onSelected={(item) => handleFieldChange("MaterialMasterId", Number(item.value))}
-                  initialValue={createDropdownInitialValue(formData.MaterialMasterId, dropdownLabels.materialName)}
-                  error={errors.MaterialMasterId}
-                />
+              <SingleSelectDropdownWithPagination
+                required
+                label="Material"
+                title="Select Material"
+                size="lg"
+                dataFetchCallBack={fetchMaterialMasterDropdown}
+                onSelected={(item) => handleFieldChange("MaterialMasterId", Number(item.value))}
+                initialValue={createDropdownInitialValue(formData.MaterialMasterId, dropdownLabels.materialName)}
+                error={errors.MaterialMasterId}
+              />
 
-              </div>
+            </div>
 
-              <div>
-                <SingleSelectDropdownWithPagination
-                  required
-                  label="UOM"
-                  title="Select UOM"
-                  size="lg"
-                  dataFetchCallBack={fetchUOMMasterDropdown}
-                  onSelected={(item) => handleFieldChange("UomMasterId", Number(item.value))}
-                  initialValue={createDropdownInitialValue(formData.UomMasterId, dropdownLabels.uom)}
-                  error={errors.UomMasterId}
-                />
-              </div>
+            <div>
+              <SingleSelectDropdownWithPagination
+                required
+                label="UOM"
+                title="Select UOM"
+                size="lg"
+                dataFetchCallBack={fetchUOMMasterDropdown}
+                onSelected={(item) => handleFieldChange("UomMasterId", Number(item.value))}
+                initialValue={createDropdownInitialValue(formData.UomMasterId, dropdownLabels.uom)}
+                error={errors.UomMasterId}
+              />
             </div>
           </div>
+        </div>
 
-        </Modal>
-        {/* CUSTOMIZE COLUMNS MODAL */}
+      </Modal>
+      {/* CUSTOMIZE COLUMNS MODAL */}
 
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeSubMaterialMasterColumnsModal}
-          onClose={() => setIsShowCustomizeSubMaterialMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredSubMaterialMasterColumnKeys]),
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeSubMaterialMasterColumnsModal}
+        onClose={() => setIsShowCustomizeSubMaterialMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredSubMaterialMasterColumnKeys]),
+          )
+
+          setSelectedSubMaterialMasterColumnKeys(withRequired)
+
+          try {
+            LocalStorageHelper.storeSubMaterialMasterTableColumns(
+              JSON.stringify(withRequired),
             )
+          } catch { }
+        }}
+        columns={subMaterialMasterColumns}
+        selectedKeys={selectedSubMaterialMasterColumnKeys}
+        requiredKeys={requiredSubMaterialMasterColumnKeys}
+        title="Customize Table Columns"
+      />
 
-            setSelectedSubMaterialMasterColumnKeys(withRequired)
-
-            try {
-              LocalStorageHelper.storeSubMaterialMasterTableColumns(
-                JSON.stringify(withRequired),
-              )
-            } catch { }
-          }}
-          columns={subMaterialMasterColumns}
-          selectedKeys={selectedSubMaterialMasterColumnKeys}
-          requiredKeys={requiredSubMaterialMasterColumnKeys}
-          title="Customize Table Columns"
-        />
-
-        {/* FILTER SUB MATERIAL MODAL */}
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Sub Material Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          onCancel={() => clearFilters()}
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <Input
-                  label='Sub Material Name'
-                  type="text"
-                  value={tempFilters.SubMaterialName || ''}
-                  onChange={(e) => handleFilterChange('SubMaterialName', e.target.value)}
-                  placeholder="Enter sub material name"
-                />
-              </div>
+      {/* FILTER SUB MATERIAL MODAL */}
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Sub Material Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        onCancel={() => clearFilters()}
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <Input
+                label='Sub Material Name'
+                type="text"
+                value={tempFilters.SubMaterialName || ''}
+                onChange={(e) => handleFilterChange('SubMaterialName', e.target.value)}
+                placeholder="Enter sub material name"
+              />
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        {/* DELETE CONFIRMATION SUB MATERIAL MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteSubMaterialMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteSubMaterialMaster}
-          title="You are about to delete a sub material?"
-          message="Deleting this sub material will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
+      {/* DELETE CONFIRMATION SUB MATERIAL MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteSubMaterialMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteSubMaterialMaster}
+        title="You are about to delete a sub material?"
+        message="Deleting this sub material will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
 
 
-      </div>
-    </>
+    </div>
 
   )
 }

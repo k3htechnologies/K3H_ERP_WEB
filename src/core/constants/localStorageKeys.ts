@@ -13,6 +13,8 @@ export const LOCAL_STORAGE_KEYS = {
     EARNING_MASTER_SELECTED_COLUMNS: 'earningMaster.selectedColumns',
     VENDOR_SELECTED_COLUMNS: 'vendor.selectedColumns',
     COMPANY_MASTER_SELECTED_COLUMNS: 'companyMaster.selectedColumns',
+    CHANNEL_PARTNER_MASTER_SELECTED_COLUMNS: 'channelPartnerMaster.selectedColumns',
+    ENQUIRY_MASTER_SELECTED_COLUMNS:'enquiryMaster.selectedColumns',
     BANK_LIST_MASTER_SELECTED_COLUMNS: 'bankListMaster.selectedColumns',
     HOLIDAY_MASTER_SELECTED_COLUMNS: 'holidayMaster.selectedColumns',
     HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS: 'holidayMappingMaster.selectedColumns',
@@ -28,7 +30,10 @@ export const LOCAL_STORAGE_KEYS = {
     MATERIAL_MASTER_SELECTED_COLUMNS: 'materialMaster.selectedColumns',
     PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectDocumentCategoryMaster.selectedColumns',
     PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectRERADocumentCategoryMaster.selectedColumns',
+    TENANT_SELECTED_COLUMNS: 'tenant.selectedColumns',
     MENU_MODULE: 'menuModule',
     COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER: 'country_state_district_city_village_data',
-    OUTDOOR_SELECTED_COLUMNS:'outdoor.selectedColumns'
+    SELECTED_PROJECT_ID: 'selectedProjectId',
+
+    REDEVELOPMENT_BUILDING_COLUMNS: 'redevelopmentBuilding.selectedColumns',
 } as const

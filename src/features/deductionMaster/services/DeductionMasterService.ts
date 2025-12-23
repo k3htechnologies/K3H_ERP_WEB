@@ -17,7 +17,7 @@ export const DeductionMasterService = {
 
     apiCallPullDeductionMaster: async (params: FilterWithPaginationDeductionMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, DeductionMasterListResponse>> => {
         try {
-
+            
             return E.right(await deductionMasterDatasource.pullDeductionMaster(params, options?.signal));
 
         } catch (error: any) {

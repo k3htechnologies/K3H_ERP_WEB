@@ -3,13 +3,15 @@ import { Input } from "@/ui/components/forms/Input";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
-import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
-import ToastContainer from "@/ui/components/Toast/ToastContainer";
 import { useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateAssetMasterRequest, FilterWithPaginationAssetMasterRequest } from "../models/AssetMasterModel";
 import { assetMasterService } from "../services/AssetMasterService";
+import { DatePickerInput } from "@/ui/components/forms/Datepicker";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import BottomActionBar from "@/ui/components/forms/BottomActionBar";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const initialFormState = (): AddUpdateAssetMasterRequest => ({
   AssetMasterId: 0,
@@ -43,7 +45,11 @@ export const AddUpdateAssetMaster: React.FC = () => {
   const isAddMode = assetId === 0;
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
+
+  //#region MENU PERMISSIONS
+  const { canAction } = useMenuPermissions('/assetMaster');
+  //#endregion
 
   // ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -117,7 +123,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Asset Data'
+      'Loading Asset'
     );
   };
   //#endregion
@@ -152,11 +158,11 @@ export const AddUpdateAssetMaster: React.FC = () => {
       newErrors.AssetType = "Asset Type is required";
     }
 
-    if (!formData.AssetCost) {
+    if (!formData.AssetCost || Number(formData.AssetCost) <= 0) {
       newErrors.AssetCost = "Asset Cost is required";
     }
 
-    if (!formData.SerialNumber?.trim()) {
+    if (!formData.SerialNumber) {
       newErrors.SerialNumber = 'Serial Number is required.';
     }
 
@@ -168,12 +174,12 @@ export const AddUpdateAssetMaster: React.FC = () => {
       newErrors.AssetBrand = "Asset Brand is required";
     }
 
-    if (!formData.PurchaseDate?.trim()) {
+    if (!formData.PurchaseDate) {
       newErrors.PurchaseDate = "Purchase Date is required";
     }
 
     if (!formData.WarrantyExpiryDate) {
-      newErrors.WarrantyExpiryDate = "Warranty ExpiryDate is required";
+      newErrors.WarrantyExpiryDate = "Warranty Expiry Date is required";
     }
 
     return {
@@ -203,8 +209,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
   //#endregion
 
   //#region HANDLE SUBMIT
-  const handleAddUpdateAssetMaster = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddUpdateAssetMaster = async () => {
 
     setErrors({});
 
@@ -269,185 +274,169 @@ export const AddUpdateAssetMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        
-         {/* Loader */}
 
-        <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+      {/* Loader */}
 
-          <form onSubmit={handleAddUpdateAssetMaster}>
+      <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-            {/* Basic Asset Details */}
+      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
 
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Asset Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Asset Name'
-                    value={formData.AssetName ?? ""}
-                    onChange={(e) => handleFieldChange("AssetName", e.target.value)}
-                    placeholder="Enter Asset Name"
-                    maxLength={250}
-                    error={errors.AssetName}
-                  />
-                </div>
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Asset Code'
-                    value={formData.AssetCode ?? ""}
-                    onChange={(e) => handleFieldChange("AssetCode", e.target.value)}
-                    placeholder="Enter Asset Code"
-                    maxLength={250}
-                    error={errors.AssetCode}
-                  />
-                </div>
+        <form onSubmit={handleAddUpdateAssetMaster}>
+
+          {/* Basic Asset Details */}
+
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Asset Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Name'
+                  value={formData.AssetName ?? ""}
+                  onChange={(e) => handleFieldChange("AssetName", e.target.value)}
+                  placeholder="Enter Asset Name"
+                  maxLength={250}
+                  error={errors.AssetName}
+                />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Asset Cost'
-                    value={formData.AssetCost ?? ""}
-                    onChange={(e) => handleFieldChange("AssetCost", e.target.value)}
-                    placeholder="Enter Asset Cost"
-                    maxLength={250}
-                    error={errors.AssetCost}
-                  />
-                </div>
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Asset Brand'
-                    value={formData.AssetBrand ?? ""}
-                    onChange={(e) => handleFieldChange("AssetBrand", e.target.value)}
-                    placeholder="Enter Asset Brand"
-                    maxLength={250}
-                    error={errors.AssetBrand}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Asset Model'
-                    value={formData.AssetModel ?? ""}
-                    onChange={(e) => handleFieldChange("AssetModel", e.target.value)}
-                    placeholder="Enter Asset Model"
-                    maxLength={250}
-                    error={errors.AssetModel}
-                  />
-                </div>
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='AssetType'
-                    value={formData.AssetType ?? ""}
-                    onChange={(e) => handleFieldChange("AssetType", e.target.value)}
-                    placeholder="Enter AssetType"
-                    maxLength={250}
-                    error={errors.AssetType}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Supplier Name'
-                    value={formData.SupplierName ?? ""}
-                    onChange={(e) => handleFieldChange("SupplierName", e.target.value)}
-                    placeholder="Enter Supplier Name"
-                    maxLength={250}
-                    error={errors.SupplierName}
-                  />
-                </div>
-                 <div>
-                  <Input
-                    type="text"
-                    required
-                    label='Serial Number'
-                    value={formData.SerialNumber ?? ""}
-                    onChange={(e) => handleFieldChange("SerialNumber", e.target.value)}
-                    placeholder="Enter Serial Number"
-                    maxLength={250}
-                    error={errors.SerialNumber}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                <div>
-                  <Input
-                    type="date"
-                    required
-                    label='Purchase Date'
-                    value={formData.PurchaseDate?.substring(0, 10)}
-                    onChange={(e) => handleFieldChange("PurchaseDate", e.target.value)}
-                    placeholder="Enter Purchase Date"
-                    maxLength={250}
-                    error={errors.PurchaseDate}
-                  />
-                </div>
-                
-                <div>
-                  <Input
-                    type="date"
-                    required
-                    label='Warranty Expiry Date'
-                    value={formData.WarrantyExpiryDate?.substring(0, 10)}
-                    onChange={(e) => handleFieldChange("WarrantyExpiryDate", e.target.value)}
-                    placeholder="Enter Warranty Expiry Date"
-                    maxLength={250}
-                    error={errors.WarrantyExpiryDate}
-                  />
-                </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Code'
+                  value={formData.AssetCode?.toUpperCase() ?? ""}
+                  onChange={(e) => handleFieldChange("AssetCode", e.target.value)}
+                  placeholder="Enter Asset Code"
+                  maxLength={4}
+                  error={errors.AssetCode}
+                />
               </div>
             </div>
-          </form>
-        </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-2 flex justify-end items-center gap-3 shadow-md h-16"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)', left: "299px", right: '14px' }}>
-          <Button
-            color="transparent"
-            variant='transparent_border'
-            size="sm"
-            onClick={() => { navigate(-1); }}
-            className="px-6"
-          >
-            Cancel
-          </Button>
-          
-          <Button
-            color="green"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              handleAddUpdateAssetMaster(e);
-            }}
-            className="px-6"
-            disabled={isLoading}
-          >
-            {isAddMode ? "Add Asset" : "Update Asset"}
-          </Button>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  label='Asset Cost'
+                  required
+                  error={errors.AssetCost}
+                  type="text"
+                  value={formData.AssetCost ?? ''}
+                  maxLength={4}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '');
+                    handleFieldChange('AssetCost', digits === '' ? 0 : Number(digits));
+                  }}
+                  placeholder="Enter Asset Cost"
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Brand'
+                  value={formData.AssetBrand ?? ""}
+                  onChange={(e) => handleFieldChange("AssetBrand", e.target.value)}
+                  placeholder="Enter Asset Brand"
+                  maxLength={250}
+                  error={errors.AssetBrand}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Asset Model'
+                  value={formData.AssetModel ?? ""}
+                  onChange={(e) => handleFieldChange("AssetModel", e.target.value)}
+                  placeholder="Enter Asset Model"
+                  maxLength={250}
+                  error={errors.AssetModel}
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='AssetType'
+                  value={formData.AssetType ?? ""}
+                  onChange={(e) => handleFieldChange("AssetType", e.target.value)}
+                  placeholder="Enter Asset Type"
+                  maxLength={250}
+                  error={errors.AssetType}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Supplier Name'
+                  value={formData.SupplierName ?? ""}
+                  onChange={(e) => handleFieldChange("SupplierName", e.target.value)}
+                  placeholder="Enter Supplier Name"
+                  maxLength={250}
+                  error={errors.SupplierName}
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label='Serial Number'
+                  value={formData.SerialNumber?.toUpperCase() ?? ""}
+                  onChange={(e) => handleFieldChange("SerialNumber", e.target.value)}
+                  placeholder="Enter Serial Number"
+                  maxLength={100}
+                  error={errors.SerialNumber}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <DatePickerInput
+                  label="Purchase Date"
+                  value={formatDate_dd_mm_yyyy(formData.PurchaseDate)}
+                  onChange={(val) => handleFieldChange('PurchaseDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={errors.PurchaseDate}
+                />
+              </div>
+
+              <div>
+                <DatePickerInput
+                  label="Warranty Expiry Date"
+                  value={formatDate_dd_mm_yyyy(formData.WarrantyExpiryDate)}
+                  onChange={(val) => handleFieldChange('WarrantyExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={errors.WarrantyExpiryDate}
+                />
+              </div>
+            </div>
+          </div>
+        </form>
       </div>
-    </>
+
+      <BottomActionBar
+        cancelText="Cancel"
+        saveText={formData.AssetMasterId ? "Update" : "Add"}
+        onCancel={() => navigate(-1)}
+        canAction={canAction}
+        onSave={() => {
+          handleAddUpdateAssetMaster();
+        }}
+        isLoading={isLoading}
+      />
+    </div>
   );
 };
 

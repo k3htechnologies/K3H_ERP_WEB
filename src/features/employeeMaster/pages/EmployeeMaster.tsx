@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   EmployeeMasterData,
@@ -24,8 +23,9 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { useLocation, type Location, useNavigate } from 'react-router-dom';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
+import { FileText } from 'lucide-react';
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -37,7 +37,7 @@ export const EmployeeMaster: React.FC = () => {
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -165,7 +165,7 @@ export const EmployeeMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Employee Data'
+      'Loading Employee'
     );
   };
 
@@ -298,6 +298,30 @@ export const EmployeeMaster: React.FC = () => {
           filters,
           sortInfo,
           searchTerm,
+          employeeId: row.EmployeeId,
+          employeeName: row.FullName,
+        },
+      },
+    });
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  //#endregion
+
+  //#region VIEW EMPLOYEE DOCUMENT
+
+  const handleViewEmployeeDocument = useCallback((row: EmployeeMasterData) => {
+
+    navigate('/employeeMaster/document', {
+      state: {
+        editBuildingData: row,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm,
+          employeeId: row.EmployeeId,
+          employeeName: row.FullName,
+
         },
       },
     });
@@ -544,9 +568,42 @@ export const EmployeeMaster: React.FC = () => {
         sortable: true,
         align: 'center',
         render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleViewEmployeeDocument(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'green',
+                  padding: '4px 8px'
+                }}
+                title="Building Document"
+              >
+                <FileText className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+
+
+        )
       }
     ],
-    [canAction, handleViewEmployeeDetails]
+    [canAction, handleViewEmployeeDetails, handleViewEmployeeDocument]
 
   );
   //#endregion
@@ -678,145 +735,142 @@ export const EmployeeMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <Loader loading={isLoading} title={loadingMessage}>
-          <div></div>
-        </Loader>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <Loader loading={isLoading} title={loadingMessage}>
+        <div></div>
+      </Loader>
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Employee Name"
-          onSearchChange={v => {
-            setSearchTerm(v);
-            debouncedSearch(v);
-          }}
-          onClearSearch={clearSearchEmployees}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters);
-            setShowFilterPopup(true);
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeEmployeeColumnsModal(true)}
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add Employee"
-          onAdd={handleAddEmployeeModal}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Employee Name"
+        onSearchChange={v => {
+          setSearchTerm(v);
+          debouncedSearch(v);
+        }}
+        onClearSearch={clearSearchEmployees}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters);
+          setShowFilterPopup(true);
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeEmployeeColumnsModal(true)}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddEmployeeModal}
 
-          // IMPORT
-          isShowImportButton={canAction}
-          onUploadExcel={handleExcelImportEmployeeMaster}
-          onDownloadSampleExcel={handleDownloadExcelSampleEmployeeMaster}
+        // IMPORT
+        isShowImportButton={canAction}
+        onUploadExcel={handleExcelImportEmployeeMaster}
+        onDownloadSampleExcel={handleDownloadExcelSampleEmployeeMaster}
 
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportEmployeeExcel}
-          onExportPdf={handleExportEmployeePdf}
-          exportLoading={isLoading}
-        />
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportEmployeeExcel}
+        onExportPdf={handleExportEmployeePdf}
+        exportLoading={isLoading}
+      />
 
-        <DataTable
-          data={employeesForTable}
-          columns={visibleEmployeeColumns}
-          pagination={employeePaginationInfo}
-          emptyMessage="No employees found"
-          fixedHeight
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      <DataTable
+        data={employeesForTable}
+        columns={visibleEmployeeColumns}
+        pagination={employeePaginationInfo}
+        emptyMessage="No employees found"
+        fixedHeight
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeEmployeeColumnsModal}
-          onClose={() => setIsShowCustomizeEmployeeColumnsModal(false)}
-          onApply={keys => {
-            const withRequired = Array.from(new Set([...keys, ...requiredEmployeeColumnKeys]));
-            setSelectedEmployeeColumnKeys(withRequired);
-            try {
-              LocalStorageHelper.storeEmployeeMasterTableColumns?.(JSON.stringify(withRequired));
-            } catch {
-              // ignore
-            }
-          }}
-          columns={employeeColumns}
-          selectedKeys={selectedEmployeeColumnKeys}
-          requiredKeys={requiredEmployeeColumnKeys}
-          title="Customize Table Columns"
-        />
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeEmployeeColumnsModal}
+        onClose={() => setIsShowCustomizeEmployeeColumnsModal(false)}
+        onApply={keys => {
+          const withRequired = Array.from(new Set([...keys, ...requiredEmployeeColumnKeys]));
+          setSelectedEmployeeColumnKeys(withRequired);
+          try {
+            LocalStorageHelper.storeEmployeeMasterTableColumns?.(JSON.stringify(withRequired));
+          } catch {
+            // ignore
+          }
+        }}
+        columns={employeeColumns}
+        selectedKeys={selectedEmployeeColumnKeys}
+        requiredKeys={requiredEmployeeColumnKeys}
+        title="Customize Table Columns"
+      />
 
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Employee Master"
-          onSubmit={e => {
-            e.preventDefault();
-            applyFilters();
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          resetText=''
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Employee Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.EmployeeName || ''}
-                  onChange={e => handleFilterChange('EmployeeName', e.target.value)}
-                  placeholder="Enter employee name"
-                />
-              </div>
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Employee Master"
+        onSubmit={e => {
+          e.preventDefault();
+          applyFilters();
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        resetText=''
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Employee Name</label>
+              <Input
+                type="text"
+                value={tempFilters.EmployeeName || ''}
+                onChange={e => handleFilterChange('EmployeeName', e.target.value)}
+                placeholder="Enter employee name"
+              />
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
-                <Input
-                  type="text"
-                  value={tempFilters.BranchName || ''}
-                  onChange={e => handleFilterChange('BranchName', e.target.value)}
-                  placeholder="Enter branch name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                <Input
-                  type="text"
-                  value={tempFilters.DepartmentName || ''}
-                  onChange={e => handleFilterChange('DepartmentName', e.target.value)}
-                  placeholder="Enter department name"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+              <Input
+                type="text"
+                value={tempFilters.BranchName || ''}
+                onChange={e => handleFilterChange('BranchName', e.target.value)}
+                placeholder="Enter branch name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+              <Input
+                type="text"
+                value={tempFilters.DepartmentName || ''}
+                onChange={e => handleFilterChange('DepartmentName', e.target.value)}
+                placeholder="Enter department name"
+              />
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
-                <Input
-                  type="text"
-                  value={tempFilters.DesignationName || ''}
-                  onChange={e => handleFilterChange('DesignationName', e.target.value)}
-                  placeholder="Enter designation"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-                <Input
-                  type="text"
-                  value={tempFilters.MobileNumber || ''}
-                  onChange={e => handleFilterChange('MobileNumber', e.target.value)}
-                  placeholder="Enter mobile number"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+              <Input
+                type="text"
+                value={tempFilters.DesignationName || ''}
+                onChange={e => handleFilterChange('DesignationName', e.target.value)}
+                placeholder="Enter designation"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+              <Input
+                type="text"
+                value={tempFilters.MobileNumber || ''}
+                onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+                placeholder="Enter mobile number"
+              />
             </div>
           </div>
-        </Modal>
-      </div>
-    </>
+        </div>
+      </Modal>
+    </div>
   );
 };
 

@@ -3,10 +3,10 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AssetMappingMasterData,
+  DeleteAssetMappingMasterRequest,
   FilterWithPaginationAssetMappingMasterRequest
 } from '@/features/assetMappingMaster/models/AssetMappingMasterModel';
 
@@ -15,7 +15,7 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -24,6 +24,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { assetMappingMasterService } from '../services/AssetMappingMasterService';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { Trash2 } from 'lucide-react';
 
 
 export const AssetMappingMaster: React.FC = () => {
@@ -43,7 +45,7 @@ export const AssetMappingMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,6 +57,10 @@ export const AssetMappingMaster: React.FC = () => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
+  //DELETE ASSET MAPPING MASTER
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+  const [deleteAssetMappingMasterData, setDeleteAssetMappingMasterData] = useState<AssetMappingMasterData | null>(null)
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeAssetMappingColumnsModal, setIsShowCustomizeAssetMappingColumnsModal] = useState(false);
@@ -71,7 +77,9 @@ export const AssetMappingMaster: React.FC = () => {
   useEffect(() => {
     const incoming = location.state?.listState;
     const listState = incoming ?? {
-      page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: ''
+      page: 1, filters: {} as FilterInfo,
+      sortInfo: undefined,
+      searchTerm: ''
     };
 
     setPagination({ currentPage: listState.page ?? pagination.currentPage });
@@ -85,7 +93,9 @@ export const AssetMappingMaster: React.FC = () => {
     setSearchTerm(listState.searchTerm ?? '');
 
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadAssetMappings(listState.page ?? 1, { AssetName: String(listState.searchTerm).trim() });
+      loadAssetMappings(listState.page ?? 1, {
+        AssetName: String(listState.searchTerm).trim()
+      });
       return;
     }
 
@@ -147,7 +157,7 @@ export const AssetMappingMaster: React.FC = () => {
       undefined,
       (error: any) => addToast({ type: 'error', title: error.message }),
       undefined,
-      'Loading Asset Mapping Data'
+      'Loading Asset Mapping'
     );
   };
   //#endregion
@@ -180,11 +190,18 @@ export const AssetMappingMaster: React.FC = () => {
     debouncedSearch.cancel?.();
 
     setFilters({});
+
     setTempFilters({});
+
     setPagination({ currentPage: 1 });
+
     loadAssetMappings(1, {});
     try {
-      navigate(location.pathname, { replace: true, state: {} });
+      navigate(location.pathname,
+        {
+          replace: true,
+          state: {}
+        });
     } catch {
     }
   };
@@ -214,7 +231,7 @@ export const AssetMappingMaster: React.FC = () => {
 
         const response = await getAssetMappings(params);
 
-        handleExportFile(response, exportType, 'AssetMapping Master', addToast);
+        handleExportFile(response, exportType, 'Asset Mapping Master', addToast);
 
         return response;
       },
@@ -295,6 +312,12 @@ export const AssetMappingMaster: React.FC = () => {
 
   //#endregion
 
+  //#region CONFIRMATION DIALOG BOX
+  const handleConfirmationDialogBoxOpen = useCallback((row: AssetMappingMasterData) => {
+    setDeleteAssetMappingMasterData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
+
   //#region TABLE COLUMNS
   const AssetMappingMasterColumns = useMemo<TableColumn[]>(() => [
     {
@@ -332,8 +355,8 @@ export const AssetMappingMaster: React.FC = () => {
       label: 'Assigned Date',
       width: '15',
       sortable: false,
-      align: 'left',
-      render: (value) => 
+      align: 'center',
+      render: (value) =>
         value ? formatDate_dd_MonthName_yy(value) : '-'
     },
     {
@@ -350,7 +373,7 @@ export const AssetMappingMaster: React.FC = () => {
       label: 'Condition On Issue',
       width: '12',
       sortable: false,
-      align: 'left',
+      align: 'center',
       render: (value) => (
         <TooltipText
           text={value || 'N/A'}
@@ -373,8 +396,38 @@ export const AssetMappingMaster: React.FC = () => {
         />
       )
     },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: '12',
+      fixed: 'right',
+      align: 'center',
+      render: (_value, row) => (
+        canAction ? (
+          <div className="flex items-center justify-center gap-2">
 
-  ], [handleNavigateToView]);
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleConfirmationDialogBoxOpen(row)
+              }}
+              color='transparent'
+              isborderRadius
+              size='sm'
+              style={{
+                color: 'red',
+                padding: '4px 8px'
+              }}
+              title="Delete Asset"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : null
+      )
+    }
+  ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
@@ -403,7 +456,9 @@ export const AssetMappingMaster: React.FC = () => {
 
   useEffect(() => {
     setSelectedAssetMappingColumnKeys(prev => Array.from(new Set([...prev, ...requiredAssetMappingColumnKeys])).filter(k => allAssetMappingColumnKeys.includes(k)));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [AssetMappingMasterColumns.length])
 
   const visibleAssetMappingColumns = useMemo(
@@ -434,7 +489,11 @@ export const AssetMappingMaster: React.FC = () => {
     setShowFilterPopup(false);
     // clear router state (very important)
 
-    navigate(location.pathname, { replace: true, state: {} });
+    navigate(location.pathname,
+      {
+        replace: true,
+        state: {}
+      });
 
   };
   //#endregion
@@ -445,112 +504,176 @@ export const AssetMappingMaster: React.FC = () => {
   }
   //#endregion
 
+  //#region DELETE ASSET MAPPING MASTER
+  const handleDeleteAssetMappingMaster = async () => {
+
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteAssetMappingMasterData) return;
+
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setIsLoadingMessage,
+      async () => {
+        const params: DeleteAssetMappingMasterRequest = {
+
+          AssetMasterMappingId: deleteAssetMappingMasterData.AssetMasterMappingId || 0,
+
+          UniqueKey: deleteAssetMappingMasterData.Uniquekey || ""
+        };
+
+        const response = await assetMappingMasterService.apiCallDeleteAssetMappingMaster(params);
+
+        if (E.isRight(response)) {
+
+          setAssetMappingMasterList(prevData => prevData.filter(item => item.AssetMasterMappingId !== deleteAssetMappingMasterData.AssetMasterMappingId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteAssetMappingMasterData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+        }
+        return response;
+      },
+      undefined,
+      (error: any) => addToast({ type: "error", title: error.message }),
+      undefined,
+      "Deleting Asset Mapping"
+    );
+  };
+
+
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        
-        <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Asset Name"
-          onSearchChange={v => {
-            setSearchTerm(v);
-            debouncedSearch(v);
-          }}
-          onClearSearch={clearSearchAssetMappings}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters);
-            setShowFilterPopup(true);
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeAssetMappingColumnsModal(true)}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Asset Name"
+        onSearchChange={v => {
+          setSearchTerm(v);
+          debouncedSearch(v);
+        }}
+        onClearSearch={clearSearchAssetMappings}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters);
+          setShowFilterPopup(true);
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeAssetMappingColumnsModal(true)}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add AssetMapping"
-          onAdd={handleAddAssetMappingModal}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddAssetMappingModal}
 
 
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportAssetMappingExcel}
-          onExportPdf={handleExportAssetMappingPdf}
-          exportLoading={isLoading}
-        />
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportAssetMappingExcel}
+        onExportPdf={handleExportAssetMappingPdf}
+        exportLoading={isLoading}
+      />
 
-        {/* DATA TABLE ASSET MAPPING*/}
+      {/* DATA TABLE ASSET MAPPING*/}
 
-        <DataTable
-          data={AssetMappingsForTable}
-          columns={visibleAssetMappingColumns}
-          pagination={AssetMappingPaginationInfo}
-          emptyMessage="No Asset found"
-          fixedHeight
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      <DataTable
+        data={AssetMappingsForTable}
+        columns={visibleAssetMappingColumns}
+        pagination={AssetMappingPaginationInfo}
+        emptyMessage="No Asset Found Data"
+        fixedHeight
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
+      {/* CUSTOMIZE COLUMNS MODAL */}
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeAssetMappingColumnsModal}
-          onClose={() => setIsShowCustomizeAssetMappingColumnsModal(false)}
-          onApply={keys => {
-            const withRequired = Array.from(
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeAssetMappingColumnsModal}
+        onClose={() => setIsShowCustomizeAssetMappingColumnsModal(false)}
+        onApply={keys => {
+          const withRequired = Array.from(
 
-              new Set([...keys, ...requiredAssetMappingColumnKeys])
+            new Set([...keys, ...requiredAssetMappingColumnKeys])
+          );
+          setSelectedAssetMappingColumnKeys(withRequired);
+
+          try {
+            LocalStorageHelper.storeAssetMappingMasterTableColumns?.(
+
+              JSON.stringify(withRequired)
             );
-            setSelectedAssetMappingColumnKeys(withRequired);
+          } catch { }
+        }}
+        columns={AssetMappingMasterColumns}
+        selectedKeys={selectedAssetMappingColumnKeys}
+        requiredKeys={requiredAssetMappingColumnKeys}
+        title="Customize Table Columns"
+      />
 
-            try {
-              LocalStorageHelper.storeAssetMappingMasterTableColumns?.(
+      {/* FILTER MODAL */}
 
-                JSON.stringify(withRequired)
-              );
-            } catch { }
-          }}
-          columns={AssetMappingMasterColumns}
-          selectedKeys={selectedAssetMappingColumnKeys}
-          requiredKeys={requiredAssetMappingColumnKeys}
-          title="Customize Table Columns"
-        />
-
-        {/* FILTER MODAL */}
-
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Asset Mapping Master"
-          onSubmit={e => {
-            e.preventDefault();
-            applyFilters();
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          resetText=''
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <Input type="text"
-                label='Asset Name'
-                value={tempFilters?.AssetName ?? ''}
-                onChange={e => handleFilterChange('AssetName', e.target.value)}
-                placeholder="Enter Asset Name" />
-            </div>
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Asset Mapping Master"
+        onSubmit={e => {
+          e.preventDefault();
+          applyFilters();
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        resetText=''
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <Input type="text"
+              label='Asset Name'
+              value={tempFilters?.AssetName ?? ''}
+              onChange={e => handleFilterChange('AssetName', e.target.value)}
+              placeholder="Enter Asset Name" />
           </div>
-        </Modal>
-      </div>
-    </>
+        </div>
+      </Modal>
+
+      {/* DELETE CONFIRMATION ASSET MAPPING MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => setIsConfirmationDialogBoxOpen(false)}
+        onConfirm={handleDeleteAssetMappingMaster}
+        title="You are about to delete this Asset?"
+        message="Deleting this Asset will permanently remove its data."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+    </div>
+
   );
 };
 

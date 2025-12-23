@@ -1,6 +1,2 @@
 export { Button } from './Button'
 export { Input } from './Input'
-export { DateInput } from './DateInput'
-export type { DateInputProps } from './DateInput'
-export { DateRangePickerModal } from './DateRangePickerModal'
-export type { DateRangePickerModalProps } from './DateRangePickerModal'

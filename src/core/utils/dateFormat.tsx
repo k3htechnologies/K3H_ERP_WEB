@@ -57,12 +57,13 @@ export const formatDate_dd_MonthName_yy_hh_mm = (dateString: string, timeString?
  * @param dateString - Date string in YYYY-MM-DD format
  * @returns Formatted date string (e.g., "07 July 2025")
  */
-export const formatDate_dd_MonthName_yy = (dateString: string): string => {
-  if (!dateString || dateString.trim() === '') {
+export const formatDate_dd_MonthName_yy = (dateString: string | Date): string => {
+  if (!dateString || dateString === '') {
     return ''
   }
 
   try {
+    
     const date = new Date(dateString)
 
     // Check if date is valid
@@ -134,16 +135,6 @@ export const convert_dd_mm_yyyy_To_Yyyy_mm_dd = (
 export const convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd = (date?: string | null) => {
   if (!date) return "";
   return date.split("T")[0];
-};
-
-/**
- * Format date for display: "DD Month YYYY" or "-" if invalid
- * @param value - Date string in YYYY-MM-DD format or null/undefined
- * @returns Formatted date string or "-"
- */
-export const formatDateDisplay = (value?: string | null): string => {
-  const formatted = formatDate_dd_MonthName_yy(value || '');
-  return formatted || '-';
 };
 
 /**

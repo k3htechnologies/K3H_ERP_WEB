@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AddUpdateBranchMasterRequest,
@@ -14,7 +13,6 @@ import type {
 
 import { BranchMasterService } from '@/features/branchMaster/services/BranchMasteService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
-import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
@@ -55,7 +53,7 @@ export const BranchMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const {addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -134,9 +132,6 @@ export const BranchMaster: React.FC = () => {
       setErrors({});
     }
   }, [isAddUpdateModalOpen, editingBranchMasterData]);
-
-  //#endregion
-
 
   //#endregion
 
@@ -234,7 +229,9 @@ export const BranchMaster: React.FC = () => {
   const handleExportBranches = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
+
       setIsLoadingMessage,
+
       async () => {
         // Find the column label for sorting
         let sortByParam = undefined
@@ -271,21 +268,18 @@ export const BranchMaster: React.FC = () => {
 
   const handleExportBranchExcel = () => handleExportBranches('Excel')
   const handleExportBranchPdf = () => handleExportBranches('PDF')
-
   //#endregion
 
   //#region API | SERVICES CALL TO GET BRANCH 
-
   const getBranches = async (filterParams: FilterWithPaginationBranchMasterRequest) => {
 
     return await BranchMasterService.apiCallPullBranchMaster(filterParams);
   }
-
   //#endregion
 
   //#region HANDLE PAGE CHNAGE EVENT
-
   const handlePageChange = (page: number) => {
+
     fetchBranchList(page);
   };
   //#endregion
@@ -321,12 +315,9 @@ export const BranchMaster: React.FC = () => {
     setViewBranchMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
-
-
   //#endregion
 
   //#region EDIT BRANCH MASTER
-
   const handleEditBranchMaster = useCallback((row: BranchMasterData) => {
     setEditingBranchMasterData({
       ...row,
@@ -338,7 +329,6 @@ export const BranchMaster: React.FC = () => {
     setIsAddUpdateModalOpen(true);
 
   }, [])
-
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
@@ -365,9 +355,9 @@ export const BranchMaster: React.FC = () => {
               text={value || 'N/A'}
               maxWidth="250px"
               tooltipThreshold={25}
-              onClick={() => handleViewBranchDetails(row)} 
-             />
-             
+              onClick={() => handleViewBranchDetails(row)}
+            />
+
           </div>
         )
       },
@@ -542,7 +532,6 @@ export const BranchMaster: React.FC = () => {
                       handleConfirmationDialogBoxOpen(data)
                     }}
                   >
-                    <Trash2 className="h-5 w-5" />
                     Delete
                   </Button>
                 ) : <div style={{ width: "120px", height: "44px" }}></div>}
@@ -557,7 +546,6 @@ export const BranchMaster: React.FC = () => {
                     handleEditBranchMaster(data)
                   }}
                 >
-                  <Edit className="h-5 w-5" />
                   Edit
                 </Button>
               </>
@@ -567,8 +555,6 @@ export const BranchMaster: React.FC = () => {
       </Modal>
     )
   }
-
-
   //#endregion
 
   //#region FILTER MODAL HELPERS
@@ -577,11 +563,9 @@ export const BranchMaster: React.FC = () => {
     loadBranches(1, tempFilters)
     setShowFilterPopup(false)
   }
-
   //#endregion
 
   //#region CLEAR FILTER 
-
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
@@ -591,15 +575,18 @@ export const BranchMaster: React.FC = () => {
   //#endregion
 
   //#region HANDLE FILTER CHNAGE
-
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
 
+  //#region HANDLE RESET FORM
+  const handleResetForm = () => {
+    setFormData(initialFormState());
+    setErrors({});
+  };
   //#endregion
 
   //#region ADD UPDATE EDIT BRANCH MASTER
-
   const handleFieldChange = (field: keyof AddUpdateBranchMasterRequest, value: any) => {
 
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -643,7 +630,7 @@ export const BranchMaster: React.FC = () => {
 
     if (formData.Location.trim() === "") {
       newErrors.Location = "Location is required";
-    } 
+    }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -742,11 +729,9 @@ export const BranchMaster: React.FC = () => {
     )
 
   };
-
   //#endregion
 
   //#region DELETE BRANCH MASTER
-
   const handleDeleteBranchMaster = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
@@ -799,10 +784,9 @@ export const BranchMaster: React.FC = () => {
     )
   }
   //#endregion
-  return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
+  return (
+    
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         {/* ============================================================================
           COMMAN LOADER FOR PAGE
@@ -823,7 +807,7 @@ export const BranchMaster: React.FC = () => {
             debouncedSearch(v)
           }}
           onClearSearch={clearsearchBranches}
-          isShowFilterButton={false}
+          isShowFilterButton={true}
           filters={filters}
           onOpenFilter={() => {
             setTempFilters(filters)
@@ -834,7 +818,7 @@ export const BranchMaster: React.FC = () => {
 
           // ADD
           isShowAddButton={canAction}
-          addTitle="Add Branch"
+          addTitle="Add"
           onAdd={handleAddBranchMasterModal}
 
           // IMPORT
@@ -846,7 +830,6 @@ export const BranchMaster: React.FC = () => {
           onExportPdf={handleExportBranchPdf}
           exportLoading={isLoading}
         />
-
 
         {/* DATA TABLE BRANCH */}
         <DataTable
@@ -888,6 +871,7 @@ export const BranchMaster: React.FC = () => {
           onSubmit={handleAddUpdateBranchMaster}
           saveText={editingBranchMasterData ? 'Update Branch' : 'Save Branch'}
           resetText='Reset'
+          onreset={handleResetForm}
           loading={isLoading}
           size='xl'
         >
@@ -1008,16 +992,14 @@ export const BranchMaster: React.FC = () => {
             setDeleteBranchMasterDetailsData(null)
           }}
           onConfirm={handleDeleteBranchMaster}
-          title="You are about to delete a branch?"
-          message="Deleting this branch will permanently remove its contents."
+          title="You are about to delete a Branch?"
+          message="Deleting this Branch will permanently remove its contents."
           confirmText="Delete"
           cancelText="Cancel"
           loading={isLoading}
           variant="danger"
         />
-
       </div>
-    </>
 
   )
 }

@@ -55,6 +55,7 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
             if (params.ProjectLocation) queryParams.append('ProjectLocation', params.ProjectLocation.toString());
             if (params.ProjectName?.trim()) queryParams.append('ProjectName', params.ProjectName.trim());
             if (params.CTCNumber?.trim()) queryParams.append('CTCNumber', params.CTCNumber.trim());
+            if (params.EmployeeId) queryParams.append('EmployeeId', params.EmployeeId.toString());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

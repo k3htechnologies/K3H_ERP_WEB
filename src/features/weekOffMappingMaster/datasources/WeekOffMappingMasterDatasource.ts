@@ -34,6 +34,7 @@ export class WeekOffMappingMasterDatasourceImpl implements WeekOffMappingMasterD
             if (params.WeekOffPolicyName?.trim()) queryParams.append('Name', params.WeekOffPolicyName.trim());
             if (params.DepartmentName?.trim()) queryParams.append('DepartmentName', params.DepartmentName.trim());
             if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
+            if (params.EmployeeId) queryParams.append('EmployeeId', params.EmployeeId.toString());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

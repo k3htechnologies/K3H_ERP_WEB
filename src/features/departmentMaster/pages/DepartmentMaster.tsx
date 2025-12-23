@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AddUpdateDepartmentMasterRequest,
@@ -54,7 +53,7 @@ export const DepartmentMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -196,6 +195,7 @@ export const DepartmentMaster: React.FC = () => {
       undefined,
       'Loading Department'
     )
+    
   }
   //#endregion
 
@@ -363,8 +363,8 @@ export const DepartmentMaster: React.FC = () => {
 
             <TooltipText
               text={value || 'N/A'}
-              maxWidth="250px"
-              tooltipThreshold={30}
+              maxWidth="300px"
+              tooltipThreshold={40}
               onClick={() => handleViewDepartmentDetails(row)} // just pass a function, no need for e.preventDefault here
             />
 
@@ -387,6 +387,37 @@ export const DepartmentMaster: React.FC = () => {
         align: 'center',
         render: (value) => value || '0'
 
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction && !row.NumberOfEmployee ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Department"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )
       }
     ],
     // dependencies: include everything used inside that might change
@@ -575,13 +606,13 @@ export const DepartmentMaster: React.FC = () => {
     }
   };
 
-
   const handleAddDepartmentModal = () => {
     setEditingDepartmentMasterData(null);
     setFormData(initialFormState());
     setErrors({});
     setIsAddUpdateModalOpen(true);
   }
+
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddDepartmentMasterForm = (): {
 
@@ -819,206 +850,201 @@ export const DepartmentMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {/* ============================================================================
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        {/* ============================================================================
+      {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Department Name"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchDepartments}
-          isShowFilterButton={false}
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeDepartmentMasterColumnsModal(true)}
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add Department"
-          onAdd={handleAddDepartmentModal}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Department Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchDepartments}
+        isShowFilterButton={false}
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeDepartmentMasterColumnsModal(true)}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddDepartmentModal}
 
-          // IMPORT
-          isShowImportButton={canAction}
-          onUploadExcel={handleExcelImportDepartmentMaster}
-          onDownloadSampleExcel={handleDownloadExcelSampleDepartmentMaster}
+        // IMPORT
+        isShowImportButton={canAction}
+        onUploadExcel={handleExcelImportDepartmentMaster}
+        onDownloadSampleExcel={handleDownloadExcelSampleDepartmentMaster}
 
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportDepartmentExcel}
-          onExportPdf={handleExportDepartmentPdf}
-          exportLoading={isLoading}
-        />
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportDepartmentExcel}
+        onExportPdf={handleExportDepartmentPdf}
+        exportLoading={isLoading}
+      />
 
 
-        {/* DATA TABLE DEPARTMENT */}
-        <DataTable
-          data={departmentListForTable}
-          columns={visibleDepartmentMasterColumns}
-          pagination={departmentMasterPaginationInfo}
-          emptyMessage="No Departments Data Found"
-          fixedHeight={true}
-          maxHeight="calc(100vh - 255px)"
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-          loading={isLoading}
-        />
+      {/* DATA TABLE DEPARTMENT */}
+      <DataTable
+        data={departmentListForTable}
+        columns={visibleDepartmentMasterColumns}
+        pagination={departmentMasterPaginationInfo}
+        emptyMessage="No Departments Data Found"
+        fixedHeight={true}
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+        loading={isLoading}
+      />
 
-        {/* VIEW DEPARTMENT MODAL */}
-        <ViewDepartmentDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewDepartmentMasterDetailsData(null)
-          }}
-          data={viewDepartmentMasterDetailsData}
-        />
+      {/* VIEW DEPARTMENT MODAL */}
+      <ViewDepartmentDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewDepartmentMasterDetailsData(null)
+        }}
+        data={viewDepartmentMasterDetailsData}
+      />
 
-        {/*  ADD EDIT UPDATE DEPARTMENT MODAL */}
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingDepartmentMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingDepartmentMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          title={editingDepartmentMasterData ? 'Update Department' : 'Add Department'}
-          onSubmit={handleAddUpdateDepartmentMaster}
-          saveText={'Save'}
-          resetText='Reset'
-          loading={isLoading}
-          size='xl'
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4" >
-              <div>
-                <Input
-                  label='Department Code'
-                  required
-                  error={errors.DepartmentCode}
-                  type="text"
-                  value={formData.DepartmentCode.toUpperCase()}
-                  maxLength={4}
-                  onChange={(e) => handleFieldChange('DepartmentCode', e.target.value)}
-                  placeholder="Enter Department Code"
-                />
+      {/*  ADD EDIT UPDATE DEPARTMENT MODAL */}
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingDepartmentMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingDepartmentMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        title={editingDepartmentMasterData ? 'Update Department' : 'Add Department'}
+        onSubmit={handleAddUpdateDepartmentMaster}
+        saveText={'Save'}
+        resetText='Reset'
+        loading={isLoading}
+        size='xl'
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4" >
+            <div>
+              <Input
+                label='Department Code'
+                required
+                error={errors.DepartmentCode}
+                type="text"
+                value={formData.DepartmentCode.toUpperCase()}
+                maxLength={4}
+                onChange={(e) => handleFieldChange('DepartmentCode', e.target.value)}
+                placeholder="Enter Department Code"
+              />
 
-              </div>
+            </div>
 
-              <div>
-                <Input
-                  label='Department Name'
-                  required
-                  error={errors.DepartmentName}
-                  type="text"
-                  value={formData.DepartmentName}
-                  maxLength={100}
-                  onChange={(e) => handleFieldChange('DepartmentName', e.target.value)}
-                  placeholder="Enter Department Name"
-                />
+            <div>
+              <Input
+                label='Department Name'
+                required
+                error={errors.DepartmentName}
+                type="text"
+                value={formData.DepartmentName}
+                maxLength={100}
+                onChange={(e) => handleFieldChange('DepartmentName', e.target.value)}
+                placeholder="Enter Department Name"
+              />
 
-              </div>
             </div>
           </div>
+        </div>
 
-        </Modal>
-        {/* CUSTOMIZE COLUMNS MODAL */}
+      </Modal>
+      {/* CUSTOMIZE COLUMNS MODAL */}
 
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeDepartmentMasterColumnsModal}
-          onClose={() => setIsShowCustomizeDepartmentMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredDepartmentMasterColumnKeys]),
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeDepartmentMasterColumnsModal}
+        onClose={() => setIsShowCustomizeDepartmentMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredDepartmentMasterColumnKeys]),
+          )
+
+          setSelectedDepartmentMasterColumnKeys(withRequired)
+
+          try {
+            LocalStorageHelper.storeDepartmentMasterTableColumns(
+              JSON.stringify(withRequired),
             )
+          } catch { }
+        }}
+        columns={departmentMasterColumns}
+        selectedKeys={selectedDepartmentMasterColumnKeys}
+        requiredKeys={requiredDepartmentMasterColumnKeys}
+        title="Customize Table Columns"
+      />
 
-            setSelectedDepartmentMasterColumnKeys(withRequired)
-
-            try {
-              LocalStorageHelper.storeDepartmentMasterTableColumns(
-                JSON.stringify(withRequired),
-              )
-            } catch { }
-          }}
-          columns={departmentMasterColumns}
-          selectedKeys={selectedDepartmentMasterColumnKeys}
-          requiredKeys={requiredDepartmentMasterColumnKeys}
-          title="Customize Table Columns"
-        />
-
-        {/* FILTER DEPARTMENT MODAL */}
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Department Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          onCancel={() => clearFilters()}
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <Input
-                  label='Department Name'
-                  type="text"
-                  value={tempFilters.DepartmentName || ''}
-                  onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}
-                  placeholder="Enter department name"
-                />
-              </div>
+      {/* FILTER DEPARTMENT MODAL */}
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Department Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        onCancel={() => clearFilters()}
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <Input
+                label='Department Name'
+                type="text"
+                value={tempFilters.DepartmentName || ''}
+                onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}
+                placeholder="Enter department name"
+              />
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        {/* DELETE CONFIRMATION DEPARTMENT MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteDepartmentMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteDepartmentMaster}
-          title="You are about to delete a department?"
-          message="Deleting this department will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
+      {/* DELETE CONFIRMATION DEPARTMENT MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteDepartmentMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteDepartmentMaster}
+        title="You are about to delete a department?"
+        message="Deleting this department will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
 
 
-      </div>
-    </>
-
+    </div>
   )
 }
 

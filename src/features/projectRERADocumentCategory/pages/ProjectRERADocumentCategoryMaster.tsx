@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AddUpdateProjectRERADocumentCategoryMasterRequest,
@@ -30,6 +29,7 @@ import { FieldItem } from '@/ui/components/forms/FieldItem';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { updateFilter } from '@/core/utils/filterHelper';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 const initialFormState = (): AddUpdateProjectRERADocumentCategoryMasterRequest => ({
   ProjectRERADocumentCategoryId: 0,
@@ -39,7 +39,6 @@ const initialFormState = (): AddUpdateProjectRERADocumentCategoryMasterRequest =
   OrderBy: 0
 });
 
-var projectId=5;
 
 export const ProjectRERADocumentCategoryMaster: React.FC = () => {
   //#region STATE MANAGEMENT
@@ -54,7 +53,7 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
@@ -97,16 +96,16 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
   const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
+  //#region PROJECT SELECTION GET ID
+  const { projectId } = useProject();
+  //#endregion
+
   //#region INITIALIZATION
-  const hasFetchedInitialProjectRERADocumentCategories = useRef(false);
-
+  
   useEffect(() => {
-    if (hasFetchedInitialProjectRERADocumentCategories.current) return;
-
-    hasFetchedInitialProjectRERADocumentCategories.current = true;
-
+ if (!projectId) return;
     fetchProjectRERADocumentCategoryList();
-  }, []);
+  }, [projectId]);
 
   //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
@@ -121,7 +120,7 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
         setFormData({
           ProjectRERADocumentCategoryId: editingProjectRERADocumentCategoryMasterData.ProjectRERADocumentCategoryId,
           Uniquekey: editingProjectRERADocumentCategoryMasterData.Uniquekey || initialFormState().Uniquekey,
-          ProjectId: editingProjectRERADocumentCategoryMasterData.ProjectId || 0,
+          ProjectId:Number(projectId),
           ProjectRERADocumentCategory: editingProjectRERADocumentCategoryMasterData.ProjectRERADocumentCategoryName || '',
           OrderBy: editingProjectRERADocumentCategoryMasterData.OrderBy || 0
         });
@@ -158,8 +157,7 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
           IsCheckPermission: true,
           ProjectRERADocumentCategoryId: filterParams.ProjectRERADocumentCategoryId ? Number(filterParams.ProjectRERADocumentCategoryId) : 0,
           ProjectRERADocumentCategory: filterParams.ProjectRERADocumentCategory?.trim() || undefined,
-          // ProjectId: filterParams.ProjectId ? Number(filterParams.ProjectId) : undefined,
-          ProjectId: projectId,
+           ProjectId: Number(projectId),
           SortBy: sortByParam
         };
 
@@ -234,7 +232,7 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
           ProjectRERADocumentCategory: filters.ProjectRERADocumentCategory?.trim() || undefined,
-          ProjectId: filters.ProjectId ? Number(filters.ProjectId) : undefined,
+          ProjectId: Number(projectId),
           SortBy: sortByParam,
           ExportType: exportType
         };
@@ -306,7 +304,7 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
   const handleEditProjectRERADocumentCategoryMaster = useCallback((row: ProjectRERADocumentCategoryMasterData) => {
     setEditingProjectRERADocumentCategoryMasterData({
       ...row,
-      ProjectId: row.ProjectId || 0,
+      ProjectId: Number(projectId),
       ProjectRERADocumentCategoryName: row.ProjectRERADocumentCategoryName || '',
       OrderBy: row.OrderBy || 0
     });
@@ -550,9 +548,6 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
       newErrors.ProjectRERADocumentCategory = 'Project RERA Document Category must be at least 3 characters long';
     }
 
-    if (formData.ProjectId === 0) {
-      newErrors.ProjectId = 'Project Id is required';
-    }
 
     if (formData.OrderBy === 0) {
       newErrors.OrderBy = 'Order By is required';
@@ -568,7 +563,7 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
     return {
       ProjectRERADocumentCategoryId: formData.ProjectRERADocumentCategoryId,
       Uniquekey: formData.Uniquekey,
-      ProjectId: formData.ProjectId,
+      ProjectId: Number(projectId),
       ProjectRERADocumentCategory: formData.ProjectRERADocumentCategory,
       OrderBy: formData.OrderBy
     };
@@ -705,7 +700,7 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
         const params: DeleteProjectRERADocumentCategoryMasterRequest = {
           ProjectRERADocumentCategoryId: deleteProjectRERADocumentCategoryMasterDetailsData.ProjectRERADocumentCategoryId,
           Uniquekey: deleteProjectRERADocumentCategoryMasterDetailsData.Uniquekey,
-          ProjectId:1
+          ProjectId: Number(projectId)
         };
 
         const response =
@@ -750,218 +745,195 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {/* ============================================================================
+
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
 
-        <Loader loading={isLoading} title={loadingMessage}>
-          <div></div>
-        </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>
+        <div></div>
+      </Loader>
 
-        {/* ============================================================================
+      {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Project RERA Document Category"
-          onSearchChange={v => {
-            setSearchTerm(v);
-            debouncedSearch(v);
-          }}
-          onClearSearch={clearsearchProjectRERADocumentCategories}
-          isShowFilterButton={false}
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters);
-            setShowFilterPopup(true);
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeProjectRERADocumentCategoryMasterColumnsModal(true)}
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add Category"
-          onAdd={handleAddProjectRERADocumentCategoryModal}
-          // IMPORT
-          isShowImportButton={canAction}
-          onUploadExcel={handleExcelImportProjectRERADocumentCategoryMaster}
-          onDownloadSampleExcel={handleDownloadExcelSampleProjectRERADocumentCategoryMaster}
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportProjectRERADocumentCategoryExcel}
-          onExportPdf={handleExportProjectRERADocumentCategoryPdf}
-          exportLoading={isLoading}
-        />
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Project RERA Document Category"
+        onSearchChange={v => {
+          setSearchTerm(v);
+          debouncedSearch(v);
+        }}
+        onClearSearch={clearsearchProjectRERADocumentCategories}
+        isShowFilterButton={false}
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters);
+          setShowFilterPopup(true);
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeProjectRERADocumentCategoryMasterColumnsModal(true)}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddProjectRERADocumentCategoryModal}
+        // IMPORT
+        isShowImportButton={canAction}
+        onUploadExcel={handleExcelImportProjectRERADocumentCategoryMaster}
+        onDownloadSampleExcel={handleDownloadExcelSampleProjectRERADocumentCategoryMaster}
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportProjectRERADocumentCategoryExcel}
+        onExportPdf={handleExportProjectRERADocumentCategoryPdf}
+        exportLoading={isLoading}
+      />
 
-        {/* DATA TABLE PROJECT RERA DOCUMENT CATEGORY */}
-        <DataTable
-          data={projectRERADocumentCategoryListForTable}
-          columns={visibleProjectRERADocumentCategoryMasterColumns}
-          pagination={projectRERADocumentCategoryMasterPaginationInfo}
-          emptyMessage="No Project RERA Document Category Data Found"
-          fixedHeight={true}
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-          loading={isLoading}
-        />
+      {/* DATA TABLE PROJECT RERA DOCUMENT CATEGORY */}
+      <DataTable
+        data={projectRERADocumentCategoryListForTable}
+        columns={visibleProjectRERADocumentCategoryMasterColumns}
+        pagination={projectRERADocumentCategoryMasterPaginationInfo}
+        emptyMessage="No Project RERA Document Category Data Found"
+        fixedHeight={true}
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+        loading={isLoading}
+      />
 
-        {/* VIEW PROJECT RERA DOCUMENT CATEGORY MODAL */}
-        <ViewProjectRERADocumentCategoryDetailsModal
-          isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false);
-            setViewProjectRERADocumentCategoryMasterDetailsData(null);
-          }}
-          data={viewProjectRERADocumentCategoryMasterDetailsData}
-        />
+      {/* VIEW PROJECT RERA DOCUMENT CATEGORY MODAL */}
+      <ViewProjectRERADocumentCategoryDetailsModal
+        isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false);
+          setViewProjectRERADocumentCategoryMasterDetailsData(null);
+        }}
+        data={viewProjectRERADocumentCategoryMasterDetailsData}
+      />
 
-        {/*  ADD EDIT UPDATE PROJECT RERA DOCUMENT CATEGORY MODAL */}
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingProjectRERADocumentCategoryMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingProjectRERADocumentCategoryMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          title={editingProjectRERADocumentCategoryMasterData ? 'Update Project RERA Document Category' : 'Add Project RERA Document Category'}
-          onSubmit={handleAddUpdateProjectRERADocumentCategoryMaster}
-          saveText={
-            editingProjectRERADocumentCategoryMasterData ? 'Update Project RERA Document Category' : 'Save Project RERA Document Category'
-          }
-          resetText="Reset"
-          loading={isLoading}
-          size="xl"
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4">
-              <div>
-                <Input
-                  label="Project Id"
-                  required
-                  error={errors.ProjectId}
-                  type="number"
-                  value={formData.ProjectId.toString()}
-                  onChange={e => handleFieldChange('ProjectId', Number(e.target.value))}
-                  placeholder="Enter Project Id"
-                />
-              </div>
+      {/*  ADD EDIT UPDATE PROJECT RERA DOCUMENT CATEGORY MODAL */}
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingProjectRERADocumentCategoryMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingProjectRERADocumentCategoryMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        title={editingProjectRERADocumentCategoryMasterData ? 'Update Project RERA Document Category' : 'Add Project RERA Document Category'}
+        onSubmit={handleAddUpdateProjectRERADocumentCategoryMaster}
+        saveText={
+          editingProjectRERADocumentCategoryMasterData ? 'Update Project RERA Document Category' : 'Save Project RERA Document Category'
+        }
+        resetText="Reset"
+        loading={isLoading}
+        size="xl"
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4">
+            <div>
+              <Input
+                label="Project RERA Document Category"
+                required
+                error={errors.projectRERADocumentCategory}
+                type="text"
+                value={formData.ProjectRERADocumentCategory}
+                maxLength={200}
+                onChange={e => handleFieldChange('ProjectRERADocumentCategory', e.target.value)}
+                placeholder="Enter Project RERA Document Category"
+              />
+            </div>
 
-              <div>
-                <Input
-                  label="Project RERA Document Category"
-                  required
-                  error={errors.projectRERADocumentCategory}
-                  type="text"
-                  value={formData.ProjectRERADocumentCategory}
-                  maxLength={200}
-                  onChange={e => handleFieldChange('ProjectRERADocumentCategory', e.target.value)}
-                  placeholder="Enter Project RERA Document Category"
-                />
-              </div>
-
-              <div>
-                <Input
-                  label="Order By"
-                  required
-                  error={errors.OrderBy}
-                  type="number"
-                  value={formData.OrderBy.toString()}
-                  onChange={e => handleFieldChange('OrderBy', Number(e.target.value))}
-                  placeholder="Enter Order"
-                />
-              </div>
+            <div>
+              <Input
+                label="Order By"
+                required
+                error={errors.OrderBy}
+                type="number"
+                value={formData.OrderBy.toString()}
+                onChange={e => handleFieldChange('OrderBy', Number(e.target.value))}
+                placeholder="Enter Order"
+              />
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeProjectRERADocumentCategoryMasterColumnsModal}
-          onClose={() => setIsShowCustomizeProjectRERADocumentCategoryMasterColumnsModal(false)}
-          onApply={keys => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredProjectRERADocumentCategoryMasterColumnKeys])
-            );
+      {/* CUSTOMIZE COLUMNS MODAL */}
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeProjectRERADocumentCategoryMasterColumnsModal}
+        onClose={() => setIsShowCustomizeProjectRERADocumentCategoryMasterColumnsModal(false)}
+        onApply={keys => {
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredProjectRERADocumentCategoryMasterColumnKeys])
+          );
 
-            setSelectedProjectRERADocumentCategoryMasterColumnKeys(withRequired);
+          setSelectedProjectRERADocumentCategoryMasterColumnKeys(withRequired);
 
-            try {
-              LocalStorageHelper.storeProjectRERADocumentCategoryMasterTableColumns(JSON.stringify(withRequired));
-            } catch { }
-          }}
-          columns={projectRERADocumentCategoryMasterColumns}
-          selectedKeys={selectedProjectRERADocumentCategoryMasterColumnKeys}
-          requiredKeys={requiredProjectRERADocumentCategoryMasterColumnKeys}
-          title="Customize Table Columns"
-        />
+          try {
+            LocalStorageHelper.storeProjectRERADocumentCategoryMasterTableColumns(JSON.stringify(withRequired));
+          } catch { }
+        }}
+        columns={projectRERADocumentCategoryMasterColumns}
+        selectedKeys={selectedProjectRERADocumentCategoryMasterColumnKeys}
+        requiredKeys={requiredProjectRERADocumentCategoryMasterColumnKeys}
+        title="Customize Table Columns"
+      />
 
-        {/* FILTER PROJECT RERA DOCUMENT CATEGORY MODAL */}
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Project RERA Document Category Master"
-          onSubmit={e => {
-            e.preventDefault();
-            applyFilters();
-          }}
-          saveText="Apply Filter"
-          onCancel={() => clearFilters()}
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <Input
-                  label="Project RERA Document Category"
-                  type="text"
-                  value={tempFilters.ProjectRERADocumentCategory || ''}
-                  onChange={e => handleFilterChange('ProjectRERADocumentCategory', e.target.value)}
-                  placeholder="Enter project rera document category"
-                />
-              </div>
-              <div>
-                <Input
-                  label="Project Id"
-                  type="number"
-                  value={tempFilters.ProjectId || ''}
-                  onChange={e => handleFilterChange('ProjectId', e.target.value)}
-                  placeholder="Enter project id"
-                />
-              </div>
-      </div>
+      {/* FILTER PROJECT RERA DOCUMENT CATEGORY MODAL */}
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Project RERA Document Category Master"
+        onSubmit={e => {
+          e.preventDefault();
+          applyFilters();
+        }}
+        saveText="Apply Filter"
+        onCancel={() => clearFilters()}
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <Input
+                label="Project RERA Document Category"
+                type="text"
+                value={tempFilters.ProjectRERADocumentCategory || ''}
+                onChange={e => handleFilterChange('ProjectRERADocumentCategory', e.target.value)}
+                placeholder="Enter project rera document category"
+              />
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* DELETE CONFIRMATION PROJECT RERA DOCUMENT CATEGORY MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false);
+          setDeleteProjectRERADocumentCategoryMasterDetailsData(null);
+        }}
+        onConfirm={handleDeleteProjectRERADocumentCategoryMaster}
+        title="You are about to delete a project rera document category?"
+        message="Deleting this project rera document category will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
     </div>
-        </Modal>
-
-        {/* DELETE CONFIRMATION PROJECT RERA DOCUMENT CATEGORY MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false);
-            setDeleteProjectRERADocumentCategoryMasterDetailsData(null);
-          }}
-          onConfirm={handleDeleteProjectRERADocumentCategoryMaster}
-          title="You are about to delete a project rera document category?"
-          message="Deleting this project rera document category will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
-      </div>
-    </>
   );
 };
 

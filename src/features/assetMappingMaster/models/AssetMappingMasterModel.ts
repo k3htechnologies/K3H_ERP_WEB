@@ -6,6 +6,7 @@ export interface FilterWithPaginationAssetMappingMasterRequest {
     AssetMasterMappingId?: number
     AssetName?: string
     EmployeeName?: string
+    EmployeeId?: number
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

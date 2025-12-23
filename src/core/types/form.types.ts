@@ -54,6 +54,7 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   | 'lime'
   | 'black'
   | 'transparent'
+  | 'cancel'
   disabled?: boolean
   loading?: boolean
   fullWidth?: boolean

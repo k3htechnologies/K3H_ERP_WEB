@@ -3,10 +3,10 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AssetMasterData,
+  DeleteAssetMasterRequest,
   FilterWithPaginationAssetMasterRequest
 } from '@/features/assetMaster/models/AssetMasterModel';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
@@ -19,9 +19,11 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { assetMasterService } from '../services/AssetMasterService';
+import { Trash2 } from 'lucide-react';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 
 export const AssetMaster: React.FC = () => {
 
@@ -40,7 +42,7 @@ export const AssetMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,6 +54,11 @@ export const AssetMaster: React.FC = () => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
+  //DELETE ASSET MASTER
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+
+  const [deleteAssetMasterData, setDeleteAssetMasterData] = useState<AssetMasterData | null>(null)
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeAssetColumnsModal, setIsShowCustomizeAssetColumnsModal] = useState(false);
@@ -145,7 +152,7 @@ export const AssetMaster: React.FC = () => {
       undefined,
       (error: any) => addToast({ type: 'error', title: error.message }),
       undefined,
-      'Loading Asset Data'
+      'Loading Asset'
     );
   };
   //#endregion
@@ -291,7 +298,13 @@ export const AssetMaster: React.FC = () => {
       }
     });
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  //#endregion
 
+  //#region CONFIRMATION DIALOG BOX
+  const handleConfirmationDialogBoxOpen = useCallback((row: AssetMasterData) => {
+    setDeleteAssetMasterData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
   //#endregion
 
   //#region TABLE COLUMNS
@@ -331,7 +344,7 @@ export const AssetMaster: React.FC = () => {
       label: 'Asset Type',
       width: '15',
       sortable: false,
-      align: 'left',
+      align: 'center',
       render: (value) => (
         <TooltipText
           text={value || 'N/A'}
@@ -397,11 +410,43 @@ export const AssetMaster: React.FC = () => {
               : 'bg-gray-100 text-gray-800'
             }`}
         >
-          {value || 'N/A'}
+          {value || '-'}
         </span>
       )
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: '12',
+      fixed: 'right',
+      align: 'center',
+      render: (_value, row) => (
+        canAction ? (
+          <div className="flex items-center justify-center gap-2">
+
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleConfirmationDialogBoxOpen(row)
+              }}
+              color='transparent'
+              isborderRadius
+              size='sm'
+              style={{
+                color: 'red',
+                padding: '4px 8px'
+              }}
+              title="Delete Asset"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : null
+      )
     }
-  ], [handleNavigateToView]);
+
+  ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
 
   //#endregion
 
@@ -443,7 +488,9 @@ export const AssetMaster: React.FC = () => {
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
     setFilters(tempFilters);
+
     loadAssets(1, tempFilters);
+
     setShowFilterPopup(false);
   };
   //#endregion
@@ -473,121 +520,192 @@ export const AssetMaster: React.FC = () => {
   }
   //#endregion
 
+  //#region  DELETE ASSET MASTER  EVENT
+
+  const handleDeleteAssetMaster = async () => {
+
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteAssetMasterData) return;
+
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setIsLoadingMessage,
+      async () => {
+        const params: DeleteAssetMasterRequest = {
+
+          AssetMasterId: deleteAssetMasterData.AssetMasterId || 0,
+
+          UniqueKey: deleteAssetMasterData.Uniquekey || ""
+        };
+
+        const response = await assetMasterService.apiCallDeleteAssetMaster(params);
+
+        if (E.isRight(response)) {
+
+          setAssetMasterList(prevData => prevData.filter(item => item.AssetMasterId !== deleteAssetMasterData.AssetMasterId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteAssetMasterData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+        }
+        return response;
+      },
+      undefined,
+      (error: any) => addToast({ type: "error", title: error.message }),
+      undefined,
+      "Deleting Asset Master"
+    );
+  };
+
+  //#endregion
+
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        {/* // LOADER */}
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+      {/* // LOADER */}
 
-        {/* ACTION TOOLBAR */}
+      <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Asset Name"
-          onSearchChange={v => {
-            setSearchTerm(v);
-            debouncedSearch(v);
-          }}
-          onClearSearch={clearSearchAssets}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters);
-            setShowFilterPopup(true);
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeAssetColumnsModal(true)}
+      {/* ACTION TOOLBAR */}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add Asset"
-          onAdd={handleAddAssetModal}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Asset Name"
+        onSearchChange={v => {
+          setSearchTerm(v);
+          debouncedSearch(v);
+        }}
+        onClearSearch={clearSearchAssets}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters);
+          setShowFilterPopup(true);
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeAssetColumnsModal(true)}
+
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddAssetModal}
 
 
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportAssetExcel}
-          onExportPdf={handleExportAssetPdf}
-          exportLoading={isLoading}
-        />
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportAssetExcel}
+        onExportPdf={handleExportAssetPdf}
+        exportLoading={isLoading}
+      />
 
-        {/* DATA TABLE ASSET*/}
+      {/* DATA TABLE ASSET*/}
 
-        <DataTable
-          data={AssetsForTable}
-          columns={visibleAssetColumns}
-          pagination={AssetPaginationInfo}
-          emptyMessage="No Assets found"
-          fixedHeight
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      <DataTable
+        data={AssetsForTable}
+        columns={visibleAssetColumns}
+        pagination={AssetPaginationInfo}
+        emptyMessage="No Assets Found"
+        fixedHeight
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
+      {/* CUSTOMIZE COLUMNS MODAL */}
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeAssetColumnsModal}
-          onClose={() => setIsShowCustomizeAssetColumnsModal(false)}
-          onApply={keys => {
-            const withRequired = Array.from(
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeAssetColumnsModal}
+        onClose={() => setIsShowCustomizeAssetColumnsModal(false)}
+        onApply={keys => {
+          const withRequired = Array.from(
 
-              new Set([...keys, ...requiredAssetColumnKeys])
+            new Set([...keys, ...requiredAssetColumnKeys])
+          );
+          setSelectedAssetColumnKeys(withRequired);
+
+          try {
+            LocalStorageHelper.storeAssetMasterTableColumns?.(
+
+              JSON.stringify(withRequired)
             );
-            setSelectedAssetColumnKeys(withRequired);
+          } catch { }
+        }}
+        columns={assetMasterColumns}
+        selectedKeys={selectedAssetColumnKeys}
+        requiredKeys={requiredAssetColumnKeys}
+        title="Customize Table Columns"
+      />
 
-            try {
-              LocalStorageHelper.storeAssetMasterTableColumns?.(
+      {/* FILTER MODAL */}
 
-                JSON.stringify(withRequired)
-              );
-            } catch { }
-          }}
-          columns={assetMasterColumns}
-          selectedKeys={selectedAssetColumnKeys}
-          requiredKeys={requiredAssetColumnKeys}
-          title="Customize Table Columns"
-        />
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Asset Master"
+        onSubmit={e => {
+          e.preventDefault();
+          applyFilters();
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        resetText=''
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <Input type="text"
+              label='Asset Name'
+              value={tempFilters?.AssetName ?? ''}
+              onChange={e => handleFilterChange('AssetName', e.target.value)}
+              placeholder="Enter Asset Name" />
 
-        {/* FILTER MODAL */}
-
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Asset Master"
-          onSubmit={e => {
-            e.preventDefault();
-            applyFilters();
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          resetText=''
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <Input type="text"
-                label='Asset Name'
-                value={tempFilters?.AssetName ?? ''}
-                onChange={e => handleFilterChange('AssetName', e.target.value)}
-                placeholder="Enter Asset Name" />
-
-              <Input type="text"
-                label='Status'
-                value={tempFilters.Status || ''}
-                onChange={e => handleFilterChange('Status', e.target.value)}
-                placeholder="Enter status (Active / Inactive)" />
-            </div>
+            <Input type="text"
+              label='Status'
+              value={tempFilters.Status || ''}
+              onChange={e => handleFilterChange('Status', e.target.value)}
+              placeholder="Enter status (Active / Inactive)" />
           </div>
-        </Modal>
-      </div>
-    </>
+        </div>
+      </Modal>
+
+      {/* DELETE CONFIRMATION MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteAssetMasterData(null)
+        }}
+        onConfirm={handleDeleteAssetMaster}
+        title="You are about to delete a Asset?"
+        message="Deleting this Asset will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+
+    </div>
   );
 };
 

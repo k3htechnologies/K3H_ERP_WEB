@@ -1,7 +1,6 @@
 import useToast from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import { Tabs, type TabItem } from '@/ui/components/Tab/Tab';
-import { ToastContainer } from '@/ui/components/Toast';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { fetchProjectDocumentCategoryDropdown } from '@/features/projectDocumentCategory/projectDocumentCategoryDropDown';
 import { runApiWithLoader } from '@/core/utils';
@@ -26,6 +25,7 @@ import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { PROJECT_DOCUMENT_STATUS } from '@/core/constants';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 
 const initialFormState = (): AddUpdateProjectDocumentRequest => ({
@@ -41,7 +41,7 @@ const initialFormState = (): AddUpdateProjectDocumentRequest => ({
   RemoveProjectDocumentURL: '',
   ProjectDocumentRemark: ''
 });
-var projectId = 2;
+
 const ProjectDocument: React.FC = () => {
 
   //#region STATE
@@ -66,7 +66,7 @@ const ProjectDocument: React.FC = () => {
   const [filters] = useState<FilterInfo>({});
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -107,12 +107,17 @@ const ProjectDocument: React.FC = () => {
   const { canAction } = useMenuPermissions();
   //#endregion
 
+  //#region PROJECT SELECTION GET ID
+  const { projectId } = useProject();
+  //#endregion
+
   //#region INIT
 
   useEffect(() => {
+    if (!projectId) return;
     loadProjectDocumentTabs()
 
-  }, [])
+  }, [projectId])
 
 
 
@@ -129,7 +134,7 @@ const ProjectDocument: React.FC = () => {
           ProjectDocumentId: editingDocumentData.ProjectDocumentId,
           Uniquekey: editingDocumentData.Uniquekey || initialFormState().Uniquekey,
           ProjectDocumentName: editingDocumentData.ProjectDocumentName || '',
-          ProjectId: editingDocumentData.ProjectId,
+          ProjectId: Number(projectId),
           ProjectDocumentCategoryId: editingDocumentData.ProjectDocumentCategoryId,
           ProjectDocumentExpiryDate: editingDocumentData.ProjectDocumentExpiryDate || undefined,
           ProjectDocumentStatus: editingDocumentData.ProjectDocumentStatus,
@@ -175,7 +180,7 @@ const ProjectDocument: React.FC = () => {
       setIsLoadingMessage,
       async () => {
 
-        const response = await fetchProjectDocumentCategoryDropdown(1, projectId);
+        const response = await fetchProjectDocumentCategoryDropdown(1, Number(projectId));
 
         const items = Array.isArray(response?.itemList) ? response.itemList : [];
 
@@ -236,7 +241,7 @@ const ProjectDocument: React.FC = () => {
         const params: FilterWithPaginationProjectDocument = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          ProjectId: projectId,
+          ProjectId: Number(projectId),
           ProjectDocumentId: Number(filterParams.ProjectDocumentId) ?? undefined,
           ProjectDocumentName: filterParams.ProjectDocumentName,
           ProjectDocumentStatus: filterParams.ProjectDocumentStatus,
@@ -629,7 +634,7 @@ const ProjectDocument: React.FC = () => {
     setProjectDocumentFiles([]);
     setProjectDocumentURL('')
     setRemoveProjectDocumentUrls([]);
-    
+
     setEditingDocumentData(null);
     setFormData(initialFormState());
     setErrors({});
@@ -861,7 +866,7 @@ const ProjectDocument: React.FC = () => {
 
         const params: DeleteProjectDocumentRequest = {
           ProjectDocumentId: deleteProjectDocumentDetailsData.ProjectDocumentId,
-          projectId: deleteProjectDocumentDetailsData.ProjectId,
+          projectId: Number(projectId),
           Uniquekey: deleteProjectDocumentDetailsData.Uniquekey ?? '',
           ProjectDocumentCategoryId: deleteProjectDocumentDetailsData.ProjectDocumentCategoryId
         }
@@ -903,276 +908,273 @@ const ProjectDocument: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+      <Loader loading={isLoading} title={loadingMessage}>
+        <div></div>
+      </Loader>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-        <Loader loading={isLoading} title={loadingMessage}>
-          <div></div>
-        </Loader>
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Document Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchDocumnets}
+        isShowFilterButton={false}
+        isShowCustomizeButton={false}
+        // ADD
+        isShowAddButton={projectDocumentTabList.length > 0 ? true : false}
+        addTitle="Add Document"
+        onAdd={handleAddDocumentModal}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Document Name"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
+        // IMPORT
+        isShowImportButton={false}
+        // EXPORT
+        isShowExportButton={false}
+        exportLoading={isLoading}
+      />
+
+
+      {projectDocumentTabList.length > 0 && (
+        <Tabs
+          tabs={projectDocumentTabList}
+          defaultActive={activeTab}
+          islarge={true}
+          onTabChange={(t) => {
+            setActiveTab(t.id);
+
+            const newFilters: FilterInfo = {
+              ...filters,
+              ProjectDocumentCategoryId: t.id,
+            };
+
+            loadProjectDocument(1, newFilters);
           }}
-          onClearSearch={clearsearchDocumnets}
-          isShowFilterButton={false}
-          isShowCustomizeButton={false}
-          // ADD
-          isShowAddButton={projectDocumentTabList.length > 0 ? true : false}
-          addTitle="Add Document"
-          onAdd={handleAddDocumentModal}
 
-          // IMPORT
-          isShowImportButton={false}
-          // EXPORT
-          isShowExportButton={false}
-          exportLoading={isLoading}
         />
+      )}
 
 
-        {projectDocumentTabList.length > 0 && (
-          <Tabs
-            tabs={projectDocumentTabList}
-            defaultActive={activeTab}
-            onTabChange={(t) => {
-              setActiveTab(t.id);
+      <DataTableExpandable
+        ref={dtRef}
+        data={projectDocumentListForTable}
+        columns={projectDocumentColumns}
+        pagination={projectDocumentPaginationInfo}
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+        emptyMessage='No Document Data Found'
+        loading={isLoading}
+        fixedHeight
+        recordsPerPage={20}
+        expandable={{
 
-              const newFilters: FilterInfo = {
-                ...filters,
-                ProjectDocumentCategoryId: t.id,
-              };
+          keyField: 'ProjectDocumentId',
+          alwaysFetchOnOpen: true,
+          fetchRow: async (row) => {
 
-              loadProjectDocument(1, newFilters);
-            }}
-
-          />
-        )}
-
-
-        <DataTableExpandable
-          ref={dtRef}
-          data={projectDocumentListForTable}
-          columns={projectDocumentColumns}
-          pagination={projectDocumentPaginationInfo}
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-          emptyMessage='No Document Data Found'
-          loading={isLoading}
-          fixedHeight
-          recordsPerPage={20}
-          expandable={{
-
-            keyField: 'ProjectDocumentId',
-            alwaysFetchOnOpen: true,
-            fetchRow: async (row) => {
-
-              const params: FilterWithPaginationProjectDocument = {
-                PageNumber: 1,
-                PageSize: pagination.pageSize,
-                ProjectId: projectId,
-                ProjectDocumentId: Number(row.ProjectDocumentId),
-                ProjectDocumentName: row.ProjectDocumentName,
-                ProjectDocumentStatus: row.ProjectDocumentStatus,
-                ProjectDocumentCategory: row.ProjectDocumentCategory,
-                ProjectDocumentCategoryId: row.ProjectDocumentCategoryId
-              };
+            const params: FilterWithPaginationProjectDocument = {
+              PageNumber: 1,
+              PageSize: pagination.pageSize,
+              ProjectId: Number(projectId),
+              ProjectDocumentId: Number(row.ProjectDocumentId),
+              ProjectDocumentName: row.ProjectDocumentName,
+              ProjectDocumentStatus: row.ProjectDocumentStatus,
+              ProjectDocumentCategory: row.ProjectDocumentCategory,
+              ProjectDocumentCategoryId: row.ProjectDocumentCategoryId
+            };
 
 
-              const response = await ProjectDocumentService.apiCallPullProjectDocument(params);
+            const response = await ProjectDocumentService.apiCallPullProjectDocument(params);
 
-              if (E.isRight(response)) {
+            if (E.isRight(response)) {
 
-                return response.right.Data ?? [];
-              }
-              return [];
+              return response.right.Data ?? [];
+            }
+            return [];
 
-            },
+          },
 
 
-            renderRow: (fetchedData) => {
+          renderRow: (fetchedData) => {
 
-              const details: ProjectDocumentData[] = Array.isArray(fetchedData) ? fetchedData : (fetchedData ? [fetchedData] : []);
-              if (!details || details.length === 0) {
-
-                return (
-                  <div className="p-1 text-xs text-gray-600 text-center">
-                    No Document Found.
-                  </div>
-                );
-              }
+            const details: ProjectDocumentData[] = Array.isArray(fetchedData) ? fetchedData : (fetchedData ? [fetchedData] : []);
+            if (!details || details.length === 0) {
 
               return (
-                <DataTable
-                  data={details}
-                  columns={projectDocumentDetailsColumns}
-                  emptyMessage="No Departments Data Found"
-                  fixedHeight={true}
-                  maxHeight="calc(100vh - 255px)"
-                  recordsPerPage={20}
-                  className="flex-1"
-                  sortInfo={sortInfo}
-                  onSort={handleSortColumn}
-                  loading={isLoading}
-                />
+                <div className="p-1 text-xs text-gray-600 text-center">
+                  No Document Found.
+                </div>
               );
-            },
+            }
 
-            expandButton: { openText: 'Hide', closeText: 'Show' }
-          }}
-        />
+            return (
+              <DataTable
+                data={details}
+                columns={projectDocumentDetailsColumns}
+                emptyMessage="No Departments Data Found"
+                fixedHeight={true}
+                maxHeight="calc(100vh - 255px)"
+                recordsPerPage={20}
+                className="flex-1"
+                sortInfo={sortInfo}
+                onSort={handleSortColumn}
+                loading={isLoading}
+              />
+            );
+          },
+
+          expandButton: { openText: 'Hide', closeText: 'Show' }
+        }}
+      />
 
 
-        {/*  ADD EDIT UPDATE DOCUMENT */}
-        <Modal
-          isOpen={isAddUpdateDocumentModalOpen}
-          onClose={() => {
-            setIsAddUpdateDocumentModalOpen(false);
-            setEditingDocumentData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateDocumentModalOpen(false);
-            setEditingDocumentData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          title={editingDocumentData ? 'Update Document' : 'Add Document'}
-          onSubmit={(e) => handleAddUpdateDocument(1, e)}
-          saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
-          resetText='Reset'
-          loading={isLoading}
-          size='xl'
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4" >
-              <div>
+      {/*  ADD EDIT UPDATE DOCUMENT */}
+      <Modal
+        isOpen={isAddUpdateDocumentModalOpen}
+        onClose={() => {
+          setIsAddUpdateDocumentModalOpen(false);
+          setEditingDocumentData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateDocumentModalOpen(false);
+          setEditingDocumentData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        title={editingDocumentData ? 'Update Document' : 'Add Document'}
+        onSubmit={(e) => handleAddUpdateDocument(1, e)}
+        saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
+        resetText='Reset'
+        loading={isLoading}
+        size='xl'
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4" >
+            <div>
+              <Input
+                label='Document'
+                required
+                error={errors.ProjectDocumentName}
+                type="text"
+                value={formData.ProjectDocumentName}
+                maxLength={250}
+                onChange={(e) => handleFieldChange('ProjectDocumentName', e.target.value)}
+                placeholder="Enter Document"
+              />
+
+            </div>
+
+          </div>
+        </div>
+
+      </Modal>
+
+      {/*  ADD EDIT UPDATE DOCUMENT DETAILS */}
+      <Modal
+        isOpen={isAddUpdateDocumentDetailsModalOpen}
+        onClose={() => {
+          setIsAddUpdateDocumentDetailsModalOpen(false);
+          setEditingDocumentData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateDocumentDetailsModalOpen(false);
+          setEditingDocumentData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        title={editingDocumentData ? 'Update Document' : 'Add Document'}
+        onSubmit={(e) => handleAddUpdateDocument(0, e)}
+        saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
+        resetText='Reset'
+        loading={isLoading}
+        size='xl'
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4" >
+            <div>
+              {editingDocumentData ?
                 <Input
                   label='Document'
                   required
-                  error={errors.ProjectDocumentName}
+                  readOnly
                   type="text"
                   value={formData.ProjectDocumentName}
                   maxLength={250}
-                  onChange={(e) => handleFieldChange('ProjectDocumentName', e.target.value)}
                   placeholder="Enter Document"
                 />
-
-              </div>
-
-            </div>
-          </div>
-
-        </Modal>
-
-        {/*  ADD EDIT UPDATE DOCUMENT DETAILS */}
-        <Modal
-          isOpen={isAddUpdateDocumentDetailsModalOpen}
-          onClose={() => {
-            setIsAddUpdateDocumentDetailsModalOpen(false);
-            setEditingDocumentData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateDocumentDetailsModalOpen(false);
-            setEditingDocumentData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          title={editingDocumentData ? 'Update Document' : 'Add Document'}
-          onSubmit={(e) => handleAddUpdateDocument(0, e)}
-          saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
-          resetText='Reset'
-          loading={isLoading}
-          size='xl'
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4" >
-              <div>
-                {editingDocumentData ?
-                  <Input
-                    label='Document'
-                    required
-                    readOnly
-                    type="text"
-                    value={formData.ProjectDocumentName}
-                    maxLength={250}
-                    placeholder="Enter Document"
-                  />
-                  : ""}
-
-              </div>
-              <div>
-                <DatePickerInput
-                  label="Expiry Date"
-                  value={formatDate_dd_mm_yyyy(formData.ProjectDocumentExpiryDate)}
-                  onChange={(val) => handleFieldChange('ProjectDocumentExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                />
-              </div>
-              <div>
-                <SinglePageSelection
-                  label="Status"
-                  required
-                  value={formData.ProjectDocumentStatus}
-                  onChange={(e) => handleFieldChange('ProjectDocumentStatus', String(e))}
-                  options={PROJECT_DOCUMENT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={errors.ProjectDocumentStatus}
-                />
-              </div>
-              <div>
-                <MultiFilePicker
-                  label="Documents"
-                  value={projectDocumentFiles}
-                  onChange={setProjectDocumentFiles}
-                  availableFilesURL={projectDocumentURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                  maxFiles={5}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => {
-                    setRemoveProjectDocumentUrls((prev) => [...prev, url])
-                  }}
-                />
-              </div>
-              <div>
-                <Input
-                  label='Remark'
-
-                  type="text"
-                  value={formData.ProjectDocumentRemark}
-                  maxLength={250}
-                  onChange={(e) => handleFieldChange('ProjectDocumentRemark', e.target.value)}
-                  placeholder="Enter Remarks"
-                />
-
-              </div>
+                : ""}
 
             </div>
+            <div>
+              <DatePickerInput
+                label="Expiry Date"
+                value={formatDate_dd_mm_yyyy(formData.ProjectDocumentExpiryDate)}
+                onChange={(val) => handleFieldChange('ProjectDocumentExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+              />
+            </div>
+            <div>
+              <SinglePageSelection
+                label="Status"
+                required
+                value={formData.ProjectDocumentStatus}
+                onChange={(e) => handleFieldChange('ProjectDocumentStatus', String(e))}
+                options={PROJECT_DOCUMENT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                error={errors.ProjectDocumentStatus}
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Documents"
+                value={projectDocumentFiles}
+                onChange={setProjectDocumentFiles}
+                availableFilesURL={projectDocumentURL ?? ""}
+                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                maxFiles={5}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => {
+                  setRemoveProjectDocumentUrls((prev) => [...prev, url])
+                }}
+              />
+            </div>
+            <div>
+              <Input
+                label='Remark'
+
+                type="text"
+                value={formData.ProjectDocumentRemark}
+                maxLength={250}
+                onChange={(e) => handleFieldChange('ProjectDocumentRemark', e.target.value)}
+                placeholder="Enter Remarks"
+              />
+
+            </div>
+
           </div>
+        </div>
 
-        </Modal>
+      </Modal>
 
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteProjectDocumentDetailsData(null)
-          }}
-          onConfirm={handleDeleteDocument}
-          title="You are about to delete a document?"
-          message="Deleting this document will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
-      </div>
-    </>
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteProjectDocumentDetailsData(null)
+        }}
+        onConfirm={handleDeleteDocument}
+        title="You are about to delete a document?"
+        message="Deleting this document will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+    </div>
   );
 };
 

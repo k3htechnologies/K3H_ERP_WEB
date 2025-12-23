@@ -3,11 +3,11 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   ShiftMasterData,
-  FilterWithPaginationShiftMasterRequest
+  FilterWithPaginationShiftMasterRequest,
+  DeleteShiftMasterRequest
 } from '@/features/shiftMaster/models/ShiftMasterModel';
 
 import { ShiftMasterService } from '@/features/shiftMaster/services/ShiftMasterService'
@@ -16,13 +16,15 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { updateFilter } from '@/core/utils/filterHelper';
+import { Trash2 } from 'lucide-react';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 
 export const ShiftMaster: React.FC = () => {
 
@@ -41,7 +43,7 @@ export const ShiftMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,6 +55,10 @@ export const ShiftMaster: React.FC = () => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
+  //DELETE SHIFT MASTER
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+  const [deleteShiftMasterDetailsData, setDeleteShiftMasterDetailsData] = useState<ShiftMasterData | null>(null)
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeShiftColumnsModal, setIsShowCustomizeShiftColumnsModal] = useState(false);
@@ -69,7 +75,10 @@ export const ShiftMaster: React.FC = () => {
   useEffect(() => {
     const incoming = location.state?.listState;
     const listState = incoming ?? {
-      page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: ''
+      page: 1,
+      filters: {} as FilterInfo,
+      sortInfo: undefined,
+      searchTerm: ''
     };
 
     setPagination({ currentPage: listState.page ?? pagination.currentPage });
@@ -145,7 +154,7 @@ export const ShiftMaster: React.FC = () => {
       undefined,
       (error: any) => addToast({ type: 'error', title: error.message }),
       undefined,
-      'Loading Shift Data'
+      'Loading Shift'
     );
   };
   //#endregion
@@ -182,7 +191,10 @@ export const ShiftMaster: React.FC = () => {
     setPagination({ currentPage: 1 });
     loadShifts(1, {});
     try {
-      navigate(location.pathname, { replace: true, state: {} });
+      navigate(location.pathname, {
+        replace: true,
+        state: {}
+      });
     } catch {
     }
   };
@@ -291,7 +303,13 @@ export const ShiftMaster: React.FC = () => {
       }
     });
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  //#endregion
 
+  //#region CONFIRMATION DIALOG BOX
+  const handleConfirmationDialogBoxOpen = useCallback((row: ShiftMasterData) => {
+    setDeleteShiftMasterDetailsData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
   //#endregion
 
   //#region TABLE COLUMNS
@@ -346,9 +364,9 @@ export const ShiftMaster: React.FC = () => {
     {
       key: 'ShiftEndTime',
       label: 'Shift End Time',
-      width: '12',
+      width: '15',
       sortable: false,
-      align: 'left',
+      align: 'center',
       render: (value) => (
         <TooltipText
           text={value || 'N/A'}
@@ -363,7 +381,7 @@ export const ShiftMaster: React.FC = () => {
       label: 'Shift Duration Time',
       width: '12',
       sortable: false,
-      align: 'left',
+      align: 'center',
       render: (value) => (
         <TooltipText
           text={value || 'N/A'}
@@ -378,7 +396,7 @@ export const ShiftMaster: React.FC = () => {
       label: 'Shift Work Duration Time',
       width: '12',
       sortable: false,
-      align: 'left',
+      align: 'center',
       render: (value) => (
         <TooltipText
           text={value || 'N/A'}
@@ -387,8 +405,38 @@ export const ShiftMaster: React.FC = () => {
         />
       )
     },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: '12',
+      fixed: 'right',
+      align: 'center',
+      render: (_value, row) => (
+        canAction ? (
+          <div className="flex items-center justify-center gap-2">
 
-  ], [handleNavigateToView]);
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleConfirmationDialogBoxOpen(row)
+              }}
+              color='transparent'
+              isborderRadius
+              size='sm'
+              style={{
+                color: 'red',
+                padding: '4px 8px'
+              }}
+              title="Delete Shift"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : null
+      )
+    }
+  ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
@@ -459,116 +507,180 @@ export const ShiftMaster: React.FC = () => {
   }
   //#endregion
 
+  //#region DELETE SHIFT MASTER
+  const handleDeleteShiftMaster = async () => {
+
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteShiftMasterDetailsData) return;
+
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setIsLoadingMessage,
+      async () => {
+        const params: DeleteShiftMasterRequest = {
+
+          ShiftManagementMasterId: deleteShiftMasterDetailsData.ShiftManagementMasterId || 0,
+
+          UniqueKey: deleteShiftMasterDetailsData.Uniquekey || ""
+        };
+
+        const response = await ShiftMasterService.apiCallDeleteShiftMaster(params);
+
+        if (E.isRight(response)) {
+
+          setShiftMasterList(prevData => prevData.filter(item => item.ShiftManagementMasterId !== deleteShiftMasterDetailsData.ShiftManagementMasterId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteShiftMasterDetailsData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+        }
+        return response;
+      },
+      undefined,
+      (error: any) => addToast({ type: "error", title: error.message }),
+      undefined,
+      "Deleting Shift"
+    );
+  };
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {/* LOADER */}
 
-        <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* LOADER */}
 
-        {/* ============================================================================
+      <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+
+      {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Shift Name"
-          onSearchChange={v => {
-            setSearchTerm(v);
-            debouncedSearch(v);
-          }}
-          onClearSearch={clearSearchShifts}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters);
-            setShowFilterPopup(true);
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeShiftColumnsModal(true)}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Shift Name"
+        onSearchChange={v => {
+          setSearchTerm(v);
+          debouncedSearch(v);
+        }}
+        onClearSearch={clearSearchShifts}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters);
+          setShowFilterPopup(true);
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeShiftColumnsModal(true)}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add Shift"
-          onAdd={handleAddShiftModal}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddShiftModal}
 
 
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportShiftExcel}
-          onExportPdf={handleExportShiftPdf}
-          exportLoading={isLoading}
-        />
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportShiftExcel}
+        onExportPdf={handleExportShiftPdf}
+        exportLoading={isLoading}
+      />
 
-        {/* DATA TABLE SHIFT*/}
+      {/* DATA TABLE SHIFT*/}
 
-        <DataTable
-          data={ShiftsForTable}
-          columns={visibleShiftColumns}
-          pagination={ShiftPaginationInfo}
-          emptyMessage="No Shift found"
-          fixedHeight
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      <DataTable
+        data={ShiftsForTable}
+        columns={visibleShiftColumns}
+        pagination={ShiftPaginationInfo}
+        emptyMessage="No Shift Found"
+        fixedHeight
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
+      {/* CUSTOMIZE COLUMNS MODAL */}
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeShiftColumnsModal}
-          onClose={() => setIsShowCustomizeShiftColumnsModal(false)}
-          onApply={keys => {
-            const withRequired = Array.from(
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeShiftColumnsModal}
+        onClose={() => setIsShowCustomizeShiftColumnsModal(false)}
+        onApply={keys => {
+          const withRequired = Array.from(
 
-              new Set([...keys, ...requiredShiftColumnKeys])
+            new Set([...keys, ...requiredShiftColumnKeys])
+          );
+          setSelectedShiftColumnKeys(withRequired);
+
+          try {
+            LocalStorageHelper.storeShiftMasterTableColumns?.(
+
+              JSON.stringify(withRequired)
             );
-            setSelectedShiftColumnKeys(withRequired);
+          } catch { }
+        }}
+        columns={ShiftMasterColumns}
+        selectedKeys={selectedShiftColumnKeys}
+        requiredKeys={requiredShiftColumnKeys}
+        title="Customize Table Columns"
+      />
 
-            try {
-              LocalStorageHelper.storeShiftMasterTableColumns?.(
-
-                JSON.stringify(withRequired)
-              );
-            } catch { }
-          }}
-          columns={ShiftMasterColumns}
-          selectedKeys={selectedShiftColumnKeys}
-          requiredKeys={requiredShiftColumnKeys}
-          title="Customize Table Columns"
-        />
-
-        {/* FILTER SHIFT MODAL */}
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Shift Master"
-          onSubmit={e => {
-            e.preventDefault();
-            applyFilters();
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          resetText=''
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <Input type="text"
-                label='Shift Name'
-                value={tempFilters?.ShiftName ?? ''}
-                onChange={e => handleFilterChange('ShiftName', e.target.value)}
-                placeholder="Enter Shift Name" />
-            </div>
+      {/* FILTER SHIFT MODAL */}
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Shift Master"
+        onSubmit={e => {
+          e.preventDefault();
+          applyFilters();
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        resetText=''
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <Input type="text"
+              label='Shift Name'
+              value={tempFilters?.ShiftName ?? ''}
+              onChange={e => handleFilterChange('ShiftName', e.target.value)}
+              placeholder="Enter Shift Name" />
           </div>
-        </Modal>
-      </div>
-    </>
+        </div>
+      </Modal>
+
+      {/* DELETE CONFIRMATION  SHIFT MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => setIsConfirmationDialogBoxOpen(false)}
+        onConfirm={handleDeleteShiftMaster}
+        title="You are about to delete this Shift?"
+        message="Deleting this Shift will permanently remove its data."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+
+    </div>
   );
 };
 

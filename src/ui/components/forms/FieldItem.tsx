@@ -2,6 +2,7 @@ import React from 'react';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { COLORS } from '@/core/constants';
+import { Eye } from 'lucide-react';
 
 export const FieldItem: React.FC<{
   label: string;
@@ -10,6 +11,9 @@ export const FieldItem: React.FC<{
   className?: string;
   withBorder?: boolean;
   urls?: string | null;
+  isIcon?: boolean;
+  isUsedForInventoryFlat?: boolean;
+  isSetValue?: boolean;
 }> = ({
   label,
   value,
@@ -17,95 +21,121 @@ export const FieldItem: React.FC<{
   className = '',
   withBorder = false,
   urls = null,
+  isIcon = false,
+  isUsedForInventoryFlat = false,
+  isSetValue = true,
 }) => {
-  const displayValue = value !== undefined && value !== null && value !== '' ? String(value) : '-';
-  const borderClass = withBorder ? 'border-b border-gray-200' : '';
 
-  // parse urls (returns [])
-  const imageUrls = parseDocumentUrls(urls);
-  const hasDocs = imageUrls.length > 0;
+    const displayValue = value !== undefined && value !== null && value !== '' ? String(value) : '-';
+    const borderClass = withBorder ? 'border-b border-[#135bec2e]' : '';
 
-  // Grid style for row layout: Label | ":" | Value
-  // If you want different label width, change '180px' here.
-  const rowGridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: '180px 16px 1fr',
-    gap: 8,
-    alignItems: 'center',
-    width: '100%',
-  };
+    // parse urls (returns [])
+    const imageUrls = parseDocumentUrls(urls);
+    const hasDocs = imageUrls.length > 0;
 
-  // ROW layout: label : value
-  if (isRow) {
-    return (
-      <div className={`${borderClass} py-2`}>
-        <div style={rowGridStyle}>
-          {/* Label */}
-          <div className="text-sm font-medium text-[#1D1D1D80] truncate">
-            {label}
-          </div>
+    const EyeTrigger = (
+      <button
+        type="button"
+        className="flex items-center gap-1 text-sm font-medium p-0"
+        style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
+      >
+        <Eye size={16} />
+      </button>
+    );
 
-          {/* Colon */}
-          <div className="text-sm text-[#1D1D1D80] text-center select-none">:</div>
+    const rowGridStyle: React.CSSProperties = {
+      display: 'grid',
+      gridTemplateColumns: !isUsedForInventoryFlat ? '180px 16px 1fr' : '120px 16px 1fr',
+      // gap: 8,
+      gap: !isUsedForInventoryFlat ? 8 : 4,
+      alignItems: 'center',
+      width: '100%',
+    };
 
-          {/* Value (with optional document viewer)
-              IMPORTANT: add `min-w-0` so this grid cell can shrink and allow wrapping */}
-          <div className="text-sm text-[#1D1D1D] font-medium break-words min-w-0">
-            {hasDocs ? (
-              <MultiImageViewer
-                images={imageUrls}
-                title={label}
-                triggerLabel={
-                  // inline button — make it able to wrap with min-w-0 + whitespace-normal
-                  <button
-                    type="button"
-                    className="text-sm text-[#1D1D1D] font-medium text-left break-words whitespace-normal max-w-[400px] cursor-pointer p-0 min-w-0 underline"
-                    style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
-                  >
-                    {displayValue}
-                  </button>
-                }
-              />
-            ) : (
-              <span
-                className={`text-sm text-[#1D1D1D] font-medium text-left break-words whitespace-normal max-w-[400px] ${className} min-w-0`}
-              >
-                {displayValue}
-              </span>
-            )}
+
+    // ROW layout: label : value
+    if (isRow) {
+      return (
+        <div className={`${borderClass} ${!isUsedForInventoryFlat ? 'py-2' : 'py-0.1'}`}>
+          <div style={rowGridStyle}>
+
+            {/* Label */}
+            <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+              {label}
+            </div>
+
+            {/* Colon */}
+            <div className="text-sm text-[#1D1D1D80] text-center select-none">:</div>
+
+            <div className="text-sm text-[#1D1D1D] font-medium break-words min-w-0">
+              {hasDocs ? (
+                <MultiImageViewer
+                  images={imageUrls}
+                  title={label}
+                  triggerLabel={
+                    isIcon === true ? (
+                      <span className="flex items-center gap-2 text-sm font-medium">
+                        {isSetValue ? <span>{displayValue}</span> : ''}
+                        {EyeTrigger}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="text-sm font-medium text-left break-words whitespace-normal max-w-[400px] cursor-pointer p-0 min-w-0 underline"
+                        style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
+                      >
+                        {displayValue}
+                      </button>
+                    )
+                  }
+                />
+              ) : (
+                <span
+                  className={`text-sm text-[#1D1D1D] font-medium text-left break-words whitespace-normal max-w-[400px] ${className} min-w-0`}
+                >
+                  {displayValue}
+                </span>
+              )}
+            </div>
           </div>
         </div>
+      );
+    }
+
+    // COLUMN layout (default)
+    return (
+      <div className={`flex flex-col ${borderClass} ${className} min-w-0`}>
+        <span className="text-sm font-medium text-[#1D1D1D80] truncate">
+          {label}
+        </span>
+
+        {hasDocs ? (
+          <MultiImageViewer
+            images={imageUrls}
+            title={label}
+            isIcon
+            triggerLabel={
+              isIcon === true ? (
+                <span className="flex items-center gap-2 text-sm font-medium">
+                  <span>{displayValue}</span>
+                  {EyeTrigger}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className="text-sm font-medium text-left break-words whitespace-normal max-w-[400px] cursor-pointer p-0 min-w-0 underline"
+                  style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
+                >
+                  {displayValue}
+                </button>
+              )
+            }
+          />
+        ) : (
+          <span className={`mt-1 text-sm text-[#1D1D1D] font-medium break-words whitespace-normal ${className} min-w-0`}>
+            {displayValue}
+          </span>
+        )}
       </div>
     );
-  }
-
-  // COLUMN layout (default)
-  return (
-    // ensure outer can shrink if used inside flex
-    <div className={`flex flex-col ${borderClass} ${className} min-w-0`}>
-      <span className="text-sm font-medium text-[#1D1D1D80] truncate">
-        {label}
-      </span>
-
-      {hasDocs ? (
-        <MultiImageViewer
-          images={imageUrls}
-          title={label}
-          triggerLabel={
-            <button
-              type="button"
-              className="mt-1 text-sm text-[#1D1D1D] font-medium cursor-pointer p-0 break-words whitespace-normal min-w-0"
-              style={{ background: 'transparent', border: 'none' }}
-            >
-              {displayValue}
-            </button>
-          }
-        />
-      ) : (
-        <span className={`mt-1 text-sm text-[#1D1D1D] font-medium break-words whitespace-normal ${className} min-w-0`}>
-          {displayValue}
-        </span>
-      )}
-    </div>
-  );
-};
+  };

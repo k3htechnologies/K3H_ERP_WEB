@@ -3,9 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
-import ToastContainer from "@/ui/components/Toast/ToastContainer";
 import { useToast } from "@/core/hooks/useToast";
-import { ChevronLeft } from "lucide-react";
 import { OutDoorDataService } from "@/features/outdoor/services/OutDoorDataService";
 import type { OutDoorMasterData, AddUpdateOutDoor } from "../models/OutDoorModel";
 import * as E from "fp-ts/Either";
@@ -17,8 +15,9 @@ import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleS
 import { fetchDepartmentMasterDropdown } from "@/features/departmentMaster/departmentMasterDropdown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { MultiFilePicker, type FileValue } from "@/ui/components/ImagePicker/MultiFilePicker";
-import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
+import MultiSelectPagination, { type DropdownOptions } from "@/ui/components/DropDown/Multiselectpagination";
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
+import { employeeMasterService } from "@/features/employeeMaster/services/EmployeeMasterService";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { runApiWithLoader } from '@/core/utils';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
@@ -34,7 +33,9 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   const [dropdownLabels, setDropdownLabels] = useState<{
     departmentName?: string;
   }>({});
+  const [accompaniedByInitialValues, setAccompaniedByInitialValues] = useState<{ label: string; value: string | number }[]>([]);
   const [selectedDepartmentName, setSelectedDepartmentName] = useState<string>("");
+  const [accompaniedOptions, setAccompaniedOptions] = useState<DropdownOptions[]>([]);
   const [selectedAccompaniedValues, setSelectedAccompaniedValues] = useState<(string | number)[]>([]);
   const hasFetchedOutDoor = useRef(false);
 
@@ -42,7 +43,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
   const { outdoorId } = useParams<{ outdoorId?: string }>();
 
-  const { toasts, removeToast, addToast } = useToast();
+  const {addToast } = useToast();
 
   const [outdoorFormData, setOutdoorFormData] = useState<AddUpdateOutDoor>({
     OutdoorId: 0,
@@ -153,6 +154,46 @@ export const AddUpdateOutDoorPage: React.FC = () => {
             }));
           }
 
+          if (outdoor.AccompaniedById) {
+            const employeeIds = outdoor.AccompaniedById.split(',').map((id: string) => id.trim()).filter((id: string) => id);
+            if (employeeIds.length > 0) {
+              const fetchEmployeeNames = async () => {
+                try {
+                  const uniqueIds = Array.from(new Set(employeeIds));
+                  const employeePromises = uniqueIds.map(async (id: string) => {
+                    try {
+                      const response = await employeeMasterService.apiCallPullEmployeeMaster({
+                        PageNumber: 1,
+                        PageSize: 1,
+                        EmployeeId: Number(id),
+                        IsCheckPermission: false,
+                      });
+                      if (E.isRight(response) && response.right.Data && response.right.Data.length > 0) {
+                        const employee = response.right.Data[0];
+                        return {
+                          label: employee.FullName || id,
+                          value: String(employee.EmployeeId || id),
+                        };
+                      }
+                    } catch {
+                      // Silently fail for individual employee fetch
+                    }
+                    return { label: id, value: id };
+                  });
+                  const employeeValues = await Promise.all(employeePromises);
+                  setAccompaniedByInitialValues(employeeValues);
+                } catch (error) {
+                  console.error("Error fetching employee names:", error);
+                  setAccompaniedByInitialValues(
+                    employeeIds.map((id: string) => ({ label: id, value: id }))
+                  );
+                }
+              };
+              fetchEmployeeNames();
+            }
+          } else {
+            setAccompaniedByInitialValues([]);
+          }
         } else {
           addToast({ type: "error", title: "Outdoor record not found" });
         }
@@ -202,6 +243,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       });
       setSelectedTime("00:00");
       setSelectedDepartmentName("");
+      setAccompaniedByInitialValues([]);
       setDropdownLabels({});
       initialVisitingCardUrlsRef.current = [];
       setRemovedVisitingCardUrls([]);
@@ -224,6 +266,37 @@ export const AddUpdateOutDoorPage: React.FC = () => {
     [selectedDepartmentName] 
   );
 
+  const loadAccompaniedOptions = useCallback(async () => {
+    try {
+      const response = await fetchEmployeeMasterDropdownWithDepartment(1, {});
+      const items = (response?.itemList ?? []).map((opt: { label: string; value: string | number }) => ({
+        label: opt.label ?? String(opt.value),
+        value: opt.value,
+      }));
+      setAccompaniedOptions(items);
+    } catch (error) {
+      console.error("Error loading accompanied options:", error);
+    }
+  }, [fetchEmployeeMasterDropdownWithDepartment]);
+
+  useEffect(() => {
+    loadAccompaniedOptions();
+  }, [loadAccompaniedOptions]);
+
+  useEffect(() => {
+    if (accompaniedByInitialValues.length === 0) return;
+    setAccompaniedOptions(prev => {
+      const existing = new Set(prev.map(opt => String(opt.value)));
+      const merged = [...prev];
+      accompaniedByInitialValues.forEach(item => {
+        if (!existing.has(String(item.value))) {
+          merged.push({ label: item.label, value: item.value });
+        }
+      });
+      return merged;
+    });
+  }, [accompaniedByInitialValues]);
+
   const handleDepartmentSelected = useCallback((item: { label: string; value: string | number | null }) => {
     const departmentId = item.value ? Number(item.value) : 0;
     const departmentName = item.label || "";
@@ -243,7 +316,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       }
       return prev;
     });
-    // Options will reload automatically via useEffect when selectedDepartmentName changes
   }, [handleFieldChange]);
 
   const validateForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
@@ -367,34 +439,26 @@ export const AddUpdateOutDoorPage: React.FC = () => {
     );
   };
 
+  const handleCancel = () => {
+    navigate("/outdoor");
+  };
+
+  if (isLoading && !hasFetchedOutDoor.current) {
+    return <Loader loading={true} title={isLoadingMessage || "Loading..."}>{null}</Loader>;
+  }
 
   return (
-    <div className="p-6" style={{ backgroundColor: '#F9FAFB' }}>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <Loader loading={isLoading} title={isLoadingMessage}>
-        <div />
-      </Loader>
+    <div className="p-6">
+     
       
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <ChevronLeft 
-            className="w-6 h-6 text-blue-600 cursor-pointer hover:text-blue-800 transition-colors"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              navigate(-1);
-            }}
-          />
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="p-6 border-b border-gray-200">
           <h2 className="text-2xl font-semibold text-gray-900">
             {outdoorId ? "Edit Outdoor" : "Add Outdoor"}
           </h2>
         </div>
-      
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll">
-          <form onSubmit={(e) => { e.preventDefault(); handleAddUpdateOutDoor(); }} className="space-y-4">
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Outdoor Details</h3>
+
+        <form onSubmit={(e) => { e.preventDefault(); handleAddUpdateOutDoor(); }} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <DatePickerInput
               label="OutDoor Date"
@@ -428,18 +492,16 @@ export const AddUpdateOutDoorPage: React.FC = () => {
               initialValue={createDropdownInitialValue(outdoorFormData.DepartmentId, dropdownLabels.departmentName)}
               error={errors.DepartmentId}
               required
-              disabled={!!outdoorFormData.PunchIn}
             />
 
             <div className="space-y-1">
               <MultiSelectPagination
-                key={`accompanied-by-${outdoorFormData.DepartmentId}-${selectedDepartmentName}`}
                 label="Accompanied By" 
                 required
-                dataFetchCallBack={fetchEmployeeMasterDropdownWithDepartment}
+                options={accompaniedOptions}
                 selectedValues={selectedAccompaniedValues}
                 onChange={handleAccompaniedChange}
-                disabled={!!outdoorFormData.PunchIn || !outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
+                disabled={!outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
               />
               {errors.AccompaniedById && (
                 <p className="text-xs text-red-600">{errors.AccompaniedById}</p>
@@ -493,21 +555,28 @@ export const AddUpdateOutDoorPage: React.FC = () => {
           </div>
 
 
-            <div className="flex justify-end gap-4 mt-6 pt-6 border-t border-gray-200">
-              <Button
-                type="submit"
-                color="blue"
-                size="sm"
-                loading={isLoading}
-                className="px-6"
-              >
-                Save
-              </Button>
-            </div>
+          <div className="flex justify-end gap-4 mt-6 pt-6 border-t border-gray-200">
+            <Button
+              type="button"
+              color="transparent"
+              variant="transparent_border"
+              size="sm"
+              onClick={handleCancel}
+              className="px-6"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              color="green"
+              size="sm"
+              loading={isLoading}
+              className="px-6"
+            >
+              Save
+            </Button>
           </div>
-          </form>
-        </div>
-      </div>
+        </form>
       </div>
     </div>
   );

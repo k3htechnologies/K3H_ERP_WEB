@@ -5,7 +5,8 @@ import {
   ChevronRight,
   ChevronDown,
   X,
-  LogOut
+  LogOut,
+  Circle
 } from 'lucide-react'
 import type { ModuleData, SubModuleData, SubSubModuleData } from '@/features/menu/models/MenuModel'
 import { normalizePath, mapPathToRoute } from '@/core/utils/pathMapper';
@@ -130,7 +131,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       children: (module.SubModuleData || []).map(subModule => ({
         id: `submodule-${subModule.SubModulesMasterId}`,
         label: subModule.SubModuleName,
-        icon: renderIcon(subModule.Icon, <Home className="h-4 w-4" />, "h-4 w-4"),
+        icon: <Circle className={`h-3 w-3 fill-[#135bec] text-[#135bec]`} />,
 
         path: normalizePath(mapPathToRoute(subModule.Path)),
         children: (subModule.SubSubModuleData || [])
@@ -138,7 +139,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           .map(subSubModule => ({
             id: `subsubmodule-${subSubModule.SubSubModulesMasterId}`,
             label: subSubModule.SubSubModuleName,
-            icon: renderIcon(subSubModule.Icon, <Home className="h-4 w-4" />, "h-4 w-4"),
+            icon: <Circle className="h-2 w-2 fill-[#135bec82] text-[#135bec82]" />,
             path: normalizePath(mapPathToRoute(subSubModule.Path))
           }))
       }))
@@ -218,7 +219,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     const isCurrentPage = !!(item.path && normalizePath(item.path) === normalizedLocationPath)
 
-    const activeMenuItem = findActiveMenuItem(location.pathname)
+    const activeMenuItem = findActiveMenuItem(location.pathname);
 
     const isInActivePath = activeMenuItem && (
       (isModule && activeMenuItem.module && item.id === `module-${activeMenuItem.module.ModulesMasterId}`) ||
@@ -284,7 +285,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         return {
           container: `${item.path?.toUpperCase() === '/DASHBOARD'
             ? 'relative'
-            : 'relative ml-8 pl-2'
+            : 'relative ml-3 pl-2'
             }`,
           button: `
             w-full flex items-center space-x-3  py-1.5 rounded-md transition-all duration-200
@@ -344,17 +345,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Render children with proper indentation and vertical lines */}
         {isOpen && hasChildren && isExpanded && (
           <div className="mt-0 space-y-0 relative">
-            {/* Main vertical line for children */}
-            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-300"></div>
+
+            {/* Vertical line – ONLY for Module → SubModule */}
+            {level === 0 && (
+              <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-300"></div>
+            )}
+
             {item.children!.map((child) => (
               <div key={child.id} className="relative">
-                {/* Horizontal connector line */}
-                <div className="absolute left-6 top-3 w-4 h-0.5 bg-gray-300"></div>
+
+                {/* Horizontal line – ONLY for Module → SubModule */}
+                {level === 0 && (
+                  <div className="absolute left-6 top-4 w-4 h-0.5 bg-gray-300"></div>
+                )}
+
                 {renderMenuItem(child, level + 1)}
               </div>
             ))}
           </div>
         )}
+
+
       </div>
     )
   }
@@ -434,7 +445,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto min-h-0 flex flex-col thin-scroll">
-          <nav className="space-y-1 px-4 py-4 flex-1 flex flex-col">
+          <nav className="space-y-1 px-2 py-4 flex-1 flex flex-col">
             <div className="space-y-0">
               {menuItems.map(item => renderMenuItem(item))}
             </div>

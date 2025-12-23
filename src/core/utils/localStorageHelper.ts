@@ -182,6 +182,29 @@ export const LocalStorageHelper = {
         return null;
     },
     //#endregion
+    //#region STORE TENANT COLUMNS
+    storeTenantTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.TENANT_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Tenant Columns Details:', error);
+        }
+    },
+    //#endregion
+    //#region GET TENANT COLUMNS
+    getTenantTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TENANT_SELECTED_COLUMNS);
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.TENANT_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Tenant Columns Details:', error);
+                return null;
+            }
+        }
+        return null;
+    },
+    //#endregion
     //#region STORE BRANCH MASTER COLUMNS
     storeBranchMasterTableColumns: (columns: string): void => {
         try {
@@ -360,6 +383,52 @@ export const LocalStorageHelper = {
                 return localStorage.getItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS);
             } catch (error) {
                 console.error('Error reading Company Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE CHANNEL PARTNER MASTER COLUMNS
+    storeChannelPartnerMasterTableColumns:( columns: string): void => {
+        try{
+            localStorage.setItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_MASTER_SELECTED_COLUMNS, columns);
+        }catch(error){
+            console.error('Error Channel Partner Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET CHANNEL PARTNER MASTER COLUMNS
+    getChannelPartnerMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_MASTER_SELECTED_COLUMNS);
+            }catch (error) {
+                console.error('Error reading Channel Partner Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE ENQUIRY MASTER COLUMNS
+    storeEnquiryMasterTableColumns:( columns: string): void => {
+        try{
+            localStorage.setItem(LOCAL_STORAGE_KEYS.ENQUIRY_MASTER_SELECTED_COLUMNS, columns);
+        }catch(error){
+            console.error('Error Enquiry Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET ENQUIRY MASTER COLUMNS
+    getEnquiryMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ENQUIRY_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.ENQUIRY_MASTER_SELECTED_COLUMNS);
+            }catch (error) {
+                console.error('Error reading Enquiry Master Columns Details:', error)
                 return null
             }
         }
@@ -726,7 +795,6 @@ export const LocalStorageHelper = {
         }
     },
     //#endregion
-    
     //#region GET COUNTRY_STATE_DISTRICT_CITY_VILLAGE DATA 
     getCountry_State_District_City_VillageData: (): CountryStateCityDistrictVillageData[] | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER)
@@ -743,6 +811,55 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE SELECTED PROJECT
+    storeSelectedProject: (projectId: number): void => {
+        try {
+            localStorage.setItem(
+                LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID,
+                String(projectId)
+            );
+        } catch (error) {
+            console.error('Error storing selected project:', error);
+        }
+    },
+    //#endregion
+    //#region GET SELECTED PROJECT
+    getSelectedProject: (): number | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
+        if (stored) {
+            const parsed = Number(stored);
+            return isNaN(parsed) ? null : parsed;
+        }
+        return null;
+    },
+    //#endregion
+    //#region STORE REDEVELOPMENT BUILDING COLUMNS
+    storeRedevelopmentBuildingTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.REDEVELOPMENT_BUILDING_COLUMNS, columns);
+
+        } catch (error) {
+            console.error('Error Redevelopment Building Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET REDEVELOPMENT BUILDING COLUMNS
+    getRedevelopmentBuildingTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.REDEVELOPMENT_BUILDING_COLUMNS)
+        if (stored) {
+            try {
+
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.REDEVELOPMENT_BUILDING_COLUMNS);
+
+            } catch (error) {
+                console.error('Error reading Redevelopment Building Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+
     //#region CLEAR LOCAL STORAGE 
     clearLocalStorageData: (): void => {
         try {
@@ -777,6 +894,8 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
+
         } catch (error) {
             console.error('ERROR : CLEARING LOCAL STORAGE:', error)
         }

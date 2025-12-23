@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   ProjectMasterData,
@@ -15,13 +14,14 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, type Location, useNavigate } from 'react-router-dom';
 import { updateFilter } from '@/core/utils/filterHelper';
+import { BanknoteXIcon, Building2Icon, User2 } from 'lucide-react';
 
 export const ProjectMaster: React.FC = () => {
 
@@ -38,7 +38,7 @@ export const ProjectMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -71,6 +71,7 @@ export const ProjectMaster: React.FC = () => {
         filters?: FilterInfo;
         sortInfo?: SortInfo;
         searchTerm?: string;
+        projectId?: number;
       };
     };
   };
@@ -81,10 +82,10 @@ export const ProjectMaster: React.FC = () => {
   useEffect(() => {
 
     const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string }
+      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string; projectId?: Number }
       | undefined;
 
-    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '' };
+    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '', projectId: 0 };
 
 
     setPagination({ currentPage: listState.page ?? pagination.currentPage });
@@ -294,12 +295,72 @@ export const ProjectMaster: React.FC = () => {
           filters,
           sortInfo,
           searchTerm,
+          projectId: row.ProjectId,
         },
       },
     });
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
 
   //#endregion
+
+  //#region VIEW BANK DETAILS
+  
+    const handleViewProjectBank = useCallback((row: ProjectMasterData) => {
+      navigate('/projectMaster/bank', {
+        state: {
+          editProjectMasterData: row,
+          fromList: true,
+          listState: {
+            page: pagination.currentPage,
+            filters,
+            sortInfo,
+            searchTerm,
+            projectId: row.ProjectId
+          },
+        },
+      });
+    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    //#endregion
+  
+    //#region VIEW EMPLOYEE DETAILS
+  
+    const handleViewProjectEmployee = useCallback((row: ProjectMasterData) => {
+      navigate('/projectMaster/employee', {
+        state: {
+          editProjectMasterData: row,
+          fromList: true,
+          listState: {
+            page: pagination.currentPage,
+            filters,
+            sortInfo,
+            searchTerm,
+            projectId: row.ProjectId
+          },
+        },
+      });
+    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    //#endregion
+  
+    //#region VIEW COMPANY DETAILS
+  
+    const handleViewProjectCompany = useCallback((row: ProjectMasterData) => {
+      navigate('/projectMaster/company', {
+        state: {
+          editProjectMasterData: row,
+          fromList: true,
+          listState: {
+            page: pagination.currentPage,
+            filters,
+            sortInfo,
+            searchTerm,
+            projectId: row.ProjectId
+  
+          },
+        },
+      });
+    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    //#endregion
+  
 
   //#region TABLE COLUMN
 
@@ -343,7 +404,7 @@ export const ProjectMaster: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'center',
-         render: (value) => (
+        render: (value) => (
           <div className="flex items-center justify-start">
             <TooltipText
               text={value || '-'}
@@ -392,9 +453,78 @@ export const ProjectMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value) => value || '-'
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleViewProjectEmployee(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'blue',
+                  padding: '4px 8px'
+                }}
+                title="Project Employee"
+              >
+                <User2 className="h-4 w-4" />
+              </Button>
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleViewProjectCompany(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'green',
+                  padding: '4px 8px'
+                }}
+                title="Project Company"
+              >
+                <Building2Icon className="h-4 w-4" />
+              </Button>
+
+               <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleViewProjectBank(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'green',
+                  padding: '4px 8px'
+                }}
+                title="Project Bank"
+              >
+                <BanknoteXIcon className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+
+
+        )
       }
     ],
-    [handleViewProjectDetails]
+    [handleViewProjectDetails,handleViewProjectEmployee,handleViewProjectCompany,handleViewProjectBank]
   )
 
   //#endregion
@@ -451,20 +581,20 @@ export const ProjectMaster: React.FC = () => {
   }
 
   const clearFilters = () => {
-  setTempFilters({});
-  setFilters({});
+    setTempFilters({});
+    setFilters({});
 
-  // reset page
-  setPagination({ currentPage: 1 });
+    // reset page
+    setPagination({ currentPage: 1 });
 
-  // load empty filters
-  loadProjects(1, {});
+    // load empty filters
+    loadProjects(1, {});
 
-  setShowFilterPopup(false);
+    setShowFilterPopup(false);
 
-  // clear router state (very important)
-  navigate(location.pathname, { replace: true, state: {} });
-};
+    // clear router state (very important)
+    navigate(location.pathname, { replace: true, state: {} });
+  };
 
 
   //#endregion
@@ -484,123 +614,121 @@ export const ProjectMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Project Name..."
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchProjects}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeProjectMasterColumnsModal(true)}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add Project"
-          onAdd={handleAddProjectMasterModal}
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Project Name..."
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchProjects}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeProjectMasterColumnsModal(true)}
 
-          // IMPORT 
-          isShowImportButton={canAction}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddProjectMasterModal}
 
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportProjectExcel}
-          onExportPdf={handleExportProjectPdf}
-          exportLoading={isLoading}
-        />
-        <DataTable
-          data={projectListForTable}
-          columns={visibleProjectMasterColumns}
-          pagination={projectMasterPaginationInfo}
-          emptyMessage="No projects found"
-          fixedHeight={true}
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+        // IMPORT 
+        isShowImportButton={canAction}
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeProjectMasterColumnsModal}
-          onClose={() => setIsShowCustomizeProjectMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredProjectMasterColumnKeys])
-            );
-            setSelectedProjectMasterColumnKeys(withRequired);
-            try {
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportProjectExcel}
+        onExportPdf={handleExportProjectPdf}
+        exportLoading={isLoading}
+      />
+      <DataTable
+        data={projectListForTable}
+        columns={visibleProjectMasterColumns}
+        pagination={projectMasterPaginationInfo}
+        emptyMessage="No projects found"
+        fixedHeight={true}
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-              localStorage.setItem('projectMasterTableColumns', JSON.stringify(withRequired));
-            } catch { }
-          }}
-          columns={projectMasterColumns}
-          selectedKeys={selectedProjectMasterColumnKeys}
-          requiredKeys={requiredProjectMasterColumnKeys}
-          title="Customize Table Columns"
-        />
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeProjectMasterColumnsModal}
+        onClose={() => setIsShowCustomizeProjectMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredProjectMasterColumnKeys])
+          );
+          setSelectedProjectMasterColumnKeys(withRequired);
+          try {
 
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Project Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          resetText=''
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <Input
-                  label='Project Name'
-                  type="text"
-                  value={tempFilters.ProjectName || ''}
-                  onChange={(e) => handleFilterChange('ProjectName', e.target.value)}
-                  placeholder="Enter Project Name"
-                />
-              </div>
-              <div>
-                <Input
-                  label='Project Location'
-                  type="text"
-                  value={tempFilters.ProjectLocation || ''}
-                  onChange={(e) => handleFilterChange('ProjectLocation', e.target.value)}
-                  placeholder="Enter Project Location"
-                />
-              </div>
-              <div>
-                <Input
-                  label='CTS Number'
-                  type="text"
-                  value={tempFilters.CTCNumber || ''}
-                  onChange={(e) => handleFilterChange('CTCNumber', e.target.value)}
-                  placeholder="Enter CTS Number"
-                />
-              </div>
+            localStorage.setItem('projectMasterTableColumns', JSON.stringify(withRequired));
+          } catch { }
+        }}
+        columns={projectMasterColumns}
+        selectedKeys={selectedProjectMasterColumnKeys}
+        requiredKeys={requiredProjectMasterColumnKeys}
+        title="Customize Table Columns"
+      />
+
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Project Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        resetText=''
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <Input
+                label='Project Name'
+                type="text"
+                value={tempFilters.ProjectName || ''}
+                onChange={(e) => handleFilterChange('ProjectName', e.target.value)}
+                placeholder="Enter Project Name"
+              />
+            </div>
+            <div>
+              <Input
+                label='Project Location'
+                type="text"
+                value={tempFilters.ProjectLocation || ''}
+                onChange={(e) => handleFilterChange('ProjectLocation', e.target.value)}
+                placeholder="Enter Project Location"
+              />
+            </div>
+            <div>
+              <Input
+                label='CTS Number'
+                type="text"
+                value={tempFilters.CTCNumber || ''}
+                onChange={(e) => handleFilterChange('CTCNumber', e.target.value)}
+                placeholder="Enter CTS Number"
+              />
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
 
-      </div>
-    </>
+    </div>
   )
 }
 

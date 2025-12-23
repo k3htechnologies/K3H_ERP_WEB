@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   HolidayMappingMasterData,
@@ -17,7 +16,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
@@ -25,13 +24,13 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import { Edit, Trash2 } from 'lucide-react';
 import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { fetchBranchMasterDropdown } from '@/features/branchMaster/branchMasterDropDown';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import { fetchHolidayMasterDropdown } from '../HolidayMasterDropDown';
+import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 
 const initialFormState = (): AddUpdateHolidayMappingMasterRequest => ({
   HolidayMappingMasterId: 0,
@@ -55,7 +54,7 @@ export const HolidayMappingMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -63,7 +62,7 @@ export const HolidayMappingMaster: React.FC = () => {
     searchHolidayMappings(value)
   }, 350)
 
-  //VIEW WEEKOFF MAPPING MASTER MODAL STATES
+  //VIEW HOLIDAY MAPPING MASTER MODAL STATES
   const [viewHolidayMappingMasterDetailsData, setViewHolidayMappingMasterDetailsData] = useState<HolidayMappingMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
@@ -79,16 +78,20 @@ export const HolidayMappingMaster: React.FC = () => {
   const [editingHolidayMappingMasterData, setEditingHolidayMappingMasterData] = useState<HolidayMappingMasterData | null>(null)
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  //ADD UPDATE HOLIDAY MAPPING MASTER
+  //ADD UPDATE HOLIDAY MAPPING MASTER STATES
   const [formData, setFormData] = useState<AddUpdateHolidayMappingMasterRequest>(() => initialFormState());
 
   //DELETE  HOLIDAY MAPPING MASTER STATES
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteHolidayMappingMasterDetailsData, setDeleteHolidayMappingMasterDetailsData] = useState<HolidayMappingMasterData | null>(null)
 
+  //DROP DOWN RESET KEY
+  const [dropdownResetKey, setDropdownResetKey] = useState(0);
+
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeHolidayMappingMasterColumnsModal, setIsShowCustomizeHolidayMappingMasterColumnsModal] = useState(false);
 
+  //#region DROP DOWN LABELS
   const [dropdownLabels, setDropdownLabels] = useState<{
     branchName?: string;
     holidayName?: string;
@@ -194,12 +197,12 @@ export const HolidayMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Holiday Mapping Data'
+      'Loading Holiday Mapping'
     )
   }
   //#endregion
 
-  //#region SEARCH WEEK OFF MAPPING 
+  //#region SEARCH HOLIDAY MAPPING 
   const searchHolidayMappings = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -278,7 +281,6 @@ export const HolidayMappingMaster: React.FC = () => {
   //#endregion
 
   //#region HANDLE PAGE CHNAGE EVENT
-
   const handlePageChange = (page: number) => {
     fetchHolidayMappingList(page);
   };
@@ -307,7 +309,6 @@ export const HolidayMappingMaster: React.FC = () => {
   )
 
   const holidayMappingListForTable = useMemo(() => holidayMappingMasterList, [holidayMappingMasterList]);
-
   //#endregion
 
   //#region VIEW EDIT
@@ -426,7 +427,6 @@ export const HolidayMappingMaster: React.FC = () => {
     () => holidayMappingMasterColumns.filter(col => selectedHolidayMappingMasterColumnKeys.includes(col.key)),
     [holidayMappingMasterColumns, selectedHolidayMappingMasterColumnKeys]
   )
-
   //#endregion
 
   //#region VIEW HOLIDAY MAPPING DETAILS MODAL COMPONENT
@@ -462,7 +462,8 @@ export const HolidayMappingMaster: React.FC = () => {
 
             <FieldItem label="Holiday Name" value={data.HolidayName} isRow withBorder={true} className='font-medium text-blue-900 ' />
             <FieldItem label="Branch Name" value={data.BranchName} isRow withBorder={true} />
-            <FieldItem label="Holiday Date" value={data.HolidayDate} isRow withBorder={true} />
+            <FieldItem label="Assigned Date" value={data.HolidayDate ? formatDate_dd_MonthName_yy(data.HolidayDate) : ""} isRow />
+
             <div className="space-y-4">
               <h4 className="text-lg font-semibold pb-2">
                 Action Details
@@ -490,7 +491,6 @@ export const HolidayMappingMaster: React.FC = () => {
                       handleConfirmationDialogBoxOpen(data)
                     }}
                   >
-                    <Trash2 className="h-5 w-5" />
                     Delete
                   </Button>
 
@@ -504,7 +504,6 @@ export const HolidayMappingMaster: React.FC = () => {
                       handleEditHolidayMappingMaster(data)
                     }}
                   >
-                    <Edit className="h-5 w-5" />
                     Edit
                   </Button>
                 </>
@@ -515,7 +514,6 @@ export const HolidayMappingMaster: React.FC = () => {
       </Modal>
     )
   }
-
   //#endregion
 
   //#region FILTER MODAL HELPERS
@@ -524,7 +522,6 @@ export const HolidayMappingMaster: React.FC = () => {
     loadHolidayMappings(1, tempFilters)
     setShowFilterPopup(false)
   }
-
   //#endregion
 
   //#region CLEAR FILTER
@@ -537,7 +534,6 @@ export const HolidayMappingMaster: React.FC = () => {
   //#endregion
 
   //#region HANDLE FILTER CHNAGE
-
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
@@ -545,7 +541,6 @@ export const HolidayMappingMaster: React.FC = () => {
   //#endregion
 
   //#region ADD UPDATE HOLIDAY MAPPING MASTER
-
   const handleFieldChange = (field: keyof AddUpdateHolidayMappingMasterRequest, value: any) => {
 
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -555,10 +550,23 @@ export const HolidayMappingMaster: React.FC = () => {
     }
   };
 
-  const handleAddHolidayMappingMasterModal = () => {
-    setEditingHolidayMappingMasterData(null);
+  // RESET FORM DATA
+  const handleResetForm = () => {
     setFormData(initialFormState());
+    setDropdownLabels({});
     setErrors({});
+    setDropdownResetKey(prev => prev + 1);
+  };
+  //#endregion
+
+  const handleAddHolidayMappingMasterModal = () => {
+
+    setEditingHolidayMappingMasterData(null);
+
+    setFormData(initialFormState());
+
+    setErrors({});
+
     setIsAddUpdateModalOpen(true);
   }
 
@@ -591,6 +599,8 @@ export const HolidayMappingMaster: React.FC = () => {
     };
   }
 
+  //#region PUSH DATA
+
   const PushWeekHolidayMappingFormData = (): AddUpdateHolidayMappingMasterRequest => {
     return {
       HolidayMappingMasterId: formData.HolidayMappingMasterId,
@@ -600,7 +610,9 @@ export const HolidayMappingMaster: React.FC = () => {
       HolidayDate: formData.HolidayDate
     };
   };
+  //#endregion
 
+  //#region HANDLE ADD AND UPDATE HOLIDAY MAPPING MASTER
   const handleAddUpdateHolidayMappingMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -623,7 +635,7 @@ export const HolidayMappingMaster: React.FC = () => {
         const payload = PushWeekHolidayMappingFormData();
 
         const response = await HolidayMappingMasterService.apiCallAddUpdateHolidayMappingMaster(payload);
-        
+
         if (E.isRight(response)) {
 
           setIsAddUpdateModalOpen(false);
@@ -675,12 +687,12 @@ export const HolidayMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
-      formData.HolidayMappingMasterId === 0 ? 'Add Holiday Mapping' : 'Update Holiday Mapping...'
+      formData.HolidayMappingMasterId === 0 ? 'Add Holiday Mapping' : 'Update Holiday Mapping'
     )
   }
   //#endregion
 
-  //#region DELETE Holiday Mapping MASTER
+  //#region DELETE HOLIDAY MAPPING MASTER
   const handleDeleteHolidayMappingMaster = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
@@ -726,226 +738,222 @@ export const HolidayMappingMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Holiday Mapping Master data'
+      'Delete Holiday Mapping'
     )
   }
   //#endregion
+
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        {/* COMMAN LOADER FOR PAGE */}
+      {/* COMMAN LOADER FOR PAGE */}
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        {/* COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW */}
+      {/* COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW */}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Holiday Name..."
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchHolidayMappings}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeHolidayMappingMasterColumnsModal(true)}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Holiday Name..."
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchHolidayMappings}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeHolidayMappingMasterColumnsModal(true)}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add Holiday Mapping"
-          onAdd={handleAddHolidayMappingMasterModal}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddHolidayMappingMasterModal}
 
-          // IMPORT
-          isShowImportButton={false}
+        // IMPORT
+        isShowImportButton={false}
 
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportHolidayMappingExcel}
-          onExportPdf={handleExportHolidayMappingPdf}
-          exportLoading={isLoading}
-        />
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportHolidayMappingExcel}
+        onExportPdf={handleExportHolidayMappingPdf}
+        exportLoading={isLoading}
+      />
 
-        {/* DATA TABLE BRANCH */}
+      {/* DATA TABLE BRANCH */}
 
-        <DataTable
-          data={holidayMappingListForTable}
-          columns={visibleHolidayMappingMasterColumns}
-          pagination={holidayMappingMasterPaginationInfo}
-          emptyMessage="No Holiday Mappings Data Found"
-          fixedHeight={true}
-          maxHeight="calc(100vh - 200px)"
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      <DataTable
+        data={holidayMappingListForTable}
+        columns={visibleHolidayMappingMasterColumns}
+        pagination={holidayMappingMasterPaginationInfo}
+        emptyMessage="No Holiday Mapping Data Found"
+        fixedHeight={true}
+        maxHeight="calc(100vh - 200px)"
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        {/* VIEW WEEK OFF MAPPING MODAL */}
+      {/* VIEW WEEK OFF MAPPING MODAL */}
+      <ViewHolidayMappingDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewHolidayMappingMasterDetailsData(null)
+        }}
+        data={viewHolidayMappingMasterDetailsData}
+      />
 
-        <ViewHolidayMappingDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewHolidayMappingMasterDetailsData(null)
-          }}
-          data={viewHolidayMappingMasterDetailsData}
-        />
+      {/*  ADD EDIT UPDATE WEEK OFF MAPPING MODAL */}
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false)
+          setEditingHolidayMappingMasterData(null)
+          setFormData(initialFormState());
+          setErrors({})
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false)
+          setEditingHolidayMappingMasterData(null)
+          setFormData(initialFormState());
+        }}
+        title={editingHolidayMappingMasterData ? 'Update Holiday Mapping ' : 'Add Holiday Mapping'}
+        onSubmit={handleAddUpdateHolidayMappingMaster}
+        saveText={editingHolidayMappingMasterData ? 'Update Holiday Mapping' : 'Save Holiday Mapping'}
+        resetText='Reset'
+        onreset={handleResetForm}
+        loading={isLoading}
+        size="xl"
+      >
+        <div className="space-y-6">
 
-        {/*  ADD EDIT UPDATE WEEK OFF MAPPING MODAL */}
-
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingHolidayMappingMasterData(null)
-            setFormData(initialFormState());
-            setErrors({})
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingHolidayMappingMasterData(null)
-            setFormData(initialFormState());
-          }}
-          title={editingHolidayMappingMasterData ? 'Update Holiday Mapping ' : 'Add Holiday Mapping'}
-          onSubmit={handleAddUpdateHolidayMappingMaster}
-          saveText={editingHolidayMappingMasterData ? 'Update Holiday Mapping' : 'Save Holiday Mapping'}
-          resetText='Reset'
-          loading={isLoading}
-          size="xl"
-        >
-          <div className="space-y-6">
-
-            <div className='space-y-4'>
-              <div>
-                <SingleSelectDropdownWithPagination
-                  label="Holiday"
-                  title="Select Holiday"
-                  size="lg"
-                  required
-                  dataFetchCallBack={fetchHolidayMasterDropdown}
-                  onSelected={(item) => handleFieldChange("HolidayMasterId", Number(item.value))}
-                  initialValue={createDropdownInitialValue(formData.HolidayMasterId, dropdownLabels.holidayName)}
-                  error={errors.HolidayMasterId}
-                />
-              </div>
-              <div>
-                <SingleSelectDropdownWithPagination
-                  label="Branch"
-                  title="Select Branch "
-                  size="lg"
-                  required
-                  dataFetchCallBack={fetchBranchMasterDropdown}
-                  onSelected={(item) => handleFieldChange("BranchMasterId", String(item.value))}
-                  initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
-                  error={errors.BranchMasterId}
-
-                />
-              </div>
-            </div>
-
+          <div className='space-y-4'>
             <div>
-              <Input
-                type="date"
-                label='Holiday Date'
-                value={formData.HolidayDate?.substring(0, 10)}
-                onChange={(e) => handleFieldChange("HolidayDate", e.target.value)}
+              <SingleSelectDropdownWithPagination
+                label="Holiday"
+                key={dropdownResetKey}
+                title="Select Holiday"
+                size="lg"
                 required
-                maxLength={20}
-                placeholder="Enter Holiday Date"
-                error={errors.HolidayDate}
+                dataFetchCallBack={fetchHolidayMasterDropdown}
+                onSelected={(item) => handleFieldChange("HolidayMasterId", Number(item.value))}
+                initialValue={createDropdownInitialValue(formData.HolidayMasterId, dropdownLabels.holidayName)}
+                error={errors.HolidayMasterId}
+              />
+            </div>
+            <div>
+              <SingleSelectDropdownWithPagination
+                label="Branch"
+                key={dropdownResetKey}
+                title="Select Branch "
+                size="lg"
+                required
+                dataFetchCallBack={fetchBranchMasterDropdown}
+                onSelected={(item) => handleFieldChange("BranchMasterId", String(item.value))}
+                initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
+                error={errors.BranchMasterId}
+
               />
             </div>
           </div>
-        </Modal>
+
+          <div>
+            <DatePickerInput
+              label="Holiday Date"
+              value={formatDate_dd_mm_yyyy(formData.HolidayDate)}
+              onChange={(val) => handleFieldChange('HolidayDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+              required
+              error={errors.HolidayDate}
+            />
+          </div>
+        </div>
+      </Modal>
 
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
+      {/* CUSTOMIZE COLUMNS MODAL */}
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeHolidayMappingMasterColumnsModal}
-          onClose={() => setIsShowCustomizeHolidayMappingMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredHolidayMappingMasterColumnKeys])
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeHolidayMappingMasterColumnsModal}
+        onClose={() => setIsShowCustomizeHolidayMappingMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredHolidayMappingMasterColumnKeys])
+          )
+          setSelectedHolidayMappingMasterColumnKeys(withRequired)
+          try {
+            LocalStorageHelper.storeHolidayMappingMasterTableColumns(
+              JSON.stringify(withRequired)
             )
-            setSelectedHolidayMappingMasterColumnKeys(withRequired)
-            try {
-              LocalStorageHelper.storeHolidayMappingMasterTableColumns(
-                JSON.stringify(withRequired)
-              )
-            } catch { }
-          }}
-          columns={holidayMappingMasterColumns}
-          selectedKeys={selectedHolidayMappingMasterColumnKeys}
-          requiredKeys={requiredHolidayMappingMasterColumnKeys}
-          title="Customize Master Table Columns"
-        />
+          } catch { }
+        }}
+        columns={holidayMappingMasterColumns}
+        selectedKeys={selectedHolidayMappingMasterColumnKeys}
+        requiredKeys={requiredHolidayMappingMasterColumnKeys}
+        title="Customize Master Table Columns"
+      />
 
-        {/* FILTER BRANCH MODAL */}
+      {/* FILTER BRANCH MODAL */}
 
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Holiday Mapping Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Holiday Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.HolidayName || ''}
-                  onChange={(e) => handleFilterChange('HolidayName', e.target.value)}
-                  placeholder="Enter holiday name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Branch Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.BranchName || ''}
-                  onChange={(e) => handleFilterChange('BranchName', e.target.value)}
-                  placeholder="Enter branch name"
-                />
-              </div>
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Holiday Mapping Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Holiday Name</label>
+              <Input
+                type="text"
+                value={tempFilters.HolidayName || ''}
+                onChange={(e) => handleFilterChange('HolidayName', e.target.value)}
+                placeholder="Enter Holiday Name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Branch Name</label>
+              <Input
+                type="text"
+                value={tempFilters.BranchName || ''}
+                onChange={(e) => handleFilterChange('BranchName', e.target.value)}
+                placeholder="Enter Branch Name"
+              />
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        {/* DELETE CONFIRMATION Holiday Mapping MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteHolidayMappingMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteHolidayMappingMaster}
-          title="You are about to delete a Holiday Mapping?"
-          message="Deleting this Holiday Mapping Data will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
-      </div>
-    </>
+      {/* DELETE CONFIRMATION Holiday Mapping MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteHolidayMappingMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteHolidayMappingMaster}
+        title="You are about to delete a Holiday Mapping?"
+        message="Deleting this Holiday Mapping Data will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+    </div>
   )
 }
 

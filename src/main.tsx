@@ -4,13 +4,19 @@ import { BrowserRouter } from 'react-router-dom'
 import App from '../src/app/App'
 import './index.css'
 import { NetworkStatusWatcher } from "@/core/hooks/networkStatusWatcher";
+import { ToastProvider } from '@/core/hooks/useToast'
+import { ProjectProvider } from './features/projectMaster/context/ProjectContext'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
-    <NetworkStatusWatcher/>
-      <App />
-    </BrowserRouter>
+    <ToastProvider>
+      <ProjectProvider>
+        <BrowserRouter>
+          <NetworkStatusWatcher />
+          <App />
+        </BrowserRouter>
+      </ProjectProvider>
+    </ToastProvider>
   </React.StrictMode>,
 )
 

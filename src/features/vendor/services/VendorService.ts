@@ -2,7 +2,6 @@ import type { Failure } from '@/core/api/FailureResponse';
 import { VendorDatasourceImpl } from '@/features/vendor/datasources/VendorDatasource'
 import type {
     FilterWithPaginationVendorRequest,
-    AddUpdateVendorRequest,
     DeleteVendorRequest,
     VendorListResponse,
     VendorSaveResponse,

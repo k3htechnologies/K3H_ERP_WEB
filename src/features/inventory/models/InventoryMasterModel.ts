@@ -1,82 +1,113 @@
 import type { ApiResponse } from "@/core/api/ApiResponse";
 
-export interface InventoryModel {
-    InventoryBuildingId:                      number;
-    Uniquekey:                                string;
-    ProjectId:                                number;
-    BuildingNumber:                           string;
-    NoOfBasement:                             number;
-    NoOfPodium:                               number;
-    NoOfWings:                                number;
-    CreatedById:                              number;
-    CreatedBy:                                string;
-    CreatedDate:                              Date;
-    ModifiedById:                             number;
-    ModifiedBy:                               string;
-    ModifiedDate:                             null;
-    InventoryFlatFloorBasementPodiumWingData: InventoryFlatFloorBasementPodiumWingDatum[];
+export interface FilterInventoryRequest {
+    ProjectId: number
+    ExportType?: 'Excel' | 'PDF'
+}
+export interface InventoryData {
+    InventoryBuildingId: number;
+    Uniquekey: string;
+    ProjectId: number;
+    BuildingNumber: string;
+    NoOfBasement: number;
+    NoOfPodium: number;
+    NoOfWings: number;
+    CreatedById: number;
+    CreatedBy: string;
+    CreatedDate: Date;
+    ModifiedById: number;
+    ModifiedBy: string;
+    ModifiedDate: null;
+    InventoryFlatFloorBasementPodiumWingData: InventoryFlatFloorBasementPodiumWingData[];
 }
 
-export interface InventoryFlatFloorBasementPodiumWingDatum {
+export interface InventoryFlatFloorBasementPodiumWingData {
     InventoryFlatFloorBasementPodiumWingId: number;
-    Uniquekey:                              string;
-    InventoryBuildingId:                    number;
-    MaxNoOfFlatPerFloor:                    number;
-    NoOfFloorExcludingPodium:               number;
-    Wing:                                   string;
-    IsApproval:                             boolean;
-    ApprovalStatus:                         string;
-    InventoryFloorData:                     InventoryFloorDatum[];
+    Uniquekey: string;
+    InventoryBuildingId: number;
+    MaxNoOfFlatPerFloor: number;
+    NoOfFloorExcludingPodium: number;
+    Wing: string;
+    IsApproval: boolean;
+    ApprovalStatus: string;
+    InventoryFloorData: InventoryFloorData[];
 }
 
-export interface InventoryFloorDatum {
-    InventoryFloorId:                       number;
-    Uniquekey:                              string;
-    InventoryBuildingId:                    number;
+export interface InventoryFloorData {
+    InventoryFloorId: number;
+    Uniquekey: string;
+    InventoryBuildingId: number;
     InventoryFlatFloorBasementPodiumWingId: number;
-    Floor:                                  string;
-    SlabHeight:                             number;
-    ParkingCount:                           number;
-    InventoryFlatData:                      InventoryFlatData[];
+    Floor: string;
+    SlabHeight: number;
+    ParkingCount: number;
+    InventoryFlatData: InventoryFlatData[];
 }
 
 export interface InventoryFlatData {
-    InventoryFlatId:                        number;
-    Uniquekey:                              string;
-    InventoryBuildingId:                    number;
-    BuildingNumber:                         string;
+    InventoryFlatId: number;
+    Uniquekey: string;
+    InventoryBuildingId: number;
+    BuildingNumber: string;
     InventoryFlatFloorBasementPodiumWingId: number;
-    Wing:                                   string;
-    InventoryFloorId:                       number;
-    Floor:                                  string;
-    Flat:                                   string;
-    RERACarpetAreaSqFt:                     number;
-    FlatType:                               string;
-    FlatConfiguration:                      string;
-    FlatStatus:                             'Sale' | "Available" | "Member" | "Blocked";
-    FlatFacing:                             string;
-    InventoryFlatSpecificationData:         InventoryFlatSpecificationDatum[];
-    OwnerName:                              string;
-    BookingId:                              number;
-    BookingCreatedById:                     number;
-    BookingCreatedBy:                       string;
-    BookingCreatedDate:                     Date | null;
+    Wing: string;
+    InventoryFloorId: number;
+    Floor: string;
+    Flat: string;
+    RERACarpetAreaSqFt: number;
+    FlatType: string;
+    FlatConfiguration: string;
+    FlatStatus: 'Sold' | "Available" | "Member" | "Blocked" | "Hold";
+    FlatFacing: string;
+    InventoryFlatSpecificationData: InventoryFlatSpecificationData[];
+    OwnerName: string;
+    BookingId: number;
+    BookingCreatedById: number;
+    BookingCreatedBy: string;
+    BookingCreatedDate: Date | null;
 }
 
 
-export interface InventoryFlatSpecificationDatum {
-    InventoryFlatSpecificationId:           number;
-    Uniquekey:                              string;
-    InventoryBuildingId:                    number;
+export interface InventoryFlatSpecificationData {
+    InventoryFlatSpecificationId: number;
+    Uniquekey: string;
+    InventoryBuildingId: number;
     InventoryFlatFloorBasementPodiumWingId: number;
-    InventoryFloorId:                       number;
-    InventoryFlatId:                        number;
-    FlatLayout:                             string;
-    FlatLayoutAreaSqFt:                     number;
-    FlatLayoutLengthSqFt:                   number;
-    FlatLayoutWidthSqFt:                    number;
-    Note:                                   string;
+    InventoryFloorId: number;
+    InventoryFlatId: number;
+    FlatLayout: string;
+    FlatLayoutAreaSqFt: number;
+    FlatLayoutLengthSqFt: number;
+    FlatLayoutWidthSqFt: number;
+    Note: string;
 }
 
-export type InventoryApiPullReponse = ApiResponse<InventoryModel[]>
+
+export interface UpdateInventoryFlatRequest {
+    ProjectId?: number
+    InventoryBuildingId?: number
+    InventoryFlatFloorBasementPodiumWingId?: number
+    InventoryFlatId?: number
+    Flat?: string
+    FlatType?: string
+    RERACarpetAreaSqFt?: number
+    FlatConfiguration?: string
+    FlatStatus?: string
+    FlatFacing?: string
+
+    InventoryFlatSpecificationJSON?: string
+}
+
+export interface DeleteInventoryFlatRequest {
+    ProjectId?: number
+    InventoryBuildingId?: number
+    InventoryFlatFloorBasementPodiumWingId?: number
+    InventoryFloorId?: number
+    InventoryFlatId?: number
+}
+
+
+export type InventoryListReponse = ApiResponse<InventoryData[]>
+export type UpdateFlatResponse = ApiResponse<InventoryFlatData[]>
+export type InventoryFlatDeleteResponse = ApiResponse<number>;
 

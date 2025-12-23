@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   TncMasterData,
@@ -53,7 +52,7 @@ export const TncMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
@@ -380,6 +379,37 @@ export const TncMaster: React.FC = () => {
         align: 'left',
         render: value => (
           <TooltipText text={value || 'N/A'} maxWidth="340px" tooltipThreshold={34} />
+        )
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction && !row.NumberOfEmployee ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete T&C"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
         )
       }
     ],
@@ -726,8 +756,7 @@ export const TncMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+    
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <Loader loading={isLoading} title={loadingMessage}>
           <div></div>
@@ -750,7 +779,7 @@ export const TncMaster: React.FC = () => {
           isShowCustomizeButton={false}
           onCustomize={() => setIsShowCustomizeTncColumnsModal(true)}
           isShowAddButton={canAction}
-          addTitle="Add Tnc"
+          addTitle="Add"
           onAdd={handleAddTncModal}
           isShowImportButton={false}
           isShowExportButton={canExport}
@@ -762,6 +791,7 @@ export const TncMaster: React.FC = () => {
         <Tabs
           tabs={tncTabList}
           defaultActive={activeTab}
+          islarge={true}
           onTabChange={(t) => {
             setActiveTab(t.id);
 
@@ -771,6 +801,7 @@ export const TncMaster: React.FC = () => {
             };
 
             loadTnc(1, newFilters);
+            
           }}
         />
 
@@ -920,7 +951,6 @@ export const TncMaster: React.FC = () => {
           variant="danger"
         />
       </div>
-    </>
   );
 };
 

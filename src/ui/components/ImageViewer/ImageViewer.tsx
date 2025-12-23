@@ -10,9 +10,10 @@ interface MultiImageViewerProps {
   images: Array<string>; // array of image URLs (only images)
   title?: string;
   triggerLabel?: React.ReactNode;
-  size?: PanelSize; // only sm/md/lg/xl supported
+  size?: PanelSize;
   closeOnOverlayClick?: boolean;
   overlayZIndex?: number; // optional override
+  isIcon?: boolean;
 }
 
 const sizeClasses: Record<PanelSize, string> = {
@@ -29,6 +30,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
   size = "sm",
   closeOnOverlayClick = true,
   overlayZIndex = 9999,
+  isIcon = false
 }) => {
   // filter only truthy strings (defensive)
   const imageUrls = (images || []).filter((u) => typeof u === "string" && u.trim() !== "");
@@ -62,11 +64,11 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     const prevOverflow = document.body.style.overflow;
     try {
       document.body.style.overflow = "hidden";
-    } catch {}
+    } catch { }
     return () => {
       try {
         document.body.style.overflow = prevOverflow ?? "";
-      } catch {}
+      } catch { }
     };
   }, [isOpen]);
 
@@ -184,7 +186,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     <div className="inline-block">
       {/* Trigger */}
       {triggerLabel ? (
-        <button type="button" onClick={() => open(0)} className="text-sm font-medium underline" style={{ color: COLORS.primary1 }}>
+        <button type="button" onClick={() => open(0)} className={isIcon ? 'text-sm font-medium' : 'text-sm font-medium underline'} style={isIcon ? {} : { color: COLORS.primary1 }}>
           {triggerLabel}
         </button>
       ) : (

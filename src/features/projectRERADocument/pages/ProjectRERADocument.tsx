@@ -1,7 +1,6 @@
 import useToast from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import { Tabs, type TabItem } from '@/ui/components/Tab/Tab';
-import { ToastContainer } from '@/ui/components/Toast';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { fetchProjectRERADocumentCategoryDropdown } from '@/features/projectRERADocumentCategory/projectRERADocumentCategoryDropDown';
 import { runApiWithLoader } from '@/core/utils';
@@ -24,6 +23,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { PROJECT_DOCUMENT_STATUS } from '@/core/constants';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 
 const initialFormState = (): AddUpdateProjectRERADocumentRequest => ({
@@ -40,7 +40,7 @@ const initialFormState = (): AddUpdateProjectRERADocumentRequest => ({
   RERAPortalScreenShotURL: null,
   RemoveRERAPortalScreenShotURL: '',
 });
-var projectId = 5;
+
 const ProjectRERADocument: React.FC = () => {
 
   //#region STATE
@@ -70,7 +70,7 @@ const ProjectRERADocument: React.FC = () => {
   const [filters] = useState<FilterInfo>({});
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -104,12 +104,17 @@ const ProjectRERADocument: React.FC = () => {
   const { canAction } = useMenuPermissions();
   //#endregion
 
+  //#region PROJECT SELECTION GET ID
+  const { projectId } = useProject();
+  //#endregion
+
   //#region INIT
 
   useEffect(() => {
+    if (!projectId) return;
     loadProjectRERADocumentTabs()
 
-  }, [])
+  }, [projectId])
 
 
 
@@ -126,7 +131,7 @@ const ProjectRERADocument: React.FC = () => {
           ProjectRERADocumentId: editingDocumentData.ProjectRERADocumentId ?? 0,
           Uniquekey: editingDocumentData.Uniquekey || initialFormState().Uniquekey,
           ProjectRERADocumentName: editingDocumentData.ProjectRERADocumentName || '',
-          ProjectId: editingDocumentData.ProjectId ?? 0,
+          ProjectId: Number(projectId),
           ProjectRERADocumentCategoryId: editingDocumentData.ProjectRERADocumentCategoryId ?? 0,
           ProjectRERADocumentStatus: editingDocumentData.ProjectRERADocumentStatus ?? '',
           IsMaster: 0,
@@ -174,7 +179,7 @@ const ProjectRERADocument: React.FC = () => {
       setIsLoadingMessage,
       async () => {
 
-        const response = await fetchProjectRERADocumentCategoryDropdown(1, projectId);
+        const response = await fetchProjectRERADocumentCategoryDropdown(1, Number(projectId));
 
         const items = Array.isArray(response?.itemList) ? response.itemList : [];
 
@@ -235,7 +240,7 @@ const ProjectRERADocument: React.FC = () => {
         const params: FilterWithPaginationProjectRERADocument = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          ProjectId: projectId,
+          ProjectId: Number(projectId),
           ProjectRERADocumentId: Number(filterParams.ProjectRERADocumentId) ?? undefined,
           ProjectRERADocumentName: filterParams.ProjectRERADocumentName,
           ProjectRERADocumentStatus: filterParams.ProjectRERADocumentStatus,
@@ -269,7 +274,7 @@ const ProjectRERADocument: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Project RERA Document'
+      'Loading ' + projectRERADocumentTabList.find(t => t.id === activeTab)?.label || 'Project RERA Document'
     );
   };
   //#endregion
@@ -339,7 +344,7 @@ const ProjectRERADocument: React.FC = () => {
 
   //#endregion
 
- 
+
 
   //#region EDIT PROJECT DOCUMENT DETAILS
   const handleEditProjectRERADocumentDetails = useCallback((row: ProjectRERADocumentData) => {
@@ -348,7 +353,7 @@ const ProjectRERADocument: React.FC = () => {
       ProjectRERADocumentName: row.ProjectRERADocumentName || '',
       ProjectRERADocumentStatus: row.ProjectRERADocumentStatus || '',
       ProjectRERADocumentRemark: row.ProjectRERADocumentRemark || '',
-      
+
     })
     setIsAddUpdateDocumentDetailsModalOpen(true);
 
@@ -499,13 +504,13 @@ const ProjectRERADocument: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-        render: (value: string,row: any) => {
+        render: (value: string, row: any) => {
           return (
             <div className="flex items-center justify-between w-full">
               <MultiImageViewer
                 images={parseDocumentUrls(row.RERAPortalScreenShotURL)}
                 title="Screenshot Document"
-                triggerLabel={value===''  || 'Screenshot'}
+                triggerLabel={value === '' || 'Screenshot'}
               />
 
             </div>
@@ -630,21 +635,21 @@ const ProjectRERADocument: React.FC = () => {
 
     const fd = new FormData();
 
-      fd.append('ProjectRERADocumentId', editingDocumentData ? String(formData.ProjectRERADocumentId) : String(expandHeaderProjectRERADocumentId ?? 0));
-      
-      fd.append('Uniquekey', formData.Uniquekey ?? '');
-      
-      fd.append('ProjectRERADocumentName', expandHeaderProjectRERADocumentName ?? "");
-      
-      fd.append('ProjectId', String(projectId));
-      
-      fd.append('ProjectRERADocumentCategoryId', String(getActiveTabId() ?? 0));
-      
-      fd.append('ProjectRERADocumentStatus', formData.ProjectRERADocumentStatus ?? '');
-      
-      fd.append('ProjectRERADocumentRemark', formData.ProjectRERADocumentRemark ?? '');
-      
-      fd.append('IsMaster', String(0)),
+    fd.append('ProjectRERADocumentId', editingDocumentData ? String(formData.ProjectRERADocumentId) : String(expandHeaderProjectRERADocumentId ?? 0));
+
+    fd.append('Uniquekey', formData.Uniquekey ?? '');
+
+    fd.append('ProjectRERADocumentName', expandHeaderProjectRERADocumentName ?? "");
+
+    fd.append('ProjectId', String(projectId));
+
+    fd.append('ProjectRERADocumentCategoryId', String(getActiveTabId() ?? 0));
+
+    fd.append('ProjectRERADocumentStatus', formData.ProjectRERADocumentStatus ?? '');
+
+    fd.append('ProjectRERADocumentRemark', formData.ProjectRERADocumentRemark ?? '');
+
+    fd.append('IsMaster', String(0)),
 
       projectRERADocumentFiles.forEach(file => {
         if (file instanceof File) {
@@ -762,221 +767,220 @@ const ProjectRERADocument: React.FC = () => {
 
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-        <Loader loading={isLoading} title={loadingMessage}>
-          <div></div>
-        </Loader>
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Document Name"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+      <Loader loading={isLoading} title={loadingMessage}>
+        <div></div>
+      </Loader>
+
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Document Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchDocumnets}
+        isShowFilterButton={false}
+        isShowCustomizeButton={false}
+        // ADD
+        isShowAddButton={false}
+
+        // IMPORT
+        isShowImportButton={false}
+        // EXPORT
+        isShowExportButton={false}
+        exportLoading={isLoading}
+      />
+
+
+      {projectRERADocumentTabList.length > 0 && (
+        <Tabs
+          tabs={projectRERADocumentTabList}
+          defaultActive={activeTab}
+          islarge={true}
+          onTabChange={(t) => {
+            setActiveTab(t.id);
+
+            const newFilters: FilterInfo = {
+              ...filters,
+              ProjectRERADocumentCategoryId: t.id,
+            };
+
+            loadProjectRERADocument(1, newFilters);
           }}
-          onClearSearch={clearsearchDocumnets}
-          isShowFilterButton={false}
-          isShowCustomizeButton={false}
-          // ADD
-          isShowAddButton={false}
 
-          // IMPORT
-          isShowImportButton={false}
-          // EXPORT
-          isShowExportButton={false}
-          exportLoading={isLoading}
         />
+      )}
 
 
-        {projectRERADocumentTabList.length > 0 && (
-          <Tabs
-            tabs={projectRERADocumentTabList}
-            defaultActive={activeTab}
-            onTabChange={(t) => {
-              setActiveTab(t.id);
+      <DataTableExpandable
+        ref={dtRef}
+        data={projectRERADocumentListForTable}
+        columns={projectRERADocumentColumns}
+        pagination={projectRERADocumentPaginationInfo}
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+        emptyMessage='No Document Data Found'
+        loading={isLoading}
+        fixedHeight
+        recordsPerPage={20}
+        expandable={{
 
-              const newFilters: FilterInfo = {
-                ...filters,
-                ProjectRERADocumentCategoryId: t.id,
-              };
+          keyField: 'ProjectRERADocumentId',
+          alwaysFetchOnOpen: true,
+          fetchRow: async (row) => {
 
-              loadProjectRERADocument(1, newFilters);
-            }}
-
-          />
-        )}
-
-
-        <DataTableExpandable
-          ref={dtRef}
-          data={projectRERADocumentListForTable}
-          columns={projectRERADocumentColumns}
-          pagination={projectRERADocumentPaginationInfo}
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-          emptyMessage='No Document Data Found'
-          loading={isLoading}
-          fixedHeight
-          recordsPerPage={20}
-          expandable={{
-
-            keyField: 'ProjectRERADocumentId',
-            alwaysFetchOnOpen: true,
-            fetchRow: async (row) => {
-
-              const params: FilterWithPaginationProjectRERADocument = {
-                PageNumber: 1,
-                PageSize: pagination.pageSize,
-                ProjectId: projectId,
-                ProjectRERADocumentId: Number(row.ProjectRERADocumentId),
-                ProjectRERADocumentCategoryId: row.ProjectRERADocumentCategoryId
-              };
+            const params: FilterWithPaginationProjectRERADocument = {
+              PageNumber: 1,
+              PageSize: pagination.pageSize,
+              ProjectId: Number(projectId),
+              ProjectRERADocumentId: Number(row.ProjectRERADocumentId),
+              ProjectRERADocumentCategoryId: row.ProjectRERADocumentCategoryId
+            };
 
 
-              const response = await ProjectRERADocumentService.apiCallPullProjectRERADocument(params);
+            const response = await ProjectRERADocumentService.apiCallPullProjectRERADocument(params);
 
-              if (E.isRight(response)) {
+            if (E.isRight(response)) {
 
-                return response.right.Data ?? [];
-              }
-              return [];
+              return response.right.Data ?? [];
+            }
+            return [];
 
-            },
+          },
 
 
-            renderRow: (fetchedData) => {
+          renderRow: (fetchedData) => {
 
-              const details: ProjectRERADocumentData[] = Array.isArray(fetchedData) ? fetchedData : (fetchedData ? [fetchedData] : []);
-              if (!details || details.length === 0) {
-
-                return (
-                  <div className="p-1 text-xs text-gray-600 text-center">
-                    No Document Found.
-                  </div>
-                );
-              }
+            const details: ProjectRERADocumentData[] = Array.isArray(fetchedData) ? fetchedData : (fetchedData ? [fetchedData] : []);
+            if (!details || details.length === 0) {
 
               return (
-                <DataTable
-                  data={details}
-                  columns={projectRERADocumentDetailsColumns}
-                  emptyMessage="No Departments Data Found"
-                  fixedHeight={true}
-                  maxHeight="calc(100vh - 255px)"
-                  recordsPerPage={20}
-                  className="flex-1"
-                  sortInfo={sortInfo}
-                  onSort={handleSortColumn}
-                  loading={isLoading}
-                />
+                <div className="p-1 text-xs text-gray-600 text-center">
+                  No Document Found.
+                </div>
               );
-            },
+            }
 
-            expandButton: { openText: 'Hide', closeText: 'Show' }
-          }}
-        />
+            return (
+              <DataTable
+                data={details}
+                columns={projectRERADocumentDetailsColumns}
+                emptyMessage="No Departments Data Found"
+                fixedHeight={true}
+                maxHeight="calc(100vh - 255px)"
+                recordsPerPage={20}
+                className="flex-1"
+                sortInfo={sortInfo}
+                onSort={handleSortColumn}
+                loading={isLoading}
+              />
+            );
+          },
+
+          expandButton: { openText: 'Hide', closeText: 'Show' }
+        }}
+      />
 
 
-        {/*  ADD EDIT UPDATE DOCUMENT DETAILS */}
-        <Modal
-          isOpen={isAddUpdateDocumentDetailsModalOpen}
-          onClose={() => {
-            setIsAddUpdateDocumentDetailsModalOpen(false);
-            setEditingDocumentData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateDocumentDetailsModalOpen(false);
-            setEditingDocumentData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          title={editingDocumentData ? 'Update Document' : 'Add Document'}
-          onSubmit={(e) => handleAddUpdateDocument(0, e)}
-          saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
-          resetText='Reset'
-          loading={isLoading}
-          size='xl'
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4" >
-              <div>
-                {editingDocumentData ?
-                  <Input
-                    label='Document'
-                    required
-                    readOnly
-                    type="text"
-                    value={formData.ProjectRERADocumentName}
-                    maxLength={250}
-                    placeholder="Enter Document"
-                  />
-                  : ""}
-
-              </div>
-
-              <div>
-                <SinglePageSelection
-                  label="Status"
-                  required
-                  value={formData.ProjectRERADocumentStatus}
-                  onChange={(e) => handleFieldChange('ProjectRERADocumentStatus', String(e))}
-                  options={PROJECT_DOCUMENT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={errors.ProjectRERADocumentStatus}
-                />
-              </div>
-              <div>
-                <MultiFilePicker
-                  label="Documents"
-                  value={projectRERADocumentFiles}
-                  onChange={setProjectRERADocumentFiles}
-                  availableFilesURL={projectRERADocumentURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                  maxFiles={5}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => {
-                    setRemoveProjectRERADocumentUrls((prev) => [...prev, url])
-                  }}
-                />
-              </div>
-              <div>
-                <MultiFilePicker
-                  label="Screenshot"
-                  value={rERAPortalScreenShotFiles}
-                  onChange={setRERAPortalScreenShotFiles}
-                  availableFilesURL={rERAPortalScreenShotURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                  maxFiles={5}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => {
-                    setRemoveRERAPortalScreenShotUrls((prev) => [...prev, url])
-                  }}
-                />
-              </div>
-              <div>
+      {/*  ADD EDIT UPDATE DOCUMENT DETAILS */}
+      <Modal
+        isOpen={isAddUpdateDocumentDetailsModalOpen}
+        onClose={() => {
+          setIsAddUpdateDocumentDetailsModalOpen(false);
+          setEditingDocumentData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateDocumentDetailsModalOpen(false);
+          setEditingDocumentData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        title={editingDocumentData ? 'Update Document' : 'Add Document'}
+        onSubmit={(e) => handleAddUpdateDocument(0, e)}
+        saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
+        resetText='Reset'
+        loading={isLoading}
+        size='xl'
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4" >
+            <div>
+              {editingDocumentData ?
                 <Input
-                  label='Remark'
+                  label='Document'
+                  required
+                  readOnly
                   type="text"
-                  value={formData.ProjectRERADocumentRemark}
+                  value={formData.ProjectRERADocumentName}
                   maxLength={250}
-                  onChange={(e) => handleFieldChange('ProjectRERADocumentRemark', e.target.value)}
-                  placeholder="Enter Remarks"
+                  placeholder="Enter Document"
                 />
-
-              </div>
+                : ""}
 
             </div>
+
+            <div>
+              <SinglePageSelection
+                label="Status"
+                required
+                value={formData.ProjectRERADocumentStatus}
+                onChange={(e) => handleFieldChange('ProjectRERADocumentStatus', String(e))}
+                options={PROJECT_DOCUMENT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                error={errors.ProjectRERADocumentStatus}
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Documents"
+                value={projectRERADocumentFiles}
+                onChange={setProjectRERADocumentFiles}
+                availableFilesURL={projectRERADocumentURL ?? ""}
+                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                maxFiles={5}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => {
+                  setRemoveProjectRERADocumentUrls((prev) => [...prev, url])
+                }}
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Screenshot"
+                value={rERAPortalScreenShotFiles}
+                onChange={setRERAPortalScreenShotFiles}
+                availableFilesURL={rERAPortalScreenShotURL ?? ""}
+                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                maxFiles={5}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => {
+                  setRemoveRERAPortalScreenShotUrls((prev) => [...prev, url])
+                }}
+              />
+            </div>
+            <div>
+              <Input
+                label='Remark'
+                type="text"
+                value={formData.ProjectRERADocumentRemark}
+                maxLength={250}
+                onChange={(e) => handleFieldChange('ProjectRERADocumentRemark', e.target.value)}
+                placeholder="Enter Remarks"
+              />
+
+            </div>
+
           </div>
+        </div>
 
-        </Modal>
+      </Modal>
 
-      </div>
-    </>
+    </div>
   );
 };
 

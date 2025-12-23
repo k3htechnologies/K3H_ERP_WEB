@@ -11,6 +11,7 @@ export interface FilterWithPaginationProjectMasterRequest {
     ProjectLocation?: string
     ProjectName?: string
     CTCNumber?: string
+    EmployeeId?: number
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

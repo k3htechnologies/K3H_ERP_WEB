@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { THEME } from "@/core/constants/theme";
 
 export interface DropdownOptions {
@@ -8,145 +8,66 @@ export interface DropdownOptions {
 
 interface MultiSelectPaginationProps {
   label?: string;
-  options?: DropdownOptions[]; // optional when using dataFetchCallBack
+  options: DropdownOptions[];
   selectedValues: (string | number)[];
   required?: boolean;
   onChange: (updatedSelectedValues: (string | number)[]) => void;
   disabled?: boolean;
-  hasSubmitted?: boolean;
-  style?: React.CSSProperties;
-  dataFetchCallBack?: (
-    pageNumber: number,
-    params?: { value?: string }
-  ) => Promise<{ totalNumberOfRecord: number; itemList: DropdownOptions[] }>;
+  hasSubmitted?:boolean;
+
 }
 
 const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   label,
-  options: propOptions = [],
+  options,
   selectedValues,
   hasSubmitted = false,
   required = false,
   onChange,
   disabled = false,
-  style,
-  dataFetchCallBack,
 }) => {
   const theme = THEME;
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [options, setOptions] = useState<DropdownOptions[]>(propOptions || []);
-  const [filteredOptions, setFilteredOptions] = useState<DropdownOptions[]>(propOptions || []);
+  const [filteredOptions, setFilteredOptions] = useState<DropdownOptions[]>(options);
   const [error, setError] = useState<string | undefined>(undefined);
-  const [loading, setLoading] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const hasSelections = selectedValues.length > 0;
 
-  const fetchOptions = useCallback(
-    async (term: string) => {
-      if (!dataFetchCallBack) return;
-      try {
-        setLoading(true);
-        const result = await dataFetchCallBack(1, { value: term });
-        const list = Array.isArray(result?.itemList) ? result.itemList : [];
-        
-        // Merge with propOptions (initialOptions) to ensure selected options are included
-        const mergedOptions: DropdownOptions[] = [...(propOptions || [])];
-        list.forEach((newOpt) => {
-          if (!mergedOptions.some((opt) => String(opt.value) === String(newOpt.value))) {
-            mergedOptions.push(newOpt);
-          }
-        });
-        
-        setOptions(mergedOptions);
-        setFilteredOptions(mergedOptions);
-      } catch (err) {
-        console.error("MultiSelectPagination fetch error:", err);
-        // On error, at least keep the initialOptions
-        setOptions(propOptions || []);
-        setFilteredOptions(propOptions || []);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [dataFetchCallBack, propOptions]
-  );
-
-  // Filter options based on search input (local mode)
+  // Filter options based on search input
   useEffect(() => {
-    if (dataFetchCallBack) return;
     const lowerSearch = searchTerm.toLowerCase();
-    const filtered = (options || []).filter((opt) =>
+    const filtered = options.filter((opt) =>
       opt.label.toLowerCase().includes(lowerSearch)
     );
     setFilteredOptions(filtered);
-  }, [searchTerm, options, dataFetchCallBack]);
+  }, [searchTerm, options]);
 
-  // Clear options when dataFetchCallBack changes (e.g., department filter changes)
-  useEffect(() => {
-    if (!dataFetchCallBack) return;
-    // Clear options when callback changes to force fresh fetch
-    setOptions([]);
-    setFilteredOptions([]);
-  }, [dataFetchCallBack]);
-
-  // Fetch remote options when open or search changes
-  useEffect(() => {
-    if (!dataFetchCallBack) return;
-    if (isOpen) {
-      fetchOptions(searchTerm);
+  // Validate required field on selection change
+  // useEffect(() => {
+  //   if (required && selectedValues.length === 0) {
+  //     setError(`${label || "This field"} is required`);
+  //   } else {
+  //     setError(undefined);
+  //   }
+  // }, [selectedValues, required, label]);
+useEffect(() => {
+  if (hasSubmitted) {
+    if (required && selectedValues.length === 0) {
+      setError(`${label || "This field"} is required`);
+    } else {
+      setError(undefined);
     }
-  }, [dataFetchCallBack, fetchOptions, isOpen, searchTerm]);
-
-  // Sync when prop options change (local mode or merge with fetched options)
-  useEffect(() => {
-    if (dataFetchCallBack) {
-      // When using dataFetchCallBack, merge propOptions with existing options
-      if (propOptions && propOptions.length > 0) {
-        setOptions((current) => {
-          const merged = [...(propOptions || [])];
-          current.forEach((opt) => {
-            if (!merged.some((mOpt) => String(mOpt.value) === String(opt.value))) {
-              merged.push(opt);
-            }
-          });
-          return merged;
-        });
-        setFilteredOptions((current) => {
-          const merged = [...(propOptions || [])];
-          current.forEach((opt) => {
-            if (!merged.some((mOpt) => String(mOpt.value) === String(opt.value))) {
-              merged.push(opt);
-            }
-          });
-          return merged;
-        });
-      }
-      return;
-    }
-    setOptions(propOptions || []);
-    setFilteredOptions(propOptions || []);
-  }, [propOptions, dataFetchCallBack]);
-
-  useEffect(() => {
-    if (hasSubmitted) {
-      if (required && selectedValues.length === 0) {
-        setError(`${label || "This field"} is required`);
-      } else {
-        setError(undefined);
-      }
-    }
-  }, [hasSubmitted, selectedValues, required, label]);
+  }
+}, [hasSubmitted, selectedValues, required, label]);
 
   // Toggle selection of options
   const toggleSelect = (value: string | number) => {
-    // Ensure type-safe comparison
-    const isCurrentlySelected = selectedValues.some(sv => String(sv) === String(value));
-    const updated = isCurrentlySelected
-      ? selectedValues.filter((v) => String(v) !== String(value))
-      : [...selectedValues, String(value)];
+    const updated = selectedValues.includes(value)
+      ? selectedValues.filter((v) => v !== value)
+      : [...selectedValues, value];
 
     onChange(updated);
 
@@ -156,6 +77,8 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
       setError(undefined);
     }
   };
+
+
 
   // Handle search input changes
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,7 +99,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
 
   // Selected labels and visible tags (up to 4)
   const selectedLabels = options
-    .filter((opt) => selectedValues.some(sv => String(sv) === String(opt.value)))
+    .filter((opt) => selectedValues.includes(opt.value))
     .map((opt) => opt.label);
 
   const visibleTags = selectedLabels.slice(0, 4);
@@ -187,6 +110,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
       ref={dropdownRef}
       style={{
         width: "100%",
+        maxWidth: "400px",
         position: "relative",
       }}
     >
@@ -220,7 +144,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
           fontSize: theme.fontSize.md,
           borderRadius: theme.borderRadius.md,
           backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
-          border: error ? `1px solid ${theme.colors.error}` : `1px solid ${theme.colors.border}`,
+          border: `1px solid ${theme.colors.border}`,
           cursor: disabled ? "not-allowed" : "pointer",
           color: theme.colors.text,
           userSelect: "none",
@@ -234,7 +158,6 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
           maxWidth: "100%",
           minWidth: "150px",
           marginLeft: "0",
-          ...style,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" }}>
@@ -271,7 +194,6 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             placeholder={hasSelections ? "" : "Search..."}
             value={searchTerm}
             onChange={handleSearch}
-            onClick={(e) => e.stopPropagation()}
             disabled={disabled}
             style={{
               flex: 1,
@@ -316,10 +238,8 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             position: "absolute",
             top: "calc(100% + 4px)",
             left: 0,
-            right: 0,
             width: "100%",
-            minWidth: "100%",
-            maxHeight: "300px",
+            maxHeight: "200px",
             overflow: "hidden",
             border: `1px solid ${theme.colors.border}`,
             borderRadius: theme.borderRadius.sm,
@@ -329,126 +249,80 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             background: theme.colors.background,
           }}
         >
-          {/* Action links: Select All (left) and Clear All (right) */}
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              alignItems: "center",
+              position: "absolute",
+              left: 0,
+              right: 0,
+              zIndex: 1000,
+              backgroundColor: theme.colors.background,
+              border: `1px solid ${theme.colors.primary}40`,
+              borderRadius: theme.borderRadius.md,
+              boxShadow: theme.shadows.lg,
+              display: "flex",
+              justifyContent: "space-between",
               padding: "8px 10px",
               borderBottom: `1px solid ${theme.colors.border}`,
-              columnGap: "12px",
             }}
           >
-            <span
-              onClick={(e) => {
-                e.stopPropagation();
-                onChange(options.map((opt) => opt.value));
-                setError(undefined);
-              }}
+            <button
+              onClick={() => onChange(options.map((opt) => opt.value))}
               style={{
-                justifySelf: "start",
+                padding: "6px 10px",
+                backgroundColor: "#3b82f6",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
                 cursor: "pointer",
                 fontSize: "13px",
-                color: "#6b7280",
-                transition: theme.transitions.fast,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#4b5563";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "#6b7280";
               }}
             >
               Select All
-            </span>
-            <span
-              onClick={(e) => {
-                e.stopPropagation();
-                onChange([]);
-                if (required) {
-                  setError(`${label || "This field"} is required`);
-                } else {
-                  setError(undefined);
-                }
-              }}
+            </button>
+            <button
+              onClick={() => onChange([])}
               style={{
-                justifySelf: "end",
+                padding: "6px 10px",
+                backgroundColor: "#ef4444",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
                 cursor: "pointer",
                 fontSize: "13px",
-                color: "#6b7280",
-                transition: theme.transitions.fast,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#4b5563";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "#6b7280";
               }}
             >
               Clear All
-            </span>
+            </button>
           </div>
 
-          {/* Options list */}
-          <div style={{ maxHeight: "200px", overflowY: "auto", padding: "8px 10px" }}>
-            {loading && options.length === 0 && (
-              <div
-                style={{
-                  padding: theme.spacing.sm,
-                  textAlign: "center",
-                  color: theme.colors.textLight,
-                }}
-              >
-                Loading...
-              </div>
-            )}
-            {!loading && filteredOptions.length > 0 ? (
-              filteredOptions.map((opt) => {
-                // Ensure type matching for comparison (convert both to string)
-                const isSelected = selectedValues.some(sv => String(sv) === String(opt.value));
-                return (
+          <div style={{ maxHeight: "150px", overflowY: "auto", padding: "8px 10px" }}>
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => (
                 <div
                   key={opt.value}
                   style={{
                     marginBottom: "6px",
                     display: "flex",
-                      alignItems: "center",
+                    justifyContent: "space-between",
                     padding: "8px 10px",
                     borderRadius: theme.borderRadius.sm,
-                      backgroundColor: isSelected ? "#e6f0ff" : theme.colors.background,
+                    backgroundColor: selectedValues.includes(opt.value)
+                      ? theme.colors.hover
+                      : theme.colors.background,
                     cursor: disabled ? "not-allowed" : "pointer",
-                      color: theme.colors.textSecondary,
+                    color: theme.colors.text,
                     fontSize: theme.fontSize.sm,
                     transition: theme.transitions.normal,
                   }}
                   onClick={() => !disabled && toggleSelect(opt.value)}
-                    onMouseEnter={(e) => {
-                      if (!disabled && !isSelected) {
-                        e.currentTarget.style.backgroundColor = "#e6f0ff";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!disabled && !isSelected) {
-                        e.currentTarget.style.backgroundColor = theme.colors.background;
-                      }
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      readOnly
-                      style={{
-                        marginRight: 8,
-                        accentColor: theme.colors.primary,
-                        cursor: "pointer",
-                      }}
-                    />
+                >
                   <span>{opt.label}</span>
+                  {selectedValues.includes(opt.value) && (
+                    <span style={{ color: theme.colors.primary }}>✓</span>
+                  )}
                 </div>
-                );
-              })
-            ) : !loading ? (
+              ))
+            ) : (
               <div
                 style={{
                   padding: theme.spacing.sm,
@@ -456,9 +330,9 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
                   color: theme.colors.textLight,
                 }}
               >
-                {dataFetchCallBack ? "No options available" : "No records found"}
+                No records found
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       )}

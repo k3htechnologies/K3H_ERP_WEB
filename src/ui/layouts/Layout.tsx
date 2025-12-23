@@ -10,6 +10,8 @@ import type { PullMenuRequest } from '@/features/menu/models/MenuModel';
 import type { ModuleData, SubModuleData, SubSubModuleData } from '@/features/menu/models/MenuModel';
 import { getPageInfo } from '@/core/constants/pageInfo';
 import { MenuProvider } from '@/features/menu/context/MenuContext';
+import ToastContainer from '@/ui/components/Toast/ToastContainer';
+import { useToast } from '@/core/hooks/useToast';
 
 export const Layout: React.FC = () => {
 
@@ -20,8 +22,7 @@ export const Layout: React.FC = () => {
     const [selectedSubModule, setSelectedSubModule] = useState<SubModuleData | null>(null)
     const [selectedSubSubModule, setSelectedSubSubModule] = useState<SubSubModuleData | null>(null)
     const pageInfo = getPageInfo(location.pathname);
-
-    // THIS WILL AUTOMATICALLY HANDLE OFFLINE / ONLINE REDIRECTS
+    const { toasts, removeToast } = useToast()
 
     useNetworkStatus();
 
@@ -88,7 +89,7 @@ export const Layout: React.FC = () => {
         const handleMenuUpdated = () => {
 
             const storedMenu = LocalStorageHelper.getMenuData();
-            
+
             setMenuData(storedMenu || []);
         };
 
@@ -237,6 +238,7 @@ export const Layout: React.FC = () => {
                     </main>
                 </div>
             </div>
+            <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
         </MenuProvider>
     )
 }

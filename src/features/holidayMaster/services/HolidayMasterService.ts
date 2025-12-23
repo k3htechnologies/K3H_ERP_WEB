@@ -2,7 +2,6 @@ import type { Failure } from '@/core/api/FailureResponse';
 import { HolidayMasterDatasourceImpl } from '@/features/holidayMaster/datasources/HolidayMasterDatasource'
 import type {
     FilterWithPaginationHolidayMasterRequest,
-    AddUpdateHolidayMasterRequest,
     DeleteHolidayMasterRequest,
     HolidayMasterListResponse,
     HolidayMasterSaveResponse,
@@ -27,10 +26,10 @@ export const HolidayMasterService = {
         }
     },
 
-    apiCallAddUpdateHolidayMaster: async (params: AddUpdateHolidayMasterRequest): Promise<E.Either<Failure, HolidayMasterSaveResponse>> => {
+    apiCallAddUpdateHolidayMaster: async (FormData: FormData): Promise<E.Either<Failure, HolidayMasterSaveResponse>> => {
         try {
 
-            return E.right(await holidayMasterDatasource.addUpdateHolidayMaster(params));
+            return E.right(await holidayMasterDatasource.addUpdateHolidayMaster(FormData));
 
         } catch (error: any) {
 

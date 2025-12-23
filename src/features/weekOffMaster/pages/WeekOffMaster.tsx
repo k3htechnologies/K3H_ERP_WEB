@@ -3,11 +3,11 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   WeekOffMasterData,
   FilterWithPaginationWeekOffMasterRequest,
+  DeleteWeekOffMasterRequest,
 } from '@/features/weekOffMaster/models/WeekOffMasterModel'
 
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
@@ -15,7 +15,7 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -23,6 +23,8 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { useLocation, useNavigate } from 'react-router-dom';
 import { WeekOffMasterService } from '../services/WeekOffMasterService';
 import { updateFilter } from '@/core/utils/filterHelper';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { Trash2 } from 'lucide-react';
 
 
 export const WeekOffOffMasterMaster: React.FC = () => {
@@ -42,10 +44,11 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
+
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchWeekOff(value)
   }, 350);
@@ -54,6 +57,10 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
+  //DELETE WEEK OFF MASTER
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+  const [deleteWeekOffMasterData, setDeleteWeekOffMasterData] = useState<WeekOffMasterData | null>(null)
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeWeekOffColumnsModal, setIsShowCustomizeWeekOffOffColumnsModal] = useState(false);
@@ -147,7 +154,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       undefined,
       (error: any) => addToast({ type: 'error', title: error.message }),
       undefined,
-      'Loading WeekOff Data'
+      'Loading WeekOff'
     );
   };
   //#endregion
@@ -165,7 +172,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     }
 
     const filterParams: FilterInfo = {
-      searchValueWeekOffPolicyName: searchValue.trim(),
+      WeekOffPolicyName: searchValue.trim(),
     };
 
     await loadWeekOff(1, filterParams);
@@ -299,11 +306,20 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
   //#endregion
 
+  //#region CONFIRMATION DIALOG BOX
+  const handleConfirmationDialogBoxOpen = useCallback((row: WeekOffMasterData) => {
+
+    setDeleteWeekOffMasterData(row)
+    
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
+  //#endregion
+
   //#region TABLE COLUMNS
   const WeekOffMasterColumns = useMemo<TableColumn[]>(() => [
     {
       key: 'WeekOffPolicyName',
-      label: 'WeekOff Name',
+      label: 'Week Off Name',
       width: '20',
       sortable: true,
       fixed: 'left',
@@ -319,7 +335,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     },
     {
       key: 'WeekOffPolicyCode',
-      label: 'WeekOff Code',
+      label: 'Week Off Code',
       width: '15',
       sortable: false,
       align: 'center',
@@ -415,12 +431,43 @@ export const WeekOffOffMasterMaster: React.FC = () => {
         />
       )
     },
-  ], [handleNavigateToView]);
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: '12',
+      fixed: 'right',
+      align: 'center',
+      render: (_value, row) => (
+        canAction ? (
+          <div className="flex items-center justify-center gap-2">
+
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleConfirmationDialogBoxOpen(row)
+              }}
+              color='transparent'
+              isborderRadius
+              size='sm'
+              style={{
+                color: 'red',
+                padding: '4px 8px'
+              }}
+              title="Delete WeekOff"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : null
+      )
+    }
+  ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
 
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
-  const requiredWeekOffColumnKeys: string[] = ['WeekOffName'];
+  const requiredWeekOffColumnKeys: string[] = ['WeekOffPolicyName'];
 
   const allWeekOffColumnKeys: string[] = WeekOffMasterColumns.map(c => c.key);
 
@@ -490,118 +537,180 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   }
   //#endregion
 
+  //#region DELETE WEEK OFF MASTER
+  const handleDeleteWeekOffMaster = async () => {
+
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteWeekOffMasterData) return;
+
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setIsLoadingMessage,
+      async () => {
+        const params: DeleteWeekOffMasterRequest = {
+
+          WeekOffPolicyMasterId: deleteWeekOffMasterData.WeekOffPolicyMasterId || 0,
+
+          UniqueKey: deleteWeekOffMasterData.Uniquekey || ""
+        };
+
+        const response = await WeekOffMasterService.apiCallDeleteWeekOffMaster(params);
+
+        if (E.isRight(response)) {
+
+          setWeekOffOffMasterList(prevData => prevData.filter(item => item.WeekOffPolicyMasterId !== deleteWeekOffMasterData.WeekOffPolicyMasterId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteWeekOffMasterData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+        }
+        return response;
+      },
+      undefined,
+      (error: any) => addToast({ type: "error", title: error.message }),
+      undefined,
+      "Deleting Week Off"
+    );
+  };
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        {/* LOADER */}
-        
-        <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        {/* ============================================================================
+      {/* LOADER */}
+
+      <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+
+      {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By WeekOff Name"
-          onSearchChange={v => {
-            setSearchTerm(v);
-            debouncedSearch(v);
-          }}
-          onClearSearch={clearSearchWeekOff}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters);
-            setShowFilterPopup(true);
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeWeekOffOffColumnsModal(true)}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By WeekOff Name"
+        onSearchChange={v => {
+          setSearchTerm(v);
+          debouncedSearch(v);
+        }}
+        onClearSearch={clearSearchWeekOff}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters);
+          setShowFilterPopup(true);
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeWeekOffOffColumnsModal(true)}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add WeekOff"
-          onAdd={handleAddWeekOffModal}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddWeekOffModal}
 
 
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportWeekOffExcel}
-          onExportPdf={handleExportWeekOffPdf}
-          exportLoading={isLoading}
-        />
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportWeekOffExcel}
+        onExportPdf={handleExportWeekOffPdf}
+        exportLoading={isLoading}
+      />
 
-        {/* DATA TABLE WEEK OFF */}
+      {/* DATA TABLE WEEK OFF */}
 
-        <DataTable
-          data={WeekOffsForTable}
-          columns={visibleWeekOffColumns}
-          pagination={WeekOffPaginationInfo}
-          emptyMessage="No WeekOff found"
-          fixedHeight
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      <DataTable
+        data={WeekOffsForTable}
+        columns={visibleWeekOffColumns}
+        pagination={WeekOffPaginationInfo}
+        emptyMessage="No WeekOff Found"
+        fixedHeight
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
+      {/* CUSTOMIZE COLUMNS MODAL */}
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeWeekOffColumnsModal}
-          onClose={() => setIsShowCustomizeWeekOffOffColumnsModal(false)}
-          onApply={keys => {
-            const withRequired = Array.from(
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeWeekOffColumnsModal}
+        onClose={() => setIsShowCustomizeWeekOffOffColumnsModal(false)}
+        onApply={keys => {
+          const withRequired = Array.from(
 
-              new Set([...keys, ...requiredWeekOffColumnKeys])
+            new Set([...keys, ...requiredWeekOffColumnKeys])
+          );
+          setSelectedWeekOffColumnKeys(withRequired);
+
+          try {
+            LocalStorageHelper.storeWeekOffMasterTableColumns?.(
+
+              JSON.stringify(withRequired)
             );
-            setSelectedWeekOffColumnKeys(withRequired);
+          } catch { }
+        }}
+        columns={WeekOffMasterColumns}
+        selectedKeys={selectedWeekOffColumnKeys}
+        requiredKeys={requiredWeekOffColumnKeys}
+        title="Customize Table Columns"
+      />
 
-            try {
-              LocalStorageHelper.storeWeekOffMasterTableColumns?.(
+      {/* FILTER WEEK OFF MODAL */}
 
-                JSON.stringify(withRequired)
-              );
-            } catch { }
-          }}
-          columns={WeekOffMasterColumns}
-          selectedKeys={selectedWeekOffColumnKeys}
-          requiredKeys={requiredWeekOffColumnKeys}
-          title="Customize Table Columns"
-        />
-
-        {/* FILTER WEEK OFF MODAL */}
-
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - WeekOff Master"
-          onSubmit={e => {
-            e.preventDefault();
-            applyFilters();
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          resetText=''
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <Input type="text"
-                label='WeekOff Name'
-                value={tempFilters?.WeekOffPolicyName ?? ''}
-                onChange={e => handleFilterChange('WeekOffPolicyName', e.target.value)}
-                placeholder="Enter WeekOff Name" />
-            </div>
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - WeekOff Master"
+        onSubmit={e => {
+          e.preventDefault();
+          applyFilters();
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        resetText=''
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <Input type="text"
+              label='Week Off Name'
+              value={tempFilters?.WeekOffPolicyName ?? ''}
+              onChange={e => handleFilterChange('WeekOffPolicyName', e.target.value)}
+              placeholder="Enter WeekOff Name" />
           </div>
-        </Modal>
-      </div>
-    </>
+        </div>
+      </Modal>
+      {/* DELETE CONFIRMATION  WEEK OFF MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => setIsConfirmationDialogBoxOpen(false)}
+        onConfirm={handleDeleteWeekOffMaster}
+        title="You are about to delete this WeekOff?"
+        message="Deleting this WeekOff will permanently remove its data."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+    </div>
   );
 };
 

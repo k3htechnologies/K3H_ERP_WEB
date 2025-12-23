@@ -12,6 +12,7 @@ export const fetchProjectDocumentCategoryDropdown = async (pageNumber: number,pr
         });
 
         if (E.isLeft(responseEither)) {
+            
             return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
         }
 

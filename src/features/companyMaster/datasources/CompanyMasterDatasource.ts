@@ -77,7 +77,7 @@ export class CompanyMasterDatasourceImpl implements CompanyMasterDatasource {
         try {
             const queryParams = new URLSearchParams({
                 CompanyId: (params.CompanyId ?? 0).toString(),
-                UniqueKey: params.UniqueKey ?? '',
+                Uniquekey: params.Uniquekey ?? '',
             })
 
             const response = await this.k3hHttpClient.deleteRequestWithAuthentication(

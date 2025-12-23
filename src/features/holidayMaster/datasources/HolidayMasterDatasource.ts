@@ -3,7 +3,6 @@ import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { HolidayMasterApi } from '@/features/holidayMaster/api/HolidayMasterApi'
 import type {
     FilterWithPaginationHolidayMasterRequest,
-    AddUpdateHolidayMasterRequest,
     DeleteHolidayMasterRequest,
     HolidayMasterListResponse,
     HolidayMasterSaveResponse,
@@ -13,7 +12,7 @@ import type {
 export abstract class HolidayMasterDatasource {
 
     abstract pullHolidayMaster(params: FilterWithPaginationHolidayMasterRequest, signal?: AbortSignal): Promise<HolidayMasterListResponse>;
-    abstract addUpdateHolidayMaster(data: AddUpdateHolidayMasterRequest): Promise<HolidayMasterSaveResponse>;
+    abstract addUpdateHolidayMaster(data: FormData): Promise<HolidayMasterSaveResponse>;
     abstract deleteHolidayMaster(params: DeleteHolidayMasterRequest): Promise<HolidayMasterDeleteResponse>;
 }
 
@@ -51,22 +50,13 @@ export class HolidayMasterDatasourceImpl implements HolidayMasterDatasource {
         }
     }
 
-    async addUpdateHolidayMaster(params: AddUpdateHolidayMasterRequest): Promise<HolidayMasterSaveResponse> {
+    async addUpdateHolidayMaster(formData: FormData): Promise<HolidayMasterSaveResponse> {
 
         try {
 
-            const payLoad: AddUpdateHolidayMasterRequest = {
-                HolidayMasterId: params.HolidayMasterId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-
-                HolidayName: params.HolidayName?.trim() ?? '',
-                HolidayURL: params.HolidayURL ?? null,   // File upload
-                RemoveHolidayURL: params.RemoveHolidayURL ?? '',
-            }
-
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
                 HolidayMasterApi.ADD_UPDATE,
-                payLoad
+                formData
             )
 
             return response
@@ -75,7 +65,7 @@ export class HolidayMasterDatasourceImpl implements HolidayMasterDatasource {
             console.error('ERROR: ADD UPDATE HOLIDAY MASTER :', error)
 
             if (error === TokenExpiredException) {
-                await this.addUpdateHolidayMaster(params);
+                await this.addUpdateHolidayMaster(formData);
             }
             throw error
         }

@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AddUpdateEarningMasterRequest,
@@ -25,7 +24,6 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import { Edit, Trash2 } from 'lucide-react';
 import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { updateFilter } from '@/core/utils/filterHelper';
@@ -55,7 +53,7 @@ export const EarningMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const { addToast } = useToast()
 
 
   // SINGLE SEARCH TEXT BOX
@@ -80,15 +78,15 @@ export const EarningMaster: React.FC = () => {
   const [editingEarningMasterData, setEditingEarningMasterData] = useState<EarningMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-
   //ADD UPDATE DEPARTMENT MASTER
   const [formData, setFormData] = useState<AddUpdateEarningMasterRequest>(() => initialFormState());
-
 
   //DELETE EARNING MASTER
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteEarningMasterDetailsData, setDeleteEarningMasterDetailsData] = useState<EarningMasterData | null>(null)
 
+  //DROP DOWN RESET KEY
+  const [dropdownResetKey, setDropdownResetKey] = useState(0);
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeEarningMasterColumnsModal, setIsShowCustomizeEarningMasterColumnsModal] = useState(false);
@@ -202,7 +200,7 @@ export const EarningMaster: React.FC = () => {
   }
   //#endregion
 
-  //#region SEARCH ASSET MAPPING 
+  //#region SEARCH EARNING MASTER
   const searchEarnings = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -271,7 +269,6 @@ export const EarningMaster: React.FC = () => {
 
   const handleExportEarningExcel = () => handleExportEarnings('Excel')
   const handleExportEarningPdf = () => handleExportEarnings('PDF')
-
   //#endregion
 
   //#region API | SERVICES CALL TO GET EARNING MAPPING 
@@ -279,19 +276,15 @@ export const EarningMaster: React.FC = () => {
 
     return await EarningMasterService.apiCallPullEarningMaster(filterParams);
   }
-
   //#endregion
 
   //#region HANDLE PAGE CHNAGE EVENT
-
   const handlePageChange = (page: number) => {
     fetchEarningList(page);
   };
-
   //#endregion
 
   //#region TABLE SORT COLUMN
-
   const handleSortColumn = (sortInfo: SortInfo) => {
 
     setSortInfo(sortInfo);
@@ -302,7 +295,6 @@ export const EarningMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE PAGINATION INFO
-
   const earningMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
@@ -325,7 +317,6 @@ export const EarningMaster: React.FC = () => {
   //#endregion
 
   //#region EDIT EARNING MASTER
-
   const handleEditEarningMaster = useCallback((row: EarningMasterData) => {
     setEditingEarningMasterData({
       ...row,
@@ -337,8 +328,6 @@ export const EarningMaster: React.FC = () => {
     setIsAddUpdateModalOpen(true);
 
   }, [])
-
-
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
@@ -346,7 +335,6 @@ export const EarningMaster: React.FC = () => {
     setDeleteEarningMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
-
   //#endregion
 
   //#region TABLE COLUMN
@@ -517,7 +505,6 @@ export const EarningMaster: React.FC = () => {
                       handleConfirmationDialogBoxOpen(data)
                     }}
                   >
-                    <Trash2 className="h-5 w-5" />
                     Delete
                   </Button>
 
@@ -531,7 +518,6 @@ export const EarningMaster: React.FC = () => {
                       handleEditEarningMaster(data)
                     }}
                   >
-                    <Edit className="h-5 w-5" />
                     Edit
                   </Button>
                 </>
@@ -543,7 +529,6 @@ export const EarningMaster: React.FC = () => {
       </Modal>
     )
   }
-
   //#endregion
 
   //#region FILTER MODAL HELPERS
@@ -564,15 +549,21 @@ export const EarningMaster: React.FC = () => {
   //#endregion
 
   //#region HANDLE FILTER CHNAGE
-
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
+  //#endregion
 
+  //#region HANDLE RESET FORM
+  const handleResetForm = () => {
+    setFormData(initialFormState());
+    setDropdownLabels({});
+    setErrors({});
+    setDropdownResetKey(prev => prev + 1); 
+  };
   //#endregion
 
   //#region ADD UPDATE EDIT EARNING MASTER
-
   const handleFieldChange = (field: keyof AddUpdateEarningMasterRequest, value: any) => {
 
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -603,15 +594,18 @@ export const EarningMaster: React.FC = () => {
     if (formData.Name.trim() === "") {
 
       newErrors.Name = "Name is required"
+    } else if (formData.Name.trim().length > 50) {
+      newErrors.Name = ' Name must be at most 50 characters'
     }
 
     if (formData.Type.trim() === "") {
       newErrors.Type = "Type is required";
     }
 
-    if (formData.Value === 0) {
+    if (!formData.Value || Number(formData.Value) <= 0) {
       newErrors.Value = "Value is required";
     }
+
     if (formData.BranchMasterId === 0) {
       newErrors.BranchMasterId = "Branch is required";
     }
@@ -636,6 +630,7 @@ export const EarningMaster: React.FC = () => {
 
   };
 
+  //#region ADD UPDATE EARNING MASTER
   const handleAddUpdateEarningMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -715,7 +710,6 @@ export const EarningMaster: React.FC = () => {
     )
 
   };
-
   //#endregion
 
   //#region DELETE EARNING MASTER
@@ -761,213 +755,218 @@ export const EarningMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Earning Master Data'
+      'Delete Earning Master'
     )
   }
   //#endregion
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Earning Name"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchEarnings}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeEarningMasterColumnsModal(true)}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle='Add Earning'
-          onAdd={handleAddEarningModal}
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Earning Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchEarnings}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeEarningMasterColumnsModal(true)}
 
-          // IMPORT
-          isShowImportButton={false}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle='Add'
+        onAdd={handleAddEarningModal}
 
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportEarningExcel}
-          onExportPdf={handleExportEarningPdf}
-          exportLoading={isLoading}
-        />
+        // IMPORT
+        isShowImportButton={false}
 
-        {/* DATA TABLE EARNING*/}
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportEarningExcel}
+        onExportPdf={handleExportEarningPdf}
+        exportLoading={isLoading}
+      />
 
-        <DataTable
-          data={earningListForTable}
-          columns={visibleEarningMasterColumns}
-          pagination={earningMasterPaginationInfo}
-          emptyMessage="No Earnings Data Found"
-          fixedHeight={true}
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      {/* DATA TABLE EARNING*/}
 
-        {/* VIEW EARNING MODAL */}
-        <ViewEarningDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewEarningMasterDetailsData(null)
-          }}
-          data={viewEarningMasterDetailsData}
-        />
+      <DataTable
+        data={earningListForTable}
+        columns={visibleEarningMasterColumns}
+        pagination={earningMasterPaginationInfo}
+        emptyMessage="No Earnings Data Found"
+        fixedHeight={true}
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        {/*  ADD EDIT UPDATE EARNING MASTER */}
+      {/* VIEW EARNING MODAL */}
+      <ViewEarningDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewEarningMasterDetailsData(null)
+        }}
+        data={viewEarningMasterDetailsData}
+      />
 
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingEarningMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingEarningMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          title={editingEarningMasterData ? 'Update Earning' : 'Add Earning'}
-          onSubmit={handleAddUpdateEarningMaster}
-          saveText={editingEarningMasterData ? 'Update Earning' : 'Save Earning'}
-          resetText='Reset'
-          loading={isLoading}
-          size='xl'
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4" >
-              <div>
-                <Input
-                  type="text"
-                  required
-                  label='Earning Name'
-                  value={formData.Name ?? ""}
-                  onChange={(e) => handleFieldChange("Name", e.target.value)}
-                  placeholder="Enter Earning Name"
-                  maxLength={250}
-                  error={errors.Name} />
+      {/*  ADD EDIT UPDATE EARNING MASTER */}
 
-              </div>
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingEarningMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingEarningMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        title={editingEarningMasterData ? 'Update Earning' : 'Add Earning'}
+        onSubmit={handleAddUpdateEarningMaster}
+        saveText={editingEarningMasterData ? 'Update Earning' : 'Save Earning'}
+        resetText='Reset'
+        onreset={handleResetForm}
+        loading={isLoading}
+        size='xl'
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4" >
+            <div>
+              <Input
+                type="text"
+                required
+                label='Earning Name'
+                value={formData.Name ?? ""}
+                onChange={(e) => handleFieldChange("Name", e.target.value)}
+                placeholder="Enter Earning Name"
+                maxLength={250}
+                error={errors.Name} />
 
-              <div>
-                <Input
-                  type="text"
-                  label='Type'
-                  value={formData.Type ?? ""}
-                  onChange={(e) => handleFieldChange("Type", e.target.value)}
-                  required
-                  maxLength={20}
-                  placeholder="Enter Type"
-                  error={errors.Type} />
-              </div>
-              <div>
-                <Input
-                  type="text"
-                  label='Value'
-                  value={formData.Value ?? ""}
-                  onChange={(e) => handleFieldChange("Value", e.target.value)}
-                  required
-                  maxLength={20}
-                  placeholder="Enter Value"
-                  error={errors.Value}
-                />
-              </div>
-              <div>
-                <SingleSelectDropdownWithPagination
-                  label="Branch"
-                  title="Select Branch"
-                  size="lg"
-                  required
-                  dataFetchCallBack={fetchBranchMasterDropdown}
-                  onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
-                  initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
-                  error={errors.BranchMasterId}
-                />
+            </div>
 
-              </div>
+            <div>
+              <Input
+                type="text"
+                label='Type'
+                value={formData.Type ?? ""}
+                onChange={(e) => handleFieldChange("Type", e.target.value)}
+                required
+                maxLength={20}
+                placeholder="Enter Type"
+                error={errors.Type} />
+            </div>
+
+            <div>
+              <Input
+                label='Value'
+                required
+                error={errors.Value}
+                type="text"
+                value={formData.Value ?? ''}
+                maxLength={10}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, '');
+                  handleFieldChange('Value', digits === '' ? 0 : Number(digits));
+                }}
+                placeholder="Enter Value"
+              />
+            </div>
+
+            <div>
+              <SingleSelectDropdownWithPagination
+                label="Branch"
+                key={dropdownResetKey}
+                title="Select Branch"
+                size="lg"
+                required
+                dataFetchCallBack={fetchBranchMasterDropdown}
+                onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
+                initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
+                error={errors.BranchMasterId}
+              />
+
             </div>
           </div>
+        </div>
 
-        </Modal>
+      </Modal>
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeEarningMasterColumnsModal}
-          onClose={() => setIsShowCustomizeEarningMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(new Set([...keys, ...requiredEarningMasterColumnKeys]))
-            setSelectedEarningMasterColumnKeys(withRequired)
-            try {
-              LocalStorageHelper.storeEarningMasterTableColumns(JSON.stringify(withRequired))
-            } catch { }
-          }}
-          columns={earningMasterColumns}
-          selectedKeys={selectedEarningMasterColumnKeys}
-          requiredKeys={requiredEarningMasterColumnKeys}
-          title="Customize Table Columns"
-        />
+      {/* CUSTOMIZE COLUMNS MODAL */}
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeEarningMasterColumnsModal}
+        onClose={() => setIsShowCustomizeEarningMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(new Set([...keys, ...requiredEarningMasterColumnKeys]))
+          setSelectedEarningMasterColumnKeys(withRequired)
+          try {
+            LocalStorageHelper.storeEarningMasterTableColumns(JSON.stringify(withRequired))
+          } catch { }
+        }}
+        columns={earningMasterColumns}
+        selectedKeys={selectedEarningMasterColumnKeys}
+        requiredKeys={requiredEarningMasterColumnKeys}
+        title="Customize Table Columns"
+      />
 
-        {/* FILTER MODAL */}
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Earning Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Earning Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.Name || ''}
-                  onChange={(e) => handleFilterChange('Name', e.target.value)}
-                  placeholder="Enter Earning Name"
-                />
-              </div>
+      {/* FILTER MODAL */}
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Earning Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Earning Name</label>
+              <Input
+                type="text"
+                value={tempFilters.Name || ''}
+                onChange={(e) => handleFilterChange('Name', e.target.value)}
+                placeholder="Enter Earning Name"
+              />
             </div>
           </div>
-        </Modal>
-        {/* DELETE CONFIRMATION  EARNING MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteEarningMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteEarningMaster}
-          title="You are about to delete a  Earning?"
-          message="Deleting this  Earning will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
+        </div>
+      </Modal>
+      {/* DELETE CONFIRMATION  EARNING MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteEarningMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteEarningMaster}
+        title="You are about to delete a  Earning?"
+        message="Deleting this  Earning will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
 
-      </div>
-    </>
+    </div>
   )
 }
 

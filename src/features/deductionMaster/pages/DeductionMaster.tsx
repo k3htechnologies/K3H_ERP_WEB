@@ -3,10 +3,10 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   DeductionMasterData,
+  DeleteDeductionMasterRequest,
   FilterWithPaginationDeductionMasterRequest
 } from '@/features/deductionMaster/models/DeductionMasterModel';
 import { DeductionMasterService } from '@/features/deductionMaster/services/DeductionMasterService'
@@ -15,13 +15,15 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { updateFilter } from '@/core/utils/filterHelper';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { Trash2 } from 'lucide-react';
 
 
 export const DeductionMaster: React.FC = () => {
@@ -41,11 +43,13 @@ export const DeductionMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast();
+  const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
+
   const debouncedSearch = useDebouncedCallback((value: string) => {
+
     searchDeductions(value)
   }, 350);
 
@@ -53,6 +57,10 @@ export const DeductionMaster: React.FC = () => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
+  //DELETE DEDUCTION MASTER
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+  const [deleteDeductionMasterData, setDeleteDeductionMasterData] = useState<DeductionMasterData | null>(null)
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeDeductionColumnsModal, setIsShowCustomizeDeductionColumnsModal] = useState(false);
@@ -104,7 +112,7 @@ export const DeductionMaster: React.FC = () => {
     return await loadDeductions(page, filters);
   }
 
-  const loadDeductions = async (page: number, filterParams: FilterInfo) => {
+  const loadDeductions = async (page: number, filterParam: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -118,11 +126,12 @@ export const DeductionMaster: React.FC = () => {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
+
         const params: FilterWithPaginationDeductionMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          DeductionMasterId: filterParams.DeductionMasterId ? Number(filterParams.DeductionMasterId) : undefined,
-          Name: filterParams.Name?.trim() || undefined,
+          DeductionMasterId: 0,
+          Name: filterParam.Name,
           SortBy: sortByParam
         };
 
@@ -161,7 +170,6 @@ export const DeductionMaster: React.FC = () => {
 
       return
     }
-
     const filterParams: FilterInfo = {
       Name: searchValue.trim(),
     };
@@ -191,7 +199,9 @@ export const DeductionMaster: React.FC = () => {
   //#region EXPORT / IMPORT EXCEL AND PDF
   const handleExportDeductions = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
+
       setIsLoading,
+
       setIsLoadingMessage,
       async () => {
         // Find the column label for sorting
@@ -292,6 +302,13 @@ export const DeductionMaster: React.FC = () => {
     });
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
 
+  //#endregion
+
+  //#region CONFIRMATION DIALOG BOX
+  const handleConfirmationDialogBoxOpen = useCallback((row: DeductionMasterData) => {
+    setDeleteDeductionMasterData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
   //#endregion
 
   //#region TABLE COLUMNS
@@ -398,7 +415,38 @@ export const DeductionMaster: React.FC = () => {
         />
       )
     },
-  ], [handleNavigateToView]);
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: '12',
+      fixed: 'right',
+      align: 'center',
+      render: (_value, row) => (
+        canAction ? (
+          <div className="flex items-center justify-center gap-2">
+
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleConfirmationDialogBoxOpen(row)
+              }}
+              color='transparent'
+              isborderRadius
+              size='sm'
+              style={{
+                color: 'red',
+                padding: '4px 8px'
+              }}
+              title="Delete Deduction"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : null
+      )
+    }
+  ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
@@ -469,115 +517,180 @@ export const DeductionMaster: React.FC = () => {
   }
   //#endregion
 
+  //#region DELETE DEDUCTION MASTER
+  const handleDeleteDeductionMaster = async () => {
+
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteDeductionMasterData) return;
+
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setIsLoadingMessage,
+      async () => {
+        const params: DeleteDeductionMasterRequest = {
+
+          DeductionMasterId: deleteDeductionMasterData.DeductionMasterId || 0,
+
+          UniqueKey: deleteDeductionMasterData.Uniquekey || ""
+        };
+
+        const response = await DeductionMasterService.apiCallDeleteDeductionMaster(params);
+
+        if (E.isRight(response)) {
+
+          setDeductionMasterList(prevData => prevData.filter(item => item.DeductionMasterId !== deleteDeductionMasterData.DeductionMasterId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteDeductionMasterData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+        }
+        return response;
+      },
+      undefined,
+      (error: any) => addToast({ type: "error", title: error.message }),
+      undefined,
+      "Deleting Deduction"
+    );
+  };
+
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-        <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-         {/* ============================================================================
+      <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+
+      {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Deduction Name"
-          onSearchChange={v => {
-            setSearchTerm(v);
-            debouncedSearch(v);
-          }}
-          onClearSearch={clearSearchDeductions}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters);
-            setShowFilterPopup(true);
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeDeductionColumnsModal(true)}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Deduction Name"
+        onSearchChange={v => {
+          setSearchTerm(v);
+          debouncedSearch(v);
+        }}
+        onClearSearch={clearSearchDeductions}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters);
+          setShowFilterPopup(true);
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeDeductionColumnsModal(true)}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add Deduction"
-          onAdd={handleAddDeductionModal}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddDeductionModal}
 
 
-          // EXPORT
-          isShowExportButton={canExport}
-          onExportExcel={handleExportDeductionExcel}
-          onExportPdf={handleExportDeductionPdf}
-          exportLoading={isLoading}
-        />
+        // EXPORT
+        isShowExportButton={canExport}
+        onExportExcel={handleExportDeductionExcel}
+        onExportPdf={handleExportDeductionPdf}
+        exportLoading={isLoading}
+      />
 
-        {/* DATA TABLE DEDUCTION*/}
+      {/* DATA TABLE DEDUCTION*/}
 
-        <DataTable
-          data={DeductionsForTable}
-          columns={visibleDeductionColumns}
-          pagination={DeductionPaginationInfo}
-          emptyMessage="No Deduction found"
-          fixedHeight
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      <DataTable
+        data={DeductionsForTable}
+        columns={visibleDeductionColumns}
+        pagination={DeductionPaginationInfo}
+        emptyMessage="No Deduction found"
+        fixedHeight
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
+      {/* CUSTOMIZE COLUMNS MODAL */}
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeDeductionColumnsModal}
-          onClose={() => setIsShowCustomizeDeductionColumnsModal(false)}
-          onApply={keys => {
-            const withRequired = Array.from(
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeDeductionColumnsModal}
+        onClose={() => setIsShowCustomizeDeductionColumnsModal(false)}
+        onApply={keys => {
+          const withRequired = Array.from(
 
-              new Set([...keys, ...requiredDeductionColumnKeys])
+            new Set([...keys, ...requiredDeductionColumnKeys])
+          );
+          setSelectedDeductionColumnKeys(withRequired);
+
+          try {
+            LocalStorageHelper.storeDeductionMasterTableColumns?.(
+
+              JSON.stringify(withRequired)
             );
-            setSelectedDeductionColumnKeys(withRequired);
+          } catch { }
+        }}
+        columns={DeductionMasterColumns}
+        selectedKeys={selectedDeductionColumnKeys}
+        requiredKeys={requiredDeductionColumnKeys}
+        title="Customize Table Columns"
+      />
 
-            try {
-              LocalStorageHelper.storeDeductionMasterTableColumns?.(
-
-                JSON.stringify(withRequired)
-              );
-            } catch { }
-          }}
-          columns={DeductionMasterColumns}
-          selectedKeys={selectedDeductionColumnKeys}
-          requiredKeys={requiredDeductionColumnKeys}
-          title="Customize Table Columns"
-        />
-
-        {/* FILTER  DEDUCTION MODAL  */}
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Deduction Master"
-          onSubmit={e => {
-            e.preventDefault();
-            applyFilters();
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          resetText=''
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <Input type="text"
-                label='Deduction Name'
-                value={tempFilters?.Name ?? ''}
-                onChange={e => handleFilterChange('Name', e.target.value)}
-                placeholder="Enter Deduction Name" />
-            </div>
+      {/* FILTER  DEDUCTION MODAL  */}
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Deduction Master"
+        onSubmit={e => {
+          e.preventDefault();
+          applyFilters();
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        resetText=''
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <Input type="text"
+              label='Deduction Name'
+              value={tempFilters?.Name ?? ''}
+              onChange={e => handleFilterChange('Name', e.target.value)}
+              placeholder="Enter Deduction Name" />
           </div>
-        </Modal>
-      </div>
-    </>
+        </div>
+      </Modal>
+
+      {/* DELETE CONFIRMATION  DEDUCTION MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => setIsConfirmationDialogBoxOpen(false)}
+        onConfirm={handleDeleteDeductionMaster}
+        title="You are about to delete this Deduction?"
+        message="Deleting this Deduction will permanently remove its data."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+
+    </div>
   );
 };
 

@@ -72,8 +72,6 @@ export interface CompanyPartnerData {
     ModifiedById: number | 0
     ModifiedBy: string | ''
     ModifiedDate: string | null
-    LastModifiedBy: string | ''
-    LastModifiedDate: string | null
 }
 
 export interface AddUpdateCompanyMasterRequest {
@@ -128,7 +126,7 @@ export interface AddUpdateCompanyPartnerRequest {
 
 export interface DeleteCompanyMasterRequest {
     CompanyId: number
-    UniqueKey: string
+    Uniquekey: string
 }
 
 export type CompanyMasterListResponse = ApiResponse<CompanyMasterData[]>;

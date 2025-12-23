@@ -3,7 +3,6 @@ import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
-import { ToastContainer } from '@/ui/components/Toast';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AddUpdateBranchAssociationsMasterRequest,
@@ -24,7 +23,6 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
-import { Edit } from 'lucide-react';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
@@ -53,7 +51,7 @@ export const BranchAssociationsMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const { toasts, removeToast, addToast } = useToast()
+  const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -80,6 +78,8 @@ export const BranchAssociationsMaster: React.FC = () => {
   //ADD UPDATE BRANCH ASSOCIATION MASTER
   const [formData, setFormData] = useState<AddUpdateBranchAssociationsMasterRequest>(() => initialFormState());
 
+  //DROP DOWN RESET KEY
+  const [dropdownResetKey, setDropdownResetKey] = useState(0);
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeBranchAssociationsMasterColumnsModal, setIsShowCustomizeBranchAssociationsMasterColumnsModal] = useState(false);
@@ -221,6 +221,8 @@ export const BranchAssociationsMaster: React.FC = () => {
 
   }
   //#endregion
+
+
 
   //#region CLEAR BRANCH ASSOCIATIONS 
   const clearsearchBranchAssociations = () => {
@@ -476,7 +478,7 @@ export const BranchAssociationsMaster: React.FC = () => {
                 :
                 ''}
             </div>
-            <div className="flex justify-between items-center pt-4">
+            <div className="flex justify-end items-center pt-4">
 
               {canAction && (
                 <>
@@ -490,7 +492,7 @@ export const BranchAssociationsMaster: React.FC = () => {
                       handleEditBranchAssociationsMaster(data)
                     }}
                   >
-                    <Edit className="h-5 w-5" />
+
                     Edit
                   </Button>
                 </>
@@ -516,8 +518,11 @@ export const BranchAssociationsMaster: React.FC = () => {
   //#region CLEAR FILTER 
   const clearFilters = () => {
     setTempFilters({})
+
     setFilters({})
+
     loadBranchAssociations(1, {})
+
     setShowFilterPopup(false)
   }
 
@@ -541,6 +546,15 @@ export const BranchAssociationsMaster: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
+
+  // RESET FORM DATA
+  const handleResetForm = () => {
+    setFormData(initialFormState());
+    setDropdownLabels({});
+    setErrors({});
+    setDropdownResetKey(prev => prev + 1);
+  };
+  //#endregion
 
   const handleAddBranchAssociationsMaster = () => {
     setEditingBranchAssociationMasterData(null);
@@ -579,11 +593,11 @@ export const BranchAssociationsMaster: React.FC = () => {
     return {
       BranchAssociationsId: formData.BranchAssociationsId,
       Uniquekey: formData.Uniquekey,
-      BranchMasterId: formData.BranchMasterId,
+      BranchMasterId: formData.BranchMasterId ? String(formData.BranchMasterId) : "",
       EmployeeId: formData.EmployeeId
     };
-
   };
+
 
   const handleAddUpdateBranchAssociationsMaster = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -668,187 +682,179 @@ export const BranchAssociationsMaster: React.FC = () => {
   //#endregion
 
   return (
-    <>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {/* ============================================================================
+
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        {/* ============================================================================
+      {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Employee Name"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchBranchAssociations}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeBranchAssociationsMasterColumnsModal(true)}
-          isShowAddButton={canAction}
-          addTitle='Add BranchAssociation'
-          onAdd={handleAddBranchAssociationsMaster}
-          isShowImportButton={false}
-          isShowExportButton={canExport}
-          onExportExcel={handleExportBranchAssociationsExcel}
-          onExportPdf={handleExportBranchAssociationsPdf}
-          exportLoading={isLoading}
-        />
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Employee Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchBranchAssociations}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeBranchAssociationsMasterColumnsModal(true)}
+        isShowAddButton={canAction}
+        addTitle='Add'
+        onAdd={handleAddBranchAssociationsMaster}
+        isShowImportButton={false}
+        isShowExportButton={canExport}
+        onExportExcel={handleExportBranchAssociationsExcel}
+        onExportPdf={handleExportBranchAssociationsPdf}
+        exportLoading={isLoading}
+      />
 
+      {/* DATA TABLE BRANCH ASSOCIATIONS */}
+      <DataTable
+        data={branchAssociationsListForTable}
+        columns={visibleBranchAssociationsMasterColumns}
+        pagination={branchAssociationsMasterPaginationInfo}
+        emptyMessage="No Branch Associations Data Found"
+        fixedHeight={true}
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        {/* DATA TABLE BRANCH ASSOCIATIONS */}
-        <DataTable
-          data={branchAssociationsListForTable}
-          columns={visibleBranchAssociationsMasterColumns}
-          pagination={branchAssociationsMasterPaginationInfo}
-          emptyMessage="No Branch Associations Data Found"
-          fixedHeight={true}
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      {/* VIEW BRANCH ASSOCIATIONS MODAL */}
+      <ViewBranchAssociationsDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewBranchAssociationsMasterDetailsData(null)
+        }}
+        data={viewBranchAssociationsMasterDetailsData}
+      />
 
-        {/* VIEW BRANCH ASSOCIATIONS MODAL */}
-        <ViewBranchAssociationsDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewBranchAssociationsMasterDetailsData(null)
-          }}
-          data={viewBranchAssociationsMasterDetailsData}
-        />
+      {/* ADD BRANCH ASSOCIATIONS MODAL */}
 
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingBranchAssociationMasterData(null)
-            setFormData(initialFormState());
-            setErrors({})
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false)
-            setEditingBranchAssociationMasterData(null)
-            setFormData(initialFormState());
-            setErrors({})
-          }}
-          title={editingBranchAssociationMasterData ? 'Update Branch Associations' : 'Add Branch Associations'}
-          onSubmit={handleAddUpdateBranchAssociationsMaster}
-          saveText={editingBranchAssociationMasterData ? 'Update Branch Associations' : 'Save Branch Associations'}
-          resetText='Reset'
-          loading={isLoading}
-          size='xl'
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4" >
-              <div>
-                <SingleSelectDropdownWithPagination
-                  label="Branch"
-                  title="Select Branch"
-                  size="lg"
-                  required
-                  dataFetchCallBack={fetchBranchMasterDropdown}
-                  onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
-                  initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
-                  error={errors.BranchMasterId}
-                />
-              </div>
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false)
+          setEditingBranchAssociationMasterData(null)
+          setFormData(initialFormState());
+          setErrors({})
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false)
+          setEditingBranchAssociationMasterData(null)
+          setFormData(initialFormState());
+          setErrors({})
+        }}
+        title={editingBranchAssociationMasterData ? 'Update Branch Associations' : 'Add Branch Associations'}
+        onSubmit={handleAddUpdateBranchAssociationsMaster}
+        saveText={editingBranchAssociationMasterData ? 'Update Branch Associations' : 'Save Branch Associations'}
+        resetText='Reset'
+        onreset={handleResetForm}
+        loading={isLoading}
+        size='xl'
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4" >
+
+            <div>
               <SingleSelectDropdownWithPagination
-                label="Employee"
-                title="Select Employee"
+                label="Branch"
+                key={dropdownResetKey}
+                title="Select Branch"
                 size="lg"
                 required
-                dataFetchCallBack={fetchEmployeeMasterDropdown}
-                onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
-                initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
-                error={errors.EmployeeId}
+                dataFetchCallBack={fetchBranchMasterDropdown}
+                onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
+                initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
+                error={errors.BranchMasterId}
+              />
+            </div>
+
+            <SingleSelectDropdownWithPagination
+              label="Employee"
+              key={dropdownResetKey}
+              title="Select Employee"
+              size="lg"
+              required
+              dataFetchCallBack={fetchEmployeeMasterDropdown}
+              onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
+              initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
+              error={errors.EmployeeId}
+            />
+          </div>
+        </div>
+
+      </Modal>
+
+      {/* CUSTOMIZE COLUMNS MODAL */}
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeBranchAssociationsMasterColumnsModal}
+        onClose={() => setIsShowCustomizeBranchAssociationsMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredBranchAssociationsMasterColumnKeys]),
+          )
+
+          setSelectedBranchAssociationsMasterColumnKeys(withRequired)
+
+          try {
+            LocalStorageHelper.storeBranchAssociationsMasterTableColumns(
+              JSON.stringify(withRequired),
+            )
+          } catch { }
+        }}
+        columns={branchAssociationsMasterColumns}
+        selectedKeys={selectedBranchAssociationsMasterColumnKeys}
+        requiredKeys={requiredBranchAssociationsMasterColumnKeys}
+        title="Customize Branch Associations Master Table Columns"
+      />
+
+      {/* FILTER BRANCH ASSOCIATIONS MODAL */}
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Branch Associations Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Employee Name
+              </label>
+              <Input
+                type="text"
+                value={tempFilters.EmployeeName || ''}
+                onChange={(e) => handleFilterChange('EmployeeName', e.target.value)}
+                placeholder="Enter Employee Name"
               />
             </div>
           </div>
-
-        </Modal>
-
-
-        {/* CUSTOMIZE COLUMNS MODAL */}
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeBranchAssociationsMasterColumnsModal}
-          onClose={() => setIsShowCustomizeBranchAssociationsMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredBranchAssociationsMasterColumnKeys]),
-            )
-
-            setSelectedBranchAssociationsMasterColumnKeys(withRequired)
-
-            try {
-              LocalStorageHelper.storeBranchAssociationsMasterTableColumns(
-                JSON.stringify(withRequired),
-              )
-            } catch { }
-          }}
-          columns={branchAssociationsMasterColumns}
-          selectedKeys={selectedBranchAssociationsMasterColumnKeys}
-          requiredKeys={requiredBranchAssociationsMasterColumnKeys}
-          title="Customize Branch Associations Master Table Columns"
-        />
-
-        {/* FILTER BRANCH ASSOCIATIONS MODAL */}
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Branch Associations Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Employee Name
-                </label>
-                <Input
-                  type="text"
-                  value={tempFilters.EmployeeName || ''}
-                  onChange={(e) => handleFilterChange('EmployeeName', e.target.value)}
-                  placeholder="Enter Employee Name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Branch Master
-                </label>
-                <Input
-                  type="text"
-                  value={tempFilters.BranchMasterId || ''}
-                  onChange={(e) => handleFilterChange('BranchMasterId', e.target.value)}
-                  placeholder="Enter Branch Name"
-                />
-              </div>
-            </div>
-          </div>
-        </Modal>
-      </div>
-    </>
+        </div>
+      </Modal>
+    </div>
 
   )
 }

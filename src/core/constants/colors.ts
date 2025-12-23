@@ -9,9 +9,9 @@ export const COLORS = {
   warning: '#f59e0b',
   info: '#3b82f6',
   background: '#f9fafb',
-  text: '#374151',
+  text: '#00000080',
   textSecondary: '#6b7280',
-  border: '#e5e7eb',
+  border: '#3b82f62e',
   backgroundSecondary: '#f9fafb',
   textLight: '#9ca3af',         // Light text
   placeholder: '#9ca3af',       // Placeholder text
@@ -374,6 +374,25 @@ export const COLOR_MAP = {
       hover: { backgroundColor: '#f6f3f4' },
     },
   },
+
+   cancel: {
+    solid: {
+      light: {
+        backgroundColor: '#D0D7DE',
+        color: '#1D1D1D50',
+        border: '1px solid #D0D7DE',
+        hover: { backgroundColor: '#D0D7DE' },
+      },
+      
+      dark: {
+        backgroundColor: '#D0D7DE',
+        color: '#1D1D1D50',
+        border: '1px solid #D0D7DE',
+        hover: { backgroundColor: '#D0D7DE' },
+      },
+    },
+  },
+
 } as const
 
 export type ColorMapType = typeof COLOR_MAP

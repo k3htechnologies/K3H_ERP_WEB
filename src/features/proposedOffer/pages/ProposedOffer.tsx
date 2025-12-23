@@ -274,8 +274,6 @@ const initialFormStateRentDetails = (): AddUpdateProposedOfferRentDetailsRequest
 });
 //#endregion
 
-
-
 export const ProposedOffer: React.FC = () => {
 
   const [buildingId, setBuildingId] = useState(0);

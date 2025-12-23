@@ -4,6 +4,7 @@ export interface FilterWithPaginationEnquiryMasterRequest {
     PageSize: number;
     PageNumber: number;
     ProjectId?: number;
+    EnquiryId?:number;
     Budget?: string;
     RequirementType?: string;
     Source?: string;

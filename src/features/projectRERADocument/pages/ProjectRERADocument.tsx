@@ -274,7 +274,7 @@ const ProjectRERADocument: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Project RERA Document'
+      'Loading ' + projectRERADocumentTabList.find(t => t.id === activeTab)?.label || 'Project RERA Document'
     );
   };
   //#endregion

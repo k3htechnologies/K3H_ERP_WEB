@@ -195,6 +195,7 @@ export const DepartmentMaster: React.FC = () => {
       undefined,
       'Loading Department'
     )
+    
   }
   //#endregion
 

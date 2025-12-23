@@ -6,7 +6,7 @@ import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { Loader } from "@/core/utils/loader";
-import { PROJECT_STATUS_OPTIONS } from "@/core/constants/staticData";
+import { BUSINESS_CATEGORY, PROJECT_SCHEME, PROJECT_STATUS_OPTIONS, PROJECT_SUB_SCHEME } from "@/core/constants/staticData";
 import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
@@ -416,7 +416,7 @@ const AddUpdateProjectMaster: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
 
-            <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+            <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
                 <form onSubmit={handleSubmit}>
                     <div className="space-y-4 pb-4">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Details</h3>
@@ -534,12 +534,12 @@ const AddUpdateProjectMaster: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <Input
+                                
+                                <SinglePageSelection
                                     label="Business Category"
-                                    type="text"
                                     value={formData.BussinessCategory}
-                                    onChange={(e) => handleFieldChange('BussinessCategory', e.target.value)}
-                                    placeholder="Enter Bussiness category"
+                                    onChange={(val) => handleFieldChange('BussinessCategory', String(val))}
+                                    options={BUSINESS_CATEGORY.map(opt => ({ label: opt.name, value: opt.id }))}
                                 />
                             </div>
                             <div>
@@ -579,21 +579,19 @@ const AddUpdateProjectMaster: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <Input
+                                <SinglePageSelection
                                     label="Project Scheme"
-                                    type="text"
                                     value={formData.ProjectScheme}
-                                    onChange={(e) => handleFieldChange('ProjectScheme', e.target.value)}
-                                    placeholder="Enter project scheme"
+                                    onChange={(val) => handleFieldChange('ProjectScheme', String(val))}
+                                    options={PROJECT_SCHEME.map(opt => ({ label: opt.name, value: opt.id }))}
                                 />
                             </div>
                             <div>
-                                <Input
+                                <SinglePageSelection
                                     label="Project Sub Scheme"
-                                    type="text"
                                     value={formData.ProjectSubScheme}
-                                    onChange={(e) => handleFieldChange('ProjectSubScheme', e.target.value)}
-                                    placeholder="Enter project sub scheme"
+                                    onChange={(val) => handleFieldChange('ProjectSubScheme', String(val))}
+                                    options={PROJECT_SUB_SCHEME.map(opt => ({ label: opt.name, value: opt.id }))}
                                 />
                             </div>
                         </div>

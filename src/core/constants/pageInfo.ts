@@ -227,6 +227,11 @@ export const getPageInfo = (path: string) => {
                 title: 'Tenant',
                 description: 'Profile',
             }
+        case 'rent':
+            return {
+                title: 'Rent',
+                description: 'Rent',
+            }
         case 'proposedOffer':
             return {
                 title: 'Proposed Offer',

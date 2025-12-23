@@ -77,7 +77,9 @@ export const AssetMappingMaster: React.FC = () => {
   useEffect(() => {
     const incoming = location.state?.listState;
     const listState = incoming ?? {
-      page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: ''
+      page: 1, filters: {} as FilterInfo,
+      sortInfo: undefined,
+      searchTerm: ''
     };
 
     setPagination({ currentPage: listState.page ?? pagination.currentPage });
@@ -91,7 +93,9 @@ export const AssetMappingMaster: React.FC = () => {
     setSearchTerm(listState.searchTerm ?? '');
 
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadAssetMappings(listState.page ?? 1, { AssetName: String(listState.searchTerm).trim() });
+      loadAssetMappings(listState.page ?? 1, {
+        AssetName: String(listState.searchTerm).trim()
+      });
       return;
     }
 

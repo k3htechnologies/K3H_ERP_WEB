@@ -67,6 +67,12 @@ export const MASTER_DATA = {
     tenure: ['Tenure 1', 'Tenure 2', 'Tenure 3', 'Tenure 4', 'Tenure 5', 'Tenure 6', 'Tenure 7', 'Tenure 8', 'Tenure 9', 'Tenure 10', 'Tenure 11', 'Tenure 12', 'Tenure 13', 'Tenure 14'],
 
     unit_sqft_lumsum: ['Per Sq Ft', 'Lump Sum'],
+
+    business_category: ['Commercial', 'Gym', 'Residential', 'School'],
+
+    project_scheme: ['BMC', 'MHADA', 'SRA', 'SLUM', 'TDR', 'Other'],
+
+    project_sub_scheme: ['33 (20) B', '33 (19)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
 } as const
 
 // ============================================================================
@@ -116,3 +122,7 @@ export const CARPET_AREA_TYPE = toOptions(MASTER_DATA.carpet_area_type)
 export const TENURE = toOptions(MASTER_DATA.tenure)
 export const UNIT_SQFT_LUMPSUM = toOptions(MASTER_DATA.unit_sqft_lumsum)
 export const SPECIALITY_TYPE = toOptions(MASTER_DATA.speciality_type)
+export const BUSINESS_CATEGORY = toOptions(MASTER_DATA.business_category)
+export const PROJECT_SCHEME = toOptions(MASTER_DATA.project_scheme)
+export const PROJECT_SUB_SCHEME = toOptions(MASTER_DATA.project_sub_scheme)
+

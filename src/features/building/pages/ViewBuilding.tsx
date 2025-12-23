@@ -440,6 +440,9 @@ export const ViewBuilding: React.FC = () => {
                                 <FieldItem label="Litigation" value={buildingData?.IsLitigation ? 'Yes' : 'No'} />
                                 <FieldItem label="Litigation Remarks" value={buildingData?.LitigationRemarks ?? '-'} />
                             </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-4">
+                                <FieldItem label="Google Location" value={buildingData?.GoogleLocation ?? '-'} />
+                            </div>
                         </section>
 
                         {/* ================= LOCATION DETAILS ================= */}

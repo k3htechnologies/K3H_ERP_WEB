@@ -120,11 +120,11 @@ export const Building: React.FC = () => {
   //#endregion
 
   //#region DATA LOAD
-  const fetchBuildingList = async (page: number = pagination.currentPage) => {
-    return await loadBuildings(page, filters);
+  const fetchBuildingList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadBuildings(page, filters, sort);
   };
 
-  const loadBuildings = async (page: number, filterParams: FilterInfo) => {
+  const loadBuildings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -269,8 +269,8 @@ export const Building: React.FC = () => {
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
-    fetchBuildingList(1);
-  }, []);
+    loadBuildings(1, filters, sort);
+  }, [filters]);
 
   const buildingPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -353,7 +353,7 @@ export const Building: React.FC = () => {
 
   //#region CONFIRMATION DIALOG BOX
 
-  const handleConfirmationDialogBoxOpen = useCallback((row : BuildingData) => {
+  const handleConfirmationDialogBoxOpen = useCallback((row: BuildingData) => {
     setDeleteBuildingData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])

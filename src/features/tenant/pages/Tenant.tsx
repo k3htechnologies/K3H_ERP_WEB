@@ -135,11 +135,11 @@ export const Tenant: React.FC = () => {
   //#endregion
 
   //#region DATA LOAD
-  const fetchTenantList = async (page: number = pagination.currentPage) => {
-    return await loadTenants(page, filters, buildingId);
+  const fetchTenantList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadTenants(page, filters, buildingId, sort);
   };
 
-  const loadTenants = async (page: number, filterParams: FilterInfo, buildingId: number) => {
+  const loadTenants = async (page: number, filterParams: FilterInfo, buildingId: number, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -289,8 +289,8 @@ export const Tenant: React.FC = () => {
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
-    fetchTenantList(1);
-  }, [fetchTenantList]);
+    loadTenants(1, filters, buildingId, sort);
+  }, [loadTenants, filters]);
 
   const tenantPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -317,10 +317,10 @@ export const Tenant: React.FC = () => {
           filters,
           sortInfo,
           searchTerm,
-          tenantId:row.TenantId,
+          tenantId: row.TenantId,
           buildingId,
           buildingName,
-          tenantName:row.FlatNumber,
+          tenantName: row.FlatNumber,
         },
       },
     });
@@ -688,7 +688,7 @@ export const Tenant: React.FC = () => {
         onAdd={handleAddTenantModal}
 
         // IMPORT
-        isShowImportButton={false }
+        isShowImportButton={false}
         onUploadExcel={handleExcelImportTenant}
         onDownloadSampleExcel={handleDownloadExcelSampleTenant}
 

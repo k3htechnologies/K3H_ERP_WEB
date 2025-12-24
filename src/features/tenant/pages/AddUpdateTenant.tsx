@@ -895,7 +895,18 @@ const AddUpdateTenant: React.FC = () => {
 
     }
 
+    const mergeFileNames = (
+      existing?: (File | string)[],
+      selected?: (File | string)[]
+    ): string => {
+      const existingNames =
+        (existing ?? []).filter(x => typeof x === 'string').map(String);
 
+      const newNames =
+        (selected ?? []).filter(x => x instanceof File).map(f => (f as File).name);
+
+      return [...existingNames, ...newNames].join(',');
+    };
 
     const applicantToSave: TenantApplicant & {
       _photoFiles?: (File | string)[];
@@ -924,7 +935,12 @@ const AddUpdateTenant: React.FC = () => {
       ApplicantMobileNumber: formDataForApplicant.ApplicantMobileNumber || '',
       ApplicantEmailId: formDataForApplicant.ApplicantEmailId || '',
 
-      PhotoURL: applicantPhotoFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      // PhotoURL: applicantPhotoFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      PhotoURL: mergeFileNames(
+        editingApplicantData?.row._photoFiles,
+        applicantPhotoFiles
+      ),
+
       AadharCardNumber: formDataForApplicant.AadharCardNumber || '',
       AadharCardURL: aadharCardFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
       PanNumber: formDataForApplicant.PanNumber || '',
@@ -952,14 +968,14 @@ const AddUpdateTenant: React.FC = () => {
       LastModifiedBy: '',
       LastModifiedDate: null,
 
-      _photoFiles: applicantPhotoFiles.slice(),
-      _aadharFiles: aadharCardFiles.slice(),
-      _panFiles: panCardFiles.slice(),
-      _passportFiles: passportFiles.slice(),
-      _drivingFiles: drivingLicenseFiles.slice(),
-      _votingFiles: votingIdFiles.slice(),
-      _gstFiles: gstFiles.slice(),
-      _chequeFiles: chequeFiles.slice(),
+      _photoFiles: applicantPhotoFiles.length > 0 ? applicantPhotoFiles.slice() : editingApplicantData?.row._photoFiles ?? [],
+      _aadharFiles: aadharCardFiles.length > 0 ? aadharCardFiles.slice() : editingApplicantData?.row._aadharFiles ?? [],
+      _panFiles: panCardFiles.length > 0 ? panCardFiles.slice() : editingApplicantData?.row._panFiles ?? [],
+      _passportFiles: passportFiles.length > 0 ? passportFiles.slice() : editingApplicantData?.row._passportFiles ?? [],
+      _drivingFiles: drivingLicenseFiles.length > 0 ? drivingLicenseFiles.slice() : editingApplicantData?.row._drivingFiles ?? [],
+      _votingFiles: votingIdFiles.length > 0 ? votingIdFiles.slice() : editingApplicantData?.row._votingFiles ?? [],
+      _gstFiles: gstFiles.length > 0 ? gstFiles.slice() : editingApplicantData?.row._gstFiles ?? [],
+      _chequeFiles: chequeFiles.length > 0 ? chequeFiles.slice() : editingApplicantData?.row._chequeFiles ?? [],
 
       RemovePhotoURL: removedApplicantPhotoURLs.join(','),
       RemoveAadharCardURL: removedAadharCardURLs.join(','),

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -139,11 +139,11 @@ export const DesignationMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchDesignationMasterList = async (page: number = pagination.currentPage) => {
-    return await loadDesignationMaster(page, filters);
+  const fetchDesignationMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadDesignationMaster(page, filters, sort ?? sortInfo);
   }
 
-  const loadDesignationMaster = async (page: number, filterParams: FilterInfo) => {
+  const loadDesignationMaster = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -289,13 +289,10 @@ export const DesignationMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
-
-    setSortInfo(sortInfo);
-
-    fetchDesignationMasterList(1);
-
-  }
+    const handleSortColumn = useCallback((sort: SortInfo) => {
+    setSortInfo(sort);
+    loadDesignationMaster(1, filters, sort);
+  }, [filters]);
 
   //#endregion
 

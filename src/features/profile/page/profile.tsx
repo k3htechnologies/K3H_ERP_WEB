@@ -318,6 +318,26 @@ export const Profile: React.FC = () => {
 
     //#endregion
 
+    //#region EDIT EMPLOYEE DOCUMENT
+
+    const handleEditEmployeeDocument = (row: EmployeeMasterData) => {
+        navigate('/employeeMaster/document', {
+            state: {
+                employeeId: row.EmployeeId!,
+                employeeName: row.FullName,
+                
+                listState: {
+                    employeeId: row.EmployeeId!,
+                    employeeName: row.FullName,
+                    pageName:'profile',
+                }
+            }
+        });
+    };
+
+
+    //#endregion
+
 
     const employeeData = employeeMasterList.length > 0 ? employeeMasterList[0] : null
 
@@ -330,10 +350,15 @@ export const Profile: React.FC = () => {
                 <HeaderActionBar
                     titleText={'Profile Details'}
                     cancelText="Cancel"
+                    EditText='Edit'
                     onCancel={() => navigate(-1)}
-                    canAction={false}
-
+                    canAction={activeTab === "Document" ? true : false}
                     isLoading={isLoading}
+                    onEdit={() => {
+                        if (activeTab === "Document") {
+                            if (employeeData) handleEditEmployeeDocument(employeeData);
+                        }
+                    }}
                 />
 
                 {/* Loader */}
@@ -355,7 +380,7 @@ export const Profile: React.FC = () => {
 
                         else if (t.id === "Assets") loadAssetMasterMapping();
 
-                        else if (t.id === 'Project') loadProjects();    
+                        else if (t.id === 'Project') loadProjects();
 
                         else if (t.id === 'Shift Policy') loadShiftMappings();
 

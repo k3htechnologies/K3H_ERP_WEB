@@ -120,11 +120,11 @@ export const ProjectMaster: React.FC = () => {
   //#endregion
 
   //#region DATA LOAD
-  const fetchProjectList = async (page: number = pagination.currentPage) => {
-    return await loadProjects(page, filters);
+  const fetchProjectList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadProjects(page, filters,sort ?? sortInfo);
   }
 
-  const loadProjects = async (page: number, filterParams: FilterInfo) => {
+  const loadProjects = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -265,9 +265,9 @@ export const ProjectMaster: React.FC = () => {
   }, []);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
-    setSortInfo(sort);
-    fetchProjectList(1);
-  }, []);
+      setSortInfo(sort);
+      loadProjects(1, filters, sort);
+    }, [filters]);
 
   const projectMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({

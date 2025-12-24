@@ -275,7 +275,7 @@ const BankListMaster: React.FC = () => {
           onCustomize={() => setIsShowCustomizeColumnsModal(true)}
           isShowAddButton={false}
           isShowImportButton={false}
-          isShowExportButton={canExport}
+          isShowExportButton={canExport && bankListForTable.length >0}
           onExportExcel={handleExportBankExcel}
           onExportPdf={handleExportBankPdf}
           exportLoading={isLoading}

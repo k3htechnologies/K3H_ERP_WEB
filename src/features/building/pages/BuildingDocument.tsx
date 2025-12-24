@@ -794,7 +794,7 @@ export const BuildingDocument: React.FC = () => {
         isShowImportButton={false}
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && buildingDocumentListForTable.length >0}
         onExportExcel={handleExportBuildingDocumentExcel}
         onExportPdf={handleExportBuildingDocumentPdf}
         exportLoading={isLoading}
@@ -818,6 +818,7 @@ export const BuildingDocument: React.FC = () => {
 
 
       {/* DATA TABLE BUILDING DOCUMENT */}
+      
       <DataTable
         data={buildingDocumentListForTable}
         columns={buildingDocumentColumns}

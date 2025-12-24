@@ -136,11 +136,11 @@ export const UomMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchUomList = async (page: number = pagination.currentPage) => {
-    return await loadUoms(page, filters);
+  const fetchUomList = async (page: number = pagination.currentPage,sort?: SortInfo) => {
+    return await loadUoms(page, filters,sort ?? sortInfo);
   }
 
-  const loadUoms = async (page: number, filterParams: FilterInfo) => {
+  const loadUoms = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -287,13 +287,11 @@ export const UomMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
-
-    setSortInfo(sortInfo);
-
-    fetchUomList(1);
-
-  }
+  
+  const handleSortColumn = useCallback((sort: SortInfo) => {
+    setSortInfo(sort);
+    loadUoms(1, filters, sort);
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -350,7 +348,7 @@ export const UomMaster: React.FC = () => {
     () => [
       {
         key: 'Uom',
-        label: 'UOM Name',
+        label: 'UOM',
         width: '33',
         sortable: true,
         fixed: 'left',
@@ -790,7 +788,7 @@ export const UomMaster: React.FC = () => {
           onDownloadSampleExcel={handleDownloadExcelSampleUomMaster}
 
           // EXPORT
-          isShowExportButton={canExport}
+          isShowExportButton={canExport && uomListForTable.length >0}
           onExportExcel={handleExportUomExcel}
           onExportPdf={handleExportUomPdf}
           exportLoading={isLoading}

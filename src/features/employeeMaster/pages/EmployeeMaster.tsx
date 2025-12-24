@@ -91,13 +91,13 @@ export const EmployeeMaster: React.FC = () => {
 
       setSearchTerm(String(listState.searchTerm));
 
-      loadEmployees(listState.page ?? 1, { EmployeeName: String(listState.searchTerm).trim() });
+      loadEmployees(listState.page ?? 1, { EmployeeName: String(listState.searchTerm).trim() },listState.sortInfo);
 
       return;
     }
 
 
-    loadEmployees(listState.page ?? 1, listState.filters ?? {});
+    loadEmployees(listState.page ?? 1, listState.filters ?? {},listState.sortInfo);
 
   }, [location.state]);
 
@@ -111,11 +111,12 @@ export const EmployeeMaster: React.FC = () => {
   //#endregion
 
   //#region DATA LOAD
-  const fetchEmployeeList = async (page: number = pagination.currentPage) => {
-    return await loadEmployees(page, filters);
+  const fetchEmployeeList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadEmployees(page, filters, sort ?? sortInfo);
   };
 
-  const loadEmployees = async (page: number, filterParams: FilterInfo) => {
+  
+  const loadEmployees = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -214,6 +215,7 @@ export const EmployeeMaster: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
+
         let sortByParam: string | undefined;
         if (sortInfo) {
           const column = employeeColumns.find(col => col.key === sortInfo.column);
@@ -264,13 +266,14 @@ export const EmployeeMaster: React.FC = () => {
 
   //#region TABLE CONFIG
   const handlePageChange = useCallback((page: number) => {
-    fetchEmployeeList(page);
-  }, []);
+    fetchEmployeeList(page,sortInfo);
+  }, [sortInfo]);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
-    fetchEmployeeList(1);
-  }, []);
+    loadEmployees(1, filters, sort);
+  }, [filters]);
+
 
   const employeePaginationInfo: PaginationInfo = useMemo(
     () => ({

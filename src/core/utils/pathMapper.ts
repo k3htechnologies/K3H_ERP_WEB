@@ -48,7 +48,8 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/building': '/building',
         '/tenant': '/tenant',
         '/proposedoffer': '/proposedOffer',
-        '/rent': '/rent'
+        '/rent': '/rent',
+        '/event': '/event'
     }
 
     // If a mapped route exists, return it (normalized)

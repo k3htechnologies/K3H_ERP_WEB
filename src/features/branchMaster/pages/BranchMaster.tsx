@@ -137,11 +137,11 @@ export const BranchMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchBranchList = async (page: number = pagination.currentPage) => {
-    return await loadBranches(page, filters);
+  const fetchBranchList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadBranches(page, filters,sort);
   }
 
-  const loadBranches = async (page: number, filterParams: FilterInfo) => {
+  const loadBranches = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -285,13 +285,13 @@ export const BranchMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
+  const handleSortColumn = useCallback((sort: SortInfo) => {
 
-    setSortInfo(sortInfo);
+    setSortInfo(sort);
 
-    fetchBranchList(1);
+     loadBranches(1,filters,sort);
 
-  }
+   }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -825,7 +825,7 @@ export const BranchMaster: React.FC = () => {
           isShowImportButton={canAction}
 
           // EXPORT
-          isShowExportButton={canExport}
+          isShowExportButton={canExport && branchListForTable.length >0}
           onExportExcel={handleExportBranchExcel}
           onExportPdf={handleExportBranchPdf}
           exportLoading={isLoading}

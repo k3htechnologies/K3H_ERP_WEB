@@ -110,12 +110,12 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchLeaveEncashmentList = async (page: number = pagination.currentPage) => {
-    return await loadLeaveEncashments(page);
+  const fetchLeaveEncashmentList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadLeaveEncashments(page,sort);
 
   }
 
-  const loadLeaveEncashments = async (page: number) => {
+  const loadLeaveEncashments = async (page: number, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -222,12 +222,13 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
+  const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sortInfo);
 
-    fetchLeaveEncashmentList(1);
-  }
+    loadLeaveEncashments(1, sort);
+
+  }, []);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -682,7 +683,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
         isShowImportButton={false}
 
         // EXPORT 
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && leaveEncashmentListForTable.length > 0}
         onExportExcel={handleExportLeaveEncashmentExcel}
         onExportPdf={handleExportLeaveEncashmentPdf}
         exportLoading={isLoading}
@@ -696,7 +697,6 @@ export const LeaveEncashmentMaster: React.FC = () => {
         pagination={leaveEncashmentMasterPaginationInfo}
         emptyMessage="No Leave Encashment Found"
         fixedHeight={true}
-        maxHeight="calc(100vh - 255px)"
         recordsPerPage={20}
         className="flex-1"
         sortInfo={sortInfo}

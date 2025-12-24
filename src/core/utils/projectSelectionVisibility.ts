@@ -1,6 +1,6 @@
 export const shouldShowProjectSelection = (pathname: string): boolean => {
     const hiddenRoutes = [
-          'bankListMaster'
+        'bankListMaster'
         , 'departmentMaster'
         , 'designationMaster'
         , 'vendor'
@@ -29,6 +29,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         , 'weekOffMappingMaster'
         , 'profile'
         , 'dashboard'
+        , 'event'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

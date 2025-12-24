@@ -108,11 +108,11 @@ export const DeductionMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchDeductionMasterList = async (page: number = pagination.currentPage) => {
-    return await loadDeductions(page, filters);
+  const fetchDeductionMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadDeductions(page, filters,sort);
   }
 
-  const loadDeductions = async (page: number, filterParam: FilterInfo) => {
+  const loadDeductions = async (page: number, filterParam: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -253,13 +253,13 @@ export const DeductionMaster: React.FC = () => {
   }, []);
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = useCallback((sortInfo: SortInfo) => {
+  const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sortInfo);
 
-    fetchDeductionMasterList(1);
+    loadDeductions(1,filters,sort);
 
-  }, []);
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -606,7 +606,7 @@ export const DeductionMaster: React.FC = () => {
 
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && DeductionsForTable.length >0}
         onExportExcel={handleExportDeductionExcel}
         onExportPdf={handleExportDeductionPdf}
         exportLoading={isLoading}

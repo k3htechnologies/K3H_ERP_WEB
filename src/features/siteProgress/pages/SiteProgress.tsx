@@ -14,8 +14,8 @@ import type {
   SiteProgressConstructionData
 } from '@/features/siteProgress/models/SiteProgressModel';
 import { SiteProgressService } from '@/features/siteProgress/services/SiteProgressService';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
-var storedProjectId = 3;
 
 const SiteProgress: React.FC = () => {
 
@@ -30,13 +30,19 @@ const SiteProgress: React.FC = () => {
   const navigate = useNavigate();
   //#endregion
 
+  //#region PROJECT SELECTION GET ID
+  const { projectId } = useProject();
+  //#endregion
+
+
   //#region INIT
   useEffect(() => {
-
+    if (!projectId) return;
     fetchSiteProgressConstructionList();
 
-  }, []);
+  }, [projectId]);
   //#endregion
+
 
   //#region DATA LOAD
   const fetchSiteProgressConstructionList = async (page: number = pagination.currentPage, term: string = searchTerm) => {
@@ -52,7 +58,7 @@ const SiteProgress: React.FC = () => {
         if (term) { }
 
         const params: FilterWithPaginationSiteProgressConstructionRequest = {
-          ProjectId: storedProjectId
+          ProjectId: Number(projectId)
         };
 
         const response = await SiteProgressService.apiCallPullSiteProgressConstruction(params);

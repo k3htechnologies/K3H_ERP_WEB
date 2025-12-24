@@ -8,7 +8,7 @@ import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
-import { filterNumbers, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import { filterGoogleMapsUrl, filterNumbers, filterNumbersWithDecimal, isValidGoogleMapsUrl } from "@/core/utils/fileValidation";
 import type { AddUpdateBuildingRequest, FilterWithPaginationBuildingRequest } from "@/features/building/models/BuildingModel";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
@@ -242,6 +242,8 @@ const AddUpdateBuilding: React.FC = () => {
 
     if (!formData.GoogleLocation?.trim()) {
       newErrors.GoogleLocation = 'Google Location is required'
+    } else if (!isValidGoogleMapsUrl(formData.GoogleLocation.trim())) {
+      newErrors.GoogleLocation = 'Enter a valid Google Location'
     }
 
     if (!formData.TotalPlotAreaSqFt) {
@@ -422,6 +424,16 @@ const AddUpdateBuilding: React.FC = () => {
                 />
 
               </div>
+              <div>
+                <Input
+                  value={formData.GoogleLocation}
+                  label="Google Location"
+                  required
+                  onChange={e => handleFieldChange('GoogleLocation', filterGoogleMapsUrl(e.target.value))}
+                  error={errors.GoogleLocation}
+                  placeholder="Enter Google Location"
+                />
+              </div>
             </div>
           </div>
           {/* ============================================================= [PROPERTY INFORMATION] ============================================================================================= */}
@@ -537,7 +549,7 @@ const AddUpdateBuilding: React.FC = () => {
                       placeholder="Religious Structure Area"
                       onChange={e => handleFieldChange('TotalReligiousStructureAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                       error={errors.TotalReligiousStructureAreaSqFt}
-                       rightIcon="SqFt"
+                      rightIcon="SqFt"
                     />
                   </div>
                   : ""}

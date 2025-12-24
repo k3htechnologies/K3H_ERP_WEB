@@ -245,4 +245,26 @@ export const isValidVoterId = (voterId: string): boolean => {
   return regex.test(value);
 };
 
+// ----------------------------------
+// 🔹 FILTER GOOGLE MAPS URL
+// ----------------------------------
+export const filterGoogleMapsUrl = (value: string): string => {
+  // remove spaces
+  value = value.replace(/\s+/g, '');
+
+  // allow only URL-safe characters
+  value = value.replace(/[^a-zA-Z0-9/:.?&=_\-#%]/g, '');
+
+  return value;
+};
+
+export const isValidGoogleMapsUrl = (url: string): boolean => {
+  if (!url) return false;
+
+  const googleMapsRegex =
+    /^(https?:\/\/)?(www\.)?(google\.com\/maps|maps\.google\.com|goo\.gl\/maps|maps\.app\.goo\.gl)\/?.*/i;
+
+  return googleMapsRegex.test(url);
+};
+
 

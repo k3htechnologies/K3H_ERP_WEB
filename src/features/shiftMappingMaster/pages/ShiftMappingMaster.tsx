@@ -146,11 +146,11 @@ export const ShiftMappingMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchShiftMappingList = async (page: number = pagination.currentPage) => {
-    return await loadShiftMappings(page, filters);
+  const fetchShiftMappingList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadShiftMappings(page, filters,sort);
   }
 
-  const loadShiftMappings = async (page: number, filterParams: FilterInfo) => {
+  const loadShiftMappings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -291,12 +291,14 @@ export const ShiftMappingMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
+
+  const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sortInfo);
 
-    fetchShiftMappingList(1);
-  }
+    loadShiftMappings(1, filters, sort);
+
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -825,7 +827,7 @@ export const ShiftMappingMaster: React.FC = () => {
         isShowImportButton={false}
 
         // EXPORT 
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && shiftMappingListForTable.length > 0}
         onExportExcel={handleExportShiftMappingExcel}
         onExportPdf={handleExportShiftMappingPdf}
         exportLoading={isLoading}
@@ -839,7 +841,6 @@ export const ShiftMappingMaster: React.FC = () => {
         pagination={shiftMappingMasterPaginationInfo}
         emptyMessage="No Shift Mappings Found"
         fixedHeight={true}
-        maxHeight="calc(100vh - 200px)"
         recordsPerPage={20}
         className="flex-1"
         sortInfo={sortInfo}

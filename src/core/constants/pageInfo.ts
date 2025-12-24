@@ -237,6 +237,11 @@ export const getPageInfo = (path: string) => {
                 title: 'Proposed Offer',
                 description: 'Profile',
             }
+        case 'event':
+            return {
+                title: 'Event',
+                description: 'Profile',
+            }
 
         default:
             return {

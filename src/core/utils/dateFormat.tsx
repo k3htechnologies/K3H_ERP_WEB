@@ -190,3 +190,36 @@ export const formatTimeFromDateTime = (dateTimeString?: string | null): string =
   }
 };
 
+
+/**
+ * Format date string to "DD Month YYYY" format
+ * @param dateString - Date string in YYYY-MM-DD format
+ * @returns Formatted date string (e.g., "July 2025")
+ */
+export const formatDate_MonthName_yy = (dateString: string | Date): string => {
+  if (!dateString || dateString === '') {
+    return ''
+  }
+
+  try {
+    
+    const date = new Date(dateString)
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return ''
+    }
+
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ]
+    const month = monthNames[date.getMonth()]
+    const year = date.getFullYear()
+
+    return `${month} ${year}`
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return ''
+  }
+}

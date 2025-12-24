@@ -87,6 +87,7 @@ import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
 import EnquiryMaster from '@/features/EnquiryMaster/pages/EnquiryMaster';
+import Event from '@/features/event/pages/Event';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -225,6 +226,8 @@ function App() {
             <Route path="tenant/document" element={<TenantDocument />} />
             <Route path="rent" element={<Rent />} />
             <Route path="proposedOffer" element={<ProposedOffer />} />
+            <Route path="event" element={<Event />} />
+
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

@@ -31,6 +31,7 @@ export class LeaveTypeMasterDatasourceImpl implements LeaveTypeMasterDatasource 
             })
 
             if (params.LeaveTypeMasterId) queryParams.append('LeaveTypeMasterId', params.LeaveTypeMasterId.toString());
+            if (params.LeaveType?.trim()) queryParams.append('LeaveType', params.LeaveType.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

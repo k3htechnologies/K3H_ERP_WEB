@@ -88,6 +88,10 @@ import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
 import EnquiryMaster from '@/features/EnquiryMaster/pages/EnquiryMaster';
 import Event from '@/features/event/pages/Event';
+import CompOff from '@/features/compOff/pages/compoff';
+import LeaveCreditDebit from '@/features/leaveCreditDebit/pages/LeaveCreditDebit';
+import AddUpdateLeaveCreditDebit from '@/features/leaveCreditDebit/pages/AddUpdateLeaveCreditDebit';
+import ViewLeaveCreditDebit from '@/features/leaveCreditDebit/pages/ViewLeaveCreditDebit';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -147,6 +151,7 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="departmentMaster" element={<DepartmentMaster />} />
+            <Route path="compoff" element={<CompOff />} />
             <Route path="vendor/add/:vendorId?" element={<AddUpdateVendor />} />
             <Route path="designationMaster" element={<DesignationMaster />} />
             <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
@@ -155,6 +160,9 @@ function App() {
             <Route path="employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
             <Route path="employeeMaster/document" element={<EmployeeDocument />} />
             <Route path="outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
+            <Route path="leaveCreditDebit" element={<LeaveCreditDebit />} />
+            <Route path="leaveCreditDebit/add/:id?" element={<AddUpdateLeaveCreditDebit />} />
+            <Route path="leaveCreditDebit/view/:id?" element={<ViewLeaveCreditDebit />} />
             <Route path="outdoor" element={<OutDoor />} />
             <Route path="companyMaster" element={<CompanyMaster />} />
             <Route path="companyMaster/view" element={<ViewCompantMaster />} />

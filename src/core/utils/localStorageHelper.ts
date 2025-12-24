@@ -527,6 +527,29 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE COMP OFF COLUMNS
+    storeCompOffTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.COMP_OFF_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Comp Off Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET COMP OFF COLUMNS
+    getCompOffTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.COMP_OFF_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.COMP_OFF_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Comp Off Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
     //#region STORE SHIFT MASTER COLUMNS
     storeShiftMasterTableColumns: (columns: string): void => {
         try {
@@ -881,6 +904,7 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_TYPE_MASTER_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.COMP_OFF_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.SHIFT_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.SHIFT_MAPPING_MASTER_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS);

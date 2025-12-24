@@ -20,6 +20,7 @@ export const LOCAL_STORAGE_KEYS = {
     HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS: 'holidayMappingMaster.selectedColumns',
     LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS: 'leaveEncashmentMaster.selectedColumns',
     LEAVE_TYPE_MASTER_SELECTED_COLUMNS: 'leaveTypeMaster.selectedColumns',
+    COMP_OFF_SELECTED_COLUMNS: 'compOffTableColumns',
     SHIFT_MASTER_SELECTED_COLUMNS: 'shiftMaster.selectedColumns',
     SHIFT_MAPPING_MASTER_SELECTED_COLUMNS: 'shiftMappingMaster.selectedColumns',
     WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS: 'weekOffMappingMaster.selectedColumns',
@@ -34,6 +35,7 @@ export const LOCAL_STORAGE_KEYS = {
     MENU_MODULE: 'menuModule',
     COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER: 'country_state_district_city_village_data',
     SELECTED_PROJECT_ID: 'selectedProjectId',
-
+    OUTDOOR_SELECTED_COLUMNS:'outdoor.selectedColumns',
     REDEVELOPMENT_BUILDING_COLUMNS: 'redevelopmentBuilding.selectedColumns',
+    
 } as const

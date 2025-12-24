@@ -100,13 +100,13 @@ export const CompanyMaster: React.FC = () => {
 
             setSearchTerm(String(listState.searchTerm));
 
-            loadCompanys(listState.page ?? 1, { CompanyName: String(listState.searchTerm).trim() },listState.sortInfo);
+            loadCompanys(listState.page ?? 1, { CompanyName: String(listState.searchTerm).trim() }, listState.sortInfo);
 
             return;
         }
 
 
-        loadCompanys(listState.page ?? 1, listState.filters ?? {},listState.sortInfo);
+        loadCompanys(listState.page ?? 1, listState.filters ?? {}, listState.sortInfo);
 
     }, [location.state]);
 
@@ -270,7 +270,7 @@ export const CompanyMaster: React.FC = () => {
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
         loadCompanys(1, filters, sort);
-      }, [filters]);
+    }, [filters]);
 
     const companyPaginationInfo: PaginationInfo = useMemo(
         () => ({
@@ -634,7 +634,7 @@ export const CompanyMaster: React.FC = () => {
         await runApiWithLoader(
 
             setIsLoading,
-            
+
             setIsLoadingMessage,
 
             async () => {

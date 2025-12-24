@@ -28,6 +28,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         , 'weekOffMaster'
         , 'weekOffMappingMaster'
         , 'profile'
+        , 'dashboard'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

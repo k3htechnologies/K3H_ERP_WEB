@@ -600,7 +600,7 @@ export const AssetMappingMaster: React.FC = () => {
         data={AssetMappingsForTable}
         columns={visibleAssetMappingColumns}
         pagination={AssetMappingPaginationInfo}
-        emptyMessage="No Asset Found Data"
+        emptyMessage="No Asset Data Found "
         fixedHeight
         recordsPerPage={20}
         className="flex-1"

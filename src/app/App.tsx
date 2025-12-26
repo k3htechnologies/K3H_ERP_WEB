@@ -87,6 +87,8 @@ import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
 import EnquiryMaster from '@/features/EnquiryMaster/pages/EnquiryMaster';
+import AddUpdateEnquiryMaster from '@/features/EnquiryMaster/pages/AddUpdateEnquiryMaster';
+import ViewEnquiryMaster from '@/features/EnquiryMaster/pages/ViewEnquiryMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -133,8 +135,6 @@ function App() {
           {/* Public Routes */}
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
-
-          {/* Protected Routes with Layout */}
           <Route
             path="/"
             element={
@@ -188,6 +188,8 @@ function App() {
             <Route path="channelPartner/view" element={<ViewChannelPartnerMaster />} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartnerMaster />} />
             <Route path="enquiry" element={<EnquiryMaster />} />
+            <Route path="enquiry/view" element={<ViewEnquiryMaster />} />
+            <Route path="enquiry/add/:EnquiryId?" element={<AddUpdateEnquiryMaster />} />
             <Route path="vendor" element={<Vendor />} />
             <Route path="vendor/view" element={<ViewVendor />} />
             <Route path="projectMaster" element={<ProjectMaster />} />

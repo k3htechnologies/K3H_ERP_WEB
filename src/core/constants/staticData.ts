@@ -74,7 +74,26 @@ export const MASTER_DATA = {
 
     project_sub_scheme: ['33 (20) B', '33 (19)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
 
-     road_width: ['6.10 M', '9.15 M', '12.20 M','13.40 M','18.3 M', '27.45 M','36.6 M'],
+    road_width: ['6.10 M', '9.15 M', '12.20 M', '13.40 M', '18.3 M', '27.45 M', '36.6 M'],
+
+    occupationType: ['Salaried', 'Self-Employed', 'Others'],
+   
+    budget:['Less Than 1','UPTO 1.5','UPTO 2.5','UPTO 3','UPTO 4','UPTO 5','5 & Above'],
+
+    accomodation: ["Self-Owned", "Rented"],
+
+    requirement: ["Residential", "Commercial"],
+
+    possessionType: ['Ready', 'Within 1 Year', 'More Than 2 Year'],
+     
+    source:['Channel Partner','Direct Walking','Exhibition','Reference','Enquiry','Advertisement'],
+  
+    subsource:['Hoarding','Facebook','Instagram','Google Ads','Newspaper'],
+
+    finalStage:['Site Visit','Revisit','Negotiation','Booking Done','Lost','Inactive','Follow-up','Enquiry'],
+
+    finalStageDetail:['Ready to Move','Location Issue','Did Not Like Project','Other Issues']
+
 } as const
 
 // ============================================================================
@@ -113,6 +132,15 @@ export const PROJECT_STATUS_OPTIONS = toOptions(MASTER_DATA.projectStatus)
 export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory)
 export const COMPANY_TYPE = toOptions(MASTER_DATA.companyType)
 export const PROJECT_DOCUMENT_STATUS = toOptions(MASTER_DATA.documentStatus)
+export const ACCOMODATION_TYPE_OPTIONS = toOptions(MASTER_DATA.accomodation)
+export const REQUIREMENT_TYPE_OPTIONS = toOptions(MASTER_DATA.requirement)
+export const BUDGET_TYPE_OPTIONS = toOptions(MASTER_DATA.budget)
+export const OCCUPATION_TYPE_OPTIONS = toOptions(MASTER_DATA.occupationType)
+export const SOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.source)
+export const SUBSOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.subsource)
+export const FINAL_STAGE_TYPE_OPTIONS = toOptions(MASTER_DATA.finalStage)
+export const FINAL_STAGE_DETAILS_TYPE_OPTIONS = toOptions(MASTER_DATA.finalStageDetail)
+export const POSSESSION_TYPE_OPTIONS = toOptions(MASTER_DATA.possessionType)
 export const BANK_ACCOUNT_TYPE = toOptions(MASTER_DATA.bankAccountType)
 export const LAND_OWNERSHIP_TYPE = toOptions(MASTER_DATA.landOwnershipType)
 export const FLAT_UNIT_TYPE = toOptions(MASTER_DATA.flat_unit_Type)

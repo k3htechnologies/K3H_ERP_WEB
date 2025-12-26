@@ -3,10 +3,10 @@ import { useState, type ReactNode } from "react";
 
 export interface ExpandableCardProps {
   title?: React.ReactNode;
-  item?:any;
+  item?: any;
   showline: boolean;
-  height?:number;
-  expandedheight?:number;
+  height?: number;
+  expandedheight?: number;
   customizedIcon?: ReactNode;
   child: ReactNode;
 }
@@ -16,8 +16,8 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   showline,
   customizedIcon,
   child,
-  height=40,
-  expandedheight=250
+  height = 50,
+  expandedheight = 250
 }) => {
   const [isExpandableOpen, setExpandableOpen] = useState(true);
 
@@ -55,7 +55,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
       )}
 
       {isExpandableOpen && (
-        <div className="p-4 text-sm text-gray-600 min-h-[180px] overflow-y-auto scroll-smooth"  style={{ maxHeight: expandedheight }}>
+        <div className="p-4 text-sm text-gray-600 min-h-[180px] overflow-y-auto scroll-smooth" style={{ maxHeight: expandedheight }}>
           {child}
         </div>
       )}

@@ -4,9 +4,11 @@ import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type Ta
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import type {LeaveCreditDebitData,FilterWithPaginationLeaveCreditDebitRequest,} from '@/features/leaveCreditDebit/models/leaveCreditDebit';
-
-import { leaveCreditDebitService } from '@/features/leaveCreditDebit/services/LeaveCreditDebitService'
+import type {
+    FilterWithPaginationLeaveRequest,
+    LeaveData,
+} from '@/features/leave/models/LeaveModel';
+import { LeaveService } from '@/features/leave/services/LeaveService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -15,18 +17,19 @@ import { Input, Button } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { Trash2 } from 'lucide-react';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import type { DeleteLeaveCreditDebitRequest } from '@/features/leaveCreditDebit/models/leaveCreditDebit';
+import type { DeleteLeaveRequest } from '@/features/leave/models/LeaveModel';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, type Location, useNavigate } from 'react-router-dom';
 import { updateFilter } from '@/core/utils/filterHelper';
+import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 
-export const LeaveCreditDebit: React.FC = () => {
+export const Leave: React.FC = () => {
 
   //#region STATE
-  const [leaveCreditDebitList, setLeaveCreditDebitList] = useState<LeaveCreditDebitData[]>([]);
+  const [leaveList, setLeaveList] = useState<LeaveData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
   const navigate = useNavigate();
@@ -44,7 +47,7 @@ export const LeaveCreditDebit: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchLeaveCreditDebits(value)
+    searchLeaves(value)
   }, 350)
 
 
@@ -54,11 +57,11 @@ export const LeaveCreditDebit: React.FC = () => {
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeLeaveCreditDebitColumnsModal, setIsShowCustomizeLeaveCreditDebitColumnsModal] = useState(false);
+  const [isShowCustomizeLeaveColumnsModal, setIsShowCustomizeLeaveColumnsModal] = useState(false);
 
   //DELETE CONFIRMATION DIALOG
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-  const [selectedLeaveCreditDebitToDelete, setSelectedLeaveCreditDebitToDelete] = useState<LeaveCreditDebitData | null>(null);
+  const [selectedLeaveToDelete, setSelectedLeaveToDelete] = useState<LeaveData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   //#endregion
@@ -76,7 +79,7 @@ export const LeaveCreditDebit: React.FC = () => {
         filters?: FilterInfo;
         sortInfo?: SortInfo;
         searchTerm?: string;
-        leaveCreditDebitId?: number;
+        leaveId?: number;
       };
     };
   };
@@ -87,10 +90,10 @@ export const LeaveCreditDebit: React.FC = () => {
   useEffect(() => {
 
     const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string; leaveCreditDebitId?: number }
+      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string; leaveId?: number }
       | undefined;
 
-    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '', leaveCreditDebitId: 0 };
+    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '', leaveId: 0 };
 
 
     setPagination({ currentPage: listState.page ?? pagination.currentPage });
@@ -107,13 +110,13 @@ export const LeaveCreditDebit: React.FC = () => {
 
       setSearchTerm(String(listState.searchTerm));
 
-      loadLeaveCreditDebits(listState.page ?? 1, { DepartmentName: String(listState.searchTerm).trim() });
+      loadLeaves(listState.page ?? 1, { LeaveType: String(listState.searchTerm).trim() });
 
       return;
     }
 
 
-    loadLeaveCreditDebits(listState.page ?? 1, listState.filters ?? {});
+    loadLeaves(listState.page ?? 1, listState.filters ?? {});
 
   }, [location.state]);
 
@@ -125,11 +128,11 @@ export const LeaveCreditDebit: React.FC = () => {
   //#endregion
 
   //#region DATA LOAD
-  const fetchLeaveCreditDebitList = async (page: number = pagination.currentPage) => {
-    return await loadLeaveCreditDebits(page, filters);
+  const fetchLeaveList = async (page: number = pagination.currentPage) => {
+    return await loadLeaves(page, filters);
   }
 
-  const loadLeaveCreditDebits = async (page: number, filterParams: FilterInfo) => {
+  const loadLeaves = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -137,29 +140,26 @@ export const LeaveCreditDebit: React.FC = () => {
 
         let sortByParam = undefined;
         if (sortInfo) {
-          const column = leaveCreditDebitColumns.find(col => col.key === sortInfo.column)
+          const column = leaveColumns.find(col => col.key === sortInfo.column)
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
         }
-        const params: FilterWithPaginationLeaveCreditDebitRequest = {
+        const params: FilterWithPaginationLeaveRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          IsCheckPermission: true,
-          LeaveCreditDebitId: filterParams.LeaveCreditDebitId ? Number(filterParams.LeaveCreditDebitId) : 0,
-          LeavePeriodMode: filterParams.LeavePeriodMode?.trim() || undefined,
-          FYyear: filterParams.FYyear ? Number(filterParams.FYyear) : undefined,
-          Month: filterParams.Month?.trim() || undefined,
-          DepartmentName: filterParams.DepartmentName?.trim() || undefined,
-          DesignationName: filterParams.DesignationName?.trim() || undefined,
+          LeaveType: filterParams.LeaveType?.trim() || undefined,
+          LeaveTypeMasterId: filterParams.LeaveTypeMasterId ? Number(filterParams.LeaveTypeMasterId) : undefined,
+          StartDate: filterParams.StartDate?.trim() || undefined,
+          EndDate: filterParams.EndDate?.trim() || undefined,
           SortBy: sortByParam
         }
 
-        const response = await getLeaveCreditDebits(params);
+        const response = await getLeaves(params);
 
         if (E.isRight(response)) {
 
-          setLeaveCreditDebitList(response.right.Data);
+          setLeaveList(response.right.Data);
 
           setPagination({
             currentPage: page,
@@ -168,7 +168,6 @@ export const LeaveCreditDebit: React.FC = () => {
           });
 
         } else {
-
           addToast({ type: 'error', title: response.left.message });
         }
         return response
@@ -178,32 +177,32 @@ export const LeaveCreditDebit: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Leave Credit Debit'
+      'Loading Leave Data'
     )
   }
 
   //#endregion
 
-  //#region SERACH LEAVE CREDIT DEBIT
-  const searchLeaveCreditDebits = async (searchValue: string) => {
+  //#region SEARCH LEAVE
+  const searchLeaves = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
-      fetchLeaveCreditDebitList();
+      fetchLeaveList();
       return;
     }
 
     const filterParams: FilterInfo = {
-      DepartmentName: searchValue.trim()
+      LeaveType: searchValue.trim()
     };
 
-    await loadLeaveCreditDebits(1, filterParams);
+    await loadLeaves(1, filterParams);
   }
   //#endregion
 
-  //#region CLAER SERACH LEAVE CREDIT DEBIT
-  const clearsearchLeaveCreditDebits = () => {
+  //#region CLEAR SEARCH LEAVE
+  const clearSearchLeaves = () => {
     setSearchTerm('');
 
     debouncedSearch.cancel?.();
@@ -211,7 +210,7 @@ export const LeaveCreditDebit: React.FC = () => {
     setFilters({});
     setTempFilters({});
     setPagination({ currentPage: 1 });
-    loadLeaveCreditDebits(1, {});
+    loadLeaves(1, {});
     try {
       navigate(location.pathname, { replace: true, state: {} });
     } catch {
@@ -221,32 +220,30 @@ export const LeaveCreditDebit: React.FC = () => {
   //#endregion
 
   //#region EXCEL EXPORT PDF | EXCEL
-  const handleExportLeaveCreditDebits = async (exportType: 'Excel' | 'PDF') => {
+  const handleExportLeaves = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
         let sortByParam = undefined
         if (sortInfo) {
-          const column = leaveCreditDebitColumns.find(col => col.key === sortInfo.column)
+          const column = leaveColumns.find(col => col.key === sortInfo.column)
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
           }
         }
-        const params: FilterWithPaginationLeaveCreditDebitRequest = {
+        const params: FilterWithPaginationLeaveRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
-          IsCheckPermission: true,
-          LeavePeriodMode: filters.LeavePeriodMode?.trim() || undefined,
-          FYyear: filters.FYyear ? Number(filters.FYyear) : undefined,
-          Month: filters.Month?.trim() || undefined,
-          DepartmentName: filters.DepartmentName?.trim() || undefined,
-          DesignationName: filters.DesignationName?.trim() || undefined,
+          LeaveType: filters.LeaveType?.trim() || undefined,
+          LeaveTypeMasterId: filters.LeaveTypeMasterId ? Number(filters.LeaveTypeMasterId) : undefined,
+          StartDate: filters.StartDate?.trim() || undefined,
+          EndDate: filters.EndDate?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         }
-        const response = await getLeaveCreditDebits(params);
-        handleExportFile(response, exportType, 'Leave Credit Debit', addToast)
+        const response = await getLeaves(params);
+        handleExportFile(response, exportType, 'Leave', addToast)
         return response;
       },
       undefined,
@@ -258,28 +255,28 @@ export const LeaveCreditDebit: React.FC = () => {
     )
   }
 
-  const handleExportLeaveCreditDebitExcel = () => handleExportLeaveCreditDebits('Excel')
-  const handleExportLeaveCreditDebitPdf = () => handleExportLeaveCreditDebits('PDF')
+  const handleExportLeaveExcel = () => handleExportLeaves('Excel')
+  const handleExportLeavePdf = () => handleExportLeaves('PDF')
   //#endregion
 
-  //#region GET LEAVE CREDIT DEBIT DATA FROM API
-  const getLeaveCreditDebits = async (filterParams: FilterWithPaginationLeaveCreditDebitRequest) => {
-    return await leaveCreditDebitService.apiCallPullLeaveCreditDebit(filterParams);
+  //#region GET LEAVE DATA FROM API
+  const getLeaves = async (filterParams: FilterWithPaginationLeaveRequest) => {
+    return await LeaveService.apiCallPullLeave(filterParams);
   }
   //#endregion
 
   //#region TABLE CONFIG
 
   const handlePageChange = useCallback((page: number) => {
-    fetchLeaveCreditDebitList(page);
+    fetchLeaveList(page);
   }, []);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
-    fetchLeaveCreditDebitList(1);
+    fetchLeaveList(1);
   }, []);
 
-  const leaveCreditDebitPaginationInfo: PaginationInfo = useMemo(
+  const leavePaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
       totalPages: pagination.totalPages,
@@ -290,54 +287,55 @@ export const LeaveCreditDebit: React.FC = () => {
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
   )
 
-  const leaveCreditDebitListForTable = useMemo(() => leaveCreditDebitList, [leaveCreditDebitList]);
+  const leaveListForTable = useMemo(() => leaveList, [leaveList]);
 
   //#endregion
 
-  //#region VIEW LEAVE CREDIT DEBIT DETAILS
-  const handleViewLeaveCreditDebitDetails = useCallback((row: LeaveCreditDebitData) => {
-    navigate('/leaveCreditDebit/view', {
+  //#region VIEW LEAVE DETAILS
+  const handleViewLeaveDetails = useCallback((row: LeaveData) => {
+    navigate('/leave/view', {
       state: {
-        editLeaveCreditDebitData: row,
+        editLeaveData: row,
         fromList: true,
         listState: {
           page: pagination.currentPage,
           filters,
           sortInfo,
           searchTerm,
-          leaveCreditDebitId: row.LeaveCreditDebitId,
+          leaveId: row.LeaveId,
         },
       },
     });
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+
   //#endregion
 
-  //#region DELETE LEAVE CREDIT DEBIT
-  const handleConfirmationDialogBoxOpen = useCallback((row: LeaveCreditDebitData) => {
-    setSelectedLeaveCreditDebitToDelete(row);
+  //#region DELETE LEAVE
+  const handleConfirmationDialogBoxOpen = useCallback((row: LeaveData) => {
+    setSelectedLeaveToDelete(row);
     setIsConfirmationDialogBoxOpen(true);
   }, []);
 
-  const handleDeleteLeaveCreditDebit = useCallback(async () => {
-    if (!selectedLeaveCreditDebitToDelete?.LeaveCreditDebitId || !selectedLeaveCreditDebitToDelete?.Uniquekey) return;
+  const handleDeleteLeave = useCallback(async () => {
+    if (!selectedLeaveToDelete?.LeaveId || !selectedLeaveToDelete?.Uniquekey) return;
 
     setIsDeleting(true);
 
-    const payload: DeleteLeaveCreditDebitRequest = {
-      LeaveCreditDebitId: selectedLeaveCreditDebitToDelete.LeaveCreditDebitId,
-      Uniquekey: selectedLeaveCreditDebitToDelete.Uniquekey,
+    const payload: DeleteLeaveRequest = {
+      LeaveId: selectedLeaveToDelete.LeaveId,
+      Uniquekey: selectedLeaveToDelete.Uniquekey,
     };
 
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        const response = await leaveCreditDebitService.apiCallDeleteLeaveCreditDebit(payload);
+        const response = await LeaveService.apiCallDeleteLeave(payload);
         if (E.isRight(response)) {
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] || 'Deleted successfully' });
           setIsConfirmationDialogBoxOpen(false);
-          setSelectedLeaveCreditDebitToDelete(null);
-          loadLeaveCreditDebits(pagination.currentPage, filters);
+          setSelectedLeaveToDelete(null);
+          fetchLeaveList();
         } else {
           addToast({ type: 'error', title: response.left.message || 'Delete failed' });
         }
@@ -346,70 +344,80 @@ export const LeaveCreditDebit: React.FC = () => {
       undefined,
       (error: any) => addToast({ type: 'error', title: error?.message || 'Delete failed' }),
       undefined,
-      'Deleting Leave Credit / Debit'
+      'Deleting Leave'
     );
 
     setIsDeleting(false);
-  }, [selectedLeaveCreditDebitToDelete, addToast, pagination.currentPage, filters]);
+  }, [selectedLeaveToDelete, addToast, fetchLeaveList]);
   //#endregion
 
   //#region TABLE COLUMN
 
-  const leaveCreditDebitColumns = useMemo<TableColumn[]>(
+  const leaveColumns = useMemo<TableColumn[]>(
     () => [
       {
-        key: 'DepartmentName',
-        label: 'Department',
-        width: '20',
-        sortable: false,
+        key: 'LeaveType',
+        label: 'Leave Type',
+        width: '25',
+        sortable: true,
         fixed: 'left',
         align: 'left',
         render: (value, row) => (
-          <TooltipText
-            text={value || '-'}
-            maxWidth="250px"
-            tooltipThreshold={30}
-            onClick={() => handleViewLeaveCreditDebitDetails(row)}
-          />
+          <div className="flex items-center justify-start">
+            <TooltipText
+              text={value || '-'}
+              maxWidth="250px"
+              tooltipThreshold={25}
+              onClick={() => handleViewLeaveDetails(row)}
+            />
+          </div>
         )
       },
       {
-        key: 'DesignationName',
-        label: 'Designation',
-        width: '20',
+        key: 'StartDate',
+        label: 'Start Date',
+        width: '18',
+        sortable: true,
+        align: 'center',
+        render: (value) => (
+          <div className="flex items-center justify-center">
+            {value ? formatDate_dd_MonthName_yy(value as string) : '-'}
+          </div>
+        )
+      },
+      {
+        key: 'EndDate',
+        label: 'End Date',
+        width: '18',
+        sortable: true,
+        align: 'center',
+        render: (value) => (
+          <div className="flex items-center justify-center">
+            {value ? formatDate_dd_MonthName_yy(value as string) : '-'}
+          </div>
+        )
+      },
+      {
+        key: 'NoOfDays',
+        label: 'No Of Days',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'Reason',
+        label: 'Reason',
+        width: '24',
         sortable: false,
         align: 'left',
         render: (value) => (
           <TooltipText
             text={value || '-'}
-            maxWidth="250px"
-            tooltipThreshold={30}
+            maxWidth="240px"
+            tooltipThreshold={24}
           />
         )
-      },
-      {
-        key: 'LeavePeriodMode',
-        label: 'Period Mode',
-        width: '10',
-        sortable: true,
-        align: 'left',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'FYyear',
-        label: 'Financial Year',
-        width: '12',
-        sortable: false,
-        align: 'center',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'Month',
-        label: 'Month',
-        width: '12',
-        sortable: false,
-        align: 'center',
-        render: (value) => value || '-'
       },
       {
         key: 'actions',
@@ -433,60 +441,60 @@ export const LeaveCreditDebit: React.FC = () => {
                   color: 'red',
                   padding: '4px 8px'
                 }}
-                title="Delete Leave Credit Debit"
+                title="Delete Leave"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           ) : null
         )
-      }
+      },
     ],
-    [canAction, handleViewLeaveCreditDebitDetails, handleConfirmationDialogBoxOpen]
+    [canAction, handleViewLeaveDetails, handleConfirmationDialogBoxOpen]
   )
 
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
 
-  const requiredLeaveCreditDebitColumnKeys: string[] = ['DepartmentMasterId'];
+  const requiredLeaveColumnKeys: string[] = ['LeaveType'];
 
-  const [selectedLeaveCreditDebitColumnKeys, setSelectedLeaveCreditDebitColumnKeys] = useState<string[]>([]);
+  const [selectedLeaveColumnKeys, setSelectedLeaveColumnKeys] = useState<string[]>([]);
 
   useEffect(() => {
 
-    if (leaveCreditDebitColumns.length === 0) return;
+    if (leaveColumns.length === 0) return;
 
     try {
-      const saved = LocalStorageHelper.getLeaveCreditDebitTableColumns();
+      const saved = LocalStorageHelper.getLeaveTableColumns();
       if (saved) {
         const parsed: string[] = JSON.parse(saved);
         const filtered = parsed.filter(k =>
-          leaveCreditDebitColumns.some(col => col.key === k)
+          leaveColumns.some(col => col.key === k)
         );
         const final = Array.from(
           new Set([
             ...filtered,
-            ...requiredLeaveCreditDebitColumnKeys,
+            ...requiredLeaveColumnKeys,
           ])
         );
-        setSelectedLeaveCreditDebitColumnKeys(final);
+        setSelectedLeaveColumnKeys(final);
         return;
       }
     } catch { }
 
-    const allKeys = leaveCreditDebitColumns.map(c => c.key);
+    const allKeys = leaveColumns.map(c => c.key);
     const final = Array.from(
-      new Set([...allKeys, ...requiredLeaveCreditDebitColumnKeys])
+      new Set([...allKeys, ...requiredLeaveColumnKeys])
     );
-    setSelectedLeaveCreditDebitColumnKeys(final);
-  }, [leaveCreditDebitColumns]);
+    setSelectedLeaveColumnKeys(final);
+  }, [leaveColumns]);
 
-  const visibleLeaveCreditDebitColumns = useMemo(
-    () => leaveCreditDebitColumns.filter(col =>
-      selectedLeaveCreditDebitColumnKeys.includes(col.key)
+  const visibleLeaveColumns = useMemo(
+    () => leaveColumns.filter(col =>
+      selectedLeaveColumnKeys.includes(col.key)
     ),
-    [leaveCreditDebitColumns, selectedLeaveCreditDebitColumnKeys]
+    [leaveColumns, selectedLeaveColumnKeys]
   );
 
   //#endregion
@@ -494,7 +502,7 @@ export const LeaveCreditDebit: React.FC = () => {
   //#region FILTER HELPERS
   const applyFilters = () => {
     setFilters(tempFilters)
-    loadLeaveCreditDebits(1, tempFilters)
+    loadLeaves(1, tempFilters)
     setShowFilterPopup(false)
   }
 
@@ -506,7 +514,7 @@ export const LeaveCreditDebit: React.FC = () => {
     setPagination({ currentPage: 1 });
 
     // load empty filters
-    loadLeaveCreditDebits(1, {});
+    loadLeaves(1, {});
 
     setShowFilterPopup(false);
 
@@ -525,12 +533,10 @@ export const LeaveCreditDebit: React.FC = () => {
 
   //#endregion
 
-  //#region ADD LEAVE CREDIT DEBIT THEN NAVIGATE
-  const handleAddLeaveCreditDebitModal = () => {
-    navigate('/leaveCreditDebit/add');
+  //#region ADD LEAVE THEN NAVIGATE
+  const handleAddLeaveModal = () => {
+    navigate('/leave/add');
   };
-  //#endregion
-
   //#endregion
 
   return (
@@ -540,12 +546,12 @@ export const LeaveCreditDebit: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Department Name..."
+        searchPlaceholder="Search By Leave Type..."
         onSearchChange={(v) => {
           setSearchTerm(v)
           debouncedSearch(v)
         }}
-        onClearSearch={clearsearchLeaveCreditDebits}
+        onClearSearch={clearSearchLeaves}
         isShowFilterButton
         filters={filters}
         onOpenFilter={() => {
@@ -553,108 +559,94 @@ export const LeaveCreditDebit: React.FC = () => {
           setShowFilterPopup(true)
         }}
         isShowCustomizeButton
-        onCustomize={() => setIsShowCustomizeLeaveCreditDebitColumnsModal(true)}
+        onCustomize={() => setIsShowCustomizeLeaveColumnsModal(true)}
+
+        // ADD
         isShowAddButton={canAction}
-        addTitle=" Add"
-        onAdd={handleAddLeaveCreditDebitModal}
+        addTitle="Add"
+        onAdd={handleAddLeaveModal}
+
+        // IMPORT 
+        isShowImportButton={canAction}
+
+        // EXPORT
         isShowExportButton={canExport}
-        onExportExcel={handleExportLeaveCreditDebitExcel}
-        onExportPdf={handleExportLeaveCreditDebitPdf}
+        onExportExcel={handleExportLeaveExcel}
+        onExportPdf={handleExportLeavePdf}
         exportLoading={isLoading}
       />
-
       <DataTable
-        data={leaveCreditDebitListForTable}
-        columns={visibleLeaveCreditDebitColumns}
-        pagination={leaveCreditDebitPaginationInfo}
-        emptyMessage="No Leave Credit Debit Data Found"
+        data={leaveListForTable}
+        columns={visibleLeaveColumns}
+        pagination={leavePaginationInfo}
+        emptyMessage="No leave found"
         fixedHeight={true}
-        maxHeight="calc(100vh - 255px)"
         recordsPerPage={20}
         className="flex-1"
         sortInfo={sortInfo}
         onSort={handleSortColumn}
-        loading={isLoading}
       />
 
-
       <CustomizeColumnsModal
-        isOpen={isShowCustomizeLeaveCreditDebitColumnsModal}
-        onClose={() => setIsShowCustomizeLeaveCreditDebitColumnsModal(false)}
+        isOpen={isShowCustomizeLeaveColumnsModal}
+        onClose={() => setIsShowCustomizeLeaveColumnsModal(false)}
         onApply={(keys) => {
           const withRequired = Array.from(
-            new Set([...keys, ...requiredLeaveCreditDebitColumnKeys]),
-          )
-
-          setSelectedLeaveCreditDebitColumnKeys(withRequired)
-
+            new Set([...keys, ...requiredLeaveColumnKeys])
+          );
+          setSelectedLeaveColumnKeys(withRequired);
           try {
-            LocalStorageHelper.storeLeaveCreditDebitTableColumns(JSON.stringify(withRequired))
+
+            LocalStorageHelper.storeLeaveTableColumns(JSON.stringify(withRequired));
           } catch { }
         }}
-        columns={leaveCreditDebitColumns}
-        selectedKeys={selectedLeaveCreditDebitColumnKeys}
-        requiredKeys={requiredLeaveCreditDebitColumnKeys}
+        columns={leaveColumns}
+        selectedKeys={selectedLeaveColumnKeys}
+        requiredKeys={requiredLeaveColumnKeys}
         title="Customize Table Columns"
       />
 
       <Modal
         isOpen={showFilterPopup}
         onClose={() => setShowFilterPopup(false)}
-        title="Filter - Leave Credit Debit"
+        title="Filter - Leave"
         onSubmit={(e) => {
           e.preventDefault()
           applyFilters()
         }}
         saveText="Apply Filter"
+        cancelText="Clear Filter"
         onCancel={() => clearFilters()}
+        resetText=''
         size="small-half"
       >
         <div className="space-y-6">
           <div className="space-y-4">
             <div>
               <Input
-                label='Leave Period Mode'
+                label='Leave Type'
                 type="text"
-                value={tempFilters.LeavePeriodMode || ''}
-                onChange={(e) => handleFilterChange('LeavePeriodMode', e.target.value)}
-                placeholder="Enter period mode"
+                value={tempFilters.LeaveType || ''}
+                onChange={(e) => handleFilterChange('LeaveType', e.target.value)}
+                placeholder="Enter Leave Type"
               />
             </div>
             <div>
               <Input
-                label='Financial Year'
-                type="number"
-                value={tempFilters.FYyear || ''}
-                onChange={(e) => handleFilterChange('FYyear', e.target.value)}
-                placeholder="Enter financial year"
+                label='Start Date'
+                type="date"
+                value={tempFilters.StartDate || ''}
+                onChange={(e) => handleFilterChange('StartDate', e.target.value)}
+                placeholder="Enter Start Date"
               />
             </div>
             <div>
               <Input
-                label='Month'
-                type="text"
-                value={tempFilters.Month || ''}
-                onChange={(e) => handleFilterChange('Month', e.target.value)}
-                placeholder="Enter month"
-              />
-            </div>
-            <div>
-              <Input
-                label='Department'
-                type="text"
-                value={tempFilters.DepartmentName || ''}
-                onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}
-                placeholder="Enter department name"
-              />
-            </div>
-            <div>
-              <Input
-                label='Designation'
-                type="text"
-                value={tempFilters.DesignationName || ''}
-                onChange={(e) => handleFilterChange('DesignationName', e.target.value)}
-                placeholder="Enter designation name"
+                label='End Date'
+                type="date"
+                value={tempFilters.EndDate || ''}
+                onChange={(e) => handleFilterChange('EndDate', e.target.value)}
+                placeholder="Enter End Date"
               />
             </div>
           </div>
@@ -665,14 +657,14 @@ export const LeaveCreditDebit: React.FC = () => {
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false);
-          setSelectedLeaveCreditDebitToDelete(null);
+          setSelectedLeaveToDelete(null);
         }}
         onConfirm={() => {
           setIsConfirmationDialogBoxOpen(false);
-          void handleDeleteLeaveCreditDebit();
+          void handleDeleteLeave();
         }}
-        title="You are about to delete Leave Credit / Debit"
-        message="Are you sure you want to delete this leave credit / debit?"
+        title="You are about to delete Leave"
+        message="Are you sure you want to delete this leave?"
         confirmText="Delete"
         cancelText="Cancel"
         loading={isDeleting}
@@ -680,8 +672,7 @@ export const LeaveCreditDebit: React.FC = () => {
       />
 
     </div>
-  );
-};
+  )
+}
 
-export default LeaveCreditDebit;
-
+export default Leave

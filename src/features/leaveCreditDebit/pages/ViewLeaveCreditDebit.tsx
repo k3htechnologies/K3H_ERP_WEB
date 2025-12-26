@@ -2,20 +2,13 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type {
     LeaveCreditDebitData,
-    DeleteLeaveCreditDebitRequest,
 } from '@/features/leaveCreditDebit/models/leaveCreditDebit';
 
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
-import { Button } from '@/ui/components/forms/Button';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Loader } from '@/core/utils/loader';
-import { leaveCreditDebitService } from '@/features/leaveCreditDebit/services/LeaveCreditDebitService';
-import { runApiWithLoader } from '@/core/utils';
-import useToast from '@/core/hooks/useToast';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import * as E from 'fp-ts/Either';
 
 const DEFAULT_LIST_STATE = {
     page: 1,
@@ -26,19 +19,22 @@ const DEFAULT_LIST_STATE = {
 
 const ViewLeaveCreditDebit: React.FC = () => {
     //#region LOADING STATE
-    const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setLoadingMessage] = useState('');
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] =
-        useState(false);
+    const [isLoading] = useState(false);
+    const [loadingMessage] = useState('');
     //#endregion
+
 
     //#region LOCATION & NAVIGATION
     const location = useLocation() as {
         state?: {
             editLeaveCreditDebitData?: LeaveCreditDebitData | null;
             data?: LeaveCreditDebitData | null;
-            listState?: typeof DEFAULT_LIST_STATE;
+            listState?: {
+                page: number;
+                filters: any;
+                sortInfo?: any;
+                searchTerm?: string
+            };
         };
     };
 
@@ -58,7 +54,9 @@ const ViewLeaveCreditDebit: React.FC = () => {
     const listState = location.state?.listState ?? DEFAULT_LIST_STATE;
     //#endregion
 
-    const { addToast } = useToast();
+    //#region NO DATA HANDLE
+    if (!data) return <div>No Leave Credit Debit Data Found</div>;
+    //endregion
 
     //#region EDIT HANDLER
     const handleEditLeaveCreditDebit = (row: LeaveCreditDebitData) => {
@@ -84,79 +82,7 @@ const ViewLeaveCreditDebit: React.FC = () => {
     };
     //#endregion
 
-    //#region DELETE HANDLER
-    const handleDeleteLeaveCreditDebit = async () => {
-        if (!data?.LeaveCreditDebitId || !data?.Uniquekey) return;
-
-        const payload: DeleteLeaveCreditDebitRequest = {
-            LeaveCreditDebitId: data.LeaveCreditDebitId,
-            Uniquekey: data.Uniquekey,
-        };
-
-        setIsDeleting(true);
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const response =
-                    await leaveCreditDebitService.apiCallDeleteLeaveCreditDebit(
-                        payload
-                    );
-
-                if (E.isRight(response)) {
-                    addToast({
-                        type: 'success',
-                        title:
-                            response.right.SuccessMessage?.[0] ||
-                            'Deleted successfully',
-                    });
-
-                    handleBackToListLeaveCreditDebit();
-                } else {
-                    addToast({
-                        type: 'error',
-                        title: response.left.message || 'Delete failed',
-                    });
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) =>
-                addToast({
-                    type: 'error',
-                    title: error?.message || 'Delete failed',
-                }),
-            undefined,
-            'Deleting Leave Credit / Debit'
-        );
-
-        setIsDeleting(false);
-    };
-    //#endregion
-
-    //#region NO DATA
-    if (!data) {
-        return (
-            <div className="p-6">
-                <div className="bg-white border border-gray-200 rounded p-6 shadow-sm text-center">
-                    <p className="text-gray-600 mb-4">
-                        No record to view.
-                    </p>
-                    <Button
-                        onClick={handleBackToListLeaveCreditDebit}
-                        color="blue"
-                        size="sm"
-                    >
-                        Back
-                    </Button>
-                </div>
-            </div>
-        );
-    }
-    //#endregion
-
+    //#region RENDER
     return (
         <div className="p-6">
             <Loader loading={isLoading} title={loadingMessage}>
@@ -303,22 +229,6 @@ const ViewLeaveCreditDebit: React.FC = () => {
                     </div>
                 </div>
             </div>
-
-            {/* ================= DELETE CONFIRMATION ================= */}
-            <ConfirmationDialogBox
-                isOpen={isConfirmationDialogBoxOpen}
-                onClose={() => setIsConfirmationDialogBoxOpen(false)}
-                onConfirm={() => {
-                    setIsConfirmationDialogBoxOpen(false);
-                    void handleDeleteLeaveCreditDebit();
-                }}
-                title="You are about to delete Leave Credit / Debit"
-                message="Are you sure you want to delete Leave Credit Debit?"
-                confirmText="Delete"
-                cancelText="Cancel"
-                loading={isDeleting}
-                variant="danger"
-            />
         </div>
     );
 };

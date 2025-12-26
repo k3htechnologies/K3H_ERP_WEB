@@ -5,7 +5,9 @@ export interface FilterWithPaginationOutDoor{
     PageNumber : number
     StartDate?:string
     EndDate?:string
-
+    CompanyName?: string
+    SortBy?: string
+    ExportType?: 'Excel' | 'PDF'
 }
 
 export interface OutDoorMasterData{

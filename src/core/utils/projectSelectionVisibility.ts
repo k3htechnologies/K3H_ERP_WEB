@@ -23,10 +23,14 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         , 'holidayMappingMaster'
         , 'leaveEncashmentMaster'
         , 'leaveTypeMaster'
+        , 'leave'
+        , 'leaveCreditDebit'
+        , 'outdoor'
         , 'shiftMaster'
         , 'shiftMappingMaster'
         , 'weekOffMaster'
         , 'weekOffMappingMaster'
+        , 'outdoor'
         , 'profile'
     ];
 

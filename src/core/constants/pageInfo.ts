@@ -77,6 +77,40 @@ export const getPageInfo = (path: string) => {
                 title: 'Leave Type Master',
                 description: 'Manage and organize branch associations with complete CRUD operations',
             }
+        case 'leave':
+            if (second === "view") {
+                return {
+                    title: "View Leave",
+                    description: "View leave details and information",
+                };
+            }
+            if (second === "add") {
+                return {
+                    title: "Add/Update Leave",
+                    description: "Add or update leave information",
+                };
+            }
+            return {
+                title: 'Leave Management',
+                description: 'Manage and organize employee leave requests with complete CRUD operations',
+            }
+        case 'leaveCreditDebit':
+            if (second === "view") {
+                return {
+                    title: "View Leave Credit Debit",
+                    description: "View leave credit debit details",
+                };
+            }
+            if (second === "add") {
+                return {
+                    title: "Add/Update Leave Credit Debit",
+                    description: "Add or update leave credit debit details",
+                };
+            }
+            return {
+                title: 'Leave Credit Debit Management',
+                description: 'Manage employee leave credit and debit with complete CRUD operations',
+            }
 
         case 'shiftMaster':
             return {
@@ -123,6 +157,7 @@ export const getPageInfo = (path: string) => {
                 title: 'Project Management',
                 description: 'Manage and organize branch associations with complete CRUD operations',
             }
+
 
         case 'employeeMaster':
             return {
@@ -236,6 +271,17 @@ export const getPageInfo = (path: string) => {
             return {
                 title: 'Proposed Offer',
                 description: 'Profile',
+            }
+        case 'outdoor':
+            if (second === "add") {
+                return {
+                    title: "Add/Update Outdoor",
+                    description: "Add or update outdoor visit information",
+                };
+            }
+            return {
+                title: 'Outdoor Management',
+                description: 'Manage and organize outdoor visits with complete CRUD operations',
             }
 
         default:

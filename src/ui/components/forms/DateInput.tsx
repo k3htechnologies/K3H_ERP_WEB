@@ -57,10 +57,22 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
     const [currentMonth, setCurrentMonth] = useState<Date>(initialDate)
     const [selectedDate, setSelectedDate] = useState<Date | null>(parseDdMmYyyy(value))
 
-    const wrapperRef = useRef<HTMLDivElement | null>(null)
+    const internalRef = useRef<HTMLDivElement | null>(null)
     const popupRef = useRef<HTMLDivElement | null>(null)
 
-    const [openPosition, setOpenPosition] = useState<'bottom' | 'top'>('bottom')
+    // Merge forwarded ref with internal ref
+    const wrapperRef = (node: HTMLDivElement | null) => {
+      internalRef.current = node
+      if (ref) {
+        if (typeof ref === 'function') {
+          ref(node)
+        } else if (ref) {
+          ref.current = node
+        }
+      }
+    }
+
+    const [, setOpenPosition] = useState<'bottom' | 'top'>('bottom')
     const [popupPosition, setPopupPosition] = useState<{ top?: number; bottom?: number; left?: number; right?: number }>({})
 
     // Close on outside click
@@ -68,8 +80,8 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
       const handleClickOutside = (e: MouseEvent) => {
         const target = e.target as Node
         if (
-          wrapperRef.current && 
-          !wrapperRef.current.contains(target) &&
+          internalRef.current &&
+          !internalRef.current.contains(target) &&
           popupRef.current &&
           !popupRef.current.contains(target)
         ) {
@@ -149,7 +161,7 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
 
       if (willOpen) {
         setTimeout(() => {
-          const rect = wrapperRef.current?.getBoundingClientRect()
+          const rect = internalRef.current?.getBoundingClientRect()
           const popupHeight = 350
           const viewportHeight = window.innerHeight
 
@@ -162,10 +174,11 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
               position = 'top'
             }
             setOpenPosition(position)
+            // openPosition is set but not used - keeping for potential future use
 
             let topPos: number | undefined = undefined
             let bottomPos: number | undefined = undefined
-            
+
             if (position === 'bottom') {
               topPos = rect.bottom + 8
               if (topPos + popupHeight > viewportHeight) {
@@ -178,7 +191,7 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
                 topPos = 8
               }
             }
-            
+
             setPopupPosition({
               top: topPos,
               bottom: bottomPos,
@@ -226,7 +239,7 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
               ...props.style
             }}
           />
-          
+
           {showClearButton && displayValue && !disabled && (
             <button
               type="button"
@@ -376,13 +389,13 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
                       backgroundColor: selected
                         ? theme.colors.primary
                         : today
-                        ? theme.colors.primaryLight
-                        : 'transparent',
+                          ? theme.colors.primaryLight
+                          : 'transparent',
                       color: selected
                         ? '#fff'
                         : inMonth
-                        ? theme.colors.text
-                        : theme.colors.textLight,
+                          ? theme.colors.text
+                          : theme.colors.textLight,
                       opacity: isDisabled ? 0.3 : 1,
                       fontWeight: selected || today ? theme.fontWeight.semibold : theme.fontWeight.normal,
                     }}
@@ -396,8 +409,8 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
                         e.currentTarget.style.backgroundColor = selected
                           ? theme.colors.primary
                           : today
-                          ? theme.colors.primaryLight
-                          : 'transparent'
+                            ? theme.colors.primaryLight
+                            : 'transparent'
                       }
                     }}
                   >

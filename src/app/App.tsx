@@ -56,8 +56,7 @@ import ProjectRERADocument from '@/features/projectRERADocument/pages/ProjectRER
 import ViewCompantMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
 import Inventory from '@/features/inventory/pages/Inventory';
 import InventorySpecification from '@/features/inventory/pages/InventorySpecification';
-import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor';
-import OutDoor from '@/features/outdoor/pages/OutDoor';
+import { OutDoor } from '@/features/outdoor/pages/OutDoor';
 
 import { ViewVendor } from '@/features/vendor/pages/ViewVendor';
 import SiteProgress from '@/features/siteProgress/pages/SiteProgress';
@@ -91,6 +90,10 @@ import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditDebit from '@/features/leaveCreditDebit/pages/LeaveCreditDebit';
 import AddUpdateLeaveCreditDebit from '@/features/leaveCreditDebit/pages/AddUpdateLeaveCreditDebit';
 import ViewLeaveCreditDebit from '@/features/leaveCreditDebit/pages/ViewLeaveCreditDebit';
+import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor';
+import Leave from '@/features/leave/pages/Leave';
+import AddUpdateLeave from '@/features/leave/pages/AddUpdateLeave';
+import ViewLeave from '@/features/leave/pages/ViewLeave';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -163,6 +166,9 @@ function App() {
             <Route path="leaveCreditDebit/add/:id?" element={<AddUpdateLeaveCreditDebit />} />
             <Route path="leaveCreditDebit/view/:id?" element={<ViewLeaveCreditDebit />} />
             <Route path="outdoor" element={<OutDoor />} />
+            <Route path="leave" element={<Leave />} />
+            <Route path="leave/add/:id?" element={<AddUpdateLeave />} />
+            <Route path="leave/view/:id?" element={<ViewLeave />} />
             <Route path="companyMaster" element={<CompanyMaster />} />
             <Route path="companyMaster/view" element={<ViewCompantMaster />} />
             <Route path="companyMaster/add/:companyId?" element={<AddCompany />} />

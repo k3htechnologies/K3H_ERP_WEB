@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import { Button } from "@/ui/components/forms/Button";
@@ -212,31 +212,24 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   );
   //#endregion
 
+  // Memoize fetchParams to prevent unnecessary re-renders and API loops
+  const fetchParams = useMemo(() => ({ 
+    departmentName: selectedDepartmentName || "" 
+  }), [selectedDepartmentName]);
+
   // Use multi-select dropdown hook for Accompanied By (moved after fetchEmployeeMasterDropdownWithDepartment)
   const hasDepartment = !!(selectedDepartmentName && outdoorFormData.DepartmentId && outdoorFormData.DepartmentId > 0);
   const accompaniedDropdown = useMultiSelectDropdown({
     value: outdoorFormData.AccompaniedById,
     fetchCallback: fetchEmployeeMasterDropdownWithDepartment,
-    fetchParams: { departmentName: selectedDepartmentName || "" },
+    fetchParams: fetchParams,
     autoFetchOptions: hasDepartment && !!outdoorFormData.AccompaniedById,
   });
 
-  // Store refreshOptions in a ref to avoid dependency issues
-  const refreshOptionsRef = useRef(accompaniedDropdown.refreshOptions);
-  useEffect(() => {
-    refreshOptionsRef.current = accompaniedDropdown.refreshOptions;
-  }, [accompaniedDropdown.refreshOptions]);
-
-  // Refresh accompanied dropdown options when department changes or when AccompaniedById is set after department is available
-  useEffect(() => {
-    if (hasDepartment && outdoorFormData.AccompaniedById) {
-      // Use a small delay to ensure state updates are complete
-      const timer = setTimeout(() => {
-        refreshOptionsRef.current();
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedDepartmentName, hasDepartment, outdoorFormData.AccompaniedById]);
+  // Note: The hook's autoFetchOptions will handle fetching when:
+  // 1. The value (AccompaniedById) changes
+  // 2. The fetchParams (departmentName) changes (via fetchOptionsForSelected dependency)
+  // No manual refresh needed to avoid API loops
 
   //#region HANDLE ACCOMPANIED CHANGE
   const handleAccompaniedChange = useCallback((values: (string | number)[]) => {
@@ -365,7 +358,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
         if (E.isRight(apiResponse)) {
           const response = apiResponse.right;
-          
+
           // Check backend ErrorMessage first
           if (response.ErrorMessage && response.ErrorMessage.length > 0) {
             addToast({
@@ -389,9 +382,9 @@ export const AddUpdateOutDoorPage: React.FC = () => {
             });
           } else {
             // Success - use backend SuccessMessage
-            addToast({ 
-              type: 'success', 
-              title: response.SuccessMessage?.[0] 
+            addToast({
+              type: 'success',
+              title: response.SuccessMessage?.[0]
             });
             navigate("/outdoor", {
               state: {
@@ -486,7 +479,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
                   <div className="space-y-1">
                     <MultiSelectPagination
-                      key={`accompanied-by-${outdoorFormData.DepartmentId}-${selectedDepartmentName}`}
+                      // key={`accompanied-by-${outdoorFormData.DepartmentId}-${selectedDepartmentName}`}
                       label="Accompanied By"
                       required
                       dataFetchCallBack={fetchEmployeeMasterDropdownWithDepartment}

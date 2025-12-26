@@ -34,6 +34,7 @@ export interface TenantData {
   BuildingNumber: string | null;
   Wing: string | null;
   Floor: string | null;
+  Flat: string | null;
   RERACarpetAreaSqFt: number | null;
   InventoryFlatType: string | null;
   InventoryFlatConfiguration: string | null;

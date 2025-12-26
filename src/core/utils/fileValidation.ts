@@ -267,4 +267,11 @@ export const isValidGoogleMapsUrl = (url: string): boolean => {
   return googleMapsRegex.test(url);
 };
 
+// ----------------------------------
+// 🔹 FILTER ACCOUNT NUMBER
+// ----------------------------------
+
+export const isValidAccount = (num: string) =>
+  /^[0-9]{6,18}$/.test(num);
+
 

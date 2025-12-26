@@ -199,6 +199,7 @@ const AddUpdateEmployeePage: React.FC = () => {
           const e = response.right.Data?.[0];
 
           if (e) {
+            
             setFormData(prev => ({
               ...prev,
               EmployeeId: e.EmployeeId ?? prev.EmployeeId,

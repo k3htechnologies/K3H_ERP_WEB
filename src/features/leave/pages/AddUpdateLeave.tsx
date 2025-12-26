@@ -152,7 +152,7 @@ export const AddUpdateLeave: React.FC = () => {
 
                 if (E.isRight(respEither)) {
                     const response = respEither.right;
-                    
+
                     // Check backend ErrorMessage first
                     if (response.ErrorMessage && response.ErrorMessage.length > 0) {
                         addToast({ type: 'error', title: response.ErrorMessage[0] });
@@ -275,18 +275,6 @@ export const AddUpdateLeave: React.FC = () => {
                             </div>
 
                             <div className="flex justify-end items-center gap-3 pt-4">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        handleReset();
-                                    }}
-                                    disabled={isSaving}
-                                >
-                                    Reset
-                                </Button>
                                 <Button
                                     color="blue"
                                     size="sm"

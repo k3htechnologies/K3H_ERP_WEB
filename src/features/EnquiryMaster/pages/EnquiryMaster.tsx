@@ -78,6 +78,7 @@ export const EnquiryMaster: React.FC = () => {
     //#endregion
 
     //#region INIT
+    
     useEffect(() => {
         const incoming = location.state?.listState;
         const listState = incoming ?? {
@@ -97,7 +98,9 @@ export const EnquiryMaster: React.FC = () => {
         setSearchTerm(listState.searchTerm ?? '');
 
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
+
             loadEnquiry(listState.page ?? 1, {
+
                 Name: String(listState.searchTerm).trim()
             });
             return;
@@ -117,12 +120,16 @@ export const EnquiryMaster: React.FC = () => {
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
     const fetchEnquiryMasterList = async (page: number = pagination.currentPage) => {
+
         return await loadEnquiry(page, filters);
     }
     const loadEnquiry = async (page: number, filterParams: FilterInfo) => {
         await runApiWithLoader(
+
             setIsLoading,
+
             setIsLoadingMessage,
+
             async () => {
                 let sortByParam = undefined;
 
@@ -176,7 +183,6 @@ export const EnquiryMaster: React.FC = () => {
 
             return
         }
-
         const filterParams: FilterInfo = {
             Name: searchValue.trim(),
         };
@@ -231,7 +237,9 @@ export const EnquiryMaster: React.FC = () => {
                 const response = await getEnquiry(params);
 
                 if (E.isRight(response)) {
+
                     handleExportFile(response.right.Data, exportType, 'Enquiry Master', addToast);
+
                 } else {
                     addToast({ type: 'error', title: response.left.message || 'Export failed' });
                 }
@@ -242,7 +250,6 @@ export const EnquiryMaster: React.FC = () => {
             'Preparing Export'
         );
     };
-
 
     const handleExportEnquiryExcel = () => handleExportEnquiry('Excel')
     const handleExportEnquiryPdf = () => handleExportEnquiry('PDF')
@@ -260,7 +267,6 @@ export const EnquiryMaster: React.FC = () => {
 
             async () => {
 
-
                 return null;
             },
             undefined,
@@ -271,7 +277,6 @@ export const EnquiryMaster: React.FC = () => {
             'Preparing Import'
         )
     }
-
 
     const downloadExcelSampleEnquiryMaster = async () => {
         await runApiWithLoader(
@@ -388,6 +393,20 @@ export const EnquiryMaster: React.FC = () => {
                     maxWidth="250px"
                     tooltipThreshold={25}
                     onClick={() => handleNavigateToView(row)}
+                />
+            )
+        },
+        {
+            key: 'ProjectName',
+            label: 'Project Name',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: (value) => (
+                <TooltipText
+                    text={value || 'N/A'}
+                    maxWidth="150px"
+                    tooltipThreshold={15}
                 />
             )
         },
@@ -551,7 +570,6 @@ export const EnquiryMaster: React.FC = () => {
                 replace: true,
                 state: {}
             });
-
     };
     //#endregion
 
@@ -644,7 +662,6 @@ export const EnquiryMaster: React.FC = () => {
                 isShowAddButton={canAction}
                 addTitle="Add"
                 onAdd={handleAddEnquiryModal}
-
 
                 // IMPORT
                 isShowImportButton={canAction}

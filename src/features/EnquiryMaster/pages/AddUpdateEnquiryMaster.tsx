@@ -90,6 +90,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
     };
     //#endregion
 
+    //#region HANDLE CHANGE FOR SOURCE DROP DOWN
     const handleSourceChange = (value: string | number) => {
         const sourceValue = String(value);
         setFormData(prev => ({
@@ -115,7 +116,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
     }, [EnquiryId]);
     //#endregion
 
-    //#region FETCH Enquiry  MASTER DETAILS
+    //#region FETCH ENQUIRY  MASTER DETAILS
     const fetchEnquiryMasterDetails = async () => {
         await runApiWithLoader(
 
@@ -128,8 +129,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                 const params: FilterWithPaginationEnquiryMasterRequest = {
                     PageNumber: 1,
                     PageSize: 1,
-                    EnquiryId: EnquiryMasterId
-
+                    EnquiryId: EnquiryMasterId,
                 };
 
                 const response = await EnquiryMasterService.apiCallPullEnquiryMaster(params);
@@ -143,7 +143,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             ...prev,
                             EnquiryId: e.EnquiryId ?? prev.EnquiryId,
                             Uniquekey: e.Uniquekey ?? prev.Uniquekey,
-                            ProjectId: e.ProjectId ?? prev.ProjectId,
+                            ProjectId: e.ProjectId && e.ProjectId > 0 ? e.ProjectId : prev.ProjectId,
                             Name: e.Name ?? prev.Name,
                             EmailId: e.EmailId ?? prev.EmailId,
                             MobileNumber: e.MobileNumber ?? prev.MobileNumber,
@@ -328,8 +328,8 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
 
             async () => {
                 const payload = PushEnquiryMasterFormData();
-                console.log('FINAL PAYLOAD', JSON.stringify(payload, null, 2));
-
+                debugger
+                console.log("payload", payload)
                 const response = await EnquiryMasterService.apiCallAddUpdateEnquiryMaster(payload);
 
                 if (E.isRight(response)) {
@@ -367,7 +367,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            isAddMode ? 'Add Enquiry' : 'Update Enquiry'
+            isAddMode ? 'Add ' : 'Update '
         );
     };
     //#endregion
@@ -432,7 +432,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                         const emailId = filterEmail(e.target.value);
                                         handleFieldChange('EmailId', emailId)
                                     }}
-                                    placeholder="Enter Valid Email id"
+                                    placeholder="Enter Valid Email Id"
                                 />
                             </div>
                         </div>
@@ -445,7 +445,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                     size="lg"
                                     required
                                     dataFetchCallBack={fetchProjectMasterDropdown}
-                                    onSelected={(item) => handleFieldChange('ProjectId', Number(item.value))}
+                                    onSelected={(item) => handleFieldChange('ProjectId', (item.value))}
                                     initialValue={createDropdownInitialValue(formData.ProjectId, dropdownLabels.projectName)}
                                     error={errors.ProjectId}
                                 />
@@ -469,6 +469,8 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                     options={REQUIREMENT_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
                                     error={errors.Requirement}
                                 />
+                            </div>
+                            <div>
                             </div>
                         </div>
 

@@ -315,7 +315,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
 
             async () => {
                 const payload = PushChannelPartnerMasterFormData();
-                console.log(payload)
+
                 const response = await ChannelPartnerMasterService.apiCallAddUpdateChannelPartnerMaster(payload);
 
                 if (E.isRight(response)) {

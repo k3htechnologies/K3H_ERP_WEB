@@ -83,7 +83,7 @@ export interface AddUpdateEnquiryMasterRequest {
     OccupationType?: string | null
     Accommodation?: string | null
     Budget?: string | null
-    IsHomeLoan: boolean
+    IsHomeLoan: boolean | false
     Requirement?: string | null
     RequirementType?: string | null
     AreaPreferred?: number | null

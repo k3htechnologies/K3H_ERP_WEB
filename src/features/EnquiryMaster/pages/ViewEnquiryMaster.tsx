@@ -17,18 +17,19 @@ const ViewEnquiryMaster: React.FC = () => {
 
     // Selected Enquiry data passed from the Enquiry List page (via navigate state)
     const editEnquiryData = location.state?.editEnquiryData as EnquiryMasterData;
-   
+
     // Stores pagination, filters, and sorting state of Enquiry List page to restore on back navigation
 
     const listState = location.state?.listState;
 
     // MESSAGE IF DATA NOT FOUND
-    if (!editEnquiryData) return <div className=" items items-center">No Enquiry Data Found</div>;
+    if (!editEnquiryData) return <div>No Enquiry Data Found</div>;
 
     //#region EDIT ENQUIRY MASTER
     const handleEditEnquiryMaster = (row: EnquiryMasterData) => {
         if (!row?.EnquiryId) return;
         navigate(`/enquiry/add/${row.EnquiryId}`, {
+
             state: {
                 editEnquiryData: row,
                 fromList: true,
@@ -108,7 +109,7 @@ const ViewEnquiryMaster: React.FC = () => {
                         {/* Basic Deatils */}
 
                         <div className="grid grid-cols-2 gap-x-10 gap-y-6 p-4">
-                            
+
                             <FieldItem label="Contact No:" value={editEnquiryData.MobileNumber ? `+91 ${editEnquiryData.MobileNumber}` : '-'} />
                             <FieldItem label="E-Mail ID" value={editEnquiryData.EmailId} />
                             <FieldItem label="Project Name" value={editEnquiryData.ProjectName} />

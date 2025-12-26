@@ -108,21 +108,21 @@ export const ViewCompantMaster: React.FC = () => {
                         </h4>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <FieldItem label="PAN Number" value={editCompanyData?.PANNumber ?? '-'} urls={editCompanyData?.PanCardURL} />
-                            <FieldItem label="GST Number" value={editCompanyData?.GSTNumber ?? '-'} urls={editCompanyData?.GSTCertificateURL} />
-                            <FieldItem label="CIN Number" value={editCompanyData?.CINNumber ?? '-'} urls={editCompanyData?.CINURL} />
+                            <FieldItem label="PAN Number" value={editCompanyData?.PANNumber ?? '-'} urls={editCompanyData?.PanCardURL} isIcon/>
+                            <FieldItem label="GST Number" value={editCompanyData?.GSTNumber ?? '-'} urls={editCompanyData?.GSTCertificateURL} isIcon />
+                            <FieldItem label="CIN Number" value={editCompanyData?.CINNumber ?? '-'} urls={editCompanyData?.CINURL} isIcon />
                             <FieldItem label="RERA Number" value={editCompanyData?.RERANumber ?? '-'} />
 
                             <FieldItem
                                 label="Company Letter Head"
                                 value={editCompanyData?.CompanyLetterheadHeaderURL ? 'View Letter Head' : '-'}
-                                urls={editCompanyData?.CompanyLetterheadHeaderURL}
+                                urls={editCompanyData?.CompanyLetterheadHeaderURL} isIcon
                             />
 
                             <FieldItem
                                 label="Company Letter Footer"
                                 value={editCompanyData?.CompanyLetterheadFooterURL ? 'View Letter Footer' : '-'}
-                                urls={editCompanyData?.CompanyLetterheadFooterURL}
+                                urls={editCompanyData?.CompanyLetterheadFooterURL} isIcon
                             />
                         </div>
                     </section>

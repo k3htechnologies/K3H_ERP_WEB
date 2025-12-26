@@ -138,11 +138,11 @@ export const DepartmentMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchDepartmentList = async (page: number = pagination.currentPage) => {
-    return await loadDepartments(page, filters);
+  const fetchDepartmentList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadDepartments(page, filters, sort ?? sortInfo);
   }
 
-  const loadDepartments = async (page: number, filterParams: FilterInfo) => {
+  const loadDepartments = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -195,7 +195,7 @@ export const DepartmentMaster: React.FC = () => {
       undefined,
       'Loading Department'
     )
-    
+
   }
   //#endregion
 
@@ -290,13 +290,11 @@ export const DepartmentMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
 
-    setSortInfo(sortInfo);
-
-    fetchDepartmentList(1);
-
-  }
+  const handleSortColumn = useCallback((sort: SortInfo) => {
+    setSortInfo(sort);
+    loadDepartments(1, filters, sort);
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -889,7 +887,7 @@ export const DepartmentMaster: React.FC = () => {
         onDownloadSampleExcel={handleDownloadExcelSampleDepartmentMaster}
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && departmentListForTable.length > 0}
         onExportExcel={handleExportDepartmentExcel}
         onExportPdf={handleExportDepartmentPdf}
         exportLoading={isLoading}
@@ -903,7 +901,6 @@ export const DepartmentMaster: React.FC = () => {
         pagination={departmentMasterPaginationInfo}
         emptyMessage="No Departments Data Found"
         fixedHeight={true}
-        maxHeight="calc(100vh - 255px)"
         recordsPerPage={20}
         className="flex-1"
         sortInfo={sortInfo}

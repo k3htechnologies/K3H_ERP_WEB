@@ -77,6 +77,21 @@ export const getPageInfo = (path: string) => {
                 title: 'Leave Type Master',
                 description: 'Manage and organize branch associations with complete CRUD operations',
             }
+        case 'leave':
+            return {
+                title: 'Leave Management',
+                description: 'Manage and organize employee leave requests with complete CRUD operations',
+            }
+        case 'leaveCreditDebit':
+            return {
+                title: 'Leave Credit Debit Management',
+                description: 'Manage employee leave credit and debit with complete CRUD operations',
+            }
+        case 'compOff':
+            return {
+                title: 'compOff',
+                description: 'Manage compOff with complete CRUD operations',
+            }
 
         case 'shiftMaster':
             return {
@@ -123,6 +138,7 @@ export const getPageInfo = (path: string) => {
                 title: 'Project Management',
                 description: 'Manage and organize branch associations with complete CRUD operations',
             }
+
 
         case 'employeeMaster':
             return {
@@ -236,6 +252,18 @@ export const getPageInfo = (path: string) => {
             return {
                 title: 'Proposed Offer',
                 description: 'Profile',
+            }
+        case 'event':
+            return {
+                title: 'Event',
+                description: 'Profile',
+            }
+
+        case 'outdoor':
+
+            return {
+                title: "Outdoor Managemen",
+                description: "outdoor visit information",
             }
 
         default:

@@ -111,11 +111,11 @@ export const Vendor: React.FC = () => {
 
   //#region DATA LOAD
 
-  const fetchVendorList = async (page: number = pagination.currentPage) => {
-    return await loadVendors(page, filters);
+  const fetchVendorList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadVendors(page, filters,sort ?? sortInfo);
   };
 
-  const loadVendors = async (page: number, filterParams: FilterInfo) => {
+  const loadVendors = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -264,11 +264,11 @@ export const Vendor: React.FC = () => {
   const handlePageChange = useCallback((page: number) => {
     fetchVendorList(page);
   }, [fetchVendorList]);
-
-   const handleSortColumn = useCallback((sort: SortInfo) => {
-      setSortInfo(sort);
-      fetchVendorList(1);
-    }, []);
+  
+    const handleSortColumn = useCallback((sort: SortInfo) => {
+    setSortInfo(sort);
+    loadVendors(1, filters, sort);
+  }, [filters]);
 
   const vendorPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -631,7 +631,7 @@ export const Vendor: React.FC = () => {
           onDownloadSampleExcel={handleDownloadExcelSampleVendor}
 
            // EXPORT
-          isShowExportButton={canExport}
+          isShowExportButton={canExport && vendorListForTable.length > 0}
           onExportExcel={handleExportVendorExcel}
           onExportPdf={handleExportVendorPdf}
           exportLoading={isLoading}

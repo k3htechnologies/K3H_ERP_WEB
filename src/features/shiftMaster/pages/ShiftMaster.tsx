@@ -109,11 +109,11 @@ export const ShiftMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchShiftMasterList = async (page: number = pagination.currentPage) => {
-    return await loadShifts(page, filters);
+  const fetchShiftMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadShifts(page, filters,sort);
   }
 
-  const loadShifts = async (page: number, filterParams: FilterInfo) => {
+  const loadShifts = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -255,13 +255,14 @@ export const ShiftMaster: React.FC = () => {
   }, []);
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = useCallback((sortInfo: SortInfo) => {
-
-    setSortInfo(sortInfo);
-
-    fetchShiftMasterList(1);
-
-  }, []);
+  
+  const handleSortColumn = useCallback((sort: SortInfo) => {
+  
+      setSortInfo(sortInfo);
+  
+      loadShifts(1, filters, sort);
+  
+    }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -596,7 +597,7 @@ export const ShiftMaster: React.FC = () => {
 
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && ShiftsForTable.length >0}
         onExportExcel={handleExportShiftExcel}
         onExportPdf={handleExportShiftPdf}
         exportLoading={isLoading}
@@ -608,7 +609,7 @@ export const ShiftMaster: React.FC = () => {
         data={ShiftsForTable}
         columns={visibleShiftColumns}
         pagination={ShiftPaginationInfo}
-        emptyMessage="No Shift Found"
+        emptyMessage="No Shift Data Found"
         fixedHeight
         recordsPerPage={20}
         className="flex-1"

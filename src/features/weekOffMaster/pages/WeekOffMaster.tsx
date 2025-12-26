@@ -108,11 +108,11 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchWeekOffMasterList = async (page: number = pagination.currentPage) => {
-    return await loadWeekOff(page, filters);
+  const fetchWeekOffMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadWeekOff(page, filters,sort);
   }
 
-  const loadWeekOff = async (page: number, filterParams: FilterInfo) => {
+  const loadWeekOff = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -255,13 +255,15 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   }, []);
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = useCallback((sortInfo: SortInfo) => {
+
+
+  const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sortInfo);
 
-    fetchWeekOffMasterList(1);
+    loadWeekOff(1, filters, sort);
 
-  }, []);
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -310,7 +312,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   const handleConfirmationDialogBoxOpen = useCallback((row: WeekOffMasterData) => {
 
     setDeleteWeekOffMasterData(row)
-    
+
     setIsConfirmationDialogBoxOpen(true)
   }, [])
   //#endregion
@@ -627,7 +629,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && WeekOffsForTable.length > 0}
         onExportExcel={handleExportWeekOffExcel}
         onExportPdf={handleExportWeekOffPdf}
         exportLoading={isLoading}
@@ -639,7 +641,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
         data={WeekOffsForTable}
         columns={visibleWeekOffColumns}
         pagination={WeekOffPaginationInfo}
-        emptyMessage="No WeekOff Found"
+        emptyMessage="No Week Off Found"
         fixedHeight
         recordsPerPage={20}
         className="flex-1"

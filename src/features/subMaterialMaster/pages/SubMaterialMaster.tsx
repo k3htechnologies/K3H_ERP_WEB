@@ -154,11 +154,11 @@ export const SubMaterialMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchSubMaterialList = async (page: number = pagination.currentPage) => {
-    return await loadSubMaterials(page, filters);
+  const fetchSubMaterialList = async (page: number = pagination.currentPage,sort?: SortInfo) => {
+    return await loadSubMaterials(page, filters,sort ?? sortInfo);
   }
 
-  const loadSubMaterials = async (page: number, filterParams: FilterInfo) => {
+  const loadSubMaterials = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -307,13 +307,11 @@ export const SubMaterialMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
-
-    setSortInfo(sortInfo);
-
-    fetchSubMaterialList(1);
-
-  }
+  
+  const handleSortColumn = useCallback((sort: SortInfo) => {
+    setSortInfo(sort);
+    loadSubMaterials(1, filters, sort);
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -906,7 +904,7 @@ export const SubMaterialMaster: React.FC = () => {
         onDownloadSampleExcel={handleDownloadExcelSampleSubMaterialMaster}
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && subMaterialListForTable.length >0}
         onExportExcel={handleExportSubMaterialExcel}
         onExportPdf={handleExportSubMaterialPdf}
         exportLoading={isLoading}

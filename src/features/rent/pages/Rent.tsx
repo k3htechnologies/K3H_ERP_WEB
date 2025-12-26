@@ -457,7 +457,7 @@ export const Rent: React.FC = () => {
         // NO IMPORT BUTTON - VIEW ONLY
         isShowImportButton={false}
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && tableData.length >0}
         onExportExcel={handleExportRentExcel}
         onExportPdf={handleExportRentPdf}
         exportLoading={isLoading}

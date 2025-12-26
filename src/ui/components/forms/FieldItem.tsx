@@ -2,7 +2,6 @@ import React from 'react';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { COLORS } from '@/core/constants';
-import { Eye } from 'lucide-react';
 
 export const FieldItem: React.FC<{
   label: string;
@@ -31,17 +30,7 @@ export const FieldItem: React.FC<{
 
     // parse urls (returns [])
     const imageUrls = parseDocumentUrls(urls);
-    const hasDocs = imageUrls.length > 0;
-
-    const EyeTrigger = (
-      <button
-        type="button"
-        className="flex items-center gap-1 text-sm font-medium p-0"
-        style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
-      >
-        <Eye size={16} />
-      </button>
-    );
+    const hasDocs = imageUrls.length > 0 ? true :false;
 
     const rowGridStyle: React.CSSProperties = {
       display: 'grid',
@@ -76,7 +65,7 @@ export const FieldItem: React.FC<{
                     isIcon === true ? (
                       <span className="flex items-center gap-2 text-sm font-medium">
                         {isSetValue ? <span>{displayValue}</span> : ''}
-                        {EyeTrigger}
+                        
                       </span>
                     ) : (
                       <button
@@ -118,7 +107,6 @@ export const FieldItem: React.FC<{
               isIcon === true ? (
                 <span className="flex items-center gap-2 text-sm font-medium">
                   <span>{displayValue}</span>
-                  {EyeTrigger}
                 </span>
               ) : (
                 <button

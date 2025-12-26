@@ -147,11 +147,11 @@ export const EarningMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchEarningList = async (page: number = pagination.currentPage) => {
-    return await loadEarnings(page, filters);
+  const fetchEarningList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadEarnings(page, filters,sort);
   }
 
-  const loadEarnings = async (page: number, filterParams: FilterInfo) => {
+  const loadEarnings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -285,13 +285,13 @@ export const EarningMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
-
-    setSortInfo(sortInfo);
-
-    fetchEarningList(1);
-
-  }
+  const handleSortColumn = useCallback((sort: SortInfo) => {
+  
+      setSortInfo(sortInfo);
+  
+      loadEarnings(1, filters, sort);
+  
+    }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -790,7 +790,7 @@ export const EarningMaster: React.FC = () => {
         isShowImportButton={false}
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && earningListForTable.length >0}
         onExportExcel={handleExportEarningExcel}
         onExportPdf={handleExportEarningPdf}
         exportLoading={isLoading}

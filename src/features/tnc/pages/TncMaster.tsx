@@ -141,11 +141,11 @@ export const TncMaster: React.FC = () => {
   //#endregion
 
   //#region DATA LOAD
-  const fetchTncList = async (page: number = pagination.currentPage) => {
-    return await loadTnc(page, filters);
+  const fetchTncList = async (page: number = pagination.currentPage,sort?: SortInfo) => {
+    return await loadTnc(page, filters ,sort ?? sortInfo);
   };
 
-  const loadTnc = async (page: number, filterParams: FilterInfo) => {
+  const loadTnc = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -293,10 +293,9 @@ export const TncMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-
   const handleSortColumn = (sort: SortInfo) => {
     setSortInfo(sort);
-    fetchTncList(1);
+    loadTnc(1, filters, sort);
   };
   //#endregion
 
@@ -782,7 +781,7 @@ export const TncMaster: React.FC = () => {
           addTitle="Add"
           onAdd={handleAddTncModal}
           isShowImportButton={false}
-          isShowExportButton={canExport}
+          isShowExportButton={canExport && tncListForTable.length >0}
           onExportExcel={handleExportTncExcel}
           onExportPdf={handleExportTncPdf}
           exportLoading={isLoading}
@@ -800,7 +799,7 @@ export const TncMaster: React.FC = () => {
               ModuleName: t.id,
             };
 
-            loadTnc(1, newFilters);
+            loadTnc(1, newFilters,sortInfo);
             
           }}
         />

@@ -26,6 +26,8 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/holidaymappingmaster': '/holidayMappingMaster',
         '/leaveencashmentmaster': '/leaveEncashmentMaster',
         '/leavetypemaster': '/leaveTypeMaster',
+        '/leave': '/leave',
+        '/leavecreditdebit': '/leaveCreditDebit',
         '/shiftmaster': '/shiftMaster',
         '/shiftmappingmaster': '/shiftMappingMaster',
         '/weekoffmaster': '/weekOffMaster',
@@ -37,6 +39,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/tnc': '/tnc',
         '/banklistmaster': '/bankListMaster',
         '/projectmaster': '/projectMaster',
+        '/outdoor': '/outdoor',
         '/materialmaster': '/materialMaster',
         '/submaterialmaster': '/subMaterialMaster',
         '/uommaster': '/uomMaster',
@@ -48,7 +51,8 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/building': '/building',
         '/tenant': '/tenant',
         '/proposedoffer': '/proposedOffer',
-        '/rent': '/rent'
+        '/rent': '/rent',
+        '/event': '/event'
     }
 
     // If a mapped route exists, return it (normalized)

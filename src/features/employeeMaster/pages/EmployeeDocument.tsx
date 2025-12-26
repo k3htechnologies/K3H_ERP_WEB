@@ -103,12 +103,14 @@ export const EmployeeDocument: React.FC = () => {
         searchTerm?: string;
         employeeId?: number;
         employeeName?: string;
+        pageName?: string;
       };
     };
   };
   const preservedListState = location.state?.listState;
   const employeeId = preservedListState?.employeeId || 0;
   const employeeName = preservedListState?.employeeName || '';
+  const pageName = preservedListState?.pageName || '';
 
   //#endregion
 
@@ -726,8 +728,9 @@ export const EmployeeDocument: React.FC = () => {
   //#endregion
 
   //#region BACK EMPLOYEE MASTER PAGE
+  
   const handleBackToListEmployee = () => {
-    navigate('/employeeMaster', {
+    navigate(`${ pageName.toUpperCase() ==='PROFILE' ? '/profile' : '/employeeMaster'}`, {
       state: {
         listState: preservedListState ?? {
           page: 1,

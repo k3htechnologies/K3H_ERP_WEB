@@ -141,11 +141,17 @@ export const TimePicker: React.FC<TimePickerProps> = ({
   });
 
   return (
+
     <div className={className} style={{ position: "relative", width: "100%", ...style }}>
+      
       {label && (
+
         <div style={{ marginBottom: "6px", fontSize: currentSize.fontSize, fontWeight: theme.fontWeight.medium, color: theme.colors.black }}>
+
           {label}
+
           {required && <span style={{ color: theme.colors.error, marginLeft: "4px" }}>*</span>}
+          
         </div>
       )}
 
@@ -177,7 +183,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({
         <div style={{ fontSize: currentSize.fontSize, fontWeight: theme.fontWeight.bold, color: theme.colors.textSecondary, padding: `0 ${theme.spacing.xs}` }}>
           :
         </div>
-
+        
         {/* Minutes */}
         <div style={{ flex: 1 }}>
           <select
@@ -195,23 +201,6 @@ export const TimePicker: React.FC<TimePickerProps> = ({
             ))}
           </select>
         </div>
-
-        {/* AM/PM only for 12-hour */}
-        {format === 12 && (
-          <div style={{ flex: "0 0 80px" }}>
-            <select
-              value={ampm}
-              onChange={(e) => handleChange(hours, minutes, e.target.value as "AM" | "PM")}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              disabled={disabled}
-              style={getSelectStyles()}
-            >
-              <option value="AM">AM</option>
-              <option value="PM">PM</option>
-            </select>
-          </div>
-        )}
       </div>
 
       {error && <p style={{ color: theme.colors.error, fontSize: theme.fontSize.sm, marginTop: "4px" }}>{error}</p>}

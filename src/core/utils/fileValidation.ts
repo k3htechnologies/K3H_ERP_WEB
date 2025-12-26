@@ -203,3 +203,68 @@ export const calculatePercentageAmount = (
   );
 };
 
+// ----------------------------------
+// 🔹 FILTER PASSPORT (A1234567)
+// 1 letter + 7 digits (India)
+// ----------------------------------
+export const filterPassportNumber = (value: string): string =>
+  value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 8);
+
+export const isValidPassportNumber = (passport: string): boolean => {
+  if (!passport) return false;
+  const value = passport.toUpperCase().trim();
+  const regex = /^[A-Z]{1}[0-9]{7}$/;
+  return regex.test(value);
+};
+
+// ----------------------------------
+// 🔹 FILTER DRIVING LICENSE
+// Example: MH1420110062271
+// ----------------------------------
+export const filterDrivingLicenseNumber = (value: string): string =>
+  value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 16);
+
+export const isValidDrivingLicenseNumber = (dl: string): boolean => {
+  if (!dl) return false;
+  const value = dl.toUpperCase().trim();
+  const regex = /^[A-Z]{2}[0-9]{13,14}$/;
+  return regex.test(value);
+};
+
+// ----------------------------------
+// 🔹 FILTER VOTER ID (EPIC)
+// ABC1234567
+// ----------------------------------
+export const filterVoterId = (value: string): string =>
+  value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 10);
+
+export const isValidVoterId = (voterId: string): boolean => {
+  if (!voterId) return false;
+  const value = voterId.toUpperCase().trim();
+  const regex = /^[A-Z]{3}[0-9]{7}$/;
+  return regex.test(value);
+};
+
+// ----------------------------------
+// 🔹 FILTER GOOGLE MAPS URL
+// ----------------------------------
+export const filterGoogleMapsUrl = (value: string): string => {
+  // remove spaces
+  value = value.replace(/\s+/g, '');
+
+  // allow only URL-safe characters
+  value = value.replace(/[^a-zA-Z0-9/:.?&=_\-#%]/g, '');
+
+  return value;
+};
+
+export const isValidGoogleMapsUrl = (url: string): boolean => {
+  if (!url) return false;
+
+  const googleMapsRegex =
+    /^(https?:\/\/)?(www\.)?(google\.com\/maps|maps\.google\.com|goo\.gl\/maps|maps\.app\.goo\.gl)\/?.*/i;
+
+  return googleMapsRegex.test(url);
+};
+
+

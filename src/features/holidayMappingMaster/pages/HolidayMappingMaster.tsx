@@ -145,11 +145,11 @@ export const HolidayMappingMaster: React.FC = () => {
 
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
-  const fetchHolidayMappingList = async (page: number = pagination.currentPage) => {
-    return await loadHolidayMappings(page, filters);
+  const fetchHolidayMappingList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadHolidayMappings(page, filters,sort);
   }
 
-  const loadHolidayMappings = async (page: number, filterParams: FilterInfo) => {
+  const loadHolidayMappings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -287,12 +287,13 @@ export const HolidayMappingMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
+  const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sortInfo);
 
-    fetchHolidayMappingList(1);
-  }
+    loadHolidayMappings(1, filters, sort);
+
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -780,7 +781,7 @@ export const HolidayMappingMaster: React.FC = () => {
         isShowImportButton={false}
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && holidayMappingListForTable.length > 0}
         onExportExcel={handleExportHolidayMappingExcel}
         onExportPdf={handleExportHolidayMappingPdf}
         exportLoading={isLoading}
@@ -794,7 +795,6 @@ export const HolidayMappingMaster: React.FC = () => {
         pagination={holidayMappingMasterPaginationInfo}
         emptyMessage="No Holiday Mapping Data Found"
         fixedHeight={true}
-        maxHeight="calc(100vh - 200px)"
         recordsPerPage={20}
         className="flex-1"
         sortInfo={sortInfo}

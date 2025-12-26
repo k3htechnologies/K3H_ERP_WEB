@@ -106,11 +106,11 @@ export const AssetMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchAssetMasterList = async (page: number = pagination.currentPage) => {
-    return await loadAssets(page, filters);
+  const fetchAssetMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadAssets(page, filters,sort);
   }
 
-  const loadAssets = async (page: number, filterParams: FilterInfo) => {
+  const loadAssets = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -250,13 +250,13 @@ export const AssetMaster: React.FC = () => {
   }, []);
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = useCallback((sortInfo: SortInfo) => {
+  const handleSortColumn = useCallback((sort: SortInfo) => {
 
-    setSortInfo(sortInfo);
+    setSortInfo(sort);
 
-    fetchAssetMasterList(1);
+    loadAssets(1,filters,sort);
 
-  }, []);
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -611,7 +611,7 @@ export const AssetMaster: React.FC = () => {
 
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && AssetsForTable.length>0}
         onExportExcel={handleExportAssetExcel}
         onExportPdf={handleExportAssetPdf}
         exportLoading={isLoading}

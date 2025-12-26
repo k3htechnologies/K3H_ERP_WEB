@@ -112,17 +112,17 @@ export const ViewVendor: React.FC = () => {
               <FieldItem
                 label="PAN Number"
                 value={editVendorMasterData?.PanCardNumber ?? '-'}
-                urls={editVendorMasterData?.PanCardURL}
+                urls={editVendorMasterData?.PanCardURL} isIcon
               />
               <FieldItem
                 label="GST Number"
                 value={editVendorMasterData?.GSTNumber ?? '-'}
-                urls={editVendorMasterData?.GSTCertificateURL}
+                urls={editVendorMasterData?.GSTCertificateURL} isIcon
               />
               <FieldItem
                 label="Aadhar Card Number"
                 value={editVendorMasterData?.AadharCardNumber ?? '-'}
-                urls={editVendorMasterData?.AadharCardURL}
+                urls={editVendorMasterData?.AadharCardURL} isIcon
               />
             </div>
           </section>

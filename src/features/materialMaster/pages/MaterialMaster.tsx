@@ -138,11 +138,11 @@ export const MaterialMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchMaterialList = async (page: number = pagination.currentPage) => {
-    return await loadMaterials(page, filters);
+  const fetchMaterialList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadMaterials(page, filters,sort ?? sortInfo);
   }
 
-  const loadMaterials = async (page: number, filterParams: FilterInfo) => {
+  const loadMaterials = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -289,13 +289,11 @@ export const MaterialMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
-
-    setSortInfo(sortInfo);
-
-    fetchMaterialList(1);
-
-  }
+  
+  const handleSortColumn = useCallback((sort: SortInfo) => {
+    setSortInfo(sort);
+    loadMaterials(1, filters, sort);
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -872,7 +870,7 @@ export const MaterialMaster: React.FC = () => {
           onDownloadSampleExcel={handleDownloadExcelSampleMaterialMaster}
 
           // EXPORT
-          isShowExportButton={canExport}
+          isShowExportButton={canExport && materialListForTable.length >0}
           onExportExcel={handleExportMaterialExcel}
           onExportPdf={handleExportMaterialPdf}
           exportLoading={isLoading}

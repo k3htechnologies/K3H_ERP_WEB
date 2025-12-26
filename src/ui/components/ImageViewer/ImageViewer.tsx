@@ -1,7 +1,7 @@
 // MultiImageViewer.tsx
 import React, { useCallback, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import { X, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Download, Eye } from "lucide-react";
 import { COLORS } from "@/core/constants";
 
 type PanelSize = "sm" | "md" | "lg" | "xl";
@@ -29,8 +29,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
   triggerLabel,
   size = "sm",
   closeOnOverlayClick = true,
-  overlayZIndex = 9999,
-  isIcon = false
+  overlayZIndex = 9999
 }) => {
   // filter only truthy strings (defensive)
   const imageUrls = (images || []).filter((u) => typeof u === "string" && u.trim() !== "");
@@ -186,9 +185,21 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     <div className="inline-block">
       {/* Trigger */}
       {triggerLabel ? (
-        <button type="button" onClick={() => open(0)} className={isIcon ? 'text-sm font-medium' : 'text-sm font-medium underline'} style={isIcon ? {} : { color: COLORS.primary1 }}>
-          {triggerLabel}
-        </button>
+        <>
+          <div className="flex items-center gap-2">
+            <span className="truncate">{triggerLabel}</span>
+
+            <button
+              type="button"
+              onClick={() => open(0)}
+              className="flex items-center gap-1 text-sm font-medium p-0"
+              style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
+            >
+              <Eye size={16} />
+            </button>
+          </div>
+
+        </>
       ) : (
         // fallback small thumbnail grid
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

@@ -136,11 +136,11 @@ export const LeaveTypeMaster: React.FC = () => {
   //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
-  const fetchLeaveTypeList = async (page: number = pagination.currentPage) => {
-    return await loadLeaveTypes(page, filters);
+  const fetchLeaveTypeList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadLeaveTypes(page, filters,sort);
   }
 
-  const loadLeaveTypes = async (page: number, filterParams: FilterInfo) => {
+  const loadLeaveTypes = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -279,13 +279,13 @@ export const LeaveTypeMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
+  const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sortInfo);
 
-    fetchLeaveTypeList(1);
+    loadLeaveTypes(1, filters, sort);
 
-  }
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -833,7 +833,7 @@ export const LeaveTypeMaster: React.FC = () => {
         addTitle='Add'
         onAdd={handleAddLeaveTypeModal}
         isShowImportButton={false}
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && leaveTypeListForTable.length > 0}
         onExportExcel={handleExportLeaveTypeExcel}
         onExportPdf={handleExportLeaveTypePdf}
         exportLoading={isLoading}

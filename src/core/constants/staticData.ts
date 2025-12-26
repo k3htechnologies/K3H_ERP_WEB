@@ -76,6 +76,14 @@ export const MASTER_DATA = {
 
     road_width: ['6.10 M', '9.15 M', '12.20 M', '13.40 M', '18.3 M', '27.45 M', '36.6 M'],
 
+    calender_view_type: ['Month','Week','Day'],
+
+    event_type: ['Task','Meeting','Conference Room Booking'],
+
+    conference_room_name: ['Room 1','Room 2','Room 3'],
+    
+    road_width: ['6.10 M', '9.15 M', '12.20 M', '13.40 M', '18.3 M', '27.45 M', '36.6 M'],
+
     occupationType: ['Salaried', 'Self-Employed', 'Others'],
    
     budget:['Less Than 1','UPTO 1.5','UPTO 2.5','UPTO 3','UPTO 4','UPTO 5','5 & Above'],
@@ -156,4 +164,9 @@ export const BUSINESS_CATEGORY = toOptions(MASTER_DATA.business_category)
 export const PROJECT_SCHEME = toOptions(MASTER_DATA.project_scheme)
 export const PROJECT_SUB_SCHEME = toOptions(MASTER_DATA.project_sub_scheme)
 export const ROAD_WIDTH = toOptions(MASTER_DATA.road_width)
+export const CALENDER_VIEW_TYPE = toOptions(MASTER_DATA.calender_view_type)
+export const EVENT_TYPE = toOptions(MASTER_DATA.event_type)
+export const CONFERENCE_ROOM_NAME = toOptions(MASTER_DATA.conference_room_name)
+
+
 

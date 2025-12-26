@@ -137,11 +137,11 @@ export const HolidayMaster: React.FC = () => {
   //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
-  const fetchHolidayList = async (page: number = pagination.currentPage) => {
-    return await loadHolidays(page, filters);
+  const fetchHolidayList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadHolidays(page, filters, sort);
   }
 
-  const loadHolidays = async (page: number, filterParams: FilterInfo) => {
+  const loadHolidays = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -276,12 +276,15 @@ export const HolidayMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
+  
+  const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sortInfo);
 
-    fetchHolidayList(1);
-  }
+    loadHolidays(1, filters, sort);
+
+  }, [filters]);
+
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -532,7 +535,7 @@ export const HolidayMaster: React.FC = () => {
 
     if (!formData.HolidayName?.trim()) {
       newErrors.HolidayName = "Holiday name is required";
-    }else if (formData.HolidayName.trim().length > 50) {
+    } else if (formData.HolidayName.trim().length > 50) {
       newErrors.HolidayName = 'Holiday Name must be at most 50 characters'
     }
 
@@ -736,7 +739,7 @@ export const HolidayMaster: React.FC = () => {
         isShowImportButton={false}
 
         // EXPORT 
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && holidayListForTable.length > 0}
         onExportExcel={handleExportHolidayExcel}
         onExportPdf={handleExportHolidayPdf}
         exportLoading={isLoading}

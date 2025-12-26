@@ -147,11 +147,11 @@ export const WeekOffMappingMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchWeekOffMappingList = async (page: number = pagination.currentPage) => {
-    return await loadWeekOffMappings(page, filters);
+  const fetchWeekOffMappingList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadWeekOffMappings(page, filters, sort);
   }
 
-  const loadWeekOffMappings = async (page: number, filterParams: FilterInfo) => {
+  const loadWeekOffMappings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -299,12 +299,14 @@ export const WeekOffMappingMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
+
+  const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sortInfo);
 
-    fetchWeekOffMappingList(1);
-  }
+    loadWeekOffMappings(1, filters, sort);
+
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -832,7 +834,7 @@ export const WeekOffMappingMaster: React.FC = () => {
         isShowImportButton={false}
 
         // EXPORT 
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && weekOffMappingListForTable.length > 0}
         onExportExcel={handleExportWeekOffMappingExcel}
         onExportPdf={handleExportWeekOffMappingPdf}
         exportLoading={isLoading}
@@ -846,7 +848,6 @@ export const WeekOffMappingMaster: React.FC = () => {
         pagination={weekOffMappingMasterPaginationInfo}
         emptyMessage="No Week Off Mappings Found"
         fixedHeight={true}
-        maxHeight="calc(100vh - 200px)"
         recordsPerPage={20}
         className="flex-1"
         sortInfo={sortInfo}

@@ -135,11 +135,11 @@ export const Tenant: React.FC = () => {
   //#endregion
 
   //#region DATA LOAD
-  const fetchTenantList = async (page: number = pagination.currentPage) => {
-    return await loadTenants(page, filters, buildingId);
+  const fetchTenantList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadTenants(page, filters, buildingId, sort);
   };
 
-  const loadTenants = async (page: number, filterParams: FilterInfo, buildingId: number) => {
+  const loadTenants = async (page: number, filterParams: FilterInfo, buildingId: number, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -289,8 +289,8 @@ export const Tenant: React.FC = () => {
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
-    fetchTenantList(1);
-  }, [fetchTenantList]);
+    loadTenants(1, filters, buildingId, sort);
+  }, [loadTenants, filters]);
 
   const tenantPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -317,10 +317,10 @@ export const Tenant: React.FC = () => {
           filters,
           sortInfo,
           searchTerm,
-          tenantId:row.TenantId,
+          tenantId: row.TenantId,
           buildingId,
           buildingName,
-          tenantName:row.FlatNumber,
+          tenantName: row.FlatNumber,
         },
       },
     });
@@ -341,6 +341,7 @@ export const Tenant: React.FC = () => {
           searchTerm,
           tenantId: row.TenantId,
           buildingId: row.BuildingId,
+          buildingName,
           projectId: projectId,
           tenantName: row.FlatNumber,
 
@@ -678,7 +679,7 @@ export const Tenant: React.FC = () => {
           setTempFilters(filters);
           setShowFilterPopup(true);
         }}
-        isShowCustomizeButton
+        isShowCustomizeButton={Number(buildingId) > 0 ? true : false}
         onCustomize={() => setIsShowCustomizeTenantColumnsModal(true)}
         // ADD
         isShowAddButton={canAction && Number(buildingId) > 0 ? true : false}
@@ -687,12 +688,12 @@ export const Tenant: React.FC = () => {
         onAdd={handleAddTenantModal}
 
         // IMPORT
-        isShowImportButton={canAction}
+        isShowImportButton={false}
         onUploadExcel={handleExcelImportTenant}
         onDownloadSampleExcel={handleDownloadExcelSampleTenant}
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && Number(buildingId) > 0 && tenantsForTable.length > 0 ? true : false}
         onExportExcel={handleExportTenantExcel}
         onExportPdf={handleExportTenantPdf}
         exportLoading={isLoading}

@@ -112,11 +112,11 @@ export const AssetMappingMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchAssetMappingMasterList = async (page: number = pagination.currentPage) => {
-    return await loadAssetMappings(page, filters);
+  const fetchAssetMappingMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadAssetMappings(page, filters,sort);
   }
 
-  const loadAssetMappings = async (page: number, filterParams: FilterInfo) => {
+  const loadAssetMappings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -261,13 +261,13 @@ export const AssetMappingMaster: React.FC = () => {
   }, []);
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = useCallback((sortInfo: SortInfo) => {
+ const handleSortColumn = useCallback((sort: SortInfo) => {
 
-    setSortInfo(sortInfo);
+    setSortInfo(sort);
 
-    fetchAssetMappingMasterList(1);
+    loadAssetMappings(1,filters,sort);
 
-  }, []);
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -588,7 +588,7 @@ export const AssetMappingMaster: React.FC = () => {
 
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && AssetMappingsForTable.length> 0}
         onExportExcel={handleExportAssetMappingExcel}
         onExportPdf={handleExportAssetMappingPdf}
         exportLoading={isLoading}

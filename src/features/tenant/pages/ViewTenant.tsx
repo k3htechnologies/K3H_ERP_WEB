@@ -431,29 +431,29 @@ export const ViewTenant: React.FC = () => {
                         </div>
 
                     </div>
+                    {parkingList.length > 0 ?
+                        <div className="mt-6">
+                            <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                                <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
+                                    Parking Details</h4>
 
-                    <div className="mt-6">
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                                Parking Details</h4>
+                                <div className="pt-2">
 
-                            <div className="pt-2">
-
-                                <div className="w-full">
-                                    <DataTable
-                                        data={parkingList}
-                                        columns={parkingColumns}
-                                        emptyMessage="No Parking Data found"
-                                        fixedHeight={false}
-                                        recordsPerPage={20}
-                                        className="min-w-full"
-                                        aria-label="Parking list"
-                                    />
+                                    <div className="w-full">
+                                        <DataTable
+                                            data={parkingList}
+                                            columns={parkingColumns}
+                                            emptyMessage="No Parking Data found"
+                                            fixedHeight={false}
+                                            recordsPerPage={20}
+                                            className="min-w-full"
+                                            aria-label="Parking list"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        </section>
-                    </div>
-
+                            </section>
+                        </div>
+                        : ""}
                 </>
             )}
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { THEME } from "@/core/constants/theme";
 
 export interface DropdownOptions {
@@ -8,66 +8,145 @@ export interface DropdownOptions {
 
 interface MultiSelectPaginationProps {
   label?: string;
-  options: DropdownOptions[];
+  options?: DropdownOptions[]; // optional when using dataFetchCallBack
   selectedValues: (string | number)[];
   required?: boolean;
   onChange: (updatedSelectedValues: (string | number)[]) => void;
   disabled?: boolean;
-  hasSubmitted?:boolean;
-
+  hasSubmitted?: boolean;
+  style?: React.CSSProperties;
+  dataFetchCallBack?: (
+    pageNumber: number,
+    params?: { value?: string }
+  ) => Promise<{ totalNumberOfRecord: number; itemList: DropdownOptions[] }>;
 }
 
 const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   label,
-  options,
+  options: propOptions = [],
   selectedValues,
   hasSubmitted = false,
   required = false,
   onChange,
   disabled = false,
+  style,
+  dataFetchCallBack,
 }) => {
   const theme = THEME;
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredOptions, setFilteredOptions] = useState<DropdownOptions[]>(options);
+  const [options, setOptions] = useState<DropdownOptions[]>(propOptions || []);
+  const [filteredOptions, setFilteredOptions] = useState<DropdownOptions[]>(propOptions || []);
   const [error, setError] = useState<string | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const hasSelections = selectedValues.length > 0;
 
-  // Filter options based on search input
+  const fetchOptions = useCallback(
+    async (term: string) => {
+      if (!dataFetchCallBack) return;
+      try {
+        setLoading(true);
+        const result = await dataFetchCallBack(1, { value: term });
+        const list = Array.isArray(result?.itemList) ? result.itemList : [];
+
+        // Merge with propOptions (initialOptions) to ensure selected options are included
+        const mergedOptions: DropdownOptions[] = [...(propOptions || [])];
+        list.forEach((newOpt) => {
+          if (!mergedOptions.some((opt) => String(opt.value) === String(newOpt.value))) {
+            mergedOptions.push(newOpt);
+          }
+        });
+
+        setOptions(mergedOptions);
+        setFilteredOptions(mergedOptions);
+      } catch (err) {
+        console.error("MultiSelectPagination fetch error:", err);
+        // On error, at least keep the initialOptions
+        setOptions(propOptions || []);
+        setFilteredOptions(propOptions || []);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [dataFetchCallBack, propOptions]
+  );
+
+  // Filter options based on search input (local mode)
   useEffect(() => {
+    if (dataFetchCallBack) return;
     const lowerSearch = searchTerm.toLowerCase();
-    const filtered = options.filter((opt) =>
+    const filtered = (options || []).filter((opt) =>
       opt.label.toLowerCase().includes(lowerSearch)
     );
     setFilteredOptions(filtered);
-  }, [searchTerm, options]);
+  }, [searchTerm, options, dataFetchCallBack]);
 
-  // Validate required field on selection change
-  // useEffect(() => {
-  //   if (required && selectedValues.length === 0) {
-  //     setError(`${label || "This field"} is required`);
-  //   } else {
-  //     setError(undefined);
-  //   }
-  // }, [selectedValues, required, label]);
-useEffect(() => {
-  if (hasSubmitted) {
-    if (required && selectedValues.length === 0) {
-      setError(`${label || "This field"} is required`);
-    } else {
-      setError(undefined);
+  // Clear options when dataFetchCallBack changes (e.g., department filter changes)
+  useEffect(() => {
+    if (!dataFetchCallBack) return;
+    // Clear options when callback changes to force fresh fetch
+    setOptions([]);
+    setFilteredOptions([]);
+  }, [dataFetchCallBack]);
+
+  // Fetch remote options when open or search changes
+  useEffect(() => {
+    if (!dataFetchCallBack) return;
+    if (isOpen) {
+      fetchOptions(searchTerm);
     }
-  }
-}, [hasSubmitted, selectedValues, required, label]);
+  }, [dataFetchCallBack, fetchOptions, isOpen, searchTerm]);
+
+  // Sync when prop options change (local mode or merge with fetched options)
+  useEffect(() => {
+    if (dataFetchCallBack) {
+      // When using dataFetchCallBack, merge propOptions with existing options
+      if (propOptions && propOptions.length > 0) {
+        setOptions((current) => {
+          const merged = [...(propOptions || [])];
+          current.forEach((opt) => {
+            if (!merged.some((mOpt) => String(mOpt.value) === String(opt.value))) {
+              merged.push(opt);
+            }
+          });
+          return merged;
+        });
+        setFilteredOptions((current) => {
+          const merged = [...(propOptions || [])];
+          current.forEach((opt) => {
+            if (!merged.some((mOpt) => String(mOpt.value) === String(opt.value))) {
+              merged.push(opt);
+            }
+          });
+          return merged;
+        });
+      }
+      return;
+    }
+    setOptions(propOptions || []);
+    setFilteredOptions(propOptions || []);
+  }, [propOptions, dataFetchCallBack]);
+
+  useEffect(() => {
+    if (hasSubmitted) {
+      if (required && selectedValues.length === 0) {
+        setError(`${label || "This field"} is required`);
+      } else {
+        setError(undefined);
+      }
+    }
+  }, [hasSubmitted, selectedValues, required, label]);
 
   // Toggle selection of options
   const toggleSelect = (value: string | number) => {
-    const updated = selectedValues.includes(value)
-      ? selectedValues.filter((v) => v !== value)
-      : [...selectedValues, value];
+    // Ensure type-safe comparison
+    const isCurrentlySelected = selectedValues.some(sv => String(sv) === String(value));
+    const updated = isCurrentlySelected
+      ? selectedValues.filter((v) => String(v) !== String(value))
+      : [...selectedValues, String(value)];
 
     onChange(updated);
 
@@ -77,8 +156,6 @@ useEffect(() => {
       setError(undefined);
     }
   };
-
-
 
   // Handle search input changes
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +176,7 @@ useEffect(() => {
 
   // Selected labels and visible tags (up to 4)
   const selectedLabels = options
-    .filter((opt) => selectedValues.includes(opt.value))
+    .filter((opt) => selectedValues.some(sv => String(sv) === String(opt.value)))
     .map((opt) => opt.label);
 
   const visibleTags = selectedLabels.slice(0, 4);
@@ -110,7 +187,6 @@ useEffect(() => {
       ref={dropdownRef}
       style={{
         width: "100%",
-        maxWidth: "400px",
         position: "relative",
       }}
     >
@@ -144,7 +220,7 @@ useEffect(() => {
           fontSize: theme.fontSize.md,
           borderRadius: theme.borderRadius.md,
           backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
-          border: `1px solid ${theme.colors.border}`,
+          border: error ? `1px solid ${theme.colors.error}` : `1px solid ${theme.colors.border}`,
           cursor: disabled ? "not-allowed" : "pointer",
           color: theme.colors.text,
           userSelect: "none",
@@ -158,6 +234,7 @@ useEffect(() => {
           maxWidth: "100%",
           minWidth: "150px",
           marginLeft: "0",
+          ...style,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" }}>
@@ -194,6 +271,7 @@ useEffect(() => {
             placeholder={hasSelections ? "" : "Search..."}
             value={searchTerm}
             onChange={handleSearch}
+            onClick={(e) => e.stopPropagation()}
             disabled={disabled}
             style={{
               flex: 1,
@@ -238,8 +316,10 @@ useEffect(() => {
             position: "absolute",
             top: "calc(100% + 4px)",
             left: 0,
+            right: 0,
             width: "100%",
-            maxHeight: "200px",
+            minWidth: "100%",
+            maxHeight: "300px",
             overflow: "hidden",
             border: `1px solid ${theme.colors.border}`,
             borderRadius: theme.borderRadius.sm,
@@ -249,80 +329,70 @@ useEffect(() => {
             background: theme.colors.background,
           }}
         >
+          {/* Action links: Select All (left) and Clear All (right) */}
           <div
             style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              zIndex: 1000,
-              backgroundColor: theme.colors.background,
-              border: `1px solid ${theme.colors.primary}40`,
-              borderRadius: theme.borderRadius.md,
-              boxShadow: theme.shadows.lg,
-              display: "flex",
-              justifyContent: "space-between",
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              alignItems: "center",
               padding: "8px 10px",
               borderBottom: `1px solid ${theme.colors.border}`,
+              columnGap: "12px",
             }}
           >
-            <button
-              onClick={() => onChange(options.map((opt) => opt.value))}
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange(options.map((opt) => opt.value));
+                setError(undefined);
+              }}
               style={{
-                padding: "6px 10px",
-                backgroundColor: "#3b82f6",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
+                justifySelf: "start",
                 cursor: "pointer",
                 fontSize: "13px",
+                color: "#6b7280",
+                transition: theme.transitions.fast,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#4b5563";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#6b7280";
               }}
             >
               Select All
-            </button>
-            <button
-              onClick={() => onChange([])}
+            </span>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange([]);
+                if (required) {
+                  setError(`${label || "This field"} is required`);
+                } else {
+                  setError(undefined);
+                }
+              }}
               style={{
-                padding: "6px 10px",
-                backgroundColor: "#ef4444",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
+                justifySelf: "end",
                 cursor: "pointer",
                 fontSize: "13px",
+                color: "#6b7280",
+                transition: theme.transitions.fast,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#4b5563";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#6b7280";
               }}
             >
               Clear All
-            </button>
+            </span>
           </div>
 
-          <div style={{ maxHeight: "150px", overflowY: "auto", padding: "8px 10px" }}>
-            {filteredOptions.length > 0 ? (
-              filteredOptions.map((opt) => (
-                <div
-                  key={opt.value}
-                  style={{
-                    marginBottom: "6px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "8px 10px",
-                    borderRadius: theme.borderRadius.sm,
-                    backgroundColor: selectedValues.includes(opt.value)
-                      ? theme.colors.hover
-                      : theme.colors.background,
-                    cursor: disabled ? "not-allowed" : "pointer",
-                    color: theme.colors.text,
-                    fontSize: theme.fontSize.sm,
-                    transition: theme.transitions.normal,
-                  }}
-                  onClick={() => !disabled && toggleSelect(opt.value)}
-                >
-                  <span>{opt.label}</span>
-                  {selectedValues.includes(opt.value) && (
-                    <span style={{ color: theme.colors.primary }}>✓</span>
-                  )}
-                </div>
-              ))
-            ) : (
+          {/* Options list */}
+          <div style={{ maxHeight: "200px", overflowY: "auto", padding: "8px 10px" }}>
+            {loading && options.length === 0 && (
               <div
                 style={{
                   padding: theme.spacing.sm,
@@ -330,9 +400,65 @@ useEffect(() => {
                   color: theme.colors.textLight,
                 }}
               >
-                No records found
+                Loading...
               </div>
             )}
+            {!loading && filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => {
+                // Ensure type matching for comparison (convert both to string)
+                const isSelected = selectedValues.some(sv => String(sv) === String(opt.value));
+                return (
+                  <div
+                    key={opt.value}
+                    style={{
+                      marginBottom: "6px",
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "8px 10px",
+                      borderRadius: theme.borderRadius.sm,
+                      backgroundColor: isSelected ? "#e6f0ff" : theme.colors.background,
+                      cursor: disabled ? "not-allowed" : "pointer",
+                      color: theme.colors.textSecondary,
+                      fontSize: theme.fontSize.sm,
+                      transition: theme.transitions.normal,
+                    }}
+                    onClick={() => !disabled && toggleSelect(opt.value)}
+                    onMouseEnter={(e) => {
+                      if (!disabled && !isSelected) {
+                        e.currentTarget.style.backgroundColor = "#e6f0ff";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!disabled && !isSelected) {
+                        e.currentTarget.style.backgroundColor = theme.colors.background;
+                      }
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      readOnly
+                      style={{
+                        marginRight: 8,
+                        accentColor: theme.colors.primary,
+                        cursor: "pointer",
+                      }}
+                    />
+                    <span>{opt.label}</span>
+                  </div>
+                );
+              })
+            ) : !loading ? (
+              <div
+                style={{
+                  padding: theme.spacing.sm,
+                  textAlign: "center",
+                  color: theme.colors.textLight,
+                }}
+              >
+                {dataFetchCallBack ? "No options available" : "No records found"}
+              </div>
+            ) : null}
           </div>
         </div>
       )}

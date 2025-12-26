@@ -248,7 +248,7 @@ export const Leave: React.FC = () => {
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Export failed' })
+        addToast({ type: 'error', title: error.message })
       },
       undefined,
       'Preparing Export...'
@@ -332,17 +332,28 @@ export const Leave: React.FC = () => {
       async () => {
         const response = await LeaveService.apiCallDeleteLeave(payload);
         if (E.isRight(response)) {
-          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] || 'Deleted successfully' });
-          setIsConfirmationDialogBoxOpen(false);
-          setSelectedLeaveToDelete(null);
-          fetchLeaveList();
+          // Check backend ErrorMessage first
+          if (response.right.ErrorMessage && response.right.ErrorMessage.length > 0) {
+            addToast({ type: 'error', title: response.right.ErrorMessage[0] });
+          } else if (response.right.WarningMessage && response.right.WarningMessage.length > 0) {
+            addToast({ type: 'warning', title: response.right.WarningMessage[0] });
+            setIsConfirmationDialogBoxOpen(false);
+            setSelectedLeaveToDelete(null);
+            fetchLeaveList();
+          } else {
+            // Success - use backend SuccessMessage
+            addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+            setIsConfirmationDialogBoxOpen(false);
+            setSelectedLeaveToDelete(null);
+            fetchLeaveList();
+          }
         } else {
-          addToast({ type: 'error', title: response.left.message || 'Delete failed' });
+          addToast({ type: 'error', title: response.left.message });
         }
         return response;
       },
       undefined,
-      (error: any) => addToast({ type: 'error', title: error?.message || 'Delete failed' }),
+      (error: any) => addToast({ type: 'error', title: error?.message }),
       undefined,
       'Deleting Leave'
     );

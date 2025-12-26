@@ -351,36 +351,60 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                 const response = await leaveCreditDebitService.apiCallAddUpdateLeaveCreditDebit(payload);
 
                 if (E.isRight(response)) {
+                    const apiResponse = response.right;
+                    
+                    // Check backend ErrorMessage first
+                    if (apiResponse.ErrorMessage && apiResponse.ErrorMessage.length > 0) {
+                        addToast({ type: "error", title: apiResponse.ErrorMessage[0] });
+                    } else if (apiResponse.WarningMessage && apiResponse.WarningMessage.length > 0) {
+                        addToast({ type: "warning", title: apiResponse.WarningMessage[0] });
+                        // Get list state from navigation if available, otherwise use defaults
+                        const locationState = location.state as {
+                            listState?: {
+                                page?: number;
+                                filters?: any;
+                                sortInfo?: any;
+                                searchTerm?: string;
+                            };
+                        } | null;
 
-                    addToast({ type: "success", title: formData.LeaveCreditDebitId ? "Leave Credit/Debit details updated successfully" : "New Leave Credit/Debit added successfully" });
-
-
-                    // Get list state from navigation if available, otherwise use defaults
-                    const locationState = location.state as {
-                        listState?: {
-                            page?: number;
-                            filters?: any;
-                            sortInfo?: any;
-                            searchTerm?: string;
+                        const listState = locationState?.listState || {
+                            page: 1,
+                            filters: {},
+                            sortInfo: undefined,
+                            searchTerm: '',
                         };
-                    } | null;
 
-                    const listState = locationState?.listState || {
-                        page: 1,
-                        filters: {},
-                        sortInfo: undefined,
-                        searchTerm: '',
-                    };
+                        navigate("/leaveCreditDebit", {
+                            state: { listState }
+                        });
+                    } else {
+                        // Success - use backend SuccessMessage
+                        addToast({ type: "success", title: apiResponse.SuccessMessage?.[0] });
 
-                    navigate("/leaveCreditDebit", {
-                        state: { listState }
-                    });
+                        // Get list state from navigation if available, otherwise use defaults
+                        const locationState = location.state as {
+                            listState?: {
+                                page?: number;
+                                filters?: any;
+                                sortInfo?: any;
+                                searchTerm?: string;
+                            };
+                        } | null;
 
+                        const listState = locationState?.listState || {
+                            page: 1,
+                            filters: {},
+                            sortInfo: undefined,
+                            searchTerm: '',
+                        };
 
+                        navigate("/leaveCreditDebit", {
+                            state: { listState }
+                        });
+                    }
                 } else {
-
                     addToast({ type: "error", title: response.left?.message });
-
                 }
                 return response;
             },

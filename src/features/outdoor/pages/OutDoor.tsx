@@ -4,8 +4,8 @@ import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type {
-    FilterWithPaginationOutDoor,
-    OutDoorMasterData,
+  FilterWithPaginationOutDoor,
+  OutDoorMasterData,
 } from '@/features/outdoor/models/OutDoorModel';
 import { OutDoorDataService } from '@/features/outdoor/services/OutDoorDataService';
 import { formatDate_dd_MonthName_yy, formatTimeFromDateTime } from '@/core/utils/dateFormat';
@@ -265,7 +265,7 @@ export const OutDoor: React.FC = () => {
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Export failed' })
+        addToast({ type: 'error', title: error.message })
       },
       undefined,
       'Preparing Export...'
@@ -412,54 +412,47 @@ export const OutDoor: React.FC = () => {
           if (E.isRight(response)) {
             const apiResponse = response.right;
 
-            // Check if API response has error messages
+            // Check backend ErrorMessage first (same pattern as ProjectMaster)
             if (apiResponse.ErrorMessage && apiResponse.ErrorMessage.length > 0) {
-              const errorMessage = apiResponse.ErrorMessage[0];
               addToast({
                 type: "error",
-                title: errorMessage
+                title: apiResponse.ErrorMessage[0]
               });
             } else if (apiResponse.WarningMessage && apiResponse.WarningMessage.length > 0) {
-              const warningMessage = apiResponse.WarningMessage[0];
               addToast({
                 type: "warning",
-                title: warningMessage
+                title: apiResponse.WarningMessage[0]
               });
               await loadOutDoors(pagination.currentPage, filters);
-            } else if (!apiResponse.IsSuccess) {
-              addToast({
-                type: "error",
-                title: "Failed to punch in/out"
-              });
             } else {
+              // Success - use backend SuccessMessage
               await loadOutDoors(pagination.currentPage, filters);
-              const successMessage = apiResponse.SuccessMessage?.[0] || (!item.PunchIn ? "Punched In Successfully" : "Punched Out Successfully");
               addToast({
                 type: "success",
-                title: successMessage
+                title: apiResponse.SuccessMessage?.[0]
               });
             }
           } else {
+            // Network/HTTP error - use backend error message (same pattern as ProjectMaster)
             addToast({
               type: "error",
-              title: response.left.message || "Failed to punch in/out"
+              title: response.left.message
             });
           }
-        } catch (error: unknown) {
-          const errorMessage = (error as { message?: string })?.message || "Failed to get location or punch in/out";
+        } catch (error: any) {
           addToast({
             type: "error",
-            title: errorMessage
+            title: error.message
           });
         } finally {
           setPunchingItemId(null);
         }
       },
       undefined,
-      (error: unknown) => {
+      (error: any) => {
         addToast({
           type: "error",
-          title: (error as { message?: string })?.message || "Failed to punch in/out"
+          title: error.message
         });
         setPunchingItemId(null);
       },
@@ -495,47 +488,41 @@ export const OutDoor: React.FC = () => {
         if (E.isRight(response)) {
           const apiResponse = response.right;
 
-          // Check if API response has error messages
+          // Check backend ErrorMessage first (same pattern as ProjectMaster)
           if (apiResponse.ErrorMessage && apiResponse.ErrorMessage.length > 0) {
-            const errorMessage = apiResponse.ErrorMessage[0];
             addToast({
               type: "error",
-              title: errorMessage
+              title: apiResponse.ErrorMessage[0]
             });
           } else if (apiResponse.WarningMessage && apiResponse.WarningMessage.length > 0) {
-            const warningMessage = apiResponse.WarningMessage[0];
             addToast({
               type: "warning",
-              title: warningMessage
+              title: apiResponse.WarningMessage[0]
             });
             await loadOutDoors(pagination.currentPage, filters);
             handleCloseConclusionModal();
-          } else if (!apiResponse.IsSuccess) {
-            addToast({
-              type: "error",
-              title: "Failed to save conclusion"
-            });
           } else {
+            // Success - use backend SuccessMessage
             await loadOutDoors(pagination.currentPage, filters);
-            const successMessage = apiResponse.SuccessMessage?.[0] || "Conclusion saved successfully";
             addToast({
               type: "success",
-              title: successMessage
+              title: apiResponse.SuccessMessage?.[0]
             });
             handleCloseConclusionModal();
           }
         } else {
+          // Network/HTTP error - use backend error message (same pattern as ProjectMaster)
           addToast({
             type: "error",
-            title: response.left.message || "Failed to save conclusion"
+            title: response.left.message
           });
         }
       },
       undefined,
-      (error: unknown) => {
+      (error: any) => {
         addToast({
           type: "error",
-          title: (error as { message?: string })?.message || "Failed to save conclusion"
+          title: error.message
         });
       },
       undefined,
@@ -605,17 +592,28 @@ export const OutDoor: React.FC = () => {
       async () => {
         const response = await OutDoorDataService.apiCallDeleteOutDoor(payload);
         if (E.isRight(response)) {
-          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] || 'Deleted successfully' });
-          setIsConfirmationDialogBoxOpen(false);
-          setSelectedOutdoorToDelete(null);
-          loadOutDoors(pagination.currentPage, filters);
+          // Check backend ErrorMessage first
+          if (response.right.ErrorMessage && response.right.ErrorMessage.length > 0) {
+            addToast({ type: 'error', title: response.right.ErrorMessage[0] });
+          } else if (response.right.WarningMessage && response.right.WarningMessage.length > 0) {
+            addToast({ type: 'warning', title: response.right.WarningMessage[0] });
+            setIsConfirmationDialogBoxOpen(false);
+            setSelectedOutdoorToDelete(null);
+            loadOutDoors(pagination.currentPage, filters);
+          } else {
+            // Success - use backend SuccessMessage
+            addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+            setIsConfirmationDialogBoxOpen(false);
+            setSelectedOutdoorToDelete(null);
+            loadOutDoors(pagination.currentPage, filters);
+          }
         } else {
-          addToast({ type: 'error', title: response.left.message || 'Delete failed' });
+          addToast({ type: 'error', title: response.left.message });
         }
         return response;
       },
       undefined,
-      (error: any) => addToast({ type: 'error', title: error?.message || 'Delete failed' }),
+      (error: any) => addToast({ type: 'error', title: error?.message }),
       undefined,
       'Deleting Outdoor'
     );
@@ -668,268 +666,268 @@ export const OutDoor: React.FC = () => {
       />
       <div className="p-4">
 
-          {outDoorList.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No outdoor records found</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {outDoorList.map((item) => {
-                const isMeetingStarted = canPunchInOut(item.OutDoorDate, item.OutDoorTime);
-                const hasMissed = hasMissedPunch(item);
-                const hasMissedPrevious = hasMissedPunchInPreviousDate(item);
+        {outDoorList.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No outdoor records found</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
+            {outDoorList.map((item) => {
+              const isMeetingStarted = canPunchInOut(item.OutDoorDate, item.OutDoorTime);
+              const hasMissed = hasMissedPunch(item);
+              const hasMissedPrevious = hasMissedPunchInPreviousDate(item);
 
-                const isPunchedInAndOut = item.PunchIn && item.PunchOut;
+              const isPunchedInAndOut = item.PunchIn && item.PunchOut;
 
-                return (
-                  <ExpandableCard
-                    key={item.OutdoorId}
-                    title={
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex-1">
-                          <h3 className="text-sm font-medium text-gray-900 mb-1">
-                            {formatDate_dd_MonthName_yy(item.OutDoorDate)}
-                          </h3>
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs text-gray-600 flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5" />
-                              {formatTimeFromDateTime(item.OutDoorTime) || 'N/A'}
-                            </span>
-                          </div>
+              return (
+                <ExpandableCard
+                  key={item.OutdoorId}
+                  title={
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium text-gray-900 mb-1">
+                          {formatDate_dd_MonthName_yy(item.OutDoorDate)}
+                        </h3>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-gray-600 flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            {formatTimeFromDateTime(item.OutDoorTime) || 'N/A'}
+                          </span>
                         </div>
-
                       </div>
-                    }
-                    showline={true}
-                    customizedIcon={
-                      <div className="flex items-center gap-2">
-                        {/* Missed Punch Icon */}
-                        {hasMissed && (
-                          <div title={!item.PunchIn ? "Punch In missed" : "Punch Out missed"}>
-                            <AlertTriangle className="w-5 h-5 text-red-500" />
-                          </div>
-                        )}
 
-                        {/* Conclusion Button */}
-                        {isPunchedInAndOut && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenConclusionModal(item);
-                            }}
-                            className="p-1.5 rounded-lg hover:bg-white/50 transition-colors"
-                            title={item.Conclusion ? "Edit Conclusion" : "Add Conclusion"}
-                          >
-                            <ClipboardCheck
-                              className={`w-5 h-5 ${item.Conclusion ? 'text-purple-600' : 'text-gray-600'}`}
+                    </div>
+                  }
+                  showline={true}
+                  customizedIcon={
+                    <div className="flex items-center gap-2">
+                      {/* Missed Punch Icon */}
+                      {hasMissed && (
+                        <div title={!item.PunchIn ? "Punch In missed" : "Punch Out missed"}>
+                          <AlertTriangle className="w-5 h-5 text-red-500" />
+                        </div>
+                      )}
+
+                      {/* Conclusion Button */}
+                      {isPunchedInAndOut && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenConclusionModal(item);
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-white/50 transition-colors"
+                          title={item.Conclusion ? "Edit Conclusion" : "Add Conclusion"}
+                        >
+                          <ClipboardCheck
+                            className={`w-5 h-5 ${item.Conclusion ? 'text-purple-600' : 'text-gray-600'}`}
+                          />
+                        </button>
+                      )}
+
+                      {/* Punch In/Out Button */}
+                      {!isPunchedInAndOut && isMeetingStarted && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePunchInOut(item);
+                          }}
+                          disabled={punchingItemId === item.OutdoorId}
+                          className="p-1.5 rounded-lg hover:bg-white/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title={!item.PunchIn ? "Punch In" : "Punch Out"}
+                        >
+                          {punchingItemId === item.OutdoorId ? (
+                            <div className="w-5 h-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Fingerprint
+                              className={`w-5 h-5 ${!item.PunchIn ? 'text-green-600' : 'text-blue-600'}`}
                             />
-                          </button>
-                        )}
+                          )}
+                        </button>
+                      )}
 
-                        {/* Punch In/Out Button */}
-                        {!isPunchedInAndOut && isMeetingStarted && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePunchInOut(item);
-                            }}
-                            disabled={punchingItemId === item.OutdoorId}
-                            className="p-1.5 rounded-lg hover:bg-white/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={!item.PunchIn ? "Punch In" : "Punch Out"}
-                          >
-                            {punchingItemId === item.OutdoorId ? (
-                              <div className="w-5 h-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                              <Fingerprint
-                                className={`w-5 h-5 ${!item.PunchIn ? 'text-green-600' : 'text-blue-600'}`}
-                              />
-                            )}
-                          </button>
-                        )}
+                      {/* Delete Button */}
+                      {canAction && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleConfirmationDialogBoxOpen(item);
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-white/50 transition-colors"
+                          title="Delete Outdoor"
+                        >
+                          <Trash2 className="w-5 h-5 text-red-600" />
+                        </button>
+                      )}
+                    </div>
 
-                        {/* Delete Button */}
-                        {canAction && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleConfirmationDialogBoxOpen(item);
-                            }}
-                            className="p-1.5 rounded-lg hover:bg-white/50 transition-colors"
-                            title="Delete Outdoor"
-                          >
-                            <Trash2 className="w-5 h-5 text-red-600" />
-                          </button>
-                        )}
-                      </div>
-
-                    }
-                    child={
-                      <div className="space-y-4">
-                        {/* Left Column */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
-                          <div className="space-y-0">
-                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Name</p>
-                                <p className="text-sm font-medium text-gray-900">{item.CompanyName || 'N/A'}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Address</p>
-                                <p className="text-sm font-medium text-gray-900">{item.CompanyAddress || 'N/A'}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Purpose</p>
-                                <div className="text-sm font-medium text-gray-900">
-                                  <TooltipText
-                                    text={item.Purpose || 'N/A'}
-                                    maxWidth="300px"
-                                    tooltipThreshold={30}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-
-                            {item.Conclusion && (
-                              <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                                <div className="flex-1">
-                                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Conclusion</p>
-                                  <p className="text-sm font-medium text-gray-600">{item.Conclusion}</p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Right Column */}
-                          <div className="space-y-0">
-                            {item.DepartmentName && (
-                              <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                                <div className="flex-1">
-                                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Department</p>
-                                  <p className="text-sm font-medium text-gray-900">{item.DepartmentName}</p>
-                                </div>
-                              </div>
-                            )}
-
-                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Accompanied By</p>
-                                <p className="text-sm font-medium text-gray-900">{item.AccompaniedByName || 'N/A'}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Requested By</p>
-                                <p className="text-sm font-medium text-gray-900">{item.CreatedBy || 'N/A'}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center justify-end pt-2">
-                              <button
-                                onClick={() => navigate(`/outdoor/add/${item.OutdoorId}`)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm min-w-[110px] justify-center"
-                              >
-                                <Edit className="w-4 h-4" />
-                                Edit
-                              </button>
+                  }
+                  child={
+                    <div className="space-y-4">
+                      {/* Left Column */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+                        <div className="space-y-0">
+                          <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Name</p>
+                              <p className="text-sm font-medium text-gray-900">{item.CompanyName || 'N/A'}</p>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Punch In/Out Section */}
-                        {(item.PunchIn || item.PunchOut || hasMissedPrevious) && (
-                          <div className="border-t border-gray-200 pt-3">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                              <Fingerprint className="w-4 h-4" />
-                              Attendance
-                            </h4>
-                            {hasMissedPrevious ? (
-                              <div className="p-3 bg-red-50 rounded-lg border border-red-200">
-                                <p className="text-sm font-medium text-red-700">Attendance is not marked</p>
-                              </div>
-                            ) : (
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {item.PunchIn && (
-                                  <div className="p-3 bg-green-50 rounded-lg border border-green-100">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                      <p className="text-xs font-semibold text-green-700 uppercase">Punch In</p>
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-900 mb-1">
-                                      {formatTimeFromDateTime(item.PunchIn) || 'N/A'}
-                                    </p>
-                                    {item.PunchInAddress && (
-                                      <p className="text-xs text-gray-600 flex items-start gap-1">
-                                        <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                                        <span className="line-clamp-2">{item.PunchInAddress}</span>
-                                      </p>
-                                    )}
-                                  </div>
-                                )}
-                                {item.PunchOut && (
-                                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                      <p className="text-xs font-semibold text-blue-700 uppercase">Punch Out</p>
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-900 mb-1">
-                                      {formatTimeFromDateTime(item.PunchOut) || 'N/A'}
-                                    </p>
-                                    {item.PunchOutAddress && (
-                                      <p className="text-xs text-gray-600 flex items-start gap-1">
-                                        <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                                        <span className="line-clamp-2">{item.PunchOutAddress}</span>
-                                      </p>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Visiting Card Section */}
-                        <div className="border-t border-gray-200 pt-3">
-                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center gap-2.5">
-                              <FileText className="w-4 h-4 text-gray-400" />
-                              <div>
-                                <p className="text-sm font-medium text-gray-700">Visiting Card</p>
-                                <p className="text-xs text-gray-500">Document attachment</p>
-                              </div>
+                          <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Address</p>
+                              <p className="text-sm font-medium text-gray-900">{item.CompanyAddress || 'N/A'}</p>
                             </div>
-                            {item.VisitingCardURL ? (() => {
-                              const cardUrls = parseDocumentUrls(item.VisitingCardURL);
-                              return (
-                                <MultiImageViewer
-                                  images={cardUrls}
-                                  title="Visiting Card"
-                                  triggerLabel={
-                                    <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm">
-                                      <ExternalLink className="w-3.5 h-3.5" />
-                                      View Card{cardUrls.length > 1 ? ` (${cardUrls.length})` : ''}
-                                    </button>
-                                  }
+                          </div>
+
+                          <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Purpose</p>
+                              <div className="text-sm font-medium text-gray-900">
+                                <TooltipText
+                                  text={item.Purpose || 'N/A'}
+                                  maxWidth="300px"
+                                  tooltipThreshold={30}
                                 />
-                              );
-                            })() : (
-                              <span className="text-xs text-gray-400 italic">Not Uploaded</span>
-                            )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {item.Conclusion && (
+                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
+                              <div className="flex-1">
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Conclusion</p>
+                                <p className="text-sm font-medium text-gray-600">{item.Conclusion}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Right Column */}
+                        <div className="space-y-0">
+                          {item.DepartmentName && (
+                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
+                              <div className="flex-1">
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Department</p>
+                                <p className="text-sm font-medium text-gray-900">{item.DepartmentName}</p>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Accompanied By</p>
+                              <p className="text-sm font-medium text-gray-900">{item.AccompaniedByName || 'N/A'}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Requested By</p>
+                              <p className="text-sm font-medium text-gray-900">{item.CreatedBy || 'N/A'}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-end pt-2">
+                            <button
+                              onClick={() => navigate(`/outdoor/add/${item.OutdoorId}`)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm min-w-[110px] justify-center"
+                            >
+                              <Edit className="w-4 h-4" />
+                              Edit
+                            </button>
                           </div>
                         </div>
                       </div>
-                    }
-                  />
-                );
-              })}
-            </div>
-          )}
+
+                      {/* Punch In/Out Section */}
+                      {(item.PunchIn || item.PunchOut || hasMissedPrevious) && (
+                        <div className="border-t border-gray-200 pt-3">
+                          <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                            <Fingerprint className="w-4 h-4" />
+                            Attendance
+                          </h4>
+                          {hasMissedPrevious ? (
+                            <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                              <p className="text-sm font-medium text-red-700">Attendance is not marked</p>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {item.PunchIn && (
+                                <div className="p-3 bg-green-50 rounded-lg border border-green-100">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <p className="text-xs font-semibold text-green-700 uppercase">Punch In</p>
+                                  </div>
+                                  <p className="text-sm font-medium text-gray-900 mb-1">
+                                    {formatTimeFromDateTime(item.PunchIn) || 'N/A'}
+                                  </p>
+                                  {item.PunchInAddress && (
+                                    <p className="text-xs text-gray-600 flex items-start gap-1">
+                                      <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                      <span className="line-clamp-2">{item.PunchInAddress}</span>
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                              {item.PunchOut && (
+                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <p className="text-xs font-semibold text-blue-700 uppercase">Punch Out</p>
+                                  </div>
+                                  <p className="text-sm font-medium text-gray-900 mb-1">
+                                    {formatTimeFromDateTime(item.PunchOut) || 'N/A'}
+                                  </p>
+                                  {item.PunchOutAddress && (
+                                    <p className="text-xs text-gray-600 flex items-start gap-1">
+                                      <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                      <span className="line-clamp-2">{item.PunchOutAddress}</span>
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Visiting Card Section */}
+                      <div className="border-t border-gray-200 pt-3">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center gap-2.5">
+                            <FileText className="w-4 h-4 text-gray-400" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">Visiting Card</p>
+                              <p className="text-xs text-gray-500">Document attachment</p>
+                            </div>
+                          </div>
+                          {item.VisitingCardURL ? (() => {
+                            const cardUrls = parseDocumentUrls(item.VisitingCardURL);
+                            return (
+                              <MultiImageViewer
+                                images={cardUrls}
+                                title="Visiting Card"
+                                triggerLabel={
+                                  <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm">
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                    View Card{cardUrls.length > 1 ? ` (${cardUrls.length})` : ''}
+                                  </button>
+                                }
+                              />
+                            );
+                          })() : (
+                            <span className="text-xs text-gray-400 italic">Not Uploaded</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  }
+                />
+              );
+            })}
+          </div>
+        )}
 
         <Pagination pagination={outDoorPaginationInfo} className="mt-4" />
       </div>

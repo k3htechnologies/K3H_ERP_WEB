@@ -161,17 +161,17 @@ export const AddUpdateOutDoorPage: React.FC = () => {
             }
 
           } else {
-            addToast({ type: "error", title: "Outdoor record not found" });
+            addToast({ type: "error", title: apiResponse.right.ErrorMessage?.[0] });
           }
         } else {
-          addToast({ type: "error", title: "Failed to load outdoor data" });
+          addToast({ type: "error", title: apiResponse.left.message });
         }
 
         return apiResponse;
       },
       undefined,
       (error: any) => {
-        addToast({ type: "error", title: error?.message || "Failed to load outdoor data" });
+        addToast({ type: "error", title: error?.message });
       },
       undefined,
       'Loading Outdoor Data'
@@ -345,36 +345,60 @@ export const AddUpdateOutDoorPage: React.FC = () => {
         const apiResponse = await OutDoorDataService.apiCallAddUpdateOutDoor(pushOutDoorFormData);
 
         if (E.isRight(apiResponse)) {
-          const isAdd = outdoorFormData.OutdoorId === 0;
-          if (isAdd) {
-            addToast({ type: 'success', title: 'Outdoor data added successfully' });
-          } else {
-            addToast({ type: 'success', title: 'Outdoor data updated successfully' });
-          }
-          navigate("/outdoor", {
-            state: {
-              listState: {
-                page: 1,
-                filters: {},
-                sortInfo: undefined,
-                searchTerm: ''
+          const response = apiResponse.right;
+          
+          // Check backend ErrorMessage first
+          if (response.ErrorMessage && response.ErrorMessage.length > 0) {
+            addToast({
+              type: "error",
+              title: response.ErrorMessage[0]
+            });
+          } else if (response.WarningMessage && response.WarningMessage.length > 0) {
+            addToast({
+              type: "warning",
+              title: response.WarningMessage[0]
+            });
+            navigate("/outdoor", {
+              state: {
+                listState: {
+                  page: 1,
+                  filters: {},
+                  sortInfo: undefined,
+                  searchTerm: ''
+                }
               }
-            }
-          });
+            });
+          } else {
+            // Success - use backend SuccessMessage
+            addToast({ 
+              type: 'success', 
+              title: response.SuccessMessage?.[0] 
+            });
+            navigate("/outdoor", {
+              state: {
+                listState: {
+                  page: 1,
+                  filters: {},
+                  sortInfo: undefined,
+                  searchTerm: ''
+                }
+              }
+            });
+          }
         } else {
           addToast({
             type: "error",
-            title: apiResponse.left.message || "Failed to save outdoor data",
+            title: apiResponse.left.message,
           });
         }
 
         return apiResponse;
       },
       undefined,
-      (error: unknown) => {
+      (error: any) => {
         addToast({
           type: "error",
-          title: (error as { message?: string })?.message || "Failed to save outdoor data",
+          title: error.message
         });
       },
       undefined,

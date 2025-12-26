@@ -334,17 +334,28 @@ export const LeaveCreditDebit: React.FC = () => {
       async () => {
         const response = await leaveCreditDebitService.apiCallDeleteLeaveCreditDebit(payload);
         if (E.isRight(response)) {
-          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] || 'Deleted successfully' });
-          setIsConfirmationDialogBoxOpen(false);
-          setSelectedLeaveCreditDebitToDelete(null);
-          loadLeaveCreditDebits(pagination.currentPage, filters);
+          // Check backend ErrorMessage first
+          if (response.right.ErrorMessage && response.right.ErrorMessage.length > 0) {
+            addToast({ type: 'error', title: response.right.ErrorMessage[0] });
+          } else if (response.right.WarningMessage && response.right.WarningMessage.length > 0) {
+            addToast({ type: 'warning', title: response.right.WarningMessage[0] });
+            setIsConfirmationDialogBoxOpen(false);
+            setSelectedLeaveCreditDebitToDelete(null);
+            loadLeaveCreditDebits(pagination.currentPage, filters);
+          } else {
+            // Success - use backend SuccessMessage
+            addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+            setIsConfirmationDialogBoxOpen(false);
+            setSelectedLeaveCreditDebitToDelete(null);
+            loadLeaveCreditDebits(pagination.currentPage, filters);
+          }
         } else {
-          addToast({ type: 'error', title: response.left.message || 'Delete failed' });
+          addToast({ type: 'error', title: response.left.message });
         }
         return response;
       },
       undefined,
-      (error: any) => addToast({ type: 'error', title: error?.message || 'Delete failed' }),
+      (error: any) => addToast({ type: 'error', title: error?.message || 'An error occurred' }),
       undefined,
       'Deleting Leave Credit / Debit'
     );

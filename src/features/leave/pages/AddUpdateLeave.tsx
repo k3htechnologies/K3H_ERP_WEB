@@ -151,17 +151,28 @@ export const AddUpdateLeave: React.FC = () => {
                 const respEither = await LeaveService.apiCallAddUpdateLeave(payload);
 
                 if (E.isRight(respEither)) {
-                    addToast({ type: 'success', title: 'Saved', message: 'Leave saved successfully' });
-                    navigate(-1);
+                    const response = respEither.right;
+                    
+                    // Check backend ErrorMessage first
+                    if (response.ErrorMessage && response.ErrorMessage.length > 0) {
+                        addToast({ type: 'error', title: response.ErrorMessage[0] });
+                    } else if (response.WarningMessage && response.WarningMessage.length > 0) {
+                        addToast({ type: 'warning', title: response.WarningMessage[0] });
+                        navigate(-1);
+                    } else {
+                        // Success - use backend SuccessMessage
+                        addToast({ type: 'success', title: response.SuccessMessage?.[0] });
+                        navigate(-1);
+                    }
                 } else {
-                    addToast({ type: 'error', title: 'Failed', message: respEither.left.message });
+                    addToast({ type: 'error', title: respEither.left.message });
                 }
 
                 return respEither;
             },
             undefined,
             (error: any) => {
-                addToast({ type: 'error', title: 'Failed', message: error?.message || 'Save failed' });
+                addToast({ type: 'error', title: error?.message });
             },
             undefined,
             'Saving Leave...'

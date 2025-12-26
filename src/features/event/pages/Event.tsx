@@ -15,15 +15,17 @@ import useToast from '@/core/hooks/useToast';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { CONFERENCE_ROOM_NAME, EVENT_TYPE } from '@/core/constants';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
-import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { fetchEmployeeMasterDropdown } from '@/features/employeeMaster/employeeMasterDropDown';
-import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import MultiFilePicker from '@/ui/components/ImagePicker/MultiFilePicker';
 import { TextArea } from '@/ui/components/forms/Textarea';
 import { TimePicker } from '@/ui/components/TimePicker/TimePicker';
 import CustomCalendar from '@/ui/components/Calender/CustomCalendar';
 import { getWeekDays } from '@/ui/components/Calender/CalendarUtils';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import MultiSelectPagination from '@/ui/components/DropDown/Multiselectpagination';
+import { fetchProjectDropdown } from '@/features/projectMaster/projectDropdown';
+import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
 
 /* ================= TYPES ================= */
 type CalendarView = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay';
@@ -80,12 +82,21 @@ const Event: React.FC = () => {
   const [documentFiles, setDocumentFiles] = useState<(File | string)[]>([]);
   const [removedDocumentUrls, setRemovedDocumentUrls] = useState<string[]>([]);
   const [documentURL, setDocumentURL] = useState<string>();
+  const [selectedEmployeeValues, setSelectedEmployeeValues] = useState<string | number | null>(null);
 
-  //SET DROP DOWN 
-  const [dropdownLabels, setDropdownLabels] = useState<{
-    departmentName?: string;
-    fullName?: string;
-  }>({});
+  const employeeMasterDropdown = useMultiSelectDropdown({
+    value: selectedEmployeeValues,
+    fetchCallback: fetchEmployeeMasterDropdown,
+    autoFetchOptions: true,
+  });
+
+  const [selectedProjectValues, setSelectedProjectValues] = useState<string | number | null>(null);
+
+  const projectMasterDropdown = useMultiSelectDropdown({
+    value: selectedProjectValues,
+    fetchCallback: fetchProjectDropdown,
+    autoFetchOptions: true,
+  });
 
   //#endregion
 
@@ -150,10 +161,7 @@ const Event: React.FC = () => {
         setDocumentURL(editingEventData.DocumentURL);
         setRemovedDocumentUrls([]);
 
-        setDropdownLabels({
-          departmentName: editingEventData.DepartmentName || "",
-          fullName: editingEventData.FullName || ""
-        });
+
 
       } else {
         setFormData(initialFormState());
@@ -238,6 +246,9 @@ const Event: React.FC = () => {
         start: start,
         end: end,
         description: ev.Description,
+        fullname: ev.FullName,
+        projectName: ev.ProjectName,
+        priority: ev.Priority,
         CreatedBy: ev.CreatedBy,
         CreatedDate: ev.CreatedDate,
       };
@@ -322,15 +333,25 @@ const Event: React.FC = () => {
   }
 
   const PushEventFormData = (): FormData => {
+
+
+    const employeeIdsString = employeeMasterDropdown.selectedValues.length > 0
+      ? employeeMasterDropdown.selectedValues.join(',')
+      : '';
+
+    const projectIdsString = projectMasterDropdown.selectedValues.length > 0
+      ? projectMasterDropdown.selectedValues.join(',')
+      : '';
+
     const fd = new FormData();
 
     fd.append("EventId", String(formData.EventId ?? 0));
     fd.append("Uniquekey", formData.Uniquekey ?? "");
     fd.append("Type", formData.Type ?? "");
     fd.append("Title", formData.Title ?? "");
-    fd.append("ProjectId", formData.ProjectId ?? "");
+    fd.append("ProjectId", projectIdsString ?? "");
     fd.append("DepartmentId", formData.DepartmentId ?? "");
-    fd.append("EmployeeId", formData.EmployeeId ?? "");
+    fd.append("EmployeeId", employeeIdsString ?? "");
     fd.append("Date", formData.Date ?? "");                // yyyy-MM-dd
     fd.append("DeadlineDate", formData.DeadlineDate ?? "");
     fd.append("StartTime", formData.StartTime ?? "");      // HH:mm
@@ -424,10 +445,15 @@ const Event: React.FC = () => {
 
   //#endregion
 
+  //#region VIEW EVENT MODAL FILTER AS PER TAB CHNAGE
+
   const filteredEventsForSelectedDate = eventsForSelectedDate.filter(ev => {
-  if (ViewActiveTab === "All") return true;
-  return ev.Type?.toUpperCase() === ViewActiveTab.toUpperCase();
-});
+    if (ViewActiveTab === "All") return true;
+    return ev.Type?.toUpperCase() === ViewActiveTab.toUpperCase();
+  });
+  //#endregion
+
+
 
   return (
     <div className="flex bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -780,15 +806,21 @@ const Event: React.FC = () => {
               </>
               : ''}
             <div>
-              <SingleSelectDropdownWithPagination
+
+              <MultiSelectPagination
                 label="Add Employee"
-                title="Select Employee"
-                size="lg"
                 dataFetchCallBack={fetchEmployeeMasterDropdown}
-                onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
-                initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.fullName)}
-                error={errors.ReportPersonId}
+                selectedValues={employeeMasterDropdown.selectedValues}
+                options={employeeMasterDropdown.initialOptions}
+                onChange={(values) => {
+                  const { idsString } = employeeMasterDropdown.handleChange(values);
+                  setSelectedEmployeeValues(idsString || null);
+                  if (errors.DesignationId) {
+                    setErrors((prev) => ({ ...prev, DesignationId: '' }));
+                  }
+                }}
               />
+
             </div>
             {formData.Type?.toUpperCase() !== "TASK" ?
               <div>
@@ -802,6 +834,24 @@ const Event: React.FC = () => {
                 />
               </div>
               : ""}
+
+            <div>
+
+              <MultiSelectPagination
+                label="Add Project"
+                dataFetchCallBack={fetchProjectDropdown}
+                selectedValues={projectMasterDropdown.selectedValues}
+                options={projectMasterDropdown.initialOptions}
+                onChange={(values) => {
+                  const { idsString } = projectMasterDropdown.handleChange(values);
+                  setSelectedProjectValues(idsString || null);
+                  if (errors.DesignationId) {
+                    setErrors((prev) => ({ ...prev, DesignationId: '' }));
+                  }
+                }}
+              />
+
+            </div>
             <div>
               <MultiFilePicker
                 label="Document"
@@ -845,7 +895,7 @@ const Event: React.FC = () => {
         title={formatDate_dd_MonthName_yy(currentDate.toISOString().slice(0, 10))}
         onSubmit={handleAddUpdateEvent}
         loading={isLoading}
-        size='xl'
+        size='xxl'
       >
         <div className="space-y-3">
           <Tabs
@@ -857,48 +907,131 @@ const Event: React.FC = () => {
 
           {filteredEventsForSelectedDate.length === 0 && (
             <div className="text-xs text-gray-400">
-              No events for this day
+              <NoDataView message='No events for this day' />
             </div>
           )}
 
           {filteredEventsForSelectedDate.map(ev => (
+
             <div
               key={ev.EventId}
-              className="text-xs p-3 rounded-lg"
-              style={{
-                background:
-                  ev.Type?.toUpperCase() === "TASK"
-                    ? "linear-gradient(90deg, rgba(19, 91, 236, 0.25) 0%, #FFFFFF 100%)"
-                    : ev.Type?.toUpperCase() === "MEETING"
-                      ? "linear-gradient(90deg, rgba(233, 44, 44, 0.25) 0%, #FFFFFF 100%)"
+              className='text-xs p-3 rounded-lg bg-gray-100'>
+              <div className="flex items-start justify-between gap-4">
 
-                      : "linear-gradient(90deg, rgba(255, 159, 45, 0.25) 0%, #FFFFFF 100%)",
-                border:
-                  ev.Type?.toUpperCase() === "TASK"
-                    ? "1px solid #135BEC"
-                    : ev.Type?.toUpperCase() === "MEETING"
-                      ? "1px solid #E92C2C"
-                      : "1px solid #FF9F2D",
-              }}
-            >
-              <h4 className="text-lg font-semibold">
-                {ev.Title}
-              </h4>
+                {/* LEFT — dot + title */}
+                <span className="flex items-center gap-2 text-lg font-semibold">
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{
+                      backgroundColor:
+                        ev.Type?.toUpperCase() === "TASK"
+                          ? "#2563eb"
+                          : ev.Type?.toUpperCase() === "MEETING"
+                            ? "#ef4444"
+                            : "#f97316"
+                    }}
+                  />
+                  {ev.Title}
+                </span>
 
-              <div>
+                {/* RIGHT — deadline */}
+                {ev.Type?.toUpperCase() === "TASK" ?
+                  <span className="text-sm font-medium text-gray-600 whitespace-nowrap">
+                    Deadline : {formatDate_dd_MonthName_yy(ev.DeadlineDate || "-")}
+                  </span>
+                  :
+                  <span className="text-sm font-medium text-gray-600 whitespace-nowrap">
+                    Date : {formatDate_dd_MonthName_yy(ev.Date || "-")}
+                  </span>
+                }
+
+              </div>
+
+              <div className='pb-2'>
                 {ev.Description?.trim() || "-"}
               </div>
 
-              <FieldItem label="Task Assigned By" isRow value={ev.CreatedBy} />
-              <FieldItem label="Task Assigned Date" isRow value={formatDate_dd_MonthName_yy_hh_mm(ev.CreatedDate || '-')} />
-              <FieldItem label="Task Deadline Date" isRow value={formatDate_dd_MonthName_yy_hh_mm(ev.DeadlineDate || '-')} />
-              <FieldItem label="Document" urls={ev.DocumentURL} isRow isIcon />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                <div className="lg:col-span-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                    {ev.FullName && (
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '180px 16px 1fr',
+                        gap: 8,
+                        alignItems: 'start',
+                        width: '100%'
+                      }}>
+                        <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+                          {ev.Type}  Member
+                        </div>
+                        <div className="text-sm text-[#1D1D1D80] text-center select-none">:</div>
+
+                        <div className="text-sm text-[#1D1D1D] font-medium break-words min-w-0">
+                          <ul className="list-disc ml-4 text-[11px]">
+                            {ev.FullName.split(',').map(name => name.trim()).filter(name => name !== "")
+                              .map((name, i) => (
+                                <li key={i}>{name}</li>
+                              ))
+                            }
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                    {ev.ProjectName && (
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '180px 16px 1fr',
+                        gap: 8,
+                        alignItems: 'start',
+                        width: '100%'
+                      }}>
+                        <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+                          Project Name
+                        </div>
+                        <div className="text-sm text-[#1D1D1D80] text-center select-none">:</div>
+
+                        <div className="text-sm text-[#1D1D1D] font-medium break-words min-w-0">
+                          <ul className="list-disc ml-4 text-[11px]">
+                            {ev.ProjectName.split(',').map(name => name.trim()).filter(name => name !== "")
+                              .map((name, i) => (
+                                <li key={i}>{name}</li>
+                              ))
+                            }
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-3 flex items-center justify-between">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <FieldItem label={`${ev.Type} Assigned By`} isRow value={ev.CreatedBy} />
+                  <FieldItem label={`${ev.Type}  Assigned Date`} isRow value={formatDate_dd_MonthName_yy_hh_mm(ev.CreatedDate ?? '-')} />
+                  {ev.Type!=='Task' ?
+                  <FieldItem label={`${ev.Type} Time`} isRow value={ev.StartTime +'- '+ ev.EndTime } /> : ""}
+                 
+                </div>
+                {ev.DocumentURL && (
+                  <FieldItem
+                    label=""
+                    value="Document"
+                    urls={ev.DocumentURL}
+                    isSetValue={true}
+                    isIcon={false}
+                  />
+                )}
+              </div>
             </div>
+
 
           ))}
         </div>
-      </Modal>
-    </div>
+      </Modal >
+    </div >
   );
 };
 

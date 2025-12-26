@@ -391,7 +391,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
           </div>
 
           {/* Options list */}
-          <div style={{ maxHeight: "200px", overflowY: "auto", padding: "8px 10px" }}>
+          <div className='thin-scroll' style={{ maxHeight: "200px", overflowY: "auto", padding: "8px 10px" }}>
             {loading && options.length === 0 && (
               <div
                 style={{

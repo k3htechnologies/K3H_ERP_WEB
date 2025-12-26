@@ -79,9 +79,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
   //#region INITIALIZATION
   useEffect(() => {
-    const ids = outdoorFormData.AccompaniedById
-      ? outdoorFormData.AccompaniedById.split(',').map(id => id.trim()).filter(Boolean)
-      : [];
+    const ids = outdoorFormData.AccompaniedById ? outdoorFormData.AccompaniedById.split(',').map(id => id.trim()).filter(Boolean) : [];
     setSelectedAccompaniedValues(ids);
   }, [outdoorFormData.AccompaniedById]);
 
@@ -346,7 +344,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
         if (E.isRight(apiResponse)) {
           const response = apiResponse.right;
-          
+
           // Check backend ErrorMessage first
           if (response.ErrorMessage && response.ErrorMessage.length > 0) {
             addToast({
@@ -370,9 +368,9 @@ export const AddUpdateOutDoorPage: React.FC = () => {
             });
           } else {
             // Success - use backend SuccessMessage
-            addToast({ 
-              type: 'success', 
-              title: response.SuccessMessage?.[0] 
+            addToast({
+              type: 'success',
+              title: response.SuccessMessage?.[0]
             });
             navigate("/outdoor", {
               state: {

@@ -27,14 +27,14 @@ export default function DayView({
   const dayName = currentDate.toLocaleDateString("en-US", { weekday: "short" });
   const dayNumber = currentDate.getDate();
 
-  
-  /* ⭐ NEW — Track current time in minutes */
+
+  /* Track current time in minutes */
   const [nowMinutes, setNowMinutes] = useState<number>(() => {
     const n = new Date();
     return n.getHours() * 60 + n.getMinutes();
   });
 
-  /* ⭐ NEW — update every minute */
+  /* update every minute */
   useEffect(() => {
     const timer = setInterval(() => {
       const n = new Date();
@@ -44,7 +44,7 @@ export default function DayView({
     return () => clearInterval(timer);
   }, []);
 
-  /* ⭐ NEW — Show only if currentDate is TODAY */
+  /*  Show only if currentDate is TODAY */
   const isToday =
     new Date().toISOString().slice(0, 10) === dateStr;
 
@@ -93,6 +93,13 @@ export default function DayView({
   const maxLane = Math.max(...laneEvents.map(e => e.lane), 0);
   const laneWidth = 100 / (maxLane + 1);
 
+  const colors = [
+    "bg-pink-400 border-pink-200",
+    "bg-green-400 border-green-200",
+    "bg-blue-400 border-blue-200"
+  ];
+
+
   return (
     <div className="flex flex-col h-[80vh]">
 
@@ -123,7 +130,7 @@ export default function DayView({
             <div key={h} className="border border-gray-200 h-[60px]" />
           ))}
 
-          {/* ⭐⭐⭐ CURRENT-TIME LINE HERE ⭐⭐⭐ */}
+          {/*  CURRENT-TIME LINE HERE */}
           {isToday && (
             <div
               className="absolute left-0 right-0 z-50"
@@ -193,21 +200,43 @@ export default function DayView({
 
                 {/* FOOTER */}
                 <div className=" pl-5  px-3 pb-2 flex items-center justify-between">
+
                   <span className="text-[11px] text-gray-500">
                     {ev.CreatedBy}
                   </span>
+
                   <span className="text-[11px] text-gray-500">
                     {formatDate_dd_MonthName_yy(ev.CreatedDate ?? '-')}
                   </span>
 
                   <div className="flex -space-x-2">
-                    <div className="w-6 h-6 rounded-full bg-pink-400 border border-pink-200"></div>
-                    <div className="w-6 h-6 rounded-full bg-green-400 border border-green-200"></div>
-                    <div className="w-6 h-6 rounded-full bg-blue-400 border border-blue-200"></div>
-                    <div className="w-6 h-6 rounded-full bg-purple-400 border border-purple-200 text-[10px] flex items-center justify-center text-white">
-                      +3
-                    </div>
+                    {ev.fullname!
+                      .split(',')
+                      .map(name => name.trim())
+                      .filter(name => name !== "")
+                      .slice(0, 3)   
+                      .map((name, i) => (
+                        <div
+                          key={i}
+                          className={`w-6 h-6 rounded-full ${colors[i % colors.length]} border text-[10px] flex items-center justify-center text-white`}
+                        >
+                          {name[0].toUpperCase()}
+                        </div>
+                      ))}
+
+                    {/* EXTRA COUNT BADGE */}
+                    {ev.fullname!.split(',').filter(n => n.trim() !== "").length > 3 && (
+                      <div className="w-6 h-6 rounded-full bg-purple-400 border-purple-200 text-[10px] flex items-center justify-center text-white">
+                        +
+                        {
+                          ev.fullname!.split(',').filter(n => n.trim() !== "").length - 3
+                        }
+                      </div>
+                    )}
                   </div>
+
+
+
                 </div>
 
               </div>

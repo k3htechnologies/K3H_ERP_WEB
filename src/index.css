@@ -57,22 +57,6 @@ body {
 }
 
 
-/* ================= DayPicker Selected Date ================= */
-
-/* Selected date background */
-/* ================= DayPicker Selected Date ================= */
-
-.rdp-day.rdp-day_selected,
-.rdp-day.rdp-day_selected:hover,
-.rdp-day[aria-selected="true"] {
-  background-color: #3B82F6 !important;
-  color: #ffffff !important;
-  border-radius: 50% !important;
-}
-
-.rdp-selected .rdp-day_button {
-    border: 0.5px solid #3B82F6 !important;
-}
 
 
 

@@ -58,6 +58,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
 
     // NAVIGATE
     const navigate = useNavigate();
+    
     const location = useLocation();
 
     // GET VALUE FROM URL EnquiryMasterId

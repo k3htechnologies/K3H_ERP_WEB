@@ -21,6 +21,7 @@ import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleS
 import { fetchChannelPartnerMasterDropdown } from "../services/channelPartnerDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchProjectMasterDropdown } from "@/features/ChannelPartnerMaster/services/ProjectMasterDropDown";
+import RadioButton from "@/ui/components/forms/RadioButton";
 
 const initialFormState = (): AddUpdateEnquiryMasterRequest => ({
     EnquiryId: 0,
@@ -526,6 +527,21 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                     error={errors.Budget}
                                 />
                             </div>
+                            <div className="flex gap-4">
+                                <p>Would You Like To Opt For Home Loan ?</p>
+                                
+                                <RadioButton
+                                    label="Yes"
+                                    checked={formData.IsHomeLoan === true}
+                                    onChange={() => handleFieldChange("IsHomeLoan", true)}
+                                />
+                                <RadioButton
+                                    label="No"
+                                    checked={formData.IsHomeLoan === false}
+                                    onChange={() => handleFieldChange("IsHomeLoan", false)}
+                                />
+                            </div>
+
                         </div>
                         <div className="space-y-4 pb-3">
                             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Enquiry Information</h3>

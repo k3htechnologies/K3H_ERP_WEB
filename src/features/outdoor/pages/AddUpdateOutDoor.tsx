@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import { Button } from "@/ui/components/forms/Button";
@@ -19,6 +19,7 @@ import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/
 import { runApiWithLoader } from '@/core/utils';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
+import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
 
 const initialFormState = (): AddUpdateOutDoor => ({
   OutdoorId: 0,
@@ -50,7 +51,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   const initialVisitingCardUrlsRef = useRef<string[]>([]);
   const [dropdownLabels, setDropdownLabels] = useState<{ departmentName?: string; }>({});
   const [selectedDepartmentName, setSelectedDepartmentName] = useState<string>("");
-  const [selectedAccompaniedValues, setSelectedAccompaniedValues] = useState<(string | number)[]>([]);
   const hasFetchedOutDoor = useRef(false);
 
   // NAVIGATE
@@ -78,13 +78,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   //#endregion 
 
   //#region INITIALIZATION
-  useEffect(() => {
-    const ids = outdoorFormData.AccompaniedById
-      ? outdoorFormData.AccompaniedById.split(',').map(id => id.trim()).filter(Boolean)
-      : [];
-    setSelectedAccompaniedValues(ids);
-  }, [outdoorFormData.AccompaniedById]);
-
   useEffect(() => {
     hasFetchedOutDoor.current = false;
   }, [outdoorId]);
@@ -129,6 +122,16 @@ export const AddUpdateOutDoorPage: React.FC = () => {
             const parsedDate = parseDateFromISO(outdoor.OutDoorDate || "");
             const parsedTime = parseTimeFromISO(outdoor.OutDoorTime || "");
 
+            // Set department first, then form data, to ensure hook can fetch options correctly
+            if (outdoor.DepartmentId && outdoor.DepartmentName) {
+              const departmentName = outdoor.DepartmentName;
+              setSelectedDepartmentName(departmentName);
+              setDropdownLabels(prev => ({
+                ...prev,
+                departmentName: departmentName,
+              }));
+            }
+
             setOutdoorFormData({
               OutdoorId: outdoor.OutdoorId,
               Uniquekey: outdoor.Uniquekey,
@@ -150,15 +153,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
             initialVisitingCardUrlsRef.current = parseDocumentUrls(outdoor.VisitingCardURL || "");
             setRemovedVisitingCardUrls([]);
             setSelectedTime(parsedTime);
-
-            if (outdoor.DepartmentId && outdoor.DepartmentName) {
-              const departmentName = outdoor.DepartmentName;
-              setSelectedDepartmentName(departmentName);
-              setDropdownLabels(prev => ({
-                ...prev,
-                departmentName: departmentName,
-              }));
-            }
 
           } else {
             addToast({ type: "error", title: apiResponse.right.ErrorMessage?.[0] });
@@ -206,13 +200,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
   //#endregion
 
-  //#region HANDLE ACCOMPANIED CHANGE
-  const handleAccompaniedChange = useCallback((values: (string | number)[]) => {
-    setSelectedAccompaniedValues(values);
-    handleFieldChange("AccompaniedById", values.join(","));
-  }, [handleFieldChange]);
-  //#endregion
-
   //#region FETCH EMPLOYEE DROPDOWN WITH DEPARTMENT
   const fetchEmployeeMasterDropdownWithDepartment = useCallback(
     async (pageNumber: number, params?: { value?: string }) => {
@@ -225,6 +212,32 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   );
   //#endregion
 
+  // Memoize fetchParams to prevent unnecessary re-renders and API loops
+  const fetchParams = useMemo(() => ({ 
+    departmentName: selectedDepartmentName || "" 
+  }), [selectedDepartmentName]);
+
+  // Use multi-select dropdown hook for Accompanied By (moved after fetchEmployeeMasterDropdownWithDepartment)
+  const hasDepartment = !!(selectedDepartmentName && outdoorFormData.DepartmentId && outdoorFormData.DepartmentId > 0);
+  const accompaniedDropdown = useMultiSelectDropdown({
+    value: outdoorFormData.AccompaniedById,
+    fetchCallback: fetchEmployeeMasterDropdownWithDepartment,
+    fetchParams: fetchParams,
+    autoFetchOptions: hasDepartment && !!outdoorFormData.AccompaniedById,
+  });
+
+  // Note: The hook's autoFetchOptions will handle fetching when:
+  // 1. The value (AccompaniedById) changes
+  // 2. The fetchParams (departmentName) changes (via fetchOptionsForSelected dependency)
+  // No manual refresh needed to avoid API loops
+
+  //#region HANDLE ACCOMPANIED CHANGE
+  const handleAccompaniedChange = useCallback((values: (string | number)[]) => {
+    const { idsString } = accompaniedDropdown.handleChange(values);
+    handleFieldChange("AccompaniedById", idsString);
+  }, [handleFieldChange, accompaniedDropdown]);
+  //#endregion
+
   //#region HANDLE DEPARTMENT SELECTED
   const handleDepartmentSelected = useCallback((item: { label: string; value: string | number | null }) => {
     const departmentId = item.value ? Number(item.value) : 0;
@@ -232,7 +245,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
     handleFieldChange("DepartmentId", departmentId);
     setSelectedDepartmentName(departmentName);
-    setSelectedAccompaniedValues([]);
 
     setDropdownLabels(prev => ({
       ...prev,
@@ -346,7 +358,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
         if (E.isRight(apiResponse)) {
           const response = apiResponse.right;
-          
+
           // Check backend ErrorMessage first
           if (response.ErrorMessage && response.ErrorMessage.length > 0) {
             addToast({
@@ -370,9 +382,9 @@ export const AddUpdateOutDoorPage: React.FC = () => {
             });
           } else {
             // Success - use backend SuccessMessage
-            addToast({ 
-              type: 'success', 
-              title: response.SuccessMessage?.[0] 
+            addToast({
+              type: 'success',
+              title: response.SuccessMessage?.[0]
             });
             navigate("/outdoor", {
               state: {
@@ -467,11 +479,12 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
                   <div className="space-y-1">
                     <MultiSelectPagination
-                      key={`accompanied-by-${outdoorFormData.DepartmentId}-${selectedDepartmentName}`}
+                      // key={`accompanied-by-${outdoorFormData.DepartmentId}-${selectedDepartmentName}`}
                       label="Accompanied By"
                       required
                       dataFetchCallBack={fetchEmployeeMasterDropdownWithDepartment}
-                      selectedValues={selectedAccompaniedValues}
+                      selectedValues={accompaniedDropdown.selectedValues}
+                      options={accompaniedDropdown.initialOptions}
                       onChange={handleAccompaniedChange}
                       disabled={!!outdoorFormData.PunchIn || !outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
                     />

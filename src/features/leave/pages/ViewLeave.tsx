@@ -83,6 +83,7 @@ export const ViewLeave: React.FC = () => {
                     titleText="Leave Details"
                     onCancel={handleBackToListLeave}
                     onEdit={canAction ? handleEditLeave : undefined}
+                    canAction={canAction}
                 />
 
                 <div className="space-y-6">

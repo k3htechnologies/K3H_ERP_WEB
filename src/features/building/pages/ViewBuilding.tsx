@@ -484,25 +484,7 @@ export const ViewBuilding: React.FC = () => {
                     {/* ================= RIGHT SIDE (1/3) ================= */}
                     <div className="lg:col-span-1 space-y-6">
 
-                        {/* ================= QUICK ACTIONS ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Action Details
-                            </h4>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Created By" value={buildingData?.CreatedBy ?? '-'} />
-                                <FieldItem
-                                    label="Created Date"
-                                    value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.CreatedDate ?? '-')}
-                                />
-                                <FieldItem label="Modified By" value={buildingData?.ModifiedBy ?? '-'} />
-                                <FieldItem
-                                    label="Modified Date"
-                                    value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.ModifiedDate ?? '-')}
-                                />
-                            </div>
-                        </section>
+                        
 
                         {/* ================= GARDERN INFORMATION ================= */}
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
@@ -558,6 +540,25 @@ export const ViewBuilding: React.FC = () => {
 
                             </div>
 
+                        </section>
+                        {/* ================= QUICK ACTIONS ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Action Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Created By" value={buildingData?.CreatedBy ?? '-'} />
+                                <FieldItem
+                                    label="Created Date"
+                                    value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.CreatedDate ?? '-')}
+                                />
+                                <FieldItem label="Modified By" value={buildingData?.ModifiedBy ?? '-'} />
+                                <FieldItem
+                                    label="Modified Date"
+                                    value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.ModifiedDate ?? '-')}
+                                />
+                            </div>
                         </section>
 
                     </div>

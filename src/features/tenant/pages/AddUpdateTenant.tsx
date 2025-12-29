@@ -15,7 +15,7 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { APPLICANT_TYPE, COMMERCIAL_FLAT_CONFIGURATION, FLAT_UNIT_FACING, FLAT_UNIT_TYPE, RESIDENTIAL_FLAT_CONFIGURATION } from "@/core/constants";
-import { filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidPAN } from "@/core/utils/fileValidation";
+import { filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidAccount, isValidDrivingLicenseNumber, isValidGST, isValidIFSC, isValidPAN, isValidPassportNumber, isValidVoterId } from "@/core/utils/fileValidation";
 import { Button } from "@/ui/components/forms";
 import { Edit, IdCardIcon, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
@@ -279,6 +279,7 @@ const AddUpdateTenant: React.FC = () => {
           const tenant = response.right.Data?.[0] as TenantData | undefined;
 
           if (tenant) {
+
             setFormData(prev => ({
               ...prev,
               TenantId: tenant.TenantId ?? prev.TenantId,
@@ -294,6 +295,7 @@ const AddUpdateTenant: React.FC = () => {
               ExtraAreaPurchasedSqFt: tenant.ExtraAreaPurchasedSqFt ?? prev.ExtraAreaPurchasedSqFt,
               TotalAreaSqFt: tenant.TotalAreaSqFt ?? prev.TotalAreaSqFt,
             }));
+
 
             const applicantsWithFiles = (tenant?.TenantApplicantData || []).map(a => ({
               ...a,
@@ -504,37 +506,37 @@ const AddUpdateTenant: React.FC = () => {
     setEditingApplicantData({ row, index });
     setFormDataForApplicant(applicantData);
 
-    setApplicantPhotoFiles([]);
+    // PHOTO
+    setApplicantPhotoFiles(row._photoFiles ?? []);
     setRemovedApplicantPhotoURLs([]);
 
     // AADHAR
-    setAadharCardFiles([]);
+    setAadharCardFiles(row._aadharFiles ?? []);
     setRemovedAadharCardURLs([]);
 
     // PAN
-    setPanCardFiles([]);
+    setPanCardFiles(row._panFiles ?? []);
     setRemovedPanCardURLs([]);
 
     // PASSPORT
-    setPassportFiles([]);
+    setPassportFiles(row._passportFiles ?? []);
     setRemovedPassportURLs([]);
 
-    // DRIVING LICENSE
-    setDrivingLicenseFiles([]);
+    // DL
+    setDrivingLicenseFiles(row._drivingFiles ?? []);
     setRemovedDrivingLicenseURLs([]);
 
-    // VOTING ID
-    setVotingIdFiles([]);
+    // VOTER
+    setVotingIdFiles(row._votingFiles ?? []);
     setRemovedVotingIdURLs([]);
 
     // GST
-    setGstFiles([]);
+    setGstFiles(row._gstFiles ?? []);
     setRemovedGstURLs([]);
 
     // CHEQUE
-    setChequeFiles([]);
+    setChequeFiles(row._chequeFiles ?? []);
     setRemovedChequeURLs([]);
-
 
     setIsAddUpdateApplicantModalOpen(true);
   }, [preservedListState]);
@@ -827,53 +829,176 @@ const AddUpdateTenant: React.FC = () => {
       newErrorsTenantApplicant.PhotoURL = "Applicant Photo is required";
     }
 
-    if (formDataForApplicant.AadharCardNumber?.trim() && !isValidAadhaar(formDataForApplicant.AadharCardNumber.trim())) {
-      newErrorsTenantApplicant.AadharCardNumber = 'Enter a valid Aadhaar Card Number';
+    const AadharCardNumber = formDataForApplicant.AadharCardNumber?.trim() || "";
+    const hasAadharCardNumber = AadharCardNumber !== "";
+    const hasAadharCardNumberFile = aadharCardFiles.length > 0 || (editingApplicantData?.row._aadharFiles?.length ?? 0) > 0;
+
+    // 🔹 Rule 1 — If number present, validate number
+    if (hasAadharCardNumber && !isValidAadhaar(AadharCardNumber)) {
+      newErrorsTenantApplicant.AadharCardNumber = "Enter a valid Aadhaar Card Number";
     }
 
-    if (formDataForApplicant.AadharCardNumber?.trim() && !aadharCardFiles.length && !editingApplicantData?.row._aadharFiles?.length) {
-      newErrorsTenantApplicant.AadharCardURL = 'Enter a valid Aadhaar Card URL';
+    // 🔹 Rule 2 — If number present, file is required
+    if (hasAadharCardNumber && !hasAadharCardNumberFile) {
+      newErrorsTenantApplicant.AadharCardURL = "Aadhaar document is required";
     }
 
-    if (formDataForApplicant.PanNumber?.trim() && !isValidPAN(formDataForApplicant.PanNumber.trim())) {
-      newErrorsTenantApplicant.PanNumber = 'Enter a valid PAN Card Number';
+    // 🔹 Rule 3 — If file present, number is required
+    if (hasAadharCardNumberFile && !hasAadharCardNumber) {
+      newErrorsTenantApplicant.AadharCardNumber = "Aadhaar Card Number is required";
     }
 
-    if (formDataForApplicant.PanNumber?.trim() && !panCardFiles.length && !editingApplicantData?.row._panFiles?.length) {
-      newErrorsTenantApplicant.PanCardURL = 'Enter a valid PAN Card URL';
+
+    const PanNumber = formDataForApplicant.PanNumber?.trim() || "";
+    const hasPanNumber = PanNumber !== "";
+    const hasPanFile =
+      panCardFiles.length > 0 ||
+      (editingApplicantData?.row._panFiles?.length ?? 0) > 0;
+
+    // Rule 1
+    if (hasPanNumber && !isValidPAN(PanNumber)) {
+      newErrorsTenantApplicant.PanNumber = "Enter a valid PAN Card Number";
     }
 
-    if (formDataForApplicant.PassportNumber?.trim() && !isValidAadhaar(formDataForApplicant.PassportNumber.trim())) {
-      newErrorsTenantApplicant.PassportNumber = 'Enter a valid Passport Number';
+    // Rule 2
+    if (hasPanNumber && !hasPanFile) {
+      newErrorsTenantApplicant.PanCardURL = "PAN document is required";
     }
 
-    if (formDataForApplicant.PassportNumber?.trim() && !passportFiles.length && !editingApplicantData?.row._passportFiles?.length) {
-      newErrorsTenantApplicant.PassportURL = 'Enter a valid Passport URL';
+    // Rule 3
+    if (hasPanFile && !hasPanNumber) {
+      newErrorsTenantApplicant.PanNumber = "PAN Card Number is required";
     }
 
-    if (formDataForApplicant.DrivingLicenseNumber?.trim() && !isValidAadhaar(formDataForApplicant.DrivingLicenseNumber.trim())) {
-      newErrorsTenantApplicant.DrivingLicenseNumber = 'Enter a valid Driving License Number';
+    const PassportNumber = formDataForApplicant.PassportNumber?.trim() || "";
+    const hasPassportNumber = PassportNumber !== "";
+    const hasPassportFile =
+      passportFiles.length > 0 ||
+      (editingApplicantData?.row._passportFiles?.length ?? 0) > 0;
+
+    // Rule 1
+    if (hasPassportNumber && !isValidPassportNumber(PassportNumber)) {
+      newErrorsTenantApplicant.PassportNumber = "Enter a valid Passport Number";
     }
 
-    if (formDataForApplicant.DrivingLicenseNumber?.trim() && !drivingLicenseFiles.length && !editingApplicantData?.row._drivingFiles?.length) {
-      newErrorsTenantApplicant.DrivingLicenseURL = 'Enter a valid Driving License URL';
+    // Rule 2
+    if (hasPassportNumber && !hasPassportFile) {
+      newErrorsTenantApplicant.PassportURL = "Passport document is required";
     }
 
-    if (formDataForApplicant.VotingIdNumber?.trim() && !isValidAadhaar(formDataForApplicant.VotingIdNumber.trim())) {
-      newErrorsTenantApplicant.VotingIdNumber = 'Enter a valid Voting Id Number';
+    // Rule 3
+    if (hasPassportFile && !hasPassportNumber) {
+      newErrorsTenantApplicant.PassportNumber = "Passport Number is required";
     }
 
-    if (formDataForApplicant.VotingIdNumber?.trim() && !votingIdFiles.length && !editingApplicantData?.row._votingFiles?.length) {
-      newErrorsTenantApplicant.VotingIdURL = 'Enter a valid voting URL';
+
+    const DLNumber = formDataForApplicant.DrivingLicenseNumber?.trim() || "";
+    const hasDLNumber = DLNumber !== "";
+    const hasDLFile =
+      drivingLicenseFiles.length > 0 ||
+      (editingApplicantData?.row._drivingFiles?.length ?? 0) > 0;
+
+    // Rule 1
+    if (hasDLNumber && !isValidDrivingLicenseNumber(DLNumber)) {
+      newErrorsTenantApplicant.DrivingLicenseNumber = "Enter a valid Driving License Number";
     }
 
-    if (formDataForApplicant.GSTNumber?.trim() && !isValidAadhaar(formDataForApplicant.GSTNumber.trim())) {
-      newErrorsTenantApplicant.GSTNumber = 'Enter a valid GST Number';
+    // Rule 2
+    if (hasDLNumber && !hasDLFile) {
+      newErrorsTenantApplicant.DrivingLicenseURL = "Driving License document is required";
     }
 
-    if (formDataForApplicant.GSTNumber?.trim() && !gstFiles.length && !editingApplicantData?.row._gstFiles?.length) {
-      newErrorsTenantApplicant.GSTNumberURL = 'Enter a valid GST URL';
+    // Rule 3
+    if (hasDLFile && !hasDLNumber) {
+      newErrorsTenantApplicant.DrivingLicenseNumber = "Driving License Number is required";
     }
+
+
+    const VotingIdNumber = formDataForApplicant.VotingIdNumber?.trim() || "";
+    const hasVotingIdNumber = VotingIdNumber !== "";
+    const hasVotingFile =
+      votingIdFiles.length > 0 ||
+      (editingApplicantData?.row._votingFiles?.length ?? 0) > 0;
+
+    // Rule 1
+    if (hasVotingIdNumber && !isValidVoterId(VotingIdNumber)) {
+      newErrorsTenantApplicant.VotingIdNumber = "Enter a valid Voting Id Number";
+    }
+
+    // Rule 2
+    if (hasVotingIdNumber && !hasVotingFile) {
+      newErrorsTenantApplicant.VotingIdURL = "Voting ID document is required";
+    }
+
+    // Rule 3
+    if (hasVotingFile && !hasVotingIdNumber) {
+      newErrorsTenantApplicant.VotingIdNumber = "Voting ID Number is required";
+    }
+
+
+    const GSTNumber = formDataForApplicant.GSTNumber?.trim() || "";
+    const hasGSTNumber = GSTNumber !== "";
+    const hasGSTFile =
+      gstFiles.length > 0 ||
+      (editingApplicantData?.row._gstFiles?.length ?? 0) > 0;
+
+    // Rule 1
+    if (hasGSTNumber && !isValidGST(GSTNumber)) {
+      newErrorsTenantApplicant.GSTNumber = "Enter a valid GST Number";
+    }
+
+    // Rule 2
+    if (hasGSTNumber && !hasGSTFile) {
+      newErrorsTenantApplicant.GSTNumberURL = "GST document is required";
+    }
+
+    // Rule 3
+    if (hasGSTFile && !hasGSTNumber) {
+      newErrorsTenantApplicant.GSTNumber = "GST Number is required";
+    }
+
+    // ================= BANK VALIDATION =================
+    const bankId = formDataForApplicant.BankListMasterId || 0;
+    const account = (formDataForApplicant.AccountNumber || "").trim();
+    const ifsc = (formDataForApplicant.IFSCCode || "").trim();
+
+    const hasChequeFile =
+      chequeFiles.length > 0 ||
+      (editingApplicantData?.row._chequeFiles?.length ?? 0) > 0;
+
+    // 👉 If ANY bank info exists → ALL become required
+    const hasAnyBankInfo =
+      bankId > 0 ||
+      account !== "" ||
+      ifsc !== "" ||
+      hasChequeFile;
+
+    
+    if (hasAnyBankInfo) {
+
+      if (!bankId) {
+        newErrorsTenantApplicant.BankListMasterId = "Bank is required";
+      }
+
+      if (!account) {
+        newErrorsTenantApplicant.AccountNumber = "Account Number is required";
+      } else if (!isValidAccount(account)) {
+        newErrorsTenantApplicant.AccountNumber = "Enter a valid Account Number (6–18 digits)";
+      }
+
+      if (!ifsc) {
+        newErrorsTenantApplicant.IFSCCode = "IFSC Code is required";
+      } else if (!isValidIFSC(ifsc)) {
+        newErrorsTenantApplicant.IFSCCode = "Enter a valid IFSC Code";
+      }
+
+      if (!hasChequeFile) {
+        newErrorsTenantApplicant.ChequeURL = "Cheque is required";
+      }
+    }
+
+
+
 
     return {
       isValid: Object.keys(newErrorsTenantApplicant).length === 0,
@@ -1418,11 +1543,12 @@ const AddUpdateTenant: React.FC = () => {
 
               <MultiFilePicker
                 label="Photo"
+                placeholder="Select Photo"
                 required
                 error={errorsTenantApplicant.PhotoURL}
                 value={applicantPhotoFiles}
                 onChange={setApplicantPhotoFiles}
-                availableFilesURL={editingApplicantData?.row._photoFiles}
+                // availableFilesURL={editingApplicantData?.row._photoFiles}
                 allowedTypes={['image/jpeg', 'image/png']}
                 maxFiles={1}
                 maxSizeMB={5}
@@ -1446,31 +1572,30 @@ const AddUpdateTenant: React.FC = () => {
                 onChange={(e) =>
                   handleFieldChangeTenantApplicant('AadharCardNumber', filterAadhaar(e.target.value))
                 }
-                placeholder="Enter Aadhaar number"
+                placeholder="Enter Aadhaar Number"
                 rightIcon={<IdCardIcon />}
               />
             </div>
 
-            {formDataForApplicant.AadharCardNumber ?
-              <div>
-                <MultiFilePicker
-                  label="Aadhaar Card"
+            <div>
+              <MultiFilePicker
+                label="Aadhaar Card"
+                placeholder="Select Aadhaar Card"
+                error={errorsTenantApplicant.AadharCardURL}
+                value={aadharCardFiles}
+                onChange={setAadharCardFiles}
+                //availableFilesURL={editingApplicantData?.row._aadharFiles}
+                allowedTypes={[
+                  'image/jpeg',
+                  'image/png',
+                  'application/pdf',
+                ]}
+                maxFiles={2}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => setRemovedAadharCardURLs((prev) => [...prev, url])}
+              />
+            </div>
 
-                  error={errorsTenantApplicant.AadharCardURL}
-                  value={aadharCardFiles}
-                  onChange={setAadharCardFiles}
-                  availableFilesURL={editingApplicantData?.row._aadharFiles}
-                  allowedTypes={[
-                    'image/jpeg',
-                    'image/png',
-                    'application/pdf',
-                  ]}
-                  maxFiles={2}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => setRemovedAadharCardURLs((prev) => [...prev, url])}
-                />
-              </div>
-              : ""}
             <div>
 
             </div>
@@ -1488,32 +1613,31 @@ const AddUpdateTenant: React.FC = () => {
                 onChange={(e) =>
                   handleFieldChangeTenantApplicant('PanNumber', filterPAN(e.target.value).toUpperCase())
                 }
-                placeholder="Enter PAN number"
+                placeholder="Enter PAN Number"
                 rightIcon={<IdCardIcon />}
               />
             </div>
-            {formDataForApplicant.PanNumber ?
-              <div>
-                <MultiFilePicker
-                  label="PAN Card"
+            <div>
+              <MultiFilePicker
+                label="PAN Card"
+                placeholder="Select PAN Card"
+                error={errorsTenantApplicant.PanCardURL}
+                value={panCardFiles}
+                onChange={setPanCardFiles}
+                //availableFilesURL={editingApplicantData?.row._panFiles}
+                allowedTypes={[
+                  'image/jpeg',
+                  'image/png',
+                  'application/pdf',
+                  'application/msword',
+                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                ]}
+                maxFiles={2}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])}
+              />
+            </div>
 
-                  error={errorsTenantApplicant.PanCardURL}
-                  value={panCardFiles}
-                  onChange={setPanCardFiles}
-                  availableFilesURL={editingApplicantData?.row._panFiles}
-                  allowedTypes={[
-                    'image/jpeg',
-                    'image/png',
-                    'application/pdf',
-                    'application/msword',
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                  ]}
-                  maxFiles={2}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])}
-                />
-              </div>
-              : ""}
             <div>
 
             </div>
@@ -1530,25 +1654,26 @@ const AddUpdateTenant: React.FC = () => {
                 onChange={(e) =>
                   handleFieldChangeTenantApplicant('PassportNumber', filterPassportNumber(e.target.value.toUpperCase()))
                 }
-                placeholder="Enter Passport number"
+                placeholder="Enter Passport Number"
                 rightIcon={<IdCardIcon />}
               />
             </div>
-            {formDataForApplicant.PassportNumber ?
-              <div>
-                <MultiFilePicker
-                  label="Passport"
-                  error={errorsTenantApplicant.PassportURL}
-                  value={passportFiles}
-                  onChange={setPassportFiles}
-                  availableFilesURL={editingApplicantData?.row._passportFiles}
-                  allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
-                  maxFiles={3}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])}
-                />
-              </div>
-              : ""}
+
+            <div>
+              <MultiFilePicker
+                label="Passport"
+                placeholder="Select Passport"
+                error={errorsTenantApplicant.PassportURL}
+                value={passportFiles}
+                onChange={setPassportFiles}
+                //availableFilesURL={editingApplicantData?.row._passportFiles}
+                allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
+                maxFiles={3}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])}
+              />
+            </div>
+
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -1561,25 +1686,26 @@ const AddUpdateTenant: React.FC = () => {
                 onChange={(e) =>
                   handleFieldChangeTenantApplicant('DrivingLicenseNumber', filterDrivingLicenseNumber(e.target.value.toUpperCase()))
                 }
-                placeholder="Enter Driving License number"
+                placeholder="Enter Driving License Number"
                 rightIcon={<IdCardIcon />}
               />
             </div>
-            {formDataForApplicant.DrivingLicenseNumber ?
-              <div>
-                <MultiFilePicker
-                  label="Driving License"
-                  error={errorsTenantApplicant.DrivingLicenseURL}
-                  value={drivingLicenseFiles}
-                  onChange={setDrivingLicenseFiles}
-                  availableFilesURL={editingApplicantData?.row._drivingFiles}
-                  allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
-                  maxFiles={3}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])}
-                />
-              </div>
-              : ''}
+
+            <div>
+              <MultiFilePicker
+                label="Driving License"
+                placeholder="Select Driving License"
+                error={errorsTenantApplicant.DrivingLicenseURL}
+                value={drivingLicenseFiles}
+                onChange={setDrivingLicenseFiles}
+                //availableFilesURL={editingApplicantData?.row._drivingFiles}
+                allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
+                maxFiles={3}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])}
+              />
+            </div>
+
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -1592,25 +1718,26 @@ const AddUpdateTenant: React.FC = () => {
                 onChange={(e) =>
                   handleFieldChangeTenantApplicant('VotingIdNumber', filterVoterId(e.target.value.toUpperCase()))
                 }
-                placeholder="Enter Voting ID number"
+                placeholder="Enter Voting ID Number"
                 rightIcon={<IdCardIcon />}
               />
             </div>
-            {formDataForApplicant.VotingIdNumber ?
-              <div>
-                <MultiFilePicker
-                  label="Voting ID"
-                  error={errorsTenantApplicant.VotingIdURL}
-                  value={votingIdFiles}
-                  onChange={setVotingIdFiles}
-                  availableFilesURL={editingApplicantData?.row._votingFiles}
-                  allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
-                  maxFiles={3}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])}
-                />
-              </div>
-              : ""}
+
+            <div>
+              <MultiFilePicker
+                label="Voting ID"
+                placeholder="Select Voting ID"
+                error={errorsTenantApplicant.VotingIdURL}
+                value={votingIdFiles}
+                onChange={setVotingIdFiles}
+                //availableFilesURL={editingApplicantData?.row._votingFiles}
+                allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
+                maxFiles={3}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])}
+              />
+            </div>
+
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -1623,25 +1750,26 @@ const AddUpdateTenant: React.FC = () => {
                 onChange={(e) =>
                   handleFieldChangeTenantApplicant('GSTNumber', filterGST(e.target.value.toUpperCase()))
                 }
-                placeholder="Enter GST number"
+                placeholder="Enter GST Number"
                 rightIcon={<IdCardIcon />}
               />
             </div>
-            {formDataForApplicant.GSTNumber ?
-              <div>
-                <MultiFilePicker
-                  label="GST Documents"
-                  error={errorsTenantApplicant.GSTNumberURL}
-                  value={gstFiles}
-                  onChange={setGstFiles}
-                  availableFilesURL={editingApplicantData?.row._gstFiles}
-                  allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
-                  maxFiles={5}
-                  maxSizeMB={10}
-                  onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])}
-                />
-              </div>
-              : ""}
+
+            <div>
+              <MultiFilePicker
+                label="GST Documents"
+                placeholder="Select GST Documents"
+                error={errorsTenantApplicant.GSTNumberURL}
+                value={gstFiles}
+                onChange={setGstFiles}
+                //availableFilesURL={editingApplicantData?.row._gstFiles}
+                allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
+                maxFiles={5}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])}
+              />
+            </div>
+
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -1681,7 +1809,7 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.ChequeURL}
                 value={chequeFiles}
                 onChange={setChequeFiles}
-                availableFilesURL={editingApplicantData?.row._chequeFiles}
+                //availableFilesURL={editingApplicantData?.row._chequeFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={2}
                 maxSizeMB={10}

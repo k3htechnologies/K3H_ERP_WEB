@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
-  Paperclip,
   Eye,
   Trash2,
   File as FileIcon,
@@ -9,6 +8,7 @@ import {
   Image as ImageIcon,
   List,
   InfoIcon,
+  Upload,
 } from "lucide-react";
 import { MultiImageViewer } from "@/ui/components/ImageViewer/ImageViewer";
 import useToast from "@/core/hooks/useToast";
@@ -55,8 +55,21 @@ const normalizeAvailableFiles = (
 export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
   label,
   required,
-  allowedTypes = ["image/jpeg", "image/png", "application/pdf"],
-  maxFiles = 5,
+  allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "application/pdf",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/octet-stream",
+    "text/csv"
+  ],
+
+
+
+  maxFiles = 100,
   value,
   availableFilesURL,
   onChange,
@@ -242,7 +255,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
         </span>
 
         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Paperclip size={18} onClick={() => inputRef.current?.click()} />
+          <Upload size={18} onClick={() => inputRef.current?.click()} />
           {totalCount > 0 && <List size={18} onClick={() => setIsListOpen(p => !p)} />}
         </span>
       </div>
@@ -297,7 +310,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
                   <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
                     {getFileLabel(url)}
                   </span>
-                  <MultiImageViewer images={[url]} triggerLabel={<Eye size={18} />} />
+                  <MultiImageViewer images={[url]} triggerLabel={<Eye size={18}  />} />
                   <Trash2 size={18} color="red" onClick={() => setExistingUrls(p => p.filter((_, x) => x !== i))} />
                 </div>
               ))}

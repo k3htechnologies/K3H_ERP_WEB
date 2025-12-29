@@ -106,7 +106,7 @@ export const FieldItem: React.FC<{
             triggerLabel={
               isIcon === true ? (
                 <span className="flex items-center gap-2 text-sm font-medium">
-                  <span>{displayValue}</span>
+                 {isSetValue ? <span>{displayValue}</span> : ''}
                 </span>
               ) : (
                 <button

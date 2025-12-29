@@ -29,6 +29,7 @@ import { FieldItem } from '@/ui/components/forms/FieldItem';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { updateFilter } from '@/core/utils/filterHelper';
+import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 
 
 const initialFormState = (): AddUpdateDepartmentMasterRequest => ({
@@ -90,6 +91,8 @@ export const DepartmentMaster: React.FC = () => {
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeDepartmentMasterColumnsModal, setIsShowCustomizeDepartmentMasterColumnsModal] = useState(false);
 
+  //EXCEL IMPORT 
+  const [showImportModal, setShowImportModal] = useState(false);
 
   //#endregion
 
@@ -736,28 +739,6 @@ export const DepartmentMaster: React.FC = () => {
 
   //#region IMPORT EXCEL | DOWNLOAD
 
-  const excelImportDepartmentMaster = async () => {
-
-    await runApiWithLoader(
-
-      setIsLoading,
-
-      setIsLoadingMessage,
-
-      async () => {
-
-
-        return null;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Import failed' })
-      },
-      undefined,
-      'Preparing Import'
-    )
-  }
-
 
   const downloadExcelSampleDepartmentMaster = async () => {
     await runApiWithLoader(
@@ -785,10 +766,40 @@ export const DepartmentMaster: React.FC = () => {
     )
   }
 
-  const handleExcelImportDepartmentMaster = () => excelImportDepartmentMaster()
   const handleDownloadExcelSampleDepartmentMaster = () => downloadExcelSampleDepartmentMaster()
 
+  const uploadExcel = async (file: File, mergeExisting: string) => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
 
+        const fd = new FormData();
+        
+        fd.append("ExcelFile", file);
+        fd.append("IsAllDelete", mergeExisting);
+        fd.append("TableName",'DEPARTMENT MASTER');
+
+        const response = await technicalService.apiCallExcelImport(fd);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: "Excel imported sucessfully" })
+
+          fetchDepartmentList();
+
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (err: any) => addToast({ type: "error", title: err.message }),
+      undefined,
+      "Importing Excel"
+    );
+  };
 
   //#endregion
 
@@ -883,7 +894,7 @@ export const DepartmentMaster: React.FC = () => {
 
         // IMPORT
         isShowImportButton={canAction}
-        onUploadExcel={handleExcelImportDepartmentMaster}
+        onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleDepartmentMaster}
 
         // EXPORT
@@ -1041,6 +1052,14 @@ export const DepartmentMaster: React.FC = () => {
         variant="danger"
       />
 
+      <ExportImport
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onUpload={(file, mergeExisting) => {
+          setShowImportModal(false);
+          uploadExcel(file, mergeExisting);
+        }}
+      />
 
     </div>
   )

@@ -33,6 +33,7 @@ import { fetchMaterialMasterDropdown } from '@/features/materialMaster/materialM
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { fetchUOMMasterDropdown } from '@/features/uomMaster/uomMasterDropdown';
+import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 
 
 const initialFormState = (): AddUpdateSubMaterialMasterRequest => ({
@@ -95,6 +96,9 @@ export const SubMaterialMaster: React.FC = () => {
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeSubMaterialMasterColumnsModal, setIsShowCustomizeSubMaterialMasterColumnsModal] = useState(false);
 
+  //EXCEL IMPORT 
+  const [showImportModal, setShowImportModal] = useState(false);
+
   const [dropdownLabels, setDropdownLabels] = useState<{
     materialName?: string;
     uom?: string;
@@ -154,8 +158,8 @@ export const SubMaterialMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchSubMaterialList = async (page: number = pagination.currentPage,sort?: SortInfo) => {
-    return await loadSubMaterials(page, filters,sort ?? sortInfo);
+  const fetchSubMaterialList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadSubMaterials(page, filters, sort ?? sortInfo);
   }
 
   const loadSubMaterials = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
@@ -307,7 +311,7 @@ export const SubMaterialMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  
+
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     loadSubMaterials(1, filters, sort);
@@ -752,29 +756,6 @@ export const SubMaterialMaster: React.FC = () => {
 
   //#region IMPORT EXCEL | DOWNLOAD
 
-  const excelImportSubMaterialMaster = async () => {
-
-    await runApiWithLoader(
-
-      setIsLoading,
-
-      setIsLoadingMessage,
-
-      async () => {
-
-
-        return null;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Import failed' })
-      },
-      undefined,
-      'Preparing Import'
-    )
-  }
-
-
   const downloadExcelSampleSubMaterialMaster = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -801,10 +782,40 @@ export const SubMaterialMaster: React.FC = () => {
     )
   }
 
-  const handleExcelImportSubMaterialMaster = () => excelImportSubMaterialMaster()
   const handleDownloadExcelSampleSubMaterialMaster = () => downloadExcelSampleSubMaterialMaster()
 
+  const uploadExcel = async (file: File, mergeExisting: string) => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
 
+        const fd = new FormData();
+
+        fd.append("ExcelFile", file);
+        fd.append("IsAllDelete", mergeExisting);
+        fd.append("TableName", 'MATERIAL MASTER');
+
+        const response = await technicalService.apiCallExcelImport(fd);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: "Excel imported sucessfully" })
+
+          fetchSubMaterialList();
+
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (err: any) => addToast({ type: "error", title: err.message }),
+      undefined,
+      "Importing Excel"
+    );
+  };
 
   //#endregion
 
@@ -900,11 +911,11 @@ export const SubMaterialMaster: React.FC = () => {
 
         // IMPORT
         isShowImportButton={canAction}
-        onUploadExcel={handleExcelImportSubMaterialMaster}
+        onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleSubMaterialMaster}
 
         // EXPORT
-        isShowExportButton={canExport && subMaterialListForTable.length >0}
+        isShowExportButton={canExport && subMaterialListForTable.length > 0}
         onExportExcel={handleExportSubMaterialExcel}
         onExportPdf={handleExportSubMaterialPdf}
         exportLoading={isLoading}
@@ -1072,7 +1083,14 @@ export const SubMaterialMaster: React.FC = () => {
         variant="danger"
       />
 
-
+      <ExportImport
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onUpload={(file, mergeExisting) => {
+          setShowImportModal(false);
+          uploadExcel(file, mergeExisting);
+        }}
+      />
     </div>
 
   )

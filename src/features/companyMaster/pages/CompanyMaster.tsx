@@ -29,6 +29,7 @@ import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { Trash2 } from 'lucide-react';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 
 export const CompanyMaster: React.FC = () => {
     //#region STATE
@@ -53,6 +54,9 @@ export const CompanyMaster: React.FC = () => {
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
     const [isShowCustomizeCompanyColumnsModal, setIsShowCustomizeCompanyColumnsModal] = useState(false);
+
+    //EXCEL IMPORT 
+    const [showImportModal, setShowImportModal] = useState(false);
 
     const { canAction, canExport } = useMenuPermissions();
 
@@ -575,27 +579,6 @@ export const CompanyMaster: React.FC = () => {
 
     //#region IMPORT EXCEL | DOWNLOAD
 
-    const excelImportCompanyMaster = async () => {
-
-        await runApiWithLoader(
-
-            setIsLoading,
-
-            setIsLoadingMessage,
-
-            async () => {
-                return null;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message || 'Import failed' })
-            },
-            undefined,
-            'Preparing Import'
-        )
-    }
-
-
     const downloadExcelSampleCompanyMaster = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -622,9 +605,40 @@ export const CompanyMaster: React.FC = () => {
         )
     }
 
-    const handleExcelImportCompanyMaster = () => excelImportCompanyMaster()
     const handleDownloadExcelSampleCompanyMaster = () => downloadExcelSampleCompanyMaster()
 
+    const uploadExcel = async (file: File, mergeExisting: string) => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                const fd = new FormData();
+
+                fd.append("ExcelFile", file);
+                fd.append("IsAllDelete", mergeExisting);
+                fd.append("TableName", 'COMPANY MASTER');
+
+                const response = await technicalService.apiCallExcelImport(fd);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: 'success', title: "Excel imported sucessfully" })
+
+                    fetchCompanyList();
+
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (err: any) => addToast({ type: "error", title: err.message }),
+            undefined,
+            "Importing Excel"
+        );
+    };
     //#endregion
 
     //#region DELETE COMPANY MASTER
@@ -712,7 +726,7 @@ export const CompanyMaster: React.FC = () => {
 
                 // IMPORT
                 isShowImportButton={canAction}
-                onUploadExcel={handleExcelImportCompanyMaster}
+                onUploadExcel={() => setShowImportModal(true)}
                 onDownloadSampleExcel={handleDownloadExcelSampleCompanyMaster}
 
                 // EXPORT
@@ -807,6 +821,15 @@ export const CompanyMaster: React.FC = () => {
                 cancelText="Cancel"
                 loading={isLoading}
                 variant="danger"
+            />
+
+            <ExportImport
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onUpload={(file, mergeExisting) => {
+                    setShowImportModal(false);
+                    uploadExcel(file, mergeExisting);
+                }}
             />
         </div>
 

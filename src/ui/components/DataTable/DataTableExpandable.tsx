@@ -34,7 +34,7 @@ export interface DataTableExpandableRef {
   collapseAll: () => void
 }
 
-export const DataTableExpandable= forwardRef<DataTableExpandableRef, DataTableProps>(({
+export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableProps>(({
   data,
   columns,
   pagination,
@@ -78,7 +78,7 @@ export const DataTableExpandable= forwardRef<DataTableExpandableRef, DataTablePr
           >
             {state?.loading ? <span className="text-xs">...</span>
               : isOpen
-                ? (openLabel ? <span className="text-sm">{openLabel}</span> : <ChevronDown size={16} className="text-gray-600" />)
+                ? (openLabel ? <span className="text-sm">{openLabel}</span> : <ChevronDown size={50} className="text-gray-600" />)
                 : (closeLabel ? <span className="text-sm">{closeLabel}</span> : <ChevronRight size={16} className="text-gray-600" />)
             }
           </button>
@@ -135,7 +135,7 @@ export const DataTableExpandable= forwardRef<DataTableExpandableRef, DataTablePr
     }
   }
 
-    // expose imperative API to parent
+  // expose imperative API to parent
   useImperativeHandle(ref, () => ({
     collapseRow: (id: string) => {
       setExpandedMap(prev => {
@@ -172,7 +172,7 @@ export const DataTableExpandable= forwardRef<DataTableExpandableRef, DataTablePr
             disabled={currentPage === 1}
             className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4 bg-gray-10000" />
           </button>
 
           <div className="flex items-center space-x-1">
@@ -222,7 +222,7 @@ export const DataTableExpandable= forwardRef<DataTableExpandableRef, DataTablePr
       } : {}}>
         <table className="min-w-full border-collapse border border-gray-300">
           <thead className={`${fixedHeight ? 'sticky top-0 z-40' : ''} shadow-sm`} style={{
-            backgroundColor: '#E5E5E5',
+            // backgroundColor: '#E5E5E5',
             position: fixedHeight ? 'sticky' : 'static',
             top: 0,
             zIndex: 50,
@@ -258,6 +258,7 @@ export const DataTableExpandable= forwardRef<DataTableExpandableRef, DataTablePr
                   }}
                   onClick={() => column.sortable && handleSort(column.key)}
                 >
+
                   <div className={`flex items-center space-x-1 ${column.align === 'center' ? 'justify-center' : column.align === 'right' ? 'justify-end' : 'justify-start'}`}>
                     <span className="truncate">{column.label}</span>
                     {column.sortable && <ArrowUpDown className="h-3 w-3 flex-shrink-0" />}
@@ -272,7 +273,7 @@ export const DataTableExpandable= forwardRef<DataTableExpandableRef, DataTablePr
             {!loading && data.length === 0 ? (
               <tr>
                 <td colSpan={effectiveColumns.length} className="py-10">
-                <NoDataView
+                  <NoDataView
                     message={emptyMessage}
                   />
                 </td>
@@ -297,13 +298,13 @@ export const DataTableExpandable= forwardRef<DataTableExpandableRef, DataTablePr
                                 }}
                                 className="p-1 rounded hover:bg-gray-100"
                               >
-                                {state?.loading ? <span className="text-xs">...</span> : (isOpen ? (<ChevronDown size={16} className="text-gray-600" />) : (<ChevronRight size={16} className="text-gray-600" />))}
+                                {state?.loading ? <span className="text-xs">...</span> : (isOpen ? (<ChevronDown size={16} className="text-black-600 bg-blue-100 h-5 w-5" />) : (<ChevronRight size={16} className="text-black-600 bg-blue-100 h-5 w-5" />))}
                               </button>
                             </td>
                           )
                         }
 
-                        const value = column.render ?  column.render(row[column.key], row, index): row[column.key]
+                        const value = column.render ? column.render(row[column.key], row, index) : row[column.key]
                         return (
                           <td key={column.key}
                             className={`px-4 py-2 text-gray-900 border-r border-gray-200 ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'} ${column.fixed === 'left' ? 'sticky left-0 bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-100' : column.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-100' : ''}`}
@@ -318,17 +319,17 @@ export const DataTableExpandable= forwardRef<DataTableExpandableRef, DataTablePr
 
                     {/* Expanded row (single row spanning columns) */}
                     {expandable && expandedMap[rowKey]?.open && (
-                      <tr className="bg-gray-50">
+                      <tr className="bg-white-50">
                         <td colSpan={effectiveColumns.length} className="px-4 py-3 border-b border-gray-200">
                           {
-                          expandedMap[rowKey].loading ? (
-                            <div className="py-6 text-center">Loading...</div>
-                          ) : expandedMap[rowKey].error ? (
-                            <div className="py-4 text-red-500">{expandedMap[rowKey].error}</div>
-                          ) : (
-                            // render fetched data (or undefined) through provided renderRow
-                            expandable.renderRow(expandedMap[rowKey].data, row)
-                          )}
+                            expandedMap[rowKey].loading ? (
+                              <div className="py-6 text-center">Loading...</div>
+                            ) : expandedMap[rowKey].error ? (
+                              <div className="py-4 text-red-500">{expandedMap[rowKey].error}</div>
+                            ) : (
+                              // render fetched data (or undefined) through provided renderRow
+                              expandable.renderRow(expandedMap[rowKey].data, row)
+                            )}
                         </td>
                       </tr>
                     )}

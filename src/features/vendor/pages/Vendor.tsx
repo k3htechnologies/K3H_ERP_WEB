@@ -25,7 +25,9 @@ import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Trash2 } from 'lucide-react';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { technicalService } from '@/features/technical/services/TechnicalService';
-import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
+import type { FilterMagicLinkWithValidate, FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
+import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 
 export const Vendor: React.FC = () => {
@@ -54,6 +56,13 @@ export const Vendor: React.FC = () => {
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   const [isShowCustomizeVendorColumnsModal, setIsShowCustomizeVendorColumnsModal] = useState(false);
+
+  //EXCEL IMPORT 
+  const [showImportModal, setShowImportModal] = useState(false);
+
+  //SHARE MAGIC LINK OPTION
+  const [isShareMagicLinkModalOpen, setIsShareMagicLinkModalOpen] = useState(false);
+  const [magicLink, setmagicLink] = useState<string>('');
 
   const { canAction, canExport } = useMenuPermissions();
 
@@ -112,7 +121,7 @@ export const Vendor: React.FC = () => {
   //#region DATA LOAD
 
   const fetchVendorList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadVendors(page, filters,sort ?? sortInfo);
+    return await loadVendors(page, filters, sort ?? sortInfo);
   };
 
   const loadVendors = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
@@ -264,8 +273,8 @@ export const Vendor: React.FC = () => {
   const handlePageChange = useCallback((page: number) => {
     fetchVendorList(page);
   }, [fetchVendorList]);
-  
-    const handleSortColumn = useCallback((sort: SortInfo) => {
+
+  const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     loadVendors(1, filters, sort);
   }, [filters]);
@@ -485,30 +494,6 @@ export const Vendor: React.FC = () => {
 
 
   //#region IMPORT EXCEL | DOWNLOAD
-
-  const excelImportVendor = async () => {
-
-    await runApiWithLoader(
-
-      setIsLoading,
-
-      setIsLoadingMessage,
-
-      async () => {
-
-
-        return null;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Import failed' })
-      },
-      undefined,
-      'Preparing Import'
-    )
-  }
-
-
   const downloadExcelSampleVendor = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -535,11 +520,41 @@ export const Vendor: React.FC = () => {
     )
   }
 
-  const handleExcelImportVendor = () => excelImportVendor()
+
   const handleDownloadExcelSampleVendor = () => downloadExcelSampleVendor()
 
+  const uploadExcel = async (file: File, mergeExisting: string) => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
 
+        const fd = new FormData();
 
+        fd.append("ExcelFile", file);
+        fd.append("IsAllDelete", mergeExisting);
+        fd.append("TableName", 'Vendor');
+
+        const response = await technicalService.apiCallExcelImport(fd);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: "Excel imported sucessfully" })
+
+          fetchVendorList();
+
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (err: any) => addToast({ type: "error", title: err.message }),
+      undefined,
+      "Importing Excel"
+    );
+  };
   //#endregion
 
   //#region  DELETE VENDOR EVENT
@@ -596,150 +611,277 @@ export const Vendor: React.FC = () => {
 
   //#endregion
 
+  //region MAGIC LICK
+  const handleMagicLinkWithValidate = async () => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+        // Find the column label for sorting
+
+        const params: FilterMagicLinkWithValidate = {
+          ClientRegistrationId: Number(LocalStorageHelper.getStoredEmployeeData()?.ClientRegistrationId),
+          MagicLinkType: 'VENDOR MANAGEMENT'
+        }
+
+        const response = await technicalService.apiCallPullMagicLinkWithValidate(params);
+
+        if (E.isRight(response)) {
+
+          setmagicLink(response.right.Data ?? '');
+
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+        }
+
+        return response;
+
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Export failed' })
+      },
+      undefined,
+      'Generate Link'
+    )
+  }
+  const handleCopyMagicLink = async () => {
+    if (!magicLink) return;
+    try {
+      await navigator.clipboard.writeText(magicLink);
+
+      addToast({ type: "success", title: "Link copied to clipboard" });
+
+    } catch {
+
+      addToast({ type: "error", title: "Failed to copy link" });
+
+    }
+  };
+
+  const handleShareMagicLink = async () => {
+    if (!magicLink) return;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Vendor Magic Link',
+          text: 'Use this link to access Vendor Portal',
+          url: magicLink
+        });
+      } catch {
+
+      }
+    } else {
+      await handleCopyMagicLink();
+    }
+  };
+  //#endregion
   return (
-    
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-full flex flex-col">
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Vendor Name"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearSearchVendors}
-          isShowFilterButton
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-full flex flex-col">
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-          onCustomize={() => setIsShowCustomizeVendorColumnsModal(true)}
-          
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add"
-          onAdd={handleAddVendor}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Vendor Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearSearchVendors}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
 
-           // IMPORT
-          isShowImportButton={canAction}
-          onUploadExcel={handleExcelImportVendor}
-          onDownloadSampleExcel={handleDownloadExcelSampleVendor}
+        onCustomize={() => setIsShowCustomizeVendorColumnsModal(true)}
 
-           // EXPORT
-          isShowExportButton={canExport && vendorListForTable.length > 0}
-          onExportExcel={handleExportVendorExcel}
-          onExportPdf={handleExportVendorPdf}
-          exportLoading={isLoading}
-        />
-        <DataTable
-          data={vendorListForTable}
-          columns={visibleVendorColumns}
-          pagination={vendorPaginationInfo}
-          emptyMessage="No Vendors Data Found"
-          fixedHeight={true}
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddVendor}
 
-        {/* DELETE CONFIRMATION MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteVendorDetailsData(null)
-          }}
-          onConfirm={handleDeleteVendor}
-          title="You are about to delete a vendor?"
-          message="Deleting this vendor will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
+        // ADD EXTRA MAGIC LINK
+        isShowAddExtraButton={canAction}
+        addExtraTitle="Share"
+        onAddExtra={async () => {
+          await handleMagicLinkWithValidate();
+          setIsShareMagicLinkModalOpen(true);
+        }}
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeVendorColumnsModal}
-          onClose={() => setIsShowCustomizeVendorColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(new Set([...keys, ...requiredVendorColumnKeys]))
-            setSelectedVendorColumnKeys(withRequired)
-            try {
-              LocalStorageHelper.storeVendorTableColumns(JSON.stringify(withRequired))
-            } catch { /* empty */ }
-          }}
-          columns={vendorColumns}
-          selectedKeys={selectedVendorColumnKeys}
-          requiredKeys={requiredVendorColumnKeys}
-          title="Customize Vendor Table Columns"
-        />
 
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Vendor"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          resetText=''
-          onCancel={() => clearFilters()}
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
+        // IMPORT
+        isShowImportButton={canAction}
+        onUploadExcel={() => setShowImportModal(true)}
+        onDownloadSampleExcel={handleDownloadExcelSampleVendor}
 
-                <Input
-                  label='Vendor Name'
-                  type="text"
-                  value={tempFilters.VendorName || ''}
-                  onChange={(e) => handleFilterChange('VendorName', e.target.value)}
-                  placeholder="Enter Vendor Name"
-                />
-              </div>
-              <div>
+        // EXPORT
+        isShowExportButton={canExport && vendorListForTable.length > 0}
+        onExportExcel={handleExportVendorExcel}
+        onExportPdf={handleExportVendorPdf}
+        exportLoading={isLoading}
+      />
+      <DataTable
+        data={vendorListForTable}
+        columns={visibleVendorColumns}
+        pagination={vendorPaginationInfo}
+        emptyMessage="No Vendors Data Found"
+        fixedHeight={true}
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-                <Input
-                  label='Company Name'
-                  type="text"
-                  value={tempFilters.CompanyName || ''}
-                  onChange={(e) => handleFilterChange('CompanyName', e.target.value)}
-                  placeholder="Enter Company Name"
-                />
-              </div>
-              <div>
+      {/* DELETE CONFIRMATION MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteVendorDetailsData(null)
+        }}
+        onConfirm={handleDeleteVendor}
+        title="You are about to delete a vendor?"
+        message="Deleting this vendor will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
 
-                <Input
-                  label='Company Type'
-                  type="text"
-                  value={tempFilters.CompanyType || ''}
-                  onChange={(e) => handleFilterChange('CompanyType', e.target.value)}
-                  placeholder="Enter Company Type"
-                />
-              </div>
-              <div>
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeVendorColumnsModal}
+        onClose={() => setIsShowCustomizeVendorColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(new Set([...keys, ...requiredVendorColumnKeys]))
+          setSelectedVendorColumnKeys(withRequired)
+          try {
+            LocalStorageHelper.storeVendorTableColumns(JSON.stringify(withRequired))
+          } catch { /* empty */ }
+        }}
+        columns={vendorColumns}
+        selectedKeys={selectedVendorColumnKeys}
+        requiredKeys={requiredVendorColumnKeys}
+        title="Customize Vendor Table Columns"
+      />
 
-                <Input
-                  label='Mobile Number'
-                  type="text"
-                  value={tempFilters.MobileNumber || ''}
-                  onChange={(e) => handleFilterChange('MobileNumber', e.target.value)}
-                  placeholder="Enter Mobile Number"
-                />
-              </div>
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Vendor"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        resetText=''
+        onCancel={() => clearFilters()}
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+
+              <Input
+                label='Vendor Name'
+                type="text"
+                value={tempFilters.VendorName || ''}
+                onChange={(e) => handleFilterChange('VendorName', e.target.value)}
+                placeholder="Enter Vendor Name"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='Company Name'
+                type="text"
+                value={tempFilters.CompanyName || ''}
+                onChange={(e) => handleFilterChange('CompanyName', e.target.value)}
+                placeholder="Enter Company Name"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='Company Type'
+                type="text"
+                value={tempFilters.CompanyType || ''}
+                onChange={(e) => handleFilterChange('CompanyType', e.target.value)}
+                placeholder="Enter Company Type"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='Mobile Number'
+                type="text"
+                value={tempFilters.MobileNumber || ''}
+                onChange={(e) => handleFilterChange('MobileNumber', e.target.value)}
+                placeholder="Enter Mobile Number"
+              />
             </div>
           </div>
-        </Modal>
-      </div>
+        </div>
+      </Modal>
+
+      <ExportImport
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onUpload={(file, mergeExisting) => {
+          setShowImportModal(false);
+          uploadExcel(file, mergeExisting);
+        }}
+      />
+
+      {/*  SHARE MAGIC LINK MODAL */}
+      <Modal
+        isOpen={isShareMagicLinkModalOpen}
+        onClose={() => setIsShareMagicLinkModalOpen(false)}
+        onCancel={() => setIsShareMagicLinkModalOpen(false)}
+        title="Share Link"
+        size="xl"
+      >
+        <div className="space-y-6 p-6 bg-blue-100">
+
+          <TextArea
+            label="Magic Link"
+            rows={3}
+            className="thin-scroll"
+            value={magicLink ?? ''}
+            readOnly
+          />
+
+          <div className="flex items-center justify-end gap-3">
+
+            <Button
+              color="primary"
+              onClick={handleCopyMagicLink}
+              type='button'
+            >
+              Copy Link
+            </Button>
+
+            <Button
+              color="secondary"
+              onClick={handleShareMagicLink}
+              type='button'
+            >
+              Share Link
+            </Button>
+
+          </div>
+
+        </div>
+      </Modal>
+
+
+    </div>
   )
 }
 

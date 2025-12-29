@@ -30,6 +30,7 @@ import type { FilterPullExcelSample } from '@/features/technical/models/Technica
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 
 const initialFormState = (): AddUpdateProjectDocumentCategoryMasterRequest => ({
   ProjectDocumentCategoryId: 0,
@@ -88,8 +89,11 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
     useState<ProjectDocumentCategoryMasterData | null>(null);
 
   //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeProjectDocumentCategoryMasterColumnsModal, setIsShowCustomizeProjectDocumentCategoryMasterColumnsModal] =
-    useState(false);
+  const [isShowCustomizeProjectDocumentCategoryMasterColumnsModal, setIsShowCustomizeProjectDocumentCategoryMasterColumnsModal] = useState(false);
+
+  //EXCEL IMPORT 
+  const [showImportModal, setShowImportModal] = useState(false);
+
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -101,10 +105,10 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
   //#endregion
 
   //#region INITIALIZATION
- 
+
   useEffect(() => {
-     if (!projectId) return;
-    
+    if (!projectId) return;
+
     fetchProjectDocumentCategoryList();
   }, [projectId]);
 
@@ -636,21 +640,6 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
   //#endregion
 
   //#region IMPORT EXCEL | DOWNLOAD
-  const excelImportProjectDocumentCategoryMaster = async () => {
-    await runApiWithLoader(
-      setIsLoading,
-      setIsLoadingMessage,
-      async () => {
-        return null;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Import failed' });
-      },
-      undefined,
-      'Preparing Import'
-    );
-  };
 
   const downloadExcelSampleProjectDocumentCategoryMaster = async () => {
     await runApiWithLoader(
@@ -658,7 +647,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
       setIsLoadingMessage,
       async () => {
         const params: FilterPullExcelSample = {
-          TableName: 'PROJECT DOCUMENT CATEGORY MASTER'
+          TableName: 'PROJECT DOCUMENT CATEGORY'
         };
 
         const response = await technicalService.apiCallPullExcelSample(params);
@@ -666,7 +655,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
         handleExportFile(
           response,
           'Excel',
-          'Project Document Category Master',
+          'Project Document Category',
           addToast,
           'Sample file download successfully'
         );
@@ -682,9 +671,42 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
     );
   };
 
-  const handleExcelImportProjectDocumentCategoryMaster = () => excelImportProjectDocumentCategoryMaster();
-  const handleDownloadExcelSampleProjectDocumentCategoryMaster = () =>
-    downloadExcelSampleProjectDocumentCategoryMaster();
+
+  const handleDownloadExcelSampleProjectDocumentCategoryMaster = () => downloadExcelSampleProjectDocumentCategoryMaster();
+
+  const uploadExcel = async (file: File, mergeExisting: string) => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+
+        const fd = new FormData();
+
+        fd.append("ExcelFile", file);
+        fd.append("IsAllDelete", mergeExisting);
+        fd.append("TableName", 'PROJECT DOCUMENT CATEGORY');
+        fd.append("ProjectId", String(projectId));
+
+        const response = await technicalService.apiCallExcelImport(fd);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: "Excel imported sucessfully" })
+
+          fetchProjectDocumentCategoryList();
+
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (err: any) => addToast({ type: "error", title: err.message }),
+      undefined,
+      "Importing Excel"
+    );
+  };
   //#endregion
 
   //#region DELETE PROJECT DOCUMENT CATEGORY MASTER
@@ -782,7 +804,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
         onAdd={handleAddProjectDocumentCategoryModal}
         // IMPORT
         isShowImportButton={canAction}
-        onUploadExcel={handleExcelImportProjectDocumentCategoryMaster}
+        onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleProjectDocumentCategoryMaster}
         // EXPORT
         isShowExportButton={canExport}
@@ -914,7 +936,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
                 placeholder="Enter project document category"
               />
             </div>
-           
+
           </div>
         </div>
       </Modal>
@@ -933,6 +955,15 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
         cancelText="Cancel"
         loading={isLoading}
         variant="danger"
+      />
+
+      <ExportImport
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onUpload={(file, mergeExisting) => {
+          setShowImportModal(false);
+          uploadExcel(file, mergeExisting);
+        }}
       />
     </div>
   );

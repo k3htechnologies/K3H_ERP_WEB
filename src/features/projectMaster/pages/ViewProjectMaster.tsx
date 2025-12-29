@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect,  useState } from 'react';
 import { Loader } from '@/core/utils/loader';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
@@ -12,10 +12,11 @@ import * as E from 'fp-ts/Either';
 import type { EmployeeMasterData } from '@/features/employeeMaster/models/EmployeeMasterModel';
 import useToast from '@/core/hooks/useToast';
 import type { CompanyMasterData } from '@/features/companyMaster/models/CompanyMasterModel';
-import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
-import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
+import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
+import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 
 
 export const ViewProjectMaster: React.FC = () => {
@@ -24,7 +25,15 @@ export const ViewProjectMaster: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
     const [employeeMasterList, setEmployeeMasterList] = useState<EmployeeMasterData[]>([]);
+    // SINGLE SEARCH TEXT BOX
+    const [searchTermForEmployee, setSearchTermForEmployeeName] = useState('')
+    const debouncedSearchForEmployeeName = useDebouncedCallback((value: string) => {
+        searchEmployeeName(value)
+    }, 350)
+
+
     const [compantMasterList, setCompanyMasterList] = useState<CompanyMasterData[]>([]);
+
     const [projectWithBankDetailsList, setProjectWithBankDetailsList] = useState<ProjectWithBankDetails[]>([]);
 
     // TOAST
@@ -72,12 +81,11 @@ export const ViewProjectMaster: React.FC = () => {
     useEffect(() => {
         if (activeTab === 'Project Overview') {
 
-            loadProjectMasterWithEmployee(editProjectData!.ProjectId);
         }
 
         else if (activeTab === 'Employee') {
 
-            loadProjectMasterWithEmployee(editProjectData!.ProjectId);
+            loadProjectMasterWithEmployee(editProjectData!.ProjectId,'');
         }
         else if (activeTab === 'Bank Details') {
 
@@ -96,13 +104,13 @@ export const ViewProjectMaster: React.FC = () => {
 
     //#region DATA LOAD PROJECT WITH EMPLOYEE | COMPANY | BANK DETAILS
 
-    const loadProjectMasterWithEmployee = async (ProjectId: number) => {
+    const loadProjectMasterWithEmployee = async (ProjectId: number, searchText = "") => {
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
             async () => {
 
-                const response = await ProjectMasterService.apiCallPullProjectMasterWithEmployee(ProjectId);
+                const response = await ProjectMasterService.apiCallPullProjectMasterWithEmployee(ProjectId,searchText);
 
                 if (E.isRight(response)) {
 
@@ -123,6 +131,25 @@ export const ViewProjectMaster: React.FC = () => {
             'Loading Employee'
         );
     };
+
+
+    //#region SERACH EMPLOYEE NAME 
+    const searchEmployeeName = async (searchValue: string) => {
+
+        setSearchTermForEmployeeName(searchValue);
+        await loadProjectMasterWithEmployee(editProjectData!.ProjectId, searchValue);
+
+    }
+    //#endregion
+
+    //#region CLEAR SERACH DEPARTMENT 
+    const clearsearchForEmployeeName = async () => {
+        setSearchTermForEmployeeName('');
+        debouncedSearchForEmployeeName.cancel?.();
+        await loadProjectMasterWithEmployee(editProjectData!.ProjectId);
+    }
+
+    //#endregion
 
     const loadProjectMasterWithCompany = async (ProjectId: number) => {
         await runApiWithLoader(
@@ -186,267 +213,6 @@ export const ViewProjectMaster: React.FC = () => {
             state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTermForEmployee: '' } }
         });
     };
-    //#endregion
-
-    //#region TABLE COLUMN EMPLOYEE MASTER
-    const projectMasterWithEmployeeColumns = useMemo<TableColumn[]>(
-        () => [
-            {
-                key: 'EmployeeCode',
-                label: 'Employee Code',
-                width: '14',
-                sortable: false,
-                align: 'center',
-                render: value => (
-                    <TooltipText
-                        text={value || 'N/A'}
-                        maxWidth="140px"
-                        tooltipThreshold={14}
-                        tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-                    />
-                )
-            },
-            {
-                key: 'FullName',
-                label: 'Full Name',
-                width: '22',
-                sortable: false,
-                fixed: 'left',
-                align: 'left',
-                render: (value, row) => {
-                    const fullName = (row?.FullName ?? '').trim();
-                    const initials = fullName
-                        ? fullName
-                            .split(/\s+/)
-                            .map((w: string) => (w && w.length ? w[0] : ''))
-                            .join('')
-                            .toUpperCase()
-                            .slice(0, 2)
-                        : 'NA';
-
-                    return (
-                        <div className={`flex items-center justify-between gap-3`}>
-                            {/* left: avatar + name */}
-                            <div className="flex items-center gap-3">
-                                <div
-                                    className="w-7 h-7 rounded-full
-                       bg-blue-200 
-                       flex items-center justify-center
-                       text-gray-800 font-medium text-xs
-                       border border-gray-300"
-                                    title={fullName || 'N/A'}
-                                >
-                                    {initials}
-                                </div>
-                                <div className="min-w-0">
-                                    <TooltipText
-                                        text={value || row.FirstName || 'N/A'}
-                                        maxWidth="260px"
-                                        tooltipThreshold={26}
-
-                                    />
-                                </div>
-
-                            </div>
-
-
-                        </div>
-
-                    );
-                }
-            },
-
-
-            {
-                key: 'PersonalMobileNumber',
-                label: 'Personal Mobile Number',
-                width: '14',
-                sortable: false,
-                align: 'left',
-                render: value => value ? `+91 ${value}` : '-'
-
-            },
-            {
-                key: 'EmailId',
-                label: 'Email Id',
-                width: '14',
-                sortable: false,
-                align: 'left',
-                render: value => value || 'N/A'
-            },
-            {
-                key: 'Department',
-                label: 'Department',
-                width: '14',
-                sortable: true,
-                align: 'left',
-                render: value => (
-                    <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
-                )
-            },
-            {
-                key: 'Designation',
-                label: 'Designation',
-                width: '14',
-                sortable: true,
-                align: 'left',
-                render: value => (
-                    <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
-                )
-            },
-
-            {
-                key: 'ReportPersonName',
-                label: 'Report Person Name',
-                width: '14',
-                sortable: true,
-                align: 'left',
-                render: value => (
-                    <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
-                )
-            },
-            {
-                key: 'JoiningDate',
-                label: 'Joining Date',
-                width: '14',
-                sortable: true,
-                align: 'center',
-                render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
-            },
-
-            {
-                key: 'LastLogin',
-                label: 'Last Login',
-                width: '16',
-                sortable: true,
-                align: 'center',
-                render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
-            }
-        ],
-        []
-
-    );
-    //#endregion
-
-    //#region TABLE COLUMN COMPANY MASTER
-
-    const projectMasterWithCompanyColumns = useMemo<TableColumn[]>(
-        () => [
-            {
-                key: 'CompanyName',
-                label: 'Company Name',
-                width: '33',
-                sortable: false,
-                align: 'center',
-                fixed: 'left',
-                render: (value) => value || ''
-            },
-            {
-                key: 'CompanyType',
-                label: 'Company Type',
-                width: '33',
-                sortable: false,
-                align: 'center',
-                render: (value) => value || ''
-            },
-            {
-                key: 'ContactPerson',
-                label: 'Contact Person',
-                width: '33',
-                sortable: false,
-                align: 'center',
-                render: (value) => value || ''
-            },
-            {
-                key: 'MobileNumber',
-                label: 'Mobile Number',
-                width: '33',
-                sortable: false,
-                align: 'center',
-                render: (value) => value || ''
-            },
-            {
-                key: 'CityName',
-                label: 'City',
-                width: '33',
-                sortable: false,
-                align: 'center',
-                render: (value) => value || ''
-            },
-
-        ],
-        []
-    )
-
-    //#endregion
-
-    //#region TABLE COLUMN BANK DETAILS
-
-    const projectMasterBankDetailsColumns = useMemo<TableColumn[]>(
-        () => [
-            {
-                key: 'BeneficiaryAccountHolderName',
-                label: 'Ac Holder',
-                width: '33',
-                sortable: true,
-                fixed: 'left',
-                align: 'left',
-                render: (value) => (
-                    <div className={`flex items-center justify-start`}>
-                        <TooltipText
-                            text={value || 'N/A'}
-                            maxWidth="250px"
-                            tooltipThreshold={25}
-                        />
-
-                    </div>
-                )
-            },
-            {
-                key: 'AccountNumber',
-                label: 'Ac Number',
-                width: '33',
-                sortable: false,
-                align: 'center',
-                render: (value) => value || ''
-            },
-            {
-                key: 'BankName',
-                label: 'Bank Name',
-                width: '33',
-                sortable: false,
-                align: 'center',
-                render: (value) => value || ''
-            },
-            {
-                key: 'Branch',
-                label: 'Branch',
-                width: '33',
-                sortable: false,
-                align: 'center',
-                render: (value) => value || ''
-            },
-            {
-                key: 'AcType',
-                label: 'Ac Type',
-                width: '33',
-                sortable: false,
-                align: 'center',
-                render: (value) => value || ''
-            },
-            {
-                key: 'IFSCCode',
-                label: 'IFSC',
-                width: '33',
-                sortable: false,
-                align: 'center',
-                render: (value) => value || ''
-            },
-
-        ],
-        []
-    )
-
     //#endregion
 
     //#region EDIT PROJECT
@@ -750,32 +516,96 @@ export const ViewProjectMaster: React.FC = () => {
                 {activeTab === 'Employee' && (
                     <div className="space-y-4 p-4">
 
-                        <DataTable
-                            data={employeeMasterList}
-                            columns={projectMasterWithEmployeeColumns}
-                            emptyMessage="No Employee Data Found"
-                            fixedHeight={true}
-                            maxHeight="calc(100vh - 255px)"
-                            recordsPerPage={20}
-                            className="flex-1"
-                            loading={isLoading}
+                        <TableActionToolbar
+                            isShowSearchBar
+                            searchTerm={searchTermForEmployee}
+                            searchPlaceholder="Search By Employee Name"
+                            onSearchChange={(v) => {
+                                setSearchTermForEmployeeName(v)
+                                debouncedSearchForEmployeeName(v)
+                            }}
+                            onClearSearch={clearsearchForEmployeeName}
+                            isShowFilterButton={false}
+                            exportLoading={isLoading}
                         />
+
+                        {employeeMasterList?.length ? (
+                            employeeMasterList.map(emp => {
+                                const fullName = (emp?.FullName ?? '').trim();
+                                const initials = fullName
+                                    ? fullName.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2)
+                                    : 'NA';
+
+                                return (
+                                    <section
+                                        key={emp.EmployeeCode}
+                                        className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] mb-4"
+                                    >
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="w-8 h-8 rounded-full bg-blue-200 text-gray-800 flex items-center justify-center text-xs font-medium border border-gray-300">
+                                                {initials}
+                                            </div>
+
+                                            <h4 className="text-lg font-semibold text-gray-900">
+                                                {emp.FullName || 'N/A'}
+                                            </h4>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Employee Code" value={emp.EmployeeCode ?? '-'} />
+                                            <FieldItem label="Mobile" value={emp.PersonalMobileNumber ? `+91 ${emp.PersonalMobileNumber}` : '-'} />
+                                            <FieldItem label="Email" value={emp.EmailId ?? '-'} />
+                                            <FieldItem label="Department" value={emp.Department ?? '-'} />
+                                            <FieldItem label="Designation" value={emp.Designation ?? '-'} />
+                                            <FieldItem label="Report Person" value={emp.ReportPersonName ?? '-'} />
+                                            <FieldItem
+                                                label="Joining Date"
+                                                value={emp.JoiningDate ? formatDate_dd_MonthName_yy(emp.JoiningDate) : '-'}
+                                            />
+                                            <FieldItem
+                                                label="Last Login"
+                                                value={emp.LastLogin ? formatDate_dd_MonthName_yy(emp.LastLogin) : '-'}
+                                            />
+                                        </div>
+                                    </section>
+                                );
+                            })
+                        ) : (
+                            <p className="text-center text-gray-500 py-6">
+                                <NoDataView />
+                            </p>
+                        )}
+
                     </div>
                 )}
 
                 {activeTab === "Bank Details" && (
 
                     <div className="space-y-3 p-4">
-                        <DataTable
-                            data={projectWithBankDetailsList}
-                            columns={projectMasterBankDetailsColumns}
-                            emptyMessage="No Bank Data Found"
-                            fixedHeight={true}
-                            maxHeight="calc(100vh - 255px)"
-                            recordsPerPage={20}
-                            className="flex-1"
-                            loading={isLoading}
-                        />
+                        {projectWithBankDetailsList?.length ? (
+                            projectWithBankDetailsList.map((b, i) => (
+                                <section
+                                    key={i}
+                                    className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] mb-4"
+                                >
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        {b.BeneficiaryAccountHolderName ?? "Account Details"}
+                                    </h4>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Account Holder" value={b.BeneficiaryAccountHolderName ?? "-"} />
+                                        <FieldItem label="Account Number" value={b.AccountNumber ?? "-"} />
+                                        <FieldItem label="Bank Name" value={b.BankName ?? "-"} />
+                                        <FieldItem label="Branch" value={b.Branch ?? "-"} />
+                                        <FieldItem label="Account Type" value={b.AcType ?? "-"} />
+                                        <FieldItem label="IFSC Code" value={b.IFSCCode ?? "-"} />
+                                    </div>
+                                </section>
+                            ))
+                        ) : (
+                            <NoDataView />
+                        )}
+
 
                     </div>
                 )}
@@ -784,16 +614,33 @@ export const ViewProjectMaster: React.FC = () => {
                     <div className="space-y-4 p-4">
 
 
-                        <DataTable
-                            data={compantMasterList}
-                            columns={projectMasterWithCompanyColumns}
-                            emptyMessage="No Company Data Found"
-                            fixedHeight={true}
-                            maxHeight="calc(100vh - 255px)"
-                            recordsPerPage={20}
-                            className="flex-1"
-                            loading={isLoading}
-                        />
+                        {compantMasterList?.length ? (
+                            compantMasterList.map((c, i) => (
+                                <section
+                                    key={i}
+                                    className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] mb-4"
+                                >
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        {c.CompanyName ?? "-"}
+                                    </h4>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Company Type" value={c.CompanyType ?? "-"} />
+                                        <FieldItem label="Contact Person" value={c.ContactPerson ?? "-"} />
+                                        <FieldItem label="Mobile Number" value={c.MobileNumber ?? "-"} />
+                                        <FieldItem label="E-mail Id" value={c.EmailId ?? "-"} />
+                                        <FieldItem label="PAN Number" value={c?.PANNumber ?? '-'} urls={c?.PanCardURL} isIcon />
+                                        <FieldItem label="GST Number" value={c?.GSTNumber ?? '-'} urls={c?.GSTCertificateURL} isIcon />
+                                        <FieldItem label="CIN Number" value={c?.CINNumber ?? '-'} urls={c?.CINURL} isIcon />
+                                        <FieldItem label="RERA Number" value={c?.RERANumber ?? '-'} />
+                                        <FieldItem label="City" value={c.CityName ?? "-"} />
+                                    </div>
+                                </section>
+                            ))
+                        ) : (
+                            <NoDataView />
+                        )}
+
                     </div>
                 )}
             </div>

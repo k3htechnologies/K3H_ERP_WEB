@@ -29,6 +29,7 @@ import { FieldItem } from '@/ui/components/forms/FieldItem';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { updateFilter } from '@/core/utils/filterHelper';
+import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 
 
 const initialFormState = (): AddUpdateMaterialMasterRequest => ({
@@ -53,7 +54,7 @@ export const MaterialMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const {addToast } = useToast()
+  const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -77,10 +78,10 @@ export const MaterialMaster: React.FC = () => {
   const [editingMaterialMasterData, setEditingMaterialMasterData] = useState<MaterialMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  
+
   //ADD UPDATE MATERIAL MASTER
-    const [formData, setFormData] = useState<AddUpdateMaterialMasterRequest>(() => initialFormState());
-  
+  const [formData, setFormData] = useState<AddUpdateMaterialMasterRequest>(() => initialFormState());
+
   //DELETE MATERIAL MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
@@ -89,6 +90,9 @@ export const MaterialMaster: React.FC = () => {
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeMaterialMasterColumnsModal, setIsShowCustomizeMaterialMasterColumnsModal] = useState(false);
+
+  //EXCEL IMPORT 
+  const [showImportModal, setShowImportModal] = useState(false);
 
 
   //#endregion
@@ -139,7 +143,7 @@ export const MaterialMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchMaterialList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadMaterials(page, filters,sort ?? sortInfo);
+    return await loadMaterials(page, filters, sort ?? sortInfo);
   }
 
   const loadMaterials = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
@@ -289,7 +293,7 @@ export const MaterialMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  
+
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     loadMaterials(1, filters, sort);
@@ -376,37 +380,37 @@ export const MaterialMaster: React.FC = () => {
         align: 'center',
         render: (value) => value || ''
       },
-       {
-                    key: 'actions',
-                    label: 'Actions',
-                    width: '12',
-                    fixed: 'right',
-                    align: 'center',
-                    render: (_value, row) => (
-                      canAction && !row.NumberOfEmployee ? (
-                        <div className="flex items-center justify-center gap-2">
-            
-                          <Button
-                            onClick={(e) => {
-                              e.preventDefault()
-                              e.stopPropagation()
-                              handleConfirmationDialogBoxOpen(row)
-                            }}
-                            color='transparent'
-                            isborderRadius
-                            size='sm'
-                            style={{
-                              color: 'red',
-                              padding: '4px 8px'
-                            }}
-                            title="Delete Material"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ) : null
-                    )
-                  }
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction && !row.NumberOfEmployee ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Material"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )
+      }
     ],
     // dependencies: include everything used inside that might change
     [canAction, handleViewMaterialDetails, handleEditMaterialMaster, handleConfirmationDialogBoxOpen]
@@ -718,29 +722,6 @@ export const MaterialMaster: React.FC = () => {
 
   //#region IMPORT EXCEL | DOWNLOAD
 
-  const excelImportMaterialMaster = async () => {
-
-    await runApiWithLoader(
-
-      setIsLoading,
-
-      setIsLoadingMessage,
-
-      async () => {
-
-
-        return null;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Import failed' })
-      },
-      undefined,
-      'Preparing Import'
-    )
-  }
-
-
   const downloadExcelSampleMaterialMaster = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -767,10 +748,40 @@ export const MaterialMaster: React.FC = () => {
     )
   }
 
-  const handleExcelImportMaterialMaster = () => excelImportMaterialMaster()
   const handleDownloadExcelSampleMaterialMaster = () => downloadExcelSampleMaterialMaster()
 
+  const uploadExcel = async (file: File, mergeExisting: string) => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
 
+        const fd = new FormData();
+
+        fd.append("ExcelFile", file);
+        fd.append("IsAllDelete", mergeExisting);
+        fd.append("TableName", 'MATERIAL MASTER');
+
+        const response = await technicalService.apiCallExcelImport(fd);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: "Excel imported sucessfully" })
+
+          fetchMaterialList();
+
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (err: any) => addToast({ type: "error", title: err.message }),
+      undefined,
+      "Importing Excel"
+    );
+  };
 
   //#endregion
 
@@ -830,202 +841,210 @@ export const MaterialMaster: React.FC = () => {
   //#endregion
 
   return (
-    
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {/* ============================================================================
+
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        {/* ============================================================================
+      {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Material Name"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchMaterials}
-          isShowFilterButton={false}
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeMaterialMasterColumnsModal(true)}
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add"
-          onAdd={handleAddMaterialModal}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Material Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchMaterials}
+        isShowFilterButton={false}
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeMaterialMasterColumnsModal(true)}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddMaterialModal}
 
-          // IMPORT
-          isShowImportButton={canAction}
-          onUploadExcel={handleExcelImportMaterialMaster}
-          onDownloadSampleExcel={handleDownloadExcelSampleMaterialMaster}
+        // IMPORT
+        isShowImportButton={canAction}
+        onUploadExcel={() => setShowImportModal(true)}
+        onDownloadSampleExcel={handleDownloadExcelSampleMaterialMaster}
 
-          // EXPORT
-          isShowExportButton={canExport && materialListForTable.length >0}
-          onExportExcel={handleExportMaterialExcel}
-          onExportPdf={handleExportMaterialPdf}
-          exportLoading={isLoading}
-        />
+        // EXPORT
+        isShowExportButton={canExport && materialListForTable.length > 0}
+        onExportExcel={handleExportMaterialExcel}
+        onExportPdf={handleExportMaterialPdf}
+        exportLoading={isLoading}
+      />
 
 
-        {/* DATA TABLE MATERIAL */}
-        <DataTable
-          data={materialListForTable}
-          columns={visibleMaterialMasterColumns}
-          pagination={materialMasterPaginationInfo}
-          emptyMessage="No Materials Data Found"
-          fixedHeight={true}
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-          loading={isLoading}
-        />
+      {/* DATA TABLE MATERIAL */}
+      <DataTable
+        data={materialListForTable}
+        columns={visibleMaterialMasterColumns}
+        pagination={materialMasterPaginationInfo}
+        emptyMessage="No Materials Data Found"
+        fixedHeight={true}
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+        loading={isLoading}
+      />
 
-        {/* VIEW MATERIAL MODAL */}
-        <ViewMaterialDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewMaterialMasterDetailsData(null)
-          }}
-          data={viewMaterialMasterDetailsData}
-        />
+      {/* VIEW MATERIAL MODAL */}
+      <ViewMaterialDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewMaterialMasterDetailsData(null)
+        }}
+        data={viewMaterialMasterDetailsData}
+      />
 
-        {/*  ADD EDIT UPDATE MATERIAL MODAL */}
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingMaterialMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingMaterialMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          title={editingMaterialMasterData ? 'Update Material' : 'Add Material'}
-          onSubmit={handleAddUpdateMaterialMaster}
-          saveText={editingMaterialMasterData ? 'Update Material' : 'Save Material'}
-          resetText='Reset'
-          loading={isLoading}
-          size='xl'
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4" >
-              <div>
-                <Input
-                  label='Material Code'
-                  required
-                  error={errors.MaterialCode}
-                  type="text"
-                  value={formData.MaterialCode.toUpperCase()}
-                  maxLength={4}
-                  onChange={(e) => handleFieldChange('MaterialCode', e.target.value)}
-                  placeholder="Enter Material Code"
-                />
+      {/*  ADD EDIT UPDATE MATERIAL MODAL */}
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingMaterialMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingMaterialMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        title={editingMaterialMasterData ? 'Update Material' : 'Add Material'}
+        onSubmit={handleAddUpdateMaterialMaster}
+        saveText={editingMaterialMasterData ? 'Update Material' : 'Save Material'}
+        resetText='Reset'
+        loading={isLoading}
+        size='xl'
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4" >
+            <div>
+              <Input
+                label='Material Code'
+                required
+                error={errors.MaterialCode}
+                type="text"
+                value={formData.MaterialCode.toUpperCase()}
+                maxLength={4}
+                onChange={(e) => handleFieldChange('MaterialCode', e.target.value)}
+                placeholder="Enter Material Code"
+              />
 
-              </div>
+            </div>
 
-              <div>
-                <Input
-                  label='Material Name'
-                  required
-                  error={errors.MaterialName}
-                  type="text"
-                  value={formData.MaterialName}
-                  maxLength={500}
-                  onChange={(e) => handleFieldChange('MaterialName', e.target.value)}
-                  placeholder="Enter Material Name"
-                />
+            <div>
+              <Input
+                label='Material Name'
+                required
+                error={errors.MaterialName}
+                type="text"
+                value={formData.MaterialName}
+                maxLength={500}
+                onChange={(e) => handleFieldChange('MaterialName', e.target.value)}
+                placeholder="Enter Material Name"
+              />
 
-              </div>
             </div>
           </div>
+        </div>
 
-        </Modal>
-        {/* CUSTOMIZE COLUMNS MODAL */}
+      </Modal>
+      {/* CUSTOMIZE COLUMNS MODAL */}
 
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeMaterialMasterColumnsModal}
-          onClose={() => setIsShowCustomizeMaterialMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredMaterialMasterColumnKeys]),
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeMaterialMasterColumnsModal}
+        onClose={() => setIsShowCustomizeMaterialMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredMaterialMasterColumnKeys]),
+          )
+
+          setSelectedMaterialMasterColumnKeys(withRequired)
+
+          try {
+            LocalStorageHelper.storeMaterialMasterTableColumns(
+              JSON.stringify(withRequired),
             )
+          } catch { }
+        }}
+        columns={materialMasterColumns}
+        selectedKeys={selectedMaterialMasterColumnKeys}
+        requiredKeys={requiredMaterialMasterColumnKeys}
+        title="Customize Table Columns"
+      />
 
-            setSelectedMaterialMasterColumnKeys(withRequired)
-
-            try {
-              LocalStorageHelper.storeMaterialMasterTableColumns(
-                JSON.stringify(withRequired),
-              )
-            } catch { }
-          }}
-          columns={materialMasterColumns}
-          selectedKeys={selectedMaterialMasterColumnKeys}
-          requiredKeys={requiredMaterialMasterColumnKeys}
-          title="Customize Table Columns"
-        />
-
-        {/* FILTER MATERIAL MODAL */}
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Material Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          onCancel={() => clearFilters()}
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <Input
-                  label='Material Name'
-                  type="text"
-                  value={tempFilters.MaterialName || ''}
-                  onChange={(e) => handleFilterChange('MaterialName', e.target.value)}
-                  placeholder="Enter material name"
-                />
-              </div>
+      {/* FILTER MATERIAL MODAL */}
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Material Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        onCancel={() => clearFilters()}
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <Input
+                label='Material Name'
+                type="text"
+                value={tempFilters.MaterialName || ''}
+                onChange={(e) => handleFilterChange('MaterialName', e.target.value)}
+                placeholder="Enter material name"
+              />
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        {/* DELETE CONFIRMATION MATERIAL MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteMaterialMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteMaterialMaster}
-          title="You are about to delete a material?"
-          message="Deleting this material will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
+      {/* DELETE CONFIRMATION MATERIAL MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteMaterialMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteMaterialMaster}
+        title="You are about to delete a material?"
+        message="Deleting this material will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
 
+      <ExportImport
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onUpload={(file, mergeExisting) => {
+          setShowImportModal(false);
+          uploadExcel(file, mergeExisting);
+        }}
+      />
 
-      </div>
+    </div>
 
   )
 }

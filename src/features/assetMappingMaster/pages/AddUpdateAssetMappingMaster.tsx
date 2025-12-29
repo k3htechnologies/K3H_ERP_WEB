@@ -41,7 +41,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // GET VALUE FROM URL AssetMappingMasterId
+  // GET VALUE FROM URL ASSET MAPPING MASTER ID
   const { AssetMasterMappingId } = useParams<{ AssetMasterMappingId?: string }>();
   const AssetMappingId = AssetMasterMappingId ? Number(AssetMasterMappingId) : 0;
   const isAddMode = AssetMappingId === 0;

@@ -22,6 +22,7 @@ import { fetchChannelPartnerMasterDropdown } from "../services/channelPartnerDro
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchProjectMasterDropdown } from "@/features/ChannelPartnerMaster/services/ProjectMasterDropDown";
 import RadioButton from "@/ui/components/forms/RadioButton";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
 
 const initialFormState = (): AddUpdateEnquiryMasterRequest => ({
     EnquiryId: 0,
@@ -58,13 +59,16 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
 
     // NAVIGATE
     const navigate = useNavigate();
-    
     const location = useLocation();
 
-    // GET VALUE FROM URL EnquiryMasterId
+    // GET VALUE FROM URL ENQUIRY MASTER ID
     const { EnquiryId } = useParams<{ EnquiryId?: string }>();
-    const EnquiryMasterId = EnquiryId ? Number(EnquiryId) : 0;
-    const isAddMode = EnquiryMasterId === 0;
+
+    const { projectId } = useProject();
+
+    const enquiryMasterId = EnquiryId ? Number(EnquiryId) : 0;
+
+    const isAddMode = enquiryMasterId === 0;
 
     // TOAST
     const { addToast } = useToast();
@@ -78,7 +82,9 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
     //#endregion
 
     const [dropdownLabels, setDropdownLabels] = useState<{
+
         channelPartnerName?: string
+        
         projectName?: string
     }>({})
 
@@ -131,7 +137,8 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                 const params: FilterWithPaginationEnquiryMasterRequest = {
                     PageNumber: 1,
                     PageSize: 1,
-                    EnquiryId: EnquiryMasterId,
+                    EnquiryId: enquiryMasterId,
+                    ProjectId: Number(projectId)
                 };
 
                 const response = await EnquiryMasterService.apiCallPullEnquiryMaster(params);
@@ -145,7 +152,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             ...prev,
                             EnquiryId: e.EnquiryId ?? prev.EnquiryId,
                             Uniquekey: e.Uniquekey ?? prev.Uniquekey,
-                            ProjectId: e.ProjectId && e.ProjectId > 0 ? e.ProjectId : prev.ProjectId,
+                            ProjectId: Number(projectId),
                             Name: e.Name ?? prev.Name,
                             EmailId: e.EmailId ?? prev.EmailId,
                             MobileNumber: e.MobileNumber ?? prev.MobileNumber,
@@ -164,14 +171,12 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             NextFollowUpDate: e.NextFollowUpDate ?? prev.NextFollowUpDate,
                             EnquiryDate: e.EnquiryDate ?? prev.EnquiryDate,
                             Remark: e.Remark ?? prev.Remark,
-                            ProjectName:e.ProjectName ?? prev.ProjectName
+                            ProjectName: e.ProjectName ?? prev.ProjectName
                         }));
                         setDropdownLabels({
-                            channelPartnerName: e.ChannelPartnerId?.toString(),
-                            projectName: e.ProjectId?.toString()
-
-                        })
-
+                            channelPartnerName: e.ChannelPartner || '',
+                            projectName: e.ProjectName || '',
+                        });
                     }
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -284,7 +289,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
         return {
             EnquiryId: formData.EnquiryId,
             Uniquekey: formData.Uniquekey,
-            ProjectId: Number(formData.ProjectId),
+            ProjectId: Number(projectId),
             Name: formData.Name,
             EmailId: formData.EmailId,
             MobileNumber: formData.MobileNumber,
@@ -448,7 +453,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                     size="lg"
                                     required
                                     dataFetchCallBack={fetchProjectMasterDropdown}
-                                    onSelected={(item) => handleFieldChange('ProjectId', (item.value))}
+                                    onSelected={(item) => handleFieldChange('ProjectId', Number(item.value))}
                                     initialValue={createDropdownInitialValue(formData.ProjectId, dropdownLabels.projectName)}
                                     error={errors.ProjectId}
                                 />

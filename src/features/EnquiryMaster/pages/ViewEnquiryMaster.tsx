@@ -13,12 +13,10 @@ const ViewEnquiryMaster: React.FC = () => {
     // NAVIGATION
     const navigate = useNavigate();
 
+    //#region MENU PERMISSION
     const { canAction } = useMenuPermissions('/enquiry');
 
-    // Selected Enquiry data passed from the Enquiry List page (via navigate state)
     const editEnquiryData = location.state?.editEnquiryData as EnquiryMasterData;
-
-    // Stores pagination, filters, and sorting state of Enquiry List page to restore on back navigation
 
     const listState = location.state?.listState;
 
@@ -29,7 +27,6 @@ const ViewEnquiryMaster: React.FC = () => {
     const handleEditEnquiryMaster = (row: EnquiryMasterData) => {
         if (!row?.EnquiryId) return;
         navigate(`/enquiry/add/${row.EnquiryId}`, {
-
             state: {
                 editEnquiryData: row,
                 fromList: true,
@@ -84,7 +81,7 @@ const ViewEnquiryMaster: React.FC = () => {
 
                         {/* HEADER  DETAILS */}
                         <div className="mt-1 pb-2 border-b-2 border-gray-300">
-                            <div className="flex items-center gap-28">
+                            <div className="flex items-center gap-50">
                                 <h1 className="text-lg text-black">Enquiry Details</h1>
 
                                 <div className="flex flex-col gap-3 text-xs text-gray-700">
@@ -119,7 +116,7 @@ const ViewEnquiryMaster: React.FC = () => {
                             <FieldItem label="Area Preferred" value={editEnquiryData.AreaPreferred} />
                             <FieldItem label="Occupation Type" value={editEnquiryData.OccupationType} />
                             <FieldItem label="Budget" value={editEnquiryData.Budget} />
-                            <FieldItem label="Home Loan " value={editEnquiryData.IsHomeLoan ? "Yes" :"No"} />
+                            <FieldItem label="Home Loan " value={editEnquiryData.IsHomeLoan ? "Yes" : "No"} />
                             <FieldItem label="Source " value={editEnquiryData.Source} />
                             <FieldItem label="Sub Source " value={editEnquiryData.SubSource} />
                             <FieldItem label="Channel Partner " value={editEnquiryData.ChannelPartner} />

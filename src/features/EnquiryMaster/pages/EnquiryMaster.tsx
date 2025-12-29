@@ -43,6 +43,7 @@ export const EnquiryMaster: React.FC = () => {
     const navigate = useNavigate();
 
     const { projectId } = useProject();
+
     // PAGINATION STATE
     const { pagination, setPagination } = usePagination(20);
 
@@ -54,6 +55,7 @@ export const EnquiryMaster: React.FC = () => {
 
     // SINGLE SEARCH TEXT BOX
     const [searchTerm, setSearchTerm] = useState('');
+    
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchEnquiry(value)
     }, 350);
@@ -189,7 +191,6 @@ export const EnquiryMaster: React.FC = () => {
 
         await loadEnquiry(1, filterParams);
     };
-
     //#endregion
 
     //#region CLEAR ENQUIRY MASTER 
@@ -374,7 +375,9 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: EnquiryMasterData) => {
+
         setDeleteEnquiryMasterData(row)
+        
         setIsConfirmationDialogBoxOpen(true)
     }, [])
 

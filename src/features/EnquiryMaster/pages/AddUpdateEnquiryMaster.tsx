@@ -162,7 +162,8 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             FinalStageDetail: e.FinalStageDetail ?? prev.FinalStageDetail,
                             NextFollowUpDate: e.NextFollowUpDate ?? prev.NextFollowUpDate,
                             EnquiryDate: e.EnquiryDate ?? prev.EnquiryDate,
-                            Remark: e.Remark ?? prev.Remark
+                            Remark: e.Remark ?? prev.Remark,
+                            ProjectName:e.ProjectName ?? prev.ProjectName
                         }));
                         setDropdownLabels({
                             channelPartnerName: e.ChannelPartnerId?.toString(),
@@ -330,7 +331,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
             async () => {
                 const payload = PushEnquiryMasterFormData();
                 debugger
-                console.log("payload", payload)
+
                 const response = await EnquiryMasterService.apiCallAddUpdateEnquiryMaster(payload);
 
                 if (E.isRight(response)) {
@@ -472,6 +473,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                 />
                             </div>
                             <div>
+
                             </div>
                         </div>
 
@@ -529,7 +531,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             </div>
                             <div className="flex gap-4">
                                 <p>Would You Like To Opt For Home Loan ?</p>
-                                
+
                                 <RadioButton
                                     label="Yes"
                                     checked={formData.IsHomeLoan === true}

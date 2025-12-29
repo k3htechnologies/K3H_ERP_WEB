@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import type { EnquiryMasterData } from "../models/EnquiryMasterModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
@@ -91,14 +91,14 @@ const ViewEnquiryMaster: React.FC = () => {
                                     <div>
                                         <span className="font-medium ">Enquiry Date:</span>{" "}
                                         {editEnquiryData.EnquiryDate
-                                            ? formatDate_dd_MonthName_yy(editEnquiryData.EnquiryDate)
+                                            ? formatDate_dd_mm_yyyy(editEnquiryData.EnquiryDate)
                                             : "N/A"}
                                     </div>
 
                                     <div>
                                         <span className="font-medium">Next Follow-Up Date:</span>{" "}
                                         {editEnquiryData.NextFollowUpDate
-                                            ? formatDate_dd_MonthName_yy(editEnquiryData.NextFollowUpDate)
+                                            ? formatDate_dd_mm_yyyy(editEnquiryData.NextFollowUpDate)
                                             : "N/A"}
                                     </div>
                                 </div>

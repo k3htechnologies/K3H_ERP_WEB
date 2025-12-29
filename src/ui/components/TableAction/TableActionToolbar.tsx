@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Search, X, Plus, Upload, Download, Table, SlidersHorizontal, Share, Share2Icon } from 'lucide-react'
+import { Search, X, Plus, Upload, Download, Table, SlidersHorizontal, Share2Icon } from 'lucide-react'
 import type { FilterInfo } from '@/ui/components/DataTable/DataTable'
 import { Button, Input } from '@/ui/components/forms'
 
@@ -31,7 +31,6 @@ export interface TableActionToolbarProps {
   isShowAddExtraButton?: boolean
   addExtraTitle?: string
   onAddExtra?: () => void
-  showMoreAddExtraOptions?: React.ReactNode
 
   /** IMPORT BUTTON */
   isShowImportButton?: boolean
@@ -86,8 +85,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
   // EXTRA ADD
   isShowAddExtraButton = true,
   addExtraTitle = 'Add',
-  onAddExtra,
-  showMoreAddExtraOptions = [],
+  onAddExtra
 }) => {
   const [isExportOpen, setIsExportOpen] = useState(false)
   const [isImportOpen, setIsImportOpen] = useState(false)

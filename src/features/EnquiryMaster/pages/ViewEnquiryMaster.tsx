@@ -119,7 +119,7 @@ const ViewEnquiryMaster: React.FC = () => {
                             <FieldItem label="Area Preferred" value={editEnquiryData.AreaPreferred} />
                             <FieldItem label="Occupation Type" value={editEnquiryData.OccupationType} />
                             <FieldItem label="Budget" value={editEnquiryData.Budget} />
-                            <FieldItem label="Home Loan " value={editEnquiryData.IsHomeLoan} />
+                            <FieldItem label="Home Loan " value={editEnquiryData.IsHomeLoan ? "Yes" :"No"} />
                             <FieldItem label="Source " value={editEnquiryData.Source} />
                             <FieldItem label="Sub Source " value={editEnquiryData.SubSource} />
                             <FieldItem label="Channel Partner " value={editEnquiryData.ChannelPartner} />

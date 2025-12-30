@@ -14,7 +14,7 @@ export interface ModalProps {
     resetText?: string
     onreset?: () => void
     loading?: boolean
-    size?: 'sm' | 'md' | 'lg' | 'xl' | 'half-screen' | 'small-half' | 'large-half' | 'large75' | 'large80' | 'large90' | 'large100' | 'small25' | 'small30' | 'small35' | 'small40' | 'small45' | 'small50'
+    size?: 'sm' | 'md' | 'lg' | 'xl' |'xxl' | 'half-screen' | 'small-half' | 'large-half' | 'large75' | 'large80' | 'large90' | 'large100' | 'small25' | 'small30' | 'small35' | 'small40' | 'small45' | 'small50'
     className?: string
 }
 
@@ -40,6 +40,7 @@ export const Modal: React.FC<ModalProps> = ({
         md: 'max-w-md',
         lg: 'max-w-lg',
         xl: 'max-w-xl',
+        xxl: 'max-w-6xl',
         'small25': 'w-[25%]',
         'small30': 'w-[30%]',
         'small35': 'w-[35%]',

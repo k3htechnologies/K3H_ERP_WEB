@@ -22,10 +22,7 @@ const ViewAssetMappingMaster: React.FC = () => {
     const { canAction } = useMenuPermissions('/assetMappingMaster');
     //#endregion
 
-    // Selected asset data passed from the Asset List page (via navigate state)
     const editAssetData = location.state?.assetData as AssetMappingMasterData;
-
-    // Stores pagination, filters, and sorting state of Asset List page to restore on back navigation
 
     const listState = location.state?.listState;
 

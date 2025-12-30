@@ -2,7 +2,7 @@ import type { ApiResponse } from '@/core/api/ApiResponse';
 import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions';
 import { TechnicalApi } from '@/features/technical/api/TechnicalApi'
-import type { CountryStateCityDistrictVillageListResponse, FilterPullExcelSample, FilterRefreshTokenRequest, FilterWithPaginationMaterialSubMaterialMasterUOM, FilterWithPaginationNotificationRequest, MaterialSubMaterialMasterUOMListResponse, NotificationListResponse, TechnicalListResponse } from '@/features/technical/models/TechnicalModel'
+import type { CountryStateCityDistrictVillageListResponse, FilterMagicLinkWithValidate, FilterPullExcelSample, FilterRefreshTokenRequest, FilterWithPaginationMaterialSubMaterialMasterUOM, FilterWithPaginationNotificationRequest, MaterialSubMaterialMasterUOMListResponse, NotificationListResponse, TechnicalListResponse } from '@/features/technical/models/TechnicalModel'
 
 export abstract class TechnicalDatasource {
 
@@ -10,7 +10,8 @@ export abstract class TechnicalDatasource {
     abstract pullNotification(params: FilterWithPaginationNotificationRequest): Promise<NotificationListResponse>;
     abstract refreshToken(params: FilterRefreshTokenRequest): Promise<ApiResponse<string>>;
     abstract getCountryStateDistrictCityVillage(): Promise<CountryStateCityDistrictVillageListResponse>;
-    abstract getMaterialSubMaterialMasterUOM(params:FilterWithPaginationMaterialSubMaterialMasterUOM): Promise<MaterialSubMaterialMasterUOMListResponse>;
+    abstract getMaterialSubMaterialMasterUOM(params: FilterWithPaginationMaterialSubMaterialMasterUOM): Promise<MaterialSubMaterialMasterUOMListResponse>;
+    abstract pullMagicLinkWithValidate(params: FilterMagicLinkWithValidate): Promise<ApiResponse<string>>;
 }
 
 export class TechnicalDatasourceImpl implements TechnicalDatasource {
@@ -95,19 +96,19 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
         }
     }
 
-    async getMaterialSubMaterialMasterUOM(params:FilterWithPaginationMaterialSubMaterialMasterUOM): Promise<MaterialSubMaterialMasterUOMListResponse>{
-        try{
-            
+    async getMaterialSubMaterialMasterUOM(params: FilterWithPaginationMaterialSubMaterialMasterUOM): Promise<MaterialSubMaterialMasterUOMListResponse> {
+        try {
+
             const queryParams = new URLSearchParams({
                 ProjectId: (params.ProjectId).toString(),
                 ClientRegistrationId: (params.ClientRegistrationId).toString()
             })
 
-               const response = await this.k3hHttpClient.getRequestWithAuthentication(
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${TechnicalApi.PULL_MATERIAL_SUBMATERIALUOM}?${queryParams.toString()}`);
-                return response;
+            return response;
 
-        }catch(error){
+        } catch (error) {
             console.error('Error: GET MATERIAL SUBMATERIAL UOM:', error);
             throw error
         }
@@ -149,6 +150,26 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
         } catch (error) {
 
             console.error('ERROR: PULL EXCEL SAMPLE :', error);
+            throw error
+        }
+    }
+
+    async pullMagicLinkWithValidate(params: FilterMagicLinkWithValidate): Promise<ApiResponse<string>> {
+        try {
+            const queryParams = new URLSearchParams({
+                MagicLinkType: (params.MagicLinkType ?? '').toString(),
+                ClientRegistrationId: (params.ClientRegistrationId ?? '').toString()
+            })
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${TechnicalApi.PULL_MAGIC_LINK_WITH_VALIDATE}?${queryParams.toString()}`
+            )
+
+            return response;
+
+        } catch (error) {
+
+            console.error('ERROR: PULL MAGIC LINK WITH VALIDATE :', error);
             throw error
         }
     }

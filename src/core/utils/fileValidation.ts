@@ -2,30 +2,30 @@
 // 🔹 FILTER ONLY NUMBERS
 // ----------------------------------
 export const filterNumbers = (value: string): string =>
-    value.replace(/[^0-9]/g, "");
+  value.replace(/[^0-9]/g, "");
 
 // ----------------------------------
 // 🔹 FILTER ONLY LETTERS (A–Z + space)
 // ----------------------------------
 export const filterLetters = (value: string): string =>
-    value.replace(/[^A-Za-z\s]/g, "");
+  value.replace(/[^A-Za-z\s]/g, "");
 
 // ----------------------------------
 // 🔹 FILTER ALPHA-NUMERIC + SPACE
 // ----------------------------------
 export const filterAlphaNumeric = (value: string): string =>
-    value.replace(/[^A-Za-z0-9\s]/g, "");
+  value.replace(/[^A-Za-z0-9\s]/g, "");
 
 // ----------------------------------
 // 🔹 FILTER MOBILE NUMBER (max 10 digits)
 // ----------------------------------
 export const filterMobile = (value: string): string =>
-    value.replace(/[^0-9]/g, "").slice(0, 10);
+  value.replace(/[^0-9]/g, "").slice(0, 10);
 
 export const isValidMobile = (mobile: string): boolean => {
-    if (!mobile) return false;
-    const regex = /^[6-9]\d{9}$/;
-    return regex.test(mobile.trim());
+  if (!mobile) return false;
+  const regex = /^[6-9]\d{9}$/;
+  return regex.test(mobile.trim());
 };
 
 // ----------------------------------
@@ -33,88 +33,88 @@ export const isValidMobile = (mobile: string): boolean => {
 // Example: 079-12345678
 // ----------------------------------
 export const filterLandline = (value: string): string =>
-    value.replace(/[^0-9-]/g, "");
+  value.replace(/[^0-9-]/g, "");
 
 export const isValidLandline = (number: string): boolean => {
-    if (!number) return false;
-    const regex = /^0\d{2,4}[-]?\d{6,8}$/;
-    return regex.test(number.trim());
+  if (!number) return false;
+  const regex = /^0\d{2,4}[-]?\d{6,8}$/;
+  return regex.test(number.trim());
 };
 // ----------------------------------
 // 🔹 FILTER PAN (ABCDE1234F)
 // Only uppercase letters + numbers
 // ----------------------------------
 export const filterPAN = (value: string): string =>
-    value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 10);
+  value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 10);
 
 export const isValidPAN = (pan: string): boolean => {
-    if (!pan) return false;
-    const value = pan.toUpperCase().trim();
-    const regex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    return regex.test(value);
+  if (!pan) return false;
+  const value = pan.toUpperCase().trim();
+  const regex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  return regex.test(value);
 };
 // ----------------------------------
 // 🔹 FILTER AADHAAR (only 12 digits)
 // ----------------------------------
 export const filterAadhaar = (value: string): string =>
-    value.replace(/[^0-9]/g, "").slice(0, 12);
+  value.replace(/[^0-9]/g, "").slice(0, 12);
 
 export const isValidAadhaar = (aadhaar: string): boolean => {
-    if (!aadhaar) return false;
-    const regex = /^\d{12}$/;
-    return regex.test(aadhaar.trim());
+  if (!aadhaar) return false;
+  const regex = /^\d{12}$/;
+  return regex.test(aadhaar.trim());
 };
 
 // ----------------------------------
 // 🔹 FILTER EMAIL (only valid chars)
 // ----------------------------------
 export const filterEmail = (value: string): string =>
-    value.replace(/[^a-zA-Z0-9@._+-]/g, "");
+  value.replace(/[^a-zA-Z0-9@._+-]/g, "");
 
 export const isValidEmail = (email: string): boolean => {
-    if (!email) return false;
-    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
-    return regex.test(email.trim());
+  if (!email) return false;
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
+  return regex.test(email.trim());
 };
 // ----------------------------------
 // 🔹 FILTER GST NUMBER (A–Z + 0–9 only)
 // ----------------------------------
 export const filterGST = (value: string): string =>
-    value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 15);
+  value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 15);
 
 export const isValidGST = (gst: string): boolean => {
-    if (!gst) return false;
-    const value = gst.toUpperCase().trim();
-    if (value.length !== 15) return false;
+  if (!gst) return false;
+  const value = gst.toUpperCase().trim();
+  if (value.length !== 15) return false;
 
-    const regex =
-        /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
-    return regex.test(value);
+  const regex =
+    /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+  return regex.test(value);
 };
 
 // Only A-Z + 0-9 and max 21 chars
 export const filterCIN = (value: string): string =>
-    value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 21);
+  value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 21);
 
 export const isValidCIN = (cin: string): boolean => {
-    if (!cin) return false;
-    const value = cin.toUpperCase().trim();
-    if (value.length !== 21) return false;
+  if (!cin) return false;
+  const value = cin.toUpperCase().trim();
+  if (value.length !== 21) return false;
 
-    const regex = /^[LU]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}$/;
-    return regex.test(value);
+  const regex = /^[LU]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}$/;
+  return regex.test(value);
 };
 
 // Allowed: A-Z, 0-9, -, /    | Max Length = 20
 export const filterRERA = (value: string): string =>
-    value.replace(/[^A-Za-z0-9\-\/]/g, "").toUpperCase().slice(0, 20);
+  value.replace(/[^A-Za-z0-9\-\/]/g, "").toUpperCase().slice(0, 20);
 
 
 export const isValidRERA = (rera: string): boolean => {
-    if (!rera) return false;
-    const value = rera.toUpperCase().trim();
-    const regex = /^[A-Z0-9\-\/]{6,20}$/;
-    return regex.test(value);
+  if (!rera) return false;
+  const value = rera.toUpperCase().trim();
+  const regex = /^[A-Z0-9\-\/]{6,20}$/;
+  return regex.test(value);
 };
 
 
@@ -137,24 +137,24 @@ export const isValidIFSC = (ifsc: string): boolean => {
 // 🔹 FILTER ONLY NUMBERS AND DECIMAL
 // ----------------------------------
 
-    export const filterNumbersWithDecimal = (value: string): string => {
-    // remove invalid characters
-    value = value.replace(/[^0-9.]/g, "");
+export const filterNumbersWithDecimal = (value: string): string => {
+  // remove invalid characters
+  value = value.replace(/[^0-9.]/g, "");
 
-    // allow only ONE dot
-    const parts = value.split(".");
-    if (parts.length > 2) {
-        value = parts[0] + "." + parts.slice(1).join("");
-    }
+  // allow only ONE dot
+  const parts = value.split(".");
+  if (parts.length > 2) {
+    value = parts[0] + "." + parts.slice(1).join("");
+  }
 
-    // limit to 2 decimal places
-    if (value.includes(".")) {
-        const [intPart, decimalPart = ""] = value.split(".");
-        value = intPart + "." + decimalPart.slice(0, 2);
-    }
+  // limit to 2 decimal places
+  if (value.includes(".")) {
+    const [intPart, decimalPart = ""] = value.split(".");
+    value = intPart + "." + decimalPart.slice(0, 2);
+  }
 
-    return value;
-    };
+  return value;
+};
 
 
 
@@ -266,5 +266,45 @@ export const isValidGoogleMapsUrl = (url: string): boolean => {
 
   return googleMapsRegex.test(url);
 };
+
+// ----------------------------------
+// 🔹 FILTER ACCOUNT NUMBER
+// ----------------------------------
+
+export const isValidAccount = (num: string) =>
+  /^[0-9]{6,18}$/.test(num);
+
+// ----------------------------------
+// 🔹 FILE PICKER
+// ----------------------------------
+
+export const hasAnyFile = (files: (File | string)[], existingUrl?: string) =>
+  files.length > 0 || (!!existingUrl && existingUrl.trim().length > 0);
+
+// ----------------------------------
+// 🔹 CHECK MINIMUM AGE (Default 18)
+// ----------------------------------
+export const isAtLeastAge = (
+  dobInput: string | Date | null | undefined,
+  minAge = 18
+): boolean => {
+
+  if (!dobInput) return false;
+
+  const dob = new Date(dobInput);
+  if (isNaN(dob.getTime())) return false; // invalid date
+
+  const today = new Date();
+
+  // Person's birthday after adding minAge years
+  const minAgeDate = new Date(
+    dob.getFullYear() + minAge,
+    dob.getMonth(),
+    dob.getDate()
+  );
+
+  return minAgeDate <= today;
+};
+
 
 

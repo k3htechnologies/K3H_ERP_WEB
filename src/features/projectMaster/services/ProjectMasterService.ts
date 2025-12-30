@@ -48,10 +48,10 @@ export const ProjectMasterService = {
 
         }
     },
-    apiCallPullProjectMasterWithEmployee: async (ProjectId: number, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectMasterWithEmployeeResponse>> => {
+    apiCallPullProjectMasterWithEmployee: async (ProjectId: number, FullName?: string, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectMasterWithEmployeeResponse>> => {
         try {
 
-            return E.right(await projectMasterDatasource.pullProjectMasterWithEmployee(ProjectId, options?.signal));
+            return E.right(await projectMasterDatasource.pullProjectMasterWithEmployee(ProjectId, FullName, options?.signal));
 
         } catch (error: any) {
 

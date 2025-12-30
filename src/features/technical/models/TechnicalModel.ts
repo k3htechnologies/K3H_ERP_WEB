@@ -52,31 +52,37 @@ export interface CountryStateCityDistrictVillageData {
     CityMasterIdRef: number
 }
 export interface CountryStateCityDistrictVillageDataWrapper {
-  CountryStateCityDistrictVillageData: CountryStateCityDistrictVillageData[];
+    CountryStateCityDistrictVillageData: CountryStateCityDistrictVillageData[];
 }
-export interface MaterialSubMaterialUOM{
-    MaterialMasterId:number
-    MaterialName:string
-    SubMaterialMasterId:number
-    StockQuantity:number
-    SubMaterialName:string
-    MaterialMasterIdRef:number
-    UomMasterId:number
-    UomCode:string
-}
-
-export interface MateriaLSubMaterialMasterUOMWrapper{
-MaterialMasterSubMaterialMasterData:MaterialSubMaterialUOM[]
+export interface MaterialSubMaterialUOM {
+    MaterialMasterId: number
+    MaterialName: string
+    SubMaterialMasterId: number
+    StockQuantity: number
+    SubMaterialName: string
+    MaterialMasterIdRef: number
+    UomMasterId: number
+    UomCode: string
 }
 
-export interface FilterWithPaginationMaterialSubMaterialMasterUOM{
-    ProjectId:number
-    ClientRegistrationId :number
-    
+export interface MateriaLSubMaterialMasterUOMWrapper {
+    MaterialMasterSubMaterialMasterData: MaterialSubMaterialUOM[]
+}
+
+export interface FilterWithPaginationMaterialSubMaterialMasterUOM {
+    ProjectId: number
+    ClientRegistrationId: number
+
 }
 //#region EXCEL IMPORT & SAMPLE EXCEL DOWNLOAD 
 export interface FilterPullExcelSample {
     TableName: string | ''
+}
+
+//#region MAGIC LINK WITH VALIDATION
+export interface FilterMagicLinkWithValidate {
+    MagicLinkType: string | ''
+    ClientRegistrationId: number | 0
 }
 
 //#endregion END  NOTIFICATION
@@ -84,4 +90,4 @@ export interface FilterPullExcelSample {
 export type TechnicalListResponse = ApiResponse<TechnicalData[]>;
 export type NotificationListResponse = ApiResponse<NotificationData[]>;
 export type CountryStateCityDistrictVillageListResponse = ApiResponse<CountryStateCityDistrictVillageDataWrapper[]>;
-export type MaterialSubMaterialMasterUOMListResponse =ApiResponse<{ MaterialMasterSubMaterialMasterData : MaterialSubMaterialUOM[]}>
+export type MaterialSubMaterialMasterUOMListResponse = ApiResponse<{ MaterialMasterSubMaterialMasterData: MaterialSubMaterialUOM[] }>

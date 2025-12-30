@@ -21,10 +21,7 @@ const ViewWeekOffMaster: React.FC = () => {
     const { canAction } = useMenuPermissions('/WeekOffMaster');
     //#endregion
 
-    // Selected WeekOff data passed from the WeekOff List page (via navigate state)
     const editDeductionData = location.state?.WeekOffData as WeekOffMasterData;
-
-    // Stores pagination, filters, and sorting state of WeekOff List page to restore on back navigation
 
     const listState = location.state?.listState;
 

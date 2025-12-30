@@ -247,8 +247,20 @@ const AddUpdateBuilding: React.FC = () => {
     }
 
     if (!formData.TotalPlotAreaSqFt) {
-      newErrors.TotalPlotAreaSqFt = 'Total Plot Area SqFt is required'
+      newErrors.TotalPlotAreaSqFt = 'Total Plot Area is required'
     }
+
+    if (formData.IsGarden && !formData.TotalGardenAreaSqFt) {
+      newErrors.TotalGardenAreaSqFt = 'Total Garden Area is required'
+    }
+    if (formData.IsReligiousStructure && !formData.TotalReligiousStructureAreaSqFt) {
+      newErrors.TotalReligiousStructureAreaSqFt = 'Total Religious Structure Area is required'
+    }
+    if (formData.IsLitigation && !formData.LitigationRemarks) {
+      newErrors.LitigationRemarks = 'Litigation Remarks is required'
+    }
+
+
     if (!formData.RoadWidth) {
       newErrors.RoadWidth = 'Road width is required'
     }
@@ -524,6 +536,7 @@ const AddUpdateBuilding: React.FC = () => {
                     <Input
                       value={formData.TotalGardenAreaSqFt ?? ''}
                       label="Garden Area (SqFt)"
+                      required
                       placeholder="Garden Area"
                       onChange={e => handleFieldChange('TotalGardenAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                       error={errors.TotalGardenAreaSqFt}
@@ -546,6 +559,7 @@ const AddUpdateBuilding: React.FC = () => {
                     <Input
                       value={formData.TotalReligiousStructureAreaSqFt ?? ''}
                       label="Religious Structure Area (SqFt)"
+                      required
                       placeholder="Religious Structure Area"
                       onChange={e => handleFieldChange('TotalReligiousStructureAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                       error={errors.TotalReligiousStructureAreaSqFt}
@@ -567,6 +581,7 @@ const AddUpdateBuilding: React.FC = () => {
                   <div className="md:col-span-2 lg:col-span-3">
                     <TextArea
                       label="Litigation Remarks"
+                      required
                       placeholder="Enter Litigation Remarks"
                       className='thin-scroll'
                       value={formData.LitigationRemarks ?? ''}

@@ -29,28 +29,30 @@ export class EnquiryMasterDatasourceImpl implements EnquiryMasterDatasource {
                 PageNumber: String(params.PageNumber),
             });
 
-            if (params.ProjectId !== undefined) queryParams.append('ProjectId', String(params.ProjectId));
-            if (params.Budget) queryParams.append('Budget', params.Budget);
+            if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
+            if (params.Budget?.trim()) queryParams.append('Budget', params.Budget.trim());
             if (params.RequirementType) queryParams.append('RequirementType', params.RequirementType);
             if (params.Source) queryParams.append('Source', params.Source);
             if (params.FromDate) queryParams.append('FromDate', params.FromDate);
             if (params.ToDate) queryParams.append('ToDate', params.ToDate);
             if (params.MobileNumber) queryParams.append('MobileNumber', params.MobileNumber);
-            if (params.Name) queryParams.append('Name', params.Name);
-            if (params.Accommodation) queryParams.append('Accommodation', params.Accommodation);
-            if (params.EmployeeId !== undefined) queryParams.append('EmployeeId', String(params.EmployeeId));
+            if (params.Name?.trim()) queryParams.append('Name', params.Name.trim());
+            if (params.Accommodation?.trim()) queryParams.append('Accommodation', params.Accommodation.trim());
+            if (params.EmployeeId) queryParams.append('EmployeeId', params.EmployeeId.toString());
             if (params.Stage) queryParams.append('Stage', params.Stage);
             if (params.TimeDimension) queryParams.append('TimeDimension', params.TimeDimension);
             if (params.EnquiryFollowUpDays) queryParams.append('EnquiryFollowUpDays', params.EnquiryFollowUpDays);
-            if (params.FinalStage) queryParams.append('FinalStage', params.FinalStage);
-            if (params.SortBy) queryParams.append('SortBy', params.SortBy);
+            if (params.FinalStage?.trim()) queryParams.append('FinalStage', params.FinalStage.trim());
+            if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpclient.getRequestWithAuthentication(
                 `${EnquiryMasterApi.PULL}?${queryParams.toString()}`, { signal }
             )
+            
             return response;
         } catch (error: any) {
+
             console.error('ERROR: PULL ENQUIRY MASTER :', error);
 
             if (error === TokenExpiredException) {
@@ -64,16 +66,20 @@ export class EnquiryMasterDatasourceImpl implements EnquiryMasterDatasource {
             const payLoad: AddUpdateEnquiryMasterRequest = {
                 EnquiryId: params.EnquiryId ?? 0,
                 Uniquekey: params.Uniquekey ?? '',
-                ProjectId: params.ProjectId,
+                ProjectId: params.ProjectId ?? 0,
                 Name: params.Name,
                 EmailId: params.EmailId,
                 MobileNumber: params.MobileNumber,
                 OccupationType: params.OccupationType ?? null,
                 Accommodation: params.Accommodation ?? null,
                 Budget: params.Budget ?? null,
+                ChannelPartnerId:params.ChannelPartnerId ?? 0,
+                ProjectName:params.ProjectName ?? '',
                 IsHomeLoan: params.IsHomeLoan,
-                Requirement: params.Requirement ?? null,
-                RequirementType: params.RequirementType ?? null,
+                ChannelPartnerName:params.ChannelPartnerName ?? '',
+                ChannelPartnerMobileNumber:params.ChannelPartnerMobileNumber,
+                Requirement: params.Requirement ?? '',
+                RequirementType: params.RequirementType ?? '',
                 AreaPreferred: params.AreaPreferred ?? 0,
                 PossessionType: params.PossessionType ?? null,
                 Source: params.Source ?? null,
@@ -86,7 +92,6 @@ export class EnquiryMasterDatasourceImpl implements EnquiryMasterDatasource {
             }
 
             const response = await this.k3hHttpclient.postRequestWithAuthentication(
-
                 EnquiryMasterApi.ADD_UPDATE,
                 payLoad
             )
@@ -105,7 +110,7 @@ export class EnquiryMasterDatasourceImpl implements EnquiryMasterDatasource {
         try {
             const queryParams = new URLSearchParams({
                 EnquiryId: (params.EnquiryId ?? 0).toString(),
-                UniqueKey: params.Uniquekey ?? '',
+                Uniquekey: params.Uniquekey ?? '',
                 ProjectId: (params.ProjectId ?? 0).toString(),
 
             })

@@ -6,7 +6,7 @@ import { fetchProjectDocumentCategoryDropdown } from '@/features/projectDocument
 import { runApiWithLoader } from '@/core/utils';
 import type { AddUpdateProjectDocumentRequest, DeleteProjectDocumentRequest, FilterWithPaginationProjectDocument, ProjectDocumentData } from '@/features/projectDocument/models/ProjectDocumentModel';
 import usePagination from '@/core/hooks/usePagination';
-import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import { type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import * as E from 'fp-ts/Either';
 import { ProjectDocumentService } from '../services/ProjectDocumentService';
 import DataTableExpandable, { type DataTableExpandableRef } from '@/ui/components/DataTable/DataTableExpandable';
@@ -26,6 +26,11 @@ import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { PROJECT_DOCUMENT_STATUS } from '@/core/constants';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
+import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
+import { technicalService } from '@/features/technical/services/TechnicalService';
+import { handleExportFile } from '@/core/utils/exportFile';
+import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
 
 
 const initialFormState = (): AddUpdateProjectDocumentRequest => ({
@@ -101,6 +106,10 @@ const ProjectDocument: React.FC = () => {
 
   //ADD UPDATE DEPARTMENT MASTER
   const [formData, setFormData] = useState<AddUpdateProjectDocumentRequest>(() => initialFormState());
+
+  //EXCEL IMPORT 
+  const [showImportModal, setShowImportModal] = useState(false);
+
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -392,18 +401,56 @@ const ProjectDocument: React.FC = () => {
         sortable: true,
         fixed: 'left',
         align: 'left',
-        render: (value, row) => {
-          const showEdit = canAction ? true : false;
-          const showDelete = canAction ? (row.UploadedProjectDocumentCount || 0) === 0 : false;
-
+        render: (value) => {
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
-
               <TooltipText
                 text={value || ''}
                 maxWidth="250px"
                 tooltipThreshold={40}
               />
+            </div>
+
+          )
+        },
+      },
+      {
+        key: 'UploadedProjectDocumentCount',
+        label: 'Document Count',
+        width: '30',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || ''
+      },
+      {
+        key: 'ApprovalPendingProjectDocumentCount',
+        label: 'Approval',
+        width: '30',
+        sortable: false,
+        align: 'center',
+        render: (value) => {
+          return (
+            <TooltipText
+              text={`${value} Pending`  || "-"}
+              maxWidth="180px"
+              tooltipThreshold={18}
+              tooltipClassName={`inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap`}
+            />
+          );
+        }
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => {
+          const showEdit = canAction ? true : false;
+          const showDelete = canAction ? (row.UploadedProjectDocumentCount || 0) === 0 : false;
+
+          return (
+            <div className="flex items-center justify-end ml-2 gap-1">
 
 
               {/* SLOT 1: ADD */}
@@ -472,22 +519,11 @@ const ProjectDocument: React.FC = () => {
                 )}
               </div>
 
-              <TooltipText
-                text={`${row.UploadedProjectDocumentCount ?? 0} Uploaded`}
-                tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 overflow-hidden text-ellipsis whitespace-nowrap'
-              />
-
-              <TooltipText
-                text={`${row.UploadedProjectDocumentCount ?? 0} Approval Pending`}
-                tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
-              />
             </div>
 
           )
-        }
-
-      },
-
+        },
+      }
     ],
     // dependencies: include everything used inside that might change
     [canAction, handleEditProjectDocument, handleConfirmationDialogBoxOpen]
@@ -518,13 +554,11 @@ const ProjectDocument: React.FC = () => {
     () => [
       {
         key: 'ProjectDocumentName',
-        label: 'Document',
+        label: 'Document Version',
         width: '15',
         sortable: false,
         align: 'left',
         render: (value: string, row: any) => {
-          const showEdit = canAction ? true : false;
-
           return (
             <div className="flex items-center justify-between w-full">
 
@@ -536,27 +570,6 @@ const ProjectDocument: React.FC = () => {
                 />
               </div>
 
-              {/* RIGHT SIDE — Fixed Edit Button */}
-              <div className="flex-shrink-0 ml-2">
-                {showEdit ? (
-                  <Button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleEditProjectDocumentDetails(row);
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Edit"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
-              </div>
             </div>
           );
         }
@@ -617,6 +630,42 @@ const ProjectDocument: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        align: 'center',
+        render: (_value, row) => {
+          const showEdit = canAction ? true : false;
+          return (
+            <div className="flex items-center justify-end ml-2 gap-1">
+              {/* RIGHT SIDE — Fixed Edit Button */}
+              <div className="flex-shrink-0 ml-2">
+                {showEdit ? (
+                  <Button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleEditProjectDocumentDetails(row);
+                    }}
+                    color="transparent"
+                    isborderRadius
+                    size="sm"
+                    title="Edit"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <div className="opacity-0 h-[32px] w-[34px]" />
+                )}
+              </div>
+
+            </div>
+
+          )
+        },
       }
 
     ],
@@ -907,6 +956,73 @@ const ProjectDocument: React.FC = () => {
   }
   //#endregion
 
+  //#region IMPORT EXCEL | DOWNLOAD
+
+  const downloadExcelSampleProjectDocument = async () => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+        // Find the column label for sorting
+
+        const params: FilterPullExcelSample = {
+          TableName: 'PROJECT DOCUMENT'
+        }
+
+        const response = await technicalService.apiCallPullExcelSample(params);
+
+        handleExportFile(response, 'Excel', 'Project Document', addToast, 'Sample file download successfully')
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Export failed' })
+      },
+      undefined,
+      'Preparing Downloading'
+    )
+  }
+
+  const handleDownloadExcelSampleProjectDocument = () => downloadExcelSampleProjectDocument();
+
+  const uploadExcel = async (file: File, mergeExisting: string) => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+
+        const fd = new FormData();
+
+        fd.append("ExcelFile", file);
+        fd.append("IsAllDelete", mergeExisting);
+        fd.append("TableName", 'Tenant');
+        fd.append("ProjectId", String(projectId));
+
+        const response = await technicalService.apiCallExcelImport(fd);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: "Excel imported sucessfully" })
+
+          fetchProjectDocumentList();
+
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (err: any) => addToast({ type: "error", title: err.message }),
+      undefined,
+      "Importing Excel"
+    );
+  };
+
+  //#endregion
+
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
@@ -930,7 +1046,9 @@ const ProjectDocument: React.FC = () => {
         onAdd={handleAddDocumentModal}
 
         // IMPORT
-        isShowImportButton={false}
+        isShowImportButton={true}
+        onUploadExcel={() => setShowImportModal(true)}
+        onDownloadSampleExcel={handleDownloadExcelSampleProjectDocument}
         // EXPORT
         isShowExportButton={false}
         exportLoading={isLoading}
@@ -1010,7 +1128,7 @@ const ProjectDocument: React.FC = () => {
             }
 
             return (
-              <DataTable
+              <DataTableWithOutBorder
                 data={details}
                 columns={projectDocumentDetailsColumns}
                 emptyMessage="No Departments Data Found"
@@ -1173,6 +1291,15 @@ const ProjectDocument: React.FC = () => {
         cancelText="Cancel"
         loading={isLoading}
         variant="danger"
+      />
+
+      <ExportImport
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onUpload={(file, mergeExisting) => {
+          setShowImportModal(false);
+          uploadExcel(file, mergeExisting);
+        }}
       />
     </div>
   );

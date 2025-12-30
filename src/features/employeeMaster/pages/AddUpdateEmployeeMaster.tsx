@@ -199,7 +199,7 @@ const AddUpdateEmployeePage: React.FC = () => {
           const e = response.right.Data?.[0];
 
           if (e) {
-            
+
             setFormData(prev => ({
               ...prev,
               EmployeeId: e.EmployeeId ?? prev.EmployeeId,
@@ -325,7 +325,7 @@ const AddUpdateEmployeePage: React.FC = () => {
     }
 
     if (!formData.EmailId?.trim()) {
-      newErrors.EmailId = 'Email is required'
+      newErrors.EmailId = 'E-mail Id is required'
     } else if (!isValidEmail(formData.EmailId.trim())) {
       newErrors.EmailId = 'Enter a valid email id'
     }
@@ -559,12 +559,13 @@ const AddUpdateEmployeePage: React.FC = () => {
         <form onSubmit={handleSubmit}>
           {/* ============================================================= [BASIC EMPLOYEE DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
-           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Employee Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Employee Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <Input
                   label="First Name"
+                  placeholder="Enter First Name"
                   value={formData.FirstName}
                   required
                   onChange={e => handleFieldChange('FirstName', filterLetters(e.target.value))}
@@ -573,7 +574,8 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <Input
                   value={formData.MiddleName}
-                  label="Middle Name "
+                  label="Middle Name"
+                  placeholder="Enter Middle Name"
                   required
                   onChange={e => handleFieldChange('MiddleName', filterLetters(e.target.value))}
                   error={errors.MiddleName} />
@@ -582,6 +584,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                 <Input
                   value={formData.LastName}
                   label="Last Name"
+                  placeholder="Enter Last Name"
                   required
                   onChange={e => handleFieldChange('LastName', filterLetters(e.target.value))}
                   error={errors.LastName} />
@@ -589,6 +592,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <SinglePageSelection
                   label="Gender"
+                  placeholder="Select Gender"
                   required
                   value={formData.Gender}
                   onChange={(e) => handleFieldChange('Gender', String(e))}
@@ -599,6 +603,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <SinglePageSelection
                   label="Marital Status"
+                  placeholder="Select Marital Status"
                   value={formData.MaritalStatus}
                   onChange={(val) => handleFieldChange("MaritalStatus", String(val))}
                   options={MARITAL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} required
@@ -609,6 +614,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                 <SinglePageSelection
                   value={formData.BloodGroup}
                   label="Blood Group"
+                  placeholder="Select Blood Group"
                   onChange={(val) => handleFieldChange("BloodGroup", String(val))} required
                   options={BLOOD_GROUP_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                   error={errors.BloodGroup}
@@ -625,7 +631,9 @@ const AddUpdateEmployeePage: React.FC = () => {
 
               </div>
               <div>
-                <Input label="Email Id"
+                <Input
+                  label="E-mail Id"
+                  placeholder="Enter E-mail Id"
                   value={formData.EmailId}
                   required
                   onChange={(e) => handleFieldChange("EmailId", filterEmail(e.target.value))}
@@ -633,7 +641,8 @@ const AddUpdateEmployeePage: React.FC = () => {
               </div>
               <div>
                 <Input
-                  label="Office Email Id"
+                  label="Office E-mail Id"
+                  placeholder="Enter Office E-mail Id"
                   value={formData.OfficeEmailId}
                   onChange={(e) => handleFieldChange("OfficeEmailId", filterEmail(e.target.value))}
                   error={errors.OfficeEmailId}
@@ -644,6 +653,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                 <Input
                   leftIcon="+91"
                   label="Personal Mobile Number"
+                  placeholder="Enter Personal Mobile Number"
                   required
                   value={formData.PersonalMobileNumber}
                   onChange={(e) => handleFieldChange("PersonalMobileNumber", filterMobile(e.target.value))}
@@ -655,6 +665,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                   value={formData.OfficeMobileNumber}
                   leftIcon="+91"
                   label="Office Mobile Number"
+                  placeholder="Enter Office Mobile Number"
                   onChange={(e) => handleFieldChange("OfficeMobileNumber", filterMobile(e.target.value))}
                   error={errors.OfficeMobileNumber}
                 />
@@ -662,6 +673,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <SinglePageSelection
                   label="Employee Type"
+                  placeholder="Select Employee Type"
                   value={formData.EmployeeType} required
                   onChange={(val) => handleFieldChange("EmployeeType", String(val))}
                   options={EMPLOYEE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
@@ -671,6 +683,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <SinglePageSelection
                   label="Relation to Emergency Contact"
+                  placeholder="Select Relation"
                   value={formData.EmergencyContactPersonRelationship} required
                   onChange={(val) => handleFieldChange("EmergencyContactPersonRelationship", String(val))}
                   options={EMERGENCY_RELATION_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
@@ -680,6 +693,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <Input
                   label="Emergency Contact Number"
+                  placeholder="Enter Emergency Contact Number"
                   leftIcon="+91"
                   value={formData.EmergencyMobileNumber}
                   required
@@ -697,6 +711,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                 <SingleSelectDropdownWithPagination
                   label="Company"
                   title="Select Company"
+                  required
                   size="lg"
                   dataFetchCallBack={fetchCompanyMasterDropdown}
                   onSelected={(item) => handleFieldChange("CompanyId", Number(item.value))}
@@ -707,6 +722,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <SingleSelectDropdownWithPagination
                   label="Department"
+                  required
                   title="Select Department"
                   size="lg"
                   dataFetchCallBack={fetchDepartmentMasterDropdown}
@@ -718,6 +734,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <SingleSelectDropdownWithPagination
                   label="Branch"
+                  required
                   title="Select Branch"
                   size="lg"
                   dataFetchCallBack={fetchBranchMasterDropdown}
@@ -729,6 +746,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <SingleSelectDropdownWithPagination
                   label="Designation"
+                  required
                   title="Select Designation"
                   size="lg"
                   dataFetchCallBack={fetchDesignationMasterDropdown}
@@ -751,6 +769,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <SingleSelectDropdownWithPagination
                   label="Reporting Person"
+                  required
                   title="Select Reporting Person"
                   size="lg"
                   dataFetchCallBack={fetchEmployeeMasterDropdown}
@@ -768,6 +787,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <TextArea
                   label="Communication Address"
+                  placeholder="Enter Communication Address"
                   required
                   className='thin-scroll'
                   value={formData.CommunicationAddress}
@@ -777,6 +797,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <TextArea
                   label="Permanent Address"
+                  placeholder="Enter Permanent Address"
                   required
                   className='thin-scroll'
                   value={formData.PermanentAddress}
@@ -807,6 +828,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
                 <SinglePageSelection
                   label="State"
+                  placeholder="Select State"
                   value={selectedStateId ?? ''} required
                   onChange={val => {
                     const id = Number(val)
@@ -824,6 +846,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <SinglePageSelection
                   label="District"
+                  placeholder="Select District"
                   value={selectedDistrictId ?? ''} required
                   onChange={val => {
                     const id = Number(val)
@@ -840,6 +863,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <SinglePageSelection
                   label="City"
+                  placeholder="Select City"
                   value={selectedCityId ?? ''} required
                   onChange={val => {
                     const id = Number(val)
@@ -873,7 +897,9 @@ const AddUpdateEmployeePage: React.FC = () => {
                 />
               </div>
               <div>
-                <Input label="Bank Branch Name"
+                <Input
+                  label="Bank Branch Name"
+                  placeholder="Enter Bank Branch Name"
                   required value={formData.BankBranchName}
                   onChange={(e) => handleFieldChange("BankBranchName", filterLetters(e.target.value))}
                   error={errors.BankBranchName} />
@@ -881,13 +907,16 @@ const AddUpdateEmployeePage: React.FC = () => {
               <div>
                 <Input
                   label="Account Number"
+                  placeholder="Enter Account Number"
                   required value={formData.AccountNo}
                   maxLength={18}
                   onChange={(e) => handleFieldChange("AccountNo", filterNumbers(e.target.value))}
                   error={errors.AccountNo} />
               </div>
               <div>
-                <Input label="IFSC Code"
+                <Input
+                  label="IFSC Code"
+                  placeholder="Enter IFSC Code"
                   required
                   value={formData.IFSCCode}
                   onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}

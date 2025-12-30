@@ -22,10 +22,7 @@ const ViewShiftMaster: React.FC = () => {
     const { canAction } = useMenuPermissions('/shiftMaster');
     //#endregion
 
-    // Selected Shift data passed from the Shift List page (via navigate state)
     const editShiftData = location.state?.ShiftData as ShiftMasterData;
-
-    // Stores pagination, filters, and sorting state of Shift List page to restore on back navigation
 
     const listState = location.state?.listState;
 

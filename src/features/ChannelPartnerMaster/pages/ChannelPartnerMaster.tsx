@@ -211,7 +211,7 @@ export const ChannelPartnerMaster: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        // Find the column label for sorting
+
         let sortByParam = undefined
         if (sortInfo) {
           const column = ChannelPartnerMasterColumns.find(col => col.key === sortInfo.column);

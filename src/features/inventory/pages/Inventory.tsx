@@ -16,6 +16,9 @@ import { Loader } from "@/core/utils/loader"
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions"
 import Tabs from "@/ui/components/Tab/Tab"
 import { FieldItem } from "@/ui/components/forms/FieldItem"
+import ExportImport from "@/ui/components/ExcelImport/ExcelImport"
+import { technicalService } from "@/features/technical/services/TechnicalService"
+import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel"
 
 
 const Inventory = () => {
@@ -31,6 +34,9 @@ const Inventory = () => {
     const { addToast } = useToast()
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
+
+    //EXCEL IMPORT 
+    const [showImportModal, setShowImportModal] = useState(false);
 
     //#regionTAB ACTIVITY
     const inventoryTabList = [
@@ -172,6 +178,7 @@ const Inventory = () => {
     const handleExportInventoryPdf = () => handleExportInventory('PDF')
 
     //#endregion
+
     //#region COUNT INVENTORY FLAT STATUS
     const countFlatsByStatus = (status: string) => {
 
@@ -315,6 +322,71 @@ const Inventory = () => {
         );
     };
 
+    //#region IMPORT EXCEL | DOWNLOAD
+
+    const downloadExcelSampleInventory = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                // Find the column label for sorting
+
+                const params: FilterPullExcelSample = {
+                    TableName: 'INVENTORY'
+                }
+
+                const response = await technicalService.apiCallPullExcelSample(params);
+
+                handleExportFile(response, 'Excel', 'Inventory', addToast, 'Sample file download successfully')
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message || 'Export failed' })
+            },
+            undefined,
+            'Preparing Downloading'
+        )
+    }
+
+    const handleDownloadExcelSampleInventory = () => downloadExcelSampleInventory();
+
+    const uploadExcel = async (file: File, mergeExisting: string) => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const fd = new FormData();
+
+                fd.append("ExcelFile", file);
+                fd.append("IsAllDelete", mergeExisting);
+                fd.append("TableName", 'Tenant');
+                fd.append("ProjectId", String(projectId));
+
+                const response = await technicalService.apiCallExcelImport(fd);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: 'success', title: "Excel imported sucessfully" })
+
+                    fetchInventory();
+
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (err: any) => addToast({ type: "error", title: err.message }),
+            undefined,
+            "Importing Excel"
+        );
+    };
+
+    //#endregion
     return (
         <>
 
@@ -341,7 +413,6 @@ const Inventory = () => {
                         isShowSearchBar={false}
                         isShowAddButton
                         onAdd={() => { }}
-                        isShowImportButton
                         showMoreAddOptions={
                             <div className="flex flex-col w-[150px] bg-white rounded-md border-[1px] border-gray-200 shadow-lg">
                                 <Button
@@ -392,6 +463,11 @@ const Inventory = () => {
                         isShowExportButton={canExport}
                         onExportExcel={handleExportInventoryExcel}
                         onExportPdf={handleExportInventoryPdf}
+
+                        // IMPORT
+                        isShowImportButton={true}
+                        onUploadExcel={() => setShowImportModal(true)}
+                        onDownloadSampleExcel={handleDownloadExcelSampleInventory}
                         exportLoading={isLoading}
                     />
                 </div>
@@ -447,6 +523,15 @@ const Inventory = () => {
                     </div>
                 </div>
             </div>
+            <ExportImport
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onUpload={(file, mergeExisting) => {
+                    setShowImportModal(false);
+                    uploadExcel(file, mergeExisting);
+                }}
+            />
+
 
             {
                 selectedWing?.InventoryFloorData.map((floor, floorIndex) => (

@@ -10,7 +10,6 @@ export interface AccordionItemData {
 
 type AccordionProps = {
     items?: AccordionItemData[];
-
     openMap?: Record<string, boolean>;
     onToggle?: (key: string, newOpen: boolean) => void;
     renderItem?: (item: AccordionItemData, isOpen: boolean, toggle: () => void) => React.ReactNode;
@@ -49,7 +48,6 @@ export const Accordion: React.FC<AccordionProps> = ({
             if (allowMultipleOpen) {
                 return { ...prev, [key]: !currently };
             } else {
-                // close others
                 return Object.fromEntries(items.map(it => [it.key, it.key === key ? !currently : false]));
             }
         });
@@ -59,13 +57,15 @@ export const Accordion: React.FC<AccordionProps> = ({
         return isControlled ? !!openMap![key] : !!localOpen[key];
     };
 
+    // ✅ call useId ONCE — NOT inside map
+    const baseId = useId();   // <-- ONLY CHANGE
+
     return (
         <div className={className}>
             {items.map(item => {
-                const id = useId() + '-' + item.key;
+                const id = `${baseId}-${item.key}`;   // <-- SAFE NOW
                 const open = isOpen(item.key);
 
-                // render via renderItem if provided
                 if (renderItem) {
                     return (
                         <div key={item.key} className="bg-white border border-gray-200 rounded shadow-sm mb-3">
@@ -74,7 +74,6 @@ export const Accordion: React.FC<AccordionProps> = ({
                     );
                 }
 
-                // default rendering
                 return (
                     <div key={item.key} className="bg-white border border-gray-200 rounded shadow-sm mb-3">
                         <div className="flex items-center justify-between px-4 py-3" onClick={() => toggle(item.key)}>

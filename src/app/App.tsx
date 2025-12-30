@@ -95,6 +95,8 @@ import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor'
 import Leave from '@/features/leave/pages/Leave';
 import AddUpdateLeave from '@/features/leave/pages/AddUpdateLeave';
 import ViewLeave from '@/features/leave/pages/ViewLeave';
+import ViewEnquiryMaster from '@/features/EnquiryMaster/pages/ViewEnquiryMaster';
+import AddUpdateEnquiryMaster from '@/features/EnquiryMaster/pages/AddUpdateEnquiryMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -141,8 +143,6 @@ function App() {
           {/* Public Routes */}
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
-
-          {/* Protected Routes with Layout */}
           <Route
             path="/"
             element={
@@ -203,6 +203,8 @@ function App() {
             <Route path="channelPartner/view" element={<ViewChannelPartnerMaster />} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartnerMaster />} />
             <Route path="enquiry" element={<EnquiryMaster />} />
+            <Route path="enquiry/view" element={<ViewEnquiryMaster />} />
+            <Route path="enquiry/add/:EnquiryId?" element={<AddUpdateEnquiryMaster />} />
             <Route path="vendor" element={<Vendor />} />
             <Route path="vendor/view" element={<ViewVendor />} />
             <Route path="projectMaster" element={<ProjectMaster />} />

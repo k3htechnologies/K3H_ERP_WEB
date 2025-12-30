@@ -5,6 +5,9 @@ export interface CalendarEvent {
   start: string;
   end?: string;
   description?: string;
+  fullname?: string;
+  projectName?: string;
+  priority?: string;
   CreatedBy?: string | ''
   CreatedDate?: string | null
 }

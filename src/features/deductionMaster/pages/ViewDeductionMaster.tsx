@@ -20,10 +20,7 @@ const ViewDeductionMaster: React.FC = () => {
 
     const { canAction } = useMenuPermissions('/deductionMaster');
 
-    // Selected Deduction data passed from the Deduction List page (via navigate state)
     const editDeductionData = location.state?.deductionData as DeductionMasterData;
-
-    // Stores pagination, filters, and sorting state of Deduction List page to restore on back navigation
 
     const listState = location.state?.listState;
 

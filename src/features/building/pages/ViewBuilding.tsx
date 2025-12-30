@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
 import type { BuildingData, BuildingDetailsData, BuildingDocumentData, BuildingKeyContactDetails, FilterWithPaginationBuildingDetailsRequest, FilterWithPaginationBuildingDocumentRequest } from '@/features/building/models/BuildingModel';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -12,16 +12,35 @@ import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import Tabs from '@/ui/components/Tab/Tab';
-import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import Accordion from '@/ui/components/Card/Accordion';
+import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react';
+import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
+import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 
 export const ViewBuilding: React.FC = () => {
 
     //#region STATE MANAGEMENT
     const [buildingData, setBuildingData] = useState<BuildingData | null>(null);
     const [buildingDocumentList, setBuildingDocumentList] = useState<BuildingDocumentData[]>([]);
+    const [docFilesMap, setDocFilesMap] = useState<Record<number, BuildingDocumentData[]>>({});
+    const accordionItems = buildingDocumentList
+        .filter(d => d.UploadedBuildingDocumentCount !== 0)
+        .map(d => ({
+            key: String(d.BuildingDocumentId),
+            title: d.DocumentName ?? "",
+            doc: d
+        }));
+
+    // SINGLE SEARCH TEXT BOX
+    const [searchTerm, setSearchTerm] = useState('')
+    const debouncedSearch = useDebouncedCallback((value: string) => {
+        searchBuildingDocument(value)
+    }, 350)
+
+
     const [contactDetailsList, setContactDetailsList] = useState<Omit<BuildingKeyContactDetails, 'BuildingId' | 'ProjectId' | 'CreatedById' | 'CreatedBy' | 'CreatedDate' | 'ModifiedById' | 'ModifiedBy' | 'ModifiedDate' | 'LastModifiedBy' | 'LastModifiedDate'>[]>([]);
     const [buildingDetailsList, setBuildingDetailsList] = useState<BuildingDetailsData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -75,7 +94,7 @@ export const ViewBuilding: React.FC = () => {
 
     //#region INIT
     useEffect(() => {
-
+        if (!projectId) return;
         if (incomingBuildingData) {
 
             setBuildingData(incomingBuildingData);
@@ -97,7 +116,7 @@ export const ViewBuilding: React.FC = () => {
             loadBuildingDetailsFromServer();
 
         }
-    }, []);
+    }, [projectId]);
 
     //#endregion
 
@@ -141,7 +160,7 @@ export const ViewBuilding: React.FC = () => {
     //#endregion 
 
     //#region DATA LOAD DOCUMENT
-    const loadBuildingDocumentFromServer = async () => {
+    const loadBuildingDocumentFromServer = async (searchText= "") => {
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
@@ -152,7 +171,9 @@ export const ViewBuilding: React.FC = () => {
                     PageSize: 1000,
                     IsCheckPermission: true,
                     ProjectId: Number(projectId),
-                    BuildingId: preservedListState?.buildingId
+                    BuildingId: preservedListState?.buildingId,
+                    BuildingDocumentId: 0,
+                    DocumentName: searchText,
                 }
 
                 const response = await buildingService.apiCallPullBuildingDocument(params);
@@ -177,56 +198,54 @@ export const ViewBuilding: React.FC = () => {
         );
     };
 
-    const buildingDocumentColumns = useMemo<TableColumn[]>(
-        () => [
-            {
-                key: 'DocumentName',
-                label: 'Document Name',
-                width: '33',
-                sortable: true,
-                fixed: 'left',
-                align: 'left',
-                render: (value) => value || 'N/A'
-            },
-            {
-                key: 'DocumentURL',
-                label: 'Document',
-                width: '20',
-                sortable: false,
-                align: 'center',
-                render: (value: string) => {
-                    const urls = parseDocumentUrls(value);
-                    if (urls.length === 0) return '-';
-                    return (
-                        <MultiImageViewer
-                            images={urls}
-                            title="Building Document"
-                            triggerLabel={`View (${urls.length})`}
-                        />
-                    );
-                }
+    const loadSingleDocumentDetails = async (doc: BuildingDocumentData) => {
 
-            },
-            {
-                key: 'CreatedBy',
-                label: 'Last Modified By',
-                width: '33',
-                sortable: true,
-                align: 'center',
-                render: (value) => value || 'N/A'
-            },
-            {
-                key: 'CreatedDate',
-                label: 'Last Modified Date',
-                width: '33',
-                sortable: true,
-                align: 'center',
-                render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+        if (docFilesMap[doc.BuildingDocumentId]) return;
+
+        try {
+            const params: FilterWithPaginationBuildingDocumentRequest = {
+                PageNumber: 1,
+                PageSize: 1000,
+                IsCheckPermission: true,
+                ProjectId: Number(projectId),
+                BuildingId: preservedListState?.buildingId,
+                BuildingDocumentId: doc.BuildingDocumentId
+            };
+
+            const res = await buildingService.apiCallPullBuildingDocument(params);
+
+            if (E.isRight(res)) {
+                setDocFilesMap(prev => ({
+                    ...prev,
+                    [doc.BuildingDocumentId]: res.right.Data ?? []
+                }));
             }
-        ],
+        }
+        finally {
 
-        [canAction]
-    )
+        }
+    };
+
+
+    //#region SERACH DEPARTMENT 
+    const searchBuildingDocument = async (searchValue: string) => {
+
+        setSearchTerm(searchValue);
+        await loadBuildingDocumentFromServer(searchValue);
+
+    }
+    //#endregion
+
+    //#region CLEAR SERACH DEPARTMENT 
+    const clearsearchBuildingDocument = async () => {
+        setSearchTerm('');
+        debouncedSearch.cancel?.();
+        await loadBuildingDocumentFromServer();
+    }
+
+    //#endregion
+
+
 
     //#endregion 
 
@@ -375,8 +394,10 @@ export const ViewBuilding: React.FC = () => {
                     }
 
                     else if (activeTab === "Document") {
+
                         const doc = buildingDocumentList?.[0];
-                        if (buildingDocumentList) handleViewBuildingDocument(doc)
+                        if (doc) handleViewBuildingDocument(doc);
+
                     }
 
                     else if (activeTab === "Details") {
@@ -484,25 +505,7 @@ export const ViewBuilding: React.FC = () => {
                     {/* ================= RIGHT SIDE (1/3) ================= */}
                     <div className="lg:col-span-1 space-y-6">
 
-                        {/* ================= QUICK ACTIONS ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Action Details
-                            </h4>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Created By" value={buildingData?.CreatedBy ?? '-'} />
-                                <FieldItem
-                                    label="Created Date"
-                                    value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.CreatedDate ?? '-')}
-                                />
-                                <FieldItem label="Modified By" value={buildingData?.ModifiedBy ?? '-'} />
-                                <FieldItem
-                                    label="Modified Date"
-                                    value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.ModifiedDate ?? '-')}
-                                />
-                            </div>
-                        </section>
 
                         {/* ================= GARDERN INFORMATION ================= */}
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
@@ -559,6 +562,25 @@ export const ViewBuilding: React.FC = () => {
                             </div>
 
                         </section>
+                        {/* ================= QUICK ACTIONS ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Action Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Created By" value={buildingData?.CreatedBy ?? '-'} />
+                                <FieldItem
+                                    label="Created Date"
+                                    value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.CreatedDate ?? '-')}
+                                />
+                                <FieldItem label="Modified By" value={buildingData?.ModifiedBy ?? '-'} />
+                                <FieldItem
+                                    label="Modified Date"
+                                    value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.ModifiedDate ?? '-')}
+                                />
+                            </div>
+                        </section>
 
                     </div>
 
@@ -566,17 +588,81 @@ export const ViewBuilding: React.FC = () => {
 
             )}
 
-            {activeTab === 'Document' && (
-                <DataTable
-                    data={buildingDocumentList}
-                    columns={buildingDocumentColumns}
-                    emptyMessage="No Building Documents Data Found"
-                    fixedHeight={true}
-                    recordsPerPage={20}
-                    className="flex-1"
-                    loading={isLoading}
-                />
+            {activeTab === "Document" && (
+                <>
+                    <TableActionToolbar
+                        isShowSearchBar
+                        searchTerm={searchTerm}
+                        searchPlaceholder="Search By Document Name"
+                        onSearchChange={(v) => {
+                            setSearchTerm(v)
+                            debouncedSearch(v)
+                        }}
+                        onClearSearch={clearsearchBuildingDocument}
+                        isShowFilterButton={false}
+                        exportLoading={isLoading}
+                    />
+
+                    <Accordion
+                        items={accordionItems}
+                        allowMultipleOpen
+                        renderItem={(item, isOpen, toggle) => {
+
+                            const doc = buildingDocumentList.find(d => String(d.BuildingDocumentId) === item.key);
+
+                            if (!doc) return null;
+
+
+                            const details = docFilesMap[doc.BuildingDocumentId] ?? [];
+
+                            return (
+                                <div>
+
+                                    {/* HEADER */}
+                                    <div
+                                        className="flex justify-between items-center px-4 py-3 cursor-pointer"
+                                        onClick={async () => {
+                                            toggle();
+                                            if (!isOpen) await loadSingleDocumentDetails(doc);
+                                        }}
+                                    >
+                                        <h3 className="font-medium">{doc.DocumentName}</h3>
+                                        <span>{isOpen ? <ChevronDownIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}</span>
+                                    </div>
+
+                                    {/* BODY */}
+                                    {isOpen && (
+                                          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-5">
+
+                                            {details.map(d => {
+                                                const urls = parseDocumentUrls(d.DocumentURL ?? "");
+
+                                                return (
+                                                    <div key={d.Uniquekey} className="border border-gray-200 rounded-lg p-4 mb-3 shadow-sm">
+                                                        <MultiImageViewer
+                                                            images={urls}
+                                                            title={d.DocumentName ?? "Document"}
+                                                            triggerLabel={`${d.DocumentName}`}
+                                                        />
+
+                                                        <div className="text-xs text-gray-600 mt-3 space-y-1">
+                                                            <FieldItem label="Remark" value={d.DocumentRemark ?? '-'}  />
+                                                            <FieldItem label="Uploaded By / Date" value={d?.CreatedBy + ' ' + formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate ?? '-')}  />
+
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }}
+                    />
+                </>
             )}
+
+
 
             {activeTab === 'Details' && (
 

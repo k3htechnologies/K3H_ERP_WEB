@@ -522,11 +522,8 @@ export const EnquiryMaster: React.FC = () => {
             if (saved) {
 
                 const parsed = JSON.parse(saved) as string[]
-                // Ensure required columns are always present
 
                 const withRequired = Array.from(new Set([...parsed, ...requiredEnquiryColumnKeys]));
-
-                // Filter out any keys that no longer exist
 
                 return withRequired.filter(k => allEnquiryColumnKeys.includes(k));
             }
@@ -536,9 +533,6 @@ export const EnquiryMaster: React.FC = () => {
 
     useEffect(() => {
         setSelectedEnquiryColumnKeys(prev => Array.from(new Set([...prev, ...requiredEnquiryColumnKeys])).filter(k => allEnquiryColumnKeys.includes(k)));
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-
     }, [EnquiryMasterColumns.length])
 
     const visibleEnquiryColumns = useMemo(

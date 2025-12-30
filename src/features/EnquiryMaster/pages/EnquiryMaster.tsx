@@ -20,13 +20,16 @@ import { Button, Input } from "@/ui/components/forms";
 import { updateFilter } from "@/core/utils/filterHelper";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { runApiWithLoader } from "@/core/utils";
 import { EnquiryMasterService } from "../services/EnquiryMasterServices";
 import * as E from 'fp-ts/Either';
 import { handleExportFile } from "@/core/utils/exportFile";
 import { Loader } from "@/core/utils/loader";
 import { Trash2 } from "lucide-react";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel";
+import { technicalService } from "@/features/technical/services/TechnicalService";
 
 
 export const EnquiryMaster: React.FC = () => {
@@ -39,6 +42,8 @@ export const EnquiryMaster: React.FC = () => {
     // USE NAVIGATE
     const navigate = useNavigate();
 
+    const { projectId } = useProject();
+
     // PAGINATION STATE
     const { pagination, setPagination } = usePagination(20);
 
@@ -50,6 +55,7 @@ export const EnquiryMaster: React.FC = () => {
 
     // SINGLE SEARCH TEXT BOX
     const [searchTerm, setSearchTerm] = useState('');
+
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchEnquiry(value)
     }, 350);
@@ -74,6 +80,7 @@ export const EnquiryMaster: React.FC = () => {
     //#endregion
 
     //#region INIT
+
     useEffect(() => {
         const incoming = location.state?.listState;
         const listState = incoming ?? {
@@ -93,7 +100,9 @@ export const EnquiryMaster: React.FC = () => {
         setSearchTerm(listState.searchTerm ?? '');
 
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
+
             loadEnquiry(listState.page ?? 1, {
+
                 Name: String(listState.searchTerm).trim()
             });
             return;
@@ -113,12 +122,16 @@ export const EnquiryMaster: React.FC = () => {
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
     const fetchEnquiryMasterList = async (page: number = pagination.currentPage) => {
+
         return await loadEnquiry(page, filters);
     }
     const loadEnquiry = async (page: number, filterParams: FilterInfo) => {
         await runApiWithLoader(
+
             setIsLoading,
+
             setIsLoadingMessage,
+
             async () => {
                 let sortByParam = undefined;
 
@@ -131,11 +144,14 @@ export const EnquiryMaster: React.FC = () => {
                 const params: FilterWithPaginationEnquiryMasterRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
-                    EnquiryId:filterParams.EnquiryId ? Number(filterParams.EnquiryId):undefined,
+                    Name: filterParams.Name?.trim() || undefined,
+                    EnquiryId: filterParams.EnquiryId ? Number(filterParams.EnquiryId) : undefined,
+                    ProjectId: Number(projectId),
                     Budget: filterParams.Budget?.trim() || undefined,
                     SortBy: sortByParam
                 };
                 const response = await EnquiryMasterService.apiCallPullEnquiryMaster(params);
+
                 if (E.isRight(response)) {
 
                     setEnquiryMasterMasterList(response.right.Data);
@@ -170,14 +186,13 @@ export const EnquiryMaster: React.FC = () => {
 
             return
         }
-
         const filterParams: FilterInfo = {
+
             Name: searchValue.trim(),
         };
 
         await loadEnquiry(1, filterParams);
     };
-
     //#endregion
 
     //#region CLEAR ENQUIRY MASTER 
@@ -204,12 +219,13 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region EXPORT / IMPORT EXCEL AND PDF
     const handleExportEnquiry = async (exportType: 'Excel' | 'PDF') => {
+
         await runApiWithLoader(
+
             setIsLoading,
             setIsLoadingMessage,
             async () => {
-                // Find the column label for sorting
-                let sortByParam = undefined
+                let sortByParam;
                 if (sortInfo) {
                     const column = EnquiryMasterColumns.find(col => col.key === sortInfo.column);
                     if (column) {
@@ -221,14 +237,14 @@ export const EnquiryMaster: React.FC = () => {
                     PageSize: pagination.totalRecords,
                     Name: filters.Name?.trim() || undefined,
                     SortBy: sortByParam,
-                    ExportType: exportType
+                    ExportType: exportType,
+                    ProjectId: Number(projectId)
                 };
 
                 const response = await getEnquiry(params);
 
                 handleExportFile(response, exportType, 'Enquiry Master', addToast);
-
-                return response;
+                return response
             },
             undefined,
             (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
@@ -241,8 +257,59 @@ export const EnquiryMaster: React.FC = () => {
     const handleExportEnquiryPdf = () => handleExportEnquiry('PDF')
     //#endregion
 
+    //#region IMPORT EXCEL | DOWNLOAD
 
-    //#region API | SERVICES CALL TO GET ASSET MAPPING
+    const excelImportEnquiryMaster = async () => {
+
+        await runApiWithLoader(
+
+            setIsLoading,
+
+            setIsLoadingMessage,
+
+            async () => {
+
+                return null;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message || 'Import failed' })
+            },
+            undefined,
+            'Preparing Import'
+        )
+    }
+
+    const downloadExcelSampleEnquiryMaster = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+                // Find the column label for sorting
+                const params: FilterPullExcelSample = {
+                    TableName: 'ENQUIRY'
+                }
+
+                const response = await technicalService.apiCallPullExcelSample(params);
+
+                handleExportFile(response, 'Excel', 'Enquiry Master', addToast, 'Sample file download successfully')
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message || 'Export failed' })
+            },
+            undefined,
+            'Preparing Downloading'
+        )
+    }
+
+    const handleExcelImportEnquiryMaster = () => excelImportEnquiryMaster()
+    const handleDownloadExcelSampleEnquiryMaster = () => downloadExcelSampleEnquiryMaster()
+    //#endregion
+
+    //#region API | SERVICES CALL TO GET ENQUIRY
     const getEnquiry = async (filterParams: FilterWithPaginationEnquiryMasterRequest) => {
 
         return await EnquiryMasterService.apiCallPullEnquiryMaster(filterParams);
@@ -251,9 +318,8 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
-
+        
         fetchEnquiryMasterList(page);
-
     }, []);
 
     //#region TABLE SORT COLUMN
@@ -282,7 +348,7 @@ export const EnquiryMaster: React.FC = () => {
     const handleNavigateToView = (row: EnquiryMasterData) => {
         navigate('/enquiry/view', {
             state: {
-                assetData: row,
+                editEnquiryData: row,
                 listState: {
                     page: pagination.currentPage,
                     filters,
@@ -298,7 +364,11 @@ export const EnquiryMaster: React.FC = () => {
         navigate('/enquiry/add', {
             state: {
                 fromList: true,
-                listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
+                listState: {
+                    page: pagination.currentPage,
+                    filters, sortInfo,
+                    searchTerm
+                }
             }
         });
     }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
@@ -306,7 +376,9 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: EnquiryMasterData) => {
+
         setDeleteEnquiryMasterData(row)
+
         setIsConfirmationDialogBoxOpen(true)
     }, [])
 
@@ -329,48 +401,16 @@ export const EnquiryMaster: React.FC = () => {
             )
         },
         {
-            key: 'Accommodation',
-            label: 'Accommodation',
+            key: 'ProjectName',
+            label: 'Project Name',
             width: '15',
             sortable: false,
             align: 'center',
             render: (value) => (
                 <TooltipText
                     text={value || 'N/A'}
-                    maxWidth="170px"
+                    maxWidth="150px"
                     tooltipThreshold={15}
-                />
-            )
-        },
-        {
-            key: 'NextFollowUpDate',
-            label: 'Next Follow Up Date',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: (value) =>
-                value ? formatDate_dd_MonthName_yy(value) : '-'
-        },
-        {
-            key: 'EnquiryDate',
-            label: 'EnquiryDate',
-            width: '12',
-            sortable: false,
-            align: 'center',
-            render: (value) =>
-                value ? formatDate_dd_MonthName_yy(value) : '-'
-        },
-        {
-            key: 'SubSource',
-            label: 'Sub Source',
-            width: '12',
-            sortable: false,
-            align: 'center',
-            render: (value) => (
-                <TooltipText
-                    text={value || 'N/A'}
-                    maxWidth="120px"
-                    tooltipThreshold={12}
                 />
             )
         },
@@ -388,6 +428,53 @@ export const EnquiryMaster: React.FC = () => {
                 />
             )
         },
+        {
+            key: 'FinalStage',
+            label: 'Final Stage',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: (value) => (
+                <TooltipText
+                    text={value || 'N/A'}
+                    maxWidth="170px"
+                    tooltipThreshold={15}
+                />
+            )
+        },
+        {
+            key: 'Source',
+            label: 'Source',
+            width: '12',
+            sortable: false,
+            align: 'center',
+            render: (value) => (
+                <TooltipText
+                    text={value || 'N/A'}
+                    maxWidth="120px"
+                    tooltipThreshold={12}
+                />
+            )
+        },
+        {
+            key: 'NextFollowUpDate',
+            label: 'Next Follow-Up Date',
+            width: '12',
+            sortable: false,
+            align: 'center',
+            render: (value?: string) =>
+                value ? formatDate_dd_MonthName_yy(value) : 'N/A'
+        },
+        {
+            key: 'EnquiryDate',
+            label: 'Enquiry Date',
+            width: '12',
+            sortable: false,
+            align: 'center',
+            render: (value?: string) =>
+                value ? formatDate_dd_MonthName_yy(value) : 'N/A'
+        },
+
         {
             key: 'actions',
             label: 'Actions',
@@ -411,7 +498,7 @@ export const EnquiryMaster: React.FC = () => {
                                 color: 'red',
                                 padding: '4px 8px'
                             }}
-                            title="Delete Asset"
+                            title="Delete Enquiry"
                         >
                             <Trash2 className="h-4 w-4" />
                         </Button>
@@ -429,18 +516,24 @@ export const EnquiryMaster: React.FC = () => {
 
     const [selectedEnquiryColumnKeys, setSelectedEnquiryColumnKeys] = useState<string[]>(() => {
         try {
+
             const saved = LocalStorageHelper.getEnquiryMasterTableColumns?.();
+
             if (saved) {
+
                 const parsed = JSON.parse(saved) as string[]
                 // Ensure required columns are always present
 
                 const withRequired = Array.from(new Set([...parsed, ...requiredEnquiryColumnKeys]));
+
                 // Filter out any keys that no longer exist
+
                 return withRequired.filter(k => allEnquiryColumnKeys.includes(k));
             }
         } catch { }
         return allEnquiryColumnKeys;
     });
+
     useEffect(() => {
         setSelectedEnquiryColumnKeys(prev => Array.from(new Set([...prev, ...requiredEnquiryColumnKeys])).filter(k => allEnquiryColumnKeys.includes(k)));
 
@@ -481,18 +574,16 @@ export const EnquiryMaster: React.FC = () => {
                 replace: true,
                 state: {}
             });
-
     };
     //#endregion
 
     //#region HANDLE FILTER CHNAGE
     const handleFilterChange = (key: string, value: string) => {
-
         setTempFilters(prev => updateFilter(prev, key, value));
     }
     //#endregion
 
-    //#region DELETE ASSET MAPPING MASTER
+    //#region DELETE ENQUIRY MASTER
     const handleDeleteEnquiryMaster = async () => {
 
         setIsConfirmationDialogBoxOpen(false);
@@ -508,7 +599,9 @@ export const EnquiryMaster: React.FC = () => {
                 const params: DeleteEnquiryMasterRequest = {
 
                     EnquiryId: deleteEnquiryMasterData.EnquiryId || 0,
-                    ProjectId: deleteEnquiryMasterData.ProjectId || 0,
+
+                    ProjectId: Number(projectId),
+
                     Uniquekey: deleteEnquiryMasterData.Uniquekey || ""
                 };
 
@@ -541,7 +634,7 @@ export const EnquiryMaster: React.FC = () => {
             undefined,
             (error: any) => addToast({ type: "error", title: error.message }),
             undefined,
-            "Deleting Asset Mapping"
+            "Deleting Enquiry"
         );
     };
 
@@ -574,6 +667,11 @@ export const EnquiryMaster: React.FC = () => {
                 addTitle="Add"
                 onAdd={handleAddEnquiryModal}
 
+                // IMPORT
+                isShowImportButton={canAction}
+                onUploadExcel={handleExcelImportEnquiryMaster}
+                onDownloadSampleExcel={handleDownloadExcelSampleEnquiryMaster}
+
                 //EXPORT
                 isShowExportButton={canExport}
                 onExportExcel={handleExportEnquiryExcel}
@@ -586,7 +684,7 @@ export const EnquiryMaster: React.FC = () => {
                 data={EnquiryForTable}
                 columns={visibleEnquiryColumns}
                 pagination={EnquiryPaginationInfo}
-                emptyMessage="No Enquiry Found Data"
+                emptyMessage="No Enquiry Data Found"
                 fixedHeight
                 recordsPerPage={20}
                 className="flex-1"
@@ -616,7 +714,6 @@ export const EnquiryMaster: React.FC = () => {
                 requiredKeys={requiredEnquiryColumnKeys}
                 title="Customize Table Columns"
             />
-
             {/* FILTER MODAL */}
 
             <Modal

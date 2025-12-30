@@ -15,10 +15,7 @@ const ViewChannelPartnerMaster: React.FC = () => {
 
     const { canAction } = useMenuPermissions('/channelPartner');
 
-    // Selected ChannelPartner data passed from the ChannelPartner List page (via navigate state)
     const editChannelPartnerData = location.state?.editChannelPartnerData as ChannelPartnerMasterData;
-
-    // Stores pagination, filters, and sorting state of ChannelPartner List page to restore on back navigation
 
     const listState = location.state?.listState;
 

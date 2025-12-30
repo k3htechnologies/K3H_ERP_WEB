@@ -30,6 +30,7 @@ import { FieldItem } from '@/ui/components/forms/FieldItem';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { updateFilter } from '@/core/utils/filterHelper';
+import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 
 const initialFormState = (): AddUpdateDesignationMasterRequest => ({
   DesignationMasterId: 0,
@@ -89,6 +90,10 @@ export const DesignationMaster: React.FC = () => {
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeDesignationMasterColumnsModal, setIsShowCustomizeDesignationMasterColumnsModal] = useState(false);
+
+  //EXCEL IMPORT 
+  const [showImportModal, setShowImportModal] = useState(false);
+
 
   //NAVIGATE 
   const navigate = useNavigate();
@@ -289,7 +294,7 @@ export const DesignationMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-    const handleSortColumn = useCallback((sort: SortInfo) => {
+  const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     loadDesignationMaster(1, filters, sort);
   }, [filters]);
@@ -359,8 +364,8 @@ export const DesignationMaster: React.FC = () => {
             <div className="flex items-center justify-end ml-2 gap-1">
               <TooltipText
                 text={value || 'N/A'}
-                maxWidth="250px"
-                tooltipThreshold={25}
+                maxWidth="350px"
+                tooltipThreshold={45}
                 onClick={() => handleViewDesignationDetails(row)}
               />
 
@@ -401,11 +406,7 @@ export const DesignationMaster: React.FC = () => {
         width: '30',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            {value}
-          </span>
-        )
+        render: (value) => value || '0'
       },
       {
         key: 'NumberOfEmployee',
@@ -413,11 +414,7 @@ export const DesignationMaster: React.FC = () => {
         width: '20',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            {value}
-          </span>
-        )
+        render: (value) => value || '0'
       },
       {
         key: 'actions',
@@ -770,29 +767,6 @@ export const DesignationMaster: React.FC = () => {
 
   //#region IMPORT EXCEL | DOWNLOAD
 
-  const excelImportDesignationMaster = async () => {
-
-    await runApiWithLoader(
-
-      setIsLoading,
-
-      setIsLoadingMessage,
-
-      async () => {
-
-
-        return null;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Import failed' })
-      },
-      undefined,
-      'Preparing Import'
-    )
-  }
-
-
   const downloadExcelSampleDesignationMaster = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -819,9 +793,40 @@ export const DesignationMaster: React.FC = () => {
     )
   }
 
-  const handleExcelImportDesignationMaster = () => excelImportDesignationMaster()
   const handleDownloadExcelSampleDesignationMaster = () => downloadExcelSampleDesignationMaster()
 
+  const uploadExcel = async (file: File, mergeExisting: string) => {
+      await runApiWithLoader(
+        setIsLoading,
+        setIsLoadingMessage,
+        async () => {
+  
+          const fd = new FormData();
+          
+          fd.append("ExcelFile", file);
+          fd.append("IsAllDelete", mergeExisting);
+          fd.append("TableName",'DESIGNATION MASTER');
+  
+          const response = await technicalService.apiCallExcelImport(fd);
+  
+          if (E.isRight(response)) {
+  
+            addToast({ type: 'success', title: "Excel imported sucessfully" })
+  
+            fetchDesignationMasterList();
+  
+          } else {
+            addToast({ type: "error", title: response.left.message });
+          }
+  
+          return response;
+        },
+        undefined,
+        (err: any) => addToast({ type: "error", title: err.message }),
+        undefined,
+        "Importing Excel"
+      );
+    };
   //#endregion
 
   //#region DELETE DESIGNATION MASTER
@@ -915,7 +920,7 @@ export const DesignationMaster: React.FC = () => {
 
         // IMPORT
         isShowImportButton={canAction}
-        onUploadExcel={handleExcelImportDesignationMaster}
+        onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleDesignationMaster}
 
         // EXPORT
@@ -1076,6 +1081,14 @@ export const DesignationMaster: React.FC = () => {
         variant="danger"
       />
 
+      <ExportImport
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onUpload={(file, mergeExisting) => {
+          setShowImportModal(false);
+          uploadExcel(file, mergeExisting);
+        }}
+      />
     </div>
   )
 }

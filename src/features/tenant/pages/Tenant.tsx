@@ -26,6 +26,9 @@ import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleS
 import { fetchBuildingDropdown } from '@/features/building/buildingDropdown';
 import { FileText } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
+import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
+import { technicalService } from '@/features/technical/services/TechnicalService';
 
 export const Tenant: React.FC = () => {
   //#region STATE
@@ -54,6 +57,10 @@ export const Tenant: React.FC = () => {
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   const [isShowCustomizeTenantColumnsModal, setIsShowCustomizeTenantColumnsModal] = useState(false);
+
+  //EXCEL IMPORT 
+  const [showImportModal, setShowImportModal] = useState(false);
+
 
   const { canAction, canExport } = useMenuPermissions();
 
@@ -615,33 +622,22 @@ export const Tenant: React.FC = () => {
 
   //#region IMPORT EXCEL | DOWNLOAD
 
-  const excelImportTenant = async () => {
-
-    await runApiWithLoader(
-
-      setIsLoading,
-
-      setIsLoadingMessage,
-
-      async () => {
-        return null;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Import failed' })
-      },
-      undefined,
-      'Preparing Import'
-    )
-  }
-
-
   const downloadExcelSampleTenant = async () => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        return null;
+        // Find the column label for sorting
+
+        const params: FilterPullExcelSample = {
+          TableName: 'TENANT'
+        }
+
+        const response = await technicalService.apiCallPullExcelSample(params);
+
+        handleExportFile(response, 'Excel', 'Tenant', addToast, 'Sample file download successfully')
+
+        return response;
       },
       undefined,
       (error: any) => {
@@ -652,8 +648,42 @@ export const Tenant: React.FC = () => {
     )
   }
 
-  const handleExcelImportTenant = () => excelImportTenant()
-  const handleDownloadExcelSampleTenant = () => downloadExcelSampleTenant()
+  const handleDownloadExcelSampleTenant = () => downloadExcelSampleTenant();
+
+  const uploadExcel = async (file: File, mergeExisting: string) => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+
+        const fd = new FormData();
+
+        fd.append("ExcelFile", file);
+        fd.append("IsAllDelete", mergeExisting);
+        fd.append("TableName", 'Tenant');
+        fd.append("ProjectId", String(projectId));
+        fd.append("BuildingId", String(buildingId));
+
+        const response = await technicalService.apiCallExcelImport(fd);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: "Excel imported sucessfully" })
+
+          fetchTenantList();
+
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (err: any) => addToast({ type: "error", title: err.message }),
+      undefined,
+      "Importing Excel"
+    );
+  };
 
   //#endregion
 
@@ -688,8 +718,8 @@ export const Tenant: React.FC = () => {
         onAdd={handleAddTenantModal}
 
         // IMPORT
-        isShowImportButton={false}
-        onUploadExcel={handleExcelImportTenant}
+        isShowImportButton={true}
+        onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleTenant}
 
         // EXPORT
@@ -742,7 +772,7 @@ export const Tenant: React.FC = () => {
         data={tenantsForTable}
         columns={visibleTenantColumns}
         pagination={tenantPaginationInfo}
-        emptyMessage="No tenants found"
+        emptyMessage="No Tenants Found"
         fixedHeight
         recordsPerPage={20}
         className="flex-1"
@@ -818,6 +848,15 @@ export const Tenant: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      <ExportImport
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onUpload={(file, mergeExisting) => {
+          setShowImportModal(false);
+          uploadExcel(file, mergeExisting);
+        }}
+      />
     </div>
   );
 };

@@ -25,7 +25,7 @@ export abstract class ProjectMasterDatasource {
     abstract pullProjectMaster(params: FilterWithPaginationProjectMasterRequest, signal?: AbortSignal): Promise<ProjectMasterListResponse>;
     abstract addUpdateProjectMaster(formData: FormData): Promise<ProjectMasterSaveResponse>;
 
-    abstract pullProjectMasterWithEmployee(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithEmployeeResponse>;
+    abstract pullProjectMasterWithEmployee(ProjectId: number, FullName?: string, signal?: AbortSignal): Promise<ProjectMasterWithEmployeeResponse>;
     abstract addUpdateProjectMasterWithEmployee(params: AddUpdateProjectMasterWithEmployeeRequest): Promise<ProjectMasterWithEmployeeSaveResponse>;
     abstract deleteProjectMasterWithEmployee(params: DeleteProjectMasterWithEmployeeRequest): Promise<ProjectMasterWithEmployeeDeleteResponse>;
 
@@ -96,11 +96,13 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
         }
     }
 
-    async pullProjectMasterWithEmployee(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithEmployeeResponse> {
+    async pullProjectMasterWithEmployee(ProjectId: number, FullName?: string, signal?: AbortSignal): Promise<ProjectMasterWithEmployeeResponse> {
         try {
             const queryParams = new URLSearchParams({
                 ProjectId: (ProjectId ?? 0).toString()
             })
+            if (FullName) queryParams.append('FullName', FullName.trim());
+
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${ProjectMasterApi.PULL_PROJECT_WITH_EMPLOYEE}?${queryParams.toString()}`, { signal }
             )

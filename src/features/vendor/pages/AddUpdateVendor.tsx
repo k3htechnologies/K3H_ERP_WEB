@@ -565,7 +565,7 @@ export const AddUpdateVendor: React.FC = () => {
 
       <Loader loading={isLoading} title={loadingMessage}><div></div> </Loader>
 
-      <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll ">
+      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
 
         {/* ============================================================= [BASIC VENDOR DETAILS] ============================================================================================= */}
         <div className="space-y-4 pb-3">
@@ -627,7 +627,7 @@ export const AddUpdateVendor: React.FC = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Input
-              label="Aadhaar Card Number" 
+              label="Aadhaar Card Number"
               required
               value={formData.AadharCardNumber}
               rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
@@ -658,7 +658,7 @@ export const AddUpdateVendor: React.FC = () => {
             />
 
             <Input
-              label="PAN Card Number" 
+              label="PAN Card Number"
               required
               value={formData.PanCardNumber}
               rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
@@ -687,7 +687,7 @@ export const AddUpdateVendor: React.FC = () => {
               }}
             />
             <Input
-              label="GST Number" 
+              label="GST Number"
               required
               value={formData.GSTNumber}
               rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
@@ -808,7 +808,7 @@ export const AddUpdateVendor: React.FC = () => {
 
         {/* MATERIAL / CONTRACT */}
         <div className="space-y-4 pb-3">
-          <h3 className="text-lg font-semibold text-gray-500 border-b pb-2">
+          <h3 className="text-lg font-semibold border-b border-gray-300 pb-2">
             Material and Contract Management
           </h3>
 
@@ -820,13 +820,14 @@ export const AddUpdateVendor: React.FC = () => {
 
             defaultActive={activeTab}
             onTabChange={(tab) => setActiveTab(tab.id)}
+            islarge
           />
 
           {/* Material Tab Content */}
           {activeTab === "material" && (
             <div className="space-y-4">
 
-              <div className="bg-gray-50 border rounded-lg p-4 space-y-3 h-[400px] flex flex-col">
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3 h-[400px] flex flex-col">
 
                 <Input
                   type="text"
@@ -856,7 +857,7 @@ export const AddUpdateVendor: React.FC = () => {
                             onClick={() => handleAddMaterial(item)}
                           >
                             {isSelected ? (
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4" style={{ color: "red" }} />
                             ) : (
                               <Plus className="w-4 h-4" />
                             )}
@@ -865,7 +866,7 @@ export const AddUpdateVendor: React.FC = () => {
                       );
                     })
                   ) : (
-                    <div className="text-center text-gray-400 py-3">
+                    <div className="text-center text-gray-400 py-12">
                       <NoDataView />
                     </div>
                   )}
@@ -906,7 +907,7 @@ export const AddUpdateVendor: React.FC = () => {
 
       <BottomActionBar
         cancelText="Cancel"
-        saveText={formData.VendorId ? "Update Vendor" : "Add Vendor"}
+        saveText={formData.VendorId ? "Update" : "Add"}
         onCancel={() => navigate(-1)}
         canAction={canAction}
         onSave={() => {
@@ -915,7 +916,7 @@ export const AddUpdateVendor: React.FC = () => {
         isLoading={isLoading}
       />
 
-     
+
     </div>
   );
 };

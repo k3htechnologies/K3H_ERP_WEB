@@ -196,6 +196,7 @@ export interface FilterWithPaginationBuildingDocumentRequest {
   BuildingId?: number
   BuildingDocumentId?: number
   DocumentName?: string | ''
+  DocumentStatus?: string | ''
   SortBy?: string
   ExportType?: 'Excel' | 'PDF'
 }
@@ -208,6 +209,9 @@ export interface BuildingDocumentData {
   ProjectId: number;
   DocumentName?: string | null;
   DocumentURL?: string | null;
+  DocumentRemark?: string | null;
+  IsMaster?: number | 0;
+  UploadedBuildingDocumentCount: number;
   CreatedById: number | 0
   CreatedBy: string | ''
   CreatedDate: string | null
@@ -225,7 +229,9 @@ export interface AddUpdateBuildingDocumentRequest {
   ProjectId: number;
   DocumentName?: string | null;
   DocumentURL?: File[] | null;
-  RemoveDocumentURL?: string[] | null;
+  RemoveDocumentURL?: string | null;
+  DocumentRemark?: string | null;
+  IsMaster?: number | 0;
 }
 
 export interface DeleteBuildingDocumentRequest {

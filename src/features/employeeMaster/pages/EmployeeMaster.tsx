@@ -26,6 +26,7 @@ import { technicalService } from '@/features/technical/services/TechnicalService
 import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { FileText } from 'lucide-react';
+import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -50,6 +51,9 @@ export const EmployeeMaster: React.FC = () => {
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   const [isShowCustomizeEmployeeColumnsModal, setIsShowCustomizeEmployeeColumnsModal] = useState(false);
+
+  //EXCEL IMPORT 
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const { canAction, canExport } = useMenuPermissions();
 
@@ -91,13 +95,13 @@ export const EmployeeMaster: React.FC = () => {
 
       setSearchTerm(String(listState.searchTerm));
 
-      loadEmployees(listState.page ?? 1, { EmployeeName: String(listState.searchTerm).trim() },listState.sortInfo);
+      loadEmployees(listState.page ?? 1, { EmployeeName: String(listState.searchTerm).trim() }, listState.sortInfo);
 
       return;
     }
 
 
-    loadEmployees(listState.page ?? 1, listState.filters ?? {},listState.sortInfo);
+    loadEmployees(listState.page ?? 1, listState.filters ?? {}, listState.sortInfo);
 
   }, [location.state]);
 
@@ -115,7 +119,7 @@ export const EmployeeMaster: React.FC = () => {
     return await loadEmployees(page, filters, sort ?? sortInfo);
   };
 
-  
+
   const loadEmployees = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
@@ -266,7 +270,7 @@ export const EmployeeMaster: React.FC = () => {
 
   //#region TABLE CONFIG
   const handlePageChange = useCallback((page: number) => {
-    fetchEmployeeList(page,sortInfo);
+    fetchEmployeeList(page, sortInfo);
   }, [sortInfo]);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
@@ -685,27 +689,6 @@ export const EmployeeMaster: React.FC = () => {
 
   //#region IMPORT EXCEL | DOWNLOAD
 
-  const excelImportEmployeeMaster = async () => {
-
-    await runApiWithLoader(
-
-      setIsLoading,
-
-      setIsLoadingMessage,
-
-      async () => {
-        return null;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Import failed' })
-      },
-      undefined,
-      'Preparing Import'
-    )
-  }
-
-
   const downloadExcelSampleEmployeeMaster = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -732,8 +715,40 @@ export const EmployeeMaster: React.FC = () => {
     )
   }
 
-  const handleExcelImportEmployeeMaster = () => excelImportEmployeeMaster()
   const handleDownloadExcelSampleEmployeeMaster = () => downloadExcelSampleEmployeeMaster()
+
+  const uploadExcel = async (file: File, mergeExisting: string) => {
+    await runApiWithLoader(
+      setIsLoading,
+      setIsLoadingMessage,
+      async () => {
+
+        const fd = new FormData();
+
+        fd.append("ExcelFile", file);
+        fd.append("IsAllDelete", mergeExisting);
+        fd.append("TableName", 'EMPLOYEE MASTER');
+
+        const response = await technicalService.apiCallExcelImport(fd);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: "Excel imported sucessfully" })
+
+          fetchEmployeeList();
+
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (err: any) => addToast({ type: "error", title: err.message }),
+      undefined,
+      "Importing Excel"
+    );
+  };
 
   //#endregion
 
@@ -767,7 +782,7 @@ export const EmployeeMaster: React.FC = () => {
 
         // IMPORT
         isShowImportButton={canAction}
-        onUploadExcel={handleExcelImportEmployeeMaster}
+        onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleEmployeeMaster}
 
         // EXPORT
@@ -873,6 +888,15 @@ export const EmployeeMaster: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      <ExportImport
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onUpload={(file, mergeExisting) => {
+          setShowImportModal(false);
+          uploadExcel(file, mergeExisting);
+        }}
+      />
     </div>
   );
 };

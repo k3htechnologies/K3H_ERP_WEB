@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Search, X, Plus, Upload, Download, Table, SlidersHorizontal } from 'lucide-react'
+import { Search, X, Plus, Upload, Download, Table, SlidersHorizontal, Share2Icon } from 'lucide-react'
 import type { FilterInfo } from '@/ui/components/DataTable/DataTable'
 import { Button, Input } from '@/ui/components/forms'
 
@@ -25,7 +25,12 @@ export interface TableActionToolbarProps {
   isShowAddButton?: boolean
   addTitle?: string
   onAdd?: () => void
-  showMoreAddOptions? : React.ReactNode
+  showMoreAddOptions?: React.ReactNode
+
+  /** ADD EXTRA BUTTON */
+  isShowAddExtraButton?: boolean
+  addExtraTitle?: string
+  onAddExtra?: () => void
 
   /** IMPORT BUTTON */
   isShowImportButton?: boolean
@@ -76,14 +81,20 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
   onExportExcel,
   onExportPdf,
   exportLoading = false,
+
+  // EXTRA ADD
+  isShowAddExtraButton = true,
+  addExtraTitle = 'Add',
+  onAddExtra
 }) => {
   const [isExportOpen, setIsExportOpen] = useState(false)
   const [isImportOpen, setIsImportOpen] = useState(false)
-  const [showIsAddMore,setShowIsAddMore] = useState(false)
+  const [showIsAddMore, setShowIsAddMore] = useState(false)
 
   const exportRef = useRef<HTMLDivElement | null>(null)
   const importRef = useRef<HTMLDivElement | null>(null)
   const addMoreRef = useRef<HTMLDivElement | null>(null)
+  const addExtraRef = useRef<HTMLDivElement | null>(null)
 
   // Close export/import/add dropdown when clicked outside or Escape pressed.
   useEffect(() => {
@@ -231,7 +242,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                     e.preventDefault()
                     e.stopPropagation()
                     setIsExportOpen((s) => !s)
-                    setIsImportOpen(false) 
+                    setIsImportOpen(false)
                   }}
                   color="blue"
                   colorMode="gradient_light"
@@ -243,7 +254,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                   style={{ width: '95px' }}
                   leftIcon={<Download className="h-4 w-4" />}
                 >
-                   <span>Export</span>
+                  <span>Export</span>
                 </Button>
 
                 {isExportOpen && (
@@ -267,12 +278,12 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Export as Excel"
-                          style={{justifyContent:"left"}}
+                          style={{ justifyContent: "left" }}
                         >
 
                           Export as Excel
                         </Button>
-                      )}    
+                      )}
 
                       {onExportPdf && (
                         <Button
@@ -288,7 +299,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Export as PDF"
-                          style={{justifyContent:"left"}}
+                          style={{ justifyContent: "left" }}
                         >
 
                           Export as PDF
@@ -318,9 +329,9 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                   aria-expanded={isImportOpen}
                   aria-haspopup="menu"
                   style={{ width: '95px' }}
-                  leftIcon={ <Upload className="h-4 w-4 " /> }
+                  leftIcon={<Upload className="h-4 w-4 " />}
                 >
-                <span>{importTitle}</span>
+                  <span>{importTitle}</span>
                 </Button>
 
                 {isImportOpen && (
@@ -344,7 +355,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Upload Excel"
-                          style={{justifyContent:"left"}}
+                          style={{ justifyContent: "left" }}
                         >
                           Upload Excel
                         </Button>
@@ -364,7 +375,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           isborderRadius
                           size="sm"
                           title="Download Sample Excel"
-                          style={{justifyContent:"left"}}
+                          style={{ justifyContent: "left" }}
                         >
                           Sample Excel
                         </Button>
@@ -378,30 +389,56 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
             {/* ADD BUTTON */}
             {isShowAddButton && onAdd && (
               <div ref={addMoreRef} className='relative'>
-              <Button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                   const hasMoreAddOptions = React.Children.count(showMoreAddOptions) > 0;
-                  if(hasMoreAddOptions){
-                    setShowIsAddMore((s) => !s)
-                  }else {
-                    onAdd()
-                  }
-                }}
-                color="blue"
-                size="mxs"
-                variant="solid"
-                colorMode="gradient_dark"
-                defineWidth
-                title={addTitle}
-                aria-label={addTitle}
-                style={{ width: '95px' }}
-                leftIcon={ <Plus className="h-4 w-4" />}
-              >
-                <span>{addTitle}</span>
-              </Button>
-              {showIsAddMore &&  <div className='absolute z-50 mt-2 right-0'>{showMoreAddOptions}</div>}
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    const hasMoreAddOptions = React.Children.count(showMoreAddOptions) > 0;
+                    if (hasMoreAddOptions) {
+                      setShowIsAddMore((s) => !s)
+                    } else {
+                      onAdd()
+                    }
+                  }}
+                  color="blue"
+                  size="mxs"
+                  variant="solid"
+                  colorMode="gradient_dark"
+                  defineWidth
+                  title={addTitle}
+                  aria-label={addTitle}
+                  style={{ width: '95px' }}
+                  leftIcon={<Plus className="h-4 w-4" />}
+                >
+                  <span>{addTitle}</span>
+                </Button>
+                {showIsAddMore && <div className='absolute z-50 mt-2 right-0'>{showMoreAddOptions}</div>}
+              </div>
+            )}
+
+            {/* ADD EXTRA */}
+            {isShowAddExtraButton && onAddExtra && (
+              <div ref={addExtraRef} className='relative'>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+
+                    onAddExtra()
+
+                  }}
+                  color="blue"
+                  size="mxs"
+                  variant="solid"
+                  colorMode="gradient_dark"
+                  defineWidth
+                  title={addExtraTitle}
+                  aria-label={addExtraTitle}
+                  style={{ width: '95px' }}
+                  leftIcon={<Share2Icon className="h-4 w-4" />}
+                >
+                  <span>{addExtraTitle}</span>
+                </Button>
               </div>
             )}
           </div>

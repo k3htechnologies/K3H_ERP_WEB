@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { ChevronDown, ChevronUp, InfoIcon, Search } from "lucide-react";
 import type { SinglePageSelectionProps } from "@/core/types/dropDownSelectionType";
 import { THEME } from "@/core/constants/theme";
+import { COLORS } from "@/core/constants";
 
 export const SinglePageSelection = forwardRef<
   HTMLDivElement,
@@ -104,6 +105,8 @@ export const SinglePageSelection = forwardRef<
 
     const chosenSelectedColor =
       selectedTextColor ?? theme.colors.primary ?? "#0b5fff";
+
+      const isPlaceholder = !value;
 
     /* ================= PORTAL POSITION (ONLY NEW LOGIC) ================= */
 
@@ -219,7 +222,7 @@ export const SinglePageSelection = forwardRef<
         >
           <span
             style={{
-              color: selectedTextColor ? chosenSelectedColor : "#000",
+              color: isPlaceholder ? COLORS.placeholder : selectedTextColor ? chosenSelectedColor : "#000",
               fontWeight: selectedTextColor ? "700" : "400",
             }}
           >

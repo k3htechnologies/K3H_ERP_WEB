@@ -179,42 +179,34 @@ const AddUpdateTenant: React.FC = () => {
   // ================= PHOTO =================
   const [applicantPhotoFiles, setApplicantPhotoFiles] = useState<(File | string)[]>([]);
   const [removedApplicantPhotoURLs, setRemovedApplicantPhotoURLs] = useState<string[]>([]);
-  //const [applicantPhotoURL, setApplicantPhotoURL] = useState<string>();
 
   // ================= AADHAR =================
   const [aadharCardFiles, setAadharCardFiles] = useState<(File | string)[]>([]);
   const [removedAadharCardURLs, setRemovedAadharCardURLs] = useState<string[]>([]);
-  //const [aadharCardPreviewURL, setAadharCardPreviewURL] = useState<string>();
 
   // ================= PAN =================
   const [panCardFiles, setPanCardFiles] = useState<(File | string)[]>([]);
   const [removedPanCardURLs, setRemovedPanCardURLs] = useState<string[]>([]);
-  //const [panCardPreviewURL, setPanCardPreviewURL] = useState<string>();
 
   // ================= PASSPORT =================
   const [passportFiles, setPassportFiles] = useState<(File | string)[]>([]);
   const [removedPassportURLs, setRemovedPassportURLs] = useState<string[]>([]);
-  //const [passportPreviewURL, setPassportPreviewURL] = useState<string>();
 
   // ================= DRIVING LICENSE =================
   const [drivingLicenseFiles, setDrivingLicenseFiles] = useState<(File | string)[]>([]);
   const [removedDrivingLicenseURLs, setRemovedDrivingLicenseURLs] = useState<string[]>([]);
-  //const [drivingLicensePreviewURL, setDrivingLicensePreviewURL] = useState<string>();
 
   // ================= VOTING ID =================
   const [votingIdFiles, setVotingIdFiles] = useState<(File | string)[]>([]);
   const [removedVotingIdURLs, setRemovedVotingIdURLs] = useState<string[]>([]);
-  //const [votingIdPreviewURL, setVotingIdPreviewURL] = useState<string>();
 
   // ================= GST =================
   const [gstFiles, setGstFiles] = useState<(File | string)[]>([]);
   const [removedGstURLs, setRemovedGstURLs] = useState<string[]>([]);
-  //const [gstPreviewURL, setGstPreviewURL] = useState<string>();
 
   // ================= CHEQUE =================
   const [chequeFiles, setChequeFiles] = useState<(File | string)[]>([]);
   const [removedChequeURLs, setRemovedChequeURLs] = useState<string[]>([]);
-  //const [chequePreviewURL, setChequePreviewURL] = useState<string>();
 
   //ERROR SET UP
   const [errorsTenantApplicant, setErrorsTenantApplicant] = useState<{ [k: string]: string }>({});
@@ -1548,7 +1540,6 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.PhotoURL}
                 value={applicantPhotoFiles}
                 onChange={setApplicantPhotoFiles}
-                // availableFilesURL={editingApplicantData?.row._photoFiles}
                 allowedTypes={['image/jpeg', 'image/png']}
                 maxFiles={1}
                 maxSizeMB={5}
@@ -1584,7 +1575,6 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.AadharCardURL}
                 value={aadharCardFiles}
                 onChange={setAadharCardFiles}
-                //availableFilesURL={editingApplicantData?.row._aadharFiles}
                 allowedTypes={[
                   'image/jpeg',
                   'image/png',
@@ -1624,7 +1614,6 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.PanCardURL}
                 value={panCardFiles}
                 onChange={setPanCardFiles}
-                //availableFilesURL={editingApplicantData?.row._panFiles}
                 allowedTypes={[
                   'image/jpeg',
                   'image/png',
@@ -1666,7 +1655,6 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.PassportURL}
                 value={passportFiles}
                 onChange={setPassportFiles}
-                //availableFilesURL={editingApplicantData?.row._passportFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={3}
                 maxSizeMB={10}
@@ -1698,7 +1686,6 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.DrivingLicenseURL}
                 value={drivingLicenseFiles}
                 onChange={setDrivingLicenseFiles}
-                //availableFilesURL={editingApplicantData?.row._drivingFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={3}
                 maxSizeMB={10}
@@ -1730,7 +1717,6 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.VotingIdURL}
                 value={votingIdFiles}
                 onChange={setVotingIdFiles}
-                //availableFilesURL={editingApplicantData?.row._votingFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={3}
                 maxSizeMB={10}
@@ -1762,7 +1748,6 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.GSTNumberURL}
                 value={gstFiles}
                 onChange={setGstFiles}
-                //availableFilesURL={editingApplicantData?.row._gstFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={5}
                 maxSizeMB={10}
@@ -1809,7 +1794,6 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.ChequeURL}
                 value={chequeFiles}
                 onChange={setChequeFiles}
-                //availableFilesURL={editingApplicantData?.row._chequeFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={2}
                 maxSizeMB={10}

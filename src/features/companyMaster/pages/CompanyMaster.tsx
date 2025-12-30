@@ -789,7 +789,7 @@ export const CompanyMaster: React.FC = () => {
                                 type="text"
                                 value={tempFilters.CompanyName || ''}
                                 onChange={(e) => handleFilterChange('CompanyName', e.target.value)}
-                                placeholder="Enter company name"
+                                placeholder="Enter company Name"
 
                             />
                         </div>
@@ -800,7 +800,7 @@ export const CompanyMaster: React.FC = () => {
                                 type="text"
                                 value={tempFilters.CompanyType || ''}
                                 onChange={(e) => handleFilterChange('CompanyType', e.target.value)}
-                                placeholder="Enter company type"
+                                placeholder="Enter company Type"
                             />
                         </div>
                     </div>

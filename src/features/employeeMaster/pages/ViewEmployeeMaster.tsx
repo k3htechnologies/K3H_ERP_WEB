@@ -23,6 +23,10 @@ import type { FilterWithPaginationWeekOffMappingMasterRequest, WeekOffMappingMas
 import { employeeMasterService } from '../services/EmployeeMasterService';
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData } from '@/features/projectMaster/models/ProjectMasterModel';
 import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
+import type { EmployeeExperienceDetailsData, FilterWithPaginationEmployeeExperienceDetailsRequest } from '@/features/employeeMaster/models/EmployeeExperienceDetailsModal';
+import type { EmployeeEducationDetailsData, FilterWithPaginationEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
+import { employeeExperienceDetailsService } from '@/features/employeeMaster/services/EmployeeExperienceDetailsService';
+import { employeeEducationDetailsService } from '@/features/employeeMaster/services/EmployeeEducationDetailsService';
 
 export const ViewEmployeeMaster: React.FC = () => {
 
@@ -34,6 +38,8 @@ export const ViewEmployeeMaster: React.FC = () => {
     const [shiftMappingMasterList, setShiftMappingMasterList] = useState<ShiftMappingMasterData[]>([]);
     const [weekOffMappingMasterList, setWeekOffMappingMasterList] = useState<WeekOffMappingMasterData[]>([]);
     const [projectMasterList, setProjectMasterList] = useState<ProjectMasterData[]>([]);
+    const [employeeEducationDetailsDataList, setEmployeeEducationDetailsDataList] = useState<EmployeeEducationDetailsData[]>([]);
+    const [employeeExperienceDetailsDataList, setEmployeeExperienceDetailsDataList] = useState<EmployeeExperienceDetailsData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
     const { canAction } = useMenuPermissions('/employeeMaster');
@@ -69,6 +75,8 @@ export const ViewEmployeeMaster: React.FC = () => {
         { id: "Project", label: "Project" },
         { id: "Shift Policy", label: "Shift Policy" },
         { id: "Week Off Policy", label: "Week Off Policy" },
+        { id: "Education Details", label: "Education Details" },
+        { id: "Experience Details", label: "Experience Details" },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(employeeTabList[0].id);
@@ -87,10 +95,13 @@ export const ViewEmployeeMaster: React.FC = () => {
 
         else if (activeTab === 'Project') loadProjects();
 
-
         else if (activeTab === 'Shift Policy') loadShiftMappings();
 
         else if (activeTab === 'Week Off Policy') loadWeekOffMappings();
+
+        else if (activeTab === 'Education Details') loadEmployeeEducationDetails();
+
+        else if (activeTab === 'Experience Details') loadEmployeeExperienceDetails();
 
     }, [activeTab]);
 
@@ -333,7 +344,82 @@ export const ViewEmployeeMaster: React.FC = () => {
     }
 
     //#endregion
-    
+
+    //#region LOAD EMPLOYEE EDUCATION DETAILS
+    const loadEmployeeEducationDetails = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationEmployeeEducationDetailsRequest = {
+                    PageNumber: 1,
+                    PageSize: 100,
+                    Qualification: undefined,
+                    EmployeeId: preservedListState!.employeeId,
+                }
+
+                const response = await employeeEducationDetailsService.apiCallPullEmployeeEducationDetails(params);
+
+                if (E.isRight(response)) {
+
+                    setEmployeeEducationDetailsDataList(response.right.Data);
+
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Loading Employee Education'
+        )
+    }
+    //#endregion
+
+    //#region LOAD EMPLOYEE EXPERIENCE DETAILS
+    const loadEmployeeExperienceDetails = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationEmployeeExperienceDetailsRequest = {
+                    PageNumber: 1,
+                    PageSize: 100,
+                    CompanyName: undefined,
+                    EmployeeId: preservedListState!.employeeId,
+                }
+
+                const response = await employeeExperienceDetailsService.apiCallPullEmployeeExperienceDetails(params);
+
+                if (E.isRight(response)) {
+
+                    setEmployeeExperienceDetailsDataList(response.right.Data);
+
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Loading Employee Experience'
+        )
+    }
+    //#endregion
+
+
     //#region EDIT EMPLOYEE
 
     const handleEditEmployee = (row: EmployeeMasterData) => {
@@ -394,7 +480,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListEmployeeMaster()}
-                canAction={canAction}
+                canAction={canAction && (activeTab === "Overview" || activeTab === "Document")}
                 onEdit={() => {
                     if (activeTab === "Overview") {
                         if (employeeData) handleEditEmployee(employeeData);
@@ -428,6 +514,9 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                         else if (t.id === 'Week Off Policy') loadWeekOffMappings();
 
+                        else if (t.id === 'Education Details') loadEmployeeEducationDetails();
+
+                        else if (t.id === 'Experience Details') loadEmployeeExperienceDetails();
 
                     }}
                 />
@@ -961,7 +1050,84 @@ export const ViewEmployeeMaster: React.FC = () => {
                 </div>
             )}
 
+            {activeTab === 'Education Details' && employeeEducationDetailsDataList && (
+                <div className="space-y-4">
+                    {employeeEducationDetailsDataList.length === 0 ? (
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                            <NoDataView message='No Education Details Found' />
+                        </section>
+                    ) : (
+                        <div className="space-y-3">
+                            {employeeEducationDetailsDataList.map((employeeEducationDetails) => {
 
+                                return (
+                                    <>
+
+                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                Education Details
+                                            </h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                        <FieldItem label="Qualification" value={employeeEducationDetails!.Qualification} />
+                                                        <FieldItem label="CollegeName" value={employeeEducationDetails!.CollegeName} className='font-medium text-blue-900 ' />
+
+                                                        <FieldItem label="Passing Year" value={employeeEducationDetails!.PassingYear} />
+
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </section>
+                                    </>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {activeTab === 'Experience Details' && employeeExperienceDetailsDataList && (
+                <div className="space-y-4">
+                    {employeeExperienceDetailsDataList.length === 0 ? (
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                            <NoDataView message='No Experience Details Found' />
+                        </section>
+                    ) : (
+                        <div className="space-y-3">
+                            {employeeExperienceDetailsDataList.map((employeeExperienceDetails) => {
+
+                                return (
+                                    <>
+
+                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                Education Details
+                                            </h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                        <FieldItem label="Company Name" value={employeeExperienceDetails!.CompanyName} />
+                                                        <FieldItem label="Role" value={employeeExperienceDetails!.Role} className='font-medium text-blue-900 ' />
+                                                        <FieldItem label="Tenure" value={employeeExperienceDetails!.Tenure} />
+
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </section>
+                                    </>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
         </div >
     );
 };

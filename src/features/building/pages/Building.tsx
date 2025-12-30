@@ -705,7 +705,7 @@ export const Building: React.FC = () => {
         isShowCustomizeButton
         onCustomize={() => setIsShowCustomizeBuildingColumnsModal(true)}
         // ADD
-        isShowAddButton={canAction}
+        isShowAddButton={canAction && Number(projectId) > 0}
         addTitle="Add"
         onAdd={handleAddBuildingModal}
 

@@ -5,6 +5,14 @@ export const EmployeeMasterApi = {
     PULL_EMPLOYEE_DOCUMENT: '/EmployeeDocument/PullEmployeeDocument',
     ADD_UPDATE_EMPLOYEE_DOCUMENT: '/EmployeeDocument/AddUpdateEmployeeDocument',
     DELETE_EMPLOYEE_DOCUMENT: '/EmployeeDocument/DeleteEmployeeDocument',
+
+    PULL_EMPLOYEE_EXPERIENCE_DETAILS: '/EmployeeExperienceDetails/PullEmployeeExperienceDetails',
+    ADD_UPDATE_EMPLOYEE_EXPERIENCE_DETAILS: '/EmployeeExperienceDetails/AddUpdateEmployeeExperienceDetails',
+    DELETE_EMPLOYEE_EXPERIENCE_DETAILS: '/EmployeeExperienceDetails/DeleteEmployeeExperienceDetails',
+
+    PULL_EMPLOYEE_EDUCATION_DETAILS: '/EmployeeEducationDetails/PullEmployeeEducationDetails',
+    ADD_UPDATE_EMPLOYEE_EDUCATION_DETAILS: '/EmployeeEducationDetails/AddUpdateEmployeeEducationDetails',
+    DELETE_EMPLOYEE_EDUCATION_DETAILS: '/EmployeeEducationDetails/DeleteEmployeeEducationDetails',
     
 } as const
 

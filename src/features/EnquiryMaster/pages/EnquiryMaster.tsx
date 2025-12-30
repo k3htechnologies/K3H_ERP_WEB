@@ -55,7 +55,7 @@ export const EnquiryMaster: React.FC = () => {
 
     // SINGLE SEARCH TEXT BOX
     const [searchTerm, setSearchTerm] = useState('');
-    
+
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchEnquiry(value)
     }, 350);
@@ -80,7 +80,7 @@ export const EnquiryMaster: React.FC = () => {
     //#endregion
 
     //#region INIT
-    
+
     useEffect(() => {
         const incoming = location.state?.listState;
         const listState = incoming ?? {
@@ -146,11 +146,12 @@ export const EnquiryMaster: React.FC = () => {
                     PageSize: pagination.pageSize,
                     Name: filterParams.Name?.trim() || undefined,
                     EnquiryId: filterParams.EnquiryId ? Number(filterParams.EnquiryId) : undefined,
-                    ProjectId: projectId || undefined,
+                    ProjectId: projectId ?? undefined,
                     Budget: filterParams.Budget?.trim() || undefined,
                     SortBy: sortByParam
                 };
                 const response = await EnquiryMasterService.apiCallPullEnquiryMaster(params);
+
                 if (E.isRight(response)) {
 
                     setEnquiryMasterMasterList(response.right.Data);
@@ -186,6 +187,7 @@ export const EnquiryMaster: React.FC = () => {
             return
         }
         const filterParams: FilterInfo = {
+
             Name: searchValue.trim(),
         };
 
@@ -217,33 +219,32 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region EXPORT / IMPORT EXCEL AND PDF
     const handleExportEnquiry = async (exportType: 'Excel' | 'PDF') => {
+
         await runApiWithLoader(
+
             setIsLoading,
             setIsLoadingMessage,
             async () => {
                 let sortByParam;
                 if (sortInfo) {
                     const column = EnquiryMasterColumns.find(col => col.key === sortInfo.column);
-                    if (column) sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
+                    if (column) {
+                        sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
+                    }
                 }
-
                 const params: FilterWithPaginationEnquiryMasterRequest = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     Name: filters.Name?.trim() || undefined,
                     SortBy: sortByParam,
-                    ExportType: exportType
+                    ExportType: exportType,
+                    ProjectId: Number(projectId)
                 };
 
                 const response = await getEnquiry(params);
 
-                if (E.isRight(response)) {
-
-                    handleExportFile(response.right.Data, exportType, 'Enquiry Master', addToast);
-
-                } else {
-                    addToast({ type: 'error', title: response.left.message || 'Export failed' });
-                }
+                handleExportFile(response, exportType, 'Enquiry Master', addToast);
+                return response
             },
             undefined,
             (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
@@ -284,7 +285,6 @@ export const EnquiryMaster: React.FC = () => {
             setIsLoading,
             setIsLoadingMessage,
             async () => {
-
                 // Find the column label for sorting
                 const params: FilterPullExcelSample = {
                     TableName: 'ENQUIRY'
@@ -318,6 +318,7 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
+        
         fetchEnquiryMasterList(page);
     }, []);
 
@@ -377,7 +378,7 @@ export const EnquiryMaster: React.FC = () => {
     const handleConfirmationDialogBoxOpen = useCallback((row: EnquiryMasterData) => {
 
         setDeleteEnquiryMasterData(row)
-        
+
         setIsConfirmationDialogBoxOpen(true)
     }, [])
 
@@ -599,7 +600,7 @@ export const EnquiryMaster: React.FC = () => {
 
                     EnquiryId: deleteEnquiryMasterData.EnquiryId || 0,
 
-                    ProjectId: deleteEnquiryMasterData.ProjectId || 0,
+                    ProjectId: Number(projectId),
 
                     Uniquekey: deleteEnquiryMasterData.Uniquekey || ""
                 };

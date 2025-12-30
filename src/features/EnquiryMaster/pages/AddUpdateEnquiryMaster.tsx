@@ -20,7 +20,6 @@ import { ACCOMODATION_TYPE_OPTIONS, BUDGET_TYPE_OPTIONS, FINAL_STAGE_DETAILS_TYP
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { fetchChannelPartnerMasterDropdown } from "../services/channelPartnerDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
-import { fetchProjectMasterDropdown } from "@/features/ChannelPartnerMaster/services/ProjectMasterDropDown";
 import RadioButton from "@/ui/components/forms/RadioButton";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 
@@ -47,7 +46,9 @@ const initialFormState = (): AddUpdateEnquiryMasterRequest => ({
     EnquiryDate: "",
     Remark: "",
     ChannelPartnerId: 0,
-    ProjectName: ""
+    ProjectName: "",
+    ChannelPartnerName:"",
+    ChannelPartnerMobileNumber:0
 });
 
 export const AddUpdateEnquiryMaster: React.FC = () => {
@@ -82,10 +83,10 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
     //#endregion
 
     const [dropdownLabels, setDropdownLabels] = useState<{
+        channelPartnerName?: string,
 
-        channelPartnerName?: string
+        MobileNumber?:string
         
-        projectName?: string
     }>({})
 
     //#region HANDLE FIELD CHANGE EVENT
@@ -100,7 +101,9 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
 
     //#region HANDLE CHANGE FOR SOURCE DROP DOWN
     const handleSourceChange = (value: string | number) => {
+
         const sourceValue = String(value);
+
         setFormData(prev => ({
             ...prev,
             Source: sourceValue,
@@ -109,6 +112,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
         }));
 
         setErrors(prev => ({
+            
             ...prev,
             Source: '',
             SubSource: '',
@@ -174,8 +178,8 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             ProjectName: e.ProjectName ?? prev.ProjectName
                         }));
                         setDropdownLabels({
-                            channelPartnerName: e.ChannelPartner || '',
-                            projectName: e.ProjectName || '',
+                            
+                            channelPartnerName: e.ChannelPartnerName || '',
                         });
                     }
                 } else {
@@ -244,10 +248,6 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
             newErrors.PossessionType = 'Possession Type is required.';
         }
 
-        if (!formData.ProjectId) {
-            newErrors.ProjectId = 'Project Name is required.';
-        }
-
         if (!formData.AreaPreferred) {
             newErrors.AreaPreferred = 'Area Preferred is required.';
         }
@@ -309,7 +309,9 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
             EnquiryDate: formData.EnquiryDate,
             Remark: formData.Remark,
             ChannelPartnerId: formData.ChannelPartnerId,
-            ProjectName: formData.ProjectName
+            ProjectName: formData.ProjectName,
+            ChannelPartnerName:formData.ChannelPartnerName,
+            ChannelPartnerMobileNumber:formData.ChannelPartnerMobileNumber
         };
     }
     //#endregion
@@ -336,8 +338,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
 
             async () => {
                 const payload = PushEnquiryMasterFormData();
-                debugger
-
+                
                 const response = await EnquiryMasterService.apiCallAddUpdateEnquiryMaster(payload);
 
                 if (E.isRight(response)) {
@@ -445,19 +446,8 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
-                            <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Project"
-                                    title="Select Project"
-                                    size="lg"
-                                    required
-                                    dataFetchCallBack={fetchProjectMasterDropdown}
-                                    onSelected={(item) => handleFieldChange('ProjectId', Number(item.value))}
-                                    initialValue={createDropdownInitialValue(formData.ProjectId, dropdownLabels.projectName)}
-                                    error={errors.ProjectId}
-                                />
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                           
                             <div>
                                 <SinglePageSelection
                                     label="Accommodation"

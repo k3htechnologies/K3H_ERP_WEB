@@ -49,6 +49,7 @@ export class EnquiryMasterDatasourceImpl implements EnquiryMasterDatasource {
             const response = await this.k3hHttpclient.getRequestWithAuthentication(
                 `${EnquiryMasterApi.PULL}?${queryParams.toString()}`, { signal }
             )
+            
             return response;
         } catch (error: any) {
 
@@ -75,6 +76,8 @@ export class EnquiryMasterDatasourceImpl implements EnquiryMasterDatasource {
                 ChannelPartnerId:params.ChannelPartnerId ?? 0,
                 ProjectName:params.ProjectName ?? '',
                 IsHomeLoan: params.IsHomeLoan,
+                ChannelPartnerName:params.ChannelPartnerName ?? '',
+                ChannelPartnerMobileNumber:params.ChannelPartnerMobileNumber,
                 Requirement: params.Requirement ?? '',
                 RequirementType: params.RequirementType ?? '',
                 AreaPreferred: params.AreaPreferred ?? 0,

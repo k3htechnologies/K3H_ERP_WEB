@@ -119,8 +119,8 @@ const ViewEnquiryMaster: React.FC = () => {
                             <FieldItem label="Home Loan " value={editEnquiryData.IsHomeLoan ? "Yes" : "No"} />
                             <FieldItem label="Source " value={editEnquiryData.Source} />
                             <FieldItem label="Sub Source " value={editEnquiryData.SubSource} />
-                            <FieldItem label="Channel Partner " value={editEnquiryData.ChannelPartner} />
-                            <FieldItem label="Channel Partner Number " value={editEnquiryData.MobileNumber} />
+                            <FieldItem label="Channel Partner " value={editEnquiryData.ChannelPartnerName} />
+                            <FieldItem label="Channel Partner Number:" value={editEnquiryData.ChannelPartnerMobileNumber ? `+91 ${editEnquiryData.ChannelPartnerMobileNumber}` : '-'} />
                             <FieldItem label="Final Stage " value={editEnquiryData.FinalStage} />
                             <FieldItem label="Final Stage Detail " value={editEnquiryData.FinalStageDetail} />
                             <FieldItem label="Created By" value={editEnquiryData.CreatedBy} />

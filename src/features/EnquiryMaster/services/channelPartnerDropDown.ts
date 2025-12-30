@@ -16,7 +16,7 @@ export const fetchChannelPartnerMasterDropdown = async (pageNumber: number, para
         const apiResponse = responseEither.right;
 
         const itemList = (apiResponse?.Data || []).map((d: any) => ({
-            label: d.Name,
+            label: `${d.Name} - ${d.MobileNumber}`,
             value: String(d.ChannelPartnerId)
         }));
 

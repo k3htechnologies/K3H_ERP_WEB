@@ -34,7 +34,8 @@ export interface EnquiryMasterData {
     Budget: string | null
     IsHomeLoan: boolean
     ChannelPartnerId: number | null
-    ChannelPartner: string,
+    ChannelPartnerName: string,
+    ChannelPartnerMobileNumber:number | null
     ProjectName: string | null
     Requirement: string | null
     RequirementType: string | null
@@ -72,7 +73,6 @@ export interface ChannelPartnerWithEnquiryData {
     TimeDimension: string | null
 }
 
-
 export interface AddUpdateEnquiryMasterRequest {
     EnquiryId: number | null
     Uniquekey: string | null
@@ -88,6 +88,8 @@ export interface AddUpdateEnquiryMasterRequest {
     RequirementType?: string | null
     AreaPreferred?: number | null
     ChannelPartnerId: number | null
+    ChannelPartnerName:string | null
+    ChannelPartnerMobileNumber:number | null
     ProjectName: string | null
     PossessionType?: string | null
     Source?: string | null

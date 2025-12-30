@@ -178,7 +178,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             ProjectName: e.ProjectName ?? prev.ProjectName
                         }));
                         setDropdownLabels({
-                            
+
                             channelPartnerName: e.ChannelPartnerName || '',
                         });
                     }
@@ -488,7 +488,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                 </div>
                                 <div>
                                     <Input
-                                        label='Area Preferred'
+                                        label='Area Preferred (In Sq. Ft)'
                                         required
                                         error={errors.AreaPreferred}
                                         type="text"
@@ -517,7 +517,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             </div>
                             <div>
                                 <SinglePageSelection
-                                    label="Budget"
+                                    label="Budget (In Cr)"
                                     required
                                     value={formData.Budget ?? ''}
                                     onChange={(value) => handleFieldChange("Budget", value)}

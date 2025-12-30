@@ -77,33 +77,7 @@ export const AddUpdateLeave: React.FC = () => {
     }, [id, location.state]);
     //#endregion
 
-    //#region RESET FORM
-    const handleReset = () => {
-        const incoming = location.state?.data;
-        if (id && incoming) {
-            setFormData({
-                LeaveId: incoming.LeaveId,
-                Uniquekey: incoming.Uniquekey || initialFormState().Uniquekey,
-                LeaveTypeMasterId: incoming.LeaveTypeMasterId,
-                StartDate: incoming.StartDate,
-                EndDate: incoming.EndDate,
-                StartDateLeaveDuration: incoming.StartDateLeaveDuration || 'Full',
-                EndDateLeaveDuration: incoming.EndDateLeaveDuration || 'Full',
-                Reason: incoming.Reason || '',
-                LeaveDocumentFiles: [],
-            });
-            setDropdownLabels({
-                leaveTypeName: incoming.LeaveType || '',
-            });
-        } else {
-            setFormData(initialFormState());
-            setDropdownLabels({});
-        }
-        setErrors({});
-        setIsDateModalOpen(false);
-    };
-    //#endregion
-
+  
     //#region VALIDATION
     const validateLeaveForm = (): {
         isValid: boolean;

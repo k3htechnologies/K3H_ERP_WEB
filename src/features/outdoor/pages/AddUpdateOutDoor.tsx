@@ -79,13 +79,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
   //#region INITIALIZATION
   useEffect(() => {
-    const ids = outdoorFormData.AccompaniedById
-      ? outdoorFormData.AccompaniedById.split(',').map(id => id.trim()).filter(Boolean)
-      : [];
-    setSelectedAccompaniedValues(ids);
-  }, [outdoorFormData.AccompaniedById]);
-
-  useEffect(() => {
     hasFetchedOutDoor.current = false;
   }, [outdoorId]);
   //#endregion

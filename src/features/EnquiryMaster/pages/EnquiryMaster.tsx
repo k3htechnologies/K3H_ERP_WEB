@@ -146,7 +146,7 @@ export const EnquiryMaster: React.FC = () => {
                     PageSize: pagination.pageSize,
                     Name: filterParams.Name?.trim() || undefined,
                     EnquiryId: filterParams.EnquiryId ? Number(filterParams.EnquiryId) : undefined,
-                    ProjectId: projectId ?? undefined,
+                    ProjectId: Number(projectId),
                     Budget: filterParams.Budget?.trim() || undefined,
                     SortBy: sortByParam
                 };

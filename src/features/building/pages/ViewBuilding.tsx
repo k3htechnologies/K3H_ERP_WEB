@@ -16,7 +16,7 @@ import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import Accordion from '@/ui/components/Card/Accordion';
-import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react';
+import { ChevronDownIcon, ChevronRightIcon, MapPin } from 'lucide-react';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 
@@ -68,6 +68,8 @@ export const ViewBuilding: React.FC = () => {
         };
     };
     const preservedListState = location.state?.listState;
+
+    const buildingName = preservedListState?.buildingName || '';
 
     //#endregion
 
@@ -160,7 +162,7 @@ export const ViewBuilding: React.FC = () => {
     //#endregion 
 
     //#region DATA LOAD DOCUMENT
-    const loadBuildingDocumentFromServer = async (searchText= "") => {
+    const loadBuildingDocumentFromServer = async (searchText = "") => {
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
@@ -381,7 +383,8 @@ export const ViewBuilding: React.FC = () => {
             </Loader>
 
             <HeaderActionBar
-                titleText={`Building ${activeTab}`}
+                titleText={`Building ${activeTab} :`}
+                subTitleText={buildingName}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListBuilding()}
@@ -456,12 +459,19 @@ export const ViewBuilding: React.FC = () => {
                                 <FieldItem label="Road Width" value={buildingData?.RoadWidth ?? '-'} />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
                                 <FieldItem label="Land Ownership" value={buildingData?.LandOwnershipType ?? '-'} />
 
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-4">
-                                <FieldItem label="Google Location" value={buildingData?.GoogleLocation ?? '-'} />
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pt-4 ">
+                                <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+                                    Google Location
+                                </div>
+                                {buildingData?.GoogleLocation !== "" ?
+                                    <span className="text-blue-600 underline cursor-pointer flex items-center"
+                                        onClick={() => window.open(buildingData?.GoogleLocation, "_blank")}>
+                                        {buildingData?.GoogleLocation}
+                                    </span> : "-"}
                             </div>
                         </section>
 
@@ -514,7 +524,7 @@ export const ViewBuilding: React.FC = () => {
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Is Garden Structure" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
+                                <FieldItem label="Garden Structure" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
                                 <FieldItem label="Garden Area (sq ft)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
 
                             </div>
@@ -528,7 +538,7 @@ export const ViewBuilding: React.FC = () => {
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Is Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
+                                <FieldItem label="Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
                                 <FieldItem label="Structure Area (sq ft)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
 
                             </div>
@@ -556,7 +566,7 @@ export const ViewBuilding: React.FC = () => {
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Is Litigation" value={buildingData?.IsLitigation ? 'Yes' : 'No'} />
+                                <FieldItem label="Litigation" value={buildingData?.IsLitigation ? 'Yes' : 'No'} />
                                 <FieldItem label="Litigation Remarks" value={buildingData?.LitigationRemarks ?? '-'} />
 
                             </div>
@@ -632,7 +642,7 @@ export const ViewBuilding: React.FC = () => {
 
                                     {/* BODY */}
                                     {isOpen && (
-                                          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-5">
 
                                             {details.map(d => {
                                                 const urls = parseDocumentUrls(d.DocumentURL ?? "");
@@ -646,8 +656,8 @@ export const ViewBuilding: React.FC = () => {
                                                         />
 
                                                         <div className="text-xs text-gray-600 mt-3 space-y-1">
-                                                            <FieldItem label="Remark" value={d.DocumentRemark ?? '-'}  />
-                                                            <FieldItem label="Uploaded By / Date" value={d?.CreatedBy + ' ' + formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate ?? '-')}  />
+                                                            <FieldItem label="Remark" value={d.DocumentRemark ?? '-'} />
+                                                            <FieldItem label="Uploaded By / Date" value={d?.CreatedBy + ' ' + formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate ?? '-')} />
 
                                                         </div>
                                                     </div>
@@ -678,17 +688,17 @@ export const ViewBuilding: React.FC = () => {
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem
-                                            label="Gross Plot Area SqFt"
+                                            label="Gross Plot Area (SqFt)"
                                             value={buildingDetailsList?.[0]?.GrossPlotAreaSqFt ?? 0}
                                         />
 
                                         <FieldItem
-                                            label="Physical Survey Area SqFt"
+                                            label="Physical Survey Area (SqFt)"
                                             value={buildingDetailsList?.[0]?.PlotAreaPhysicalSurveySqFt ?? 0}
                                         />
 
                                         <FieldItem
-                                            label="Old Approved Plan Area SqFt"
+                                            label="Old Approved Plan Area (SqFt)"
                                             value={buildingDetailsList?.[0]?.PlotAreaOldApprovedPlanSqFt ?? 0}
                                         />
                                     </div>
@@ -699,12 +709,12 @@ export const ViewBuilding: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                                         <FieldItem
-                                            label="Conveyance Area SqFt"
+                                            label="Conveyance Area (SqFt)"
                                             value={buildingDetailsList?.[0]?.PlotAreaConveyanceSqFt ?? 0}
                                         />
 
                                         <FieldItem
-                                            label="PR Card Area SqFt"
+                                            label="PR Card Area (SqFt)"
                                             value={buildingDetailsList?.[0]?.PlotAreaPRCardSqFt ?? 0}
                                         />
 
@@ -722,16 +732,16 @@ export const ViewBuilding: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Total Built Up Area SqFt" value={buildingDetailsList?.[0]?.TotalBuiltUpAreaSqFt ?? 0} />
+                                        <FieldItem label="Total Built Up Area (SqFt)" value={buildingDetailsList?.[0]?.TotalBuiltUpAreaSqFt ?? 0} />
                                         <FieldItem label="Total Residential Units" value={buildingDetailsList?.[0]?.TotalResidentialUnits ?? 0} />
-                                        <FieldItem label="Residential Carpet Area SqFt" value={buildingDetailsList?.[0]?.TotalResidentialCarpetAreaSqFt ?? 0} />
+                                        <FieldItem label="Residential Carpet Area (SqFt)" value={buildingDetailsList?.[0]?.TotalResidentialCarpetAreaSqFt ?? 0} />
                                     </div>
                                 </div>
 
                                 <div className="lg:col-span-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Total Commercial Units" value={buildingDetailsList?.[0]?.TotalCommercialUnits ?? 0} />
-                                        <FieldItem label="Commercial Carpet Area SqFt" value={buildingDetailsList?.[0]?.TotalCommercialCarpetAreaSqFt ?? 0} />
+                                        <FieldItem label="Commercial Carpet Area (SqFt)" value={buildingDetailsList?.[0]?.TotalCommercialCarpetAreaSqFt ?? 0} />
                                     </div>
                                 </div>
                             </div>
@@ -754,8 +764,8 @@ export const ViewBuilding: React.FC = () => {
 
                                             <FieldItem label="Contact Type" value={contact.ContactType} />
                                             <FieldItem label="Contact Name" value={contact.ContactName} />
-                                            <FieldItem label="Mobile Number" value={`+91 ${contact.MobileNumber}`} />
-                                            <FieldItem label="Email ID" value={contact.EmailId} />
+                                            <FieldItem label="Mobile Number" value={contact?.MobileNumber ? `+91 ${contact.MobileNumber}` : ''} />
+                                            <FieldItem label="E-mail Id" value={contact.EmailId} />
 
                                         </div>
                                     </div>

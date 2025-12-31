@@ -13,6 +13,7 @@ export const FieldItem: React.FC<{
   isIcon?: boolean;
   isUsedForInventoryFlat?: boolean;
   isSetValue?: boolean;
+  isgoogleMap?: boolean;
 }> = ({
   label,
   value,

@@ -32,6 +32,7 @@ interface DataTableProps {
 export interface DataTableExpandableRef {
   collapseRow: (id: string) => void
   collapseAll: () => void
+  expandRow: (id: string, row?: any) => Promise<void>
 }
 
 export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableProps>(({
@@ -151,6 +152,25 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
         })
         return next
       })
+    },
+    expandRow: async (id: string, row?: any) => {
+      setExpandedMap(prev => ({
+        ...prev,
+        [id]: { ...(prev[id] || {}), open: true }
+      }))
+
+      if (expandable?.fetchRow) {
+        setExpandedMap(prev => ({
+          ...prev,
+          [id]: { ...(prev[id] || {}), loading: true }
+        }))
+
+        const data = await expandable.fetchRow?.(row)
+        setExpandedMap(prev => ({
+          ...prev,
+          [id]: { ...(prev[id] || {}), data, loading: false, open: true }
+        }))
+      }
     }
   }), [])
 

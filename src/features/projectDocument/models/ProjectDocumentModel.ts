@@ -30,7 +30,7 @@ export interface ProjectDocumentData {
     ApprovalPendingProjectDocumentCount: number;
     RejectedProjectDocumentCount: number;
     ExpiredProjectDocumentCount: number;
-
+    IsMaster?: number | 0;
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

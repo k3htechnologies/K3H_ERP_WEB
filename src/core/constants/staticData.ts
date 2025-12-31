@@ -14,13 +14,13 @@ export interface Option {
 
 export const MASTER_DATA = {
     emergencyRelations: [
-        'Father', 'Mother', 'Spouse', 'Sibling', 'Child', 'Brother', 'Sister',
+        'Father', 'Mother', 'Spouse', 'Child',
         'Son', 'Daughter', 'Grandfather', 'Grandmother', 'Uncle', 'Aunt',
         'Cousin', 'Friend', 'Other'
     ],
 
     employeeTypes: [
-        'Permanent', 'Contract', 'Intern', 'Part Time', 'Consultant', 'Temporary'
+        'Permanent', 'Contract', 'Intern', 'Part Time', 'Temporary'
     ],
 
     genders: ['Male', 'Female', 'Other'],

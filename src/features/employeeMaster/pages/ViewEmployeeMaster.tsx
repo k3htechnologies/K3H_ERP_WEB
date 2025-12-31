@@ -40,6 +40,11 @@ export const ViewEmployeeMaster: React.FC = () => {
     const [projectMasterList, setProjectMasterList] = useState<ProjectMasterData[]>([]);
     const [employeeEducationDetailsDataList, setEmployeeEducationDetailsDataList] = useState<EmployeeEducationDetailsData[]>([]);
     const [employeeExperienceDetailsDataList, setEmployeeExperienceDetailsDataList] = useState<EmployeeExperienceDetailsData[]>([]);
+    const [loadedSections, setLoadedSections] = useState<{
+        educationDetails?: boolean;
+        experienceDetails?: boolean;
+    }>({});
+
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
     const { canAction } = useMenuPermissions('/employeeMaster');
@@ -75,8 +80,6 @@ export const ViewEmployeeMaster: React.FC = () => {
         { id: "Project", label: "Project" },
         { id: "Shift Policy", label: "Shift Policy" },
         { id: "Week Off Policy", label: "Week Off Policy" },
-        { id: "Education Details", label: "Education Details" },
-        { id: "Experience Details", label: "Experience Details" },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(employeeTabList[0].id);
@@ -98,10 +101,6 @@ export const ViewEmployeeMaster: React.FC = () => {
         else if (activeTab === 'Shift Policy') loadShiftMappings();
 
         else if (activeTab === 'Week Off Policy') loadWeekOffMappings();
-
-        else if (activeTab === 'Education Details') loadEmployeeEducationDetails();
-
-        else if (activeTab === 'Experience Details') loadEmployeeExperienceDetails();
 
     }, [activeTab]);
 
@@ -514,10 +513,6 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                         else if (t.id === 'Week Off Policy') loadWeekOffMappings();
 
-                        else if (t.id === 'Education Details') loadEmployeeEducationDetails();
-
-                        else if (t.id === 'Experience Details') loadEmployeeExperienceDetails();
-
                     }}
                 />
             </div>
@@ -586,46 +581,6 @@ export const ViewEmployeeMaster: React.FC = () => {
 
 
                         </section>
-
-                        {/* ================== EMPLOYEE INFO ================== */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Employee Infoformation
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Company Name" value={safe(employeeData!.CompanyName)} />
-                                        <FieldItem label="Branch" value={safe(employeeData!.Branch)} />
-                                        <FieldItem label="Department" value={safe(employeeData!.Department)} />
-
-                                    </div>
-                                </div>
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Designation" value={safe(employeeData!.Designation)} />
-                                        <FieldItem
-                                            label="Joining Date"
-                                            value={formatDate_dd_MonthName_yy(safe(employeeData!.JoiningDate))}
-                                        />
-                                        <FieldItem label="Reporting Person" value={safe(employeeData!.ReportPersonName)} />
-                                    </div>
-                                </div>
-                                <div className="lg:col-span-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Employment Type" value={safe(employeeData!.EmployeeType)} />
-
-                                        <FieldItem label="Office Number" value={employeeData?.OfficeMobileNumber
-                                            ? `+91 ${safe(employeeData?.OfficeMobileNumber)}`
-                                            : '-'} />
-
-                                        <FieldItem label="Office E-mail ID" value={safe(employeeData!.OfficeEmailId)} />
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
                         {/* ================== ADDRESS ================== */}
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
@@ -651,6 +606,54 @@ export const ViewEmployeeMaster: React.FC = () => {
                             </div>
                         </section>
 
+                        {/* ================== EMPLOYEE INFO ================== */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Employee Infoformation
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Company Name" value={safe(employeeData!.CompanyName)} />
+                                        <FieldItem label="Branch" value={safe(employeeData!.Branch)} />
+                                        <FieldItem label="Department" value={safe(employeeData!.Department)} />
+
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Designation" value={safe(employeeData!.Designation)} />
+                                        <FieldItem
+                                            label="Joining Date"
+                                            value={formatDate_dd_MonthName_yy(safe(employeeData!.JoiningDate))}
+                                        />
+                                        <FieldItem label="Reporting Person" value={safe(employeeData!.ReportPersonName)} />
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Employment Type" value={safe(employeeData!.EmployeeType)} />
+
+                                        <FieldItem label="Office Number" value={employeeData?.OfficeMobileNumber
+                                            ? `+91 ${safe(employeeData?.OfficeMobileNumber)}`
+                                            : '-'} />
+
+                                        <FieldItem label="Office E-mail ID" value={safe(employeeData!.OfficeEmailId)} />
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem
+                                            label="Probation Date"
+                                            value={formatDate_dd_MonthName_yy(safe(employeeData!.ProbationDate))}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+
                         {/* ================== BANK DETAILS ================== */}
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900  mb-4">
@@ -675,7 +678,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                         {/* ================== FAMILY DETAILS ================== */}
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Family Details
+                                Emergency Contact Details
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -749,9 +752,9 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                 </div>
 
                                                 {index !== employeeReportingCycleList.length - 1 && (
-
                                                     <div className="w-px bg-gray-500 flex-1 mt-1"></div>
                                                 )}
+
                                             </div>
 
                                             {/* Content */}
@@ -781,34 +784,81 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                         </section>
 
-                        {/* Documents example block */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                                Documents
-                            </h4>
-                            <div>Documents Listing Here</div>
-                        </section>
 
                         {/* ================= FAMILY / EDUCATION / EXPERIENCE ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
-                            <Accordion
-                                items={[
-                                    { key: 'education', title: 'Education Details', content: <div /> },
-                                    { key: 'experience', title: 'Experience', content: <div /> },
 
-                                ]}
-                            />
-                        </section>
+                        <Accordion
+                            allowMultipleOpen
+                            items={[
+                                { key: 'Education Details', title: 'Education Details' },
+                                { key: 'Experience Details', title: 'Experience Details' }
+                            ]}
+                            renderItem={(item, isOpen, toggle) => (
+                                <div>
+
+                                    {/* HEADER */}
+                                    <div
+                                        className="flex justify-between items-center px-4 py-3 cursor-pointer"
+                                        onClick={async () => {
+                                            toggle();
+
+                                            if (item.key === 'Education Details' && !loadedSections.educationDetails) {
+                                                await loadEmployeeEducationDetails();
+                                                setLoadedSections(prev => ({ ...prev, education: true }));
+                                            }
+
+                                            if (item.key === 'Experience Details' && !loadedSections.experienceDetails) {
+                                                await loadEmployeeExperienceDetails();
+                                                setLoadedSections(prev => ({ ...prev, experience: true }));
+                                            }
+                                        }}
+                                    >
+                                        <h4 className="font-semibold">{item.title}</h4>
+                                    </div>
+
+                                    {/* BODY */}
+                                    {isOpen && (
+                                        <div className="p-4">
+
+                                            {item.key === 'Education Details' && (
+                                                employeeEducationDetailsDataList.length === 0
+                                                    ? <NoDataView message="No Education Details Found" />
+                                                    : employeeEducationDetailsDataList.map(e => (
+                                                        <div key={e.Uniquekey} className="mb-3 border-b border-gray-200 pb-2 last:border-b-0 last:pb-0">
+                                                            <FieldItem label="Qualification" value={e.Qualification} />
+                                                            <FieldItem label="College" value={e.CollegeName} />
+                                                            <FieldItem label="Passing Year" value={e.Passing} />
+                                                        </div>
+                                                    ))
+                                            )}
+
+                                            {item.key === 'Experience Details' && (
+                                                employeeExperienceDetailsDataList.length === 0
+                                                    ? <NoDataView message="No Experience Details Found" />
+                                                    : employeeExperienceDetailsDataList.map(e => (
+                                                        <div key={e.Uniquekey} className="mb-3 border-b border-gray-200 pb-2 last:border-b-0 last:pb-0">
+                                                            <FieldItem label="Company Name" value={e.CompanyName} isRow />
+                                                            <FieldItem label="Role" value={e.Role} isRow />
+                                                            <FieldItem label="Tenure" value={e.Tenure} isRow />
+                                                        </div>
+                                                    ))
+                                            )}
+
+                                        </div>
+                                    )}
+
+                                </div>
+                            )}
+                        />
 
                     </div>
 
                 </div>
             )}
 
-            {activeTab === 'Document' && employeeDocumentList && (
+            {activeTab === 'Document' && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-5">
-
-                    {employeeDocumentList?.filter(doc => doc?.DocumentURL)?.length > 0 ? (
+                    {employeeDocumentList?.some(doc => doc?.DocumentURL) ? (
                         employeeDocumentList
                             .filter(doc => doc?.DocumentURL)
                             .map((doc, index) => (
@@ -816,26 +866,23 @@ export const ViewEmployeeMaster: React.FC = () => {
                                     key={index}
                                     className="bg-white rounded-xl shadow-sm p-2 border border-gray-200"
                                 >
-                                    <div className="flex items-center justify-between rounded-lg transition">
-                                        <FieldItem
-                                            label={doc?.DocumentName || ''}
-                                            urls={doc?.DocumentURL}
-                                            isIcon
-                                            isRow
-                                            isSetValue={false}
-                                        />
-                                    </div>
+                                    <FieldItem
+                                        label={doc?.DocumentName || ''}
+                                        urls={doc?.DocumentURL}
+                                        isIcon
+                                        isRow
+                                        isSetValue={false}
+                                    />
                                 </section>
                             ))
                     ) : (
-                        <section className="md:col-span-2 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                             <NoDataView message="No Documents Found" />
                         </section>
                     )}
-
                 </div>
-
             )}
+
 
 
             {activeTab === 'Assets' && assetMappingMasterList && (
@@ -916,6 +963,29 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                         <FieldItem label="Asset Cost" value={asset.AssetCost} />
                                                     </div>
                                                 </div>
+                                            </div>
+
+                                            <h4 className="text-lg font-semibold text-gray-900 pt-3">
+                                                Action Details
+                                            </h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                                                        <FieldItem label="Created By" value={safe(asset!.CreatedBy)} />
+                                                        <FieldItem
+                                                            label="Created Date"
+                                                            value={formatDate_dd_MonthName_yy(safe(asset!.CreatedDate))}
+                                                        />
+                                                        <FieldItem label="Modified By" value={safe(asset!.ModifiedBy)} />
+                                                        <FieldItem
+                                                            label="Modified Date"
+                                                            value={formatDate_dd_MonthName_yy_hh_mm(safe(asset!.ModifiedDate))}
+                                                        />
+                                                    </div>
+                                                </div>
+
+
                                             </div>
 
                                         </section>
@@ -1050,84 +1120,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                 </div>
             )}
 
-            {activeTab === 'Education Details' && employeeEducationDetailsDataList && (
-                <div className="space-y-4">
-                    {employeeEducationDetailsDataList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
-                            <NoDataView message='No Education Details Found' />
-                        </section>
-                    ) : (
-                        <div className="space-y-3">
-                            {employeeEducationDetailsDataList.map((employeeEducationDetails) => {
 
-                                return (
-                                    <>
-
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
-                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                Education Details
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-
-                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem label="Qualification" value={employeeEducationDetails!.Qualification} />
-                                                        <FieldItem label="CollegeName" value={employeeEducationDetails!.CollegeName} className='font-medium text-blue-900 ' />
-
-                                                        <FieldItem label="Passing Year" value={employeeEducationDetails!.PassingYear} />
-
-                                                    </div>
-                                                </div>
-
-                                            </div>
-
-                                        </section>
-                                    </>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {activeTab === 'Experience Details' && employeeExperienceDetailsDataList && (
-                <div className="space-y-4">
-                    {employeeExperienceDetailsDataList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
-                            <NoDataView message='No Experience Details Found' />
-                        </section>
-                    ) : (
-                        <div className="space-y-3">
-                            {employeeExperienceDetailsDataList.map((employeeExperienceDetails) => {
-
-                                return (
-                                    <>
-
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
-                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                Education Details
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-
-                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem label="Company Name" value={employeeExperienceDetails!.CompanyName} />
-                                                        <FieldItem label="Role" value={employeeExperienceDetails!.Role} className='font-medium text-blue-900 ' />
-                                                        <FieldItem label="Tenure" value={employeeExperienceDetails!.Tenure} />
-
-                                                    </div>
-                                                </div>
-
-                                            </div>
-
-                                        </section>
-                                    </>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-            )}
         </div >
     );
 };

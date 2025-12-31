@@ -18,7 +18,7 @@ export interface EmployeeEducationDetailsData {
   FullName?: string | null;
   Qualification?: string | null;
   CollegeName?: string | null;
-  PassingYear?: string | null;
+  Passing?: string | null;
   CreatedById: number | 0
   CreatedBy: string | ''
   CreatedDate: string | null
@@ -35,7 +35,7 @@ export interface AddUpdateEmployeeEducationDetailsRequest {
   EmployeeId: number;
   Qualification?: string | null;
   CollegeName?: string | null;
-  PassingYear?: string | null;
+  Passing?: string | null;
 }
 
 export interface DeleteEmployeeEducationDetailsRequest {

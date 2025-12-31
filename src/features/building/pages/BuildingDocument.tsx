@@ -21,9 +21,9 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
+import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 
 
 const initialFormState = (): AddUpdateBuildingDocumentRequest => ({
@@ -72,6 +72,11 @@ const BuildingDocument: React.FC = () => {
 
   //DATATABLE EXPANDABLE REF
   const dtRef = useRef<DataTableExpandableRef | null>(null)
+
+  //DATATABLE EXPANDED ROW AND PARENT ID
+
+  const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
+
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -193,6 +198,7 @@ const BuildingDocument: React.FC = () => {
         if (E.isRight(response)) {
 
           setBuildingDocumentList(response.right.Data);
+
           setPagination({
             currentPage: page,
             totalRecords: response.right.TotalNumberOfRecord,
@@ -310,7 +316,11 @@ const BuildingDocument: React.FC = () => {
   //#region CONFIRMATION DIALOG BOX
 
   const handleConfirmationDialogBoxOpen = useCallback((row: BuildingDocumentData) => {
-    setDeleteBuildingDocumentDetailsData(row)
+    setDeleteBuildingDocumentDetailsData({
+      ...row,
+      IsMaster: row.IsMaster
+    })
+
     setIsConfirmationDialogBoxOpen(true)
   }, [])
 
@@ -502,22 +512,29 @@ const BuildingDocument: React.FC = () => {
         label: 'Last Modified By',
         width: '33',
         sortable: false,
-        align: 'center',
-        render: (value) => value || 'N/A'
+        align: 'left',
+        render: (value) => (
+          <TooltipText
+            text={value || '-'}
+            maxWidth="180px"
+            tooltipThreshold={18}
+          />
+        )
       },
       {
         key: 'CreatedDate',
         label: 'Last Modified Date',
         width: '33',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       },
       {
         key: 'actions',
         label: 'Actions',
         width: '12',
-        align: 'center',
+        align: 'left',
+        fixed: 'right',
         render: (_value, row) => {
           const showEdit = canAction ? true : false;
           return (
@@ -539,6 +556,27 @@ const BuildingDocument: React.FC = () => {
                     title="Edit"
                   >
                     <Edit className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <div className="opacity-0 h-[32px] w-[34px]" />
+                )}
+              </div>
+
+              <div className="w-[34px] flex justify-center">
+                {showEdit ? (
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleConfirmationDialogBoxOpen(row)
+                    }}
+                    color="transparent"
+                    isborderRadius
+                    size="sm"
+                    style={{ color: 'red' }}
+                    title="Delete"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 ) : (
                   <div className="opacity-0 h-[32px] w-[34px]" />
@@ -606,10 +644,19 @@ const BuildingDocument: React.FC = () => {
 
     const newErrors: { [key: string]: string } = {}
 
-    if (!buildingDocumentFiles.length && !buildingDocumentURL) {
+    const hasNewFiles = buildingDocumentFiles.length > 0;
+
+    const existingUrls = (buildingDocumentURL ?? "").split(",").filter(x => x.trim() !== "");
+
+    const remainingExisting = existingUrls.filter( url => !RemoveBuildingDocumentUrls.includes(url));
+
+    const hasRemainingExisting = remainingExisting.length > 0;
+
+    const hasFile = hasNewFiles || hasRemainingExisting;
+
+    if (!hasFile) {
       newErrors.BuildingDocumentURL = "Document is required.";
     }
-
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -721,6 +768,20 @@ const BuildingDocument: React.FC = () => {
               });
             }
 
+            else {
+
+              const parentId = expandedParentRow?.BuildingDocumentId;
+
+              await fetchBuildingDocumentList(pagination.currentPage);
+
+              if (parentId) {
+                dtRef.current?.expandRow?.(
+                  String(parentId),
+                  expandedParentRow
+                );
+              }
+            }
+
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
           } else {
@@ -737,6 +798,21 @@ const BuildingDocument: React.FC = () => {
                 )
               )
             }
+
+            else {
+
+              const parentId = expandedParentRow?.BuildingDocumentId;
+
+              await fetchBuildingDocumentList(pagination.currentPage);
+
+              if (parentId) {
+                dtRef.current?.expandRow?.(
+                  String(parentId),
+                  expandedParentRow
+                );
+              }
+            }
+
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
@@ -766,15 +842,13 @@ const BuildingDocument: React.FC = () => {
 
   //#region DELETE DOCUMENT
   const handleDeleteDocument = async () => {
-
     setIsConfirmationDialogBoxOpen(false);
 
-    if (!deleteBuildingDocumentDetailsData) return
+    if (!deleteBuildingDocumentDetailsData) return;
 
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
-
       async () => {
 
         const params: DeleteBuildingDocumentRequest = {
@@ -782,42 +856,61 @@ const BuildingDocument: React.FC = () => {
           BuildingId: Number(buildingId),
           ProjectId: Number(projectId),
           UniqueKey: deleteBuildingDocumentDetailsData.Uniquekey ?? '',
-        }
+        };
 
         const response = await buildingService.apiCallDeleteBuildingDocument(params);
 
         if (E.isRight(response)) {
 
-          setBuildingDocumentList(prevData => prevData.filter(item => item.BuildingDocumentId !== deleteBuildingDocumentDetailsData.BuildingDocumentId));
+          // 👇 CASE-1: MASTER DOCUMENT DELETE
+          if (deleteBuildingDocumentDetailsData.IsMaster === 1) {
 
-          setPagination({
-            currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords - 1,
-            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
-          });
+            setBuildingDocumentList(prev =>
+              prev.filter(x =>
+                x.BuildingDocumentId !== deleteBuildingDocumentDetailsData.BuildingDocumentId
+              )
+            );
 
-          addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+            setPagination({
+              currentPage: pagination.currentPage,
+              totalRecords: pagination.totalRecords - 1,
+              totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+            });
+          }
 
-          setIsConfirmationDialogBoxOpen(false);
+
+          else {
+
+            const parentId = expandedParentRow.BuildingDocumentId;
+
+            await fetchBuildingDocumentList(pagination.currentPage);
+
+            if (parentId) {
+              dtRef.current?.expandRow?.(
+                String(parentId),
+                expandedParentRow
+              );
+            }
+
+          }
+
+          addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
           setDeleteBuildingDocumentDetailsData(null);
-
-        } else {
-          addToast({ type: 'error', title: response.left.message });
-
           setIsConfirmationDialogBoxOpen(false);
         }
-
-        return response
+        else {
+          addToast({ type: 'error', title: response.left.message });
+          setIsConfirmationDialogBoxOpen(false);
+        }
       },
       undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message })
-      },
+      (error: any) => addToast({ type: 'error', title: error.message }),
       undefined,
       'Delete Document'
-    )
-  }
+    );
+  };
+
   //#endregion
 
   //#region BACK BUILDING PAGE
@@ -845,19 +938,16 @@ const BuildingDocument: React.FC = () => {
       </Loader>
 
       <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
-        <Button
-          onClick={handleBackToListBuilding}
-          color="cancel"
-          type="button"
-          size="sm"
-          className="hover:bg-gray-100 rounded-md"
-        >
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
-        </Button>
 
-        <h1 className="text-lg font-semibold text-gray-800">
-          Building Name: <span className="text-blue-700">{buildingName}</span>
-        </h1>
+        <HeaderActionBar
+          titleText={"Building Name"}
+          subTitleText={buildingName}
+          cancelText="Cancel"
+          EditText=""
+          onCancel={() => handleBackToListBuilding()}
+          canAction={false}
+          isLoading={isLoading}
+        />
       </div>
 
       <TableActionToolbar
@@ -895,11 +985,15 @@ const BuildingDocument: React.FC = () => {
         loading={isLoading}
         fixedHeight
         recordsPerPage={20}
+
         expandable={{
 
           keyField: 'BuildingDocumentId',
           alwaysFetchOnOpen: true,
+
           fetchRow: async (row) => {
+
+            setExpandedParentRow(row);
 
             const params: FilterWithPaginationBuildingDocumentRequest = {
               PageNumber: 1,
@@ -1027,7 +1121,7 @@ const BuildingDocument: React.FC = () => {
                 <Input
                   label='Document'
                   required
-                  readOnly
+                  disabled
                   type="text"
                   value={formData.DocumentName ?? ""}
                   maxLength={250}
@@ -1039,7 +1133,9 @@ const BuildingDocument: React.FC = () => {
 
             <div>
               <MultiFilePicker
-                label="Documents"
+                label="Files"
+                placeholder='Select Files'
+                required
                 value={buildingDocumentFiles}
                 onChange={setBuildingDocumentFiles}
                 availableFilesURL={buildingDocumentURL ?? ""}

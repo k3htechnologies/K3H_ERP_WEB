@@ -259,7 +259,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
 
                 {isExportOpen && (
                   <div
-                    className="absolute right-0 mt-2 min-w-[168px] bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-50"
+                    className="absolute right-0 mt-2 min-w-[168px] bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-100"
                     role="menu"
                     aria-label="Export options"
                   >
@@ -336,7 +336,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
 
                 {isImportOpen && (
                   <div
-                    className="absolute right-0 mt-2 min-w-[168px] bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-50"
+                    className="absolute right-0 mt-2 min-w-[168px] bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-100"
                     role="menu"
                     aria-label="Import options"
                   >
@@ -412,7 +412,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                 >
                   <span>{addTitle}</span>
                 </Button>
-                {showIsAddMore && <div className='absolute z-50 mt-2 right-0'>{showMoreAddOptions}</div>}
+                {showIsAddMore && <div className='absolute z-100 mt-2 right-0'>{showMoreAddOptions}</div>}
               </div>
             )}
 

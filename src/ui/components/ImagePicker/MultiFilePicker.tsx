@@ -74,7 +74,8 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
   availableFilesURL,
   onChange,
   placeholder = "Select file(s)...",
-  error
+  error,
+  onRemoveExisting   
 }) => {
   const theme = THEME;
 
@@ -310,8 +311,15 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
                   <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
                     {getFileLabel(url)}
                   </span>
-                  <MultiImageViewer images={[url]} triggerLabel={<Eye size={18}  />} />
-                  <Trash2 size={18} color="red" onClick={() => setExistingUrls(p => p.filter((_, x) => x !== i))} />
+                  <MultiImageViewer images={[url]} triggerLabel={<Eye size={18} />} />
+                  <Trash2
+                    size={18}
+                    color="red"
+                    onClick={() => {
+                      onRemoveExisting?.(existingUrls[i]);   // <-- notify parent
+                      setExistingUrls(p => p.filter((_, x) => x !== i));
+                    }}
+                  />
                 </div>
               ))}
 

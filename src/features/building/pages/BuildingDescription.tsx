@@ -7,7 +7,7 @@ import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
-import { filterNumbersWithDecimal, filterMobile, filterEmail, filterLetters } from "@/core/utils/fileValidation";
+import { filterNumbersWithDecimal, filterMobile, filterEmail, filterLetters, filterNumbers } from "@/core/utils/fileValidation";
 import type { AddUpdateBuildingDetailsRequest, FilterWithPaginationBuildingDetailsRequest, BuildingKeyContactDetails } from "@/features/building/models/BuildingModel";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
@@ -336,10 +336,7 @@ const BuildingDescription: React.FC = () => {
                   label="Plot Area Physical Survey (SqFt)"
                   type="text"
                   value={formData.PlotAreaPhysicalSurveySqFt || ''}
-                  onChange={(e) => {
-                    const val = filterNumbersWithDecimal(e.target.value);
-                    handleFieldChange('PlotAreaPhysicalSurveySqFt', val ? Number(val) : undefined);
-                  }}
+                  onChange={(e) => handleFieldChange('PlotAreaPhysicalSurveySqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter Physical Survey Area"
                   rightIcon="SqFt"
                 />
@@ -349,10 +346,7 @@ const BuildingDescription: React.FC = () => {
                   label="Plot Area Old Approved Plan (SqFt)"
                   type="text"
                   value={formData.PlotAreaOldApprovedPlanSqFt || ''}
-                  onChange={(e) => {
-                    const val = filterNumbersWithDecimal(e.target.value);
-                    handleFieldChange('PlotAreaOldApprovedPlanSqFt', val ? Number(val) : undefined);
-                  }}
+                  onChange={(e) => handleFieldChange('PlotAreaOldApprovedPlanSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter Old Approved Plan Area"
                   rightIcon="SqFt"
                 />
@@ -362,10 +356,10 @@ const BuildingDescription: React.FC = () => {
                   label="Plot Area Conveyance (SqFt)"
                   type="text"
                   value={formData.PlotAreaConveyanceSqFt || ''}
-                  onChange={(e) => {
-                    const val = filterNumbersWithDecimal(e.target.value);
-                    handleFieldChange('PlotAreaConveyanceSqFt', val ? Number(val) : undefined);
-                  }}
+                  onChange={(e) =>
+
+                    handleFieldChange('PlotAreaConveyanceSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+
                   placeholder="Enter Conveyance Area"
                   rightIcon="SqFt"
                 />
@@ -375,10 +369,7 @@ const BuildingDescription: React.FC = () => {
                   label="Plot Area PR Card (SqFt)"
                   type="text"
                   value={formData.PlotAreaPRCardSqFt || ''}
-                  onChange={(e) => {
-                    const val = filterNumbersWithDecimal(e.target.value);
-                    handleFieldChange('PlotAreaPRCardSqFt', val ? Number(val) : undefined);
-                  }}
+                  onChange={(e) => handleFieldChange('PlotAreaPRCardSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter PR Card Area"
                   rightIcon="SqFt"
                 />
@@ -408,10 +399,8 @@ const BuildingDescription: React.FC = () => {
                   label="Total Residential Units"
                   type="text"
                   value={formData.TotalResidentialUnits || ''}
-                  onChange={(e) => {
-                    const val = filterNumbersWithDecimal(e.target.value);
-                    handleFieldChange('TotalResidentialUnits', val ? Number(val) : undefined);
-                  }}
+                  maxLength={9}
+                  onChange={(e) => handleFieldChange('TotalResidentialUnits', filterNumbers(e.target.value) || 0)}
                   placeholder="Enter Residential Units"
                 />
               </div>
@@ -420,10 +409,7 @@ const BuildingDescription: React.FC = () => {
                   label="Total Residential Carpet Area (SqFt)"
                   type="text"
                   value={formData.TotalResidentialCarpetAreaSqFt || ''}
-                  onChange={(e) => {
-                    const val = filterNumbersWithDecimal(e.target.value);
-                    handleFieldChange('TotalResidentialCarpetAreaSqFt', val ? Number(val) : undefined);
-                  }}
+                  onChange={(e) => handleFieldChange('TotalResidentialCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter Residential Carpet Area"
                   rightIcon="SqFt"
                 />
@@ -432,11 +418,9 @@ const BuildingDescription: React.FC = () => {
                 <Input
                   label="Total Commercial Units"
                   type="text"
+                  maxLength={9}
                   value={formData.TotalCommercialUnits || ''}
-                  onChange={(e) => {
-                    const val = filterNumbersWithDecimal(e.target.value);
-                    handleFieldChange('TotalCommercialUnits', val ? Number(val) : undefined);
-                  }}
+                  onChange={(e) => handleFieldChange('TotalCommercialUnits', filterNumbers(e.target.value) || 0)}
                   placeholder="Enter Commercial Units"
                 />
               </div>
@@ -445,10 +429,7 @@ const BuildingDescription: React.FC = () => {
                   label="Total Commercial Carpet Area (SqFt)"
                   type="text"
                   value={formData.TotalCommercialCarpetAreaSqFt || ''}
-                  onChange={(e) => {
-                    const val = filterNumbersWithDecimal(e.target.value);
-                    handleFieldChange('TotalCommercialCarpetAreaSqFt', val ? Number(val) : undefined);
-                  }}
+                  onChange={(e) => handleFieldChange('TotalCommercialCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter Commercial Carpet Area"
                   rightIcon="SqFt"
                 />

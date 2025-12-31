@@ -139,6 +139,11 @@ export const Tenant: React.FC = () => {
     };
   }, [debouncedSearch]);
 
+  useEffect(() => {
+    setBuildingId(0);
+    setBuildingName('');
+  }, [projectId]);
+
   //#endregion
 
   //#region DATA LOAD
@@ -718,7 +723,7 @@ export const Tenant: React.FC = () => {
         onAdd={handleAddTenantModal}
 
         // IMPORT
-        isShowImportButton={true}
+        isShowImportButton={Number(buildingId) > 0 ? true : false}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleTenant}
 

@@ -23,10 +23,17 @@ import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import Accordion from '@/ui/components/Card/Accordion';
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData } from '@/features/projectMaster/models/ProjectMasterModel';
 import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
-import type { EmployeeEducationDetailsData, FilterWithPaginationEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
-import type { EmployeeExperienceDetailsData, FilterWithPaginationEmployeeExperienceDetailsRequest } from '@/features/employeeMaster/models/EmployeeExperienceDetailsModal';
+import type { EmployeeEducationDetailsData, FilterWithPaginationEmployeeEducationDetailsRequest, AddUpdateEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
+import type { EmployeeExperienceDetailsData, FilterWithPaginationEmployeeExperienceDetailsRequest, AddUpdateEmployeeExperienceDetailsRequest } from '@/features/employeeMaster/models/EmployeeExperienceDetailsModal';
 import { employeeEducationDetailsService } from '@/features/employeeMaster/services/EmployeeEducationDetailsService';
 import { employeeExperienceDetailsService } from '@/features/employeeMaster/services/EmployeeExperienceDetailsService';
+import { Modal } from '@/ui/components/Modal/Modal';
+import { Input } from '@/ui/components/forms/Input';
+import { ConfirmationDialogBox } from '@/core/utils/confirmationDialogBox';
+import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/ui/components/forms/Button';
+import type { DeleteEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
+import type { DeleteEmployeeExperienceDetailsRequest } from '@/features/employeeMaster/models/EmployeeExperienceDetailsModal';
 
 export const Profile: React.FC = () => {
 
@@ -39,9 +46,55 @@ export const Profile: React.FC = () => {
     const [weekOffMappingMasterList, setWeekOffMappingMasterList] = useState<WeekOffMappingMasterData[]>([]);
     const [employeeEducationDetailsDataList, setEmployeeEducationDetailsDataList] = useState<EmployeeEducationDetailsData[]>([]);
     const [employeeExperienceDetailsDataList, setEmployeeExperienceDetailsDataList] = useState<EmployeeExperienceDetailsData[]>([]);
+    const [loadedSections, setLoadedSections] = useState<{
+        educationDetails?: boolean;
+        experienceDetails?: boolean;
+    }>({});
     const [projectMasterList, setProjectMasterList] = useState<ProjectMasterData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
+
+    // Modal states
+    const [isEducationModalOpen, setIsEducationModalOpen] = useState(false);
+    const [isExperienceModalOpen, setIsExperienceModalOpen] = useState(false);
+    const [isEditEducationMode, setIsEditEducationMode] = useState(false);
+    const [isEditExperienceMode, setIsEditExperienceMode] = useState(false);
+
+    // Delete confirmation states
+    const [isDeleteEducationDialogOpen, setIsDeleteEducationDialogOpen] = useState(false);
+    const [isDeleteExperienceDialogOpen, setIsDeleteExperienceDialogOpen] = useState(false);
+    const [selectedEducationItem, setSelectedEducationItem] = useState<EmployeeEducationDetailsData | null>(null);
+    const [selectedExperienceItem, setSelectedExperienceItem] = useState<EmployeeExperienceDetailsData | null>(null);
+
+    // Education form state
+    const [educationFormData, setEducationFormData] = useState<AddUpdateEmployeeEducationDetailsRequest>({
+        EmployeeEducationDetailsId: 0,
+        EmployeeId: Number(LocalStorageHelper.getStoredEmployeeData()?.EmployeeId) || 0,
+        Qualification: '',
+        CollegeName: '',
+        Passing: '',
+        Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+    });
+    const [educationFormErrors, setEducationFormErrors] = useState<{
+        Qualification?: string;
+        CollegeName?: string;
+        Passing?: string;
+    }>({});
+
+    // Experience form state
+    const [experienceFormData, setExperienceFormData] = useState<AddUpdateEmployeeExperienceDetailsRequest>({
+        EmployeeExperienceDetailsId: 0,
+        EmployeeId: Number(LocalStorageHelper.getStoredEmployeeData()?.EmployeeId) || 0,
+        CompanyName: '',
+        Role: '',
+        Tenure: '',
+        Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+    });
+    const [experienceFormErrors, setExperienceFormErrors] = useState<{
+        CompanyName?: string;
+        Role?: string;
+        Tenure?: string;
+    }>({});
 
     // TOAST
     const { addToast } = useToast()
@@ -60,8 +113,6 @@ export const Profile: React.FC = () => {
         { id: "Project", label: "Project" },
         { id: "Shift Policy", label: "Shift Policy" },
         { id: "Week Off Policy", label: "Week Off Policy" },
-        { id: "Education Details", label: "Education Details" },
-        { id: "Experience Details", label: "Experience Details" },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(employeeTabList[0].id);
@@ -83,10 +134,6 @@ export const Profile: React.FC = () => {
         else if (activeTab === 'Shift Policy') loadShiftMappings();
 
         else if (activeTab === 'Week Off Policy') loadWeekOffMappings();
-
-        else if (activeTab === 'Education Details') loadEmployeeEducationDetails();
-
-        else if (activeTab === 'Experience Details') loadEmployeeExperienceDetails();
 
 
     }, [activeTab]);
@@ -303,7 +350,7 @@ export const Profile: React.FC = () => {
 
                 const params: FilterWithPaginationEmployeeEducationDetailsRequest = {
                     PageNumber: 1,
-                    PageSize: 100,
+                    PageSize: 1,
                     Qualification: undefined,
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
                 }
@@ -424,6 +471,315 @@ export const Profile: React.FC = () => {
 
     //#endregion
 
+    //#region EDUCATION MODAL HANDLERS
+
+    const handleOpenEducationModal = (item?: EmployeeEducationDetailsData) => {
+        if (item) {
+            // Edit mode
+            setEducationFormData({
+                EmployeeEducationDetailsId: item.EmployeeEducationDetailsId,
+                EmployeeId: item.EmployeeId,
+                Qualification: item.Qualification || '',
+                CollegeName: item.CollegeName || '',
+                Passing: item.Passing || '',
+                Uniquekey: item.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+            });
+            setIsEditEducationMode(true);
+        } else {
+            // Add mode
+            setEducationFormData({
+                EmployeeEducationDetailsId: 0,
+                EmployeeId: Number(LocalStorageHelper.getStoredEmployeeData()?.EmployeeId) || 0,
+                Qualification: '',
+                CollegeName: '',
+                Passing: '',
+                Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+            });
+            setIsEditEducationMode(false);
+        }
+        setEducationFormErrors({});
+        setIsEducationModalOpen(true);
+    };
+
+    const handleCloseEducationModal = () => {
+        setIsEducationModalOpen(false);
+        setIsEditEducationMode(false);
+        setEducationFormData({
+            EmployeeEducationDetailsId: 0,
+            EmployeeId: Number(LocalStorageHelper.getStoredEmployeeData()?.EmployeeId) || 0,
+            Qualification: '',
+            CollegeName: '',
+            Passing: '',
+            Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        });
+        setEducationFormErrors({});
+    };
+
+    const validateEducationForm = (): boolean => {
+        const errors: {
+            Qualification?: string;
+            CollegeName?: string;
+            Passing?: string;
+        } = {};
+
+        if (!educationFormData.Qualification?.trim()) {
+            errors.Qualification = 'Qualification is required';
+        }
+        if (!educationFormData.CollegeName?.trim()) {
+            errors.CollegeName = 'College Name is required';
+        }
+        if (!educationFormData.Passing?.trim()) {
+            errors.Passing = 'Passing Year is required';
+        }
+
+        setEducationFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleEducationFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!validateEducationForm()) {
+            return;
+        }
+
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+                const params: AddUpdateEmployeeEducationDetailsRequest = {
+                    EmployeeEducationDetailsId: educationFormData.EmployeeEducationDetailsId,
+                    EmployeeId: educationFormData.EmployeeId,
+                    Qualification: educationFormData.Qualification?.trim() || '',
+                    CollegeName: educationFormData.CollegeName?.trim() || '',
+                    Passing: educationFormData.Passing?.trim() || '',
+                    Uniquekey: educationFormData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+                };
+
+                const response = await employeeEducationDetailsService.apiCallAddUpdateEmployeeEducationDetails(params);
+
+                if (E.isRight(response)) {
+                    addToast({
+                        type: 'success', title: response.right.SuccessMessage[0]
+                    });
+                    handleCloseEducationModal();
+                    loadEmployeeEducationDetails();
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Add Education Details'
+        );
+    };
+
+    //#endregion
+
+    //#region EDUCATION DELETE HANDLER
+
+    const handleDeleteEducation = (item: EmployeeEducationDetailsData) => {
+        setSelectedEducationItem(item);
+        setIsDeleteEducationDialogOpen(true);
+    };
+
+    const handleConfirmDeleteEducation = async () => {
+        if (!selectedEducationItem) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+                const params: DeleteEmployeeEducationDetailsRequest = {
+                    EmployeeEducationDetailsId: selectedEducationItem.EmployeeEducationDetailsId,
+                    UniqueKey: selectedEducationItem.Uniquekey || '',
+                    EmployeeId: selectedEducationItem.EmployeeId
+                };
+
+                const response = await employeeEducationDetailsService.apiCallDeleteEmployeeEducationDetails(params);
+
+                if (E.isRight(response)) {
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+                    setIsDeleteEducationDialogOpen(false);
+                    setSelectedEducationItem(null);
+                    loadEmployeeEducationDetails();
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Deleting Education Details'
+        );
+    };
+
+    //#endregion
+
+    //#region EXPERIENCE MODAL HANDLERS
+
+    const handleOpenExperienceModal = (item?: EmployeeExperienceDetailsData) => {
+        if (item) {
+            // Edit mode
+            setExperienceFormData({
+                EmployeeExperienceDetailsId: item.EmployeeExperienceDetailsId,
+                EmployeeId: item.EmployeeId,
+                CompanyName: item.CompanyName || '',
+                Role: item.Role || '',
+                Tenure: item.Tenure || '',
+                Uniquekey: item.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+            });
+            setIsEditExperienceMode(true);
+        } else {
+            // Add mode
+            setExperienceFormData({
+                EmployeeExperienceDetailsId: 0,
+                EmployeeId: Number(LocalStorageHelper.getStoredEmployeeData()?.EmployeeId) || 0,
+                CompanyName: '',
+                Role: '',
+                Tenure: '',
+                Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+            });
+            setIsEditExperienceMode(false);
+        }
+        setExperienceFormErrors({});
+        setIsExperienceModalOpen(true);
+    };
+
+    const handleCloseExperienceModal = () => {
+        setIsExperienceModalOpen(false);
+        setIsEditExperienceMode(false);
+        setExperienceFormData({
+            EmployeeExperienceDetailsId: 0,
+            EmployeeId: Number(LocalStorageHelper.getStoredEmployeeData()?.EmployeeId) || 0,
+            CompanyName: '',
+            Role: '',
+            Tenure: '',
+            Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        });
+        setExperienceFormErrors({});
+    };
+
+    const validateExperienceForm = (): boolean => {
+        const errors: {
+            CompanyName?: string;
+            Role?: string;
+            Tenure?: string;
+        } = {};
+
+        if (!experienceFormData.CompanyName?.trim()) {
+            errors.CompanyName = 'Company Name is required';
+        }
+        if (!experienceFormData.Role?.trim()) {
+            errors.Role = 'Role is required';
+        }
+        if (!experienceFormData.Tenure?.trim()) {
+            errors.Tenure = 'Tenure is required';
+        }
+
+        setExperienceFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleExperienceFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!validateExperienceForm()) {
+            return;
+        }
+
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+                const params: AddUpdateEmployeeExperienceDetailsRequest = {
+                    EmployeeExperienceDetailsId: experienceFormData.EmployeeExperienceDetailsId,
+                    EmployeeId: experienceFormData.EmployeeId,
+                    CompanyName: experienceFormData.CompanyName?.trim() || '',
+                    Role: experienceFormData.Role?.trim() || '',
+                    Tenure: experienceFormData.Tenure?.trim() || '',
+                    Uniquekey: experienceFormData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+                };
+
+                const response = await employeeExperienceDetailsService.apiCallAddUpdateEmployeeExperienceDetails(params);
+
+                if (E.isRight(response)) {
+                    addToast({
+                        type: 'success',
+                        title: response.right.SuccessMessage[0]
+                    });
+                    handleCloseExperienceModal();
+                    loadEmployeeExperienceDetails();
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Add Experience Details'
+        );
+    };
+
+    //#endregion
+
+    //#region EXPERIENCE DELETE HANDLER
+
+    const handleDeleteExperience = (item: EmployeeExperienceDetailsData) => {
+        setSelectedExperienceItem(item);
+        setIsDeleteExperienceDialogOpen(true);
+    };
+
+    const handleConfirmDeleteExperience = async () => {
+        if (!selectedExperienceItem) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+                const params: DeleteEmployeeExperienceDetailsRequest = {
+                    EmployeeExperienceDetailsId: selectedExperienceItem.EmployeeExperienceDetailsId,
+                    UniqueKey: selectedExperienceItem.Uniquekey || '',
+                    EmployeeId: selectedExperienceItem.EmployeeId
+                };
+
+                const response = await employeeExperienceDetailsService.apiCallDeleteEmployeeExperienceDetails(params);
+
+                if (E.isRight(response)) {
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+                    setIsDeleteExperienceDialogOpen(false);
+                    setSelectedExperienceItem(null);
+                    loadEmployeeExperienceDetails();
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Deleting Experience Details'
+        );
+    };
+
+    //#endregion
+
 
     const employeeData = employeeMasterList.length > 0 ? employeeMasterList[0] : null
 
@@ -436,21 +792,15 @@ export const Profile: React.FC = () => {
                 <HeaderActionBar
                     titleText={'Profile Details'}
                     cancelText="Cancel"
-                    EditText={activeTab === "Document" ? "Edit" : "Add"}
+                    EditText={activeTab === "Document" ? "Edit" : ""}
                     onCancel={() => navigate(-1)}
-                    canAction={(activeTab === "Document" || activeTab === "Education Details" ||  activeTab === "Experience Details")}
+                    canAction={activeTab === "Document"}
                     isLoading={isLoading}
                     onEdit={() => {
                         if (activeTab === "Document") {
                             if (employeeData) handleEditEmployeeDocument(employeeData);
                         }
-                        else if (activeTab === "Education Details") {
-                            if (employeeData) handleEditEmployeeDocument(employeeData);
-                        }
 
-                        else if (activeTab === "Experience Details") {
-                            if (employeeData) handleEditEmployeeDocument(employeeData);
-                        }
                     }}
                 />
 
@@ -478,10 +828,6 @@ export const Profile: React.FC = () => {
                         else if (t.id === 'Shift Policy') loadShiftMappings();
 
                         else if (t.id === 'Week Off Policy') loadWeekOffMappings();
-
-                        else if (t.id === 'Education Details') loadEmployeeEducationDetails();
-
-                        else if (t.id === 'Experience Details') loadEmployeeExperienceDetails();
 
                     }}
                 />
@@ -551,46 +897,6 @@ export const Profile: React.FC = () => {
 
 
                                 </section>
-
-                                {/* ================== EMPLOYEE INFO ================== */}
-                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Employee Infoformation
-                                    </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Company Name" value={safe(employeeData!.CompanyName)} />
-                                                <FieldItem label="Branch" value={safe(employeeData!.Branch)} />
-                                                <FieldItem label="Department" value={safe(employeeData!.Department)} />
-
-                                            </div>
-                                        </div>
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Designation" value={safe(employeeData!.Designation)} />
-                                                <FieldItem
-                                                    label="Joining Date"
-                                                    value={formatDate_dd_MonthName_yy(safe(employeeData!.JoiningDate))}
-                                                />
-                                                <FieldItem label="Reporting Person" value={safe(employeeData!.ReportPersonName)} />
-                                            </div>
-                                        </div>
-                                        <div className="lg:col-span-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Employment Type" value={safe(employeeData!.EmployeeType)} />
-
-                                                <FieldItem label="Office Number" value={employeeData?.OfficeMobileNumber
-                                                    ? `+91 ${safe(employeeData?.OfficeMobileNumber)}`
-                                                    : '-'} />
-
-                                                <FieldItem label="Office E-mail ID" value={safe(employeeData!.OfficeEmailId)} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
-
                                 {/* ================== ADDRESS ================== */}
                                 <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
@@ -615,6 +921,54 @@ export const Profile: React.FC = () => {
                                         </div>
                                     </div>
                                 </section>
+                                {/* ================== EMPLOYEE INFO ================== */}
+                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        Employee Information
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Company Name" value={safe(employeeData!.CompanyName)} />
+                                                <FieldItem label="Branch" value={safe(employeeData!.Branch)} />
+                                                <FieldItem label="Department" value={safe(employeeData!.Department)} />
+
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Designation" value={safe(employeeData!.Designation)} />
+                                                <FieldItem
+                                                    label="Joining Date"
+                                                    value={formatDate_dd_MonthName_yy(safe(employeeData!.JoiningDate))}
+                                                />
+                                                <FieldItem label="Reporting Person" value={safe(employeeData!.ReportPersonName)} />
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Employment Type" value={safe(employeeData!.EmployeeType)} />
+
+                                                <FieldItem label="Office Number" value={employeeData?.OfficeMobileNumber
+                                                    ? `+91 ${safe(employeeData?.OfficeMobileNumber)}`
+                                                    : '-'} />
+
+                                                <FieldItem label="Office E-mail ID" value={safe(employeeData!.OfficeEmailId)} />
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem
+                                                    label="Probation Date"
+                                                    value={formatDate_dd_MonthName_yy(safe(employeeData!.ProbationDate))}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+
 
                                 {/* ================== BANK DETAILS ================== */}
                                 <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
@@ -640,7 +994,7 @@ export const Profile: React.FC = () => {
                                 {/* ================== FAMILY DETAILS ================== */}
                                 <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Family Details
+                                        Emergency Contact Details
                                     </h4>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -746,24 +1100,165 @@ export const Profile: React.FC = () => {
 
                                 </section>
 
-                                {/* Documents example block */}
-                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                                        Documents
-                                    </h4>
-                                    <div>Documents Listing Here</div>
-                                </section>
 
                                 {/* ================= FAMILY / EDUCATION / EXPERIENCE ================= */}
-                                <section className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
-                                    <Accordion
-                                        items={[
-                                            { key: 'education', title: 'Education Details', content: <div /> },
-                                            { key: 'experience', title: 'Experience', content: <div /> },
+                                <Accordion
+                                    allowMultipleOpen
+                                    items={[
+                                        { key: 'Education Details', title: 'Education Details' },
+                                        { key: 'Experience Details', title: 'Experience Details' }
+                                    ]}
+                                    renderItem={(item, isOpen, toggle) => (
+                                        <div>
 
-                                        ]}
-                                    />
-                                </section>
+                                            {/* === HEADER === */}
+                                            <div
+                                                className="flex justify-between items-center px-4 py-3 cursor-pointer"
+                                                onClick={async () => {
+                                                    toggle();
+
+                                                    if (item.key === 'Education Details' && !loadedSections.educationDetails) {
+                                                        await loadEmployeeEducationDetails();
+                                                        setLoadedSections(prev => ({ ...prev, educationDetails: true }));
+                                                    }
+
+                                                    if (item.key === 'Experience Details' && !loadedSections.experienceDetails) {
+                                                        await loadEmployeeExperienceDetails();
+                                                        setLoadedSections(prev => ({ ...prev, experienceDetails: true }));
+                                                    }
+                                                }}
+                                            >
+                                                <h4 className="font-semibold">{item.title}</h4>
+
+                                                {/* ADD BUTTON */}
+
+
+                                                <Button
+                                                    color='transparent'
+                                                    isborderRadius
+                                                    size='sm'
+                                                    style={{
+                                                        color: 'blue',
+                                                        padding: '4px 8px'
+                                                    }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (item.key === 'Education Details') {
+                                                            handleOpenEducationModal()
+                                                        }
+                                                        else if (item.key === "Experience Details") {
+                                                            handleOpenExperienceModal();
+                                                        }
+                                                    }}
+                                                    leftIcon={<Plus className="h-4 w-4" />}
+                                                >
+                                                </Button>
+                                            </div>
+
+                                            {/* === BODY === */}
+                                            {isOpen && (
+                                                <div className="p-4">
+
+                                                    {/* EDUCATION */}
+                                                    {item.key === 'Education Details' && (
+                                                        employeeEducationDetailsDataList.length === 0
+                                                            ? <NoDataView message="No Education Details Found" />
+                                                            : employeeEducationDetailsDataList.map(e => (
+                                                                <div
+                                                                    key={e.Uniquekey}
+                                                                    className="border-b last:border-b-0 border-gray-200 py-2 last:border-b-0 last:pb-0"
+                                                                >
+                                                                    <FieldItem label="Qualification" value={e.Qualification} />
+                                                                    <FieldItem label="College" value={e.CollegeName} />
+                                                                    <FieldItem label="Passing Year" value={e.Passing} />
+
+                                                                    <div className="flex justify-end gap-2">
+                                                                        <Button
+                                                                            color='transparent'
+                                                                            isborderRadius
+                                                                            size='sm'
+                                                                            style={{
+                                                                                color: 'blue',
+                                                                                padding: '4px 8px'
+                                                                            }}
+                                                                            title="Edit"
+                                                                            onClick={() => handleOpenEducationModal(e)}
+                                                                            disabled={isLoading}
+                                                                            leftIcon={<Edit className="h-4 w-4" />}
+                                                                        >
+                                                                        </Button>
+                                                                        <Button
+                                                                            color='transparent'
+                                                                            isborderRadius
+                                                                            size='sm'
+                                                                            style={{
+                                                                                color: 'red',
+                                                                                padding: '4px 8px'
+                                                                            }}
+                                                                            title="Delete"
+                                                                            onClick={() => handleDeleteEducation(e)}
+                                                                            disabled={isLoading}
+                                                                            leftIcon={<Trash2 className="h-4 w-4" />}
+                                                                        >
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+                                                            ))
+                                                    )}
+
+                                                    {/* EXPERIENCE */}
+                                                    {item.key === 'Experience Details' && (
+                                                        employeeExperienceDetailsDataList.length === 0
+                                                            ? <NoDataView message="No Experience Details Found" />
+                                                            : employeeExperienceDetailsDataList.map(e => (
+                                                                <div
+                                                                    key={e.Uniquekey}
+                                                                    className="border-b last:border-b-0 border-gray-200 py-2 last:border-b-0 last:pb-0"
+                                                                >
+                                                                    <FieldItem label="Company Name" value={e.CompanyName} isRow />
+                                                                    <FieldItem label="Role" value={e.Role} isRow />
+                                                                    <FieldItem label="Tenure" value={e.Tenure} isRow />
+
+                                                                    <div className="flex justify-end gap-2">
+                                                                        <Button
+                                                                            color='transparent'
+                                                                            isborderRadius
+                                                                            size='sm'
+                                                                            style={{
+                                                                                color: 'blue',
+                                                                                padding: '4px 8px'
+                                                                            }}
+                                                                            title="Edit"
+                                                                            onClick={() => handleOpenExperienceModal(e)}
+                                                                            disabled={isLoading}
+                                                                            leftIcon={<Edit className="h-4 w-4" />}
+                                                                        >
+
+                                                                        </Button>
+                                                                        <Button
+                                                                            color='transparent'
+                                                                            isborderRadius
+                                                                            size='sm'
+                                                                            style={{
+                                                                                color: 'red',
+                                                                                padding: '4px 8px'
+                                                                            }}
+                                                                            title="Delete"
+                                                                            onClick={() => handleDeleteExperience(e)}
+                                                                            leftIcon={<Trash2 className="h-4 w-4" />}
+                                                                        >
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+                                                            ))
+                                                    )}
+
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                />
+
 
                             </div>
 
@@ -802,7 +1297,7 @@ export const Profile: React.FC = () => {
                     </div>
 
                 )}
-                
+
                 {activeTab === 'Assets' && assetMappingMasterList && (
                     <div className="space-y-4">
                         {assetMappingMasterList.length === 0 ? (
@@ -1015,87 +1510,120 @@ export const Profile: React.FC = () => {
                     </div>
                 )}
 
-                {activeTab === 'Education Details' && employeeEducationDetailsDataList && (
-                    <div className="space-y-4">
-                        {employeeEducationDetailsDataList.length === 0 ? (
-                            <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
-                                <NoDataView message='No Education Details Found' />
-                            </section>
-                        ) : (
-                            <div className="space-y-3">
-                                {employeeEducationDetailsDataList.map((employeeEducationDetails) => {
-
-                                    return (
-                                        <>
-
-                                            <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
-                                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                    Education Details
-                                                </h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-
-                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem label="Qualification" value={employeeEducationDetails!.Qualification} />
-                                                            <FieldItem label="CollegeName" value={employeeEducationDetails!.CollegeName} className='font-medium text-blue-900 ' />
-
-                                                            <FieldItem label="Passing Year" value={employeeEducationDetails!.PassingYear} />
-
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-
-                                            </section>
-                                        </>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {activeTab === 'Experience Details' && employeeExperienceDetailsDataList && (
-                    <div className="space-y-4">
-                        {employeeExperienceDetailsDataList.length === 0 ? (
-                            <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
-                                <NoDataView message='No Experience Details Found' />
-                            </section>
-                        ) : (
-                            <div className="space-y-3">
-                                {employeeExperienceDetailsDataList.map((employeeExperienceDetails) => {
-
-                                    return (
-                                        <>
-
-                                            <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
-                                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                    Education Details
-                                                </h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-
-                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem label="Company Name" value={employeeExperienceDetails!.CompanyName} />
-                                                            <FieldItem label="Role" value={employeeExperienceDetails!.Role} className='font-medium text-blue-900 ' />
-                                                            <FieldItem label="Tenure" value={employeeExperienceDetails!.Tenure} />
-
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-
-                                            </section>
-                                        </>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-                )}
 
             </div>
-        </div>
+
+            {/* Education Details Modal */}
+            <Modal
+                isOpen={isEducationModalOpen}
+                onClose={handleCloseEducationModal}
+                title={isEditEducationMode ? "Edit Education Details" : "Add Education Details"}
+                onSubmit={handleEducationFormSubmit}
+                saveText="Save"
+                cancelText="Cancel"
+                onCancel={handleCloseEducationModal}
+                loading={isLoading}
+                size="xl"
+            >
+                <div className="space-y-4">
+                    <Input
+                        label="Qualification"
+                        value={educationFormData.Qualification || ''}
+                        onChange={(e) => setEducationFormData({ ...educationFormData, Qualification: e.target.value })}
+                        required
+                        error={educationFormErrors.Qualification}
+                        placeholder="Enter Qualification"
+                    />
+                    <Input
+                        label="College Name"
+                        value={educationFormData.CollegeName || ''}
+                        onChange={(e) => setEducationFormData({ ...educationFormData, CollegeName: e.target.value })}
+                        required
+                        error={educationFormErrors.CollegeName}
+                        placeholder="Enter College Name"
+                    />
+                    <Input
+                        label="Passing Year"
+                        value={educationFormData.Passing || ''}
+                        onChange={(e) => setEducationFormData({ ...educationFormData, Passing: e.target.value })}
+                        required
+                        error={educationFormErrors.Passing}
+                        placeholder="Enter Passing Year"
+                    />
+                </div>
+            </Modal>
+
+            {/* Experience Details Modal */}
+            <Modal
+                isOpen={isExperienceModalOpen}
+                onClose={handleCloseExperienceModal}
+                title={isEditExperienceMode ? "Edit Experience Details" : "Add Experience Details"}
+                onSubmit={handleExperienceFormSubmit}
+                saveText="Save"
+                cancelText="Cancel"
+                onCancel={handleCloseExperienceModal}
+                loading={isLoading}
+                size="xl"
+            >
+                <div className="space-y-4">
+                    <Input
+                        label="Company Name"
+                        value={experienceFormData.CompanyName || ''}
+                        onChange={(e) => setExperienceFormData({ ...experienceFormData, CompanyName: e.target.value })}
+                        required
+                        error={experienceFormErrors.CompanyName}
+                        placeholder="Enter Company Name"
+                    />
+                    <Input
+                        label="Role"
+                        value={experienceFormData.Role || ''}
+                        onChange={(e) => setExperienceFormData({ ...experienceFormData, Role: e.target.value })}
+                        required
+                        error={experienceFormErrors.Role}
+                        placeholder="Enter Role"
+                    />
+                    <Input
+                        label="Tenure"
+                        value={experienceFormData.Tenure || ''}
+                        onChange={(e) => setExperienceFormData({ ...experienceFormData, Tenure: e.target.value })}
+                        required
+                        error={experienceFormErrors.Tenure}
+                        placeholder="Enter Tenure"
+                    />
+                </div>
+            </Modal>
+
+            {/* Delete Confirmation Dialogs */}
+            <ConfirmationDialogBox
+                isOpen={isDeleteEducationDialogOpen}
+                onClose={() => {
+                    setIsDeleteEducationDialogOpen(false);
+                    setSelectedEducationItem(null);
+                }}
+                onConfirm={handleConfirmDeleteEducation}
+                title="Delete Education Details"
+                message={`Are you sure you want to delete this education detail? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                loading={isLoading}
+                variant="danger"
+            />
+
+            <ConfirmationDialogBox
+                isOpen={isDeleteExperienceDialogOpen}
+                onClose={() => {
+                    setIsDeleteExperienceDialogOpen(false);
+                    setSelectedExperienceItem(null);
+                }}
+                onConfirm={handleConfirmDeleteExperience}
+                title="Delete Experience Details"
+                message={`Are you sure you want to delete this experience detail? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                loading={isLoading}
+                variant="danger"
+            />
+        </div >
     )
 }
 

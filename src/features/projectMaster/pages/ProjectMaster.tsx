@@ -315,7 +315,8 @@ export const ProjectMaster: React.FC = () => {
             filters,
             sortInfo,
             searchTerm,
-            projectId: row.ProjectId
+            projectId: row.ProjectId,
+            uniquekey:row.Uniquekey
           },
         },
       });
@@ -334,7 +335,8 @@ export const ProjectMaster: React.FC = () => {
             filters,
             sortInfo,
             searchTerm,
-            projectId: row.ProjectId
+            projectId: row.ProjectId,
+            uniquekey:row.Uniquekey
           },
         },
       });

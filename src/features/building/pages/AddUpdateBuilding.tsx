@@ -17,6 +17,7 @@ import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelectio
 import { LAND_OWNERSHIP_TYPE, ROAD_WIDTH } from "@/core/constants";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
+import { MapPin } from "lucide-react";
 
 const initialFormState = (): AddUpdateBuildingRequest => ({
   BuildingId: 0,
@@ -443,6 +444,7 @@ const AddUpdateBuilding: React.FC = () => {
                   required
                   onChange={e => handleFieldChange('GoogleLocation', filterGoogleMapsUrl(e.target.value))}
                   error={errors.GoogleLocation}
+                  rightIcon={<MapPin className="w-4 h-4" />}
                   placeholder="Enter Google Location"
                 />
               </div>
@@ -524,7 +526,7 @@ const AddUpdateBuilding: React.FC = () => {
                 <div className="md:col-span-2 lg:col-span-3">
 
                   <Checkbox
-                    label="Is Garden"
+                    label="Garden"
                     checked={formData.IsGarden === true}
                     onChange={(e) => handleFieldChange('IsGarden', e.target.checked ? true : false)}
                   />
@@ -548,7 +550,7 @@ const AddUpdateBuilding: React.FC = () => {
                 <div className="md:col-span-2 lg:col-span-3">
 
                   <Checkbox
-                    label="Is Religious Structure"
+                    label="Religious Structure"
                     checked={formData.IsReligiousStructure === true}
                     onChange={(e) => handleFieldChange('IsReligiousStructure', e.target.checked ? true : false)}
                   />
@@ -571,7 +573,7 @@ const AddUpdateBuilding: React.FC = () => {
                 <div className="md:col-span-2 lg:col-span-3">
 
                   <Checkbox
-                    label="Is Litigation"
+                    label="Litigation"
                     checked={formData.IsLitigation === true}
                     onChange={(e) => handleFieldChange('IsLitigation', e.target.checked ? true : false)}
                   />

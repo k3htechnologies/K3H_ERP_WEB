@@ -63,7 +63,7 @@ export const formatDate_dd_MonthName_yy = (dateString: string | Date): string =>
   }
 
   try {
-    
+
     const date = new Date(dateString)
 
     // Check if date is valid
@@ -92,27 +92,18 @@ export const formatDate_dd_MonthName_yy = (dateString: string | Date): string =>
  */
 export const formatDate_dd_mm_yyyy = (dateString?: string | null): string => {
 
-  if (!dateString || typeof dateString !== 'string' || dateString.trim() === '') {
-    return '';
-  }
+  if (!dateString) return '';
 
-  try {
+  const trimmed = dateString.trim();
+  if (!trimmed) return '';
 
-    const date = new Date(dateString);
+  // supports YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss...
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(trimmed);
+  if (!match) return '';
 
-    // Invalid date check
-    if (isNaN(date.getTime())) return '';
+  const [, yyyy, mm, dd] = match;
 
-    const day = date.getUTCDate().toString().padStart(2, '0');
-    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-    const year = date.getUTCFullYear();
-
-    return `${day}-${month}-${year}`;
-
-  }
-  catch {
-    return '';
-  }
+  return `${dd}-${mm}-${yyyy}`;
 
 };
 
@@ -149,27 +140,27 @@ export const formatTimeFromDateTime = (dateTimeString?: string | null): string =
 
   try {
     const trimmed = dateTimeString.trim();
-    
+
     // If already in HH:MM format, return as is
     if (/^\d{2}:\d{2}$/.test(trimmed)) {
       return trimmed;
     }
-    
+
     // Extract time from ISO format directly to avoid timezone conversion
     // Formats: "2025-12-03T15:26:50.513", "2025-12-03T15:26:50", "2025-12-03T15:26:50Z"
     const timeMatch = trimmed.match(/T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?/);
     if (timeMatch) {
       const hours = parseInt(timeMatch[1], 10);
       const minutes = parseInt(timeMatch[2], 10);
-      
+
       // Format to 12-hour format with AM/PM
       const ampm = hours >= 12 ? 'PM' : 'AM';
       let displayHours = hours % 12;
       displayHours = displayHours ? displayHours : 12; // 0 should be 12
-      
+
       return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
     }
-    
+
     // Fallback: try parsing as Date and use UTC methods
     const date = new Date(trimmed);
     if (!isNaN(date.getTime())) {
@@ -182,7 +173,7 @@ export const formatTimeFromDateTime = (dateTimeString?: string | null): string =
 
       return `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
     }
-    
+
     return '';
   } catch (error) {
     console.error('Error formatting time from datetime:', error);
@@ -202,7 +193,7 @@ export const formatDate_MonthName_yy = (dateString: string | Date): string => {
   }
 
   try {
-    
+
     const date = new Date(dateString)
 
     // Check if date is valid

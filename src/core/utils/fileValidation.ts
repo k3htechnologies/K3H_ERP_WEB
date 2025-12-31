@@ -73,9 +73,11 @@ export const filterEmail = (value: string): string =>
 
 export const isValidEmail = (email: string): boolean => {
   if (!email) return false;
-  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
+  const regex = /^[a-zA-Z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
   return regex.test(email.trim());
 };
+
+
 // ----------------------------------
 // 🔹 FILTER GST NUMBER (A–Z + 0–9 only)
 // ----------------------------------
@@ -304,6 +306,18 @@ export const isAtLeastAge = (
   );
 
   return minAgeDate <= today;
+};
+
+// ----------------------------------
+// 🔹 CHECK PATH IS SUB SUB
+// ----------------------------------
+export const isSubSubRoute = (pathname: string): boolean => {
+  const parts = pathname
+    .replace(/^\/+|\/+$/g, '') // remove leading & trailing slashes
+    .split('/')
+    .filter(x => x); // remove empty strings if any
+
+  return parts.length >= 2;
 };
 
 

@@ -522,7 +522,7 @@ const Employee: React.FC = () => {
 
   //#region ADD UPDATE PROJECT MASTER WITH EMPLOYEE
 
-  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  //============================================================= [VALIDATION FUNCTION] =============================================================================================
 
   const PushProjectMasterWithEmployeeData = (): AddUpdateProjectMasterWithEmployeeRequest => {
     return {

@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 
 interface HeaderActionBarProps {
     titleText?: string;
+    subTitleText?: string;
     cancelText?: string;
     EditText?: string;
     onCancel?: () => void;
@@ -14,6 +15,7 @@ interface HeaderActionBarProps {
 
 const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
     titleText,
+    subTitleText,
     cancelText = "Cancel",
     EditText = "Edit",
     onCancel,
@@ -32,7 +34,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                     color="primary"
                     size="sm"
                     onClick={onCancel}
-                    leftIcon={<ChevronLeft className="w-5 h-5 text-gray-700" strokeWidth={3.0}    />}
+                    leftIcon={<ChevronLeft className="w-5 h-5 text-gray-700" strokeWidth={3.0} />}
                     title={cancelText}
                     style={{ backgroundColor: "#DBEAFE" }}
                     className="hover:bg-[#DBEAFE]"
@@ -40,7 +42,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                 </Button>
 
                 <h2 className="text-lg font-semibold text-gray-900 pl-3">
-                    {titleText}
+                    {titleText} {subTitleText !== "" ? <span className="text-blue-700">{subTitleText}</span> : ""}
                 </h2>
             </div>
 

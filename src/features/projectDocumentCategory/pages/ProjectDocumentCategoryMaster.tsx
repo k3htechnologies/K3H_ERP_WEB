@@ -338,7 +338,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
           <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
             <TooltipText
               text={value || 'N/A'}
-              maxWidth="250px"
+              maxWidth="500px"
               tooltipThreshold={30}
               onClick={() => handleViewProjectDocumentCategoryDetails(row)}
             />
@@ -352,6 +352,37 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
         sortable: false,
         align: 'center',
         render: value => value ?? ''
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction && !row.NumberOfEmployee ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Department"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )
       }
     ],
     [canAction, handleViewProjectDocumentCategoryDetails, handleEditProjectDocumentCategoryMaster, handleConfirmationDialogBoxOpen]
@@ -547,10 +578,8 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
   } => {
     const newErrors: { [key: string]: string } = {};
 
-    if (formData.ProjectDocumentCategory.trim() === '') {
-      newErrors.ProjectDocumentCategory = 'Project Document Category is required';
-    } else if (formData.ProjectDocumentCategory.length < 3) {
-      newErrors.ProjectDocumentCategory = 'Project Document Category must be at least 3 characters long';
+    if (!formData.ProjectDocumentCategory?.trim()) {
+      newErrors.projectDocumentCategory = 'Project Document Category is required';
     }
 
     if (formData.OrderBy === 0) {
@@ -855,7 +884,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
         title={editingProjectDocumentCategoryMasterData ? 'Update Project Document Category' : 'Add Project Document Category'}
         onSubmit={handleAddUpdateProjectDocumentCategoryMaster}
         saveText={
-          editingProjectDocumentCategoryMasterData ? 'Update Project Document Category' : 'Save Project Document Category'
+          editingProjectDocumentCategoryMasterData ? 'Update' : 'Add'
         }
         resetText="Reset"
         loading={isLoading}
@@ -881,7 +910,6 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
                 label="Order By"
                 required
                 error={errors.OrderBy}
-                type="number"
                 value={formData.OrderBy.toString()}
                 onChange={e => handleFieldChange('OrderBy', Number(e.target.value))}
                 placeholder="Enter Order"
@@ -931,8 +959,8 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
               <Input
                 label="Project Document Category"
                 type="text"
-                value={tempFilters.ProjectDocumentCategory || ''}
-                onChange={e => handleFilterChange('ProjectDocumentCategory', e.target.value)}
+                value={tempFilters.ProjectDocumentCategory}
+                onChange={e => handleFilterChange('projectDocumentCategory', e.target.value)}
                 placeholder="Enter project document category"
               />
             </div>

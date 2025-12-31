@@ -86,6 +86,9 @@ const ProjectDocument: React.FC = () => {
   //DATATABLE EXPANDABLE REF
   const dtRef = useRef<DataTableExpandableRef | null>(null)
 
+  //DATATABLE EXPANDED ROW AND PARENT ID
+
+  const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -124,7 +127,22 @@ const ProjectDocument: React.FC = () => {
 
   useEffect(() => {
     if (!projectId) return;
-    loadProjectDocumentTabs()
+
+    setProjectDocumentList([]);
+    setProjectDocumentTabList([]);
+    setActiveTab('');
+    setExpandedParentRow(null);
+    setEditingDocumentData(null);
+    setErrors({});
+    setPagination({
+      currentPage: 1,
+      totalPages: 0,
+      totalRecords: 0,
+      pageSize: pagination.pageSize
+    });
+    dtRef.current?.collapseAll?.();
+
+    loadProjectDocumentTabs();
 
   }, [projectId])
 
@@ -165,6 +183,7 @@ const ProjectDocument: React.FC = () => {
   }, [isAddUpdateDocumentModalOpen, isAddUpdateDocumentDetailsModalOpen, editingDocumentData]);
 
   //#endregion
+
   //#region ACTIVE TAB IF FIND OUT
   const getActiveTabId = (filterParams?: FilterInfo): number => {
     if (filterParams && filterParams.ProjectDocumentCategoryId != null) {
@@ -381,9 +400,12 @@ const ProjectDocument: React.FC = () => {
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
-
   const handleConfirmationDialogBoxOpen = useCallback((row: ProjectDocumentData) => {
-    setDeleteProjectDocumentDetailsData(row)
+    setDeleteProjectDocumentDetailsData({
+      ...row,
+      IsMaster: row.IsMaster
+    })
+
     setIsConfirmationDialogBoxOpen(true)
   }, [])
 
@@ -431,7 +453,7 @@ const ProjectDocument: React.FC = () => {
         render: (value) => {
           return (
             <TooltipText
-              text={`${value} Pending`  || "-"}
+              text={`${value} Pending` || "-"}
               maxWidth="180px"
               tooltipThreshold={18}
               tooltipClassName={`inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap`}
@@ -621,7 +643,13 @@ const ProjectDocument: React.FC = () => {
         width: '33',
         sortable: false,
         align: 'center',
-        render: (value) => value || 'N/A'
+        render: (value) => (
+          <TooltipText
+            text={value || '-'}
+            maxWidth="180px"
+            tooltipThreshold={18}
+          />
+        )
       },
       {
         key: 'CreatedDate',
@@ -636,6 +664,7 @@ const ProjectDocument: React.FC = () => {
         label: 'Actions',
         width: '12',
         align: 'center',
+        fixed: 'right',
         render: (_value, row) => {
           const showEdit = canAction ? true : false;
           return (
@@ -656,6 +685,27 @@ const ProjectDocument: React.FC = () => {
                     title="Edit"
                   >
                     <Edit className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <div className="opacity-0 h-[32px] w-[34px]" />
+                )}
+              </div>
+
+              <div className="w-[34px] flex justify-center">
+                {showEdit ? (
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleConfirmationDialogBoxOpen(row)
+                    }}
+                    color="transparent"
+                    isborderRadius
+                    size="sm"
+                    style={{ color: 'red' }}
+                    title="Delete"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 ) : (
                   <div className="opacity-0 h-[32px] w-[34px]" />
@@ -744,7 +794,19 @@ const ProjectDocument: React.FC = () => {
 
       newErrors.ProjectDocumentStatus = "Status is required"
     }
+    const hasNewFiles = projectDocumentFiles.length > 0;
 
+    const existingUrls = (projectDocumentURL ?? "").split(",").filter(x => x.trim() !== "");
+
+    const remainingExisting = existingUrls.filter(url => !RemoveProjectDocumentUrls.includes(url));
+
+    const hasRemainingExisting = remainingExisting.length > 0;
+
+    const hasFile = hasNewFiles || hasRemainingExisting;
+
+    if (!hasFile) {
+      newErrors.ProjectDocumentURL = "File is required.";
+    }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -855,6 +917,18 @@ const ProjectDocument: React.FC = () => {
                 totalRecords: pagination.totalRecords + 1,
                 totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
               });
+            } else {
+
+              const parentId = expandedParentRow?.ProjectDocumentId;
+
+              await fetchProjectDocumentList(pagination.currentPage);
+
+              if (parentId) {
+                dtRef.current?.expandRow?.(
+                  String(parentId),
+                  expandedParentRow
+                );
+              }
             }
 
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
@@ -872,6 +946,19 @@ const ProjectDocument: React.FC = () => {
                     : item
                 )
               )
+            }
+            else {
+
+              const parentId = expandedParentRow?.ProjectDocumentId;
+
+              await fetchProjectDocumentList(pagination.currentPage);
+
+              if (parentId) {
+                dtRef.current?.expandRow?.(
+                  String(parentId),
+                  expandedParentRow
+                );
+              }
             }
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
@@ -924,14 +1011,31 @@ const ProjectDocument: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          setProjectDocumentList(prevData => prevData.filter(item => item.ProjectDocumentId !== deleteProjectDocumentDetailsData.ProjectDocumentId));
+          if (deleteProjectDocumentDetailsData.IsMaster === 1) {
 
-          setPagination({
-            currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords - 1,
-            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
-          });
+            setProjectDocumentList(prevData => prevData.filter(item => item.ProjectDocumentId !== deleteProjectDocumentDetailsData.ProjectDocumentId));
 
+            setPagination({
+              currentPage: pagination.currentPage,
+              totalRecords: pagination.totalRecords - 1,
+              totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+            });
+
+          }
+          else {
+
+            const parentId = expandedParentRow.ProjectDocumentId;
+
+            await fetchProjectDocumentList(pagination.currentPage);
+
+            if (parentId) {
+              dtRef.current?.expandRow?.(
+                String(parentId),
+                expandedParentRow
+              );
+            }
+
+          }
           addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
           setIsConfirmationDialogBoxOpen(false);
@@ -1041,7 +1145,7 @@ const ProjectDocument: React.FC = () => {
         isShowFilterButton={false}
         isShowCustomizeButton={false}
         // ADD
-        isShowAddButton={projectDocumentTabList.length > 0 ? true : false}
+        isShowAddButton={projectDocumentTabList.length > 0 && canAction ? true : false}
         addTitle="Add"
         onAdd={handleAddDocumentModal}
 
@@ -1091,6 +1195,8 @@ const ProjectDocument: React.FC = () => {
           keyField: 'ProjectDocumentId',
           alwaysFetchOnOpen: true,
           fetchRow: async (row) => {
+
+            setExpandedParentRow(row);
 
             const params: FilterWithPaginationProjectDocument = {
               PageNumber: 1,
@@ -1165,7 +1271,7 @@ const ProjectDocument: React.FC = () => {
         }}
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(1, e)}
-        saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
+        saveText={editingDocumentData ? 'Update' : 'Add'}
         resetText='Reset'
         loading={isLoading}
         size='xl'
@@ -1239,6 +1345,7 @@ const ProjectDocument: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Status"
+                placeholder='Select Status'
                 required
                 value={formData.ProjectDocumentStatus}
                 onChange={(e) => handleFieldChange('ProjectDocumentStatus', String(e))}
@@ -1248,13 +1355,16 @@ const ProjectDocument: React.FC = () => {
             </div>
             <div>
               <MultiFilePicker
-                label="Documents"
+                label="Files"
+                placeholder='Select Files'
+                required
                 value={projectDocumentFiles}
                 onChange={setProjectDocumentFiles}
                 availableFilesURL={projectDocumentURL ?? ""}
                 allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                 maxFiles={5}
                 maxSizeMB={10}
+                error={errors.ProjectDocumentURL}
                 onRemoveExisting={(url) => {
                   setRemoveProjectDocumentUrls((prev) => [...prev, url])
                 }}

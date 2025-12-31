@@ -28,6 +28,7 @@ import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 
 
 const initialFormState = (): AddUpdateTenantDocumentRequest => ({
@@ -805,27 +806,25 @@ export const TenantDocument: React.FC = () => {
         isShowImportButton={false}
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={false}
         onExportExcel={handleExportTenantDocumentExcel}
         onExportPdf={handleExportTenantDocumentPdf}
         exportLoading={isLoading}
       />
 
       <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
-        <Button
-          onClick={handleBackToListTenant}
-          color="cancel"
-          type="button"
-          size="sm"
-          className="hover:bg-gray-100 rounded-md"
-        >
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
-        </Button>
 
-        <h1 className="text-lg font-semibold text-gray-800">
-          Tenant Name: <span className="text-blue-700">{tenantName}</span>
-        </h1>
+        <HeaderActionBar
+          titleText={"Tenant Name"}
+          subTitleText={tenantName}
+          cancelText="Cancel"
+          EditText=""
+          onCancel={() => handleBackToListTenant()}
+          canAction={false}
+          isLoading={isLoading}
+        />
       </div>
+
 
 
       {/* DATA TABLE TENANT DOCUMENT */}
@@ -890,7 +889,8 @@ export const TenantDocument: React.FC = () => {
 
             <div>
               <MultiFilePicker
-                label="Document"
+                label="Files"
+                placeholder="Select Files"
                 required
                 error={errors.DocumentURL}
                 value={documentFiles}

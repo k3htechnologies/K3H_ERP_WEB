@@ -327,7 +327,7 @@ export const ViewTenant: React.FC = () => {
                                                 {/* SECTION 1 */}
                                                 <div className={`lg:col-span-3 pt-3 ${isLast ? '' : 'pb-3'}`}>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                        <FieldItem label="Type" value={tenantData.ApplicantType} />
+                                                        <FieldItem label="Type" value={tenantData.ApplicantType} className='text-blue-900' />
                                                         <FieldItem label="Full Name" value={tenantData.ApplicantName} urls={tenantData?.PhotoURL} isIcon />
                                                         <FieldItem label="Contact Number" value={tenantData?.ApplicantMobileNumber} />
                                                         <FieldItem label="E-Mail ID" value={tenantData?.ApplicantEmailId} />

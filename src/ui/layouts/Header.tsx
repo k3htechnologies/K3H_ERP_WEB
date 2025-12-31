@@ -15,6 +15,7 @@ import { COLORS } from '@/core/constants'
 import { SinglePageSelection } from '../components/DropDown/SinglePageSelection'
 import { useProject } from '@/features/projectMaster/context/ProjectContext'
 import { shouldShowProjectSelection } from '@/core/utils/projectSelectionVisibility'
+import { isSubSubRoute } from '@/core/utils/fileValidation'
 
 interface HeaderProps {
     isSidebarOpen: boolean
@@ -36,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
 
     const location = useLocation();
     const showProjectSelection = shouldShowProjectSelection(location.pathname);
-
+const readOnlyProject = isSubSubRoute(location.pathname);
     // EMPLOYEE PROFILE MODAL
     const [isEmployeeProfileModalOpen, setIsEmployeeProfileModalOpen] = useState(false);
 
@@ -214,6 +215,7 @@ export const Header: React.FC<HeaderProps> = ({
                             }}
                             placeholder="Select Project"
                             selectedTextColor="#135BEC"
+                            disabled={readOnlyProject}
                         />
 
 

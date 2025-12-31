@@ -327,25 +327,25 @@ const AddUpdateEmployeePage: React.FC = () => {
     if (!formData.EmailId?.trim()) {
       newErrors.EmailId = 'E-mail Id is required'
     } else if (!isValidEmail(formData.EmailId.trim())) {
-      newErrors.EmailId = 'Enter a valid email id'
+      newErrors.EmailId = 'Enter a Valid E-mail Id'
     }
 
 
     if (formData.OfficeEmailId?.trim() && !isValidEmail(formData.OfficeEmailId.trim())) {
-      newErrors.OfficeEmailId = 'Enter a valid office email address';
+      newErrors.OfficeEmailId = 'Enter a valid office Email Address';
     }
 
 
     if (!formData.PersonalMobileNumber?.trim()) {
       newErrors.PersonalMobileNumber = 'Mobile Number is required.'
     } else if (!isValidMobile(formData.PersonalMobileNumber.trim())) {
-      newErrors.PersonalMobileNumber = 'Enter a valid 10-digit mobile number'
+      newErrors.PersonalMobileNumber = 'Enter a valid 10-Digit Mobile Number'
     }
 
     if (formData.OfficeMobileNumber != '' && !formData.OfficeMobileNumber?.trim()) {
       newErrors.OfficeMobileNumber = 'Office Mobile Number is required.'
     } else if (formData.OfficeMobileNumber != '' && !isValidMobile(formData.OfficeMobileNumber.trim())) {
-      newErrors.OfficeMobileNumber = 'Enter a valid 10-digit office mobile number'
+      newErrors.OfficeMobileNumber = 'Enter a valid 10-digit Office Mobile Number'
     }
 
     if (!formData.EmployeeType?.trim()) {
@@ -353,7 +353,7 @@ const AddUpdateEmployeePage: React.FC = () => {
     }
 
     if (!formData.EmergencyContactPersonRelationship?.trim()) {
-      newErrors.EmergencyContactPersonRelationship = "Relationship to Emergency Contact is required";
+      newErrors.EmergencyContactPersonRelationship = "Relation to Emergency Contact is required";
     }
 
     if (!formData.EmergencyMobileNumber?.trim()) {
@@ -624,7 +624,8 @@ const AddUpdateEmployeePage: React.FC = () => {
                 <DatePickerInput
                   label="DOB"
                   value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
-                  onChange={(val) => handleFieldChange('DateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required
+                  onChange={(val) => handleFieldChange('DateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                   required
                   error={errors.DateOfBirth}
 
                 />
@@ -929,7 +930,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
       <BottomActionBar
         cancelText="Cancel"
-        saveText={formData.EmployeeId ? "Update Employee" : "Add Employee"}
+        saveText={formData.EmployeeId ? "Update" : "Add"}
         onCancel={() => navigate(-1)}
         canAction={canAction}
         onSave={() => {

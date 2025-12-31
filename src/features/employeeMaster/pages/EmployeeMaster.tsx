@@ -457,7 +457,7 @@ export const EmployeeMaster: React.FC = () => {
         key: 'Branch',
         label: 'Branch',
         width: '14',
-        sortable: true,
+        sortable: false,
         align: 'left',
         render: value => (
           <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
@@ -478,7 +478,7 @@ export const EmployeeMaster: React.FC = () => {
         key: 'DateOfBirth',
         label: 'DOB',
         width: '14',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
       },
@@ -486,7 +486,7 @@ export const EmployeeMaster: React.FC = () => {
         key: 'JoiningDate',
         label: 'Joining Date',
         width: '14',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
       },
@@ -494,7 +494,7 @@ export const EmployeeMaster: React.FC = () => {
         key: 'ProbationDate',
         label: 'Probation Date',
         width: '14',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
       },
@@ -572,7 +572,7 @@ export const EmployeeMaster: React.FC = () => {
         key: 'LastLogin',
         label: 'Last Login',
         width: '16',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       },

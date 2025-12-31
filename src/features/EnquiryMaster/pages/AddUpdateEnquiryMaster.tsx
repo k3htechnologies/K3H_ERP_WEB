@@ -13,20 +13,25 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { EnquiryMasterService } from "../services/EnquiryMasterServices";
-import { filterEmail, filterMobile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
+import { filterEmail, filterMobile } from "@/core/utils/fileValidation";
 import { Mail } from "lucide-react";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { ACCOMODATION_TYPE_OPTIONS, BUDGET_TYPE_OPTIONS, FINAL_STAGE_DETAILS_TYPE_OPTIONS, FINAL_STAGE_TYPE_OPTIONS, OCCUPATION_TYPE_OPTIONS, POSSESSION_TYPE_OPTIONS, REQUIREMENT_TYPE_OPTIONS, SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from "@/core/constants";
+import { ACCOMODATION_TYPE_OPTIONS, AGE_TYPE_OPTION, BUDGET_TYPE_OPTIONS, COMMERCIAL_FLAT_CONFIGURATION, CUSTOMER_CLASSIFICATION_TYPE, DESIRED_FLOOR_BAND, ETHNICITY_TYPE_OPTION, FINAL_STAGE_DETAILS_TYPE_OPTIONS, FINAL_STAGE_TYPE_OPTIONS, NATIONALITY_TYPE_OPTION, NEIGHBORHOOD_PLACES_TYPE_OPTION, OCCUPATION_TYPE_OPTIONS, POSSESSION_TYPE_OPTIONS, REQUIREMENT_TYPE_OPTIONS, RESIDENTIAL_FLAT_CONFIGURATION, SOURCE_OF_FUNDING_TYPE, SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from "@/core/constants";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { fetchChannelPartnerMasterDropdown } from "../services/channelPartnerDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
-import RadioButton from "@/ui/components/forms/RadioButton";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
+import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
+import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 
 const initialFormState = (): AddUpdateEnquiryMasterRequest => ({
     EnquiryId: 0,
     Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     ProjectId: 0,
+    EmployeeId: 0,
+    SalesAdvisorId: 0,
+    SourcingManagerId: 0,
+    PresalesExecutiveId: 0,
     Name: "",
     EmailId: "",
     MobileNumber: "",
@@ -47,8 +52,9 @@ const initialFormState = (): AddUpdateEnquiryMasterRequest => ({
     Remark: "",
     ChannelPartnerId: 0,
     ProjectName: "",
-    ChannelPartnerName:"",
-    ChannelPartnerMobileNumber:0
+    ChannelPartnerName: "",
+    ChannelPartnerMobileNumber: 0,
+    Age: ''
 });
 
 export const AddUpdateEnquiryMaster: React.FC = () => {
@@ -84,9 +90,9 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
 
     const [dropdownLabels, setDropdownLabels] = useState<{
         channelPartnerName?: string,
+        MobileNumber?: string
+        employeeName?: string;
 
-        MobileNumber?:string
-        
     }>({})
 
     //#region HANDLE FIELD CHANGE EVENT
@@ -97,6 +103,15 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
+    //#endregion
+
+    //#region FETCH EMPLOYEE DROPDOWN WITH DEPARTMENT
+    const fetchEmployeesByDept = (dept: string) =>
+        (page: number, params?: { value?: string }) =>
+            fetchEmployeeMasterDropdown(page, {
+                value: params?.value || "",
+                departmentName: dept,
+            });
     //#endregion
 
     //#region HANDLE CHANGE FOR SOURCE DROP DOWN
@@ -112,7 +127,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
         }));
 
         setErrors(prev => ({
-            
+
             ...prev,
             Source: '',
             SubSource: '',
@@ -163,6 +178,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             OccupationType: e.OccupationType ?? prev.OccupationType,
                             Accommodation: e.Accommodation ?? prev.Accommodation,
                             Budget: e.Budget ?? prev.Budget,
+                            Age: e.Age ?? prev.Age,
                             IsHomeLoan: e.IsHomeLoan ?? prev.IsHomeLoan,
                             Requirement: e.Requirement ?? prev.Requirement,
                             RequirementType: e.RequirementType ?? prev.RequirementType,
@@ -175,11 +191,23 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             NextFollowUpDate: e.NextFollowUpDate ?? prev.NextFollowUpDate,
                             EnquiryDate: e.EnquiryDate ?? prev.EnquiryDate,
                             Remark: e.Remark ?? prev.Remark,
-                            ProjectName: e.ProjectName ?? prev.ProjectName
+                            ProjectName: e.ProjectName ?? prev.ProjectName,
+                            SalesAdvisorId: e.SalesAdvisorId ?? prev.SalesAdvisorId,
+                            SourcingManagerId: e.SourcingManagerId ?? prev.SourcingManagerId,
+                            PresalesExecutiveId: e.PresalesExecutiveId ?? prev.PresalesExecutiveId,
+                            Nationality: e.Nationality ?? prev.Nationality,
+                            DesiredFloorBand: e.DesiredFloorBand ?? prev.DesiredFloorBand,
+                            NeighborhoodPlacesInterestedIn: e.NeighborhoodPlacesInterestedIn ?? prev.NeighborhoodPlacesInterestedIn,
+                            CustomerClassification: e.CustomerClassification ?? prev.CustomerClassification,
+                            SourceOfFunding: e.SourceOfFunding ?? prev.SourceOfFunding,
+                            Ethnicity: e.Ethnicity ?? prev.Ethnicity,
+                            EnquiryTimeIn: e.EnquiryTimeIn ?? prev.EnquiryTimeIn,
+                            EnquiryTimeOut: e.EnquiryTimeOut ?? prev.EnquiryTimeOut,
                         }));
                         setDropdownLabels({
-
                             channelPartnerName: e.ChannelPartnerName || '',
+                            employeeName: e.EmployeeName || "",
+
                         });
                     }
                 } else {
@@ -214,67 +242,8 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
             newErrors.Name = 'Enquiry Name must be at most 50 characters';
         }
 
-        if (!formData.EmailId?.trim()) {
-            newErrors.EmailId = 'Email is required.';
-        } else if (!isValidEmail(formData.EmailId.trim())) {
-            newErrors.EmailId = 'Enter a Valid email address.';
-        }
-
-        if (!formData.Budget?.trim()) {
-            newErrors.Budget = 'Budget is required.';
-        }
-
-        if (!formData.MobileNumber?.trim()) {
-            newErrors.MobileNumber = 'Mobile Number is required.'
-        } else if (!isValidMobile(formData.MobileNumber.trim())) {
-            newErrors.MobileNumber = 'Enter a Valid 10-digit mobile number.'
-        }
-
-        if (!formData.NextFollowUpDate) {
-            newErrors.NextFollowUpDate = "Next Follow Up Date is required";
-        }
-
-        if (!formData.EnquiryDate?.trim()) {
-            newErrors.EnquiryDate = 'Enquiry Date is required.';
-        }
-
-        if (!formData.Accommodation?.trim()) {
-            newErrors.Accommodation = 'Accommodation is required.';
-        }
-        if (!formData.Requirement?.trim()) {
-            newErrors.Requirement = 'Requirement is required.';
-        }
-        if (!formData.PossessionType?.trim()) {
-            newErrors.PossessionType = 'Possession Type is required.';
-        }
-
-        if (!formData.AreaPreferred) {
-            newErrors.AreaPreferred = 'Area Preferred is required.';
-        }
-        if (!formData.Source?.trim()) {
-            newErrors.Source = 'Source is required.';
-        }
-
-        if (formData.Source === 'Advertisement' && !formData.SubSource?.trim()) {
-            newErrors.SubSource = 'Sub Source is required.';
-        }
-
-        if (formData.Source === 'Channel Partner' && !formData.ChannelPartnerId) {
-            newErrors.ChannelPartnerId = 'Channel Partner is required.';
-        }
-
-        if (!formData.FinalStage?.trim()) {
-            newErrors.FinalStage = 'Final Stage is required.';
-        }
-        if (!formData.FinalStageDetail?.trim()) {
-            newErrors.FinalStageDetail = 'Final Stage Detail is required.';
-        }
-
-        if (!formData.OccupationType?.trim()) {
-            newErrors.OccupationType = 'Occupation Type is required.';
-        }
-        if (!formData.Remark?.trim()) {
-            newErrors.Remark = 'Remarks is required.';
+        if (!formData.MobileNumber) {
+            newErrors.MobileNumber = 'Mobile Number  is required.';
         }
 
         return {
@@ -290,12 +259,17 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
             EnquiryId: formData.EnquiryId,
             Uniquekey: formData.Uniquekey,
             ProjectId: Number(projectId),
+            EmployeeId: formData.EmployeeId,
+            SalesAdvisorId: formData.SalesAdvisorId,
+            SourcingManagerId: formData.SourcingManagerId,
+            PresalesExecutiveId: formData.PresalesExecutiveId,
             Name: formData.Name,
             EmailId: formData.EmailId,
             MobileNumber: formData.MobileNumber,
             OccupationType: formData.OccupationType,
             Accommodation: formData.Accommodation,
             Budget: formData.Budget,
+            Age: formData.Age,
             IsHomeLoan: formData.IsHomeLoan,
             Requirement: formData.Requirement,
             RequirementType: formData.RequirementType || null,
@@ -307,11 +281,13 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
             FinalStageDetail: formData.FinalStageDetail,
             NextFollowUpDate: formData.NextFollowUpDate,
             EnquiryDate: formData.EnquiryDate,
+            EnquiryTimeIn: formData.EnquiryTimeIn,
+            EnquiryTimeOut: formData.EnquiryTimeOut,
             Remark: formData.Remark,
             ChannelPartnerId: formData.ChannelPartnerId,
             ProjectName: formData.ProjectName,
-            ChannelPartnerName:formData.ChannelPartnerName,
-            ChannelPartnerMobileNumber:formData.ChannelPartnerMobileNumber
+            ChannelPartnerName: formData.ChannelPartnerName,
+            ChannelPartnerMobileNumber: formData.ChannelPartnerMobileNumber
         };
     }
     //#endregion
@@ -338,7 +314,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
 
             async () => {
                 const payload = PushEnquiryMasterFormData();
-                
+
                 const response = await EnquiryMasterService.apiCallAddUpdateEnquiryMaster(payload);
 
                 if (E.isRight(response)) {
@@ -432,7 +408,6 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             <div>
                                 <Input
                                     label='Email ID'
-                                    required
                                     type="text"
                                     value={formData.EmailId ?? ""}
                                     error={errors.EmailId}
@@ -446,12 +421,20 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                           
+                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+
+                            <div>
+                                <SinglePageSelection
+                                    label="Age"
+                                    value={formData.Age ?? ''}
+                                    onChange={(value) => handleFieldChange("Age", value)}
+                                    options={AGE_TYPE_OPTION.map(opt => ({ label: opt.name, value: opt.id }))}
+                                    error={errors.Age}
+                                />
+                            </div>
                             <div>
                                 <SinglePageSelection
                                     label="Accommodation"
-                                    required
                                     value={formData.Accommodation ?? ''}
                                     onChange={(value) => handleFieldChange("Accommodation", value)}
                                     options={ACCOMODATION_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
@@ -460,26 +443,62 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             </div>
                             <div>
                                 <SinglePageSelection
-                                    label="Requirement"
-                                    required
-                                    value={formData.Requirement ?? ''}
-                                    onChange={(value) => handleFieldChange("Requirement", value)}
-                                    options={REQUIREMENT_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                    error={errors.Requirement}
+                                    label="Occupation Type"
+                                    value={formData.OccupationType ?? ''}
+                                    onChange={(value) => handleFieldChange("OccupationType", value)}
+                                    options={OCCUPATION_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                                    error={errors.OccupationType}
                                 />
                             </div>
-                            <div>
+                        </div>
 
+                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+
+                            <div>
+                                <SinglePageSelection
+                                    label="Nationality"
+                                    value={formData.Nationality ?? ''}
+                                    onChange={(value) => handleFieldChange("Nationality", value)}
+                                    options={NATIONALITY_TYPE_OPTION.map(opt => ({ label: opt.name, value: opt.id }))}
+                                    error={errors.Nationality}
+                                />
                             </div>
+
+                            {formData.Nationality === 'NRI' && (
+                                <div>
+                                    <Input
+                                        type="text"
+                                        label='Country Of Residence'
+                                        value={formData.CountryOfResidence ?? ""}
+                                        onChange={(e) => handleFieldChange("CountryOfResidence", e.target.value)}
+                                        placeholder="Enter Country Of Residence"
+                                        maxLength={250}
+                                        error={errors.CountryOfResidence}
+                                    />
+                                </div>
+                            )}
+
+                            {formData.Nationality === 'NRI' && (
+                                <div>
+                                    <Input
+                                        type="text"
+                                        label='City Of Residence'
+                                        value={formData.CityOfResidence ?? ""}
+                                        onChange={(e) => handleFieldChange("CityOfResidence", e.target.value)}
+                                        placeholder="Enter City Of Residence"
+                                        maxLength={250}
+                                        error={errors.CityOfResidence}
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         <div className="space-y-4 pb-3">
                             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Property Preferences</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
                                 <div>
                                     <SinglePageSelection
                                         label="Possession Type"
-                                        required
                                         value={formData.PossessionType ?? ''}
                                         onChange={(value) => handleFieldChange("PossessionType", value)}
                                         options={POSSESSION_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
@@ -489,11 +508,10 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                 <div>
                                     <Input
                                         label='Area Preferred (In Sq. Ft)'
-                                        required
                                         error={errors.AreaPreferred}
                                         type="text"
                                         value={formData.AreaPreferred ?? ''}
-                                        maxLength={50}
+                                        maxLength={10}
                                         onChange={(e) => {
                                             const digits = e.target.value.replace(/\D/g, '');
                                             handleFieldChange('AreaPreferred', digits === '' ? 0 : Number(digits));
@@ -501,53 +519,115 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                         placeholder="Enter Area Preferred"
                                     />
                                 </div>
+                                <div>
+                                    <SinglePageSelection
+                                        label="Desired Floor Band"
+                                        value={formData.DesiredFloorBand ?? ''}
+                                        onChange={(value) => handleFieldChange("DesiredFloorBand", value)}
+                                        options={DESIRED_FLOOR_BAND.map(opt => ({ label: opt.name, value: opt.id }))}
+                                        error={errors.DesiredFloorBand}
+                                    />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                            <div>
-                                <SinglePageSelection
-                                    label="Occupation Type"
-                                    required
-                                    value={formData.OccupationType ?? ''}
-                                    onChange={(value) => handleFieldChange("OccupationType", value)}
-                                    options={OCCUPATION_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                    error={errors.OccupationType}
-                                />
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+
                             <div>
                                 <SinglePageSelection
                                     label="Budget (In Cr)"
-                                    required
                                     value={formData.Budget ?? ''}
                                     onChange={(value) => handleFieldChange("Budget", value)}
                                     options={BUDGET_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
                                     error={errors.Budget}
                                 />
                             </div>
-                            <div className="flex gap-4">
-                                <p>Would You Like To Opt For Home Loan ?</p>
 
-                                <RadioButton
-                                    label="Yes"
-                                    checked={formData.IsHomeLoan === true}
-                                    onChange={() => handleFieldChange("IsHomeLoan", true)}
-                                />
-                                <RadioButton
-                                    label="No"
-                                    checked={formData.IsHomeLoan === false}
-                                    onChange={() => handleFieldChange("IsHomeLoan", false)}
+                            <div>
+                                <SinglePageSelection
+                                    label="Neighborhood Places"
+                                    value={formData.NeighborhoodPlacesInterestedIn ?? ''}
+                                    onChange={(value) => handleFieldChange('NeighborhoodPlacesInterestedIn', value)}
+                                    options={NEIGHBORHOOD_PLACES_TYPE_OPTION.map(opt => ({ label: opt.name, value: opt.id }))}
+                                    error={errors.NeighborhoodPlaces}
                                 />
                             </div>
+                            <div>
+                                <SinglePageSelection
+                                    label="Requirement"
+                                    value={formData.Requirement ?? ''}
+                                    onChange={(value) => handleFieldChange("Requirement", value)}
+                                    options={REQUIREMENT_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                                    error={errors.Requirement}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                            {formData.Requirement === 'Residential' && (
+                                <div>
+                                    <SinglePageSelection
+                                        label="Residential Type"
+                                        value={formData.RequirementType ?? ''}
+                                        onChange={(value) => handleFieldChange("RequirementType", value)}
+                                        options={RESIDENTIAL_FLAT_CONFIGURATION.map(opt => ({ label: opt.name, value: opt.id }))}
+                                        error={errors.Residential}
+                                    />
+                                </div>
+                            )}
+
+                            {formData.Requirement === 'Commercial' && (
+                                <div>
+                                    <SinglePageSelection
+                                        label="Commercial Type"
+                                        value={formData.RequirementType ?? ''}
+                                        onChange={(value) => handleFieldChange("RequirementType", value)}
+                                        options={COMMERCIAL_FLAT_CONFIGURATION.map(opt => ({ label: opt.name, value: opt.id }))}
+                                        error={errors.CommercialType}
+                                    />
+                                </div>
+                            )}
 
                         </div>
+                        <div className="space-y-4 pb-3">
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Customer Details</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+                                <div>
+                                    <SinglePageSelection
+                                        label="Customer Classification"
+                                        value={formData.CustomerClassification ?? ''}
+                                        onChange={(value) => handleFieldChange("CustomerClassification", value)}
+                                        options={CUSTOMER_CLASSIFICATION_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
+                                        error={errors.CustomerClassification}
+                                    />
+                                </div>
+                                <div>
+                                    <SinglePageSelection
+                                        label="Source Of Funding"
+                                        value={formData.SourceOfFunding ?? ''}
+                                        onChange={(value) => handleFieldChange("SourceOfFunding", value)}
+                                        options={SOURCE_OF_FUNDING_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
+                                        error={errors.SourceOfFunding}
+                                    />
+                                </div>
+                                <div>
+                                    <SinglePageSelection
+                                        label="Ethnicity"
+                                        value={formData.Ethnicity ?? ''}
+                                        onChange={(value) => handleFieldChange("Ethnicity", value)}
+                                        options={ETHNICITY_TYPE_OPTION.map(opt => ({ label: opt.name, value: opt.id }))}
+                                        error={errors.Ethnicity}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="space-y-4 pb-3">
                             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Enquiry Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <SinglePageSelection
                                         label="Source"
-                                        required
                                         value={formData.Source ?? ''}
                                         onChange={handleSourceChange}
                                         options={SOURCE_TYPE_OPTIONS.map(opt => ({
@@ -558,12 +638,23 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                     />
                                 </div>
 
+                                <div>
+                                    <SinglePageSelection
+                                        label="Final Stage"
+                                        value={formData.FinalStage ?? ''}
+                                        onChange={(value) => handleFieldChange("FinalStage", value)}
+                                        options={FINAL_STAGE_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                                        error={errors.FinalStage}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Advertisement - Sub Source */}
                                 {formData.Source === 'Advertisement' && (
                                     <div>
                                         <SinglePageSelection
                                             label="Sub Source"
-                                            required
                                             value={formData.SubSource ?? ''}
                                             onChange={(value) => handleFieldChange("SubSource", String(value))}
                                             options={SUBSOURCE_TYPE_OPTIONS.map(opt => ({
@@ -582,7 +673,6 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                             label="Channel Partner"
                                             title="Select Channel Partner"
                                             size="lg"
-                                            required
                                             dataFetchCallBack={fetchChannelPartnerMasterDropdown}
                                             onSelected={(item) =>
                                                 handleFieldChange("ChannelPartnerId", Number(item.value))
@@ -594,29 +684,18 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                         />
                                     </div>
                                 )}
-                            </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <SinglePageSelection
-                                    label="Final Stage"
-                                    required
-                                    value={formData.FinalStage ?? ''}
-                                    onChange={(value) => handleFieldChange("FinalStage", value)}
-                                    options={FINAL_STAGE_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                    error={errors.FinalStage}
-                                />
-                            </div>
-                            <div>
-                                <SinglePageSelection
-                                    label="Final Stage Detail"
-                                    required
-                                    value={formData.FinalStageDetail ?? ''}
-                                    onChange={(value) => handleFieldChange("FinalStageDetail", value)}
-                                    options={FINAL_STAGE_DETAILS_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                    error={errors.FinalStageDetail}
-                                />
+                                {formData.FinalStage === 'Lost' && (
+                                    <div>
+                                        <SinglePageSelection
+                                            label="Final Stage Detail"
+                                            value={formData.FinalStageDetail ?? ''}
+                                            onChange={(value) => handleFieldChange("FinalStageDetail", value)}
+                                            options={FINAL_STAGE_DETAILS_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                                            error={errors.FinalStageDetail}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="space-y-4 pb-3">
@@ -627,7 +706,6 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                         label="Enquiry Date"
                                         value={formatDate_dd_mm_yyyy(formData.EnquiryDate)}
                                         onChange={(val) => handleFieldChange('EnquiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                        required
                                         error={errors.EnquiryDate}
                                     />
                                 </div>
@@ -637,25 +715,87 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                         label="Next Follow Up Date"
                                         value={formatDate_dd_mm_yyyy(formData.NextFollowUpDate)}
                                         onChange={(val) => handleFieldChange('NextFollowUpDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                        required
                                         error={errors.NextFollowUpDate}
                                     />
                                 </div>
                             </div>
-
-                            <div>
-                                <TextArea
-                                    label="Remarks"
-                                    required
-                                    className='thin-scroll'
-                                    value={formData.Remark ?? ""}
-                                    placeholder="Enter Remarks"
-                                    maxLength={500}
-                                    onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                    error={errors.Remark} />
-                            </div>
                         </div>
                     </div>
+                    <div className="space-y-4 pb-3">
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">  Sales Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+                            <div>
+                                <SingleSelectDropdownWithPagination
+                                    label="Sales Advisor"
+                                    title="Select Advisor"
+                                    size="lg"
+                                    dataFetchCallBack={fetchEmployeesByDept("Sale")}
+                                    onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item.value))}
+                                    initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.employeeName)}
+                                    error={errors.SalesAdvisorId}
+                                />
+                            </div>
+
+                            <div>
+                                <SingleSelectDropdownWithPagination
+                                    label="Sourcing Manager"
+                                    title="Select Sourcing Manager"
+                                    size="lg"
+                                    dataFetchCallBack={fetchEmployeesByDept("Sale")}
+                                    onSelected={(item) => handleFieldChange("SourcingManagerId", Number(item.value))}
+                                    initialValue={createDropdownInitialValue(formData.SourcingManagerId, dropdownLabels.employeeName
+                                    )}
+                                    error={errors.SourcingManagerId}
+                                />
+
+                            </div>
+
+                            <div>
+                                <SingleSelectDropdownWithPagination
+                                    label="Presales Executive Name"
+                                    title="Select Presales Executive Name"
+                                    size="lg"
+                                    dataFetchCallBack={fetchEmployeesByDept("Sale")}
+                                    onSelected={(item) => handleFieldChange("PresalesExecutiveId", Number(item.value))}
+                                    initialValue={createDropdownInitialValue(formData.PresalesExecutiveId, dropdownLabels.employeeName)}
+                                    error={errors.PresalesExecutiveId}
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                            <div>
+                                <TimePicker
+                                    label="Customer Time In"
+                                    size="sm"
+                                    format={24}
+                                    value={formData.EnquiryTimeIn || ""}
+                                    onChange={(val) => handleFieldChange("EnquiryTimeIn", val)}
+                                    error={errors.EnquiryTimeIn}
+                                />
+                            </div>
+                            <div>
+                                <TimePicker
+                                    label="Customer Time Out"
+                                    size="sm"
+                                    format={24}
+                                    value={formData.EnquiryTimeOut || ""}
+                                    onChange={(val) => handleFieldChange("EnquiryTimeOut", val)}
+                                    error={errors.EnquiryTimeOut}
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <TextArea
+                                label="Remarks"
+                                className='thin-scroll'
+                                value={formData.Remark ?? ""}
+                                placeholder="Enter Remarks"
+                                maxLength={500}
+                                onChange={(e) => handleFieldChange("Remark", e.target.value)}
+                                error={errors.Remark} />
+                        </div>
+                    </div>
+
                 </form>
             </div>
 

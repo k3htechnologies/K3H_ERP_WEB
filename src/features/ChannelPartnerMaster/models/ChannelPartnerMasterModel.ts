@@ -7,6 +7,7 @@ export interface FilterWithPaginationChannelPartnerMasterRequest {
     ChannelPartnerId?: number
     Name?: string
     MobileNumber?: string
+    ProjectId?:number
     CompanyName?: string
     Status?: string
     SortBy?: string

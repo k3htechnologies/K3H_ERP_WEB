@@ -92,18 +92,12 @@ const ViewAssetPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                            <div className="lg:col-span-3 pb-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     <FieldItem label="Asset Brand" value={editAssetData.AssetBrand} />
                                     <FieldItem label="Asset Model" value={editAssetData.AssetModel} />
                                     <FieldItem label="Serial Number" value={editAssetData.SerialNumber} />
 
-                                </div>
-                            </div>
-
-                            <div className="lg:col-span-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Status" value={editAssetData.Status} />
                                 </div>
                             </div>
                         </div>

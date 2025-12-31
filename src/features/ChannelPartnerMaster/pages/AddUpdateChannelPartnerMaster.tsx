@@ -9,15 +9,13 @@ import React from "react";
 import type { AddUpdateChannelPartnerMasterRequest, FilterWithPaginationChannelPartnerMasterRequest } from "../models/ChannelPartnerMasterModel";
 import { ChannelPartnerMasterService } from "../services/ChannelPartnerMasterService";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
-import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { Mail } from "lucide-react";
 import { filterAadhaar, filterEmail, filterGST, filterMobile, filterPAN, filterRERA, isValidAadhaar, isValidEmail, isValidMobile, isValidPAN } from "@/core/utils/fileValidation";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { SPECIALITY_TYPE } from "@/core/constants";
-import { fetchProjectMasterDropdown } from "../services/ProjectMasterDropDown";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
 
 const initialFormState = (): AddUpdateChannelPartnerMasterRequest => ({
     ChannelPartnerId: 0,
@@ -71,6 +69,8 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
     // TOASTs
     const { addToast } = useToast();
 
+    const { projectId } = useProject();
+
     // ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     //#endregion
@@ -78,11 +78,6 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/channelPartner');
     //#endregion
-
-    const [dropdownLabels, setDropdownLabels] = useState<{
-        designationName?: string;
-        projectName?: string
-    }>({});
 
     //#region HANDLE FIELD CHANGE EVENT
     const handleFieldChange = (field: keyof AddUpdateChannelPartnerMasterRequest, value: any) => {
@@ -115,7 +110,9 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                 const params: FilterWithPaginationChannelPartnerMasterRequest = {
                     PageNumber: 1,
                     PageSize: 1,
-                    ChannelPartnerId: ChannelPartnerId ? Number(ChannelPartnerId) : undefined
+                    ChannelPartnerId: ChannelPartnerId ? Number(ChannelPartnerId) : undefined,
+                    ProjectId: Number(projectId)
+
                 };
 
                 const response = await ChannelPartnerMasterService.apiCallPullChannelPartnerMaster(params);
@@ -145,6 +142,8 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                             Speciality: e.Speciality ?? prev.Speciality,
                             OfficeAddress: e.OfficeAddress ?? prev.OfficeAddress,
                             ProjectId: e.ProjectId ?? prev.ProjectId,
+                            ProjectName: e.ProjectName ?? prev.ProjectName
+
                         }));
                         setPanCardURLFiles([])
                         setPanCardURL(e.PanCardURL ? e.PanCardURL.split(",") : []);
@@ -152,11 +151,6 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                         setAadharCardURLFiles([]);
                         setAadharCardURL(e.AadharCardURL ? e.AadharCardURL.split(",") : []);
                         setRemoveAadharCardUrls([]);
-
-                        setDropdownLabels({
-                            projectName: e.ProjectName || '',
-
-                        });
                     }
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -244,9 +238,6 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
             newErrors.OfficeAddress = 'Office Address is required.';
         }
 
-        if (!formData.ProjectId) {
-            newErrors.ProjectId = 'Project Name is Required.';
-        }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -272,6 +263,7 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
         fd.append("OfficeAddress", formData.OfficeAddress ?? "");
         fd.append("Speciality", formData.Speciality ?? "");
         fd.append("ProjectId", formData.ProjectId ?? "");
+        fd.append("ProjectName", formData.ProjectName ?? "");
 
         panCardURLFiles.forEach(file => {
             if (file instanceof File) {
@@ -553,19 +545,6 @@ export const AddUpdateChannelPartnerMaster: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-
-                            <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Project"
-                                    title="Select Project"
-                                    size="lg"
-                                    required
-                                    dataFetchCallBack={fetchProjectMasterDropdown}
-                                    onSelected={(item) => handleFieldChange('ProjectId', String(item.value))}
-                                    initialValue={createDropdownInitialValue(formData.ProjectId, dropdownLabels.projectName)}
-                                    error={errors.ProjectId}
-                                />
-                            </div>
 
                             <div>
                                 <SinglePageSelection

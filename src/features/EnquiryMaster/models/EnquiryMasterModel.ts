@@ -26,6 +26,9 @@ export interface EnquiryMasterData {
     EnquiryId: number | null
     Uniquekey: string | null
     ProjectId: number
+    SalesAdvisorId:number | null
+    SourcingManagerId:number | null
+    PresalesExecutiveId:number | null
     Name: string | null
     EmailId: string | null
     MobileNumber: string | null
@@ -35,18 +38,28 @@ export interface EnquiryMasterData {
     IsHomeLoan: boolean
     ChannelPartnerId: number | null
     ChannelPartnerName: string,
-    ChannelPartnerMobileNumber:number | null
+    ChannelPartnerMobileNumber: number | null
     ProjectName: string | null
     Requirement: string | null
     RequirementType: string | null
     AreaPreferred: number
     PossessionType: string | null
     Source: string | null
+    Age: string | null
     SubSource: string | null
     FinalStage: string | null
     FinalStageDetail: string | null
     NextFollowUpDate: string | null
     EnquiryDate: string | null
+    EmployeeName: string | null
+    Nationality: string | null
+    DesiredFloorBand: string | null
+    NeighborhoodPlacesInterestedIn: string | null
+    CustomerClassification: string | null
+    SourceOfFunding: string | null
+    Ethnicity: string | null
+    EnquiryTimeIn: string | null
+    EnquiryTimeOut: string | null
     Remark: string | null
     CreatedById?: number | 0
     CreatedBy?: string | null
@@ -77,6 +90,10 @@ export interface AddUpdateEnquiryMasterRequest {
     EnquiryId: number | null
     Uniquekey: string | null
     ProjectId: number
+    EmployeeId: number
+    SalesAdvisorId:number | null
+    SourcingManagerId:number | null
+    PresalesExecutiveId:number | null
     Name: string | null
     EmailId: string | null
     MobileNumber: string | null
@@ -88,8 +105,8 @@ export interface AddUpdateEnquiryMasterRequest {
     RequirementType?: string | null
     AreaPreferred?: number | null
     ChannelPartnerId: number | null
-    ChannelPartnerName:string | null
-    ChannelPartnerMobileNumber:number | null
+    ChannelPartnerName: string | null
+    ChannelPartnerMobileNumber: number | null
     ProjectName: string | null
     PossessionType?: string | null
     Source?: string | null
@@ -98,6 +115,17 @@ export interface AddUpdateEnquiryMasterRequest {
     FinalStageDetail?: string | null
     NextFollowUpDate?: string | null
     EnquiryDate?: string | null
+    Nationality?: string | null
+    CountryOfResidence?: string | null
+    CityOfResidence?: string | null
+    DesiredFloorBand?: string | null
+    Age?: string | null
+    NeighborhoodPlacesInterestedIn?: string | null
+    CustomerClassification?: string | null
+    SourceOfFunding?: string | null
+    Ethnicity?: string | null
+    EnquiryTimeIn?: string | null
+    EnquiryTimeOut?: string | null
     Remark?: string | null
 }
 
@@ -108,6 +136,6 @@ export interface DeleteEnquiryMasterRequest {
 }
 
 export type EnquiryMasterListResponse = ApiResponse<EnquiryMasterData[]>
-export type ChannelPartnerWithEnquiryListResponse=ApiResponse<ChannelPartnerWithEnquiryData[]>
+export type ChannelPartnerWithEnquiryListResponse = ApiResponse<ChannelPartnerWithEnquiryData[]>
 export type EnquiryMasterSaveResponse = ApiResponse<EnquiryMasterData[]>
 export type EnquiryMasterDeleteResponse = ApiResponse<number>

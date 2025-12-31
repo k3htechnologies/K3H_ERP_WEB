@@ -105,7 +105,7 @@ const ViewChannelPartnerMaster: React.FC = () => {
                             <FieldItem label="GST Number" value={editChannelPartnerData.GSTNumber} />
                             <FieldItem label="RERA Number" value={editChannelPartnerData.RERANumber} />
                             <FieldItem label="Office Address" value={editChannelPartnerData.OfficeAddress} />
-                            <FieldItem label="Project " value={editChannelPartnerData.ProjectName} />
+                            <FieldItem label="Project Name" value={editChannelPartnerData.ProjectName} />
                             <FieldItem label="Created By" value={editChannelPartnerData.CreatedBy} />
                             <FieldItem label="Created Date" value={editChannelPartnerData.CreatedDate ? formatDate_dd_MonthName_yy(editChannelPartnerData.CreatedDate) : ""} />
                             <FieldItem label="Modified By" value={editChannelPartnerData.ModifiedBy} />

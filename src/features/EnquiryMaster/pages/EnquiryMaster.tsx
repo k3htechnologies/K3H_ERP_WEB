@@ -82,6 +82,8 @@ export const EnquiryMaster: React.FC = () => {
     //#region INIT
 
     useEffect(() => {
+
+        if (!projectId) return;
         const incoming = location.state?.listState;
         const listState = incoming ?? {
             page: 1, filters: {} as FilterInfo,
@@ -109,7 +111,7 @@ export const EnquiryMaster: React.FC = () => {
         }
 
         loadEnquiry(listState.page ?? 1, listState.filters ?? {});
-    }, [location.state]);
+    }, [location.state, projectId]);
 
     //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
     useEffect(() => {
@@ -318,7 +320,7 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
-        
+
         fetchEnquiryMasterList(page);
     }, []);
 

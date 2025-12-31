@@ -129,7 +129,6 @@ export const AssetMaster: React.FC = () => {
           PageSize: pagination.pageSize,
           AssetMasterId: filterParams.AssetMasterId ? Number(filterParams.AssetMasterId) : undefined,
           AssetName: filterParams.AssetName?.trim() || undefined,
-          Status: filterParams.Status?.trim() || undefined,
           SortBy: sortByParam
         };
 
@@ -213,7 +212,6 @@ export const AssetMaster: React.FC = () => {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           AssetName: filters.AssetName?.trim() || undefined,
-          Status: filters.Status?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         };
@@ -393,25 +391,6 @@ export const AssetMaster: React.FC = () => {
           maxWidth="150px"
           tooltipThreshold={15}
         />
-      )
-    },
-    {
-      key: 'Status',
-      label: 'Status',
-      width: '12',
-      sortable: false,
-      align: 'center',
-      render: (value) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${value === 'Active'
-            ? 'bg-green-100 text-green-800'
-            : value === 'Inactive'
-              ? 'bg-red-100 text-red-800'
-              : 'bg-gray-100 text-gray-800'
-            }`}
-        >
-          {value || '-'}
-        </span>
       )
     },
     {
@@ -679,12 +658,6 @@ export const AssetMaster: React.FC = () => {
               value={tempFilters?.AssetName ?? ''}
               onChange={e => handleFilterChange('AssetName', e.target.value)}
               placeholder="Enter Asset Name" />
-
-            <Input type="text"
-              label='Status'
-              value={tempFilters.Status || ''}
-              onChange={e => handleFilterChange('Status', e.target.value)}
-              placeholder="Enter status (Active / Inactive)" />
           </div>
         </div>
       </Modal>

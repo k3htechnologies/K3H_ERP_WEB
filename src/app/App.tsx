@@ -51,6 +51,8 @@ import SubMaterialMaster from '@/features/subMaterialMaster/pages/SubMaterialMas
 import { UomMaster } from '@/features/uomMaster/pages/UomMaster';
 import ProjectDocumentCategoryMaster from '@/features/projectDocumentCategory/pages/ProjectDocumentCategoryMaster';
 import ProjectDocument from '@/features/projectDocument/pages/ProjectDocument';
+import ApprovalDocumentCategoryMaster from '@/features/approvalDocumentCategory/pages/ApprovalDocumentCategoryMaster';
+import ApprovalDocument from '@/features/approvalDocument/pages/ApprovalDocument';
 import ProjectRERADocumentCategoryMaster from '@/features/projectRERADocumentCategory/pages/ProjectRERADocumentCategoryMaster';
 import ProjectRERADocument from '@/features/projectRERADocument/pages/ProjectRERADocument';
 import ViewCompantMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
@@ -221,6 +223,8 @@ function App() {
             <Route path="uomMaster" element={<UomMaster />} />
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />
             <Route path="document" element={<ProjectDocument />} />
+            <Route path="approvalCategory" element={<ApprovalDocumentCategoryMaster />} />
+            <Route path="approvalDocument" element={<ApprovalDocument />} />
             <Route path="reraCategory" element={<ProjectRERADocumentCategoryMaster />} />
             <Route path="rera" element={<ProjectRERADocument />} />
             <Route path="siteProgress" element={<SiteProgress />} />

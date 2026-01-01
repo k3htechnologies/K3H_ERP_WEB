@@ -181,6 +181,16 @@ export const getPageInfo = (path: string) => {
                 title: 'Project Document',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
+            case 'approvalDocument':
+            return {
+                title: 'Approval Document',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+            case 'approvalCategory':
+            return {
+                title: 'Approval Document Category Master',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
         case 'profile':
             return {
                 title: 'Profile',

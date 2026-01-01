@@ -826,6 +826,29 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE APPROVAL DOCUMENT CATEGORY MASTER COLUMNS
+    storeApprovalDocumentCategoryMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.APPROVAL_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Approval Document Category Master Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET APPROVAL DOCUMENT CATEGORY MASTER COLUMNS
+    getApprovalDocumentCategoryMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.APPROVAL_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.APPROVAL_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Approval Document Category Master Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
     //#region STORE PROJECT RERA DOCUMENT CATEGORY MASTER COLUMNS
     storeProjectRERADocumentCategoryMasterTableColumns: (columns: string): void => {
         try {

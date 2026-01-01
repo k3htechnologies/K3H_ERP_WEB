@@ -32,6 +32,7 @@ export const LOCAL_STORAGE_KEYS = {
     UOM_MASTER_SELECTED_COLUMNS: 'uomMaster.selectedColumns',
     MATERIAL_MASTER_SELECTED_COLUMNS: 'materialMaster.selectedColumns',
     PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectDocumentCategoryMaster.selectedColumns',
+    APPROVAL_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'approvalDocumentCategoryMaster.selectedColumns',
     PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectRERADocumentCategoryMaster.selectedColumns',
     TENANT_SELECTED_COLUMNS: 'tenant.selectedColumns',
     MENU_MODULE: 'menuModule',

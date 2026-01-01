@@ -76,30 +76,43 @@ export const MASTER_DATA = {
 
     road_width: ['6.10 M', '9.15 M', '12.20 M', '13.40 M', '18.3 M', '27.45 M', '36.6 M'],
 
-    calender_view_type: ['Month','Week','Day'],
+    calender_view_type: ['Month', 'Week', 'Day'],
 
-    event_type: ['Task','Meeting','Conference Room Booking'],
+    event_type: ['Task', 'Meeting', 'Conference Room Booking'],
 
-    conference_room_name: ['Room 1','Room 2','Room 3'],
-    
-    occupationType: ['Salaried', 'Self-Employed', 'Others'],
-   
-    budget:['Less Than 1','UPTO 1.5','UPTO 2.5','UPTO 3','UPTO 4','UPTO 5','5 & Above'],
+    conference_room_name: ['Room 1', 'Room 2', 'Room 3'],
 
-    accomodation: ["Self-Owned", "Rented"],
+    occupationType: ['Business', 'Homemaker', 'Professional', 'Salaried', 'Retired',],
 
-    requirement: ["Residential", "Commercial"],
+    budget: ['Less Than 1', 'UPTO 1.5', 'UPTO 2.5', 'UPTO 3', 'UPTO 4', 'UPTO 5', '5 & Above'],
+
+    accomodation: ["Rented", "Self-Owned",],
+
+    requirement: ["Commercial", "Residential"],
 
     possessionType: ['Ready', 'Within 1 Year', 'More Than 2 Year'],
-     
-    source:['Channel Partner','Direct Walking','Exhibition','Reference','Enquiry','Advertisement'],
-  
-    subsource:['Hoarding','Facebook','Instagram','Google Ads','Newspaper'],
 
-    finalStage:['Site Visit','Revisit','Negotiation','Booking Done','Lost','Inactive','Follow-up','Enquiry'],
+    source: ['Advertisement', 'Channel Partner', 'Direct Walking', 'Exhibition', 'Enquiry', 'HRR Website', 'Reference'],
 
-    finalStageDetail:['Ready to Move','Location Issue','Did Not Like Project','Other Issues']
+    subsource: ['Facebook', 'Hoarding', 'Instagram', 'Google Ads', 'Newspaper'],
 
+    finalStage: ['Booking Done', 'Enquiry', 'Follow-up', 'Lost', 'Inactive', 'Negotiation', 'Revisit', 'Site Visit'],
+
+    finalStageDetail: ['TimeLine Issue', 'Location Issue', 'Low Budget', 'Did Not Like Project', 'Other Issues'],
+
+    age: ['21-25', '26-35', '36-45', '46-55', '56-65', '>65'],
+
+    desiredFloorBand: ['Higher', 'Middle', 'Lower'],
+
+    neighborhoodPlaces: ['Creche', 'Colleges', 'Gardens', 'Gyms', 'Hospitals', 'IT Parks', 'Multiplexes', 'Nightclubs', 'Place of Worship', 'Restaurants', 'Schools', 'Others'],
+
+    customerclassification: ['Hot', 'Warm', 'Cold'],
+
+    sourceOfFunding: ['Loan', 'Self-funded', 'Sale Of Property', 'Subvention Loan'],
+
+    ethnicity: ['Bengali', 'Christian', 'Gujarati', 'Jain', 'Muslim', 'Marwari', 'Maharashtrian', 'North Indian', 'Parsi', 'Sindhi', 'south Indian', 'Others'],
+
+    nationality: ['Indian', 'NRI']
 } as const
 
 // ============================================================================
@@ -146,7 +159,14 @@ export const SOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.source)
 export const SUBSOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.subsource)
 export const FINAL_STAGE_TYPE_OPTIONS = toOptions(MASTER_DATA.finalStage)
 export const FINAL_STAGE_DETAILS_TYPE_OPTIONS = toOptions(MASTER_DATA.finalStageDetail)
+export const AGE_TYPE_OPTION = toOptions(MASTER_DATA.age)
+export const NEIGHBORHOOD_PLACES_TYPE_OPTION = toOptions(MASTER_DATA.neighborhoodPlaces)
+export const DESIRED_FLOOR_BAND = toOptions(MASTER_DATA.desiredFloorBand)
+export const CUSTOMER_CLASSIFICATION_TYPE = toOptions(MASTER_DATA.customerclassification)
+export const SOURCE_OF_FUNDING_TYPE = toOptions(MASTER_DATA.sourceOfFunding)
+export const ETHNICITY_TYPE_OPTION = toOptions(MASTER_DATA.ethnicity)
 export const POSSESSION_TYPE_OPTIONS = toOptions(MASTER_DATA.possessionType)
+export const NATIONALITY_TYPE_OPTION = toOptions(MASTER_DATA.nationality)
 export const BANK_ACCOUNT_TYPE = toOptions(MASTER_DATA.bankAccountType)
 export const LAND_OWNERSHIP_TYPE = toOptions(MASTER_DATA.landOwnershipType)
 export const FLAT_UNIT_TYPE = toOptions(MASTER_DATA.flat_unit_Type)

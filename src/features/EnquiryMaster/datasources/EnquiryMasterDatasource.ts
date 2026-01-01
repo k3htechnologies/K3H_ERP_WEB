@@ -49,7 +49,7 @@ export class EnquiryMasterDatasourceImpl implements EnquiryMasterDatasource {
             const response = await this.k3hHttpclient.getRequestWithAuthentication(
                 `${EnquiryMasterApi.PULL}?${queryParams.toString()}`, { signal }
             )
-            
+
             return response;
         } catch (error: any) {
 
@@ -67,17 +67,30 @@ export class EnquiryMasterDatasourceImpl implements EnquiryMasterDatasource {
                 EnquiryId: params.EnquiryId ?? 0,
                 Uniquekey: params.Uniquekey ?? '',
                 ProjectId: params.ProjectId ?? 0,
+                EmployeeId: params.EmployeeId ?? 0,
                 Name: params.Name,
                 EmailId: params.EmailId,
                 MobileNumber: params.MobileNumber,
                 OccupationType: params.OccupationType ?? null,
                 Accommodation: params.Accommodation ?? null,
                 Budget: params.Budget ?? null,
-                ChannelPartnerId:params.ChannelPartnerId ?? 0,
-                ProjectName:params.ProjectName ?? '',
+                ChannelPartnerId: params.ChannelPartnerId ?? 0,
+                ProjectName: params.ProjectName ?? '',
+                SalesAdvisorId: params.SalesAdvisorId ?? 0,
+                SourcingManagerId: params.SourcingManagerId ?? 0,
+                PresalesExecutiveId: params.PresalesExecutiveId ?? 0,
+                Nationality: params.Nationality ?? '',
+                DesiredFloorBand: params.DesiredFloorBand ?? '',
+                NeighborhoodPlacesInterestedIn: params.NeighborhoodPlacesInterestedIn ?? '',
+                CustomerClassification: params.CustomerClassification ?? '',
+                SourceOfFunding: params.SourceOfFunding ?? '',
+                Ethnicity: params.Ethnicity ?? '',
+                EnquiryTimeIn: params.EnquiryTimeIn ?? '',
+                EnquiryTimeOut: params.EnquiryTimeOut ?? '',
                 IsHomeLoan: params.IsHomeLoan,
-                ChannelPartnerName:params.ChannelPartnerName ?? '',
-                ChannelPartnerMobileNumber:params.ChannelPartnerMobileNumber,
+                Age: params.Age ?? '',
+                ChannelPartnerName: params.ChannelPartnerName ?? '',
+                ChannelPartnerMobileNumber: params.ChannelPartnerMobileNumber,
                 Requirement: params.Requirement ?? '',
                 RequirementType: params.RequirementType ?? '',
                 AreaPreferred: params.AreaPreferred ?? 0,

@@ -110,19 +110,33 @@ const ViewEnquiryMaster: React.FC = () => {
                             <FieldItem label="Contact No:" value={editEnquiryData.MobileNumber ? `+91 ${editEnquiryData.MobileNumber}` : '-'} />
                             <FieldItem label="E-Mail ID" value={editEnquiryData.EmailId} />
                             <FieldItem label="Project Name" value={editEnquiryData.ProjectName} />
+                            <FieldItem label="Age" value={editEnquiryData.Age} />
                             <FieldItem label="Accommodation" value={editEnquiryData.Accommodation} />
-                            <FieldItem label="Requirement" value={editEnquiryData.Requirement} />
+                            <FieldItem label="Occupation Type" value={editEnquiryData.OccupationType} />
+                            <FieldItem label="Nationality" value={editEnquiryData.Nationality} />
                             <FieldItem label="Possession Type" value={editEnquiryData.PossessionType} />
                             <FieldItem label="Area Preferred" value={editEnquiryData.AreaPreferred} />
-                            <FieldItem label="Occupation Type" value={editEnquiryData.OccupationType} />
+                            <FieldItem label="Desired Floor Band" value={editEnquiryData.DesiredFloorBand} />
                             <FieldItem label="Budget" value={editEnquiryData.Budget} />
-                            <FieldItem label="Home Loan " value={editEnquiryData.IsHomeLoan ? "Yes" : "No"} />
+                            <FieldItem label="Neighborhood Places" value={editEnquiryData.NeighborhoodPlacesInterestedIn} />
+                            <FieldItem label="Requirement" value={editEnquiryData.Requirement} />
+                            <FieldItem label="Requirement Type" value={editEnquiryData.RequirementType} />
+                            <FieldItem label="Customer Classification" value={editEnquiryData.CustomerClassification} />
+                            <FieldItem label="Source Of Funding" value={editEnquiryData.SourceOfFunding} />
+                            <FieldItem label="Ethnicity" value={editEnquiryData.Ethnicity} />
+                            {/* <FieldItem label="Home Loan " value={editEnquiryData.IsHomeLoan ? "Yes" : "No"} /> */}
                             <FieldItem label="Source " value={editEnquiryData.Source} />
                             <FieldItem label="Sub Source " value={editEnquiryData.SubSource} />
                             <FieldItem label="Channel Partner " value={editEnquiryData.ChannelPartnerName} />
                             <FieldItem label="Channel Partner Number:" value={editEnquiryData.ChannelPartnerMobileNumber ? `+91 ${editEnquiryData.ChannelPartnerMobileNumber}` : '-'} />
                             <FieldItem label="Final Stage " value={editEnquiryData.FinalStage} />
                             <FieldItem label="Final Stage Detail " value={editEnquiryData.FinalStageDetail} />
+                            <FieldItem label="Sales Advisor" value={editEnquiryData.SalesAdvisorId} />
+                            <FieldItem label="Sourcing Manager" value={editEnquiryData.SourcingManagerId} />
+                            <FieldItem label="Presales Executive Name" value={editEnquiryData.PresalesExecutiveId} />
+                            <FieldItem label="Customer Time In" value={editEnquiryData.EnquiryTimeIn} />
+                            <FieldItem label="Customer Time Out" value={editEnquiryData.EnquiryTimeOut} />
+                            <FieldItem label="Remarks" value={editEnquiryData.Remark} />
                             <FieldItem label="Created By" value={editEnquiryData.CreatedBy} />
                             <FieldItem label="Created Date" value={editEnquiryData.CreatedDate ? formatDate_dd_MonthName_yy(editEnquiryData.CreatedDate) : ""} />
                             <FieldItem label="Modified By" value={editEnquiryData.ModifiedBy} />

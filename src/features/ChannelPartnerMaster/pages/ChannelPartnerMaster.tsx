@@ -27,6 +27,7 @@ import type { FilterPullExcelSample } from '@/features/technical/models/Technica
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Trash2 } from 'lucide-react';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 
 export const ChannelPartnerMaster: React.FC = () => {
@@ -47,6 +48,8 @@ export const ChannelPartnerMaster: React.FC = () => {
 
   // TOAST
   const { addToast } = useToast();
+
+  const { projectId } = useProject();
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
@@ -137,7 +140,9 @@ export const ChannelPartnerMaster: React.FC = () => {
           PageSize: pagination.pageSize,
           ChannelPartnerId: filterParams.ChannelPartnerMasterId ? Number(filterParams.ChannelPartnerMasterId) : undefined,
           Name: filterParams.Name?.trim() || undefined,
-          SortBy: sortByParam
+          SortBy: sortByParam,
+          ProjectId: Number(projectId),
+
         };
 
         const response = await ChannelPartnerMasterService.apiCallPullChannelPartnerMaster(params);
@@ -223,6 +228,7 @@ export const ChannelPartnerMaster: React.FC = () => {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           Name: filters.Name?.trim() || undefined,
+          ProjectId: Number(projectId),
           SortBy: sortByParam,
           ExportType: exportType
         };
@@ -524,7 +530,7 @@ export const ChannelPartnerMaster: React.FC = () => {
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
-  const requiredChannelPartnerColumnKeys: string[] = ['Name','actions'];
+  const requiredChannelPartnerColumnKeys: string[] = ['Name', 'actions'];
 
   const allChannelPartnerColumnKeys: string[] = ChannelPartnerMasterColumns.map(c => c.key);
 

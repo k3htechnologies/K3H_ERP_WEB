@@ -82,6 +82,8 @@ export const EnquiryMaster: React.FC = () => {
     //#region INIT
 
     useEffect(() => {
+
+        if (!projectId) return;
         const incoming = location.state?.listState;
         const listState = incoming ?? {
             page: 1, filters: {} as FilterInfo,
@@ -109,7 +111,7 @@ export const EnquiryMaster: React.FC = () => {
         }
 
         loadEnquiry(listState.page ?? 1, listState.filters ?? {});
-    }, [location.state]);
+    }, [location.state, projectId]);
 
     //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
     useEffect(() => {
@@ -318,7 +320,7 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
-        
+
         fetchEnquiryMasterList(page);
     }, []);
 
@@ -522,11 +524,8 @@ export const EnquiryMaster: React.FC = () => {
             if (saved) {
 
                 const parsed = JSON.parse(saved) as string[]
-                // Ensure required columns are always present
 
                 const withRequired = Array.from(new Set([...parsed, ...requiredEnquiryColumnKeys]));
-
-                // Filter out any keys that no longer exist
 
                 return withRequired.filter(k => allEnquiryColumnKeys.includes(k));
             }
@@ -536,9 +535,6 @@ export const EnquiryMaster: React.FC = () => {
 
     useEffect(() => {
         setSelectedEnquiryColumnKeys(prev => Array.from(new Set([...prev, ...requiredEnquiryColumnKeys])).filter(k => allEnquiryColumnKeys.includes(k)));
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-
     }, [EnquiryMasterColumns.length])
 
     const visibleEnquiryColumns = useMemo(

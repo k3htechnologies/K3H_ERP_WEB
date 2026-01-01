@@ -418,7 +418,6 @@ export const ViewEmployeeMaster: React.FC = () => {
     }
     //#endregion
 
-
     //#region EDIT EMPLOYEE
 
     const handleEditEmployee = (row: EmployeeMasterData) => {
@@ -825,9 +824,9 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                     ? <NoDataView message="No Education Details Found" />
                                                     : employeeEducationDetailsDataList.map(e => (
                                                         <div key={e.Uniquekey} className="mb-3 border-b border-gray-200 pb-2 last:border-b-0 last:pb-0">
-                                                            <FieldItem label="Qualification" value={e.Qualification} />
-                                                            <FieldItem label="College" value={e.CollegeName} />
-                                                            <FieldItem label="Passing Year" value={e.Passing} />
+                                                            <FieldItem label="Qualification" value={e.Qualification} isRow />
+                                                            <FieldItem label="College" value={e.CollegeName}  isRow/>
+                                                            <FieldItem label="Passing Year" value={e.Passing}  isRow/>
                                                         </div>
                                                     ))
                                             )}

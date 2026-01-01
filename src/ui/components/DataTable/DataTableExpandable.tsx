@@ -245,7 +245,7 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
             // backgroundColor: '#E5E5E5',
             position: fixedHeight ? 'sticky' : 'static',
             top: 0,
-            zIndex: 50,
+            zIndex: 38,
           }}>
             <tr className="h-10" style={{
               fontSize: '14px',

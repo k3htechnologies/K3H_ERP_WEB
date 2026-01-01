@@ -350,7 +350,7 @@ export const Profile: React.FC = () => {
 
                 const params: FilterWithPaginationEmployeeEducationDetailsRequest = {
                     PageNumber: 1,
-                    PageSize: 1,
+                    PageSize: 100,
                     Qualification: undefined,
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
                 }
@@ -1168,9 +1168,9 @@ export const Profile: React.FC = () => {
                                                                     key={e.Uniquekey}
                                                                     className="border-b last:border-b-0 border-gray-200 py-2 last:border-b-0 last:pb-0"
                                                                 >
-                                                                    <FieldItem label="Qualification" value={e.Qualification} />
-                                                                    <FieldItem label="College" value={e.CollegeName} />
-                                                                    <FieldItem label="Passing Year" value={e.Passing} />
+                                                                    <FieldItem label="Qualification" value={e.Qualification} isRow/>
+                                                                    <FieldItem label="College" value={e.CollegeName} isRow/>
+                                                                    <FieldItem label="Passing Year" value={e.Passing} isRow/>
 
                                                                     <div className="flex justify-end gap-2">
                                                                         <Button

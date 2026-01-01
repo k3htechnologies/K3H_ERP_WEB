@@ -320,5 +320,76 @@ export const isSubSubRoute = (pathname: string): boolean => {
   return parts.length >= 2;
 };
 
+// ----------------------------------
+// 🔹 CALCULATED HOW MUCH FILE WE MARGE FOR VALIDATION
+// ----------------------------------
 
+export const calculateMergedFiles = (
+  existingFiles?: (File | string)[],
+  currentStateFiles?: (File | string)[],
+  removedUrls?: string[]
+): (File | string)[] => {
+  const removedSet = new Set((removedUrls || []).map(url => url.trim()).filter(Boolean));
+
+  const existingUrls = (existingFiles || [])
+    .filter(file => typeof file === 'string')
+    .map(url => String(url).trim());
+
+  const currentStateUrls = (currentStateFiles || [])
+    .filter(file => typeof file === 'string')
+    .map(url => String(url).trim());
+
+  const currentStateUrlSet = new Set(currentStateUrls);
+
+  const preservedExisting = existingUrls
+    .filter(url => !removedSet.has(url))
+    .filter(url => currentStateUrlSet.has(url))
+    .map(url => url);
+
+  const newFiles = (currentStateFiles || [])
+    .filter(file => file instanceof File);
+
+  return [...preservedExisting, ...newFiles];
+};
+
+// ----------------------------------
+//HELPER FUNCTION TO MERGE FILES PROPERLY : PRESERVES EXISTING FILES (STRINGS) THAT WEREN'T REMOVED, ADDS NEW FILES (FILE OBJECTS)
+// ----------------------------------
+export const mergeFiles = (
+  existingFiles?: (File | string)[],
+  currentStateFiles?: (File | string)[],
+  removedUrls?: string[]
+): (File | string)[] => {
+  const removedSet = new Set((removedUrls || []).map(url => url.trim()).filter(Boolean));
+
+  const existingUrls = (existingFiles || [])
+    .filter(file => typeof file === 'string')
+    .map(url => String(url).trim());
+
+  const currentStateUrls = (currentStateFiles || [])
+    .filter(file => typeof file === 'string')
+    .map(url => String(url).trim());
+
+  const currentStateUrlSet = new Set(currentStateUrls);
+  
+  const preservedExisting = existingUrls
+    .filter(url => !removedSet.has(url)) 
+    .filter(url => currentStateUrlSet.has(url)) 
+    .map(url => url);
+
+  const newFiles = (currentStateFiles || [])
+    .filter(file => file instanceof File);
+
+  return [...preservedExisting, ...newFiles];
+};
+
+// ----------------------------------
+// HELPER FUNCTION TO CREATE URL STRING FROM MERGED FILES
+// ----------------------------------
+export const createFileUrlString = (mergedFiles: (File | string)[]): string => {
+  return mergedFiles
+    .map(file => typeof file === 'string' ? file : file.name)
+    .filter(Boolean)
+    .join(',');
+};
 

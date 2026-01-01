@@ -77,7 +77,7 @@ export const Building: React.FC = () => {
     if (!projectId) return;
 
     const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string }
+      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string, buildingId?: number, projectId: number, buildingName: string }
       | undefined;
 
     const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '' };
@@ -96,13 +96,13 @@ export const Building: React.FC = () => {
 
       setSearchTerm(String(listState.searchTerm));
 
-      loadBuildings(listState.page ?? 1, { BuildingName: String(listState.searchTerm).trim() });
+      loadBuildings(listState.page ?? 1, { BuildingName: String(listState.searchTerm).trim() }, listState.sortInfo);
 
       return;
     }
 
-    loadBuildings(listState.page ?? 1, listState.filters ?? {});
-  }, [location.state, projectId]);
+    loadBuildings(listState.page ?? 1, listState.filters ?? {}, listState.sortInfo);
+  }, [location.state,projectId]);
 
   useEffect(() => {
     return () => {
@@ -110,12 +110,6 @@ export const Building: React.FC = () => {
     };
   }, [debouncedSearch]);
 
-
-  useEffect(() => {
-    if (!projectId) return;
-    setFilters({});
-    setTempFilters({});
-  }, [projectId]);
 
   //#endregion
 
@@ -768,7 +762,7 @@ export const Building: React.FC = () => {
       <Modal
         isOpen={showFilterPopup}
         onClose={() => setShowFilterPopup(false)}
-        title="Filter - Building Master"
+        title="Filter - Building"
         onSubmit={e => {
           e.preventDefault();
           applyFilters();

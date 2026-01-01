@@ -6,8 +6,8 @@ export const updateFilter = <T extends Record<string, unknown>>(
     
     const updated = { ...filters } as Record<string, unknown>;
 
-    if (value !== undefined && value !== null && String(value).trim() !== '') {
-        updated[key] = typeof value === 'string' ? value.trim() : value;
+    if (value !== undefined && value !== null && String(value) !== '') {
+        updated[key] = typeof value === 'string' ? value : value;
     } else {
         delete updated[key];
     }

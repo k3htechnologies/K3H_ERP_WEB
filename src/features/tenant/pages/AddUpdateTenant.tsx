@@ -15,7 +15,7 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { APPLICANT_TYPE, COMMERCIAL_FLAT_CONFIGURATION, FLAT_UNIT_FACING, FLAT_UNIT_TYPE, RESIDENTIAL_FLAT_CONFIGURATION } from "@/core/constants";
-import { filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidAccount, isValidDrivingLicenseNumber, isValidGST, isValidIFSC, isValidPAN, isValidPassportNumber, isValidVoterId } from "@/core/utils/fileValidation";
+import { calculateMergedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidAccount, isValidDrivingLicenseNumber, isValidGST, isValidIFSC, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from "@/core/utils/fileValidation";
 import { Button } from "@/ui/components/forms";
 import { Edit, IdCardIcon, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
@@ -416,6 +416,8 @@ const AddUpdateTenant: React.FC = () => {
               searchTerm?: string;
               buildingId?: number;
               buildingName?: string;
+              tenantId?: number;
+              tenantName?: string;
             };
           } | null;
 
@@ -425,7 +427,9 @@ const AddUpdateTenant: React.FC = () => {
             sortInfo: undefined,
             searchTerm: '',
             buildingId: 0,
-            buildingName: ''
+            buildingName: '',
+            tenantId:0,
+            tenantName: ''
           };
 
           navigate("/tenant", {
@@ -798,7 +802,6 @@ const AddUpdateTenant: React.FC = () => {
         && a.ApplicantMobileNumber !== formDataForApplicant.ApplicantMobileNumber
       ).length;
 
-
     if (String(formDataForApplicant.ApplicantType ?? '').toUpperCase() === "APPLICANT") {
       if (countPrimaryApplicants() >= 1) {
         newErrorsTenantApplicant.ApplicantType = "Only one primary applicant is allowed.";
@@ -817,13 +820,21 @@ const AddUpdateTenant: React.FC = () => {
       newErrorsTenantApplicant.ApplicantMobileNumber = 'Mobile Number is required'
     }
 
-    if (!applicantPhotoFiles.length && !editingApplicantData?.row._photoFiles?.length) {
+    // Validate Photo - check merged files (what will actually be saved)
+    const mergedPhotoFiles = editingApplicantData
+      ? calculateMergedFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, removedApplicantPhotoURLs)
+      : applicantPhotoFiles.slice();
+
+    if (mergedPhotoFiles.length === 0) {
       newErrorsTenantApplicant.PhotoURL = "Applicant Photo is required";
     }
 
+    const mergedAadharFiles = editingApplicantData
+      ? calculateMergedFiles(editingApplicantData.row._aadharFiles, aadharCardFiles, removedAadharCardURLs)
+      : aadharCardFiles.slice();
     const AadharCardNumber = formDataForApplicant.AadharCardNumber?.trim() || "";
     const hasAadharCardNumber = AadharCardNumber !== "";
-    const hasAadharCardNumberFile = aadharCardFiles.length > 0 || (editingApplicantData?.row._aadharFiles?.length ?? 0) > 0;
+    const hasAadharCardNumberFile = mergedAadharFiles.length > 0;
 
     // 🔹 Rule 1 — If number present, validate number
     if (hasAadharCardNumber && !isValidAadhaar(AadharCardNumber)) {
@@ -841,11 +852,13 @@ const AddUpdateTenant: React.FC = () => {
     }
 
 
+    const mergedPanFiles = editingApplicantData
+      ? calculateMergedFiles(editingApplicantData.row._panFiles, panCardFiles, removedPanCardURLs)
+      : panCardFiles.slice();
+
     const PanNumber = formDataForApplicant.PanNumber?.trim() || "";
     const hasPanNumber = PanNumber !== "";
-    const hasPanFile =
-      panCardFiles.length > 0 ||
-      (editingApplicantData?.row._panFiles?.length ?? 0) > 0;
+    const hasPanFile = mergedPanFiles.length > 0;
 
     // Rule 1
     if (hasPanNumber && !isValidPAN(PanNumber)) {
@@ -862,11 +875,13 @@ const AddUpdateTenant: React.FC = () => {
       newErrorsTenantApplicant.PanNumber = "PAN Card Number is required";
     }
 
+    const mergedPassportFiles = editingApplicantData
+      ? calculateMergedFiles(editingApplicantData.row._passportFiles, passportFiles, removedPassportURLs)
+      : passportFiles.slice();
+
     const PassportNumber = formDataForApplicant.PassportNumber?.trim() || "";
     const hasPassportNumber = PassportNumber !== "";
-    const hasPassportFile =
-      passportFiles.length > 0 ||
-      (editingApplicantData?.row._passportFiles?.length ?? 0) > 0;
+    const hasPassportFile = mergedPassportFiles.length > 0;
 
     // Rule 1
     if (hasPassportNumber && !isValidPassportNumber(PassportNumber)) {
@@ -883,12 +898,13 @@ const AddUpdateTenant: React.FC = () => {
       newErrorsTenantApplicant.PassportNumber = "Passport Number is required";
     }
 
+    const mergedDrivingFiles = editingApplicantData
+      ? calculateMergedFiles(editingApplicantData.row._drivingFiles, drivingLicenseFiles, removedDrivingLicenseURLs)
+      : drivingLicenseFiles.slice();
 
     const DLNumber = formDataForApplicant.DrivingLicenseNumber?.trim() || "";
     const hasDLNumber = DLNumber !== "";
-    const hasDLFile =
-      drivingLicenseFiles.length > 0 ||
-      (editingApplicantData?.row._drivingFiles?.length ?? 0) > 0;
+    const hasDLFile = mergedDrivingFiles.length > 0;
 
     // Rule 1
     if (hasDLNumber && !isValidDrivingLicenseNumber(DLNumber)) {
@@ -906,11 +922,14 @@ const AddUpdateTenant: React.FC = () => {
     }
 
 
+    const mergedVotingFiles = editingApplicantData
+      ? calculateMergedFiles(editingApplicantData.row._votingFiles, votingIdFiles, removedVotingIdURLs)
+      : votingIdFiles.slice();
+
+
     const VotingIdNumber = formDataForApplicant.VotingIdNumber?.trim() || "";
     const hasVotingIdNumber = VotingIdNumber !== "";
-    const hasVotingFile =
-      votingIdFiles.length > 0 ||
-      (editingApplicantData?.row._votingFiles?.length ?? 0) > 0;
+    const hasVotingFile = mergedVotingFiles.length > 0;
 
     // Rule 1
     if (hasVotingIdNumber && !isValidVoterId(VotingIdNumber)) {
@@ -928,11 +947,12 @@ const AddUpdateTenant: React.FC = () => {
     }
 
 
+    const mergedGstFiles = editingApplicantData
+      ? calculateMergedFiles(editingApplicantData.row._gstFiles, gstFiles, removedGstURLs)
+      : gstFiles.slice();
     const GSTNumber = formDataForApplicant.GSTNumber?.trim() || "";
     const hasGSTNumber = GSTNumber !== "";
-    const hasGSTFile =
-      gstFiles.length > 0 ||
-      (editingApplicantData?.row._gstFiles?.length ?? 0) > 0;
+    const hasGSTFile = mergedGstFiles.length > 0;
 
     // Rule 1
     if (hasGSTNumber && !isValidGST(GSTNumber)) {
@@ -950,13 +970,14 @@ const AddUpdateTenant: React.FC = () => {
     }
 
     // ================= BANK VALIDATION =================
+    const mergedChequeFiles = editingApplicantData
+      ? calculateMergedFiles(editingApplicantData.row._chequeFiles, chequeFiles, removedChequeURLs)
+      : chequeFiles.slice();
     const bankId = formDataForApplicant.BankListMasterId || 0;
     const account = (formDataForApplicant.AccountNumber || "").trim();
     const ifsc = (formDataForApplicant.IFSCCode || "").trim();
 
-    const hasChequeFile =
-      chequeFiles.length > 0 ||
-      (editingApplicantData?.row._chequeFiles?.length ?? 0) > 0;
+    const hasChequeFile = mergedChequeFiles.length > 0;
 
     // 👉 If ANY bank info exists → ALL become required
     const hasAnyBankInfo =
@@ -965,7 +986,7 @@ const AddUpdateTenant: React.FC = () => {
       ifsc !== "" ||
       hasChequeFile;
 
-    
+
     if (hasAnyBankInfo) {
 
       if (!bankId) {
@@ -1012,18 +1033,38 @@ const AddUpdateTenant: React.FC = () => {
 
     }
 
-    const mergeFileNames = (
-      existing?: (File | string)[],
-      selected?: (File | string)[]
-    ): string => {
-      const existingNames =
-        (existing ?? []).filter(x => typeof x === 'string').map(String);
+    // Merge files for each document type
+    const mergedPhotoFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, removedApplicantPhotoURLs)
+      : applicantPhotoFiles.slice();
 
-      const newNames =
-        (selected ?? []).filter(x => x instanceof File).map(f => (f as File).name);
+    const mergedAadharFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._aadharFiles, aadharCardFiles, removedAadharCardURLs)
+      : aadharCardFiles.slice();
 
-      return [...existingNames, ...newNames].join(',');
-    };
+    const mergedPanFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._panFiles, panCardFiles, removedPanCardURLs)
+      : panCardFiles.slice();
+
+    const mergedPassportFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._passportFiles, passportFiles, removedPassportURLs)
+      : passportFiles.slice();
+
+    const mergedDrivingFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._drivingFiles, drivingLicenseFiles, removedDrivingLicenseURLs)
+      : drivingLicenseFiles.slice();
+
+    const mergedVotingFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._votingFiles, votingIdFiles, removedVotingIdURLs)
+      : votingIdFiles.slice();
+
+    const mergedGstFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._gstFiles, gstFiles, removedGstURLs)
+      : gstFiles.slice();
+
+    const mergedChequeFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._chequeFiles, chequeFiles, removedChequeURLs)
+      : chequeFiles.slice();
 
     const applicantToSave: TenantApplicant & {
       _photoFiles?: (File | string)[];
@@ -1052,28 +1093,23 @@ const AddUpdateTenant: React.FC = () => {
       ApplicantMobileNumber: formDataForApplicant.ApplicantMobileNumber || '',
       ApplicantEmailId: formDataForApplicant.ApplicantEmailId || '',
 
-      // PhotoURL: applicantPhotoFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
-      PhotoURL: mergeFileNames(
-        editingApplicantData?.row._photoFiles,
-        applicantPhotoFiles
-      ),
-
+      PhotoURL: createFileUrlString(mergedPhotoFiles),
       AadharCardNumber: formDataForApplicant.AadharCardNumber || '',
-      AadharCardURL: aadharCardFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      AadharCardURL: createFileUrlString(mergedAadharFiles),
       PanNumber: formDataForApplicant.PanNumber || '',
-      PanCardURL: panCardFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      PanCardURL: createFileUrlString(mergedPanFiles),
       PassportNumber: formDataForApplicant.PassportNumber || '',
-      PassportURL: passportFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      PassportURL: createFileUrlString(mergedPassportFiles),
       DrivingLicenseNumber: formDataForApplicant.DrivingLicenseNumber || '',
-      DrivingLicenseURL: drivingLicenseFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      DrivingLicenseURL: createFileUrlString(mergedDrivingFiles),
       VotingIdNumber: formDataForApplicant.VotingIdNumber || '',
-      VotingIdURL: votingIdFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      VotingIdURL: createFileUrlString(mergedVotingFiles),
       GSTNumber: formDataForApplicant.GSTNumber || '',
-      GSTNumberURL: gstFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      GSTNumberURL: createFileUrlString(mergedGstFiles),
       BankListMasterId: formDataForApplicant.BankListMasterId ?? null,
       AccountNumber: formDataForApplicant.AccountNumber || '',
       IFSCCode: formDataForApplicant.IFSCCode || '',
-      ChequeURL: chequeFiles.map(f => (typeof f === 'string' ? f : (f as File).name)).join(','),
+      ChequeURL: createFileUrlString(mergedChequeFiles),
 
       BankName: null,
       CreatedById: 0,
@@ -1085,14 +1121,14 @@ const AddUpdateTenant: React.FC = () => {
       LastModifiedBy: '',
       LastModifiedDate: null,
 
-      _photoFiles: applicantPhotoFiles.length > 0 ? applicantPhotoFiles.slice() : editingApplicantData?.row._photoFiles ?? [],
-      _aadharFiles: aadharCardFiles.length > 0 ? aadharCardFiles.slice() : editingApplicantData?.row._aadharFiles ?? [],
-      _panFiles: panCardFiles.length > 0 ? panCardFiles.slice() : editingApplicantData?.row._panFiles ?? [],
-      _passportFiles: passportFiles.length > 0 ? passportFiles.slice() : editingApplicantData?.row._passportFiles ?? [],
-      _drivingFiles: drivingLicenseFiles.length > 0 ? drivingLicenseFiles.slice() : editingApplicantData?.row._drivingFiles ?? [],
-      _votingFiles: votingIdFiles.length > 0 ? votingIdFiles.slice() : editingApplicantData?.row._votingFiles ?? [],
-      _gstFiles: gstFiles.length > 0 ? gstFiles.slice() : editingApplicantData?.row._gstFiles ?? [],
-      _chequeFiles: chequeFiles.length > 0 ? chequeFiles.slice() : editingApplicantData?.row._chequeFiles ?? [],
+      _photoFiles: mergedPhotoFiles,
+      _aadharFiles: mergedAadharFiles,
+      _panFiles: mergedPanFiles,
+      _passportFiles: mergedPassportFiles,
+      _drivingFiles: mergedDrivingFiles,
+      _votingFiles: mergedVotingFiles,
+      _gstFiles: mergedGstFiles,
+      _chequeFiles: mergedChequeFiles,
 
       RemovePhotoURL: removedApplicantPhotoURLs.join(','),
       RemoveAadharCardURL: removedAadharCardURLs.join(','),
@@ -1459,14 +1495,44 @@ const AddUpdateTenant: React.FC = () => {
           setEditingApplicantData(null)
           setFormDataForApplicant(initialFormStateApplicantDetails());
           setErrorsTenantApplicant({});
-
+          setApplicantPhotoFiles([]);
+          setAadharCardFiles([]);
+          setPanCardFiles([]);
+          setPassportFiles([]);
+          setDrivingLicenseFiles([]);
+          setVotingIdFiles([]);
+          setGstFiles([]);
+          setChequeFiles([]);
+          setRemovedApplicantPhotoURLs([]);
+          setRemovedAadharCardURLs([]);
+          setRemovedPanCardURLs([]);
+          setRemovedPassportURLs([]);
+          setRemovedDrivingLicenseURLs([]);
+          setRemovedVotingIdURLs([]);
+          setRemovedGstURLs([]);
+          setRemovedChequeURLs([]);
         }}
         onCancel={() => {
           setIsAddUpdateApplicantModalOpen(false)
           setEditingApplicantData(null)
           setFormDataForApplicant(initialFormStateApplicantDetails());
           setErrorsTenantApplicant({});
-
+          setApplicantPhotoFiles([]);
+          setAadharCardFiles([]);
+          setPanCardFiles([]);
+          setPassportFiles([]);
+          setDrivingLicenseFiles([]);
+          setVotingIdFiles([]);
+          setGstFiles([]);
+          setChequeFiles([]);
+          setRemovedApplicantPhotoURLs([]);
+          setRemovedAadharCardURLs([]);
+          setRemovedPanCardURLs([]);
+          setRemovedPassportURLs([]);
+          setRemovedDrivingLicenseURLs([]);
+          setRemovedVotingIdURLs([]);
+          setRemovedGstURLs([]);
+          setRemovedChequeURLs([]);
         }}
         title={editingApplicantData ? 'Update Tenant Applicant' : 'Add Tenant Applicant'}
         onSubmit={handleAddUpdateTenantApplicant}

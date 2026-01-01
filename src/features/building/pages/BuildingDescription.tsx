@@ -265,6 +265,7 @@ const BuildingDescription: React.FC = () => {
               searchTerm?: string;
               buildingId?: number;
               buildingName?: string;
+              projectId?: number
             };
           } | null;
 
@@ -274,8 +275,8 @@ const BuildingDescription: React.FC = () => {
             sortInfo: undefined,
             searchTerm: '',
             buildingId: buildingId,
-            buildingName: buildingName
-
+            buildingName: buildingName,
+            projectId: projectId
           };
 
           navigate("/building", {

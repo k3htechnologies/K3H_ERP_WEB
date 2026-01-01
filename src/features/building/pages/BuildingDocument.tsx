@@ -385,7 +385,7 @@ const BuildingDocument: React.FC = () => {
         align: 'center',
         render: (_value, row) => {
           const showEdit = canAction ? true : false;
-          const showDelete = canAction ? (row.UploadedProjectDocumentCount || 0) === 0 : false;
+          const showDelete = canAction ? (row.UploadedBuildingDocumentCount || 0) === 0 : false;
 
           return (
             <div className="flex items-center justify-end ml-2 gap-1">

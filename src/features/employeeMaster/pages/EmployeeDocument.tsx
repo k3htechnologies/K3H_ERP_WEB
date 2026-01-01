@@ -13,7 +13,7 @@ import type {
 
 import { employeeDocumentService } from '@/features/employeeMaster/services/EmployeeDocumentService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
-import { ArrowLeft, Edit, Trash2, } from 'lucide-react';
+import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';

@@ -71,9 +71,9 @@ export const Tenant: React.FC = () => {
         filters?: FilterInfo;
         sortInfo?: SortInfo;
         searchTerm?: string;
-        tenantId?: number;
         buildingId?: number;
         buildingName?: string;
+        tenantId?: number;
         tenantName?: string;
       };
     };
@@ -142,6 +142,8 @@ export const Tenant: React.FC = () => {
   useEffect(() => {
     setBuildingId(0);
     setBuildingName('');
+    setTenantList([]);
+    navigate(location.pathname, { replace: true, state: {} });
   }, [projectId]);
 
   //#endregion
@@ -739,6 +741,7 @@ export const Tenant: React.FC = () => {
         <div className="relative min-w-0 w-[526px]">
 
           <SingleSelectDropdownWithPagination
+            key={projectId}
             label="Building"
             title="Select Building"
             size="lg"
@@ -751,10 +754,9 @@ export const Tenant: React.FC = () => {
             dataFetchCallBack={(pageNumber) => fetchBuildingDropdown(pageNumber, { projectId: Number(projectId) })}
             onSelected={(item) => {
 
-              const buildingId = item && item.value ? Number(item.value) : undefined;
+              const buildingId = Number(item?.value ?? 0);
 
-              const buildingName = item.label;
-
+              const buildingName = item?.label ?? '';
               setBuildingId(Number(buildingId));
 
               setBuildingName(buildingName);

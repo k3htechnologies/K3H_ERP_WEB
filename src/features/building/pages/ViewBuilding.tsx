@@ -16,7 +16,7 @@ import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import Accordion from '@/ui/components/Card/Accordion';
-import { ChevronDownIcon, ChevronRightIcon, MapPin } from 'lucide-react';
+import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 
@@ -370,7 +370,7 @@ export const ViewBuilding: React.FC = () => {
     //#region BACK BUILDING PAGE
     const handleBackToListBuilding = () => {
         navigate('/building', {
-            state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' } }
+            state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '', buildingId: 0, projectId: 0, buildingName: '' } }
         });
     };
     //#endregion

@@ -13,7 +13,7 @@ import type {
 
 import { tenantService } from '@/features/tenant/services/TenantService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
-import { ArrowLeft, Edit, Trash2, } from 'lucide-react';
+import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
@@ -107,6 +107,7 @@ export const TenantDocument: React.FC = () => {
         tenantId?: number;
         buildingId?: number;
         projectId?: number;
+        buildingName?: string;
         tenantName?: string;
       };
     };
@@ -116,11 +117,11 @@ export const TenantDocument: React.FC = () => {
   const buildingId = preservedListState?.buildingId || 0;
   const projectId = preservedListState?.projectId || 0;
   const tenantName = preservedListState?.tenantName || '';
-
+  const buildingName = preservedListState?.buildingName || '';
   //#endregion
 
   //#region MENU PERMISSIONS
-  const { canAction, canExport } = useMenuPermissions();
+  const { canAction } = useMenuPermissions();
   //#endregion
 
   //#region INITIALIZATION
@@ -419,9 +420,9 @@ export const TenantDocument: React.FC = () => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsAddUpdateModalOpen(false)
-                      handleConfirmationDialogBoxOpen(row)
+                      handleEditTenantDocument(row)
                     }}
-                    leftIcon={<Trash2 className="h-4 w-4" />}
+                    leftIcon={<Edit className="h-4 w-4" />}
                   >
                   </Button>
 
@@ -437,9 +438,10 @@ export const TenantDocument: React.FC = () => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsAddUpdateModalOpen(false)
-                      handleEditTenantDocument(row)
+
+                      handleConfirmationDialogBoxOpen(row)
                     }}
-                    leftIcon={<Edit className="h-4 w-4" />}
+                    leftIcon={<Trash2 className="h-4 w-4" />}
                   >
                   </Button>
                 </>
@@ -565,7 +567,7 @@ export const TenantDocument: React.FC = () => {
     }
 
     if (!documentFiles.length && !documentURL) {
-      newErrors.DocumentURL = "Document file is required";
+      newErrors.DocumentURL = "File is required";
     }
 
     return {
@@ -759,6 +761,7 @@ export const TenantDocument: React.FC = () => {
           tenantId,
           buildingId,
           projectId,
+          buildingName,
           tenantName
         }
       }

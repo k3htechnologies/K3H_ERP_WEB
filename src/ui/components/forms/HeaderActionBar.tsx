@@ -41,9 +41,18 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                 >
                 </Button>
 
-                <h2 className="text-lg font-semibold text-gray-900 pl-3">
-                    {titleText} {subTitleText !== "" ? <span className="text-blue-700">{subTitleText}</span> : ""}
+                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2 pl-3">
+
+                    <span>{titleText}</span>
+
+                    {subTitleText && (
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 max-w-[900px] truncate">
+                            {subTitleText}
+                        </span>
+                    )}
+
                 </h2>
+
             </div>
 
             {canAction ? (

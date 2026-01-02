@@ -31,6 +31,7 @@ import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel";
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import { useEnquiryListState } from "@/features/enquiry/context/EnquiryListStateContext";
+import { getStatusColor } from "./Status";
 
 
 export const Enquiry: React.FC = () => {
@@ -130,7 +131,7 @@ export const Enquiry: React.FC = () => {
     useEffect(() => {
         if (!projectId) return;
 
-        clearEnquiryContext();
+        // clearEnquiryContext();
 
         if (searchTerm && searchTerm.trim()) {
             loadEnquiry(page, { Name: searchTerm.trim() }, sortInfo);
@@ -356,16 +357,6 @@ export const Enquiry: React.FC = () => {
             )
         },
         {
-            key: 'EnquiryFollowUpDays',
-            label: 'Enquiry Follow Up Days',
-            width: '14',
-            sortable: false,
-            align: 'left',
-            render: value => value ? `${value}` : '-'
-
-        },
-
-        {
             key: 'MobileNumber',
             label: 'Mobile Number',
             width: '14',
@@ -373,6 +364,36 @@ export const Enquiry: React.FC = () => {
             align: 'left',
             render: value => value ? `+91 ${value}` : '-'
 
+        },
+        {
+            key: 'EnquiryFollowUpDays',
+            label: 'Enquiry Follow Up Days',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'FinalStage',
+            label: 'Final Stage',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: (value) => {
+                const { bg, text } = getStatusColor(value);
+
+                return (
+                    <span
+                        className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                        style={{
+                            backgroundColor: bg,
+                            color: text
+                        }}
+                    >
+                        {value || "-"}
+                    </span>
+                );
+            }
         },
         {
             key: 'EmailId',
@@ -527,14 +548,7 @@ export const Enquiry: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
-        {
-            key: 'FinalStage',
-            label: 'Final Stage',
-            width: '14',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
-        },
+
         {
             key: 'FinalStageDetail',
             label: 'Final Stage Detail',

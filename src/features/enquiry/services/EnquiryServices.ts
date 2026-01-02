@@ -9,7 +9,7 @@ import type {
 } from '@/features/enquiry/models/EnquiryModel'
 import * as E from 'fp-ts/Either';
 import {  } from '@/features/enquiry/datasources/EnquiryDatasource';
-import { EnquiryDatasourceImpl } from '../datasources/EnquiryDatasource';
+import { EnquiryDatasourceImpl } from '@/features/enquiry/datasources/EnquiryDatasource';
 
 const EnquiryDatasource = new EnquiryDatasourceImpl();
 

@@ -700,7 +700,7 @@ export const Enquiry: React.FC = () => {
                     setSelectedEnquiryColumnKeys(withRequired);
 
                     try {
-                        LocalStorageHelper.storeEarningMasterTableColumns?.(
+                        LocalStorageHelper.storeEnquiryTableColumns?.(
                             JSON.stringify(withRequired)
                         );
                     } catch { }

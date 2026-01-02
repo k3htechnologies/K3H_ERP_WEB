@@ -436,6 +436,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     error={errors.MobileNumber}
                                 />
                             </div>
+
                             <div>
                                 <Input
                                     label='Email ID'
@@ -473,6 +474,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     error={errors.Accommodation}
                                 />
                             </div>
+
                             <div>
                                 <SinglePageSelection
                                     label="Occupation Type"
@@ -537,6 +539,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         error={errors.PossessionType}
                                     />
                                 </div>
+
                                 <div>
                                     <Input
                                         label='Area Preferred (In Sq. Ft)'
@@ -552,6 +555,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         placeholder="Enter Area Preferred"
                                     />
                                 </div>
+
                                 <div>
                                     <SinglePageSelection
                                         label="Desired Floor Band"
@@ -585,6 +589,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     error={errors.NeighborhoodPlaces}
                                 />
                             </div>
+
                             <div>
                                 <SinglePageSelection
                                     label="Requirement"
@@ -634,6 +639,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         error={errors.CustomerClassification}
                                     />
                                 </div>
+
                                 <div>
                                     <SinglePageSelection
                                         label="Source Of Funding"
@@ -643,6 +649,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         error={errors.SourceOfFunding}
                                     />
                                 </div>
+
                                 <div>
                                     <SinglePageSelection
                                         label="Ethnicity"
@@ -658,6 +665,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                         <div className="space-y-4 pb-3">
                             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Enquiry Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
                                 <div>
                                     <SinglePageSelection
                                         label="Source"
@@ -808,6 +816,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     error={errors.EnquiryTimeIn}
                                 />
                             </div>
+
                             <div>
                                 <TimePicker
                                     label="Customer Time Out"
@@ -819,6 +828,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                 />
                             </div>
                         </div>
+                        
                         <div>
                             <TextArea
                                 label="Remarks"

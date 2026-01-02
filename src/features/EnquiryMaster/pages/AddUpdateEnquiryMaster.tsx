@@ -50,11 +50,21 @@ const initialFormState = (): AddUpdateEnquiryMasterRequest => ({
     NextFollowUpDate: "",
     EnquiryDate: "",
     Remark: "",
+    Nationality: "",
     ChannelPartnerId: 0,
     ProjectName: "",
     ChannelPartnerName: "",
     ChannelPartnerMobileNumber: 0,
-    Age: ''
+    CityOfResidence: "",
+    CountryOfResidence: "",
+    CustomerClassification: "",
+    Ethnicity: "",
+    DesiredFloorBand: "",
+    NeighborhoodPlacesInterestedIn: "",
+    SourceOfFunding: "",
+    Age: '',
+    EnquiryTimeIn: '00:00',
+    EnquiryTimeOut: '00:00'
 });
 
 export const AddUpdateEnquiryMaster: React.FC = () => {
@@ -199,6 +209,8 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                             DesiredFloorBand: e.DesiredFloorBand ?? prev.DesiredFloorBand,
                             NeighborhoodPlacesInterestedIn: e.NeighborhoodPlacesInterestedIn ?? prev.NeighborhoodPlacesInterestedIn,
                             CustomerClassification: e.CustomerClassification ?? prev.CustomerClassification,
+                            CountryOfResidence: e.CountryOfResidence ?? prev.CountryOfResidence,
+                            CityOfResidence: e.CityOfResidence ?? prev.CityOfResidence,
                             SourceOfFunding: e.SourceOfFunding ?? prev.SourceOfFunding,
                             Ethnicity: e.Ethnicity ?? prev.Ethnicity,
                             EnquiryTimeIn: e.EnquiryTimeIn ?? prev.EnquiryTimeIn,
@@ -245,7 +257,18 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
         if (!formData.MobileNumber) {
             newErrors.MobileNumber = 'Mobile Number  is required.';
         }
-
+        if (!formData.EmailId) {
+            newErrors.EmailId = 'Email Id  is required.';
+        }
+        if (!formData.AreaPreferred) {
+            newErrors.AreaPreferred = 'Area Preferred is required.';
+        }
+        if (!formData.EnquiryDate) {
+            newErrors.EnquiryDate = 'Enquiry Date  is required.';
+        }
+        if (!formData.NextFollowUpDate) {
+            newErrors.NextFollowUpDate = 'Next Follow-Up Date  is required.';
+        }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -270,6 +293,14 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
             Accommodation: formData.Accommodation,
             Budget: formData.Budget,
             Age: formData.Age,
+            Nationality: formData.Nationality,
+            NeighborhoodPlacesInterestedIn: formData.NeighborhoodPlacesInterestedIn,
+            DesiredFloorBand: formData.DesiredFloorBand,
+            CustomerClassification: formData.CustomerClassification,
+            SourceOfFunding: formData.SourceOfFunding,
+            Ethnicity: formData.Ethnicity,
+            CountryOfResidence: formData.CountryOfResidence,
+            CityOfResidence: formData.CityOfResidence,
             IsHomeLoan: formData.IsHomeLoan,
             Requirement: formData.Requirement,
             RequirementType: formData.RequirementType || null,
@@ -409,6 +440,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                 <Input
                                     label='Email ID'
                                     type="text"
+                                    required
                                     value={formData.EmailId ?? ""}
                                     error={errors.EmailId}
                                     rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
@@ -510,6 +542,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                         label='Area Preferred (In Sq. Ft)'
                                         error={errors.AreaPreferred}
                                         type="text"
+                                        required
                                         value={formData.AreaPreferred ?? ''}
                                         maxLength={10}
                                         onChange={(e) => {
@@ -704,6 +737,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                                 <div>
                                     <DatePickerInput
                                         label="Enquiry Date"
+                                        required
                                         value={formatDate_dd_mm_yyyy(formData.EnquiryDate)}
                                         onChange={(val) => handleFieldChange('EnquiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                         error={errors.EnquiryDate}
@@ -712,7 +746,8 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
 
                                 <div>
                                     <DatePickerInput
-                                        label="Next Follow Up Date"
+                                        label="Next Follow-Up Date"
+                                        required
                                         value={formatDate_dd_mm_yyyy(formData.NextFollowUpDate)}
                                         onChange={(val) => handleFieldChange('NextFollowUpDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                         error={errors.NextFollowUpDate}

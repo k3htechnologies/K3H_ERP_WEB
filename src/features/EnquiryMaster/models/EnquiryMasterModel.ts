@@ -27,8 +27,11 @@ export interface EnquiryMasterData {
     Uniquekey: string | null
     ProjectId: number
     SalesAdvisorId:number | null
+    SalesAdvisor:string | null
     SourcingManagerId:number | null
+    SourcingManager:string | null
     PresalesExecutiveId:number | null
+    PresalesExecutive:string | null
     Name: string | null
     EmailId: string | null
     MobileNumber: string | null
@@ -57,6 +60,8 @@ export interface EnquiryMasterData {
     NeighborhoodPlacesInterestedIn: string | null
     CustomerClassification: string | null
     SourceOfFunding: string | null
+    CountryOfResidence:string | null
+    CityOfResidence:string | null
     Ethnicity: string | null
     EnquiryTimeIn: string | null
     EnquiryTimeOut: string | null

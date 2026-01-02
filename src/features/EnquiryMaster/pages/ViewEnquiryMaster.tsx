@@ -114,6 +114,8 @@ const ViewEnquiryMaster: React.FC = () => {
                             <FieldItem label="Accommodation" value={editEnquiryData.Accommodation} />
                             <FieldItem label="Occupation Type" value={editEnquiryData.OccupationType} />
                             <FieldItem label="Nationality" value={editEnquiryData.Nationality} />
+                            <FieldItem label="Country Of Residence" value={editEnquiryData.CountryOfResidence} />
+                            <FieldItem label="City Of Residence" value={editEnquiryData.CityOfResidence} />
                             <FieldItem label="Possession Type" value={editEnquiryData.PossessionType} />
                             <FieldItem label="Area Preferred" value={editEnquiryData.AreaPreferred} />
                             <FieldItem label="Desired Floor Band" value={editEnquiryData.DesiredFloorBand} />
@@ -124,16 +126,15 @@ const ViewEnquiryMaster: React.FC = () => {
                             <FieldItem label="Customer Classification" value={editEnquiryData.CustomerClassification} />
                             <FieldItem label="Source Of Funding" value={editEnquiryData.SourceOfFunding} />
                             <FieldItem label="Ethnicity" value={editEnquiryData.Ethnicity} />
-                            {/* <FieldItem label="Home Loan " value={editEnquiryData.IsHomeLoan ? "Yes" : "No"} /> */}
                             <FieldItem label="Source " value={editEnquiryData.Source} />
                             <FieldItem label="Sub Source " value={editEnquiryData.SubSource} />
                             <FieldItem label="Channel Partner " value={editEnquiryData.ChannelPartnerName} />
                             <FieldItem label="Channel Partner Number:" value={editEnquiryData.ChannelPartnerMobileNumber ? `+91 ${editEnquiryData.ChannelPartnerMobileNumber}` : '-'} />
                             <FieldItem label="Final Stage " value={editEnquiryData.FinalStage} />
                             <FieldItem label="Final Stage Detail " value={editEnquiryData.FinalStageDetail} />
-                            <FieldItem label="Sales Advisor" value={editEnquiryData.SalesAdvisorId} />
-                            <FieldItem label="Sourcing Manager" value={editEnquiryData.SourcingManagerId} />
-                            <FieldItem label="Presales Executive Name" value={editEnquiryData.PresalesExecutiveId} />
+                            <FieldItem label="Sales Advisor" value={editEnquiryData.SalesAdvisor} />
+                            <FieldItem label="Sourcing Manager" value={editEnquiryData.SourcingManager} />
+                            <FieldItem label="Presales Executive" value={editEnquiryData.PresalesExecutive} />
                             <FieldItem label="Customer Time In" value={editEnquiryData.EnquiryTimeIn} />
                             <FieldItem label="Customer Time Out" value={editEnquiryData.EnquiryTimeOut} />
                             <FieldItem label="Remarks" value={editEnquiryData.Remark} />

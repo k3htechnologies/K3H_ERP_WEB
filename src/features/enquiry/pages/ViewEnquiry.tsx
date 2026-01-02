@@ -1,63 +1,109 @@
-import { useLocation, useNavigate } from "react-router-dom";
-import type { EnquiryData } from "../models/EnquiryModel";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import type { EnquiryData, FilterWithPaginationEnquiryRequest } from "../models/EnquiryModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { useEnquiryListState } from "@/features/enquiry/context/EnquiryListStateContext";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
+import { EnquiryService } from "../services/EnquiryServices";
+import { runApiWithLoader } from "@/core/utils";
+import * as E from 'fp-ts/Either';
+import { useToast } from "@/core/hooks/useToast";
+import { Loader } from "@/core/utils/loader";
 
 const ViewEnquiry: React.FC = () => {
 
-    //LOCATION
-    const location = useLocation();
-
     // NAVIGATION
     const navigate = useNavigate();
+    const { EnquiryId } = useParams<{ EnquiryId?: string }>();
+    const { projectId } = useProject();
+    const { listState } = useEnquiryListState();
+    const { enquiryId: contextEnquiryId } = listState;
+    const { addToast } = useToast();
+
+    const [editEnquiryData, setEditEnquiryData] = useState<EnquiryData | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState('');
+
+    const currentEnquiryId = EnquiryId ? Number(EnquiryId) : contextEnquiryId;
 
     //#region MENU PERMISSION
     const { canAction } = useMenuPermissions('/enquiry');
 
-    const editEnquiryData = location.state?.editEnquiryData as EnquiryData;
+    //#region FETCH ENQUIRY DETAILS
+    useEffect(() => {
+        if (!projectId || !currentEnquiryId || currentEnquiryId === 0) return;
 
-    const listState = location.state?.listState;
+        const fetchEnquiryDetails = async () => {
+            await runApiWithLoader(
+                setIsLoading,
+                setLoadingMessage,
+                async () => {
+                    const params: FilterWithPaginationEnquiryRequest = {
+                        PageNumber: 1,
+                        PageSize: 1,
+                        EnquiryId: currentEnquiryId,
+                        ProjectId: Number(projectId)
+                    };
+
+                    const response = await EnquiryService.apiCallPullEnquiry(params);
+
+                    if (E.isRight(response)) {
+                        const enquiry = response.right.Data?.[0];
+                        if (enquiry) {
+                            setEditEnquiryData(enquiry);
+                        } else {
+                            addToast({ type: 'error', title: 'Enquiry not found' });
+                        }
+                    } else {
+                        addToast({ type: 'error', title: response.left.message });
+                    }
+
+                    return response;
+                },
+                undefined,
+                (error: any) => {
+                    addToast({ type: 'error', title: error.message });
+                },
+                undefined,
+                'Loading Enquiry'
+            );
+        };
+
+        fetchEnquiryDetails();
+    }, [projectId, currentEnquiryId, addToast]);
 
     // MESSAGE IF DATA NOT FOUND
-    if (!editEnquiryData) return <div>No Enquiry Data Found</div>;
+    if (!editEnquiryData) {
+        return (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+                <Loader loading={isLoading} title={loadingMessage}>
+                    <div>No Enquiry Data Found</div>
+                </Loader>
+            </div>
+        );
+    }
 
     //#region EDIT ENQUIRY MASTER
     const handleEditEnquiry = (row: EnquiryData) => {
         if (!row?.EnquiryId) return;
-        navigate(`/enquiry/add/${row.EnquiryId}`, {
-            state: {
-                editEnquiryData: row,
-                fromList: true,
-                listState: listState ?? {
-                    page: 1,
-                    filters: {},
-                    sortInfo: undefined,
-                    searchTerm: ''
-                }
-            }
-        });
+        navigate(`/enquiry/add/${row.EnquiryId}`);
     };
     //#endregion
 
     //#region BACK PROJECT PAGE
     const handleBackToListEnquiry = () => {
-        navigate('/enquiry', {
-            state: {
-                listState: listState ?? {
-                    page: 1,
-                    filters: {},
-                    sortInfo: undefined,
-                    searchTerm: ''
-                }
-            }
-        });
+        navigate('/enquiry');
     };
     //#endregion
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+            <Loader loading={isLoading} title={loadingMessage}>
+                <div></div>
+            </Loader>
 
             {/* Header Details*/}
             <HeaderActionBar

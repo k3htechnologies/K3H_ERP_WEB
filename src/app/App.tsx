@@ -100,6 +100,7 @@ import ViewLeave from '@/features/leave/pages/ViewLeave';
 import ViewEnquiry from '@/features/enquiry/pages/ViewEnquiry';
 import Enquiry from '@/features/enquiry/pages/Enquiry';
 import AddUpdateEnquiry from '@/features/enquiry/pages/AddUpdateEnquiry';
+import { EnquiryListStateProvider } from '@/features/enquiry/context/EnquiryListStateContext';
 import EarningMaster from '@/features/earningMaster/pages/EarningMaster';
 
 // Loading component for Suspense fallback
@@ -240,9 +241,10 @@ function App() {
             <Route path="channelPartner" element={<ChannelPartnerMaster />} />
             <Route path="channelPartner/view" element={<ViewChannelPartnerMaster />} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartnerMaster />} />
-            <Route path="enquiry" element={<Enquiry />} />
-            <Route path="enquiry/view" element={<ViewEnquiry/>} />
-            <Route path="enquiry/add/:EnquiryId?" element={<AddUpdateEnquiry />} />
+            
+            <Route path="enquiry" element={<EnquiryListStateProvider><Enquiry /></EnquiryListStateProvider>} />
+            <Route path="enquiry/view/:EnquiryId?" element={<EnquiryListStateProvider><ViewEnquiry/></EnquiryListStateProvider>} />
+            <Route path="enquiry/add/:EnquiryId?" element={<EnquiryListStateProvider><AddUpdateEnquiry /></EnquiryListStateProvider>} />
 
             {/* REDEVELOPMENT */}
 

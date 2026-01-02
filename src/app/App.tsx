@@ -89,7 +89,6 @@ import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
-import EnquiryMaster from '@/features/EnquiryMaster/pages/EnquiryMaster';
 import Event from '@/features/event/pages/Event';
 import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditDebit from '@/features/leaveCreditDebit/pages/LeaveCreditDebit';
@@ -99,8 +98,9 @@ import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor'
 import Leave from '@/features/leave/pages/Leave';
 import AddUpdateLeave from '@/features/leave/pages/AddUpdateLeave';
 import ViewLeave from '@/features/leave/pages/ViewLeave';
-import ViewEnquiryMaster from '@/features/EnquiryMaster/pages/ViewEnquiryMaster';
-import AddUpdateEnquiryMaster from '@/features/EnquiryMaster/pages/AddUpdateEnquiryMaster';
+import Enquiry from '@/features/enquiry/pages/Enquiry';
+import ViewEnquiry from '@/features/enquiry/pages/ViewEnquiry';
+import AddUpdateEnquiry from '@/features/enquiry/pages/AddUpdateEnquiry';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -206,9 +206,9 @@ function App() {
             <Route path="channelPartner" element={<ChannelPartnerMaster />} />
             <Route path="channelPartner/view" element={<ViewChannelPartnerMaster />} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartnerMaster />} />
-            <Route path="enquiry" element={<EnquiryMaster />} />
-            <Route path="enquiry/view" element={<ViewEnquiryMaster />} />
-            <Route path="enquiry/add/:EnquiryId?" element={<AddUpdateEnquiryMaster />} />
+            <Route path="enquiry" element={<Enquiry />} />
+            <Route path="enquiry/view" element={<ViewEnquiry />} />
+            <Route path="enquiry/add/:EnquiryId?" element={<AddUpdateEnquiry />} />
             <Route path="vendor" element={<Vendor />} />
             <Route path="vendor/view" element={<ViewVendor />} />
             <Route path="projectMaster" element={<ProjectMaster />} />

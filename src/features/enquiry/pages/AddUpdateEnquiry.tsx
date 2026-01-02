@@ -6,13 +6,13 @@ import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
-import type { AddUpdateEnquiryMasterRequest, FilterWithPaginationEnquiryMasterRequest } from "../models/EnquiryMasterModel";
+import type { AddUpdateEnquiryRequest, FilterWithPaginationEnquiryRequest } from "../models/EnquiryModel";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
-import { EnquiryMasterService } from "../services/EnquiryMasterServices";
+import { EnquiryService } from "../services/EnquiryServices";
 import { filterEmail, filterMobile } from "@/core/utils/fileValidation";
 import { Mail } from "lucide-react";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
@@ -24,7 +24,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
 import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 
-const initialFormState = (): AddUpdateEnquiryMasterRequest => ({
+const initialFormState = (): AddUpdateEnquiryRequest => ({
     EnquiryId: 0,
     Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     ProjectId: 0,
@@ -67,10 +67,10 @@ const initialFormState = (): AddUpdateEnquiryMasterRequest => ({
     EnquiryTimeOut: '00:00'
 });
 
-export const AddUpdateEnquiryMaster: React.FC = () => {
+export const AddUpdateEnquiry: React.FC = () => {
 
     //#region STATE MANAGEMENT
-    const [formData, setFormData] = useState<AddUpdateEnquiryMasterRequest>(() => initialFormState());
+    const [formData, setFormData] = useState<AddUpdateEnquiryRequest>(() => initialFormState());
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
@@ -78,14 +78,14 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // GET VALUE FROM URL ENQUIRY MASTER ID
+    // GET VALUE FROM URL ENQUIRY ID
     const { EnquiryId } = useParams<{ EnquiryId?: string }>();
 
     const { projectId } = useProject();
 
-    const enquiryMasterId = EnquiryId ? Number(EnquiryId) : 0;
+    const EnquiryMasterId = EnquiryId ? Number(EnquiryId) : 0;
 
-    const isAddMode = enquiryMasterId === 0;
+    const isAddMode = EnquiryMasterId === 0;
 
     // TOAST
     const { addToast } = useToast();
@@ -106,7 +106,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
     }>({})
 
     //#region HANDLE FIELD CHANGE EVENT
-    const handleFieldChange = (field: keyof AddUpdateEnquiryMasterRequest, value: any) => {
+    const handleFieldChange = (field: keyof AddUpdateEnquiryRequest, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
 
         if (errors[field]) {
@@ -148,13 +148,13 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
     //#region INITIALIZATION
     useEffect(() => {
         if (!isAddMode) {
-            fetchEnquiryMasterDetails();
+            fetchEnquiryDetails();
         }
     }, [EnquiryId]);
     //#endregion
 
-    //#region FETCH ENQUIRY  MASTER DETAILS
-    const fetchEnquiryMasterDetails = async () => {
+    //#region FETCH ENQUIRY DETAILS
+    const fetchEnquiryDetails = async () => {
         await runApiWithLoader(
 
             setIsLoading,
@@ -163,14 +163,14 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
 
             async () => {
 
-                const params: FilterWithPaginationEnquiryMasterRequest = {
+                const params: FilterWithPaginationEnquiryRequest = {
                     PageNumber: 1,
                     PageSize: 1,
-                    EnquiryId: enquiryMasterId,
+                    EnquiryId: EnquiryMasterId,
                     ProjectId: Number(projectId)
                 };
 
-                const response = await EnquiryMasterService.apiCallPullEnquiryMaster(params);
+                const response = await EnquiryService.apiCallPullEnquiry(params);
 
                 if (E.isRight(response)) {
 
@@ -239,7 +239,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
     //#endregion
 
     // ============================================================= [VALIDATION FUNCTION] =============================================================================================
-    const validateAddEnquiryMasterForm = (): {
+    const validateAddEnquiryForm = (): {
 
         isValid: boolean
 
@@ -277,7 +277,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
     //#endregion
 
     //#region PUSH DATA
-    const PushEnquiryMasterFormData = (): AddUpdateEnquiryMasterRequest => {
+    const PushEnquiryFormData = (): AddUpdateEnquiryRequest => {
         return {
             EnquiryId: formData.EnquiryId,
             Uniquekey: formData.Uniquekey,
@@ -323,12 +323,12 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
     }
     //#endregion
 
-    //#region HANDLE ADD AND UPDATE Enquiry  MASTER
-    const handleAddUpdateEnquiryMaster = async () => {
+    //#region HANDLE ADD AND UPDATE Enquiry 
+    const handleAddUpdateEnquiry = async () => {
 
         setErrors({});
 
-        const validation = validateAddEnquiryMasterForm();
+        const validation = validateAddEnquiryForm();
 
         if (!validation.isValid) {
 
@@ -344,9 +344,9 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
             setLoadingMessage,
 
             async () => {
-                const payload = PushEnquiryMasterFormData();
+                const payload = PushEnquiryFormData();
 
-                const response = await EnquiryMasterService.apiCallAddUpdateEnquiryMaster(payload);
+                const response = await EnquiryService.apiCallAddUpdateEnquiry(payload);
 
                 if (E.isRight(response)) {
                     addToast({ type: "success", title: isAddMode ? "Enquiry  added successfully" : "Enquiry  updated successfully" });
@@ -398,7 +398,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
 
             <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
 
-                <form onSubmit={handleAddUpdateEnquiryMaster}>
+                <form onSubmit={handleAddUpdateEnquiry}>
 
                     {/* Basic Enquiry Details */}
 
@@ -840,7 +840,7 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
                 onCancel={() => navigate(-1)}
                 canAction={canAction}
                 onSave={() => {
-                    handleAddUpdateEnquiryMaster();
+                    handleAddUpdateEnquiry();
                 }}
                 isLoading={isLoading}
             />
@@ -848,4 +848,4 @@ export const AddUpdateEnquiryMaster: React.FC = () => {
     );
 };
 
-export default AddUpdateEnquiryMaster;
+export default AddUpdateEnquiry;

@@ -1,11 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import type { EnquiryMasterData } from "../models/EnquiryMasterModel";
+import type { EnquiryData } from "../models/EnquiryModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
-const ViewEnquiryMaster: React.FC = () => {
+const ViewEnquiry: React.FC = () => {
 
     //LOCATION
     const location = useLocation();
@@ -16,15 +16,15 @@ const ViewEnquiryMaster: React.FC = () => {
     //#region MENU PERMISSION
     const { canAction } = useMenuPermissions('/enquiry');
 
-    const editEnquiryData = location.state?.editEnquiryData as EnquiryMasterData;
+    const editEnquiryData = location.state?.editEnquiryData as EnquiryData;
 
     const listState = location.state?.listState;
 
     // MESSAGE IF DATA NOT FOUND
     if (!editEnquiryData) return <div>No Enquiry Data Found</div>;
 
-    //#region EDIT ENQUIRY MASTER
-    const handleEditEnquiryMaster = (row: EnquiryMasterData) => {
+    //#region EDIT ENQUIRY 
+    const handleEditEnquiry = (row: EnquiryData) => {
         if (!row?.EnquiryId) return;
         navigate(`/enquiry/add/${row.EnquiryId}`, {
             state: {
@@ -42,7 +42,7 @@ const ViewEnquiryMaster: React.FC = () => {
     //#endregion
 
     //#region BACK PROJECT PAGE
-    const handleBackToListEnquiryMaster = () => {
+    const handleBackToListEnquiry = () => {
         navigate('/enquiry', {
             state: {
                 listState: listState ?? {
@@ -64,10 +64,10 @@ const ViewEnquiryMaster: React.FC = () => {
                 titleText={editEnquiryData.Name ?? ''}
                 cancelText="Cancel"
                 EditText="Edit"
-                onCancel={() => handleBackToListEnquiryMaster()}
+                onCancel={() => handleBackToListEnquiry()}
                 canAction={canAction}
                 onEdit={() => {
-                    if (editEnquiryData) handleEditEnquiryMaster(editEnquiryData!);
+                    if (editEnquiryData) handleEditEnquiry(editEnquiryData!);
                 }}
                 isLoading={false}
             />
@@ -166,4 +166,4 @@ const ViewEnquiryMaster: React.FC = () => {
     );
 };
 
-export default ViewEnquiryMaster;
+export default ViewEnquiry;

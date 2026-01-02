@@ -1,28 +1,28 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import { EnquiryMasterApi } from "../api/EnquiryMasterApi";
+import { EnquiryApi } from "../api/EnquiryApi";
 import type {
-    FilterWithPaginationEnquiryMasterRequest,
-    AddUpdateEnquiryMasterRequest,
-    DeleteEnquiryMasterRequest,
-    EnquiryMasterListResponse,
-    EnquiryMasterSaveResponse,
-    EnquiryMasterDeleteResponse
-} from '@/features/EnquiryMaster/models/EnquiryMasterModel'
+    FilterWithPaginationEnquiryRequest,
+    AddUpdateEnquiryRequest,
+    DeleteEnquiryRequest,
+    EnquiryListResponse,
+    EnquirySaveResponse,
+    EnquiryDeleteResponse
+} from '@/features/enquiry/models/EnquiryModel'
 
-export abstract class EnquiryMasterDatasource {
+export abstract class EnquiryDatasource {
 
-    abstract pullEnquiryMaster(params: FilterWithPaginationEnquiryMasterRequest, signal?: AbortSignal): Promise<EnquiryMasterListResponse>;
-    abstract addUpadateEnquiryMaster(data: AddUpdateEnquiryMasterRequest): Promise<EnquiryMasterSaveResponse>;
-    abstract deleteEnquiryMaster(params: DeleteEnquiryMasterRequest): Promise<EnquiryMasterDeleteResponse>;
+    abstract pullEnquiry(params: FilterWithPaginationEnquiryRequest, signal?: AbortSignal): Promise<EnquiryListResponse>;
+    abstract addUpadateEnquiry(data: AddUpdateEnquiryRequest): Promise<EnquirySaveResponse>;
+    abstract deleteEnquiry(params: DeleteEnquiryRequest): Promise<EnquiryDeleteResponse>;
 }
 
-export class EnquiryMasterDatasourceImpl implements EnquiryMasterDatasource {
+export class EnquiryDatasourceImpl implements EnquiryDatasource {
     private get k3hHttpclient() {
         return baseClient
     }
 
-    async pullEnquiryMaster(params: FilterWithPaginationEnquiryMasterRequest, signal?: AbortSignal): Promise<EnquiryMasterListResponse> {
+    async pullEnquiry(params: FilterWithPaginationEnquiryRequest, signal?: AbortSignal): Promise<EnquiryListResponse> {
         try {
             const queryParams = new URLSearchParams({
                 PageSize: String(params.PageSize),
@@ -47,23 +47,23 @@ export class EnquiryMasterDatasourceImpl implements EnquiryMasterDatasource {
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpclient.getRequestWithAuthentication(
-                `${EnquiryMasterApi.PULL}?${queryParams.toString()}`, { signal }
+                `${EnquiryApi.PULL}?${queryParams.toString()}`, { signal }
             )
 
             return response;
         } catch (error: any) {
 
-            console.error('ERROR: PULL ENQUIRY MASTER :', error);
+            console.error('ERROR: PULL ENQUIRY:', error);
 
             if (error === TokenExpiredException) {
-                await this.pullEnquiryMaster(params);
+                await this.pullEnquiry(params);
             }
             throw error
         }
     }
-    async addUpadateEnquiryMaster(params: AddUpdateEnquiryMasterRequest): Promise<EnquiryMasterSaveResponse> {
+    async addUpadateEnquiry(params: AddUpdateEnquiryRequest): Promise<EnquirySaveResponse> {
         try {
-            const payLoad: AddUpdateEnquiryMasterRequest = {
+            const payLoad: AddUpdateEnquiryRequest = {
                 EnquiryId: params.EnquiryId ?? 0,
                 Uniquekey: params.Uniquekey ?? '',
                 ProjectId: params.ProjectId ?? 0,
@@ -105,21 +105,21 @@ export class EnquiryMasterDatasourceImpl implements EnquiryMasterDatasource {
             }
 
             const response = await this.k3hHttpclient.postRequestWithAuthentication(
-                EnquiryMasterApi.ADD_UPDATE,
+                EnquiryApi.ADD_UPDATE,
                 payLoad
             )
             return response
         } catch (error) {
-            console.log('ERROR:ADD UPDATE ENQUIRY MASTER:', error)
+            console.log('ERROR:ADD UPDATE ENQUIRY :', error)
 
             if (error == TokenExpiredException) {
-                await this.addUpadateEnquiryMaster(params);
+                await this.addUpadateEnquiry(params);
             }
             throw error
         }
     }
 
-    async deleteEnquiryMaster(params: DeleteEnquiryMasterRequest): Promise<EnquiryMasterDeleteResponse> {
+    async deleteEnquiry(params: DeleteEnquiryRequest): Promise<EnquiryDeleteResponse> {
         try {
             const queryParams = new URLSearchParams({
                 EnquiryId: (params.EnquiryId ?? 0).toString(),
@@ -129,7 +129,7 @@ export class EnquiryMasterDatasourceImpl implements EnquiryMasterDatasource {
             })
 
             const response = await this.k3hHttpclient.deleteRequestWithAuthentication(
-                `${EnquiryMasterApi.DELETE}?${queryParams.toString()}`
+                `${EnquiryApi.DELETE}?${queryParams.toString()}`
             )
 
             return response
@@ -137,9 +137,9 @@ export class EnquiryMasterDatasourceImpl implements EnquiryMasterDatasource {
         } catch (error) {
             if (error === TokenExpiredException) {
 
-                console.error('ERROR: DELETE ENQUIRY MASTER :', error);
+                console.error('ERROR: DELETE ENQUIRY :', error);
 
-                await this.deleteEnquiryMaster(params);
+                await this.deleteEnquiry(params);
 
             }
 

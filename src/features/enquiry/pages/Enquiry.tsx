@@ -1,10 +1,10 @@
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
-    DeleteEnquiryMasterRequest,
-    EnquiryMasterData,
-    FilterWithPaginationEnquiryMasterRequest
-} from '@/features/EnquiryMaster/models/EnquiryMasterModel';
+    DeleteEnquiryRequest,
+    EnquiryData,
+    FilterWithPaginationEnquiryRequest
+} from '@/features/enquiry/models/EnquiryModel';
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import { DataTable, type FilterInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
@@ -21,7 +21,7 @@ import { updateFilter } from "@/core/utils/filterHelper";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { runApiWithLoader } from "@/core/utils";
-import { EnquiryMasterService } from "../services/EnquiryMasterServices";
+import { EnquiryService } from "../services/EnquiryServices";
 import * as E from 'fp-ts/Either';
 import { handleExportFile } from "@/core/utils/exportFile";
 import { Loader } from "@/core/utils/loader";
@@ -32,10 +32,10 @@ import type { FilterPullExcelSample } from "@/features/technical/models/Technica
 import { technicalService } from "@/features/technical/services/TechnicalService";
 
 
-export const EnquiryMaster: React.FC = () => {
+export const Enquiry: React.FC = () => {
 
     //#region STATE MANAGEMENT
-    const [EnquiryMasterList, setEnquiryMasterMasterList] = useState<EnquiryMasterData[]>([]);
+    const [EnquiryList, setEnquiryList] = useState<EnquiryData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
 
@@ -65,9 +65,9 @@ export const EnquiryMaster: React.FC = () => {
     const [filters, setFilters] = useState<FilterInfo>({});
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-    //DELETE ENQUIRY MASTER
+    //DELETE ENQUIRY
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-    const [deleteEnquiryMasterData, setDeleteEnquiryMasterData] = useState<EnquiryMasterData | null>(null)
+    const [deleteEnquiryData, setDeleteEnquiryData] = useState<EnquiryData | null>(null)
 
     //CUSTOMIZE COLUMN MODAL
     const [isShowCustomizeEnquiryColumnsModal, setIsShowCustomizeEnquiryColumnsModal] = useState(false);
@@ -123,7 +123,7 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-    const fetchEnquiryMasterList = async (page: number = pagination.currentPage) => {
+    const fetchEnquiryList = async (page: number = pagination.currentPage) => {
 
         return await loadEnquiry(page, filters);
     }
@@ -138,12 +138,12 @@ export const EnquiryMaster: React.FC = () => {
                 let sortByParam = undefined;
 
                 if (sortInfo) {
-                    const column = EnquiryMasterColumns.find(col => col.key === sortInfo.column);
+                    const column = EnquiryColumns.find(col => col.key === sortInfo.column);
                     if (column) {
                         sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
                     }
                 }
-                const params: FilterWithPaginationEnquiryMasterRequest = {
+                const params: FilterWithPaginationEnquiryRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     Name: filterParams.Name?.trim() || undefined,
@@ -152,11 +152,11 @@ export const EnquiryMaster: React.FC = () => {
                     Budget: filterParams.Budget?.trim() || undefined,
                     SortBy: sortByParam
                 };
-                const response = await EnquiryMasterService.apiCallPullEnquiryMaster(params);
+                const response = await EnquiryService.apiCallPullEnquiry(params);
 
                 if (E.isRight(response)) {
 
-                    setEnquiryMasterMasterList(response.right.Data);
+                    setEnquiryList(response.right.Data);
 
                     setPagination({
                         currentPage: page,
@@ -184,7 +184,7 @@ export const EnquiryMaster: React.FC = () => {
 
         if (searchValue.trim() === '') {
 
-            fetchEnquiryMasterList();
+            fetchEnquiryList();
 
             return
         }
@@ -197,7 +197,7 @@ export const EnquiryMaster: React.FC = () => {
     };
     //#endregion
 
-    //#region CLEAR ENQUIRY MASTER 
+    //#region CLEAR ENQUIRY 
     const clearSearchEnquiry = () => {
         setSearchTerm('');
 
@@ -229,12 +229,12 @@ export const EnquiryMaster: React.FC = () => {
             async () => {
                 let sortByParam;
                 if (sortInfo) {
-                    const column = EnquiryMasterColumns.find(col => col.key === sortInfo.column);
+                    const column = EnquiryColumns.find(col => col.key === sortInfo.column);
                     if (column) {
                         sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
                     }
                 }
-                const params: FilterWithPaginationEnquiryMasterRequest = {
+                const params: FilterWithPaginationEnquiryRequest = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     Name: filters.Name?.trim() || undefined,
@@ -245,7 +245,7 @@ export const EnquiryMaster: React.FC = () => {
 
                 const response = await getEnquiry(params);
 
-                handleExportFile(response, exportType, 'Enquiry Master', addToast);
+                handleExportFile(response, exportType, 'Enquiry', addToast);
                 return response
             },
             undefined,
@@ -261,7 +261,7 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region IMPORT EXCEL | DOWNLOAD
 
-    const excelImportEnquiryMaster = async () => {
+    const excelImportEnquiry = async () => {
 
         await runApiWithLoader(
 
@@ -282,7 +282,7 @@ export const EnquiryMaster: React.FC = () => {
         )
     }
 
-    const downloadExcelSampleEnquiryMaster = async () => {
+    const downloadExcelSampleEnquiry = async () => {
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
@@ -294,7 +294,7 @@ export const EnquiryMaster: React.FC = () => {
 
                 const response = await technicalService.apiCallPullExcelSample(params);
 
-                handleExportFile(response, 'Excel', 'Enquiry Master', addToast, 'Sample file download successfully')
+                handleExportFile(response, 'Excel', 'Enquiry', addToast, 'Sample file download successfully')
 
                 return response;
             },
@@ -307,21 +307,21 @@ export const EnquiryMaster: React.FC = () => {
         )
     }
 
-    const handleExcelImportEnquiryMaster = () => excelImportEnquiryMaster()
-    const handleDownloadExcelSampleEnquiryMaster = () => downloadExcelSampleEnquiryMaster()
+    const handleExcelImportEnquiry = () => excelImportEnquiry()
+    const handleDownloadExcelSampleEnquiry = () => downloadExcelSampleEnquiry()
     //#endregion
 
     //#region API | SERVICES CALL TO GET ENQUIRY
-    const getEnquiry = async (filterParams: FilterWithPaginationEnquiryMasterRequest) => {
+    const getEnquiry = async (filterParams: FilterWithPaginationEnquiryRequest) => {
 
-        return await EnquiryMasterService.apiCallPullEnquiryMaster(filterParams);
+        return await EnquiryService.apiCallPullEnquiry(filterParams);
     }
     //#endregion
 
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
 
-        fetchEnquiryMasterList(page);
+        fetchEnquiryList(page);
     }, []);
 
     //#region TABLE SORT COLUMN
@@ -329,7 +329,7 @@ export const EnquiryMaster: React.FC = () => {
 
         setSortInfo(sortInfo);
 
-        fetchEnquiryMasterList(1);
+        fetchEnquiryList(1);
 
     }, []);
 
@@ -344,10 +344,10 @@ export const EnquiryMaster: React.FC = () => {
         }),
         [pagination, handlePageChange]
     )
-    const EnquiryForTable = useMemo(() => EnquiryMasterList, [EnquiryMasterList]);
+    const EnquiryForTable = useMemo(() => EnquiryList, [EnquiryList]);
 
     //#region NAVIGATE TO  VIEW ENQUIRY
-    const handleNavigateToView = (row: EnquiryMasterData) => {
+    const handleNavigateToView = (row: EnquiryData) => {
         navigate('/enquiry/view', {
             state: {
                 editEnquiryData: row,
@@ -377,15 +377,15 @@ export const EnquiryMaster: React.FC = () => {
     //#endregion
 
     //#region CONFIRMATION DIALOG BOX
-    const handleConfirmationDialogBoxOpen = useCallback((row: EnquiryMasterData) => {
+    const handleConfirmationDialogBoxOpen = useCallback((row: EnquiryData) => {
 
-        setDeleteEnquiryMasterData(row)
+        setDeleteEnquiryData(row)
 
         setIsConfirmationDialogBoxOpen(true)
     }, [])
 
     //#region TABLE COLUMNS
-    const EnquiryMasterColumns = useMemo<TableColumn[]>(() => [
+    const EnquiryColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'Name',
             label: 'Enquiry Name',
@@ -514,12 +514,12 @@ export const EnquiryMaster: React.FC = () => {
     //#region COLUMN CUSTOMIZATION
     const requiredEnquiryColumnKeys: string[] = ['Name'];
 
-    const allEnquiryColumnKeys: string[] = EnquiryMasterColumns.map(c => c.key);
+    const allEnquiryColumnKeys: string[] = EnquiryColumns.map(c => c.key);
 
     const [selectedEnquiryColumnKeys, setSelectedEnquiryColumnKeys] = useState<string[]>(() => {
         try {
 
-            const saved = LocalStorageHelper.getEnquiryMasterTableColumns?.();
+            const saved = LocalStorageHelper.getEnquiryTableColumns?.();
 
             if (saved) {
 
@@ -535,11 +535,11 @@ export const EnquiryMaster: React.FC = () => {
 
     useEffect(() => {
         setSelectedEnquiryColumnKeys(prev => Array.from(new Set([...prev, ...requiredEnquiryColumnKeys])).filter(k => allEnquiryColumnKeys.includes(k)));
-    }, [EnquiryMasterColumns.length])
+    }, [EnquiryColumns.length])
 
     const visibleEnquiryColumns = useMemo(
-        () => EnquiryMasterColumns.filter(col => selectedEnquiryColumnKeys.includes(col.key)),
-        [EnquiryMasterColumns, selectedEnquiryColumnKeys]
+        () => EnquiryColumns.filter(col => selectedEnquiryColumnKeys.includes(col.key)),
+        [EnquiryColumns, selectedEnquiryColumnKeys]
     );
     //#endregion
 
@@ -579,12 +579,12 @@ export const EnquiryMaster: React.FC = () => {
     }
     //#endregion
 
-    //#region DELETE ENQUIRY MASTER
-    const handleDeleteEnquiryMaster = async () => {
+    //#region DELETE ENQUIRY
+    const handleDeleteEnquiry = async () => {
 
         setIsConfirmationDialogBoxOpen(false);
 
-        if (!deleteEnquiryMasterData) return;
+        if (!deleteEnquiryData) return;
 
         await runApiWithLoader(
 
@@ -592,20 +592,20 @@ export const EnquiryMaster: React.FC = () => {
 
             setIsLoadingMessage,
             async () => {
-                const params: DeleteEnquiryMasterRequest = {
+                const params: DeleteEnquiryRequest = {
 
-                    EnquiryId: deleteEnquiryMasterData.EnquiryId || 0,
+                    EnquiryId: deleteEnquiryData.EnquiryId || 0,
 
                     ProjectId: Number(projectId),
 
-                    Uniquekey: deleteEnquiryMasterData.Uniquekey || ""
+                    Uniquekey: deleteEnquiryData.Uniquekey || ""
                 };
 
-                const response = await EnquiryMasterService.apiCallDeleteEnquiryMaster(params);
+                const response = await EnquiryService.apiCallDeleteEnquiry(params);
 
                 if (E.isRight(response)) {
 
-                    setEnquiryMasterMasterList(prevData => prevData.filter(item => item.EnquiryId !== deleteEnquiryMasterData?.EnquiryId));
+                    setEnquiryList(prevData => prevData.filter(item => item.EnquiryId !== deleteEnquiryData?.EnquiryId));
 
                     setPagination({
                         currentPage: pagination.currentPage,
@@ -616,7 +616,7 @@ export const EnquiryMaster: React.FC = () => {
 
                     setIsConfirmationDialogBoxOpen(false);
 
-                    setDeleteEnquiryMasterData(null);
+                    setDeleteEnquiryData(null);
 
                 } else {
 
@@ -665,8 +665,8 @@ export const EnquiryMaster: React.FC = () => {
 
                 // IMPORT
                 isShowImportButton={canAction}
-                onUploadExcel={handleExcelImportEnquiryMaster}
-                onDownloadSampleExcel={handleDownloadExcelSampleEnquiryMaster}
+                onUploadExcel={handleExcelImportEnquiry}
+                onDownloadSampleExcel={handleDownloadExcelSampleEnquiry}
 
                 //EXPORT
                 isShowExportButton={canExport}
@@ -705,7 +705,7 @@ export const EnquiryMaster: React.FC = () => {
                         );
                     } catch { }
                 }}
-                columns={EnquiryMasterColumns}
+                columns={EnquiryColumns}
                 selectedKeys={selectedEnquiryColumnKeys}
                 requiredKeys={requiredEnquiryColumnKeys}
                 title="Customize Table Columns"
@@ -715,7 +715,7 @@ export const EnquiryMaster: React.FC = () => {
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
-                title="Filter - Enquiry Master"
+                title="Filter - Enquiry"
                 onSubmit={e => {
                     e.preventDefault();
                     applyFilters();
@@ -741,7 +741,7 @@ export const EnquiryMaster: React.FC = () => {
             <ConfirmationDialogBox
                 isOpen={isConfirmationDialogBoxOpen}
                 onClose={() => setIsConfirmationDialogBoxOpen(false)}
-                onConfirm={handleDeleteEnquiryMaster}
+                onConfirm={handleDeleteEnquiry}
                 title="You are about to delete this Enquiry?"
                 message="Deleting this Enquiry will permanently remove its data."
                 confirmText="Delete"
@@ -752,4 +752,4 @@ export const EnquiryMaster: React.FC = () => {
         </div>
     );
 }
-export default EnquiryMaster;
+export default Enquiry;

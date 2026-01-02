@@ -90,6 +90,8 @@ export const HolidayMaster: React.FC = () => {
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeHolidayMasterColumnsModal, setIsShowCustomizeHolidayMasterColumnsModal] = useState(false);
 
+  // RESET CHOOSE FILE
+  const [resetfilePicker, setResetFilePicker] = useState(0);
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -107,6 +109,16 @@ export const HolidayMaster: React.FC = () => {
 
     fetchHolidayList()
   }, [])
+
+  //#region RESET FORM DATA
+  const handleResetForm = () => {
+    setFormData(initialFormState());
+    setHolidayURLFiles([]);
+    setRemoveHolidayURL([]);
+    setErrors({});
+    setResetFilePicker(prev => prev + 1);
+  };
+  //#endregion
 
   //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
@@ -276,7 +288,7 @@ export const HolidayMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  
+
   const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sortInfo);
@@ -787,6 +799,7 @@ export const HolidayMaster: React.FC = () => {
         onSubmit={handleAddUpdateHolidayMaster}
         saveText={editingHolidayMasterData ? 'Update Holiday' : 'Save Holiday'}
         resetText='Reset'
+        onreset={handleResetForm}
         loading={isLoading}
         size="xl"
       >
@@ -807,6 +820,7 @@ export const HolidayMaster: React.FC = () => {
             <div>
               <MultiFilePicker
                 label='Holiday URL'
+                key={resetfilePicker}
                 required
                 error={errors.HolidayURL}
                 value={HolidayURLFiles}

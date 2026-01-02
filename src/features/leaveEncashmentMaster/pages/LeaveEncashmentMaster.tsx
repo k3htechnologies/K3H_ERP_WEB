@@ -111,7 +111,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchLeaveEncashmentList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadLeaveEncashments(page,sort);
+    return await loadLeaveEncashments(page, sort);
 
   }
 
@@ -668,26 +668,26 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
       {/* COMBINED IMPORT , EXPORT ROW */}
 
-      <TableActionToolbar
-        isShowSearchBar={false}
-        isShowFilterButton={false}
-        isShowCustomizeButton
-        onCustomize={() => setIsShowCustomizeLeaveEncashmentMasterColumnsModal(true)}
+      <div className="flex justify-end">
+        <TableActionToolbar
+          isShowSearchBar={false}
+          isShowFilterButton={false}
+          isShowCustomizeButton
+          onCustomize={() =>
+            setIsShowCustomizeLeaveEncashmentMasterColumnsModal(true)}
 
-        // ADD
-        isShowAddButton={canAction}
-        addTitle="Add"
-        onAdd={handleAddLeaveEncashmentMasterModal}
+          isShowAddButton={canAction}
+          addTitle="Add"
+          onAdd={handleAddLeaveEncashmentMasterModal}
 
-        // IMPORT
-        isShowImportButton={false}
+          isShowImportButton={false}
 
-        // EXPORT 
-        isShowExportButton={canExport && leaveEncashmentListForTable.length > 0}
-        onExportExcel={handleExportLeaveEncashmentExcel}
-        onExportPdf={handleExportLeaveEncashmentPdf}
-        exportLoading={isLoading}
-      />
+          isShowExportButton={canExport && leaveEncashmentListForTable.length > 0}
+          onExportExcel={handleExportLeaveEncashmentExcel}
+          onExportPdf={handleExportLeaveEncashmentPdf}
+          exportLoading={isLoading}
+        />
+      </div>
 
       {/* DATA TABLE LEAVE ENCASHMENT */}
 

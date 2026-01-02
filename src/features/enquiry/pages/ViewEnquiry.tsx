@@ -62,6 +62,7 @@ const ViewEnquiry: React.FC = () => {
             {/* Header Details*/}
             <HeaderActionBar
                 titleText={editEnquiryData.Name ?? ''}
+                subTitleText={editEnquiryData.FinalStage ?? ''}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListEnquiry()}
@@ -89,14 +90,14 @@ const ViewEnquiry: React.FC = () => {
                                         <span className="font-medium ">Enquiry Date:</span>{" "}
                                         {editEnquiryData.EnquiryDate
                                             ? formatDate_dd_mm_yyyy(editEnquiryData.EnquiryDate)
-                                            : "N/A"}
+                                            : "-"}
                                     </div>
 
                                     <div>
                                         <span className="font-medium">Next Follow-Up Date:</span>{" "}
                                         {editEnquiryData.NextFollowUpDate
                                             ? formatDate_dd_mm_yyyy(editEnquiryData.NextFollowUpDate)
-                                            : "N/A"}
+                                            : "-"}
                                     </div>
                                 </div>
 
@@ -129,7 +130,8 @@ const ViewEnquiry: React.FC = () => {
                             <FieldItem label="Source " value={editEnquiryData.Source} />
                             <FieldItem label="Sub Source " value={editEnquiryData.SubSource} />
                             <FieldItem label="Channel Partner " value={editEnquiryData.ChannelPartnerName} />
-                            <FieldItem label="Channel Partner Number:" value={editEnquiryData.ChannelPartnerMobileNumber ? `+91 ${editEnquiryData.ChannelPartnerMobileNumber}` : '-'} />
+                            <FieldItem label="Channel Partner Number:" value={editEnquiryData.ChannelPartnerMobileNumber ? 
+                                `+91 ${editEnquiryData.ChannelPartnerMobileNumber}` : '-'} />
                             <FieldItem label="Final Stage " value={editEnquiryData.FinalStage} />
                             <FieldItem label="Final Stage Detail " value={editEnquiryData.FinalStageDetail} />
                             <FieldItem label="Sales Advisor" value={editEnquiryData.SalesAdvisor} />
@@ -139,9 +141,9 @@ const ViewEnquiry: React.FC = () => {
                             <FieldItem label="Customer Time Out" value={editEnquiryData.EnquiryTimeOut} />
                             <FieldItem label="Remarks" value={editEnquiryData.Remark} />
                             <FieldItem label="Created By" value={editEnquiryData.CreatedBy} />
-                            <FieldItem label="Created Date" value={editEnquiryData.CreatedDate ? formatDate_dd_MonthName_yy(editEnquiryData.CreatedDate) : ""} />
+                            <FieldItem label="Created Date" value={editEnquiryData.CreatedDate ? formatDate_dd_MonthName_yy(editEnquiryData.CreatedDate) : "-"} />
                             <FieldItem label="Modified By" value={editEnquiryData.ModifiedBy} />
-                            <FieldItem label="Modified Date" value={editEnquiryData.ModifiedDate ? formatDate_dd_MonthName_yy(editEnquiryData.ModifiedDate) : ""} />
+                            <FieldItem label="Modified Date" value={editEnquiryData.ModifiedDate ? formatDate_dd_MonthName_yy(editEnquiryData.ModifiedDate) : "-"} />
 
                         </div>
                     </div>

@@ -76,11 +76,11 @@ export const Enquiry: React.FC = () => {
     const { canAction, canExport } = useMenuPermissions();
     //#endregion
 
+    //#region LOCATION
     const location = useLocation() as any;
     //#endregion
 
     //#region INIT
-
     useEffect(() => {
 
         if (!projectId) return;
@@ -388,7 +388,7 @@ export const Enquiry: React.FC = () => {
     const EnquiryColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'Name',
-            label: 'Enquiry Name',
+            label: 'Full Name',
             width: '20',
             sortable: true,
             fixed: 'left',
@@ -402,20 +402,7 @@ export const Enquiry: React.FC = () => {
                 />
             )
         },
-        {
-            key: 'ProjectName',
-            label: 'Project Name',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: (value) => (
-                <TooltipText
-                    text={value || 'N/A'}
-                    maxWidth="150px"
-                    tooltipThreshold={15}
-                />
-            )
-        },
+
         {
             key: 'Requirement',
             label: 'Requirement',
@@ -430,6 +417,7 @@ export const Enquiry: React.FC = () => {
                 />
             )
         },
+
         {
             key: 'FinalStage',
             label: 'Final Stage',
@@ -444,6 +432,7 @@ export const Enquiry: React.FC = () => {
                 />
             )
         },
+
         {
             key: 'Source',
             label: 'Source',
@@ -458,6 +447,7 @@ export const Enquiry: React.FC = () => {
                 />
             )
         },
+
         {
             key: 'NextFollowUpDate',
             label: 'Next Follow-Up Date',
@@ -465,8 +455,9 @@ export const Enquiry: React.FC = () => {
             sortable: false,
             align: 'center',
             render: (value?: string) =>
-                value ? formatDate_dd_MonthName_yy(value) : 'N/A'
+                value ? formatDate_dd_MonthName_yy(value) : '-'
         },
+
         {
             key: 'EnquiryDate',
             label: 'Enquiry Date',
@@ -474,7 +465,7 @@ export const Enquiry: React.FC = () => {
             sortable: false,
             align: 'center',
             render: (value?: string) =>
-                value ? formatDate_dd_MonthName_yy(value) : 'N/A'
+                value ? formatDate_dd_MonthName_yy(value) : '-'
         },
 
         {
@@ -643,7 +634,7 @@ export const Enquiry: React.FC = () => {
             <TableActionToolbar
                 isShowSearchBar
                 searchTerm={searchTerm}
-                searchPlaceholder="Search By Enquiry Name"
+                searchPlaceholder="Search By Full Name"
                 onSearchChange={v => {
                     setSearchTerm(v);
                     debouncedSearch(v);
@@ -729,10 +720,10 @@ export const Enquiry: React.FC = () => {
                 <div className="space-y-6">
                     <div className="space-y-4">
                         <Input type="text"
-                            label="Enquiry Name"
+                            label="Full Name Name"
                             value={tempFilters?.Name ?? ''}
                             onChange={e => handleFilterChange('Name', e.target.value)}
-                            placeholder="Enter Enquiry Name" />
+                            placeholder="Enter Full Name" />
                     </div>
                 </div>
             </Modal>

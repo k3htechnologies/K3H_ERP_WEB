@@ -13,7 +13,7 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { EnquiryService } from "../services/EnquiryServices";
-import { filterEmail, filterMobile } from "@/core/utils/fileValidation";
+import { filterEmail, filterMobile, isValidEmail } from "@/core/utils/fileValidation";
 import { Mail } from "lucide-react";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { ACCOMODATION_TYPE_OPTIONS, AGE_TYPE_OPTION, BUDGET_TYPE_OPTIONS, COMMERCIAL_FLAT_CONFIGURATION, CUSTOMER_CLASSIFICATION_TYPE, DESIRED_FLOOR_BAND, ETHNICITY_TYPE_OPTION, FINAL_STAGE_DETAILS_TYPE_OPTIONS, FINAL_STAGE_TYPE_OPTIONS, NATIONALITY_TYPE_OPTION, NEIGHBORHOOD_PLACES_TYPE_OPTION, OCCUPATION_TYPE_OPTIONS, POSSESSION_TYPE_OPTIONS, REQUIREMENT_TYPE_OPTIONS, RESIDENTIAL_FLAT_CONFIGURATION, SOURCE_OF_FUNDING_TYPE, SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from "@/core/constants";
@@ -124,27 +124,6 @@ export const AddUpdateEnquiry: React.FC = () => {
             });
     //#endregion
 
-    //#region HANDLE CHANGE FOR SOURCE DROP DOWN
-    const handleSourceChange = (value: string | number) => {
-
-        const sourceValue = String(value);
-
-        setFormData(prev => ({
-            ...prev,
-            Source: sourceValue,
-            SubSource: sourceValue === 'Advertisement' ? prev.SubSource : '',
-            ChannelPartnerId: sourceValue === 'Channel Partner' ? prev.ChannelPartnerId : 0
-        }));
-
-        setErrors(prev => ({
-
-            ...prev,
-            Source: '',
-            SubSource: '',
-            ChannelPartnerId: ''
-        }));
-    };
-
     //#region INITIALIZATION
     useEffect(() => {
         if (!isAddMode) {
@@ -249,26 +228,55 @@ export const AddUpdateEnquiry: React.FC = () => {
         const newErrors: { [key: string]: string } = {};
 
         if (!formData.Name) {
-            newErrors.Name = 'Enquiry Name is required.';
+            newErrors.Name = 'FULL Name is required.';
         } else if (formData.Name.trim().length > 50) {
-            newErrors.Name = 'Enquiry Name must be at most 50 characters';
+            newErrors.Name = 'FULL Name must be at most 50 characters';
         }
 
         if (!formData.MobileNumber) {
             newErrors.MobileNumber = 'Mobile Number  is required.';
         }
-        if (!formData.EmailId) {
-            newErrors.EmailId = 'Email Id  is required.';
+
+        if (!formData.EmailId?.trim()) {
+            newErrors.EmailId = "Email Id is required.";
+        } else if (!isValidEmail(formData.EmailId?.trim())) {
+            newErrors.EmailId = "Enter a valid email address.";
         }
+
         if (!formData.AreaPreferred) {
             newErrors.AreaPreferred = 'Area Preferred is required.';
         }
+
         if (!formData.EnquiryDate) {
             newErrors.EnquiryDate = 'Enquiry Date  is required.';
         }
+
         if (!formData.NextFollowUpDate) {
             newErrors.NextFollowUpDate = 'Next Follow-Up Date  is required.';
         }
+
+        if (formData.Nationality === "NRI") {
+
+            if (!formData.CountryOfResidence?.trim()) {
+                newErrors.CountryOfResidence = "Country of Residence is required";
+            }
+            if (!formData.CityOfResidence?.trim()) {
+                newErrors.CityOfResidence = "City of Residence is required";
+            }
+        }
+
+        if (formData.Source === "Advertisement" && !formData.SubSource) {
+            newErrors.SubSource = "Sub Source is required";
+        }
+
+        if (formData.Source === "Channel Partner" && !formData.ChannelPartnerId) {
+            newErrors.ChannelPartnerId = "Channel Partner is required";
+        }
+
+        if (formData.FinalStage === "Lost" && !formData.FinalStageDetail) {
+            newErrors.FinalStageDetail = "Final Stage Detail is required";
+        }
+    
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -323,7 +331,7 @@ export const AddUpdateEnquiry: React.FC = () => {
     }
     //#endregion
 
-    //#region HANDLE ADD AND UPDATE Enquiry 
+    //#region HANDLE ADD AND UPDATE ENQUIRY 
     const handleAddUpdateEnquiry = async () => {
 
         setErrors({});
@@ -413,7 +421,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     label='Full Name'
                                     value={formData.Name ?? ""}
                                     onChange={(e) => handleFieldChange("Name", e.target.value)}
-                                    placeholder="Enter Name"
+                                    placeholder="Enter FULL Name"
                                     maxLength={250}
                                     error={errors.Name}
                                 />
@@ -429,8 +437,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     onChange={(e) => {
                                         const mobile = filterMobile(e.target.value)
                                         handleFieldChange("MobileNumber", mobile)
-                                    }
-                                    }
+                                    }}
                                     placeholder="Enter Mobile Number"
                                     maxLength={10}
                                     error={errors.MobileNumber}
@@ -670,7 +677,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     <SinglePageSelection
                                         label="Source"
                                         value={formData.Source ?? ''}
-                                        onChange={handleSourceChange}
+                                        onChange={(value) => handleFieldChange('Source', value)}
                                         options={SOURCE_TYPE_OPTIONS.map(opt => ({
                                             label: opt.name,
                                             value: opt.id
@@ -691,7 +698,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Advertisement - Sub Source */}
+
                                 {formData.Source === 'Advertisement' && (
                                     <div>
                                         <SinglePageSelection
@@ -707,7 +714,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     </div>
                                 )}
 
-                                {/* Channel Partner - Channel Partner Dropdown */}
                                 {formData.Source === 'Channel Partner' && (
                                     <div>
                                         <SingleSelectDropdownWithPagination
@@ -795,8 +801,8 @@ export const AddUpdateEnquiry: React.FC = () => {
 
                             <div>
                                 <SingleSelectDropdownWithPagination
-                                    label="Presales Executive Name"
-                                    title="Select Presales Executive Name"
+                                    label="Presales Executive"
+                                    title="Select Presales Executive"
                                     size="lg"
                                     dataFetchCallBack={fetchEmployeesByDept("Sale")}
                                     onSelected={(item) => handleFieldChange("PresalesExecutiveId", Number(item.value))}
@@ -828,7 +834,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                 />
                             </div>
                         </div>
-                        
+
                         <div>
                             <TextArea
                                 label="Remarks"

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
 import type { BuildingData, BuildingDetailsData, BuildingDocumentData, BuildingKeyContactDetails, FilterWithPaginationBuildingDetailsRequest, FilterWithPaginationBuildingDocumentRequest } from '@/features/building/models/BuildingModel';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
@@ -19,6 +19,7 @@ import Accordion from '@/ui/components/Card/Accordion';
 import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
+import { useBuildingListState } from '@/features/building/context/BuildingListStateContext';
 
 export const ViewBuilding: React.FC = () => {
 
@@ -52,35 +53,15 @@ export const ViewBuilding: React.FC = () => {
     //LOCATION
     const navigate = useNavigate();
 
-    const location = useLocation() as {
-        state?: {
-            editBuildingData?: BuildingData | null;
-            fromList?: boolean;
-            listState?: {
-                page: number;
-                filters: any;
-                sortInfo?: any;
-                searchTerm?: string;
-                buildingId?: number;
-                projectId?: number;
-                buildingName?: string;
-            };
-        };
-    };
-    const preservedListState = location.state?.listState;
-
-    const buildingName = preservedListState?.buildingName || '';
-
     //#endregion
 
     //#region PROJECT SELECTION GET ID
-
     const { projectId } = useProject()
-
     //#endregion
 
-    //#region Get BUILDING DATA FROM LOCATION STATE
-    const incomingBuildingData = (location.state?.editBuildingData ?? null) as BuildingData | null;
+    //#region BUILDING LIST STATE CONTEXT
+    const { listState } = useBuildingListState();
+    const { buildingId, buildingName } = listState;
     //#endregion
 
     //#region TAB ACTIVITY
@@ -96,35 +77,22 @@ export const ViewBuilding: React.FC = () => {
 
     //#region INIT
     useEffect(() => {
-        if (!projectId) return;
-        if (incomingBuildingData) {
-
-            setBuildingData(incomingBuildingData);
-
-            return;
-        }
+        if (!projectId || !buildingId) return;
 
         if (activeTab === 'Overview') {
-
             loadBuildingFromServer();
-
         } else if (activeTab === 'Document') {
-
             loadBuildingDocumentFromServer();
-
-        }
-        else if (activeTab === 'Details') {
-
+        } else if (activeTab === 'Details') {
             loadBuildingDetailsFromServer();
-
         }
-    }, [projectId]);
+    }, [projectId, buildingId, activeTab]);
 
     //#endregion
 
     //#region DATA LOAD OVERVIEW
     const loadBuildingFromServer = async () => {
-        if (!preservedListState?.filters?.buildingId) return;
+        if (!buildingId) return;
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
@@ -133,7 +101,7 @@ export const ViewBuilding: React.FC = () => {
                 const params: FilterWithPaginationBuildingRequest = {
                     PageNumber: 1,
                     PageSize: 1,
-                    BuildingId: preservedListState.buildingId,
+                    BuildingId: buildingId,
                     IsCheckPermission: false,
                     ProjectId: Number(projectId)
                 };
@@ -173,7 +141,7 @@ export const ViewBuilding: React.FC = () => {
                     PageSize: 1000,
                     IsCheckPermission: true,
                     ProjectId: Number(projectId),
-                    BuildingId: preservedListState?.buildingId,
+                    BuildingId: buildingId,
                     BuildingDocumentId: 0,
                     DocumentName: searchText,
                 }
@@ -210,7 +178,7 @@ export const ViewBuilding: React.FC = () => {
                 PageSize: 1000,
                 IsCheckPermission: true,
                 ProjectId: Number(projectId),
-                BuildingId: preservedListState?.buildingId,
+                BuildingId: buildingId,
                 BuildingDocumentId: doc.BuildingDocumentId
             };
 
@@ -260,7 +228,7 @@ export const ViewBuilding: React.FC = () => {
 
                 const params: FilterWithPaginationBuildingDetailsRequest = {
                     ProjectId: Number(projectId),
-                    BuildingId: preservedListState?.buildingId
+                    BuildingId: buildingId
                 }
 
                 const response = await buildingService.apiCallPullBuildingDetails(params);
@@ -310,68 +278,27 @@ export const ViewBuilding: React.FC = () => {
     //#endregion 
 
     //#region EDIT BUILDING
-
     const handleEditBuilding = (row: BuildingData) => {
         if (!row?.BuildingId) return;
-        navigate(`/building/add/${row.BuildingId}`, {
-            state: {
-                editBuildingData: row,
-                fromList: true,
-                listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
-            }
-        });
+        navigate(`/building/add/${row.BuildingId}`);
     };
-
     //#endregion
 
     //#region EDIT BUILDING DOCUMENT
-
-    const handleViewBuildingDocument = (row: BuildingDocumentData) => {
-        navigate('/building/document', {
-            state: {
-                buildingId: row.BuildingId,
-                projectId: row.ProjectId,
-                listState: {
-                    page: preservedListState?.page,
-                    filters: preservedListState?.filters,
-                    sortInfo: preservedListState?.sortInfo,
-                    searchTerm: preservedListState?.searchTerm,
-                    buildingId: row.BuildingId,
-                    projectId: row.ProjectId,
-                    buildingName: preservedListState?.buildingName,
-                }
-            }
-        });
+    const handleViewBuildingDocument = () => {
+        navigate('/building/document');
     };
     //#endregion
 
     //#region EDIT BUILDING Description
-
-    const handleViewBuildingDescription = (row: BuildingDetailsData) => {
-        navigate('/building/description', {
-            state: {
-                buildingId: row.BuildingId,
-                projectId: row.ProjectId,
-                listState: {
-                    page: preservedListState?.page,
-                    filters: preservedListState?.filters,
-                    sortInfo: preservedListState?.sortInfo,
-                    searchTerm: preservedListState?.searchTerm,
-                    buildingId: row.BuildingId,
-                    projectId: row.ProjectId,
-                    buildingName: preservedListState?.buildingName,
-                }
-            }
-        });
+    const handleViewBuildingDescription = () => {
+        navigate('/building/description');
     };
-
     //#endregion
 
     //#region BACK BUILDING PAGE
     const handleBackToListBuilding = () => {
-        navigate('/building', {
-            state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '', buildingId: 0, projectId: 0, buildingName: '' } }
-        });
+        navigate('/building');
     };
     //#endregion
 
@@ -397,15 +324,10 @@ export const ViewBuilding: React.FC = () => {
                     }
 
                     else if (activeTab === "Document") {
-
-                        const doc = buildingDocumentList?.[0];
-                        if (doc) handleViewBuildingDocument(doc);
-
+                        handleViewBuildingDocument();
                     }
-
                     else if (activeTab === "Details") {
-                        const details = buildingDetailsList?.[0];
-                        if (buildingDetailsList) handleViewBuildingDescription(details)
+                        handleViewBuildingDescription();
                     }
                 }}
 

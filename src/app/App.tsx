@@ -80,6 +80,7 @@ import AddUpdateChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages
 import ViewChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/ViewChannelPartnerMaster';
 import BuildingDescription from '@/features/building/pages/BuildingDescription';
 import BuildingDocument from '@/features/building/pages/BuildingDocument';
+import { BuildingListStateProvider } from '@/features/building/context/BuildingListStateContext';
 import TenantDocument from '@/features/tenant/pages/TenantDocument';
 import ProposedOffer from '@/features/proposedOffer/pages/ProposedOffer';
 import Company from '@/features/projectMaster/pages/Company';
@@ -235,18 +236,27 @@ function App() {
             <Route path="siteProgress/SiteProgressConstructionActivity" element={<SiteProgressConstructionActivity />} />
             <Route path="siteProgress/SiteProgressConstructionSubActivity" element={<SiteProgressConstructionSubActivity />} />
             <Route path="profile" element={<Profile />} />
-            <Route path="building" element={<Building />} />
-            <Route path="building/view" element={<ViewBuilding />} />
-            <Route path="building/add/:buildingId?" element={<AddUpdateBuilding />} />
-            <Route path="building/description" element={<BuildingDescription />} />
-            <Route path="building/document" element={<BuildingDocument />} />
+
+
+            <Route path="event" element={<Event />} />
+
+
+            {/* REDEVELOPMENT */}
+
+            <Route path="building" element={<BuildingListStateProvider><Building /></BuildingListStateProvider>} />
+            <Route path="building/view" element={<BuildingListStateProvider><ViewBuilding /></BuildingListStateProvider>} />
+            <Route path="building/add/:buildingId?" element={<BuildingListStateProvider><AddUpdateBuilding /></BuildingListStateProvider>} />
+            <Route path="building/description" element={<BuildingListStateProvider><BuildingDescription /></BuildingListStateProvider>} />
+            <Route path="building/document" element={<BuildingListStateProvider><BuildingDocument /></BuildingListStateProvider>} />
+
             <Route path="tenant" element={<Tenant />} />
             <Route path="tenant/view" element={<ViewTenant />} />
             <Route path="tenant/add/:tenantId?" element={<AddUpdateTenant />} />
             <Route path="tenant/document" element={<TenantDocument />} />
+
             <Route path="rent" element={<Rent />} />
+
             <Route path="proposedOffer" element={<ProposedOffer />} />
-            <Route path="event" element={<Event />} />
 
           </Route>
 

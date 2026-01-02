@@ -15,12 +15,13 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useLocation, type Location, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { FileText, Info, Trash2 } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { useBuildingListState } from '@/features/building/context/BuildingListStateContext';
 
 export const Building: React.FC = () => {
   //#region STATE
@@ -30,34 +31,16 @@ export const Building: React.FC = () => {
   const navigate = useNavigate();
 
   const { pagination, setPagination } = usePagination(20);
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   const { addToast } = useToast();
 
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchBuildings(value);
-  }, 350);
-
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
+
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   const [isShowCustomizeBuildingColumnsModal, setIsShowCustomizeBuildingColumnsModal] = useState(false);
 
   const { canAction, canExport } = useMenuPermissions();
-
-  const location = useLocation() as Location & {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: FilterInfo;
-        sortInfo?: SortInfo;
-        searchTerm?: string;
-      };
-    };
-  };
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
@@ -66,9 +49,13 @@ export const Building: React.FC = () => {
   //#endregion
 
   //#region PROJECT SELECTION GET ID
-
   const { projectId } = useProject()
+  //#endregion
 
+  //#region BUILDING LIST STATE CONTEXT
+  const { listState, updateListState, resetFilters, clearBuildingContext } = useBuildingListState();
+
+  const { page, filters, sortInfo, searchTerm } = listState;
   //#endregion
 
   //#region INIT
@@ -76,54 +63,37 @@ export const Building: React.FC = () => {
 
     if (!projectId) return;
 
-    const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string, buildingId?: number, projectId: number, buildingName: string }
-      | undefined;
+    clearBuildingContext();
 
-    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '' };
+    if (searchTerm && searchTerm.trim()) {
 
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
+      loadBuildings(page, { BuildingName: searchTerm.trim() }, sortInfo);
 
-    setSortInfo(listState.sortInfo);
+    } else {
 
-    setFilters(listState.filters ?? {});
+      loadBuildings(page, filters, sortInfo);
 
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
-    if (listState.searchTerm && String(listState.searchTerm).trim()) {
-
-      setSearchTerm(String(listState.searchTerm));
-
-      loadBuildings(listState.page ?? 1, { BuildingName: String(listState.searchTerm).trim() }, listState.sortInfo);
-
-      return;
     }
+  }, [projectId, page, filters, sortInfo, searchTerm, clearBuildingContext]);
 
-    loadBuildings(listState.page ?? 1, listState.filters ?? {}, listState.sortInfo);
-  }, [location.state,projectId]);
-
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel?.();
-    };
-  }, [debouncedSearch]);
 
   useEffect(() => {
-    if (!projectId) return;
-    setFilters({});
-    setTempFilters({});
-  }, [projectId]);
+
+    setPagination({ currentPage: page });
+
+  }, [page]);
+
+  useEffect(() => {
+
+    setTempFilters(filters);
+
+  }, [filters]);
 
   //#endregion
 
-  //#region DATA LOAD
-  const fetchBuildingList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadBuildings(page, filters, sort);
-  };
+  //#region DATA LOAD BUILDING
 
-  const loadBuildings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadBuildings = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -138,7 +108,7 @@ export const Building: React.FC = () => {
         }
 
         const params: FilterWithPaginationBuildingRequest = {
-          PageNumber: page,
+          PageNumber: pageNum,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           BuildingId: filterParams.BuildingId ? Number(filterParams.BuildingId) : undefined,
@@ -148,15 +118,18 @@ export const Building: React.FC = () => {
           SortBy: sortByParam
         };
 
-        const response = await getBuildings(params);
+        const response = await buildingService.apiCallPullBuilding(params);
 
         if (E.isRight(response)) {
+
           setBuildingList(response.right.Data);
+
           setPagination({
-            currentPage: page,
+            currentPage: pageNum,
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize)
           });
+
         } else {
           addToast({ type: 'error', title: response.left.message });
         }
@@ -175,37 +148,41 @@ export const Building: React.FC = () => {
   //#endregion
 
   //#region SEARCH BUILDING FILTER
-  const searchBuildings = async (searchValue: string) => {
-    setSearchTerm(searchValue);
 
-    if (searchValue.trim() === '') {
-      fetchBuildingList();
+  const debouncedSearch = useDebouncedCallback((value: string, isSerach: boolean = true) => {
+
+    let filterParams: FilterInfo = {};
+
+    if (value.trim() === '') {
+
+      updateListState({ searchTerm: '', filters: {}, page: 1 });
+
       return;
     }
 
-    const filterParams: FilterInfo = {
-      BuildingName: searchValue.trim()
-    };
+    if (isSerach) {
 
-    await loadBuildings(1, filterParams);
+      filterParams = { BuildingName: value.trim() };
+    }
+
+    updateListState({ searchTerm: value, filters: filterParams, page: 1 });
+
+  }, 350);
+
+  const searchBuildings = (searchValue: string) => {
+
+    updateListState({ searchTerm: searchValue });
+
+    debouncedSearch(searchValue, false);
   };
 
   //#endregion
 
-  //#region CLAER SERACH BUILDING
+  //#region CLEAR SEARCH BUILDING
   const clearSearchBuildings = () => {
-    setSearchTerm('');
-
     debouncedSearch.cancel?.();
-
-    setFilters({});
+    resetFilters();
     setTempFilters({});
-    setPagination({ currentPage: 1 });
-    loadBuildings(1, {});
-    try {
-      navigate(location.pathname, { replace: true, state: {} });
-    } catch {
-    }
   };
 
   //#endregion
@@ -235,7 +212,7 @@ export const Building: React.FC = () => {
           ExportType: exportType
         };
 
-        const response = await getBuildings(params);
+        const response = await buildingService.apiCallPullBuilding(params);
 
         handleExportFile(response, exportType, 'Building Master', addToast);
 
@@ -255,21 +232,14 @@ export const Building: React.FC = () => {
 
   //#endregion
 
-  //#region PULL BUILDING MASTER
-  const getBuildings = async (filterParams: FilterWithPaginationBuildingRequest) => {
-    return await buildingService.apiCallPullBuilding(filterParams);
-  };
-  //#endregion
-
   //#region TABLE CONFIG
-  const handlePageChange = useCallback((page: number) => {
-    fetchBuildingList(page);
-  }, []);
+  const handlePageChange = useCallback((newPage: number) => {
+    updateListState({ page: newPage });
+  }, [updateListState]);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
-    setSortInfo(sort);
-    loadBuildings(1, filters, sort);
-  }, [filters]);
+    updateListState({ sortInfo: sort, page: 1 });
+  }, [updateListState]);
 
   const buildingPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -286,68 +256,33 @@ export const Building: React.FC = () => {
   //#endregion
 
   //#region VIEW BUILDING DETAILS
-
   const handleViewBuildingDetails = useCallback((row: BuildingData) => {
-    navigate('/building/view', {
-      state: {
-        editBuildingData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          buildingId: row.BuildingId,
-          projectId: row.ProjectId,
-          buildingName: row.BuildingName
-        },
-      },
+    updateListState({
+      buildingId: row.BuildingId,
+      buildingName: row.BuildingName,
     });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    navigate('/building/view');
+  }, [navigate, updateListState]);
   //#endregion
 
   //#region VIEW BUILDING DOCUMENT
-
   const handleViewBuildingDocument = useCallback((row: BuildingData) => {
-    navigate('/building/document', {
-      state: {
-        editBuildingData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          buildingId: row.BuildingId,
-          projectId: row.ProjectId,
-          buildingName: row.BuildingName,
-
-        },
-      },
+    updateListState({
+      buildingId: row.BuildingId,
+      buildingName: row.BuildingName,
     });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    navigate('/building/document');
+  }, [navigate, updateListState]);
   //#endregion
 
-  //#region VIEW BUILDING DOCUMENT
-
+  //#region VIEW BUILDING DESCRIPTION
   const handleViewBuildingDescription = useCallback((row: BuildingData) => {
-    navigate('/building/description', {
-      state: {
-        editBuildingData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          buildingId: row.BuildingId,
-          projectId: row.ProjectId,
-          buildingName: row.BuildingName,
-
-        },
-      },
+    updateListState({
+      buildingId: row.BuildingId,
+      buildingName: row.BuildingName,
     });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    navigate('/building/description');
+  }, [navigate, updateListState]);
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
@@ -585,36 +520,6 @@ export const Building: React.FC = () => {
   );
   //#endregion
 
-  //#region FILTER HELPERS
-  const applyFilters = () => {
-    setFilters(tempFilters);
-    loadBuildings(1, tempFilters);
-    setShowFilterPopup(false);
-  };
-
-  const clearFilters = () => {
-    setTempFilters({});
-    setFilters({});
-
-    // reset page
-    setPagination({ currentPage: 1 });
-
-    // load empty filters
-    loadBuildings(1, {});
-
-    setShowFilterPopup(false);
-
-    // clear router state (very important)
-    navigate(location.pathname, { replace: true, state: {} });
-  };
-  //#endregion
-
-  //#region ADD NEW BUILDING
-  const handleAddBuildingModal = () => {
-    navigate('/building/add');
-  };
-  //#endregion
-
   //#region  HANDLE CHANGE EVENT
 
   const handleFilterChange = (key: string, value: string) => {
@@ -690,10 +595,7 @@ export const Building: React.FC = () => {
         isShowSearchBar
         searchTerm={searchTerm}
         searchPlaceholder="Search By Building Name"
-        onSearchChange={v => {
-          setSearchTerm(v);
-          debouncedSearch(v);
-        }}
+        onSearchChange={searchBuildings}
         onClearSearch={clearSearchBuildings}
         isShowFilterButton
         filters={filters}
@@ -706,8 +608,7 @@ export const Building: React.FC = () => {
         // ADD
         isShowAddButton={canAction && Number(projectId) > 0}
         addTitle="Add"
-        onAdd={handleAddBuildingModal}
-
+        onAdd={() => navigate('/building/add')}
         // IMPORT
         isShowImportButton={false}
 
@@ -770,11 +671,17 @@ export const Building: React.FC = () => {
         title="Filter - Building"
         onSubmit={e => {
           e.preventDefault();
-          applyFilters();
+          updateListState({ filters: tempFilters, page: 1 });
+          setShowFilterPopup(false);
         }}
         saveText="Apply Filter"
         cancelText="Clear Filter"
-        onCancel={() => clearFilters()}
+        onCancel={() => {
+          setTempFilters({});
+          resetFilters();
+          setShowFilterPopup(false);
+        }}
+
         resetText=''
         size="small-half"
       >
@@ -804,7 +711,7 @@ export const Building: React.FC = () => {
           </div>
         </div>
       </Modal>
-    </div>
+    </div >
   );
 };
 

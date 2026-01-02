@@ -20,10 +20,12 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
+import { useBuildingListState } from '@/features/building/context/BuildingListStateContext';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 
 const initialFormState = (): AddUpdateBuildingDocumentRequest => ({
@@ -104,23 +106,15 @@ const BuildingDocument: React.FC = () => {
 
   //#region NAVIGATION
   const navigate = useNavigate();
-  const location = useLocation() as {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: any;
-        sortInfo?: any;
-        searchTerm?: string;
-        buildingId?: number;
-        projectId?: number;
-        buildingName?: string;
-      };
-    };
-  };
-  const preservedListState = location.state?.listState;
-  const buildingId = preservedListState?.buildingId || 0;
-  const projectId = preservedListState?.projectId || 0;
-  const buildingName = preservedListState?.buildingName || '';
+  //#endregion
+
+  //#region PROJECT SELECTION GET ID
+  const { projectId } = useProject();
+  //#endregion
+
+  //#region BUILDING LIST STATE CONTEXT
+  const { listState } = useBuildingListState();
+  const { buildingId, buildingName } = listState;
   //#endregion
 
   //#region INIT
@@ -915,19 +909,7 @@ const BuildingDocument: React.FC = () => {
 
   //#region BACK BUILDING PAGE
   const handleBackToListBuilding = () => {
-    navigate('/building', {
-      state: {
-        listState: preservedListState ?? {
-          page: 1,
-          filters: {},
-          sortInfo: undefined,
-          searchTerm: '',
-          buildingId,
-          projectId,
-          buildingName
-        }
-      }
-    });
+    navigate('/building');
   };
   //#endregion
 

@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
@@ -11,6 +11,8 @@ import { filterNumbersWithDecimal, filterMobile, filterEmail, filterLetters, fil
 import type { AddUpdateBuildingDetailsRequest, FilterWithPaginationBuildingDetailsRequest, BuildingKeyContactDetails } from "@/features/building/models/BuildingModel";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { useBuildingListState } from "@/features/building/context/BuildingListStateContext";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
 
 
 const initialFormState = (): AddUpdateBuildingDetailsRequest => ({
@@ -37,28 +39,16 @@ const BuildingDescription: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const locationStateDetails = useLocation() as {
-    state?: {
-      buildingId?: number;
-      projectId?: number;
-      listState?: {
-        page?: number;
-        filters?: any;
-        sortInfo?: any;
-        searchTerm?: string;
-        buildingId?: number;
-        projectId?: number;
-        buildingName?: string;
-      };
-    };
-  };
+  //#region PROJECT SELECTION GET ID
+  const { projectId } = useProject();
+  //#endregion
 
-  const preservedListState = locationStateDetails.state?.listState;
-  const buildingId = preservedListState?.buildingId || 0;
-  const projectId = preservedListState?.projectId || 0;
-  const buildingName = preservedListState?.buildingName || 0;
+  //#region BUILDING LIST STATE CONTEXT
+  const { listState } = useBuildingListState();
+  
+  const { buildingId } = listState;
+  //#endregion
 
   // TOAST
   const { addToast } = useToast();
@@ -106,7 +96,7 @@ const BuildingDescription: React.FC = () => {
       async () => {
 
         const params: FilterWithPaginationBuildingDetailsRequest = {
-          ProjectId: projectId,
+          ProjectId: projectId ?? 0,
           BuildingId: buildingId
         }
 
@@ -120,7 +110,7 @@ const BuildingDescription: React.FC = () => {
             setFormData(prev => ({
               ...prev,
               BuildingId: buildingId,
-              ProjectId: projectId,
+              ProjectId: projectId ?? 0,
               GrossPlotAreaSqFt: row.GrossPlotAreaSqFt ?? prev.GrossPlotAreaSqFt ?? 0,
               PlotAreaPhysicalSurveySqFt: row.PlotAreaPhysicalSurveySqFt ?? prev.PlotAreaPhysicalSurveySqFt,
               PlotAreaOldApprovedPlanSqFt: row.PlotAreaOldApprovedPlanSqFt ?? prev.PlotAreaOldApprovedPlanSqFt,
@@ -199,6 +189,7 @@ const BuildingDescription: React.FC = () => {
 
   //#region ADD UPDATE BUILDING DETAILS
   const PushBuildingDetailsFormData = (): AddUpdateBuildingDetailsRequest => {
+
     // Convert contact details list to JSON string
     const contactDetailsJSON = contactDetailsList.length > 0
       ? JSON.stringify(contactDetailsList.map(contact => ({
@@ -213,7 +204,7 @@ const BuildingDescription: React.FC = () => {
 
     return {
       BuildingId: buildingId,
-      ProjectId: projectId,
+      ProjectId: projectId ?? 0,
       GrossPlotAreaSqFt: formData.GrossPlotAreaSqFt ?? 0,
       PlotAreaPhysicalSurveySqFt: formData.PlotAreaPhysicalSurveySqFt ?? undefined,
       PlotAreaOldApprovedPlanSqFt: formData.PlotAreaOldApprovedPlanSqFt ?? undefined,
@@ -255,33 +246,9 @@ const BuildingDescription: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          addToast({ type: "success", title: formData.BuildingId && formData.BuildingId > 0 ? "Building details updated successfully" : "Building details added successfully" });
+          addToast({ type: "success", title:response.right.SuccessMessage[0] });
 
-          const locationState = location.state as {
-            listState?: {
-              page?: number;
-              filters?: any;
-              sortInfo?: any;
-              searchTerm?: string;
-              buildingId?: number;
-              buildingName?: string;
-              projectId?: number
-            };
-          } | null;
-
-          const listState = locationState?.listState || {
-            page: 1,
-            filters: {},
-            sortInfo: undefined,
-            searchTerm: '',
-            buildingId: buildingId,
-            buildingName: buildingName,
-            projectId: projectId
-          };
-
-          navigate("/building", {
-            state: { listState }
-          });
+          navigate("/building");
 
 
         } else {

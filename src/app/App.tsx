@@ -16,7 +16,6 @@ import BranchAssociationsMaster from '@/features/branchAssociationsMaster/pages/
 import AssetMaster from '@/features/assetMaster/pages/AssetMaster';
 import AssetMappingMaster from '@/features/assetMappingMaster/pages/AssetMappingMaster';
 import DeductionMaster from '@/features/deductionMaster/pages/DeductionMaster';
-import EarningMaster from '@/features/earningMaster/pages/EarningMaster';
 import HolidayMaster from '@/features/holidayMaster/pages/HolidayMaster';
 import HolidayMappingMaster from '@/features/holidayMappingMaster/pages/HolidayMappingMaster';
 import LeaveEncashmentMaster from '@/features/leaveEncashmentMaster/pages/LeaveEncashmentMaster';
@@ -89,7 +88,6 @@ import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
-import EnquiryMaster from '@/features/EnquiryMaster/pages/EnquiryMaster';
 import Event from '@/features/event/pages/Event';
 import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditDebit from '@/features/leaveCreditDebit/pages/LeaveCreditDebit';
@@ -99,8 +97,10 @@ import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor'
 import Leave from '@/features/leave/pages/Leave';
 import AddUpdateLeave from '@/features/leave/pages/AddUpdateLeave';
 import ViewLeave from '@/features/leave/pages/ViewLeave';
-import ViewEnquiryMaster from '@/features/EnquiryMaster/pages/ViewEnquiryMaster';
-import AddUpdateEnquiryMaster from '@/features/EnquiryMaster/pages/AddUpdateEnquiryMaster';
+import ViewEnquiry from '@/features/enquiry/pages/ViewEnquiry';
+import Enquiry from '@/features/enquiry/pages/Enquiry';
+import AddUpdateEnquiry from '@/features/enquiry/pages/AddUpdateEnquiry';
+import EarningMaster from '@/features/earningMaster/pages/EarningMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -203,12 +203,7 @@ function App() {
             <Route path="WeekOffMaster/view" element={<ViewWeekOffMaster />} />
             <Route path="WeekOffMaster/add/:WeekOffMasterId?" element={<AddUpdateWeekOffMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
-            <Route path="channelPartner" element={<ChannelPartnerMaster />} />
-            <Route path="channelPartner/view" element={<ViewChannelPartnerMaster />} />
-            <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartnerMaster />} />
-            <Route path="enquiry" element={<EnquiryMaster />} />
-            <Route path="enquiry/view" element={<ViewEnquiryMaster />} />
-            <Route path="enquiry/add/:EnquiryId?" element={<AddUpdateEnquiryMaster />} />
+
             <Route path="vendor" element={<Vendor />} />
             <Route path="vendor/view" element={<ViewVendor />} />
             <Route path="projectMaster" element={<ProjectMaster />} />
@@ -241,6 +236,13 @@ function App() {
 
             <Route path="event" element={<Event />} />
 
+            {/* SALES */}
+            <Route path="channelPartner" element={<ChannelPartnerMaster />} />
+            <Route path="channelPartner/view" element={<ViewChannelPartnerMaster />} />
+            <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartnerMaster />} />
+            <Route path="enquiry" element={<Enquiry />} />
+            <Route path="enquiry/view" element={<ViewEnquiry/>} />
+            <Route path="enquiry/add/:EnquiryId?" element={<AddUpdateEnquiry />} />
 
             {/* REDEVELOPMENT */}
 

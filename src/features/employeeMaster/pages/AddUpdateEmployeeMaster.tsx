@@ -31,6 +31,7 @@ import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialVa
 import type { AddUpdateEmployeeMasterRequest, FilterWithPaginationEmployeeMasterRequest } from "@/features/employeeMaster/models/EmployeeMasterModel";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { Phone } from "lucide-react";
 
 
 const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
@@ -657,6 +658,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                   placeholder="Enter Personal Mobile Number"
                   required
                   value={formData.PersonalMobileNumber}
+                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                   onChange={(e) => handleFieldChange("PersonalMobileNumber", filterMobile(e.target.value))}
                   error={errors.PersonalMobileNumber} />
               </div>
@@ -667,6 +669,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                   leftIcon="+91"
                   label="Office Mobile Number"
                   placeholder="Enter Office Mobile Number"
+                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                   onChange={(e) => handleFieldChange("OfficeMobileNumber", filterMobile(e.target.value))}
                   error={errors.OfficeMobileNumber}
                 />
@@ -697,6 +700,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                   placeholder="Enter Emergency Contact Number"
                   leftIcon="+91"
                   value={formData.EmergencyMobileNumber}
+                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                   required
                   onChange={(e) => handleFieldChange("EmergencyMobileNumber", filterMobile(e.target.value))}
                   error={errors.EmergencyMobileNumber} />

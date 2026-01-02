@@ -84,7 +84,7 @@ export const MASTER_DATA = {
 
     occupationType: ['Business', 'Homemaker', 'Professional', 'Salaried', 'Retired',],
 
-    budget: ['Less Than 1', 'UPTO 1.5', 'UPTO 2.5', 'UPTO 3', 'UPTO 4', 'UPTO 5', '5 & Above'],
+    budget: ['<1', '1.5', '2.5', '3', '4', '5', '5 <'],
 
     accomodation: ["Rented", "Self-Owned",],
 

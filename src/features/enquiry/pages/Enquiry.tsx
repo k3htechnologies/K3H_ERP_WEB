@@ -1,10 +1,10 @@
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
-    DeleteEnquiryMasterRequest,
-    EnquiryMasterData,
-    FilterWithPaginationEnquiryMasterRequest
-} from '@/features/EnquiryMaster/models/EnquiryMasterModel';
+    DeleteEnquiryRequest,
+    EnquiryData,
+    FilterWithPaginationEnquiryRequest
+} from '@/features/enquiry/models/EnquiryModel';
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import { DataTable, type FilterInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
@@ -21,7 +21,7 @@ import { updateFilter } from "@/core/utils/filterHelper";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { runApiWithLoader } from "@/core/utils";
-import { EnquiryMasterService } from "../services/EnquiryMasterServices";
+import { EnquiryService } from "../services/EnquiryServices";
 import * as E from 'fp-ts/Either';
 import { handleExportFile } from "@/core/utils/exportFile";
 import { Loader } from "@/core/utils/loader";
@@ -32,10 +32,10 @@ import type { FilterPullExcelSample } from "@/features/technical/models/Technica
 import { technicalService } from "@/features/technical/services/TechnicalService";
 
 
-export const EnquiryMaster: React.FC = () => {
+export const Enquiry: React.FC = () => {
 
     //#region STATE MANAGEMENT
-    const [EnquiryMasterList, setEnquiryMasterMasterList] = useState<EnquiryMasterData[]>([]);
+    const [EnquiryList, setEnquiryMasterList] = useState<EnquiryData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
 
@@ -67,7 +67,7 @@ export const EnquiryMaster: React.FC = () => {
 
     //DELETE ENQUIRY MASTER
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-    const [deleteEnquiryMasterData, setDeleteEnquiryMasterData] = useState<EnquiryMasterData | null>(null)
+    const [deleteEnquiryData, setDeleteEnquiryData] = useState<EnquiryData | null>(null)
 
     //CUSTOMIZE COLUMN MODAL
     const [isShowCustomizeEnquiryColumnsModal, setIsShowCustomizeEnquiryColumnsModal] = useState(false);
@@ -123,11 +123,12 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-    const fetchEnquiryMasterList = async (page: number = pagination.currentPage) => {
+    const fetchEnquiryList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
 
-        return await loadEnquiry(page, filters);
+        return await loadEnquiry(page, filters, sort);
     }
-    const loadEnquiry = async (page: number, filterParams: FilterInfo) => {
+    
+    const loadEnquiry = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
         await runApiWithLoader(
 
             setIsLoading,
@@ -138,12 +139,12 @@ export const EnquiryMaster: React.FC = () => {
                 let sortByParam = undefined;
 
                 if (sortInfo) {
-                    const column = EnquiryMasterColumns.find(col => col.key === sortInfo.column);
+                    const column = EnquiryColumns.find(col => col.key === sortInfo.column);
                     if (column) {
                         sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
                     }
                 }
-                const params: FilterWithPaginationEnquiryMasterRequest = {
+                const params: FilterWithPaginationEnquiryRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     Name: filterParams.Name?.trim() || undefined,
@@ -152,11 +153,11 @@ export const EnquiryMaster: React.FC = () => {
                     Budget: filterParams.Budget?.trim() || undefined,
                     SortBy: sortByParam
                 };
-                const response = await EnquiryMasterService.apiCallPullEnquiryMaster(params);
+                const response = await EnquiryService.apiCallPullEnquiry(params);
 
                 if (E.isRight(response)) {
 
-                    setEnquiryMasterMasterList(response.right.Data);
+                    setEnquiryMasterList(response.right.Data);
 
                     setPagination({
                         currentPage: page,
@@ -184,7 +185,7 @@ export const EnquiryMaster: React.FC = () => {
 
         if (searchValue.trim() === '') {
 
-            fetchEnquiryMasterList();
+            fetchEnquiryList();
 
             return
         }
@@ -229,12 +230,12 @@ export const EnquiryMaster: React.FC = () => {
             async () => {
                 let sortByParam;
                 if (sortInfo) {
-                    const column = EnquiryMasterColumns.find(col => col.key === sortInfo.column);
+                    const column = EnquiryColumns.find(col => col.key === sortInfo.column);
                     if (column) {
                         sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
                     }
                 }
-                const params: FilterWithPaginationEnquiryMasterRequest = {
+                const params: FilterWithPaginationEnquiryRequest = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     Name: filters.Name?.trim() || undefined,
@@ -261,7 +262,7 @@ export const EnquiryMaster: React.FC = () => {
 
     //#region IMPORT EXCEL | DOWNLOAD
 
-    const excelImportEnquiryMaster = async () => {
+    const excelImportEnquiry = async () => {
 
         await runApiWithLoader(
 
@@ -282,7 +283,7 @@ export const EnquiryMaster: React.FC = () => {
         )
     }
 
-    const downloadExcelSampleEnquiryMaster = async () => {
+    const downloadExcelSampleEnquiry = async () => {
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
@@ -307,31 +308,29 @@ export const EnquiryMaster: React.FC = () => {
         )
     }
 
-    const handleExcelImportEnquiryMaster = () => excelImportEnquiryMaster()
-    const handleDownloadExcelSampleEnquiryMaster = () => downloadExcelSampleEnquiryMaster()
+    const handleExcelImportEnquiry = () => excelImportEnquiry()
+    const handleDownloadExcelSampleEnquiry = () => downloadExcelSampleEnquiry()
     //#endregion
 
     //#region API | SERVICES CALL TO GET ENQUIRY
-    const getEnquiry = async (filterParams: FilterWithPaginationEnquiryMasterRequest) => {
+    const getEnquiry = async (filterParams: FilterWithPaginationEnquiryRequest) => {
 
-        return await EnquiryMasterService.apiCallPullEnquiryMaster(filterParams);
+        return await EnquiryService.apiCallPullEnquiry(filterParams);
     }
     //#endregion
 
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
 
-        fetchEnquiryMasterList(page);
+        fetchEnquiryList(page);
     }, []);
 
     //#region TABLE SORT COLUMN
-    const handleSortColumn = useCallback((sortInfo: SortInfo) => {
 
-        setSortInfo(sortInfo);
-
-        fetchEnquiryMasterList(1);
-
-    }, []);
+    const handleSortColumn = useCallback((sort: SortInfo) => {
+        setSortInfo(sort);
+        loadEnquiry(1, filters, sort);
+    }, [filters]);
 
     //#region TABLE PAGINATION INFO
     const EnquiryPaginationInfo: PaginationInfo = useMemo(
@@ -344,10 +343,10 @@ export const EnquiryMaster: React.FC = () => {
         }),
         [pagination, handlePageChange]
     )
-    const EnquiryForTable = useMemo(() => EnquiryMasterList, [EnquiryMasterList]);
+    const EnquiryForTable = useMemo(() => EnquiryList, [EnquiryList]);
 
     //#region NAVIGATE TO  VIEW ENQUIRY
-    const handleNavigateToView = (row: EnquiryMasterData) => {
+    const handleNavigateToView = (row: EnquiryData) => {
         navigate('/enquiry/view', {
             state: {
                 editEnquiryData: row,
@@ -377,18 +376,35 @@ export const EnquiryMaster: React.FC = () => {
     //#endregion
 
     //#region CONFIRMATION DIALOG BOX
-    const handleConfirmationDialogBoxOpen = useCallback((row: EnquiryMasterData) => {
+    const handleConfirmationDialogBoxOpen = useCallback((row: EnquiryData) => {
 
-        setDeleteEnquiryMasterData(row)
+        setDeleteEnquiryData(row)
 
         setIsConfirmationDialogBoxOpen(true)
     }, [])
 
     //#region TABLE COLUMNS
-    const EnquiryMasterColumns = useMemo<TableColumn[]>(() => [
+    const EnquiryColumns = useMemo<TableColumn[]>(() => [
+
+        {
+            key: 'SystemGeneratedCode',
+            label: 'Unique Code',
+            width: '20',
+            sortable: true,
+            fixed: 'left',
+            align: 'left',
+            render: value => (
+                <TooltipText
+                    text={value || 'N/A'}
+                    maxWidth="140px"
+                    tooltipThreshold={14}
+                    tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                />
+            )
+        },
         {
             key: 'Name',
-            label: 'Enquiry Name',
+            label: 'Name',
             width: '20',
             sortable: true,
             fixed: 'left',
@@ -403,60 +419,192 @@ export const EnquiryMaster: React.FC = () => {
             )
         },
         {
-            key: 'ProjectName',
-            label: 'Project Name',
-            width: '15',
+            key: 'EnquiryFollowUpDays',
+            label: 'Enquiry Follow Up Days',
+            width: '14',
             sortable: false,
-            align: 'center',
-            render: (value) => (
-                <TooltipText
-                    text={value || 'N/A'}
-                    maxWidth="150px"
-                    tooltipThreshold={15}
-                />
-            )
+            align: 'left',
+            render: value => value ? `${value}` : '-'
+
+        },
+
+        {
+            key: 'MobileNumber',
+            label: 'Mobile Number',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value ? `+91 ${value}` : '-'
+
+        },
+        {
+            key: 'EmailId',
+            label: 'Email Id',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'OccupationType',
+            label: 'Occupation Type',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'Accommodation',
+            label: 'Accommodation',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'Budget',
+            label: 'Budget (In CR)',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
         },
         {
             key: 'Requirement',
             label: 'Requirement',
-            width: '15',
+            width: '14',
             sortable: false,
-            align: 'center',
-            render: (value) => (
-                <TooltipText
-                    text={value || 'N/A'}
-                    maxWidth="150px"
-                    tooltipThreshold={15}
-                />
-            )
+            align: 'left',
+            render: value => value || '-'
         },
         {
-            key: 'FinalStage',
-            label: 'Final Stage',
-            width: '15',
+            key: 'RequirementType',
+            label: 'Requirement Type',
+            width: '14',
             sortable: false,
-            align: 'center',
-            render: (value) => (
-                <TooltipText
-                    text={value || 'N/A'}
-                    maxWidth="170px"
-                    tooltipThreshold={15}
-                />
-            )
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'AreaPreferred',
+            label: 'Area Preferred',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'PossessionType',
+            label: 'Possession Type',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
         },
         {
             key: 'Source',
             label: 'Source',
-            width: '12',
+            width: '14',
             sortable: false,
-            align: 'center',
-            render: (value) => (
-                <TooltipText
-                    text={value || 'N/A'}
-                    maxWidth="120px"
-                    tooltipThreshold={12}
-                />
-            )
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'SubSource',
+            label: 'Sub Source',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'Nationality',
+            label: 'Nationality',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'Age',
+            label: 'Age',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'DesiredFloorBand',
+            label: 'Desired Floor Band',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'NeighborhoodPlacesInterestedIn',
+            label: 'Neighborhood Places',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'SourceOfFunding',
+            label: 'Source Of Funding',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'CustomerClassification',
+            label: 'Customer Classification',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+
+        {
+            key: 'ChannelPartnerName',
+            label: 'Channel Partner Name',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'ChannelPartnerCompany',
+            label: 'Channel Partner Company',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'ChannelPartnerMobileNumber',
+            label: 'Channel Partner Mobile No',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'FinalStage',
+            label: 'Final Stage',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'FinalStageDetail',
+            label: 'Final Stage Detail',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
         },
         {
             key: 'NextFollowUpDate',
@@ -475,6 +623,30 @@ export const EnquiryMaster: React.FC = () => {
             align: 'center',
             render: (value?: string) =>
                 value ? formatDate_dd_MonthName_yy(value) : 'N/A'
+        },
+        {
+            key: 'SalesAdvisor',
+            label: 'Sales Advisor',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'SourcingManager',
+            label: 'Sourcing Manager',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'PresalesExecutive',
+            label: 'Presales Executive',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
         },
 
         {
@@ -514,12 +686,12 @@ export const EnquiryMaster: React.FC = () => {
     //#region COLUMN CUSTOMIZATION
     const requiredEnquiryColumnKeys: string[] = ['Name'];
 
-    const allEnquiryColumnKeys: string[] = EnquiryMasterColumns.map(c => c.key);
+    const allEnquiryColumnKeys: string[] = EnquiryColumns.map(c => c.key);
 
     const [selectedEnquiryColumnKeys, setSelectedEnquiryColumnKeys] = useState<string[]>(() => {
         try {
 
-            const saved = LocalStorageHelper.getEnquiryMasterTableColumns?.();
+            const saved = LocalStorageHelper.getEnquiryTableColumns?.();
 
             if (saved) {
 
@@ -535,11 +707,11 @@ export const EnquiryMaster: React.FC = () => {
 
     useEffect(() => {
         setSelectedEnquiryColumnKeys(prev => Array.from(new Set([...prev, ...requiredEnquiryColumnKeys])).filter(k => allEnquiryColumnKeys.includes(k)));
-    }, [EnquiryMasterColumns.length])
+    }, [EnquiryColumns.length])
 
     const visibleEnquiryColumns = useMemo(
-        () => EnquiryMasterColumns.filter(col => selectedEnquiryColumnKeys.includes(col.key)),
-        [EnquiryMasterColumns, selectedEnquiryColumnKeys]
+        () => EnquiryColumns.filter(col => selectedEnquiryColumnKeys.includes(col.key)),
+        [EnquiryColumns, selectedEnquiryColumnKeys]
     );
     //#endregion
 
@@ -580,11 +752,11 @@ export const EnquiryMaster: React.FC = () => {
     //#endregion
 
     //#region DELETE ENQUIRY MASTER
-    const handleDeleteEnquiryMaster = async () => {
+    const handleDeleteEnquiry = async () => {
 
         setIsConfirmationDialogBoxOpen(false);
 
-        if (!deleteEnquiryMasterData) return;
+        if (!deleteEnquiryData) return;
 
         await runApiWithLoader(
 
@@ -592,20 +764,20 @@ export const EnquiryMaster: React.FC = () => {
 
             setIsLoadingMessage,
             async () => {
-                const params: DeleteEnquiryMasterRequest = {
+                const params: DeleteEnquiryRequest = {
 
-                    EnquiryId: deleteEnquiryMasterData.EnquiryId || 0,
+                    EnquiryId: deleteEnquiryData.EnquiryId || 0,
 
                     ProjectId: Number(projectId),
 
-                    Uniquekey: deleteEnquiryMasterData.Uniquekey || ""
+                    Uniquekey: deleteEnquiryData.Uniquekey || ""
                 };
 
-                const response = await EnquiryMasterService.apiCallDeleteEnquiryMaster(params);
+                const response = await EnquiryService.apiCallDeleteEnquiry(params);
 
                 if (E.isRight(response)) {
 
-                    setEnquiryMasterMasterList(prevData => prevData.filter(item => item.EnquiryId !== deleteEnquiryMasterData?.EnquiryId));
+                    setEnquiryMasterList(prevData => prevData.filter(item => item.EnquiryId !== deleteEnquiryData?.EnquiryId));
 
                     setPagination({
                         currentPage: pagination.currentPage,
@@ -616,7 +788,7 @@ export const EnquiryMaster: React.FC = () => {
 
                     setIsConfirmationDialogBoxOpen(false);
 
-                    setDeleteEnquiryMasterData(null);
+                    setDeleteEnquiryData(null);
 
                 } else {
 
@@ -643,7 +815,7 @@ export const EnquiryMaster: React.FC = () => {
             <TableActionToolbar
                 isShowSearchBar
                 searchTerm={searchTerm}
-                searchPlaceholder="Search By Enquiry Name"
+                searchPlaceholder="Search By Full Name"
                 onSearchChange={v => {
                     setSearchTerm(v);
                     debouncedSearch(v);
@@ -665,11 +837,11 @@ export const EnquiryMaster: React.FC = () => {
 
                 // IMPORT
                 isShowImportButton={canAction}
-                onUploadExcel={handleExcelImportEnquiryMaster}
-                onDownloadSampleExcel={handleDownloadExcelSampleEnquiryMaster}
+                onUploadExcel={handleExcelImportEnquiry}
+                onDownloadSampleExcel={handleDownloadExcelSampleEnquiry}
 
                 //EXPORT
-                isShowExportButton={canExport}
+                isShowExportButton={canExport && EnquiryForTable.length > 0}
                 onExportExcel={handleExportEnquiryExcel}
                 onExportPdf={handleExportEnquiryPdf}
                 exportLoading={isLoading}
@@ -705,7 +877,7 @@ export const EnquiryMaster: React.FC = () => {
                         );
                     } catch { }
                 }}
-                columns={EnquiryMasterColumns}
+                columns={EnquiryColumns}
                 selectedKeys={selectedEnquiryColumnKeys}
                 requiredKeys={requiredEnquiryColumnKeys}
                 title="Customize Table Columns"
@@ -741,7 +913,7 @@ export const EnquiryMaster: React.FC = () => {
             <ConfirmationDialogBox
                 isOpen={isConfirmationDialogBoxOpen}
                 onClose={() => setIsConfirmationDialogBoxOpen(false)}
-                onConfirm={handleDeleteEnquiryMaster}
+                onConfirm={handleDeleteEnquiry}
                 title="You are about to delete this Enquiry?"
                 message="Deleting this Enquiry will permanently remove its data."
                 confirmText="Delete"
@@ -752,4 +924,4 @@ export const EnquiryMaster: React.FC = () => {
         </div>
     );
 }
-export default EnquiryMaster;
+export default Enquiry;

@@ -1,6 +1,6 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
-export interface FilterWithPaginationEnquiryMasterRequest {
+export interface FilterWithPaginationEnquiryRequest {
     PageSize: number
     PageNumber: number
     ProjectId?: number
@@ -22,9 +22,10 @@ export interface FilterWithPaginationEnquiryMasterRequest {
     ExportType?: 'Excel' | 'PDF'
 }
 
-export interface EnquiryMasterData {
+export interface EnquiryData {
     EnquiryId: number | null
     Uniquekey: string | null
+    SystemGeneratedCode: string | null
     ProjectId: number
     SalesAdvisorId:number | null
     SalesAdvisor:string | null
@@ -91,7 +92,7 @@ export interface ChannelPartnerWithEnquiryData {
     TimeDimension: string | null
 }
 
-export interface AddUpdateEnquiryMasterRequest {
+export interface AddUpdateEnquiryRequest {
     EnquiryId: number | null
     Uniquekey: string | null
     ProjectId: number
@@ -134,13 +135,13 @@ export interface AddUpdateEnquiryMasterRequest {
     Remark?: string | null
 }
 
-export interface DeleteEnquiryMasterRequest {
+export interface DeleteEnquiryRequest {
     EnquiryId: number
     Uniquekey: string
     ProjectId: number
 }
 
-export type EnquiryMasterListResponse = ApiResponse<EnquiryMasterData[]>
+export type EnquiryListResponse = ApiResponse<EnquiryData[]>
 export type ChannelPartnerWithEnquiryListResponse = ApiResponse<ChannelPartnerWithEnquiryData[]>
-export type EnquiryMasterSaveResponse = ApiResponse<EnquiryMasterData[]>
-export type EnquiryMasterDeleteResponse = ApiResponse<number>
+export type EnquirySaveResponse = ApiResponse<EnquiryData[]>
+export type EnquiryDeleteResponse = ApiResponse<number>

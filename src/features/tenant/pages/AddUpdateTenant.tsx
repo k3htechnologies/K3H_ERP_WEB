@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
@@ -25,6 +25,7 @@ import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListM
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
+import { useTenantListState } from "@/features/tenant/context/TenantListStateContext";
 
 
 const initialFormState = (): AddUpdateTenantRequest => ({
@@ -127,25 +128,8 @@ const AddUpdateTenant: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const locationStateDetails = useLocation() as {
-    state?: {
-      editTenantData?: TenantData | null;
-      fromList?: boolean;
-      listState?: {
-        page: number;
-        filters: any;
-        sortInfo?: any;
-        searchTerm?: string;
-        buildingId?: number;
-        buildingName?: string;
-      };
-    };
-  };
-  const preservedListState = locationStateDetails.state?.listState;
-
-  //GET VALUE FROM URL :EMPLOYEEID
+  //GET VALUE FROM URL :TENANTID
   const { tenantId } = useParams<{ tenantId?: string }>();
 
   // TOAST
@@ -157,9 +141,12 @@ const AddUpdateTenant: React.FC = () => {
   //#endregion
 
   //#region PROJECT SELECTION GET ID
-
   const { projectId } = useProject()
+  //#endregion
 
+  //#region TENANT LIST STATE CONTEXT
+  const { listState } = useTenantListState();
+  const { buildingId } = listState;
   //#endregion
 
   //#region  TENANT APPLICANT
@@ -261,7 +248,7 @@ const AddUpdateTenant: React.FC = () => {
           IsCheckPermission: false,
           TenantId: Number(tenantId),
           ProjectId: Number(projectId),
-          BuildingId: preservedListState?.buildingId
+          BuildingId: buildingId
         }
 
         const response = await tenantService.apiCallPullTenant(params);
@@ -276,7 +263,7 @@ const AddUpdateTenant: React.FC = () => {
               ...prev,
               TenantId: tenant.TenantId ?? prev.TenantId,
               Uniquekey: tenant.Uniquekey ?? prev.Uniquekey,
-              BuildingId: Number(preservedListState?.buildingId),
+              BuildingId: Number(buildingId),
               ProjectId: tenant.ProjectId ?? prev.ProjectId,
               FlatNumber: tenant.FlatNumber ?? prev.FlatNumber,
               FlatCarpetAreaSqFt: tenant.FlatCarpetAreaSqFt ?? prev.FlatCarpetAreaSqFt,
@@ -405,32 +392,7 @@ const AddUpdateTenant: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          addToast({ type: "success", title: formData.TenantId ? "Tenant updated successfully" : "Tenant added successfully" });
-
-          // Get list state from navigation if available, otherwise use defaults
-          const locationState = location.state as {
-            listState?: {
-              page?: number;
-              filters?: any;
-              sortInfo?: any;
-              searchTerm?: string;
-              buildingId?: number;
-              buildingName?: string;
-              tenantId?: number;
-              tenantName?: string;
-            };
-          } | null;
-
-          const listState = locationState?.listState || {
-            page: 1,
-            filters: {},
-            sortInfo: undefined,
-            searchTerm: '',
-            buildingId: 0,
-            buildingName: '',
-            tenantId:0,
-            tenantName: ''
-          };
+          addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
           navigate("/tenant", {
             state: { listState }
@@ -464,7 +426,7 @@ const AddUpdateTenant: React.FC = () => {
     const applicantData: AddUpdateTenantApplicant = {
       TenantApplicantId: row.TenantApplicantId ?? 0,
       TenantId: row.TenantId ?? 0,
-      BuildingId: Number(preservedListState?.buildingId),
+      BuildingId: Number(buildingId),
       ProjectId: row.ProjectId ?? 0,
       ApplicantType: row.ApplicantType || '',
       ApplicantName: row.ApplicantName || '',
@@ -535,7 +497,7 @@ const AddUpdateTenant: React.FC = () => {
     setRemovedChequeURLs([]);
 
     setIsAddUpdateApplicantModalOpen(true);
-  }, [preservedListState]);
+  }, []);
   //#endregion
   //#region DELETE TENANT APPLICANT CONFIRMATION DIALOG
   const handleConfirmationDialogBoxOpen = (row: TenantApplicantWithFiles, index: number) => {
@@ -1202,7 +1164,7 @@ const AddUpdateTenant: React.FC = () => {
     fd.append('TenantId', String(formData.TenantId ?? 0));
     fd.append('Uniquekey', String(formData.Uniquekey ?? ''));
     fd.append('ProjectId', String(projectId ?? 0));
-    fd.append('BuildingId', String(preservedListState?.buildingId));
+    fd.append('BuildingId', String(buildingId));
     fd.append('FlatNumber', formData.FlatNumber ?? '');
     fd.append('FlatCarpetAreaSqFt', String(formData.FlatCarpetAreaSqFt ?? ''));
     fd.append('Facing', formData.Facing ?? '');
@@ -1242,7 +1204,7 @@ const AddUpdateTenant: React.FC = () => {
     applicantList.forEach((app, index) => {
       const prefix = `AddUpdateTenantApplicants[${index}]`;
 
-      fd.append(`${prefix}.BuildingId`, String(preservedListState?.buildingId));
+      fd.append(`${prefix}.BuildingId`, String(buildingId));
       fd.append(`${prefix}.ProjectId`, String(app.ProjectId ?? projectId));
       fd.append(`${prefix}.ApplicantType`, String(app.ApplicantType ?? ''));
       fd.append(`${prefix}.TenantId`, String(app.TenantId ?? formData.TenantId ?? 0));

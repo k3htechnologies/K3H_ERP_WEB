@@ -58,39 +58,6 @@ export const Building: React.FC = () => {
   const { page, filters, sortInfo, searchTerm } = listState;
   //#endregion
 
-  //#region INIT
-  useEffect(() => {
-
-    if (!projectId) return;
-
-    clearBuildingContext();
-
-    if (searchTerm && searchTerm.trim()) {
-
-      loadBuildings(page, { BuildingName: searchTerm.trim() }, sortInfo);
-
-    } else {
-
-      loadBuildings(page, filters, sortInfo);
-
-    }
-  }, [projectId, page, filters, sortInfo, searchTerm, clearBuildingContext]);
-
-
-  useEffect(() => {
-
-    setPagination({ currentPage: page });
-
-  }, [page]);
-
-  useEffect(() => {
-
-    setTempFilters(filters);
-
-  }, [filters]);
-
-  //#endregion
-
   //#region DATA LOAD BUILDING
 
   const loadBuildings = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
@@ -144,6 +111,39 @@ export const Building: React.FC = () => {
       'Loading Building'
     );
   };
+
+  //#endregion
+
+  //#region INIT
+  useEffect(() => {
+
+    if (!projectId) return;
+
+    clearBuildingContext();
+
+    if (searchTerm && searchTerm.trim()) {
+
+      loadBuildings(page, { BuildingName: searchTerm.trim() }, sortInfo);
+
+    } else {
+
+      loadBuildings(page, filters, sortInfo);
+
+    }
+  }, [projectId, page, filters, sortInfo, searchTerm, clearBuildingContext]);
+
+
+  useEffect(() => {
+
+    setPagination({ currentPage: page });
+
+  }, [page]);
+
+  useEffect(() => {
+
+    setTempFilters(filters);
+
+  }, [filters]);
 
   //#endregion
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -23,12 +23,14 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import { updateFilter } from '@/core/utils/filterHelper';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
+import { useTenantListState } from '@/features/tenant/context/TenantListStateContext';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 
 const initialFormState = (): AddUpdateTenantDocumentRequest => ({
@@ -95,29 +97,15 @@ export const TenantDocument: React.FC = () => {
 
   // NAVIGATION
   const navigate = useNavigate();
+  //#endregion
 
-  //LOCATION STATE
-  const location = useLocation() as {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: any;
-        sortInfo?: any;
-        searchTerm?: string;
-        tenantId?: number;
-        buildingId?: number;
-        projectId?: number;
-        buildingName?: string;
-        tenantName?: string;
-      };
-    };
-  };
-  const preservedListState = location.state?.listState;
-  const tenantId = preservedListState?.tenantId || 0;
-  const buildingId = preservedListState?.buildingId || 0;
-  const projectId = preservedListState?.projectId || 0;
-  const tenantName = preservedListState?.tenantName || '';
-  const buildingName = preservedListState?.buildingName || '';
+  //#region PROJECT SELECTION GET ID
+  const { projectId } = useProject();
+  //#endregion
+
+  //#region TENANT LIST STATE CONTEXT
+  const { listState } = useTenantListState();
+  const { tenantId, buildingId, tenantName } = listState;
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -125,17 +113,10 @@ export const TenantDocument: React.FC = () => {
   //#endregion
 
   //#region INITIALIZATION
-
-  const hasFetchedInitialTenantDocuments = useRef(false)
-
   useEffect(() => {
-
-    if (hasFetchedInitialTenantDocuments.current) return
-
-    hasFetchedInitialTenantDocuments.current = true;
-
-    fetchTenantDocumentList()
-  }, [])
+    if (!projectId || !buildingId || !tenantId) return;
+    fetchTenantDocumentList();
+  }, [projectId, buildingId, tenantId])
 
 
   //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
@@ -166,7 +147,7 @@ export const TenantDocument: React.FC = () => {
           ...initialFormState(),
           TenantId: tenantId,
           BuildingId: buildingId,
-          ProjectId: projectId
+          ProjectId: Number(projectId)
         });
         setDocumentFiles([]);
         setDocumentURL('');
@@ -205,7 +186,7 @@ export const TenantDocument: React.FC = () => {
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
-          ProjectId: projectId,
+          ProjectId: Number(projectId),
           BuildingId: buildingId,
           TenantId: tenantId,
           TenantDocumentId: filterParams.TenantDocumentId ? Number(filterParams.TenantDocumentId) : undefined,
@@ -213,7 +194,7 @@ export const TenantDocument: React.FC = () => {
           SortBy: sortByParam
         }
 
-        const response = await getTenantDocuments(params);
+        const response = await tenantService.apiCallPullTenantDocument(params);
 
         if (E.isRight(response)) {
 
@@ -279,12 +260,13 @@ export const TenantDocument: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        // Find the column label for sorting
-        let sortByParam = undefined
+       let sortByParam: string | undefined;
+
         if (sortInfo) {
-          const column = tenantDocumentColumns.find(col => col.key === sortInfo.column)
+          
+          const column = tenantDocumentColumns.find(col => col.key === sortInfo.column);
           if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
+            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
 
@@ -300,7 +282,7 @@ export const TenantDocument: React.FC = () => {
           ExportType: exportType
         }
 
-        const response = await getTenantDocuments(params);
+        const response = await tenantService.apiCallPullTenantDocument(params);
 
         handleExportFile(response, exportType, 'Tenant Document', addToast)
 
@@ -318,14 +300,6 @@ export const TenantDocument: React.FC = () => {
   const handleExportTenantDocumentExcel = () => handleExportTenantDocuments('Excel')
   const handleExportTenantDocumentPdf = () => handleExportTenantDocuments('PDF')
 
-  //#endregion
-
-  //#region API | SERVICES CALL TO GET TENANT DOCUMENT 
-
-  const getTenantDocuments = async (filterParams: FilterWithPaginationTenantDocumentRequest) => {
-
-    return await tenantService.apiCallPullTenantDocument(filterParams);
-  }
   //#endregion
 
   //#region HANDLE PAGE CHNAGE EVENT
@@ -538,7 +512,7 @@ export const TenantDocument: React.FC = () => {
       ...initialFormState(),
       TenantId: tenantId,
       BuildingId: buildingId,
-      ProjectId: projectId
+      ProjectId: Number(projectId)
     });
     setErrors({});
     setDocumentFiles([]);
@@ -748,27 +722,10 @@ export const TenantDocument: React.FC = () => {
 
   //#endregion
 
-  //#region BACK PROJECT PAGE
-  //#region BACK PROJECT PAGE
+  //#region BACK TENANT PAGE
   const handleBackToListTenant = () => {
-    navigate('/tenant', {
-      state: {
-        listState: preservedListState ?? {
-          page: 1,
-          filters: {},
-          sortInfo: undefined,
-          searchTerm: '',
-          tenantId,
-          buildingId,
-          projectId,
-          buildingName,
-          tenantName
-        }
-      }
-    });
+    navigate('/tenant');
   };
-  //#endregion
-
   //#endregion
 
   return (

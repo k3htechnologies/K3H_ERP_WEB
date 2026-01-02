@@ -81,6 +81,7 @@ import ViewChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/View
 import BuildingDescription from '@/features/building/pages/BuildingDescription';
 import BuildingDocument from '@/features/building/pages/BuildingDocument';
 import { BuildingListStateProvider } from '@/features/building/context/BuildingListStateContext';
+import { TenantListStateProvider } from '@/features/tenant/context/TenantListStateContext';
 import TenantDocument from '@/features/tenant/pages/TenantDocument';
 import ProposedOffer from '@/features/proposedOffer/pages/ProposedOffer';
 import Company from '@/features/projectMaster/pages/Company';
@@ -249,10 +250,10 @@ function App() {
             <Route path="building/description" element={<BuildingListStateProvider><BuildingDescription /></BuildingListStateProvider>} />
             <Route path="building/document" element={<BuildingListStateProvider><BuildingDocument /></BuildingListStateProvider>} />
 
-            <Route path="tenant" element={<Tenant />} />
-            <Route path="tenant/view" element={<ViewTenant />} />
-            <Route path="tenant/add/:tenantId?" element={<AddUpdateTenant />} />
-            <Route path="tenant/document" element={<TenantDocument />} />
+            <Route path="tenant" element={<TenantListStateProvider><Tenant /></TenantListStateProvider>} />
+            <Route path="tenant/view" element={<TenantListStateProvider><ViewTenant /></TenantListStateProvider>} />
+            <Route path="tenant/add/:tenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
+            <Route path="tenant/document" element={<TenantListStateProvider><TenantDocument /></TenantListStateProvider>} />
 
             <Route path="rent" element={<Rent />} />
 

@@ -19,7 +19,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useLocation, type Location, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
@@ -29,6 +29,7 @@ import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
+import { useTenantListState } from '@/features/tenant/context/TenantListStateContext';
 
 export const Tenant: React.FC = () => {
   //#region STATE
@@ -38,22 +39,10 @@ export const Tenant: React.FC = () => {
   const navigate = useNavigate();
 
   const { pagination, setPagination } = usePagination(20);
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   const { addToast } = useToast();
 
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const [buildingId, setBuildingId] = useState(0);
-
-  const [buildingName, setBuildingName] = useState('');
-
-  const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchTenants(value);
-  }, 350);
-
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   const [isShowCustomizeTenantColumnsModal, setIsShowCustomizeTenantColumnsModal] = useState(false);
@@ -64,100 +53,24 @@ export const Tenant: React.FC = () => {
 
   const { canAction, canExport } = useMenuPermissions();
 
-  const location = useLocation() as Location & {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: FilterInfo;
-        sortInfo?: SortInfo;
-        searchTerm?: string;
-        buildingId?: number;
-        buildingName?: string;
-        tenantId?: number;
-        tenantName?: string;
-      };
-    };
-  };
-
-
   //#endregion
 
   //#region PROJECT SELECTION GET ID
-
   const { projectId } = useProject()
-
   //#endregion
 
-  //#region INIT
-  useEffect(() => {
-
-    if (!projectId) return;
-
-    const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string; tenantId?: number, buildingId?: number; buildingName?: string; tenantName?: string }
-      | undefined;
-
-    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '' };
-
-
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
-    setBuildingId(listState.buildingId ?? 0);
-
-    setBuildingName(listState.buildingName ?? "");
-
-    if (listState.searchTerm && String(listState.searchTerm).trim()) {
-
-      setSearchTerm(String(listState.searchTerm));
-
-      setBuildingId(Number(listState.buildingId));
-
-      setBuildingName(String(listState.buildingName));
-
-      loadTenants(listState.page ?? 1, { FlatNumber: String(listState.searchTerm).trim() }, Number(listState.buildingId));
-
-      return;
-    }
-
-    loadTenants(listState.page ?? 1, listState.filters ?? {}, Number(listState.buildingId));
-
-  }, [location.state, projectId]);
-
-
-
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel?.();
-    };
-  }, [debouncedSearch]);
-
-  useEffect(() => {
-    setBuildingId(0);
-    setBuildingName('');
-    setTenantList([]);
-    navigate(location.pathname, { replace: true, state: {} });
-  }, [projectId]);
-
+  //#region TENANT LIST STATE CONTEXT
+  const { listState, updateListState, resetFilters, setBuildingContext } = useTenantListState();
+  const { page, filters, sortInfo, searchTerm, buildingId, buildingName } = listState;
   //#endregion
 
   //#region DATA LOAD
-  const fetchTenantList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadTenants(page, filters, buildingId, sort);
-  };
-
-  const loadTenants = async (page: number, filterParams: FilterInfo, buildingId: number, sortInfo?: SortInfo) => {
+  const loadTenants = useCallback(async (pageNum: number, filterParams: FilterInfo, buildingIdNum: number) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
+
         let sortByParam: string | undefined;
 
         if (sortInfo) {
@@ -168,27 +81,30 @@ export const Tenant: React.FC = () => {
         }
 
         const params: FilterWithPaginationTenantRequest = {
-          PageNumber: page,
+          PageNumber: pageNum,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           TenantId: filterParams.TenantId ? Number(filterParams.TenantId) : undefined,
           ProjectId: Number(projectId),
-          BuildingId: buildingId,
+          BuildingId: buildingIdNum,
           FlatNumber: filterParams.FlatNumber?.trim() || undefined,
           FlatConfiguration: filterParams.FlatConfiguration?.trim() || undefined,
           FlatType: filterParams.FlatType?.trim() || undefined,
           SortBy: sortByParam
         };
 
-        const response = await getTenants(params);
+        const response = await tenantService.apiCallPullTenant(params);
 
         if (E.isRight(response)) {
+
           setTenantList(response.right.Data);
+
           setPagination({
-            currentPage: page,
+            currentPage: pageNum,
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize)
           });
+
         } else {
           addToast({ type: 'error', title: response.left.message });
         }
@@ -202,45 +118,60 @@ export const Tenant: React.FC = () => {
       undefined,
       'Loading Tenant'
     );
-  };
+  }, [projectId, pagination.pageSize, addToast, sortInfo]);
 
   //#endregion
 
-  //#region SEARCH EMPLOYEE FILTER
-  const searchTenants = async (searchValue: string) => {
+  //#region INIT
+  useEffect(() => {
+    if (!projectId) return;
 
-    setSearchTerm(searchValue);
+    if (buildingId && buildingId > 0) {
+      if (searchTerm && searchTerm.trim()) {
+        loadTenants(page, { FlatNumber: searchTerm.trim() }, buildingId);
+      } else {
+        loadTenants(page, filters, buildingId);
+      }
+    }
+  }, [projectId, page, filters, sortInfo, searchTerm, buildingId, loadTenants]);
 
-    if (searchValue.trim() === '') {
-      fetchTenantList();
+  useEffect(() => {
+    setPagination({ currentPage: page });
+  }, [page]);
+
+  useEffect(() => {
+    setTempFilters(filters);
+  }, [filters]);
+
+  //#endregion
+
+  //#region SEARCH TENANT FILTER
+  const debouncedSearch = useDebouncedCallback((value: string, isSerach: boolean = true) => {
+    let filterParams: FilterInfo = {};
+    if (value.trim() === '') {
+      updateListState({ searchTerm: '', filters: {}, page: 1 });
       return;
     }
 
-    const filterParams: FilterInfo = {
-      FlatNumber: searchValue.trim()
-    };
+    if (isSerach) {
 
-    await loadTenants(1, filterParams, buildingId);
+      filterParams = { BuildingName: value.trim() };
+    }
+
+    updateListState({ searchTerm: value, filters: filterParams, page: 1 });
+  }, 350);
+
+  const searchTenants = (searchValue: string) => {
+    updateListState({ searchTerm: searchValue });
+    debouncedSearch(searchValue, false);
   };
-
-
   //#endregion
 
-  //#region CLAER SERACH EMPLOYEE
+  //#region CLEAR SEARCH TENANT
   const clearSearchTenants = () => {
-
-    setSearchTerm('');
-
     debouncedSearch.cancel?.();
-
-    setFilters({});
-
+    resetFilters();
     setTempFilters({});
-
-    setPagination({ currentPage: 1 });
-
-    loadTenants(1, {}, buildingId);
-
   };
 
   //#endregion
@@ -251,7 +182,9 @@ export const Tenant: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
+
         let sortByParam: string | undefined;
+
         if (sortInfo) {
           const column = tenantColumns.find(col => col.key === sortInfo.column);
           if (column) {
@@ -259,10 +192,13 @@ export const Tenant: React.FC = () => {
           }
         }
 
+
         const params: FilterWithPaginationTenantRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
+          ProjectId: Number(projectId),
+          BuildingId: buildingId,
           FlatNumber: filters.FlatNumber?.trim() || undefined,
           FlatConfiguration: filters.FlatConfiguration?.trim() || undefined,
           FlatType: filters.FlatType?.trim() || undefined,
@@ -270,7 +206,7 @@ export const Tenant: React.FC = () => {
           ExportType: exportType
         };
 
-        const response = await getTenants(params);
+        const response = await tenantService.apiCallPullTenant(params);
 
         handleExportFile(response, exportType, 'Tenant', addToast);
 
@@ -281,7 +217,7 @@ export const Tenant: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' });
       },
       undefined,
-      'Preparing Export...'
+      'Preparing Export'
     );
   };
 
@@ -290,21 +226,14 @@ export const Tenant: React.FC = () => {
 
   //#endregion
 
-  //#region PULL EMPLOYEE MASTER
-  const getTenants = async (filterParams: FilterWithPaginationTenantRequest) => {
-    return await tenantService.apiCallPullTenant(filterParams);
-  };
-  //#endregion
-
   //#region TABLE CONFIG
-  const handlePageChange = useCallback((page: number) => {
-    fetchTenantList(page);
-  }, [fetchTenantList]);
+  const handlePageChange = useCallback((newPage: number) => {
+    updateListState({ page: newPage });
+  }, [updateListState]);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
-    setSortInfo(sort);
-    loadTenants(1, filters, buildingId, sort);
-  }, [loadTenants, filters]);
+    updateListState({ sortInfo: sort, page: 1 });
+  }, [updateListState]);
 
   const tenantPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -320,49 +249,24 @@ export const Tenant: React.FC = () => {
   const tenantsForTable = useMemo(() => tenantList, [tenantList]);
   //#endregion
 
-  //#region VIEW EMPLOYEE MASTER
+  //#region VIEW TENANT DETAILS
   const handleViewTenantDetails = useCallback((row: TenantData) => {
-    navigate('/tenant/view', {
-      state: {
-        editTenantData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          tenantId: row.TenantId,
-          buildingId,
-          buildingName,
-          tenantName: row.FlatNumber,
-        },
-      },
+    updateListState({
+      tenantId: row.TenantId,
+      tenantName: row.FlatNumber,
     });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm, buildingId, buildingName]);
+    navigate('/tenant/view');
+  }, [navigate, updateListState]);
   //#endregion
 
   //#region VIEW TENANT DOCUMENT
-
   const handleViewTenantDocument = useCallback((row: TenantData) => {
-    navigate('/tenant/document', {
-      state: {
-        editBuildingData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          tenantId: row.TenantId,
-          buildingId: row.BuildingId,
-          buildingName,
-          projectId: projectId,
-          tenantName: row.FlatNumber,
-
-        },
-      },
+    updateListState({
+      tenantId: row.TenantId,
+      tenantName: row.FlatNumber,
     });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm, projectId]);
+    navigate('/tenant/document');
+  }, [navigate, updateListState]);
   //#endregion
 
   //#region TABLE COLUMN
@@ -571,50 +475,27 @@ export const Tenant: React.FC = () => {
 
   //#region FILTER HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters);
-    loadTenants(1, tempFilters, buildingId);
+    updateListState({ filters: tempFilters, page: 1 });
     setShowFilterPopup(false);
   };
 
   const clearFilters = () => {
     setTempFilters({});
-    setFilters({});
-
-    // reset page
-    setPagination({ currentPage: 1 });
-
-    // load empty filters
-    loadTenants(1, {}, buildingId);
-
+    resetFilters();
     setShowFilterPopup(false);
-
-    // clear router state (very important)
-    navigate(location.pathname, { replace: true, state: {} });
   };
   //#endregion
 
-  //#region ADD NEW EMPLOYEE
+  //#region ADD NEW TENANT
   const handleAddTenantModal = () => {
 
     if (!buildingId || Number(buildingId) === 0) {
+
       addToast({ type: 'error', title: 'Please select Building first' });
+
       return;
     }
-
-    navigate('/tenant/add', {
-      state: {
-        editTenantData: [],
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          buildingId,
-          buildingName
-        },
-      },
-    });
+    navigate('/tenant/add');
 
   };
   //#endregion
@@ -634,7 +515,6 @@ export const Tenant: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        // Find the column label for sorting
 
         const params: FilterPullExcelSample = {
           TableName: 'TENANT'
@@ -677,7 +557,14 @@ export const Tenant: React.FC = () => {
 
           addToast({ type: 'success', title: "Excel imported sucessfully" })
 
-          fetchTenantList();
+          // Reload tenants with current state
+          if (buildingId && buildingId > 0) {
+            if (searchTerm && searchTerm.trim()) {
+              loadTenants(page, { FlatNumber: searchTerm.trim() }, buildingId);
+            } else {
+              loadTenants(page, filters, buildingId);
+            }
+          }
 
         } else {
           addToast({ type: "error", title: response.left.message });
@@ -705,10 +592,7 @@ export const Tenant: React.FC = () => {
         isShowSearchBar
         searchTerm={searchTerm}
         searchPlaceholder="Search By Flat Number"
-        onSearchChange={v => {
-          setSearchTerm(v);
-          debouncedSearch(v);
-        }}
+        onSearchChange={searchTenants}
         onClearSearch={clearSearchTenants}
         isShowFilterButton
         filters={filters}
@@ -753,22 +637,10 @@ export const Tenant: React.FC = () => {
 
             dataFetchCallBack={(pageNumber) => fetchBuildingDropdown(pageNumber, { projectId: Number(projectId) })}
             onSelected={(item) => {
+              const selectedBuildingId = Number(item?.value ?? 0);
+              const selectedBuildingName = item?.label ?? '';
 
-              const buildingId = Number(item?.value ?? 0);
-
-              const buildingName = item?.label ?? '';
-              setBuildingId(Number(buildingId));
-
-              setBuildingName(buildingName);
-
-
-              setPagination({ currentPage: 1 });
-
-              loadTenants(1, {}, Number(buildingId));
-
-              try {
-                navigate(location.pathname, { replace: true, state: { listState: { page: 1, filters: {}, sortInfo, searchTerm, buildingId, buildingName } } });
-              } catch { }
+              setBuildingContext(selectedBuildingId, selectedBuildingName);
             }}
           />
 

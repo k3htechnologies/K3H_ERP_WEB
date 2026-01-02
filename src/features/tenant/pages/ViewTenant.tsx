@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
 import type { FilterWithPaginationTenantDocumentRequest, TenantData, TenantDocumentData } from '@/features/tenant/models/TenantModel';
-import { useLocation, useNavigate } from 'react-router-dom';
+ import { useNavigate } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
@@ -16,6 +16,7 @@ import useToast from '@/core/hooks/useToast';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import Tabs from '@/ui/components/Tab/Tab';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
+import { useTenantListState } from '@/features/tenant/context/TenantListStateContext';
 export const ViewTenant: React.FC = () => {
 
     //#region STATE MANAGEMENT
@@ -31,31 +32,15 @@ export const ViewTenant: React.FC = () => {
     // TOAST
     const { addToast } = useToast();
 
-    const location = useLocation() as {
-        state?: {
-            editTenantData?: TenantData | null;
-            fromList?: boolean;
-            listState?: {
-                page: number;
-                filters: any;
-                sortInfo?: any;
-                searchTerm?: string;
-                tenantId?: number;
-                buildingId?: number;
-                projectId?: number;
-                tenantName?: string;
-            };
-        };
-    };
-    const preservedListState = location.state?.listState;
-
-
     //#endregion
 
     //#region PROJECT SELECTION GET ID
-
     const { projectId } = useProject()
+    //#endregion
 
+    //#region TENANT LIST STATE CONTEXT
+    const { listState } = useTenantListState();
+    const { tenantId, buildingId, tenantName } = listState;
     //#endregion
 
     //#region TAB ACTIVITY
@@ -68,72 +53,77 @@ export const ViewTenant: React.FC = () => {
 
     //#endregion
 
-    //#region Get TENANT DATA FROM LOCATION STATE
-    const editTenantData = (location.state?.editTenantData ?? null) as TenantData | null;
+    //#region STATE FOR TENANT DATA
+    const [editTenantData, setEditTenantData] = useState<TenantData | null>(null);
     //#endregion
 
     //#region INIT
     useEffect(() => {
+        if (!projectId || !tenantId) return;
 
         if (activeTab === 'Overview') {
-
-            setApplicantList(editTenantData?.TenantApplicantData || []);
-            setParkingList(editTenantData?.ParkingData || []);
-
+            loadTenantData();
         } else if (activeTab === 'Document') {
-
             loadTenantDocumentFromServer();
-
         }
+    }, [projectId, tenantId, activeTab]);
 
-    }, []);
+    // Load tenant data for overview
+    const loadTenantData = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+                const params = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    IsCheckPermission: false,
+                    TenantId: tenantId,
+                    ProjectId: Number(projectId),
+                    BuildingId: buildingId
+                };
+
+                const response = await tenantService.apiCallPullTenant(params);
+
+                if (E.isRight(response)) {
+                    const tenant = response.right.Data?.[0];
+                    if (tenant) {
+                        setEditTenantData(tenant);
+                        setApplicantList(tenant.TenantApplicantData || []);
+                        setParkingList(tenant.ParkingData || []);
+                    }
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Tenant Data'
+        );
+    };
 
     //#endregion
 
     //#region EDIT TENANT
-
     const handleEditTenant = (row: TenantData) => {
         if (!row?.TenantId) return;
-        navigate(`/tenant/add/${row.TenantId}`, {
-            state: {
-                editTenantData: row,
-                fromList: true,
-                listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '', buildingId: 0, buildingName: '' }
-            }
-        });
+        navigate(`/tenant/add/${row.TenantId}`);
     };
-
-
     //#endregion
 
-    //#region BACK TENANT  PAGE
+    //#region BACK TENANT PAGE
     const handleBackToListTenant = () => {
-        navigate('/tenant', {
-            state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '', buildingId: 0, buildingName: '' } }
-        });
+        navigate('/tenant');
     };
     //#endregion
 
     //#region EDIT TENANT DOCUMENT
-
-    const handleViewTenantDocument = (row: TenantDocumentData) => {
-        navigate('/tenant/document', {
-            state: {
-                buildingId: row.BuildingId,
-                projectId: row.ProjectId,
-                listState: {
-                    page: preservedListState?.page,
-                    filters: preservedListState?.filters,
-                    sortInfo: preservedListState?.sortInfo,
-                    searchTerm: preservedListState?.searchTerm,
-                    buildingId: row.BuildingId,
-                    projectId: row.ProjectId,
-                    tenantId: preservedListState?.tenantId,
-                    tenantName: preservedListState?.tenantName,
-                }
-            }
-
-        });
+    const handleViewTenantDocument = () => {
+        navigate('/tenant/document');
     };
     //#endregion
 
@@ -168,8 +158,8 @@ export const ViewTenant: React.FC = () => {
                     PageSize: 1000,
                     IsCheckPermission: true,
                     ProjectId: Number(projectId),
-                    BuildingId: preservedListState?.buildingId,
-                    TenantId: preservedListState?.tenantId
+                    BuildingId: buildingId,
+                    TenantId: tenantId
                 }
 
                 const response = await tenantService.apiCallPullTenantDocument(params);
@@ -260,6 +250,7 @@ export const ViewTenant: React.FC = () => {
 
             <HeaderActionBar
                 titleText={`Tenant ${activeTab}`}
+                subTitleText={tenantName}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListTenant()}
@@ -270,8 +261,7 @@ export const ViewTenant: React.FC = () => {
                     }
 
                     else if (activeTab === "Document") {
-                        const doc = tenantDocumentList?.[0];
-                        if (tenantDocumentList) handleViewTenantDocument(doc)
+                        handleViewTenantDocument();
                     }
                 }}
                 isLoading={isLoading}
@@ -288,13 +278,9 @@ export const ViewTenant: React.FC = () => {
                         setActiveTab(t.id);
 
                         if (t.id === "Overview") {
-
-                            setApplicantList(editTenantData?.TenantApplicantData || []);
-                            setParkingList(editTenantData?.ParkingData || []);
+                            loadTenantData();
                         }
-
                         else if (t.id === "Document") {
-
                             loadTenantDocumentFromServer()
                         }
 

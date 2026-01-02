@@ -6,7 +6,7 @@ import { fetchProjectRERADocumentCategoryDropdown } from '@/features/projectRERA
 import { runApiWithLoader } from '@/core/utils';
 import type { AddUpdateProjectRERADocumentRequest, FilterWithPaginationProjectRERADocument, ProjectRERADocumentData } from '@/features/projectRERADocument/models/ProjectRERADocumentModel';
 import usePagination from '@/core/hooks/usePagination';
-import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import { type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import * as E from 'fp-ts/Either';
 import { ProjectRERADocumentService } from '../services/ProjectRERADocumentService';
 import DataTableExpandable, { type DataTableExpandableRef } from '@/ui/components/DataTable/DataTableExpandable';
@@ -24,6 +24,8 @@ import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { PROJECT_DOCUMENT_STATUS } from '@/core/constants';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
 
 
 const initialFormState = (): AddUpdateProjectRERADocumentRequest => ({
@@ -81,11 +83,16 @@ const ProjectRERADocument: React.FC = () => {
   // TAB LIST
   const [projectRERADocumentTabList, setProjectRERADocumentTabList] = useState<TabItem[]>([]);
   const [activeTab, setActiveTab] = useState<string>('');
+  const [activeTabName, setActiveTabName] = useState<string>('');
+
+  const [inAllTabPlusButtonClickDocumentCategoryId, setInAllTabPlusButtonClickDocumentCategoryId] = useState<number>(0);
 
   //DATATABLE EXPANDABLE REF
   const dtRef = useRef<DataTableExpandableRef | null>(null)
 
+  //DATATABLE EXPANDED ROW AND PARENT ID
 
+  const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
@@ -112,6 +119,22 @@ const ProjectRERADocument: React.FC = () => {
 
   useEffect(() => {
     if (!projectId) return;
+
+    setProjectRERADocumentList([]);
+    setProjectRERADocumentTabList([]);
+    setActiveTab('');
+    setActiveTabName('');
+    setExpandedParentRow(null);
+    setEditingDocumentData(null);
+    setErrors({});
+    setPagination({
+      currentPage: 1,
+      totalPages: 0,
+      totalRecords: 0,
+      pageSize: pagination.pageSize
+    });
+    dtRef.current?.collapseAll?.();
+
     loadProjectRERADocumentTabs()
 
   }, [projectId])
@@ -144,7 +167,7 @@ const ProjectRERADocument: React.FC = () => {
         setRemoveProjectRERADocumentUrls([]);
 
         setRERAPortalScreenShotFiles([]);
-        setRERAPortalScreenShotURL(editingDocumentData.ProjectRERADocumentURL || '')
+        setRERAPortalScreenShotURL(editingDocumentData.RERAPortalScreenShotURL || '')
         setRemoveRERAPortalScreenShotUrls([]);
 
 
@@ -161,13 +184,18 @@ const ProjectRERADocument: React.FC = () => {
   const getActiveTabId = (filterParams?: FilterInfo): number => {
 
     if (filterParams && filterParams.ProjectRERADocumentCategoryId != null) {
+
       const raw = filterParams.ProjectRERADocumentCategoryId;
+
       const num = typeof raw === 'number' ? raw : Number(raw);
+
       if (!Number.isNaN(num)) return num;
     }
+
     if (activeTab !== '' && !Number.isNaN(Number(activeTab))) {
       return Number(activeTab);
     }
+
     return 0;
   };
   //#endregion
@@ -194,6 +222,8 @@ const ProjectRERADocument: React.FC = () => {
 
           setActiveTab(tabs[0].id);
 
+          setActiveTabName(tabs[0].label);
+
           const newFilters: FilterInfo = {
             ...filters,
             ProjectRERADocumentCategoryId: tabs[0].id,
@@ -204,6 +234,8 @@ const ProjectRERADocument: React.FC = () => {
         else {
 
           setActiveTab('');
+
+          setActiveTabName('');
 
         }
 
@@ -242,9 +274,9 @@ const ProjectRERADocument: React.FC = () => {
           PageSize: pagination.pageSize,
           ProjectId: Number(projectId),
           ProjectRERADocumentId: Number(filterParams.ProjectRERADocumentId) ?? undefined,
-          ProjectRERADocumentName: filterParams.ProjectRERADocumentName,
-          ProjectRERADocumentStatus: filterParams.ProjectRERADocumentStatus,
-          ProjectRERADocumentCategory: filterParams.ProjectRERADocumentCategory,
+          ProjectRERADocumentName: filterParams.ProjectRERADocumentName ?? "",
+          ProjectRERADocumentStatus: filterParams.ProjectRERADocumentStatus ?? "",
+          ProjectRERADocumentCategory: filterParams.ProjectRERADocumentCategory ?? "",
           ProjectRERADocumentCategoryId: Number(getActiveTabId(filterParams)),
           SortBy: sortByParam
         };
@@ -353,6 +385,7 @@ const ProjectRERADocument: React.FC = () => {
       ProjectRERADocumentName: row.ProjectRERADocumentName || '',
       ProjectRERADocumentStatus: row.ProjectRERADocumentStatus || '',
       ProjectRERADocumentRemark: row.ProjectRERADocumentRemark || '',
+      ProjectRERADocumentCategoryId: row.ProjectRERADocumentCategoryId || 0,
 
     })
     setIsAddUpdateDocumentDetailsModalOpen(true);
@@ -373,19 +406,56 @@ const ProjectRERADocument: React.FC = () => {
         sortable: true,
         fixed: 'left',
         align: 'left',
-        render: (value, row) => {
-          const showEdit = canAction && row.IsMultiple ? true : false;
+        render: (value) => {
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
-
               <TooltipText
                 text={value || ''}
                 maxWidth="250px"
                 tooltipThreshold={40}
               />
+            </div>
 
+          )
+        },
+      },
+      {
+        key: 'UploadedProjectRERADocumentCount',
+        label: 'Document Count',
+        width: '30',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || ''
+      },
+      {
+        key: 'ApprovalPendingProjectRERADocumentCount',
+        label: 'Approval',
+        width: '30',
+        sortable: false,
+        align: 'center',
+        render: (value) => {
+          return (
+            <TooltipText
+              text={`${value} Pending` || "-"}
+              maxWidth="180px"
+              tooltipThreshold={18}
+              tooltipClassName={`inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap`}
+            />
+          );
+        }
+      },
 
-              {/* SLOT 1: ADD */}
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => {
+          const showEdit = canAction && row.IsMultiple ? true : false;
+
+          return (
+            <div className="flex items-center justify-end ml-2 gap-1">
 
               <div className="w-[34px] flex justify-center">
 
@@ -408,22 +478,11 @@ const ProjectRERADocument: React.FC = () => {
                 )}
               </div>
 
-
-              <TooltipText
-                text={`${row.UploadedProjectRERADocumentCount ?? 0} Uploaded`}
-                tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 overflow-hidden text-ellipsis whitespace-nowrap'
-              />
-
-              <TooltipText
-                text={`${row.ApprovalPendingProjectRERADocumentCount ?? 0} Approval Pending`}
-                tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
-              />
             </div>
 
           )
-        }
-
-      },
+        },
+      }
 
     ],
     // dependencies: include everything used inside that might change
@@ -460,7 +519,6 @@ const ProjectRERADocument: React.FC = () => {
         sortable: false,
         align: 'left',
         render: (value: string, row: any) => {
-          const showEdit = canAction ? true : false;
 
           return (
             <div className="flex items-center justify-between w-full">
@@ -473,27 +531,6 @@ const ProjectRERADocument: React.FC = () => {
                 />
               </div>
 
-              {/* RIGHT SIDE — Fixed Edit Button */}
-              <div className="flex-shrink-0 ml-2">
-                {showEdit ? (
-                  <Button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleEditProjectRERADocumentDetails(row);
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Edit"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
-              </div>
             </div>
           );
         }
@@ -565,6 +602,42 @@ const ProjectRERADocument: React.FC = () => {
         sortable: false,
         align: 'center',
         render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        align: 'center',
+        fixed: 'right',
+        render: (_value, row) => {
+          const showEdit = canAction ? true : false;
+          return (
+            <div className="flex items-center justify-end ml-2 gap-1">
+              <div className="flex-shrink-0 ml-2">
+                {showEdit ? (
+                  <Button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleEditProjectRERADocumentDetails(row);
+                    }}
+                    color="transparent"
+                    isborderRadius
+                    size="sm"
+                    title="Edit"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <div className="opacity-0 h-[32px] w-[34px]" />
+                )}
+              </div>
+
+            </div>
+
+          )
+        },
       }
 
     ],
@@ -576,6 +649,7 @@ const ProjectRERADocument: React.FC = () => {
   //#region ADD UPDATE EDIT DOCUMENT
 
   const handleAddDocumentDetailsModal = useCallback((row: ProjectRERADocumentData) => {
+
     setExpandHeaderProjectRERADocumentName(row.ProjectRERADocumentName ?? '');
     setExpandHeaderProjectRERADocumentId(row.ProjectRERADocumentId ?? 0);
 
@@ -587,10 +661,11 @@ const ProjectRERADocument: React.FC = () => {
     setRERAPortalScreenShotURL('')
     setRemoveRERAPortalScreenShotUrls([]);
 
-    setEditingDocumentData(null);
     setFormData(initialFormState());
     setErrors({});
     setIsAddUpdateDocumentDetailsModalOpen(true);
+
+    setInAllTabPlusButtonClickDocumentCategoryId(row.ProjectRERADocumentCategoryId ?? 0);
 
 
   }, [])
@@ -643,7 +718,7 @@ const ProjectRERADocument: React.FC = () => {
 
     fd.append('ProjectId', String(projectId));
 
-    fd.append('ProjectRERADocumentCategoryId', String(getActiveTabId() ?? 0));
+    fd.append('ProjectRERADocumentCategoryId', activeTabName === "All" ? String(inAllTabPlusButtonClickDocumentCategoryId) : String(getActiveTabId() ?? 0));
 
     fd.append('ProjectRERADocumentStatus', formData.ProjectRERADocumentStatus ?? '');
 
@@ -677,8 +752,6 @@ const ProjectRERADocument: React.FC = () => {
     e.preventDefault();
 
     setErrors({})
-
-
 
     const validation = validateAddDocumentDetailsForm()
 
@@ -721,6 +794,18 @@ const ProjectRERADocument: React.FC = () => {
                 totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
               });
             }
+            else {
+              const parentId = expandedParentRow.ProjectRERADocumentId;
+
+              await fetchProjectRERADocumentList(pagination.currentPage);
+
+              if (parentId) {
+                dtRef.current?.expandRow?.(
+                  String(parentId),
+                  expandedParentRow
+                );
+              }
+            }
 
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
@@ -737,6 +822,18 @@ const ProjectRERADocument: React.FC = () => {
                     : item
                 )
               )
+            }
+            else {
+              const parentId = expandedParentRow.ProjectRERADocumentId;
+
+              await fetchProjectRERADocumentList(pagination.currentPage);
+
+              if (parentId) {
+                dtRef.current?.expandRow?.(
+                  String(parentId),
+                  expandedParentRow
+                );
+              }
             }
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
@@ -802,7 +899,10 @@ const ProjectRERADocument: React.FC = () => {
           defaultActive={activeTab}
           islarge={true}
           onTabChange={(t) => {
+
             setActiveTab(t.id);
+
+            setActiveTabName(t.label);
 
             const newFilters: FilterInfo = {
               ...filters,
@@ -833,6 +933,8 @@ const ProjectRERADocument: React.FC = () => {
           alwaysFetchOnOpen: true,
           fetchRow: async (row) => {
 
+            setExpandedParentRow(row);
+
             const params: FilterWithPaginationProjectRERADocument = {
               PageNumber: 1,
               PageSize: pagination.pageSize,
@@ -860,18 +962,17 @@ const ProjectRERADocument: React.FC = () => {
 
               return (
                 <div className="p-1 text-xs text-gray-600 text-center">
-                  No Document Found.
+                  <NoDataView />
                 </div>
               );
             }
 
             return (
-              <DataTable
+              <DataTableWithOutBorder
                 data={details}
                 columns={projectRERADocumentDetailsColumns}
-                emptyMessage="No Departments Data Found"
+                emptyMessage="No RERA Document Found"
                 fixedHeight={true}
-                maxHeight="calc(100vh - 255px)"
                 recordsPerPage={20}
                 className="flex-1"
                 sortInfo={sortInfo}
@@ -928,6 +1029,7 @@ const ProjectRERADocument: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Status"
+                placeholder='Select Status'
                 required
                 value={formData.ProjectRERADocumentStatus}
                 onChange={(e) => handleFieldChange('ProjectRERADocumentStatus', String(e))}
@@ -937,7 +1039,7 @@ const ProjectRERADocument: React.FC = () => {
             </div>
             <div>
               <MultiFilePicker
-                label="Documents"
+                label="Files"
                 value={projectRERADocumentFiles}
                 onChange={setProjectRERADocumentFiles}
                 availableFilesURL={projectRERADocumentURL ?? ""}

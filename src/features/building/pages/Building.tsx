@@ -110,6 +110,11 @@ export const Building: React.FC = () => {
     };
   }, [debouncedSearch]);
 
+  useEffect(() => {
+    if (!projectId) return;
+    setFilters({});
+    setTempFilters({});
+  }, [projectId]);
 
   //#endregion
 

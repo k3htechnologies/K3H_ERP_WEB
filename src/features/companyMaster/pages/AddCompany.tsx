@@ -14,7 +14,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { Edit, IdCard, Mail, Phone, Trash2 } from 'lucide-react';
-import { filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterRERA, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidRERA } from '@/core/utils/fileValidation';
+import { calculateMergedFiles, createFileUrlString, filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterRERA, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidRERA, mergeFiles } from '@/core/utils/fileValidation';
 import { runApiWithLoader } from '@/core/utils';
 import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import * as E from 'fp-ts/Either';
@@ -628,39 +628,23 @@ const AddCompany: React.FC = () => {
         fixed: 'left',
         align: 'left',
         render: (value, row, index) => {
-
-          const images: string[] = (row.PhotoURL || "")
-            .split(",")
-            .map((x: string) => x.trim())
-            .filter((x: string) => x.length > 0);
-
-          const photo = images.length ? images[0] : null;
-
           return (
-            <div className="flex items-center justify-start">
-              {
-                photo ? (
-                  <img
-                    src={photo}
-                    alt="Profile"
-                    className="h-9 w-9 rounded-full object-cover mr-4 cursor-pointer border"
-                  />
-                ) : (
-                  <div className="h-9 w-9 rounded-full bg-gray-300 mr-4"></div>
-                )
-              }
+            <div className="flex items-center justify-between w-full gap-1">
 
-              <TooltipText
-                text={value || "-"}
-                maxWidth="250px"
-                tooltipThreshold={25}
-              />
-              <div className="w-[34px] flex justify-center">
+                <TooltipText
+                  text={value || "-"}
+                  maxWidth="250px"
+                  tooltipThreshold={25}
+                />
+              
+
+              {/* RIGHT: actions */}
+              <div className="flex items-center gap-1 shrink-0">
                 <Button
                   onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    handleEditCompanyPartner(row, index)
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleEditCompanyPartner(row, index);
                   }}
                   color="transparent"
                   isborderRadius
@@ -669,9 +653,7 @@ const AddCompany: React.FC = () => {
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
-              </div>
 
-              <div className="w-[34px] flex justify-center">
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
@@ -685,11 +667,10 @@ const AddCompany: React.FC = () => {
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-
               </div>
-
             </div>
           );
+
         }
       },
 
@@ -788,20 +769,6 @@ const AddCompany: React.FC = () => {
 
   //#region ADD UPDATE COMPANY PARTNER DATA
 
-  const handleAddCompanyPartnerModal = () => {
-    setEditingCompanyPartnerMasterData(null)
-    setFormDataCompanyPartner(initialFormStateCompanyPartner());
-    setCompanyPartnerPANURLFiles([]);
-    setCompanyPartnerAadhaarCardURLFiles([]);
-    setCompanyPartnerPhotoURLFiles([]);
-    setRemovedCompanyPartnerPhotoURLs([]);
-    setRemovedCompanyPartnerAadhaarCardURLs([]);
-    setRemovedCompanyPartnerPANURLs([]);
-    setIsAddUpdateCompanyPartnerModalOpen(true)
-    setErrorsCompanyPartner({});
-  }
-
-
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddCompanyPartnerForm = (): {
 
@@ -895,56 +862,63 @@ const AddCompany: React.FC = () => {
       }
     }
 
-
-
     // ===== PAN =====
-    const pan = formDataCompanyPartner.PanNumber?.trim() || "";
-    const hasPANNumber = pan !== "";
-    const hasPANFile = hasAnyFile(
-      companyPartnerPANURLFiles,
-      editingCompanyPartnerMasterData?.row?.PanCardURL
-    );
+    const mergedPanFiles = editingCompanyPartnerMasterData
+      ? calculateMergedFiles(editingCompanyPartnerMasterData.row._panCardFiles, companyPartnerPANURLFiles, removedCompanyPartnerPANURLs)
+      : companyPartnerPANURLFiles.slice();
 
-    // Rule 1 — PAN invalid
-    if (hasPANNumber && !isValidPAN(pan)) {
-      newErrorsCompanyPartner.PanNumber = "Enter a valid PAN Number";
+    const PanNumber = formDataCompanyPartner.PanNumber?.trim() || "";
+    const hasPanNumber = PanNumber !== "";
+    const hasPanFile = mergedPanFiles.length > 0;
+
+    // Rule 1
+    if (hasPanNumber && !isValidPAN(PanNumber)) {
+      newErrorsCompanyPartner.PanNumber = "Enter a valid PAN Card Number";
     }
 
-    // Rule 2 — number entered but NO document
-    if (hasPANNumber && !hasPANFile) {
-      newErrorsCompanyPartner.PanCardURL = "PAN Card Document is required";
+    // Rule 2
+    if (hasPanNumber && !hasPanFile) {
+      newErrorsCompanyPartner.PanCardURL = "PAN document is required";
     }
 
-    // Rule 3 — document uploaded but NO number
-    if (hasPANFile && !hasPANNumber) {
-      newErrorsCompanyPartner.PanNumber = "PAN Number is required";
+    // Rule 3
+    if (hasPanFile && !hasPanNumber) {
+      newErrorsCompanyPartner.PanNumber = "PAN Card Number is required";
     }
 
 
     // ===== Aadhaar =====
-    const aadhaar = formDataCompanyPartner.AadharCardNumber?.trim() || "";
-    const hasAadhaarNumber = aadhaar !== "";
-    const hasAadhaarFile = hasAnyFile(companyPartnerAadhaarCardURLFiles, editingCompanyPartnerMasterData?.row?.AadharCardURL);
 
-    // Rule 1 — Aadhaar invalid
-    if (hasAadhaarNumber && !isValidAadhaar(aadhaar)) {
-      newErrorsCompanyPartner.AadharCardNumber = "Enter a Valid 12-digit Aadhaar Number";
+    const mergedAadharFiles = editingCompanyPartnerMasterData
+      ? calculateMergedFiles(editingCompanyPartnerMasterData.row._aadharCardFiles, companyPartnerAadhaarCardURLFiles, removedCompanyPartnerAadhaarCardURLs)
+      : companyPartnerAadhaarCardURLFiles.slice();
+
+    const AadharCardNumber = formDataCompanyPartner.AadharCardNumber?.trim() || "";
+    const hasAadharCardNumber = AadharCardNumber !== "";
+    const hasAadharCardNumberFile = mergedAadharFiles.length > 0;
+
+    // 🔹 Rule 1 — If number present, validate number
+    if (hasAadharCardNumber && !isValidAadhaar(AadharCardNumber)) {
+      newErrorsCompanyPartner.AadharCardNumber = "Enter a valid Aadhaar Card Number";
     }
 
-    // Rule 2 — number entered but NO document
-    if (hasAadhaarNumber && !hasAadhaarFile) {
-      newErrorsCompanyPartner.AadharCardURL = "Aadhaar Card Document is required";
+    // 🔹 Rule 2 — If number present, file is required
+    if (hasAadharCardNumber && !hasAadharCardNumberFile) {
+      newErrorsCompanyPartner.AadharCardURL = "Aadhaar document is required";
     }
 
-    // Rule 3 — document uploaded but NO number
-    if (hasAadhaarFile && !hasAadhaarNumber) {
-      newErrorsCompanyPartner.AadharCardNumber = "Aadhaar Number is required";
+    // 🔹 Rule 3 — If file present, number is required
+    if (hasAadharCardNumberFile && !hasAadharCardNumber) {
+      newErrorsCompanyPartner.AadharCardNumber = "Aadhaar Card Number is required";
     }
 
 
     // ===== PHOTO =====
-    const hasPhotoFile = hasAnyFile(companyPartnerPhotoURLFiles, editingCompanyPartnerMasterData?.row?.PhotoURL);
-    if (!hasPhotoFile) {
+    const mergedPhotoFiles = editingCompanyPartnerMasterData
+      ? calculateMergedFiles(editingCompanyPartnerMasterData.row._photoFiles, companyPartnerPhotoURLFiles, removedCompanyPartnerPhotoURLs)
+      : companyPartnerPhotoURLFiles.slice();
+
+    if (mergedPhotoFiles.length === 0) {
       newErrorsCompanyPartner.PhotoURL = "Partner Photo is required";
     }
 
@@ -967,18 +941,17 @@ const AddCompany: React.FC = () => {
       return
     }
 
-    const mergeFileNames = (
-      existing?: (File | string)[],
-      selected?: (File | string)[]
-    ): string => {
-      const existingNames =
-        (existing ?? []).filter(x => typeof x === 'string').map(String);
+    const mergedPhotoFiles = editingCompanyPartnerMasterData
+      ? mergeFiles(editingCompanyPartnerMasterData.row._photoFiles, companyPartnerPhotoURLFiles, removedCompanyPartnerPhotoURLs)
+      : companyPartnerPhotoURLFiles.slice();
 
-      const newNames =
-        (selected ?? []).filter(x => x instanceof File).map(f => (f as File).name);
+    const mergedAadharFiles = editingCompanyPartnerMasterData
+      ? mergeFiles(editingCompanyPartnerMasterData.row._aadharCardFiles, companyPartnerAadhaarCardURLFiles, removedCompanyPartnerAadhaarCardURLs)
+      : companyPartnerAadhaarCardURLFiles.slice();
 
-      return [...existingNames, ...newNames].join(',');
-    };
+    const mergedPanFiles = editingCompanyPartnerMasterData
+      ? mergeFiles(editingCompanyPartnerMasterData.row._panCardFiles, companyPartnerPANURLFiles, removedCompanyPartnerPANURLs)
+      : companyPartnerPANURLFiles.slice();
 
     const partnerToSave: CompanyPartnerData & {
       _photoFiles?: (File | string)[];
@@ -1007,36 +980,18 @@ const AddCompany: React.FC = () => {
       AadharCardNumber: formDataCompanyPartner.AadharCardNumber || '',
 
       // -------- MERGE FILE NAMES (existing + new uploads) ----------
-      PhotoURL: mergeFileNames(
-        editingCompanyPartnerMasterData?.row._photoFiles,
-        companyPartnerPhotoURLFiles
-      ),
+      PhotoURL: createFileUrlString(mergedPhotoFiles),
 
-      PanCardURL: mergeFileNames(
-        editingCompanyPartnerMasterData?.row._panCardFiles,
-        companyPartnerPANURLFiles
-      ),
+      PanCardURL: createFileUrlString(mergedPanFiles),
 
-      AadharCardURL: mergeFileNames(
-        editingCompanyPartnerMasterData?.row._aadharCardFiles,
-        companyPartnerAadhaarCardURLFiles
-      ),
+      AadharCardURL: createFileUrlString(mergedAadharFiles),
 
       // -------- SET "_FILES" FOR UI DISPLAY / EDITING ----------
-      _photoFiles:
-        companyPartnerPhotoURLFiles.length > 0
-          ? companyPartnerPhotoURLFiles.slice()
-          : editingCompanyPartnerMasterData?.row._photoFiles ?? [],
+      _photoFiles: mergedPhotoFiles,
 
-      _panCardFiles:
-        companyPartnerPANURLFiles.length > 0
-          ? companyPartnerPANURLFiles.slice()
-          : editingCompanyPartnerMasterData?.row._panCardFiles ?? [],
+      _panCardFiles: mergedPanFiles,
 
-      _aadharCardFiles:
-        companyPartnerAadhaarCardURLFiles.length > 0
-          ? companyPartnerAadhaarCardURLFiles.slice()
-          : editingCompanyPartnerMasterData?.row._aadharCardFiles ?? [],
+      _aadharCardFiles: mergedAadharFiles,
 
       // -------- REMOVED URLS ----------
       RemovePhotoURL: removedCompanyPartnerPhotoURLs.join(','),
@@ -1651,7 +1606,22 @@ const AddCompany: React.FC = () => {
             <Button
               color="blue"
               size="sm"
-              onClick={handleAddCompanyPartnerModal}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setEditingCompanyPartnerMasterData(null);
+                setFormDataCompanyPartner(initialFormStateCompanyPartner());
+
+                setCompanyPartnerPhotoURLFiles([]);
+                setCompanyPartnerAadhaarCardURLFiles([]);
+                setCompanyPartnerPANURLFiles([]);
+
+                setRemovedCompanyPartnerPhotoURLs([]);
+                setRemovedCompanyPartnerPANURLs([]);
+                setRemovedCompanyPartnerAadhaarCardURLs([]);
+                setIsAddUpdateCompanyPartnerModalOpen(true);
+
+              }}
             >
               Add Partner
             </Button>

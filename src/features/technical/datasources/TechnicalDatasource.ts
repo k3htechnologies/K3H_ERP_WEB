@@ -92,6 +92,11 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
 
             console.error('Error: GET COUNTRY STATE DISTRICT CITY VILLAGE :', error);
 
+            if (error === TokenExpiredException) {
+
+                await this.getCountryStateDistrictCityVillage();
+            }
+
             throw error
         }
     }
@@ -110,6 +115,11 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
 
         } catch (error) {
             console.error('Error: GET MATERIAL SUBMATERIAL UOM:', error);
+
+            if (error === TokenExpiredException) {
+
+                await this.getMaterialSubMaterialMasterUOM(params);
+            }
             throw error
         }
     }
@@ -150,6 +160,10 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
         } catch (error) {
 
             console.error('ERROR: PULL EXCEL SAMPLE :', error);
+
+            if (error === TokenExpiredException) {
+                await this.pullExcelSample(params);
+            }
             throw error
         }
     }
@@ -170,6 +184,10 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
         } catch (error) {
 
             console.error('ERROR: PULL MAGIC LINK WITH VALIDATE :', error);
+
+            if (error === TokenExpiredException) {
+                await this.pullMagicLinkWithValidate(params);
+            }
             throw error
         }
     }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Menu, Bell, User } from 'lucide-react'
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
 import { Modal } from '@/ui/components/Modal/Modal'
@@ -37,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
 
     const location = useLocation();
     const showProjectSelection = shouldShowProjectSelection(location.pathname);
-const readOnlyProject = isSubSubRoute(location.pathname);
+    const readOnlyProject = isSubSubRoute(location.pathname);
     // EMPLOYEE PROFILE MODAL
     const [isEmployeeProfileModalOpen, setIsEmployeeProfileModalOpen] = useState(false);
 
@@ -76,14 +76,7 @@ const readOnlyProject = isSubSubRoute(location.pathname);
 
     //#region INITIALIZATION
 
-    const hasFetchedInitialNotifications = useRef(false)
-
     useEffect(() => {
-
-        if (hasFetchedInitialNotifications.current) return
-
-        hasFetchedInitialNotifications.current = true;
-
         fetchNotificationList()
     }, [])
 
@@ -104,7 +97,7 @@ const readOnlyProject = isSubSubRoute(location.pathname);
                 const params: FilterWithPaginationNotificationRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
-                    ProjectId: 3
+                    ProjectId: Number(projectId)
                 }
 
                 const response = await technicalService.apiCallPullNotification(params);
@@ -176,7 +169,7 @@ const readOnlyProject = isSubSubRoute(location.pathname);
     //#region Project Selection
     const { projectId, setProjectId } = useProject()
     //#endregion
-    
+
     return (
         <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex-shrink-0 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40">
             {/* Left side - Menu toggle and title */}

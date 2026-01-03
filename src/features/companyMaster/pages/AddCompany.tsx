@@ -1818,6 +1818,7 @@ const AddCompany: React.FC = () => {
                 error={errorsCompanyPartner.EmailId}
                 type="text"
                 value={formDataCompanyPartner.EmailId}
+                rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
                 onChange={e =>
                   handleFieldChangeCompanyPartner('EmailId', filterEmail(e.target.value))
                 }

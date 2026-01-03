@@ -5,10 +5,10 @@ import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type {
-  ChannelPartnerMasterData,
-  DeleteChannelPartnerMasterRequest,
-  FilterWithPaginationChannelPartnerMasterRequest
-} from '@/features/ChannelPartnerMaster/models/ChannelPartnerMasterModel';
+  ChannelPartnerData,
+  DeleteChannelPartnerRequest,
+  FilterWithPaginationChannelPartnerRequest
+} from '@/features/ChannelPartner/models/ChannelPartnerModel';
 
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
@@ -21,7 +21,7 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChannelPartnerMasterService } from '../services/ChannelPartnerMasterService';
+import { ChannelPartnerService } from '../services/ChannelPartnerService';
 import { updateFilter } from '@/core/utils/filterHelper';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
@@ -30,10 +30,10 @@ import { Trash2 } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 
-export const ChannelPartnerMaster: React.FC = () => {
+export const ChannelPartner: React.FC = () => {
 
   //#region STATE MANAGEMENT
-  const [channelPartnerMasterList, setChannelPartnerMasterList] = useState<ChannelPartnerMasterData[]>([]);
+  const [channelPartnerMasterList, setChannelPartnerList] = useState<ChannelPartnerData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
 
@@ -56,7 +56,7 @@ export const ChannelPartnerMaster: React.FC = () => {
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
 
-    searchChannelPartnerMaster(value)
+    searchChannelPartner(value)
   }, 350);
 
   //FILTER STATES
@@ -66,7 +66,7 @@ export const ChannelPartnerMaster: React.FC = () => {
 
   //DELETE ChannelPartner MASTER
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-  const [deleteChannelPartnerMasterDetailsData, setDeleteChannelPartnerMasterDetailsData] = useState<ChannelPartnerMasterData | null>(null)
+  const [deleteChannelPartnerDetailsData, setDeleteChannelPartnerDetailsData] = useState<ChannelPartnerData | null>(null)
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeChannelPartnerColumnsModal, setIsShowCustomizeChannelPartnerColumnsModal] = useState(false);
@@ -100,11 +100,11 @@ export const ChannelPartnerMaster: React.FC = () => {
     setSearchTerm(listState.searchTerm ?? '');
 
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadChannelPartnerMaster(listState.page ?? 1, { Name: String(listState.searchTerm).trim() });
+      loadChannelPartner(listState.page ?? 1, { Name: String(listState.searchTerm).trim() });
       return;
     }
 
-    loadChannelPartnerMaster(listState.page ?? 1, listState.filters ?? {});
+    loadChannelPartner(listState.page ?? 1, listState.filters ?? {});
   }, [location.state]);
 
   //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
@@ -117,11 +117,11 @@ export const ChannelPartnerMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchChannelPartnerMasterList = async (page: number = pagination.currentPage) => {
-    return await loadChannelPartnerMaster(page, filters);
+  const fetchChannelPartnerList = async (page: number = pagination.currentPage) => {
+    return await loadChannelPartner(page, filters);
   }
 
-  const loadChannelPartnerMaster = async (page: number, filterParams: FilterInfo) => {
+  const loadChannelPartner = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -130,25 +130,25 @@ export const ChannelPartnerMaster: React.FC = () => {
 
         if (sortInfo) {
 
-          const column = ChannelPartnerMasterColumns.find(col => col.key === sortInfo.column);
+          const column = ChannelPartnerColumns.find(col => col.key === sortInfo.column);
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
-        const params: FilterWithPaginationChannelPartnerMasterRequest = {
+        const params: FilterWithPaginationChannelPartnerRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          ChannelPartnerId: filterParams.ChannelPartnerMasterId ? Number(filterParams.ChannelPartnerMasterId) : undefined,
+          ChannelPartnerId: filterParams.ChannelPartnerId ? Number(filterParams.ChannelPartnerId) : undefined,
           Name: filterParams.Name?.trim() || undefined,
           SortBy: sortByParam,
           ProjectId: Number(projectId),
 
         };
 
-        const response = await ChannelPartnerMasterService.apiCallPullChannelPartnerMaster(params);
+        const response = await ChannelPartnerService.apiCallPullChannelPartner(params);
         if (E.isRight(response)) {
 
-          setChannelPartnerMasterList(response.right.Data);
+          setChannelPartnerList(response.right.Data);
 
           setPagination({
             currentPage: page,
@@ -170,13 +170,13 @@ export const ChannelPartnerMaster: React.FC = () => {
   //#endregion
 
   //#region SEARCH & CLEAR
-  const searchChannelPartnerMaster = async (searchValue: string) => {
+  const searchChannelPartner = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
 
-      fetchChannelPartnerMasterList();
+      fetchChannelPartnerList();
 
       return
     }
@@ -185,13 +185,13 @@ export const ChannelPartnerMaster: React.FC = () => {
       Name: searchValue.trim(),
     };
 
-    await loadChannelPartnerMaster(1, filterParams);
+    await loadChannelPartner(1, filterParams);
   };
 
   //#endregion
 
   //#region CLEAR CHANNEL PARTNER MASTER 
-  const clearSearchChannelPartnerMaster = () => {
+  const clearSearchChannelPartner = () => {
     setSearchTerm('');
 
     debouncedSearch.cancel?.();
@@ -199,7 +199,7 @@ export const ChannelPartnerMaster: React.FC = () => {
     setFilters({});
     setTempFilters({});
     setPagination({ currentPage: 1 });
-    loadChannelPartnerMaster(1, {});
+    loadChannelPartner(1, {});
     try {
       navigate(location.pathname, {
         replace: true,
@@ -211,7 +211,7 @@ export const ChannelPartnerMaster: React.FC = () => {
   //#endregion
 
   //#region EXPORT / IMPORT EXCEL AND PDF
-  const handleExportChannelPartnerMaster = async (exportType: 'Excel' | 'PDF') => {
+  const handleExportChannelPartner = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -219,12 +219,12 @@ export const ChannelPartnerMaster: React.FC = () => {
 
         let sortByParam = undefined
         if (sortInfo) {
-          const column = ChannelPartnerMasterColumns.find(col => col.key === sortInfo.column);
+          const column = ChannelPartnerColumns.find(col => col.key === sortInfo.column);
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
-        const params: FilterWithPaginationChannelPartnerMasterRequest = {
+        const params: FilterWithPaginationChannelPartnerRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           Name: filters.Name?.trim() || undefined,
@@ -233,7 +233,7 @@ export const ChannelPartnerMaster: React.FC = () => {
           ExportType: exportType
         };
 
-        const response = await getChannelPartnerMaster(params);
+        const response = await getChannelPartner(params);
 
         handleExportFile(response, exportType, 'Channel Partner Master', addToast);
 
@@ -246,13 +246,13 @@ export const ChannelPartnerMaster: React.FC = () => {
     );
   };
 
-  const handleExportChannelPartnerExcel = () => handleExportChannelPartnerMaster('Excel')
-  const handleExportChannelPartnerPdf = () => handleExportChannelPartnerMaster('PDF')
+  const handleExportChannelPartnerExcel = () => handleExportChannelPartner('Excel')
+  const handleExportChannelPartnerPdf = () => handleExportChannelPartner('PDF')
   //#endregion
 
   //#region IMPORT EXCEL | DOWNLOAD
 
-  const excelImportChannelPartnerMaster = async () => {
+  const excelImportChannelPartner = async () => {
 
     await runApiWithLoader(
 
@@ -275,7 +275,7 @@ export const ChannelPartnerMaster: React.FC = () => {
   }
 
 
-  const downloadExcelSampleChannelPartnerMaster = async () => {
+  const downloadExcelSampleChannelPartner = async () => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -301,20 +301,20 @@ export const ChannelPartnerMaster: React.FC = () => {
     )
   }
 
-  const handleExcelImportChannelPartnerMaster = () => excelImportChannelPartnerMaster()
-  const handleDownloadExcelSampleChannelPartnerMaster = () => downloadExcelSampleChannelPartnerMaster()
+  const handleExcelImportChannelPartner = () => excelImportChannelPartner()
+  const handleDownloadExcelSampleChannelPartner = () => downloadExcelSampleChannelPartner()
   //#endregion
 
   //#region API | SERVICES CALL TO GET CHANNEL PARTNER
-  const getChannelPartnerMaster = async (filterParams: FilterWithPaginationChannelPartnerMasterRequest) => {
+  const getChannelPartner = async (filterParams: FilterWithPaginationChannelPartnerRequest) => {
 
-    return await ChannelPartnerMasterService.apiCallPullChannelPartnerMaster(filterParams);
+    return await ChannelPartnerService.apiCallPullChannelPartner(filterParams);
   }
   //#endregion
 
   //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = useCallback((page: number) => {
-    fetchChannelPartnerMasterList(page);
+    fetchChannelPartnerList(page);
   }, []);
 
   //#region TABLE SORT COLUMN
@@ -322,7 +322,7 @@ export const ChannelPartnerMaster: React.FC = () => {
 
     setSortInfo(sortInfo);
 
-    fetchChannelPartnerMasterList(1);
+    fetchChannelPartnerList(1);
 
   }, []);
   //#endregion
@@ -339,11 +339,11 @@ export const ChannelPartnerMaster: React.FC = () => {
     [pagination, handlePageChange]
   );
 
-  const ChannelPartnerMasterForTable = useMemo(() => channelPartnerMasterList, [channelPartnerMasterList]);
+  const ChannelPartnerForTable = useMemo(() => channelPartnerMasterList, [channelPartnerMasterList]);
   //#endregion
 
   //#region NAVIGATE TO  VIEW CHANNEL PARTNER
-  const handleNavigateToView = (row: ChannelPartnerMasterData) => {
+  const handleNavigateToView = (row: ChannelPartnerData) => {
     navigate('/channelPartner/view', {
       state: {
         editChannelPartnerData: row,
@@ -369,14 +369,14 @@ export const ChannelPartnerMaster: React.FC = () => {
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
-  const handleConfirmationDialogBoxOpen = useCallback((row: ChannelPartnerMasterData) => {
-    setDeleteChannelPartnerMasterDetailsData(row)
+  const handleConfirmationDialogBoxOpen = useCallback((row: ChannelPartnerData) => {
+    setDeleteChannelPartnerDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
   //#endregion
 
   //#region TABLE COLUMNS
-  const ChannelPartnerMasterColumns = useMemo<TableColumn[]>(() => [
+  const ChannelPartnerColumns = useMemo<TableColumn[]>(() => [
     {
       key: 'Name',
       label: 'Full Name',
@@ -532,12 +532,12 @@ export const ChannelPartnerMaster: React.FC = () => {
   //#region COLUMN CUSTOMIZATION
   const requiredChannelPartnerColumnKeys: string[] = ['Name', 'actions'];
 
-  const allChannelPartnerColumnKeys: string[] = ChannelPartnerMasterColumns.map(c => c.key);
+  const allChannelPartnerColumnKeys: string[] = ChannelPartnerColumns.map(c => c.key);
 
   const [selectedChannelPartnerColumnKeys, setSelectedChannelPartnerColumnKeys] = useState<string[]>(() => {
     try {
 
-      const saved = LocalStorageHelper.getChannelPartnerMasterTableColumns?.();
+      const saved = LocalStorageHelper.getChannelPartnerTableColumns?.();
 
       if (saved) {
 
@@ -557,13 +557,13 @@ export const ChannelPartnerMaster: React.FC = () => {
     setSelectedChannelPartnerColumnKeys(prev => Array.from(new Set([...prev, ...requiredChannelPartnerColumnKeys])).filter(k => allChannelPartnerColumnKeys.includes(k)));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ChannelPartnerMasterColumns.length])
+  }, [ChannelPartnerColumns.length])
 
   const visibleChannelPartnerColumns = useMemo(
 
-    () => ChannelPartnerMasterColumns.filter(col => selectedChannelPartnerColumnKeys.includes(col.key)),
+    () => ChannelPartnerColumns.filter(col => selectedChannelPartnerColumnKeys.includes(col.key)),
 
-    [ChannelPartnerMasterColumns, selectedChannelPartnerColumnKeys]
+    [ChannelPartnerColumns, selectedChannelPartnerColumnKeys]
   );
   //#endregion
 
@@ -571,7 +571,7 @@ export const ChannelPartnerMaster: React.FC = () => {
   const applyFilters = () => {
     setFilters(tempFilters);
 
-    loadChannelPartnerMaster(1, tempFilters);
+    loadChannelPartner(1, tempFilters);
 
     setShowFilterPopup(false);
   };
@@ -586,7 +586,7 @@ export const ChannelPartnerMaster: React.FC = () => {
     setPagination({ currentPage: 1 });
 
     // load empty filters
-    loadChannelPartnerMaster(1, {});
+    loadChannelPartner(1, {});
 
     setShowFilterPopup(false);
     // clear router state (very important)
@@ -603,11 +603,11 @@ export const ChannelPartnerMaster: React.FC = () => {
   //#endregion
 
   //#region DELETE CHANNEL PARTNER MASTER
-  const handleDeleteChannelPartnerMaster = async () => {
+  const handleDeleteChannelPartner = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
 
-    if (!deleteChannelPartnerMasterDetailsData) return;
+    if (!deleteChannelPartnerDetailsData) return;
 
     await runApiWithLoader(
 
@@ -615,18 +615,18 @@ export const ChannelPartnerMaster: React.FC = () => {
 
       setIsLoadingMessage,
       async () => {
-        const params: DeleteChannelPartnerMasterRequest = {
+        const params: DeleteChannelPartnerRequest = {
 
-          ChannelPartnerId: deleteChannelPartnerMasterDetailsData.ChannelPartnerId || 0,
+          ChannelPartnerId: deleteChannelPartnerDetailsData.ChannelPartnerId || 0,
 
-          Uniquekey: deleteChannelPartnerMasterDetailsData.Uniquekey || ""
+          Uniquekey: deleteChannelPartnerDetailsData.Uniquekey || ""
         };
 
-        const response = await ChannelPartnerMasterService.apiCallDeleteChannelPartnerMaster(params);
+        const response = await ChannelPartnerService.apiCallDeleteChannelPartner(params);
 
         if (E.isRight(response)) {
 
-          setChannelPartnerMasterList(prevData => prevData.filter(item => item.ChannelPartnerId !== deleteChannelPartnerMasterDetailsData.ChannelPartnerId));
+          setChannelPartnerList(prevData => prevData.filter(item => item.ChannelPartnerId !== deleteChannelPartnerDetailsData.ChannelPartnerId));
 
           setPagination({
             currentPage: pagination.currentPage,
@@ -637,7 +637,7 @@ export const ChannelPartnerMaster: React.FC = () => {
 
           setIsConfirmationDialogBoxOpen(false);
 
-          setDeleteChannelPartnerMasterDetailsData(null);
+          setDeleteChannelPartnerDetailsData(null);
 
         } else {
 
@@ -669,7 +669,7 @@ export const ChannelPartnerMaster: React.FC = () => {
           setSearchTerm(v);
           debouncedSearch(v);
         }}
-        onClearSearch={clearSearchChannelPartnerMaster}
+        onClearSearch={clearSearchChannelPartner}
         isShowFilterButton
         filters={filters}
         onOpenFilter={() => {
@@ -686,8 +686,8 @@ export const ChannelPartnerMaster: React.FC = () => {
 
         // IMPORT
         isShowImportButton={canAction}
-        onUploadExcel={handleExcelImportChannelPartnerMaster}
-        onDownloadSampleExcel={handleDownloadExcelSampleChannelPartnerMaster}
+        onUploadExcel={handleExcelImportChannelPartner}
+        onDownloadSampleExcel={handleDownloadExcelSampleChannelPartner}
 
         // EXPORT
         isShowExportButton={canExport}
@@ -698,7 +698,7 @@ export const ChannelPartnerMaster: React.FC = () => {
 
       {/* DATA TABLE CHANNEL PARTNER*/}
       <DataTable
-        data={ChannelPartnerMasterForTable}
+        data={ChannelPartnerForTable}
         columns={visibleChannelPartnerColumns}
         pagination={ChannelPartnerPaginationInfo}
         emptyMessage="No Channel Partner found"
@@ -722,13 +722,13 @@ export const ChannelPartnerMaster: React.FC = () => {
           setSelectedChannelPartnerColumnKeys(withRequired);
 
           try {
-            LocalStorageHelper.storeChannelPartnerMasterTableColumns?.(
+            LocalStorageHelper.storeChannelPartnerTableColumns?.(
 
               JSON.stringify(withRequired)
             );
           } catch { }
         }}
-        columns={ChannelPartnerMasterColumns}
+        columns={ChannelPartnerColumns}
         selectedKeys={selectedChannelPartnerColumnKeys}
         requiredKeys={requiredChannelPartnerColumnKeys}
         title="Customize Table Columns"
@@ -765,7 +765,7 @@ export const ChannelPartnerMaster: React.FC = () => {
       <ConfirmationDialogBox
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => setIsConfirmationDialogBoxOpen(false)}
-        onConfirm={handleDeleteChannelPartnerMaster}
+        onConfirm={handleDeleteChannelPartner}
         title="You are about to delete this Channel Partner?"
         message="Deleting this Channel Partner will permanently remove its data."
         confirmText="Delete"
@@ -779,4 +779,4 @@ export const ChannelPartnerMaster: React.FC = () => {
   );
 };
 
-export default ChannelPartnerMaster;
+export default ChannelPartner;

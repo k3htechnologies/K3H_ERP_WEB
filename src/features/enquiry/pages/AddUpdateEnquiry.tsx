@@ -18,13 +18,13 @@ import { Mail, Phone } from "lucide-react";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { ACCOMODATION_TYPE_OPTIONS, AGE_TYPE_OPTION, BUDGET_TYPE_OPTIONS, COMMERCIAL_FLAT_CONFIGURATION, CUSTOMER_CLASSIFICATION_TYPE, DESIRED_FLOOR_BAND, ETHNICITY_TYPE_OPTION, FINAL_STAGE_DETAILS_TYPE_OPTIONS, FINAL_STAGE_TYPE_OPTIONS, NEIGHBORHOOD_PLACES_TYPE_OPTION, OCCUPATION_TYPE_OPTIONS, POSSESSION_TYPE_OPTIONS, REQUIREMENT_TYPE_OPTIONS, RESIDENTIAL_FLAT_CONFIGURATION, SOURCE_OF_FUNDING_TYPE, SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from "@/core/constants";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
-import { fetchChannelPartnerMasterDropdown } from "../services/channelPartnerDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
 import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 import RadioPill from "@/ui/components/forms/RadioPill";
 import { RangeSelector } from "@/ui/components/forms/RangeSelector";
+import { fetchChannelPartnerDropdown } from "@/features/ChannelPartner/channelPartnerDropDown";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
     EnquiryId: 0,
@@ -763,7 +763,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                             label="Channel Partner"
                                             title="Select Channel Partner"
                                             size="lg"
-                                            dataFetchCallBack={fetchChannelPartnerMasterDropdown}
+                                            dataFetchCallBack={fetchChannelPartnerDropdown}
                                             onSelected={(item) =>
                                                 handleFieldChange("ChannelPartnerId", Number(item.value))
                                             }

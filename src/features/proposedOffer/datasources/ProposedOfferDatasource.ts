@@ -515,7 +515,6 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         try {
             const queryParams = new URLSearchParams()
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
-            if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
             if (params.ExportType) queryParams.append('ExportType', params.ExportType)
 
             return await this.k3hHttpClient.getRequestWithAuthentication(

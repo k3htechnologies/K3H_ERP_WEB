@@ -74,9 +74,8 @@ import Tenant from '@/features/tenant/pages/Tenant';
 import AddUpdateTenant from '@/features/tenant/pages/AddUpdateTenant';
 import ViewTenant from '@/features/tenant/pages/ViewTenant';
 import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
-import ChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/ChannelPartnerMaster';
-import AddUpdateChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/AddUpdateChannelPartnerMaster';
-import ViewChannelPartnerMaster from '@/features/ChannelPartnerMaster/pages/ViewChannelPartnerMaster';
+import { ChannelPartner } from '@/features/ChannelPartner/pages/ChannelPartner';
+import { AddUpdateChannelPartner } from '@/features/ChannelPartner/pages/AddUpdateChannelPartner';
 import BuildingDescription from '@/features/building/pages/BuildingDescription';
 import BuildingDocument from '@/features/building/pages/BuildingDocument';
 import { BuildingListStateProvider } from '@/features/building/context/BuildingListStateContext';
@@ -102,6 +101,8 @@ import Enquiry from '@/features/enquiry/pages/Enquiry';
 import AddUpdateEnquiry from '@/features/enquiry/pages/AddUpdateEnquiry';
 import { EnquiryListStateProvider } from '@/features/enquiry/context/EnquiryListStateContext';
 import EarningMaster from '@/features/earningMaster/pages/EarningMaster';
+import ProposedPlan from '@/features/proposedOffer/pages/ProposedPlan';
+import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -238,12 +239,12 @@ function App() {
             <Route path="event" element={<Event />} />
 
             {/* SALES */}
-            <Route path="channelPartner" element={<ChannelPartnerMaster />} />
-            <Route path="channelPartner/view" element={<ViewChannelPartnerMaster />} />
-            <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartnerMaster />} />
-            
+            <Route path="channelPartner" element={<ChannelPartner />} />
+            <Route path="channelPartner/view" element={<ViewChannelPartner />} />
+            <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartner />} />
+
             <Route path="enquiry" element={<EnquiryListStateProvider><Enquiry /></EnquiryListStateProvider>} />
-            <Route path="enquiry/view/:EnquiryId?" element={<EnquiryListStateProvider><ViewEnquiry/></EnquiryListStateProvider>} />
+            <Route path="enquiry/view/:EnquiryId?" element={<EnquiryListStateProvider><ViewEnquiry /></EnquiryListStateProvider>} />
             <Route path="enquiry/add/:EnquiryId?" element={<EnquiryListStateProvider><AddUpdateEnquiry /></EnquiryListStateProvider>} />
 
             {/* REDEVELOPMENT */}
@@ -262,6 +263,8 @@ function App() {
             <Route path="rent" element={<Rent />} />
 
             <Route path="proposedOffer" element={<ProposedOffer />} />
+
+            <Route path="proposedPlan" element={<ProposedPlan />} />
 
           </Route>
 

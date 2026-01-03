@@ -19,7 +19,7 @@ import * as E from "fp-ts/Either";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import React from "react";
 import { Tabs } from "@/ui/components/Tab/Tab";
-import { Trash2, Plus, Search, Phone, IdCard } from "lucide-react";
+import { Trash2, Plus, Search, Phone, IdCard, Mail } from "lucide-react";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -576,6 +576,7 @@ export const AddUpdateVendor: React.FC = () => {
             {/* Vendor Name */}
             <Input
               label="Vendor Name"
+              placeholder="Enter Vendor Name"
               required
               value={formData.VendorName}
               onChange={(e) => handleFieldChange("VendorName", e.target.value)}
@@ -583,6 +584,7 @@ export const AddUpdateVendor: React.FC = () => {
             />
             <Input
               label="Company Name"
+              placeholder="Enter Company Name"
               required
               value={formData.CompanyName}
               onChange={(e) => handleFieldChange("CompanyName", e.target.value)}
@@ -590,6 +592,7 @@ export const AddUpdateVendor: React.FC = () => {
             />
             <Input
               label="Mobile Number"
+              placeholder="Enter Mobile Number"
               required
               leftIcon="+91"
               value={formData.MobileNumber}
@@ -599,15 +602,18 @@ export const AddUpdateVendor: React.FC = () => {
               error={errors.MobileNumber}
             />
             <Input
-              label="Email Id"
+              label="E-mail Id"
+              placeholder="Enter E-mail Id"
               required
               type="email"
+              rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
               value={formData.EmailId}
               onChange={(e) => handleFieldChange("EmailId", filterEmail(e.target.value))}
               error={errors.EmailId}
             />
             <SinglePageSelection
               label="Company Type"
+              placeholder="Select Company Type"
               required
               value={formData.CompanyType}
               onChange={(val) => handleFieldChange("CompanyType", String(val))}
@@ -632,12 +638,13 @@ export const AddUpdateVendor: React.FC = () => {
               value={formData.AadharCardNumber}
               rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
               onChange={(e) => handleFieldChange("AadharCardNumber", filterAadhaar(e.target.value))}
-              placeholder="Enter Aadhaar card number"
+              placeholder="Enter Aadhaar Card Number"
               error={errors.AadharCardNumber}
             />
 
             <MultiFilePicker
               label='Aadhar Card'
+              placeholder="Select Aadhaar Card"
               required
               error={errors.AadharCardURL}
               value={aadharCardURLFiles}
@@ -663,11 +670,12 @@ export const AddUpdateVendor: React.FC = () => {
               value={formData.PanCardNumber}
               rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
               onChange={(e) => handleFieldChange("PanCardNumber", filterPAN(e.target.value))}
-              placeholder="Enter PAN card number"
+              placeholder="Enter PAN Card Number"
               error={errors.PanCardNumber}
             />
             <MultiFilePicker
               label='PAN Card'
+              placeholder="Select PAN Card"
               required
               error={errors.PanCardURL}
               value={panCardURLFiles}
@@ -692,12 +700,13 @@ export const AddUpdateVendor: React.FC = () => {
               value={formData.GSTNumber}
               rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
               onChange={(e) => handleFieldChange("GSTNumber", filterGST(e.target.value))}
-              placeholder="Enter GST number"
+              placeholder="Enter GST Number"
               error={errors.GSTNumber}
             />
 
             <MultiFilePicker
               label='GST Certificate'
+              placeholder="Select GST Certificate"
               required
               error={errors.GSTCertificateURL}
               value={gstGSTCertificateFiles}
@@ -727,6 +736,7 @@ export const AddUpdateVendor: React.FC = () => {
 
           <TextArea
             label="Address"
+            placeholder="Enter Address"
             required
             rows={3}
             className="thin-scroll"
@@ -738,6 +748,7 @@ export const AddUpdateVendor: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <SinglePageSelection
               label="Country"
+              placeholder="Select Country"
               value={selectedCountryId || ""}
               required
               onChange={(val) => {
@@ -758,6 +769,7 @@ export const AddUpdateVendor: React.FC = () => {
 
             <SinglePageSelection
               label="State"
+              placeholder="Select State"
               value={selectedStateId || ""}
               required
               onChange={(val) => {
@@ -776,6 +788,7 @@ export const AddUpdateVendor: React.FC = () => {
 
             <SinglePageSelection
               label="District"
+              placeholder="Select District"
               value={selectedDistrictId || ""}
               required
               onChange={(val) => {
@@ -792,6 +805,7 @@ export const AddUpdateVendor: React.FC = () => {
 
             <SinglePageSelection
               label="City"
+              placeholder="Select City"
               value={selectedCityId || ""}
               required
               onChange={(val) => {

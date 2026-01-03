@@ -1,11 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import type { ChannelPartnerMasterData } from "../models/ChannelPartnerMasterModel";
+import type { ChannelPartnerData } from "../models/ChannelPartnerModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
-const ViewChannelPartnerMaster: React.FC = () => {
+const ViewChannelPartner: React.FC = () => {
 
     //LOCATION
     const location = useLocation();
@@ -15,7 +15,7 @@ const ViewChannelPartnerMaster: React.FC = () => {
 
     const { canAction } = useMenuPermissions('/channelPartner');
 
-    const editChannelPartnerData = location.state?.editChannelPartnerData as ChannelPartnerMasterData;
+    const editChannelPartnerData = location.state?.editChannelPartnerData as ChannelPartnerData;
 
     const listState = location.state?.listState;
 
@@ -24,7 +24,7 @@ const ViewChannelPartnerMaster: React.FC = () => {
 
 
     //#region EDIT CHANNEL PARTNER MASTER
-    const handleEditChannelPartnerMaster = (row: ChannelPartnerMasterData) => {
+    const handleEditChannelPartner = (row: ChannelPartnerData) => {
         if (!row?.ChannelPartnerId) return;
         navigate(`/channelPartner/add/${row.ChannelPartnerId}`, {
             state: {
@@ -42,7 +42,7 @@ const ViewChannelPartnerMaster: React.FC = () => {
     //#endregion
 
     //#region BACK PROJECT PAGE
-    const handleBackToListChannelPartnerMaster = () => {
+    const handleBackToListChannelPartner = () => {
         navigate('/channelPartner', {
             state: {
                 listState: listState ?? {
@@ -61,14 +61,14 @@ const ViewChannelPartnerMaster: React.FC = () => {
 
             {/* Header Details*/}
             <HeaderActionBar
-                titleText={'Channel Partner Master'}
+                subTitleText={editChannelPartnerData.Name}
                 cancelText="Cancel"
                 EditText="Edit"
-                onCancel={() => handleBackToListChannelPartnerMaster()}
+                onCancel={() => handleBackToListChannelPartner()}
                 canAction={canAction}
                 onEdit={() => {
 
-                    if (editChannelPartnerData) handleEditChannelPartnerMaster(editChannelPartnerData!);
+                    if (editChannelPartnerData) handleEditChannelPartner(editChannelPartnerData!);
 
                 }}
                 isLoading={false}
@@ -84,8 +84,7 @@ const ViewChannelPartnerMaster: React.FC = () => {
                         {/* HEADER  DETAILS */}
                         <div className="mt-2 pb-4 border-b-2 border-gray-300">
                             <div className="flex items-center gap-28">
-                                <h1 className="text-lg text-black">Channel Partner Details</h1>
-
+                                
                                 <div className="flex items-center gap-2">
                                     <span className="text-gray-500 font-medium text-sm">Company Name:</span>
                                     <span className="text-black text-sm">{editChannelPartnerData.CompanyName || '-'} </span>
@@ -94,18 +93,17 @@ const ViewChannelPartnerMaster: React.FC = () => {
                         </div>
 
                         {/* Basic Deatils */}
-                        
+
                         <div className="grid grid-cols-2 gap-x-10 gap-y-6 p-4">
-                            <FieldItem label="Contact No:" value={editChannelPartnerData.MobileNumber ? `+91 ${editChannelPartnerData.MobileNumber}` : '-'} />
+                            <FieldItem label="Mobile No:" value={editChannelPartnerData.MobileNumber ? `+91 ${editChannelPartnerData.MobileNumber}` : '-'} />
                             <FieldItem label="E-Mail ID" value={editChannelPartnerData.EmailId} />
                             <FieldItem label="Alternative Contact No:" value={editChannelPartnerData.AlternativeMobileNumber ? `+91 ${editChannelPartnerData.AlternativeMobileNumber}` : '-'} />
                             <FieldItem label="Speciality" value={editChannelPartnerData.Speciality} />
-                            <FieldItem label="PAN Number" value={editChannelPartnerData.PanNumber} />
-                            <FieldItem label="Aadhar Number" value={editChannelPartnerData.AadharCardNumber} />
+                            <FieldItem label="PAN Number" value={editChannelPartnerData.PanNumber} urls={editChannelPartnerData.PanCardURL} isIcon />
+                            <FieldItem label="Aadhar Number" value={editChannelPartnerData.AadharCardNumber} urls={editChannelPartnerData.AadharCardURL} isIcon />
                             <FieldItem label="GST Number" value={editChannelPartnerData.GSTNumber} />
                             <FieldItem label="RERA Number" value={editChannelPartnerData.RERANumber} />
                             <FieldItem label="Office Address" value={editChannelPartnerData.OfficeAddress} />
-                            <FieldItem label="Project Name" value={editChannelPartnerData.ProjectName} />
                             <FieldItem label="Created By" value={editChannelPartnerData.CreatedBy} />
                             <FieldItem label="Created Date" value={editChannelPartnerData.CreatedDate ? formatDate_dd_MonthName_yy(editChannelPartnerData.CreatedDate) : ""} />
                             <FieldItem label="Modified By" value={editChannelPartnerData.ModifiedBy} />
@@ -119,18 +117,32 @@ const ViewChannelPartnerMaster: React.FC = () => {
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
 
                         <div className="mt-2 pb-4 border-b-2 border-gray-300">
-
                             <div className="flex items-center gap-4">
-                                <h1 className="text-lg text-black">Remarks & Activity</h1>
-
+                                <h1 className="text-lg text-black">Project</h1>
                             </div>
                         </div>
+
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            {editChannelPartnerData?.ProjectName?.split(',')
+                                .map(p => p.trim())
+                                .filter(p => p.length > 0)
+                                .map((p, i) => (
+                                    <span
+                                        key={i}
+                                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
+                                    >
+                                        {p}
+                                    </span>
+                                ))}
+                        </div>
+
                     </div>
                 </div>
+
 
             </div>
         </div>
     );
 };
 
-export default ViewChannelPartnerMaster;
+export default ViewChannelPartner;

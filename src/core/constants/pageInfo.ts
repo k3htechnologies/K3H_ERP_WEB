@@ -6,14 +6,14 @@ export const getPageInfo = (path: string) => {
         case 'dashboard':
             return {
                 title: 'Dashboard',
-                description: 'Overview of your system and key metrics',
+                description: 'Quick insights, smarter decisions',
             }
+        // SETTING
         case 'departmentMaster':
             return {
                 title: 'Department Master',
-                description: 'Manage and organize company departments with complete CRUD operations',
+                description: 'Centralized department management for real estate operations',
             }
-
         case 'designationMaster':
             if (second === "employeeModuleAccess") {
                 return {
@@ -22,10 +22,58 @@ export const getPageInfo = (path: string) => {
                 };
             }
             return {
-
                 title: 'Designation Master',
+                description: 'Define roles and designations across the organization',
+            }
+        case 'companyMaster':
+            return {
+                title: 'Company Master',
+                description: 'Single source of truth for company information',
+            }
+        case 'tnc':
+            return {
+                title: 'Terms & Conditions Master',
+                description: 'Clear terms for every transaction',
+            }
+        case 'bankListMaster':
+            return {
+                title: 'Bank List Master',
+                description: 'Centralized list of banks for seamless financial operations',
+            }
+        case 'vendor':
+            return {
+                title: 'Vendor Management',
+                description: 'Structured vendor data for efficient sourcing',
+            }
+        case 'projectMaster':
+            return {
+                title: 'Project Management',
+                description: 'End-to-end Details of projects in one place',
+            }
+
+
+        case 'employeeMaster':
+            return {
+                title: 'Employee Master',
+                description: 'Manage employee records with accuracy and control',
+            }
+
+        case 'materialMaster':
+            return {
+                title: 'Material Master',
+                description: 'Manage material details in one place',
+            }
+        case 'subMaterialMaster':
+            return {
+                title: 'Sub Material Master',
+                description: 'Detailed material breakdown in one place',
+            }
+        case 'uomMaster':
+            return {
+                title: 'UOM Master',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
+        // PAYROLL MASTER
         case 'branchMaster':
             return {
                 title: 'Branch Master',
@@ -77,22 +125,6 @@ export const getPageInfo = (path: string) => {
                 title: 'Leave Type Master',
                 description: 'Manage and organize branch associations with complete CRUD operations',
             }
-        case 'leave':
-            return {
-                title: 'Leave Management',
-                description: 'Manage and organize employee leave requests with complete CRUD operations',
-            }
-        case 'leaveCreditDebit':
-            return {
-                title: 'Leave Credit Debit Management',
-                description: 'Manage employee leave credit and debit with complete CRUD operations',
-            }
-        case 'compOff':
-            return {
-                title: 'compOff',
-                description: 'Manage compOff with complete CRUD operations',
-            }
-
         case 'shiftMaster':
             return {
                 title: 'Shift Master',
@@ -113,89 +145,69 @@ export const getPageInfo = (path: string) => {
                 title: 'Week Off Mapping Master',
                 description: 'Manage and organize branch associations with complete CRUD operations',
             }
-        case 'companyMaster':
+        // PAYROLL
+        case 'leave':
             return {
-                title: 'Company Master',
-                description: 'Manage and organize branch associations with complete CRUD operations',
+                title: 'Leave Management',
+                description: 'Manage and organize employee leave requests with complete CRUD operations',
             }
-        case 'tnc':
+        case 'leaveCreditDebit':
             return {
-                title: 'Terms & Conditions Master',
-                description: 'Manage and organize branch associations with complete CRUD operations',
+                title: 'Leave Credit Debit Management',
+                description: 'Manage employee leave credit and debit with complete CRUD operations',
             }
-        case 'bankListMaster':
+        case 'compOff':
             return {
-                title: 'Bank List Master',
-                description: 'Manage and organize branch associations with complete CRUD operations',
+                title: 'compOff',
+                description: 'Manage compOff with complete CRUD operations',
             }
-        case 'vendor':
+        case 'outdoor':
             return {
-                title: 'Vendor Management',
-                description: 'Manage and organize branch associations with complete CRUD operations',
-            }
-        case 'projectMaster':
-            return {
-                title: 'Project Management',
-                description: 'Manage and organize branch associations with complete CRUD operations',
+                title: "Outdoor Managemen",
+                description: "outdoor visit information",
             }
 
 
-        case 'employeeMaster':
-            return {
-                title: 'Employee Master',
-                description: 'Manage and organize company departments with complete CRUD operations',
-            }
 
-        case 'materialMaster':
-            return {
-                title: 'Material Master',
-                description: 'Manage and organize company departments with complete CRUD operations',
-            }
-        case 'subMaterialMaster':
-            return {
-                title: 'Sub Material Master',
-                description: 'Manage and organize company departments with complete CRUD operations',
-            }
-        case 'uomMaster':
-            return {
-                title: 'UOM Master',
-                description: 'Manage and organize company departments with complete CRUD operations',
-            }
+        //DOCUMENT MANAGEMENT
         case 'category':
             return {
-                title: 'Project Document Category Master',
-                description: 'Manage and organize company departments with complete CRUD operations',
-            }
-        case 'reraCategory':
-            return {
-                title: 'RERA Document Category Master',
-                description: 'Manage and organize company departments with complete CRUD operations',
-            }
-        case 'rera':
-            return {
-                title: 'RERA Document',
-                description: 'Manage and organize company departments with complete CRUD operations',
+                title: 'Project Document Category',
+                description: 'Organize project documents by category for easy access',
             }
         case 'document':
             return {
                 title: 'Project Document',
-                description: 'Manage and organize company departments with complete CRUD operations',
+                description: 'Structured document management for real estate projects',
             }
-            case 'approvalDocument':
+        case 'reraCategory':
+            return {
+                title: 'RERA Document Category',
+                description: 'Organize RERA documents for clear regulatory reporting',
+            }
+        case 'rera':
+            return {
+                title: 'RERA Document',
+                description: 'Centralized RERA documents for regulatory compliance',
+            }
+        case 'approvalDocument':
             return {
                 title: 'Approval Document',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
-            case 'approvalCategory':
+        case 'approvalCategory':
             return {
                 title: 'Approval Document Category Master',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
+        //PROFILE
         case 'profile':
             return {
                 title: 'Profile',
-                description: 'Profile',
+                description: 'Manage user identity and profile details securely',
             }
+
+        //OPERATIONS
         case 'siteProgress':
             if (second === "SiteProgressSubConstruction") {
                 return {
@@ -243,6 +255,8 @@ export const getPageInfo = (path: string) => {
                 title: 'Site Progress',
                 description: 'Profile',
             }
+
+        //REDEVELOPMENT
         case 'building':
             return {
                 title: 'Building',
@@ -263,17 +277,39 @@ export const getPageInfo = (path: string) => {
                 title: 'Proposed Offer',
                 description: 'Profile',
             }
+        case 'proposedPlan':
+            return {
+                title: 'Proposed Plan',
+                description: 'Proposed Plan',
+            }
+        //COMMAN MODULES
         case 'event':
             return {
                 title: 'Event',
                 description: 'Profile',
             }
 
-        case 'outdoor':
 
+
+        case 'inventory':
             return {
-                title: "Outdoor Managemen",
-                description: "outdoor visit information",
+                title: "Inventory Management",
+                description: "Track building units, floors, and availability in real time",
+            }
+        case 'parking':
+            return {
+                title: "Parking Management",
+                description: "Track parking availability across buildings and projects",
+            }
+        case 'enquiry':
+            return {
+                title: "Enquiry",
+                description: "Centralized enquiry management for faster response",
+            }
+        case 'channelPartner':
+            return {
+                title: "Channel Partner",
+                description: "Single source of truth for channel partner information",
             }
 
         default:

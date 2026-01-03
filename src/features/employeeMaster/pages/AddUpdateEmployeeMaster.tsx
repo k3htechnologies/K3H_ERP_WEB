@@ -31,7 +31,7 @@ import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialVa
 import type { AddUpdateEmployeeMasterRequest, FilterWithPaginationEmployeeMasterRequest } from "@/features/employeeMaster/models/EmployeeMasterModel";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 
 
 const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
@@ -637,6 +637,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                   label="E-mail Id"
                   placeholder="Enter E-mail Id"
                   value={formData.EmailId}
+                  rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
                   required
                   onChange={(e) => handleFieldChange("EmailId", filterEmail(e.target.value))}
                   error={errors.EmailId} />
@@ -646,6 +647,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                   label="Office E-mail Id"
                   placeholder="Enter Office E-mail Id"
                   value={formData.OfficeEmailId}
+                  rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
                   onChange={(e) => handleFieldChange("OfficeEmailId", filterEmail(e.target.value))}
                   error={errors.OfficeEmailId}
                 />

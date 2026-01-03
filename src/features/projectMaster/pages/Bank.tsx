@@ -597,6 +597,7 @@ const Bank: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Account Type"
+                placeholder='Select Account Type'
                 required
                 value={formDataForBankDetails.AcType}
                 onChange={(e) => handleFieldChange('AcType', String(e))}
@@ -622,6 +623,7 @@ const Bank: React.FC = () => {
             <div>
               <Input
                 label="Account Number"
+                placeholder='Enter Account Number'
                 required value={formDataForBankDetails.AccountNumber}
                 maxLength={18}
                 onChange={(e) => handleFieldChange("AccountNumber", filterNumbers(e.target.value))}
@@ -629,6 +631,7 @@ const Bank: React.FC = () => {
             </div>
             <div>
               <Input label="IFSC Code"
+              placeholder='Enter IFSC Code'
                 required
                 value={formDataForBankDetails.IFSCCode}
                 maxLength={11}

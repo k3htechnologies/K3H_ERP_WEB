@@ -21,6 +21,8 @@ import { FINAL_STAGE_TYPE_OPTIONS } from "@/core/constants";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import { Input } from "@/ui/components/forms";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { Edit, Trash2 } from "lucide-react";
+import { getStatusColor } from "./Status";
 
 const ViewEnquiry: React.FC = () => {
 
@@ -58,7 +60,7 @@ const ViewEnquiry: React.FC = () => {
         Remark?: string;
     }>({});
 
-    
+
 
     //#region MENU PERMISSION
     const { canAction } = useMenuPermissions('/enquiry');
@@ -168,7 +170,6 @@ const ViewEnquiry: React.FC = () => {
 
     const handleOpenEnquiryFollowUpModal = (item?: EnquiryFollowUpData) => {
         if (item) {
-            // Edit mode
             setEnquiryFollowUpFormData({
                 EnquiryFollowUpId: item.EnquiryFollowUpId,
                 Uniquekey: item.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
@@ -257,11 +258,12 @@ const ViewEnquiry: React.FC = () => {
                 const response = await enquiryFollowUpService.apiCallAddUpdateEnquiryFollowUp(params);
 
                 if (E.isRight(response)) {
-                    addToast({
-                        type: 'success', title: response.right.SuccessMessage[0]
-                    });
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
                     handleCloseEnquiryFollowUpModal();
                     fetchEnquiryFollowUpDetails();
+                    fetchEnquiryDetails();
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -281,10 +283,10 @@ const ViewEnquiry: React.FC = () => {
 
     //#region ENQUIRY FOLLOW UP DELETE HANDLER
 
-    // const handleDeleteEnquiryFollowUp = (item: EnquiryFollowUpData) => {
-    //     setSelectedEnquiryFollowUpItem(item);
-    //     setIsDeleteEnquiryFollowUpDialogOpen(true);
-    // };
+    const handleDeleteEnquiryFollowUp = (item: EnquiryFollowUpData) => {
+        setSelectedEnquiryFollowUpItem(item);
+        setIsDeleteEnquiryFollowUpDialogOpen(true);
+    };
 
     const handleConfirmDeleteEnquiryFollowUp = async () => {
         if (!selectedEnquiryFollowUpItem) return;
@@ -297,7 +299,7 @@ const ViewEnquiry: React.FC = () => {
                 const params: DeleteEnquiryFollowUpRequest = {
                     EnquiryFollowUpId: selectedEnquiryFollowUpItem.EnquiryFollowUpId || 0,
                     Uniquekey: selectedEnquiryFollowUpItem.Uniquekey || '',
-                    EnquiryId: Number(EnquiryId),
+                    EnquiryId: Number(currentEnquiryId),
                     ProjectId: Number(projectId)
                 };
 
@@ -501,8 +503,50 @@ const ViewEnquiry: React.FC = () => {
                                             </span>
 
                                             <span className="text-xs text-gray-500">
-                                                {item.Status ?? ""}
+                                                {(() => {
+                                                    const { bg, text } = getStatusColor(item.Status || '');
+                                                    return (
+                                                        <span
+                                                            className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                                                            style={{ backgroundColor: bg, color: text }}
+                                                        >
+                                                            {item.Status || "-"}
+                                                        </span>
+                                                    );
+                                                })()}
                                             </span>
+                                            {index === 0 && (
+                                                <div className="flex items-center gap-1">
+                                                    <Button
+                                                        color='transparent'
+                                                        isborderRadius
+                                                        size='sm'
+                                                        style={{
+                                                            color: 'blue',
+                                                            padding: '4px 8px'
+                                                        }}
+                                                        title="Edit"
+                                                        onClick={() => handleOpenEnquiryFollowUpModal(item)}
+                                                        disabled={isLoading}
+                                                        leftIcon={<Edit className="h-4 w-4" />}
+                                                    >
+                                                    </Button>
+                                                    <Button
+                                                        color='transparent'
+                                                        isborderRadius
+                                                        size='sm'
+                                                        style={{
+                                                            color: 'red',
+                                                            padding: '4px 8px'
+                                                        }}
+                                                        title="Delete"
+                                                        onClick={() => handleDeleteEnquiryFollowUp(item)}
+                                                        disabled={isLoading}
+                                                        leftIcon={<Trash2 className="h-4 w-4" />}
+                                                    >
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* REMARK */}
@@ -560,7 +604,7 @@ const ViewEnquiry: React.FC = () => {
                         label="Status"
                         placeholder="Select Status"
                         value={enquiryFollowUpFormData.Status ?? ''}
-                        onChange={(e) => setEnquiryFollowUpFormData({ ...enquiryFollowUpFormData, Status: String(e)})}
+                        onChange={(e) => setEnquiryFollowUpFormData({ ...enquiryFollowUpFormData, Status: String(e) })}
                         options={FINAL_STAGE_TYPE_OPTIONS.map(opt => ({
                             label: opt.name,
                             value: opt.id
@@ -575,7 +619,7 @@ const ViewEnquiry: React.FC = () => {
                         required
                         value={formatDate_dd_mm_yyyy(enquiryFollowUpFormData.NextFollowUpDate) ?? ''}
                         onChange={(e) => setEnquiryFollowUpFormData({ ...enquiryFollowUpFormData, NextFollowUpDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(e) })}
-                         error={enquiryFollowUpFormErrors.NextFollowUpDate}
+                        error={enquiryFollowUpFormErrors.NextFollowUpDate}
                     />
 
                     {/* REMARK */}

@@ -225,6 +225,7 @@ export const MultiSelectDropdown = forwardRef<
             >
               <button
                 onClick={handleSelectAll}
+                type="button"
                 style={{
                   border: "none",
                   background: "none",
@@ -238,6 +239,7 @@ export const MultiSelectDropdown = forwardRef<
 
               <button
                 onClick={handleClearAll}
+                type="button"
                 style={{
                   border: "none",
                   background: "none",
@@ -251,7 +253,7 @@ export const MultiSelectDropdown = forwardRef<
             </div>
 
             {/* Options */}
-            <div style={{ overflowY: "auto", flex: 1 }}>
+            <div  style={{ overflowY: "auto", flex: 1 }}>
               {filteredOptions.map((opt: any, idx: number) => (
                 <div
                   key={idx}

@@ -18,7 +18,7 @@ import Checkbox from "@/ui/components/forms/Checkbox";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
-import { Phone } from "lucide-react";
+import { IndianRupee, Phone } from "lucide-react";
 
 const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ProjectId: 0,
@@ -429,7 +429,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     type="text"
                                     value={formData.ProjectName}
                                     onChange={(e) => handleFieldChange('ProjectName', e.target.value)}
-                                    placeholder="Enter project name"
+                                    placeholder="Enter Project Name"
                                 />
                             </div>
                             <div>
@@ -440,12 +440,13 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     type="text"
                                     value={formData.CTSNumber}
                                     onChange={(e) => handleFieldChange('CTSNumber', e.target.value)}
-                                    placeholder="Enter CTS number"
+                                    placeholder="Enter CTS Number"
                                 />
                             </div>
                             <div>
                                 <MultiFilePicker
                                     label="Project Photo"
+                                    placeholder="Select Project Photo"
                                     required
                                     error={errors.ProjectPhotoURL}
                                     value={projectPhotoFiles}
@@ -462,6 +463,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             <div>
                                 <SinglePageSelection
                                     label="Country"
+                                    placeholder="Select Country"
                                     required
                                     value={selectedCountryId || ''}
                                     onChange={(val) => {
@@ -479,6 +481,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             <div>
                                 <SinglePageSelection
                                     label="State"
+                                    placeholder="Select State"
                                     required
                                     error={errors.StateMasterId}
                                     value={selectedStateId ?? ''}
@@ -496,6 +499,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             <div>
                                 <SinglePageSelection
                                     label="District"
+                                    placeholder="Select District"
                                     required
                                     error={errors.DistrictMasterId}
                                     value={selectedDistrictId ?? ''}
@@ -512,6 +516,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             <div>
                                 <SinglePageSelection
                                     label="City"
+                                    placeholder="Select City"
                                     required
                                     error={errors.CityMasterId}
                                     value={selectedCityId ?? ''}
@@ -530,13 +535,14 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     type="text"
                                     value={formData.ZipCode}
                                     onChange={(e) => handleFieldChange('ZipCode', e.target.value)}
-                                    placeholder="Enter PIN code"
+                                    placeholder="Enter PIN Code"
                                 />
                             </div>
                             <div>
                                 
                                 <SinglePageSelection
                                     label="Business Category"
+                                    placeholder="Select Business Category"
                                     value={formData.BussinessCategory}
                                     onChange={(val) => handleFieldChange('BussinessCategory', String(val))}
                                     options={BUSINESS_CATEGORY.map(opt => ({ label: opt.name, value: opt.id }))}
@@ -550,7 +556,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     type="text"
                                     value={formData.ProjectLocation}
                                     onChange={(e) => handleFieldChange('ProjectLocation', e.target.value)}
-                                    placeholder="Enter project location"
+                                    placeholder="Enter Project Location"
                                 />
                             </div>
                             <div>
@@ -559,7 +565,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     type="text"
                                     value={formData.GoogleLocation}
                                     onChange={(e) => handleFieldChange('GoogleLocation', e.target.value)}
-                                    placeholder="Enter Google location"
+                                    placeholder="Enter Google Location"
                                 />
                             </div>
                         </div>
@@ -575,12 +581,13 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     type="text"
                                     value={formData.ProjectScope}
                                     onChange={(e) => handleFieldChange('ProjectScope', e.target.value)}
-                                    placeholder="Enter project scope"
+                                    placeholder="Enter Project Scope"
                                 />
                             </div>
                             <div>
                                 <SinglePageSelection
                                     label="Project Scheme"
+                                    placeholder="Select Project Scheme"
                                     value={formData.ProjectScheme}
                                     onChange={(val) => handleFieldChange('ProjectScheme', String(val))}
                                     options={PROJECT_SCHEME.map(opt => ({ label: opt.name, value: opt.id }))}
@@ -589,6 +596,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             <div>
                                 <SinglePageSelection
                                     label="Project Sub Scheme"
+                                    placeholder="Select Project Sub Scheme"
                                     value={formData.ProjectSubScheme}
                                     onChange={(val) => handleFieldChange('ProjectSubScheme', String(val))}
                                     options={PROJECT_SUB_SCHEME.map(opt => ({ label: opt.name, value: opt.id }))}
@@ -608,7 +616,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     type="text"
                                     value={formData.RERANumber}
                                     onChange={(e) => handleFieldChange('RERANumber', filterRERA(e.target.value))}
-                                    placeholder="Enter RERA number"
+                                    placeholder="Enter RERA Number"
                                 />
                             </div>
                             <div>
@@ -637,8 +645,9 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     label="Project Estimate Cost"
                                     type="text"
                                     value={formData.ProjectEstimateCost || ''}
+                                    rightIcon={<IndianRupee className="h-6 w-6 text-gray-400" />}
                                     onChange={(e) => handleFieldChange('ProjectEstimateCost', filterNumbers(e.target.value) || 0)}
-                                    placeholder="Enter estimate cost"
+                                    placeholder="Enter Estimate Cost"
                                 />
                             </div>
                             <div>
@@ -646,17 +655,18 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     label="On Going Budget Cost"
                                     type="text"
                                     value={formData.OnGoingBudgetCost || ''}
+                                    rightIcon={<IndianRupee className="h-6 w-6 text-gray-400" />}
                                     onChange={(e) => handleFieldChange('OnGoingBudgetCost', filterNumbers(e.target.value) || 0)}
-                                    placeholder="Enter budget cost"
+                                    placeholder="Enter Budget Cost"
                                 />
                             </div>
                             <div>
                                 <Input
-                                    label="Project Area in Sqft"
+                                    label="Project Area in (SqFt)"
                                     type="text"
                                     value={formData.ProjectAreaInSqft || ''}
                                     onChange={(e) => handleFieldChange('ProjectAreaInSqft', filterNumbers(e.target.value) || 0)}
-                                    placeholder="Enter area in sqft"
+                                    placeholder="Enter Area in (SqFt)"
                                 />
                             </div>
                         </div>
@@ -700,7 +710,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     type="text"
                                     value={formData.SiteContactName}
                                     onChange={(e) => handleFieldChange('SiteContactName', e.target.value)}
-                                    placeholder="Enter contact name"
+                                    placeholder="Enter Site Contact Name"
                                 />
                             </div>
                             <div>
@@ -712,12 +722,13 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                                     maxLength={10}
                                     onChange={(e) => handleFieldChange('SiteContactMobileNumber', filterMobile(e.target.value))}
-                                    placeholder="Enter mobile number"
+                                    placeholder="Enter Mobile Number"
                                 />
                             </div>
                             <div>
                                 <SinglePageSelection
                                     label="Project Status"
+                                    placeholder="Select Project Status"
                                     value={formData.ProjectStatus}
                                     onChange={(val) => handleFieldChange('ProjectStatus', String(val))}
                                     options={PROJECT_STATUS_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
@@ -729,7 +740,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     {/* Redevelopment Checkbox */}
                     <div className="space-y-4 pb-4">
                         <Checkbox
-                            label="Is this project a Redevelopment Project?"
+                            label="Is This Project a Redevelopment Project?"
                             checked={formData.IsRedevelopment === 1}
                             onChange={(e) => handleFieldChange('IsRedevelopment', e.target.checked ? 1 : 0)}
                         />

@@ -35,9 +35,6 @@ import type {
   FilterWithPaginationProposedOfferRentDetailsRequest,
   AddUpdateProposedOfferRentDetailsRequest,
   DeleteProposedOfferRentDetailsRequest,
-  ProposedOfferProposedPlanData,
-  FilterWithPaginationProposedOfferProposedPlanRequest,
-  AddUpdateProposedOfferProposedPlanRequest
 } from '@/features/proposedOffer/models/ProposedOfferModel';
 
 import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
@@ -241,21 +238,6 @@ const initialFormStateProjectCompletion = (): AddUpdateProposedOfferProjectCompl
 });
 //#endregion
 
-//#region INITIAL FORM STATE - PROPOSED PLAN
-const initialFormStateProposedPlan = (): AddUpdateProposedOfferProposedPlanRequest => ({
-  ProposedOfferProposedPlanId: 0,
-  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-  BuildingId: 0,
-  ProjectId: 0,
-  TotalNumberOfFloors: 0,
-  TotalUnits: 0,
-  PlanDocumentURL: null,
-  RemovePlanDocumentURL: '',
-  TotalParking: 0,
-  Amenities: ''
-});
-//#endregion
-
 //#region INITIAL FORM STATE - RENT DETAILS
 const initialFormStateRentDetails = (): AddUpdateProposedOfferRentDetailsRequest => ({
   ProposedOfferRentDetailsId: 0,
@@ -288,7 +270,6 @@ export const ProposedOffer: React.FC = () => {
   const [, setParkingAllotmentData] = useState<ProposedOfferParkingAllotmentData | null>(null);
   const [, setGSTonExistingPlusFreeAreaData] = useState<ProposedOfferGSTonExistingPlusFreeAreaData | null>(null);
   const [, setProjectCompletionData] = useState<ProposedOfferProjectCompletionData | null>(null);
-  const [, setProposedPlanData] = useState<ProposedOfferProposedPlanData | null>(null);
   const [rentDetailsList, setRentDetailsList] = useState<ProposedOfferRentDetailsData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setIsLoadingMessage] = useState('');
@@ -309,7 +290,6 @@ export const ProposedOffer: React.FC = () => {
   const [errorsParkingAllotment, setErrorsParkingAllotment] = useState<{ [k: string]: string }>({});
   const [errorsGSTonExistingPlusFreeArea, setErrorsGSTonExistingPlusFreeArea] = useState<{ [k: string]: string }>({});
   const [errorsProjectCompletion, setErrorsProjectCompletion] = useState<{ [k: string]: string }>({});
-  const [errorsProposedPlan, setErrorsProposedPlan] = useState<{ [k: string]: string }>({});
   const [errorsRentDetails, setErrorsRentDetails] = useState<{ [k: string]: string }>({});
 
   // ADD UPDATE EXTRA CARPET AREA
@@ -372,9 +352,6 @@ export const ProposedOffer: React.FC = () => {
   // ADD UPDATE PROJECT COMPLETION
   const [formDataProjectCompletion, setFormDataProjectCompletion] = useState<AddUpdateProposedOfferProjectCompletionRequest>(() => initialFormStateProjectCompletion());
 
-  // ADD UPDATE PROPOSED PLAN
-  const [formDataProposedPlan, setFormDataProposedPlan] = useState<AddUpdateProposedOfferProposedPlanRequest>(() => initialFormStateProposedPlan());
-
   // ADD UPDATE RENT DETAILS
   const [editingRentDetailsData, setEditingRentDetailsData] = useState<ProposedOfferRentDetailsData | null>(null);
   const [isAddUpdateRentDetailsModalOpen, setIsAddUpdateRentDetailsModalOpen] = useState(false);
@@ -418,7 +395,6 @@ export const ProposedOffer: React.FC = () => {
     { id: "GSTonExistingPlusFreeArea", label: "GST on Existing + Free Area" },
     { id: "ProjectCompletion", label: "Project Completion" },
     { id: "RentDetails", label: "Rent Details" },
-    { id: "ProposedPlan", label: "Proposed Plan" },
   ];
 
   const [activeTab, setActiveTab] = useState<string>(proposedOfferTabList[0].id);
@@ -445,9 +421,7 @@ export const ProposedOffer: React.FC = () => {
       fetchGSTonExistingPlusFreeAreaData();
     } else if (activeTab === 'ProjectCompletion') {
       fetchProjectCompletionData();
-    } else if (activeTab === 'ProposedPlan') {
-      fetchProposedPlanData();
-    } else if (activeTab === 'RentDetails') {
+    }  else if (activeTab === 'RentDetails') {
       fetchRentDetailsData();
     }
   }, [activeTab, projectId, buildingId]);
@@ -588,16 +562,6 @@ export const ProposedOffer: React.FC = () => {
 
     if (errorsProjectCompletion[field]) {
       setErrorsProjectCompletion((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
-  //#endregion
-
-  //#region HANDLE FIELD CHANGE EVENT - PROPOSED PLAN
-  const handleFieldChangeProposedPlan = (field: keyof AddUpdateProposedOfferProposedPlanRequest, value: any) => {
-    setFormDataProposedPlan((prev) => ({ ...prev, [field]: value }));
-
-    if (errorsProposedPlan[field]) {
-      setErrorsProposedPlan((prev) => ({ ...prev, [field]: "" }));
     }
   };
   //#endregion
@@ -2770,141 +2734,6 @@ export const ProposedOffer: React.FC = () => {
   };
   //#endregion
 
-  //#region PROPOSED PLAN
-
-  const fetchProposedPlanData = async () => {
-    await runApiWithLoader(
-      setIsLoading,
-      setIsLoadingMessage,
-      async () => {
-        const params: FilterWithPaginationProposedOfferProposedPlanRequest = {
-          ProjectId: projectId ?? undefined,
-          BuildingId: buildingId
-        };
-
-        const response = await ProposedOfferService.apiCallPullProposedPlan(params);
-
-        if (E.isRight(response)) {
-          const data = response.right.Data?.[0] || null;
-          setProposedPlanData(data);
-
-          if (data) {
-            setFormDataProposedPlan({
-              ProposedOfferProposedPlanId: data.ProposedOfferProposedPlanId || 0,
-              Uniquekey: data.Uniquekey || initialFormStateProposedPlan().Uniquekey,
-              BuildingId: buildingId,
-              ProjectId: Number(projectId),
-              TotalNumberOfFloors: data.TotalNumberOfFloors ?? 0,
-              TotalUnits: data.TotalUnits ?? 0,
-              PlanDocumentURL: null,
-              RemovePlanDocumentURL: '',
-              TotalParking: data.TotalParking ?? 0,
-              Amenities: data.Amenities || ''
-            });
-          } else {
-            setFormDataProposedPlan({
-              ...initialFormStateProposedPlan(),
-              ProjectId: Number(projectId)
-            });
-          }
-        } else {
-          addToast({ type: 'error', title: response.left.message });
-        }
-
-        return response;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message });
-      },
-      undefined,
-      'Loading Proposed Plan'
-    );
-  };
-
-  const validateProposedPlanForm = (): {
-    isValid: boolean
-    errors: { [key: string]: string }
-  } => {
-    const newErrors: { [key: string]: string } = {}
-
-    if (!formDataProposedPlan.TotalNumberOfFloors) {
-      newErrors.TotalNumberOfFloors = "Total Number of Floors is required"
-    }
-
-    if (!formDataProposedPlan.TotalUnits) {
-      newErrors.TotalUnits = "Total Units is required"
-    }
-
-    if (!formDataProposedPlan.TotalParking) {
-      newErrors.TotalParking = "Total Parking is required"
-    }
-
-    return {
-      isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors
-    }
-  }
-
-  const handleSaveProposedPlan = async () => {
-    setErrorsProposedPlan({})
-
-    const validation = validateProposedPlanForm()
-
-    if (!validation.isValid) {
-      setErrorsProposedPlan(validation.errors)
-      return
-    }
-
-    await runApiWithLoader(
-      setIsLoading,
-      setIsLoadingMessage,
-      async () => {
-        const formDataPayload = new FormData();
-        formDataPayload.append('ProposedOfferProposedPlanId', String(formDataProposedPlan.ProposedOfferProposedPlanId ?? 0));
-        formDataPayload.append('Uniquekey', formDataProposedPlan.Uniquekey || '');
-        formDataPayload.append('BuildingId', String(buildingId));
-        formDataPayload.append('ProjectId', String(projectId));
-        formDataPayload.append('TotalNumberOfFloors', String(formDataProposedPlan.TotalNumberOfFloors ?? 0));
-        formDataPayload.append('TotalUnits', String(formDataProposedPlan.TotalUnits ?? 0));
-        formDataPayload.append('TotalParking', String(formDataProposedPlan.TotalParking ?? 0));
-        formDataPayload.append('Amenities', formDataProposedPlan.Amenities || '');
-        formDataPayload.append('RemovePlanDocumentURL', formDataProposedPlan.RemovePlanDocumentURL || '');
-
-        const response = await ProposedOfferService.apiCallAddUpdateProposedPlan(formDataPayload);
-
-        if (E.isRight(response)) {
-          const isAdd = formDataProposedPlan.ProposedOfferProposedPlanId === 0;
-
-          if (isAdd) {
-            const newRecord = response.right.Data[0] as ProposedOfferProposedPlanData;
-            setProposedPlanData(newRecord);
-            setFormDataProposedPlan({
-              ...formDataProposedPlan,
-              ProposedOfferProposedPlanId: newRecord.ProposedOfferProposedPlanId || 0,
-              Uniquekey: newRecord.Uniquekey || formDataProposedPlan.Uniquekey
-            });
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-          } else {
-            const updatedRecord = response.right.Data[0] as ProposedOfferProposedPlanData;
-            setProposedPlanData(updatedRecord);
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-          }
-        } else {
-          addToast({ type: "error", title: response.left?.message });
-        }
-        return response;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message })
-      },
-      undefined,
-      Number(formDataProposedPlan.ProposedOfferProposedPlanId) === 0 ? 'Add Proposed Plan' : 'Update Proposed Plan'
-    )
-  };
-  //#endregion
-
   //#region RENT DETAILS
 
   const fetchRentDetailsData = async () => {
@@ -3285,7 +3114,6 @@ export const ProposedOffer: React.FC = () => {
         {activeTab === 'GSTonExistingPlusFreeArea'}
         {activeTab === 'ProjectCompletion'}
         {activeTab === 'RentDetails'}
-        {activeTab === 'ProposedPlan'}
       </div>
 
       {activeTab === 'ExtraCarpetArea' && (
@@ -3339,7 +3167,7 @@ export const ProposedOffer: React.FC = () => {
                     onChange={(e) => handleFieldChangeExtraCarpetArea('CommercialExtraCarpetPercent', filterNumbersWithDecimal(e.target.value))}
                     error={errors.CommercialExtraCarpetPercent}
                     placeholder="Enter Commercial Extra Carpet"
-                     rightIcon="%"
+                    rightIcon="%"
                   />
                 </div>
               </div>
@@ -4499,80 +4327,6 @@ export const ProposedOffer: React.FC = () => {
         loading={isLoading}
         variant="danger"
       />
-
-      {activeTab === 'ProposedPlan' && (
-        <>
-          <div className="space-y-6">
-            {/* Proposed Plan Details Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-                Proposed Plan Details*
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div>
-                  <Input
-                    label="Total Number of Floors"
-                    required
-                    type="text"
-                    value={formDataProposedPlan.TotalNumberOfFloors || ''}
-                    onChange={(e) => handleFieldChangeProposedPlan('TotalNumberOfFloors', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
-                    error={errorsProposedPlan.TotalNumberOfFloors}
-                    placeholder="Enter Total Number of Floors"
-                  />
-                </div>
-                <div>
-                  <Input
-                    label="Total Units"
-                    required
-                    type="text"
-                    value={formDataProposedPlan.TotalUnits || ''}
-                    onChange={(e) => handleFieldChangeProposedPlan('TotalUnits', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
-                    error={errorsProposedPlan.TotalUnits}
-                    placeholder="Enter Total Units"
-                  />
-                </div>
-                <div>
-                  <Input
-                    label="Total Parking"
-                    required
-                    type="text"
-                    value={formDataProposedPlan.TotalParking || ''}
-                    onChange={(e) => handleFieldChangeProposedPlan('TotalParking', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
-                    error={errorsProposedPlan.TotalParking}
-                    placeholder="Enter Total Parking"
-                  />
-                </div>
-                <div className="md:col-span-2 lg:col-span-3">
-                  <Input
-                    label="Amenities"
-                    type="text"
-                    value={formDataProposedPlan.Amenities || ''}
-                    onChange={(e) => handleFieldChangeProposedPlan('Amenities', e.target.value)}
-                    error={errorsProposedPlan.Amenities}
-                    placeholder="Enter Amenities"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <BottomActionBar
-            cancelText="Cancel"
-            saveText={(formDataProposedPlan.ProposedOfferProposedPlanId && formDataProposedPlan.ProposedOfferProposedPlanId > 0) ? 'Update' : 'Save'}
-            onCancel={() => {
-              setFormDataProposedPlan({
-                ...initialFormStateProposedPlan(),
-                ProjectId: Number(projectId)
-              });
-              setErrorsProposedPlan({});
-              fetchProposedPlanData();
-            }}
-            canAction={canAction}
-            onSave={handleSaveProposedPlan}
-            isLoading={isLoading}
-          />
-        </>
-      )}
-
 
     </div>
   );

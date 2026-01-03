@@ -487,14 +487,12 @@ export type ProposedOfferProjectCompletionSaveResponse = ApiResponse<ProposedOff
 export interface FilterWithPaginationProposedOfferProposedPlanRequest {
     
     ProjectId?: number
-    BuildingId?: number
     ExportType?: 'Excel' | 'PDF'
 }
 
 export interface ProposedOfferProposedPlanData {
     ProposedOfferProposedPlanId?: number
     Uniquekey?: string
-    BuildingId?: number
     ProjectId: number
     TotalNumberOfFloors?: number
     TotalUnits?: number
@@ -515,7 +513,6 @@ export interface ProposedOfferProposedPlanData {
 export interface AddUpdateProposedOfferProposedPlanRequest {
     ProposedOfferProposedPlanId?: number
     Uniquekey?: string
-    BuildingId?: number
     ProjectId?: number
     TotalNumberOfFloors?: number
     TotalUnits?: number

@@ -60,7 +60,7 @@ export const MASTER_DATA = {
 
     applicant_type: ['Applicant', 'Co - Applicant'],
 
-    speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing '],
+    speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing','Commercial + Residential Sale','Commercial + Residential + Office Sale',],
 
     carpet_area_type: ['MOFA', 'RERA'],
 
@@ -112,7 +112,68 @@ export const MASTER_DATA = {
 
     ethnicity: ['Bengali', 'Christian', 'Gujarati', 'Jain', 'Muslim', 'Marwari', 'Maharashtrian', 'North Indian', 'Parsi', 'Sindhi', 'south Indian', 'Others'],
 
-    nationality: ['Indian', 'NRI']
+    nationality: ['Indian', 'NRI'],
+
+    amenities: [
+        '24x7 Security',
+        'Amphitheatre',
+        'ATM',
+        'Badminton Court',
+        'Banquet Hall',
+        'Basketball Court',
+        'Billiards Room',
+        'Cafeteria',
+        'Children Play Area',
+        'Club House',
+        'Conference Room',
+        'Convenience Store',
+        'Co-working Space',
+        'Covered Parking',
+        'CCTV Surveillance',
+        'Creche',
+        'Cycling Track',
+        'Day Care Centre',
+        'EV Charging Points',
+        'Earthquake Resistant Structure',
+        'Fire Fighting System',
+        'First Aid Room',
+        'Garden',
+        'Garbage Disposal System',
+        'Gym',
+        'Indoor Games',
+        'Intercom Facility',
+        'Jacuzzi',
+        'Jogging Track',
+        'Kids Pool',
+        'Laundry Service',
+        'Lift',
+        'Library',
+        'Lobby',
+        'Meditation Area',
+        'Parking',
+        'Pet Care Area',
+        'Pet Park',
+        'Pharmacy',
+        'Power Backup',
+        'Rainwater Harvesting',
+        'Reading Room',
+        'School Bus Bay',
+        'Security Cabin',
+        'Sewage Treatment Plant',
+        'Service Lift',
+        'Society Office',
+        'Spa',
+        'Squash Court',
+        'Steam Room',
+        'Swimming Pool',
+        'Table Tennis',
+        'Temple / Prayer Hall',
+        'Tennis Court',
+        'Visitor Parking',
+        'Water Supply',
+        'Yoga Room'
+    ]
+
 } as const
 
 // ============================================================================
@@ -185,6 +246,7 @@ export const ROAD_WIDTH = toOptions(MASTER_DATA.road_width)
 export const CALENDER_VIEW_TYPE = toOptions(MASTER_DATA.calender_view_type)
 export const EVENT_TYPE = toOptions(MASTER_DATA.event_type)
 export const CONFERENCE_ROOM_NAME = toOptions(MASTER_DATA.conference_room_name)
+export const AMENITIES_OPTIONS = toOptions(MASTER_DATA.amenities)
 
 
 

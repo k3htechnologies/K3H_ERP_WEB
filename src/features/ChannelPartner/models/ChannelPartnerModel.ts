@@ -1,6 +1,6 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
-export interface FilterWithPaginationChannelPartnerMasterRequest {
+export interface FilterWithPaginationChannelPartnerRequest {
     PageSize: number
     PageNumber: number
     IsCheckPermission?: boolean
@@ -14,7 +14,7 @@ export interface FilterWithPaginationChannelPartnerMasterRequest {
     ExportType?: 'Excel' | 'PDF'
 }
 
-export interface ChannelPartnerMasterData {
+export interface ChannelPartnerData {
     ChannelPartnerId: number
     Uniquekey: string
     Name: string
@@ -43,7 +43,7 @@ export interface ChannelPartnerMasterData {
     LastModifiedDate: string | null
 }
 
-export interface AddUpdateChannelPartnerMasterRequest {
+export interface AddUpdateChannelPartnerRequest {
     ChannelPartnerId?: number | 0
     Uniquekey: string | null
     Name: string
@@ -62,16 +62,15 @@ export interface AddUpdateChannelPartnerMasterRequest {
     Speciality: string
     OfficeAddress: string
     ProjectId: string
-    ProjectName: string
 
 
 }
 
-export interface DeleteChannelPartnerMasterRequest {
+export interface DeleteChannelPartnerRequest {
     ChannelPartnerId: number
     Uniquekey: string
 }
 
-export type ChannelPartnerMasterListResponse = ApiResponse<ChannelPartnerMasterData[]>;
-export type ChannelPartnerMasterSaveResponse = ApiResponse<ChannelPartnerMasterData[]>;
-export type ChannelPartnerMasterDeleteResponse = ApiResponse<number>;
+export type ChannelPartnerListResponse = ApiResponse<ChannelPartnerData[]>;
+export type ChannelPartnerSaveResponse = ApiResponse<ChannelPartnerData[]>;
+export type ChannelPartnerDeleteResponse = ApiResponse<number>;

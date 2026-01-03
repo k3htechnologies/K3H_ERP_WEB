@@ -1,12 +1,12 @@
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
+import { ChannelPartnerService } from '@/features/ChannelPartner/services/ChannelPartnerService';
 import * as E from 'fp-ts/Either';
 
-export const fetchProjectMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
+export const fetchChannelPartnerDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
-        const responseEither = await ProjectMasterService.apiCallPullProjectMaster({
+        const responseEither = await ChannelPartnerService.apiCallPullChannelPartner({
             PageSize: 10,
             PageNumber: pageNumber,
-            ProjectName: params?.value || "",
+            Name: params?.value || ""
         });
 
         if (E.isLeft(responseEither)) {
@@ -16,8 +16,8 @@ export const fetchProjectMasterDropdown = async (pageNumber: number, params?: { 
         const apiResponse = responseEither.right;
 
         const itemList = (apiResponse?.Data || []).map((d: any) => ({
-            label: d.ProjectName,
-            value: String(d.ProjectId)
+            label: `${d.Name} - ${d.MobileNumber}`,
+            value: String(d.ChannelPartnerId)
         }));
 
 
@@ -27,7 +27,7 @@ export const fetchProjectMasterDropdown = async (pageNumber: number, params?: { 
         };
 
     } catch (err) {
-        console.error('FETCH PROJECT DROPDOWN ERROR', err);
+        console.error('FETCH CHANNEL MASTER DROPDOWN ERROR', err);
         return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
     }
 };

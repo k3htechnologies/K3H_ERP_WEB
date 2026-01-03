@@ -21,6 +21,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
   return (
     
     <div className="flex justify-end gap-3  pr-6">
+      {onCancel && (
       <Button
         color="cancel"
         size="md"
@@ -28,6 +29,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
       >
         {cancelText}
       </Button>
+      )}
 
       {canAction && (
         <Button

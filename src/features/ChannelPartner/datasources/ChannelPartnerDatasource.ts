@@ -1,26 +1,26 @@
 import baseClient from "@/core/config/baseClient"
 import { TokenExpiredException } from "@/core/config/baseClientexceptions"
-import { ChannelPartnerMasterApi } from '@/features/ChannelPartnerMaster/api/ChannelPartnerMasterApi'
+import { ChannelPartnerApi } from '@/features/ChannelPartner/api/ChannelPartnerApi'
 import type {
-    FilterWithPaginationChannelPartnerMasterRequest,
-    DeleteChannelPartnerMasterRequest,
-    ChannelPartnerMasterListResponse,
-    ChannelPartnerMasterSaveResponse,
-} from '@/features/ChannelPartnerMaster/models/ChannelPartnerMasterModel'
+    FilterWithPaginationChannelPartnerRequest,
+    DeleteChannelPartnerRequest,
+    ChannelPartnerListResponse,
+    ChannelPartnerSaveResponse,
+} from '@/features/ChannelPartner/models/ChannelPartnerModel'
 
-export abstract class ChannelPartnerMasterDatasource {
+export abstract class ChannelPartnerDatasource {
 
-    abstract pullChannelPartnerMaster(params: FilterWithPaginationChannelPartnerMasterRequest, signal?: AbortSignal): Promise<ChannelPartnerMasterListResponse>;
-    abstract addUpdateChannelPartnerMaster(data: FormData): Promise<ChannelPartnerMasterSaveResponse>;
-    abstract deleteChannelPartnerMasterRequest(params: DeleteChannelPartnerMasterRequest): Promise<ChannelPartnerMasterSaveResponse>;
+    abstract pullChannelPartner(params: FilterWithPaginationChannelPartnerRequest, signal?: AbortSignal): Promise<ChannelPartnerListResponse>;
+    abstract addUpdateChannelPartner(data: FormData): Promise<ChannelPartnerSaveResponse>;
+    abstract deleteChannelPartnerRequest(params: DeleteChannelPartnerRequest): Promise<ChannelPartnerSaveResponse>;
 }
 
-export class ChannelPartnerMasterDatasourceImpl implements ChannelPartnerMasterDatasource {
+export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
     private get k3hHttpClient() {
         return baseClient
     }
 
-    async pullChannelPartnerMaster(params: FilterWithPaginationChannelPartnerMasterRequest, signal?: AbortSignal): Promise<ChannelPartnerMasterListResponse> {
+    async pullChannelPartner(params: FilterWithPaginationChannelPartnerRequest, signal?: AbortSignal): Promise<ChannelPartnerListResponse> {
         try {
             const queryParams = new URLSearchParams({
                 pageSize: (params.PageSize ?? 10).toString(),
@@ -36,38 +36,38 @@ export class ChannelPartnerMasterDatasourceImpl implements ChannelPartnerMasterD
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${ChannelPartnerMasterApi.PULL}?${queryParams.toString()}`, { signal }
+                `${ChannelPartnerApi.PULL}?${queryParams.toString()}`, { signal }
             )
             return response;
         } catch (error: any) {
-            console.error('ERROR: PULL CHANNEL PARTNER MASTER :', error);
+            console.error('ERROR: PULL CHANNEL PARTNER :', error);
 
             if (error === TokenExpiredException) {
-                await this.pullChannelPartnerMaster(params);
+                await this.pullChannelPartner(params);
             }
             throw error
         }
     }
 
-    async addUpdateChannelPartnerMaster(formData: FormData): Promise<ChannelPartnerMasterSaveResponse> {
+    async addUpdateChannelPartner(formData: FormData): Promise<ChannelPartnerSaveResponse> {
         try {
             const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
-                ChannelPartnerMasterApi.ADD_UPDATE,
+                ChannelPartnerApi.ADD_UPDATE,
                 formData
             )
             return response;
         } catch (error) {
 
-            console.error('ERROR: ADD UPDATE CHANNEL PARTNER MASTER :', error)
+            console.error('ERROR: ADD UPDATE CHANNEL PARTNER :', error)
 
             if (error === TokenExpiredException) {
-                await this.addUpdateChannelPartnerMaster(formData);
+                await this.addUpdateChannelPartner(formData);
             }
             throw error
         }
     }
 
-    async deleteChannelPartnerMasterRequest(params: DeleteChannelPartnerMasterRequest): Promise<ChannelPartnerMasterSaveResponse> {
+    async deleteChannelPartnerRequest(params: DeleteChannelPartnerRequest): Promise<ChannelPartnerSaveResponse> {
         try {
             const queryParams = new URLSearchParams({
                 ChannelPartnerId: (params.ChannelPartnerId ?? 0).toString(),
@@ -75,18 +75,18 @@ export class ChannelPartnerMasterDatasourceImpl implements ChannelPartnerMasterD
             })
 
             const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
-                `${ChannelPartnerMasterApi.DELETE}?${queryParams.toString()}`
+                `${ChannelPartnerApi.DELETE}?${queryParams.toString()}`
             )
 
             return response
 
         } catch (error) {
 
-            console.error('ERROR: DELETE CHANNEL PARTNER MASTER :', error)
+            console.error('ERROR: DELETE CHANNEL PARTNER :', error)
             
             if (error === TokenExpiredException) {
 
-                await this.deleteChannelPartnerMasterRequest(params);
+                await this.deleteChannelPartnerRequest(params);
 
             }
 

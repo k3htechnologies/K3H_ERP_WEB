@@ -43,7 +43,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
 
                 <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2 pl-3">
 
-                    <span>{titleText}</span>
+                    {titleText && (<span>{titleText}</span>)}
 
                     {subTitleText && (
                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 max-w-[900px] truncate">

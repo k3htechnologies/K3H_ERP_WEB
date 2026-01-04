@@ -149,8 +149,6 @@ const AddUpdateEmployeePage: React.FC = () => {
       }))
       : [];
 
-
-
   //#endregion
 
   //#region HANDLE FILED CHNAGE EVENT

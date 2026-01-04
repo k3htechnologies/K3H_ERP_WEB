@@ -29,6 +29,8 @@ export interface ChannelPartnerData {
     PanCardURL: string
     AadharCardURL: string
     AadharCardNumber: string
+    VillageMasterId: string
+    VillageName: string
     Speciality: string
     ProjectId: string
     ProjectName: string
@@ -62,6 +64,7 @@ export interface AddUpdateChannelPartnerRequest {
     Speciality: string
     OfficeAddress: string
     ProjectId: string
+    VillageMasterId: string
 
 
 }

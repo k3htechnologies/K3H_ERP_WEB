@@ -45,3 +45,4 @@ export type ApprovalDocumentCategoryMasterListResponse = ApiResponse<ApprovalDoc
 export type ApprovalDocumentCategoryMasterSaveReponse = ApiResponse<ApprovalDocumentCategoryMasterData[]>;
 export type ApprovalDocumentCategoryMasterDeleteResponse = ApiResponse<number>;
 
+

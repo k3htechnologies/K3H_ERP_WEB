@@ -6,3 +6,4 @@ export const ApprovalDocumentCategoryMasterApi = {
 
 export type ApprovalDocumentCategoryMasterApiKeys = keyof typeof ApprovalDocumentCategoryMasterApi
 
+

@@ -39,7 +39,8 @@ const initialFormState = (): AddUpdateChannelPartnerRequest => ({
     Speciality: '',
     OfficeAddress: '',
     ProjectId: '',
-    AadharCardURL: null
+    AadharCardURL: null,
+    VillageMasterId: ''
 
 });
 
@@ -90,7 +91,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
     const { canAction } = useMenuPermissions('/channelPartner');
     //#endregion
 
-    //#region HANDLE FIELD CHANGE EVENT
+        //#region HANDLE FIELD CHANGE EVENT
     const handleFieldChange = (field: keyof AddUpdateChannelPartnerRequest, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
 

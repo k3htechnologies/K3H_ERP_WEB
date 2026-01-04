@@ -66,3 +66,4 @@ export type ApprovalDocumentListResponse = ApiResponse<ApprovalDocumentData[]>;
 export type ApprovalDocumentSaveReponse = ApiResponse<ApprovalDocumentData[]>;
 export type ApprovalDocumentDeleteResponse = ApiResponse<number>;
 
+

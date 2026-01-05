@@ -17,6 +17,7 @@ export const LOCAL_STORAGE_KEYS = {
     ENQUIRY_SELECTED_COLUMNS:'enquiry.selectedColumns',
     BANK_LIST_MASTER_SELECTED_COLUMNS: 'bankListMaster.selectedColumns',
     HOLIDAY_MASTER_SELECTED_COLUMNS: 'holidayMaster.selectedColumns',
+    LITIGATION_SELECTED_COLUMNS:'litigation.selectedColumns',
     HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS: 'holidayMappingMaster.selectedColumns',
     LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS: 'leaveEncashmentMaster.selectedColumns',
     LEAVE_TYPE_MASTER_SELECTED_COLUMNS: 'leaveTypeMaster.selectedColumns',

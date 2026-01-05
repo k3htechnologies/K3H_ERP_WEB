@@ -103,6 +103,7 @@ import { EnquiryListStateProvider } from '@/features/enquiry/context/EnquiryList
 import EarningMaster from '@/features/earningMaster/pages/EarningMaster';
 import ProposedPlan from '@/features/proposedOffer/pages/ProposedPlan';
 import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
+import Litigation from '@/features/litigation/pages/Litigation';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -238,6 +239,7 @@ function App() {
 
             <Route path="event" element={<Event />} />
 
+            <Route path='litigation' element={<Litigation />} />
             {/* SALES */}
             <Route path="channelPartner" element={<ChannelPartner />} />
             <Route path="channelPartner/view" element={<ViewChannelPartner />} />

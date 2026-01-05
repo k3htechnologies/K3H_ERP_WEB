@@ -41,9 +41,11 @@ const ViewEnquiry: React.FC = () => {
     const [editEnquiryFollowUpData, setEditEnquiryFollowUpData] = useState<EnquiryFollowUpData[]>([]);
     const [isEnquiryFollowUpModalOpen, setIsEnquiryFollowUpModalOpen] = useState(false);
     const [, setIsEditEnquiryFollowUpMode] = useState(false);
+
     // Delete confirmation states
     const [isDeleteEnquiryFollowUpDialogOpen, setIsDeleteEnquiryFollowUpDialogOpen] = useState(false);
     const [selectedEnquiryFollowUpItem, setSelectedEnquiryFollowUpItem] = useState<EnquiryFollowUpData | null>(null);
+
     // ENQUIRY FOLLOW UP form state
     const [enquiryFollowUpFormData, setEnquiryFollowUpFormData] = useState<AddUpdateEnquiryFollowUpRequest>({
         EnquiryFollowUpId: 0,
@@ -59,8 +61,6 @@ const ViewEnquiry: React.FC = () => {
         NextFollowUpDate?: string;
         Remark?: string;
     }>({});
-
-
 
     //#region MENU PERMISSION
     const { canAction } = useMenuPermissions('/enquiry');
@@ -165,9 +165,6 @@ const ViewEnquiry: React.FC = () => {
     //#endregion
 
     //#region EDUCATION MODAL HANDLERS
-
-
-
     const handleOpenEnquiryFollowUpModal = (item?: EnquiryFollowUpData) => {
         if (item) {
             setEnquiryFollowUpFormData({

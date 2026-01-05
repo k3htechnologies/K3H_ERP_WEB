@@ -207,7 +207,7 @@ export const Enquiry: React.FC = () => {
 
                 const response = await EnquiryService.apiCallPullEnquiry(params);
 
-                handleExportFile(response, exportType, 'Enquiry Master', addToast);
+                handleExportFile(response, exportType, 'Enquiry', addToast);
                 return response
             },
             undefined,
@@ -256,7 +256,7 @@ export const Enquiry: React.FC = () => {
 
                 const response = await technicalService.apiCallPullExcelSample(params);
 
-                handleExportFile(response, 'Excel', 'Enquiry Master', addToast, 'Sample file download successfully')
+                handleExportFile(response, 'Excel', 'Enquiry', addToast, 'Sample file download successfully')
 
                 return response;
             },
@@ -751,7 +751,7 @@ export const Enquiry: React.FC = () => {
             <TableActionToolbar
                 isShowSearchBar
                 searchTerm={searchTerm}
-                searchPlaceholder="Search By Name"
+                searchPlaceholder="Search By Full Name"
                 onSearchChange={handleSearchEnquiry}
                 onClearSearch={clearSearchEnquiry}
                 isShowFilterButton
@@ -805,7 +805,7 @@ export const Enquiry: React.FC = () => {
                     setSelectedEnquiryColumnKeys(withRequired);
 
                     try {
-                        LocalStorageHelper.storeEarningMasterTableColumns?.(
+                        LocalStorageHelper.storeEnquiryTableColumns?.(
                             JSON.stringify(withRequired)
                         );
                     } catch { }
@@ -820,7 +820,7 @@ export const Enquiry: React.FC = () => {
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
-                title="Filter - Enquiry Master"
+                title="Filter - Enquiry"
                 onSubmit={e => {
                     e.preventDefault();
                     applyFilters();
@@ -834,10 +834,10 @@ export const Enquiry: React.FC = () => {
                 <div className="space-y-6">
                     <div className="space-y-4">
                         <Input type="text"
-                            label="Enquiry Name"
+                            label="Full Name"
                             value={tempFilters?.Name ?? ''}
                             onChange={e => handleFilterChange('Name', e.target.value)}
-                            placeholder="Enter Enquiry Name" />
+                            placeholder="Enter Full Name" />
                     </div>
                 </div>
             </Modal>

@@ -856,7 +856,7 @@ export const HolidayMappingMaster: React.FC = () => {
                 size="lg"
                 required
                 dataFetchCallBack={fetchBranchMasterDropdown}
-                onSelected={(item) => handleFieldChange("BranchMasterId", String(item.value))}
+                onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
                 initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
                 error={errors.BranchMasterId}
 

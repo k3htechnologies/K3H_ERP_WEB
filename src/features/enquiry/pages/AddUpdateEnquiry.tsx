@@ -429,7 +429,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     label='Full Name'
                                     value={formData.Name ?? ""}
                                     onChange={(e) => handleFieldChange("Name", e.target.value)}
-                                    placeholder="Enter Name"
+                                    placeholder="Enter Full Name"
                                     maxLength={250}
                                     error={errors.Name}
                                 />

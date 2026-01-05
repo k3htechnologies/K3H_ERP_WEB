@@ -325,7 +325,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   error={errors.AssetCost}
                   type="text"
                   value={formData.AssetCost ?? ''}
-                  maxLength={4}
+                  maxLength={10}
                   onChange={(e) => {
                     const digits = e.target.value.replace(/\D/g, '');
                     handleFieldChange('AssetCost', digits === '' ? 0 : Number(digits));
@@ -364,7 +364,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
                 <Input
                   type="text"
                   required
-                  label='AssetType'
+                  label='Asset Type'
                   value={formData.AssetType ?? ""}
                   onChange={(e) => handleFieldChange("AssetType", e.target.value)}
                   placeholder="Enter Asset Type"

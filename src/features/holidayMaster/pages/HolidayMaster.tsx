@@ -87,9 +87,11 @@ export const HolidayMaster: React.FC = () => {
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteHolidayMasterDetailsData, setDeleteHolidayMasterDetailsData] = useState<HolidayMasterData | null>(null)
 
+  // RESET CHOOSE FILE
+  const [resetfilePicker, setResetFilePicker] = useState(0);
+
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeHolidayMasterColumnsModal, setIsShowCustomizeHolidayMasterColumnsModal] = useState(false);
-
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -107,6 +109,16 @@ export const HolidayMaster: React.FC = () => {
 
     fetchHolidayList()
   }, [])
+
+  //#region RESET FORM DATA
+  const handleResetForm = () => {
+    setFormData(initialFormState());
+    setHolidayURLFiles([]);
+    setRemoveHolidayURL([]);
+    setErrors({});
+    setResetFilePicker(prev => prev + 1);
+  };
+  //#endregion
 
   //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
@@ -276,7 +288,7 @@ export const HolidayMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  
+
   const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sortInfo);
@@ -786,6 +798,7 @@ export const HolidayMaster: React.FC = () => {
         title={editingHolidayMasterData ? 'Update Holiday ' : 'Add Holiday'}
         onSubmit={handleAddUpdateHolidayMaster}
         saveText={editingHolidayMasterData ? 'Update Holiday' : 'Save Holiday'}
+        onreset={handleResetForm}
         resetText='Reset'
         loading={isLoading}
         size="xl"
@@ -808,6 +821,7 @@ export const HolidayMaster: React.FC = () => {
               <MultiFilePicker
                 label='Holiday URL'
                 required
+                key={resetfilePicker}
                 error={errors.HolidayURL}
                 value={HolidayURLFiles}
                 onChange={setHolidayURLFiles}

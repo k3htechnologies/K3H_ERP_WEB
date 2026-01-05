@@ -60,7 +60,7 @@ export const MASTER_DATA = {
 
     applicant_type: ['Applicant', 'Co - Applicant'],
 
-    speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing','Commercial + Residential Sale','Commercial + Residential + Office Sale',],
+    speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing', 'Commercial + Residential Sale', 'Commercial + Residential + Office Sale',],
 
     carpet_area_type: ['MOFA', 'RERA'],
 
@@ -172,7 +172,56 @@ export const MASTER_DATA = {
         'Visitor Parking',
         'Water Supply',
         'Yoga Room'
+    ],
+    reasonsOfJobLeaving: [
+        'Better career growth opportunity',
+        'Business shutdown',
+        'Career break for family reasons',
+        'Career change / domain shift',
+        'Company financial instability',
+        'Company relocation',
+        'Company restructuring / downsizing',
+        'Completed internship / traineeship',
+        'Contract completed',
+        'Department closed',
+        'End of probation period',
+        'Extensive travel requirements',
+        'Family responsibilities',
+        'Freelancing / consulting interest',
+        'Health issues in family',
+        'Limited promotion opportunities',
+        'Limited salary growth',
+        'Long commute distance',
+        'Looking for a more flexible work culture',
+        'Looking for a more structured environment',
+        'Looking for new challenges',
+        'Management / organizational change',
+        'Marriage relocation',
+        'Moving closer to home',
+        'Moving into leadership role',
+        'Mutual separation',
+        'Parental care responsibility',
+        'Personal health reasons',
+        'Professional certification / training',
+        'Project successfully completed',
+        'Pursuing higher education',
+        'Relocation to another city',
+        'Relocation to another country',
+        'Retirement / early retirement',
+        'Returning back to home country',
+        'Role not matching my skills',
+        'Role redundancy',
+        'Seasonal job completed',
+        'Seeking fair compensation',
+        'Shift timing not suitable long-term',
+        'Spouse / family relocation',
+        'Starting my own business',
+        'Temporary role ended',
+        'Unstable work schedule',
+        'Work profile / job expectation mismatch',
+        'Work-life balance improvement'
     ]
+
 
 } as const
 
@@ -247,6 +296,7 @@ export const CALENDER_VIEW_TYPE = toOptions(MASTER_DATA.calender_view_type)
 export const EVENT_TYPE = toOptions(MASTER_DATA.event_type)
 export const CONFERENCE_ROOM_NAME = toOptions(MASTER_DATA.conference_room_name)
 export const AMENITIES_OPTIONS = toOptions(MASTER_DATA.amenities)
+export const REASONS_OF_JOB_LEAVING_OPTIONS = toOptions(MASTER_DATA.reasonsOfJobLeaving)
 
 
 

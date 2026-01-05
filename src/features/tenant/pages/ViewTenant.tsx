@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
 import type { FilterWithPaginationTenantDocumentRequest, TenantData, TenantDocumentData } from '@/features/tenant/models/TenantModel';
- import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
@@ -13,7 +13,7 @@ import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { tenantService } from '@/features/tenant/services/TenantService';
 import * as E from 'fp-ts/Either';
 import useToast from '@/core/hooks/useToast';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import Tabs from '@/ui/components/Tab/Tab';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { useTenantListState } from '@/features/tenant/context/TenantListStateContext';
@@ -188,60 +188,16 @@ export const ViewTenant: React.FC = () => {
 
     //#endregion 
 
-    //#region  TENANT DOCUMENT COLUMN
+    //#region CHECK DOCUMENT URL EXISTS
 
-    const tenantDocumentColumns = useMemo<TableColumn[]>(
-        () => [
-            {
-                key: 'DocumentName',
-                label: 'Document Name',
-                width: '33',
-                sortable: true,
-                fixed: 'left',
-                align: 'left',
-                render: (value) => value || 'N/A'
-            },
-            {
-                key: 'DocumentURL',
-                label: 'Document',
-                width: '20',
-                sortable: false,
-                align: 'center',
-                render: (value: string) => {
-                    const urls = parseDocumentUrls(value);
-                    if (urls.length === 0) return '-';
-                    return (
-                        <MultiImageViewer
-                            images={urls}
-                            title="Tenant Document"
-                            triggerLabel={`View (${urls.length})`}
-                        />
-                    );
-                }
+    const docsWithUrls = tenantDocumentList.filter(d => {
+        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+            .filter(x => x?.trim()?.length);
 
-            },
-            {
-                key: 'CreatedBy',
-                label: 'Last Modified By',
-                width: '33',
-                sortable: true,
-                align: 'center',
-                render: (value) => value || 'N/A'
-            },
-            {
-                key: 'CreatedDate',
-                label: 'Last Modified Date',
-                width: '33',
-                sortable: true,
-                align: 'center',
-                render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
-            }
-        ],
-
-        [canAction]
-    )
-
+        return urls.length > 0;
+    });
     //#endregion
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}>
@@ -479,15 +435,48 @@ export const ViewTenant: React.FC = () => {
             )}
 
             {activeTab === 'Document' && (
-                <DataTable
-                    data={tenantDocumentList}
-                    columns={tenantDocumentColumns}
-                    emptyMessage="No Tenant Documents Data Found"
-                    fixedHeight={true}
-                    recordsPerPage={20}
-                    className="flex-1"
-                    loading={isLoading}
-                />
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+
+                    {docsWithUrls.length === 0 && (
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                            <NoDataView message="No Documents Found" />
+                        </section>
+                    )}
+
+                    {docsWithUrls.map(d => {
+                        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+                            .filter(x => x?.trim()?.length);
+
+                        return (
+                            <div key={d.Uniquekey} className="border border-gray-200 rounded-lg p-4 mb-3 shadow-sm ">
+
+                                <MultiImageViewer
+                                    images={urls}
+                                    title={d.DocumentName ?? "Document"}
+                                    triggerLabel={d.DocumentName ?? "Document"}
+                                />
+
+                                <div className="text-xs text-gray-600 mt-3 space-y-1">
+                                    <FieldItem
+                                        label="Uploaded By / Date"
+                                        value={
+                                            `${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
+                                                ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
+                                                : d?.CreatedDate
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
+                                                    : '-'
+                                            }`
+                                        }
+                                    />
+                                </div>
+
+                            </div>
+                        );
+                    })}
+
+                </div>
+
             )}
         </div>
     );

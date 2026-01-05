@@ -166,6 +166,11 @@ export const getPageInfo = (path: string) => {
                 title: "Outdoor Managemen",
                 description: "outdoor visit information",
             }
+             case 'resignation':
+            return {
+                title: "Resignation",
+                description: "Resignation information",
+            }
 
 
 

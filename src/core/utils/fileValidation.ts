@@ -1,5 +1,8 @@
 // ----------------------------------
 // 🔹 FILTER ONLY NUMBERS
+
+import { DayPicker } from "react-day-picker";
+
 // ----------------------------------
 export const filterNumbers = (value: string): string =>
   value.replace(/[^0-9]/g, "");
@@ -392,4 +395,30 @@ export const createFileUrlString = (mergedFiles: (File | string)[]): string => {
     .filter(Boolean)
     .join(',');
 };
+
+// ----------------------------------
+//HAS ANY FILE PRESENT IN FILE DayPicker
+// ----------------------------------
+
+export const hasAnyDocumentFile = (
+  documentFiles: (File | string)[] = [],
+  documentURL?: string | null,
+  removedDocumentURLs: string[] = []
+): boolean => {
+
+  const hasNewFiles = documentFiles?.some(f => f instanceof File);
+
+  const existingUrls = (documentURL ?? "")
+    .split(",")
+    .map(x => x.trim())
+    .filter(x => x !== "");
+
+  const remainingExisting = existingUrls.filter(
+    url => !removedDocumentURLs?.includes(url)
+  );
+
+  return hasNewFiles || remainingExisting.length > 0;
+};
+
+
 

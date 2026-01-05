@@ -34,6 +34,8 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         , 'profile'
         , 'dashboard'
         , 'event'
+        , 'resignation'
+        ,'channelPartner'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

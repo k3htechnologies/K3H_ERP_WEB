@@ -26,6 +26,7 @@ import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWitho
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useBuildingListState } from '@/features/building/context/BuildingListStateContext';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 
 
 const initialFormState = (): AddUpdateBuildingDocumentRequest => ({
@@ -502,26 +503,31 @@ const BuildingDocument: React.FC = () => {
         )
       },
       {
-        key: 'CreatedBy',
+        key: 'ModifiedBy',
         label: 'Last Modified By',
         width: '33',
         sortable: false,
         align: 'left',
-        render: (value) => (
+        render: (value, row) => (
           <TooltipText
-            text={value || '-'}
+            text={value || row.CreatedBy || '-'}
             maxWidth="180px"
             tooltipThreshold={18}
           />
         )
       },
       {
-        key: 'CreatedDate',
+        key: 'ModifiedDate',
         label: 'Last Modified Date',
         width: '33',
         sortable: false,
         align: 'left',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+        render: (value, row) =>
+          value
+            ? formatDate_dd_MonthName_yy(value)
+            : row.CreatedDate
+              ? formatDate_dd_MonthName_yy(row.CreatedDate)
+              : '-'
       },
       {
         key: 'actions',
@@ -638,18 +644,8 @@ const BuildingDocument: React.FC = () => {
 
     const newErrors: { [key: string]: string } = {}
 
-    const hasNewFiles = buildingDocumentFiles.length > 0;
-
-    const existingUrls = (buildingDocumentURL ?? "").split(",").filter(x => x.trim() !== "");
-
-    const remainingExisting = existingUrls.filter( url => !RemoveBuildingDocumentUrls.includes(url));
-
-    const hasRemainingExisting = remainingExisting.length > 0;
-
-    const hasFile = hasNewFiles || hasRemainingExisting;
-
-    if (!hasFile) {
-      newErrors.BuildingDocumentURL = "Document is required.";
+    if (!hasAnyDocumentFile(buildingDocumentFiles, buildingDocumentURL, RemoveBuildingDocumentUrls)) {
+      newErrors.BuildingDocumentURL = "File is required.";
     }
 
     return {
@@ -1046,7 +1042,7 @@ const BuildingDocument: React.FC = () => {
           setFormData(initialFormState());
           setErrors({});
         }}
-        title={editingDocumentData ? 'Update Document' : 'Add Document'}
+        title={editingDocumentData ? 'Update Document Name' : 'Add Document Name'}
         onSubmit={(e) => handleAddUpdateDocument(1, e)}
         saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
         resetText='Reset'
@@ -1057,7 +1053,7 @@ const BuildingDocument: React.FC = () => {
           <div className="space-y-4" >
             <div>
               <Input
-                label='Document'
+                label='Document Name'
                 required
                 error={errors.DocumentName}
                 type="text"

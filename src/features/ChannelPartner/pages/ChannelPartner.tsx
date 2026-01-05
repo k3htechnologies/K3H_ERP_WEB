@@ -664,7 +664,7 @@ export const ChannelPartner: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Channel Partner Name"
+        searchPlaceholder="Search By Full Name"
         onSearchChange={v => {
           setSearchTerm(v);
           debouncedSearch(v);

@@ -178,7 +178,7 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
     if (!pagination) return null
 
     const { currentPage, totalPages, totalRecords, pageSize, onPageChange } = pagination
-    const startRecord = (currentPage - 1) * pageSize + 1
+    const startRecord = totalRecords===0 ? 0 :(currentPage - 1) * pageSize + 1
     const endRecord = Math.min(currentPage * pageSize, totalRecords)
 
     return (
@@ -189,7 +189,7 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
+           disabled={totalRecords===0 ? true : currentPage === 1}
             className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <ChevronLeft className="h-4 w-4 bg-gray-10000" />
@@ -225,7 +225,7 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
 
           <button
             onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            disabled={totalRecords===0 ? true :currentPage === totalPages}
             className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <ChevronRight className="h-4 w-4" />

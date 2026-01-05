@@ -31,6 +31,7 @@ import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useTenantListState } from '@/features/tenant/context/TenantListStateContext';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 
 
 const initialFormState = (): AddUpdateTenantDocumentRequest => ({
@@ -260,10 +261,10 @@ export const TenantDocument: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-       let sortByParam: string | undefined;
+        let sortByParam: string | undefined;
 
         if (sortInfo) {
-          
+
           const column = tenantDocumentColumns.find(col => col.key === sortInfo.column);
           if (column) {
             sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
@@ -540,9 +541,11 @@ export const TenantDocument: React.FC = () => {
       newErrors.DocumentName = "Document Name must be at least 3 characters long"
     }
 
-    if (!documentFiles.length && !documentURL) {
-      newErrors.DocumentURL = "File is required";
+
+    if (!hasAnyDocumentFile(documentFiles, documentURL, removedDocumentURLs)) {
+      newErrors.DocumentURL = "File is required.";
     }
+
 
     return {
       isValid: Object.keys(newErrors).length === 0,

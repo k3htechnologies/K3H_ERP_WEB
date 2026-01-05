@@ -272,6 +272,7 @@ export const Tenant: React.FC = () => {
   //#region TABLE COLUMN
   const tenantColumns = useMemo<TableColumn[]>(
     () => [
+      
       {
         key: 'FlatNumber',
         label: 'Flat Number',
@@ -287,6 +288,15 @@ export const Tenant: React.FC = () => {
             onClick={() => handleViewTenantDetails(row)}
           />
         )
+      },
+      {
+        key: 'ApplicantName',
+        label: 'Applicant Name',
+        width: '18',
+        sortable: true,
+        fixed: 'left',
+        align: 'left',
+        render: value => value ?? '-'
       },
       {
         key: 'FlatType',
@@ -315,7 +325,7 @@ export const Tenant: React.FC = () => {
         key: 'FlatCarpetAreaSqFt',
         label: 'Carpet Area (sqft)',
         width: '18',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => value ?? '-'
       },
@@ -609,7 +619,7 @@ export const Tenant: React.FC = () => {
         onAdd={handleAddTenantModal}
 
         // IMPORT
-        isShowImportButton={Number(buildingId) > 0 ? true : false}
+        isShowImportButton={canAction && Number(buildingId) > 0 ? true : false}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleTenant}
 
@@ -700,7 +710,7 @@ export const Tenant: React.FC = () => {
                 type="text"
                 value={tempFilters.FlatNumber || ''}
                 onChange={e => handleFilterChange('FlatNumber', e.target.value)}
-                placeholder="Enter flat number"
+                placeholder="Enter Flat Number"
               />
             </div>
 
@@ -711,7 +721,7 @@ export const Tenant: React.FC = () => {
                 type="text"
                 value={tempFilters.FlatType || ''}
                 onChange={e => handleFilterChange('FlatType', e.target.value)}
-                placeholder="Enter flat type"
+                placeholder="Enter Flat Type"
               />
             </div>
             <div>
@@ -721,7 +731,7 @@ export const Tenant: React.FC = () => {
                 type="text"
                 value={tempFilters.FlatConfiguration || ''}
                 onChange={e => handleFilterChange('FlatConfiguration', e.target.value)}
-                placeholder="Enter flat configuration"
+                placeholder="Enter Flat Configuration"
               />
             </div>
           </div>

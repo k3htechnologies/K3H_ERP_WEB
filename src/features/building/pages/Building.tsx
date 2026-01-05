@@ -391,7 +391,7 @@ export const Building: React.FC = () => {
       },
       {
         key: 'IsReligiousStructure',
-        label: 'Is Religious',
+        label: 'Religious',
         width: '12',
         sortable: false,
         align: 'center',
@@ -399,7 +399,7 @@ export const Building: React.FC = () => {
       },
       {
         key: 'IsGarden',
-        label: 'Is Garden',
+        label: 'Garden',
         width: '12',
         sortable: false,
         align: 'center',

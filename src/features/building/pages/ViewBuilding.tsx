@@ -564,13 +564,14 @@ export const ViewBuilding: React.FC = () => {
 
                                     {/* BODY */}
                                     {isOpen && (
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-5 pl-5">
 
                                             {details.map(d => {
                                                 const urls = parseDocumentUrls(d.DocumentURL ?? "");
 
                                                 return (
-                                                    <div key={d.Uniquekey} className="border border-gray-200 rounded-lg p-4 mb-3 shadow-sm">
+                                                    <div key={d.Uniquekey} className="border border-gray-200 rounded-lg p-4 mb-3 shadow-sm ">
+
                                                         <MultiImageViewer
                                                             images={urls}
                                                             title={d.DocumentName ?? "Document"}
@@ -579,7 +580,18 @@ export const ViewBuilding: React.FC = () => {
 
                                                         <div className="text-xs text-gray-600 mt-3 space-y-1">
                                                             <FieldItem label="Remark" value={d.DocumentRemark ?? '-'} />
-                                                            <FieldItem label="Uploaded By / Date" value={d?.CreatedBy + ' ' + formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate ?? '-')} />
+                                                            <FieldItem
+                                                                label="Uploaded By / Date"
+                                                                value={
+                                                                    `${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
+                                                                        ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
+                                                                        : d?.CreatedDate
+                                                                            ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
+                                                                            : '-'
+                                                                    }`
+                                                                }
+                                                            />
+
 
                                                         </div>
                                                     </div>

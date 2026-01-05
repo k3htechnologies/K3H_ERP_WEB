@@ -9,6 +9,7 @@ import {
   List,
   InfoIcon,
   Upload,
+  Plus,
 } from "lucide-react";
 import { MultiImageViewer } from "@/ui/components/ImageViewer/ImageViewer";
 import useToast from "@/core/hooks/useToast";
@@ -311,7 +312,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
                   <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
                     {getFileLabel(url)}
                   </span>
-                  <MultiImageViewer images={[url]} triggerLabel={<Eye size={18} />} />
+                  <MultiImageViewer images={[url]} isIcon={false} triggerLabel={<Plus size={18} />} />
                   <Trash2
                     size={18}
                     color="red"
@@ -329,7 +330,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
                   <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
                     {getFileLabel(item)}
                   </span>
-                  <MultiImageViewer images={[getUrl(item)]} triggerLabel={<Eye size={18} />} />
+                  <MultiImageViewer images={[getUrl(item)]} isIcon={true} triggerLabel={<Eye size={18} />} />
                   <Trash2 size={18} color="red" onClick={() => onChange(value.filter((_, x) => x !== i))} />
                 </div>
               ))}

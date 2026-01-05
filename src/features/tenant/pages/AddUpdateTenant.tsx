@@ -342,6 +342,15 @@ const AddUpdateTenant: React.FC = () => {
     if (formData.TotalAreaSqFt != null && formData.TotalAreaSqFt < 0) {
       newErrors.TotalAreaSqFt = 'Total area must be positive';
     }
+    if (formData.FlatType?.trim().toUpperCase() !== 'GYM') {
+      if (!formData.FlatConfiguration?.trim()) {
+        newErrors.FlatConfiguration = 'Flat Configuration is required.'
+      }
+    }
+
+    if (!formData.Facing?.trim()) {
+      newErrors.Facing = 'Facing is required.'
+    }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -654,9 +663,9 @@ const AddUpdateTenant: React.FC = () => {
       {
         key: 'BankName',
         label: 'Bank',
-        width: '15',
+        width: '25',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
           return (
             <MultiImageViewer
@@ -1350,11 +1359,15 @@ const AddUpdateTenant: React.FC = () => {
                 />
               </div>
               <div>
+
                 <SinglePageSelection
                   label="Unit Type"
                   required
                   value={formData.FlatType}
-                  onChange={(e) => handleFieldChange('FlatType', String(e))}
+                  onChange={(e) => {
+                    handleFieldChange('FlatType', String(e));
+                    handleFieldChange('FlatConfiguration', '');
+                  }}
                   options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
                   error={errors.FlatType}
                   placeholder="Enter Unit Type"

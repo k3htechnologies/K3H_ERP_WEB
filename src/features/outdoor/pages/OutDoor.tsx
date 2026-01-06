@@ -7,7 +7,7 @@ import type {
   FilterWithPaginationOutDoor,
   OutDoorMasterData,
 } from '@/features/outdoor/models/OutDoorModel';
-import { OutDoorDataService } from '@/features/outdoor/services/OutDoorDataService';
+import { OutDoorService } from '@/features/outdoor/services/OutDoorDataService';
 import { formatDate_dd_MonthName_yy, formatTimeFromDateTime } from '@/core/utils/dateFormat';
 import { Loader } from '@/core/utils/loader';
 import { useLocation, type Location, useNavigate } from 'react-router-dom';
@@ -278,7 +278,7 @@ export const OutDoor: React.FC = () => {
 
   //#region GET OUTDOOR DATA FROM API
   const getOutDoors = async (filterParams: FilterWithPaginationOutDoor) => {
-    return await OutDoorDataService.apiCallPullOutDoorData(filterParams);
+    return await OutDoorService.apiCallPullOutDoorData(filterParams);
   }
   //#endregion
 
@@ -403,7 +403,7 @@ export const OutDoor: React.FC = () => {
           }
 
           // Use same API for both punch in and punch out
-          const response = await OutDoorDataService.apiCallPunchInOut({
+          const response = await OutDoorService.apiCallPunchInOut({
             OutdoorId: item.OutdoorId,
             Punch: currentDateTime,
             Address: locationString
@@ -480,7 +480,7 @@ export const OutDoor: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        const response = await OutDoorDataService.apiCallAddUpdateConclusion({
+        const response = await OutDoorService.apiCallAddUpdateConclusion({
           OutdoorId: selectedOutdoorItem.OutdoorId,
           Conclusion: conclusionText
         });
@@ -590,7 +590,7 @@ export const OutDoor: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        const response = await OutDoorDataService.apiCallDeleteOutDoor(payload);
+        const response = await OutDoorService.apiCallDeleteOutDoor(payload);
         if (E.isRight(response)) {
           // Check backend ErrorMessage first
           if (response.right.ErrorMessage && response.right.ErrorMessage.length > 0) {

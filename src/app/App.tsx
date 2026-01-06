@@ -104,6 +104,7 @@ import EarningMaster from '@/features/earningMaster/pages/EarningMaster';
 import ProposedPlan from '@/features/proposedOffer/pages/ProposedPlan';
 import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
 import EmployeeResignation from '@/features/resignation/pages/EmployeeResignation';
+import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -177,7 +178,8 @@ function App() {
             <Route path="leave" element={<Leave />} />
             <Route path="leave/add/:id?" element={<AddUpdateLeave />} />
             <Route path="leave/view/:id?" element={<ViewLeave />} />
-             <Route path="resignation" element={<EmployeeResignation />} />
+            <Route path="resignation" element={<EmployeeResignation />} />
+            <Route path="payrollReport" element={<PayrollReport />} />
             <Route path="companyMaster" element={<CompanyMaster />} />
             <Route path="companyMaster/view" element={<ViewCompantMaster />} />
             <Route path="companyMaster/add/:companyId?" element={<AddCompany />} />

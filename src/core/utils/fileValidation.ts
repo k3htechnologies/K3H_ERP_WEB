@@ -1,8 +1,5 @@
 // ----------------------------------
 // 🔹 FILTER ONLY NUMBERS
-
-import { DayPicker } from "react-day-picker";
-
 // ----------------------------------
 export const filterNumbers = (value: string): string =>
   value.replace(/[^0-9]/g, "");

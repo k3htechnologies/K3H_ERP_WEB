@@ -188,8 +188,9 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
       {triggerLabel ? (
         <>
           <div className="flex items-center gap-2">
+            
             <span className="break-words whitespace-normal">
-              {isIcon && triggerLabel}
+            {isIcon && triggerLabel}
             </span>
 
             <button
@@ -199,7 +200,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
               style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
             >
               <Eye size={16} />
-
+              
             </button>
           </div>
 

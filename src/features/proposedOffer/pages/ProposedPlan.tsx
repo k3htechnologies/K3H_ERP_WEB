@@ -17,8 +17,8 @@ import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { filterNumbers } from '@/core/utils/fileValidation';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { AMENITIES_OPTIONS } from '@/core/constants';
-import { MultiSelectDropdown } from '@/ui/components/DropDown/MultiSelectDropdown';
 import MultiFilePicker from '@/ui/components/ImagePicker/MultiFilePicker';
+import MultiSelectCheckBox from '@/ui/components/forms/MultiselectCheckBox';
 
 //#region INITIAL FORM STATE - PROPOSED PLAN
 const initialFormStateProposedPlan = (): AddUpdateProposedOfferProposedPlanRequest => ({
@@ -69,7 +69,7 @@ export const ProposedPlan: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
-        
+
         setPlanDocumentFiles([]);
         setPlanDocumentURL("")
         setRemovedPlanDocumentUrls([]);
@@ -279,21 +279,6 @@ export const ProposedPlan: React.FC = () => {
                                 placeholder="Enter Total Parking"
                             />
                         </div>
-                        <div className="md:col-span-2 lg:col-span-3">
-
-                            <MultiSelectDropdown
-                                label="Amenities"
-                                options={AMENITIES_OPTIONS.map(m => ({ label: m.name, value: m.id }))}
-                                selectedValues={Array.isArray(formDataProposedPlan.Amenities) ? formDataProposedPlan.Amenities : []}
-                                onChange={(values) =>
-                                    handleFieldChangeProposedPlan("Amenities", values)
-                                }
-                                required
-                                error={errorsProposedPlan.Amenities}
-                            />
-
-                        </div>
-
                         <div>
                             <MultiFilePicker
                                 label="Plan"
@@ -311,6 +296,27 @@ export const ProposedPlan: React.FC = () => {
                                 }}
                             />
                         </div>
+                    </div>
+                    <div>
+                        
+                        <MultiSelectCheckBox
+                            label="Select Amenities"
+                            placeholder='Search Amenities'
+                            options={AMENITIES_OPTIONS.map(a => ({
+                                label: a.name,
+                                value: a.id
+                            }))}
+                            value={
+                                Array.isArray(formDataProposedPlan.Amenities)
+                                    ? formDataProposedPlan.Amenities
+                                    : (formDataProposedPlan.Amenities
+                                        ? formDataProposedPlan.Amenities.split(",")
+                                        : [])
+                            }
+                            onChange={(values) =>
+                                handleFieldChangeProposedPlan("Amenities", values)
+                            }
+                        />
                     </div>
                 </div>
             </div>

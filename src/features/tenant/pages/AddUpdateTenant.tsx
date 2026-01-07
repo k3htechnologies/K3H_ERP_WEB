@@ -17,7 +17,7 @@ import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelectio
 import { APPLICANT_TYPE, COMMERCIAL_FLAT_CONFIGURATION, FLAT_UNIT_FACING, FLAT_UNIT_TYPE, RESIDENTIAL_FLAT_CONFIGURATION } from "@/core/constants";
 import { calculateMergedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidAccount, isValidDrivingLicenseNumber, isValidGST, isValidIFSC, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from "@/core/utils/fileValidation";
 import { Button } from "@/ui/components/forms";
-import { Edit, IdCardIcon, Trash2 } from "lucide-react";
+import { ChevronRight, Edit, IdCardIcon, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
@@ -146,7 +146,7 @@ const AddUpdateTenant: React.FC = () => {
 
   //#region TENANT LIST STATE CONTEXT
   const { listState } = useTenantListState();
-  const { buildingId } = listState;
+  const { buildingId, buildingName, tenantName } = listState;
   //#endregion
 
   //#region  TENANT APPLICANT
@@ -1276,10 +1276,19 @@ const AddUpdateTenant: React.FC = () => {
           <div className="space-y-4 pb-3">
             <div className="flex items-center justify-between">
               <div className="flex-1 border-b border-gray-300 pb-2">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Applicant Details
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+
+                  <span>Applicant Detail :</span>
+
+                  <span className="flex items-center gap-2">
+                    {buildingName}
+                    <ChevronRight className="h-5 w-5 text-gray-500" />
+                    {tenantName}
+                  </span>
+
                 </h3>
               </div>
+
 
               <div className="ml-4">
                 <Button
@@ -1334,7 +1343,7 @@ const AddUpdateTenant: React.FC = () => {
 
           {/* ============================================================= [FLAT DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Unit Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Existing Unit Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
@@ -1345,17 +1354,6 @@ const AddUpdateTenant: React.FC = () => {
                   onChange={e => handleFieldChange('FlatNumber', e.target.value)}
                   error={errors.FlatNumber}
                   placeholder="Enter Unit Number"
-                />
-              </div>
-              <div>
-                <Input
-                  label="Carpet Area (SqFt)"
-                  value={formData.FlatCarpetAreaSqFt ?? ''}
-                  required
-                  onChange={e => handleFieldChange('FlatCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
-                  error={errors.FlatCarpetAreaSqFt}
-                  placeholder="Enter Carpet Area"
-                  rightIcon="SqFt"
                 />
               </div>
               <div>
@@ -1373,8 +1371,6 @@ const AddUpdateTenant: React.FC = () => {
                   placeholder="Enter Unit Type"
                 />
               </div>
-
-
               {formData.FlatType.toUpperCase() === "RESIDENTIAL" ?
                 <div>
                   <SinglePageSelection
@@ -1400,12 +1396,21 @@ const AddUpdateTenant: React.FC = () => {
                   />
                 </div>
                 : ""}
-
-
+              <div>
+                <Input
+                  label="Carpet Area (SqFt)"
+                  value={formData.FlatCarpetAreaSqFt ?? ''}
+                  required
+                  onChange={e => handleFieldChange('FlatCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
+                  error={errors.FlatCarpetAreaSqFt}
+                  placeholder="Enter Carpet Area"
+                  rightIcon="SqFt"
+                />
+              </div>
               <div>
 
                 <SinglePageSelection
-                  label="Facing"
+                  label="Unit Facing"
                   required
                   value={formData.Facing ?? ""}
                   onChange={(e) => handleFieldChange('Facing', String(e))}
@@ -1413,6 +1418,14 @@ const AddUpdateTenant: React.FC = () => {
                   error={errors.Facing}
                 />
               </div>
+
+            </div>
+          </div>
+
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Offer</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
               <div>
                 <Input
@@ -1424,16 +1437,16 @@ const AddUpdateTenant: React.FC = () => {
                   rightIcon="%"
                 />
               </div>
+
               <div>
                 <Input
-                  label="Extra Area Purchased (SqFt)"
-                  value={formData.ExtraAreaPurchasedSqFt ?? ''}
-                  onChange={(e) => handleFieldChange("ExtraAreaPurchasedSqFt", filterNumbersWithDecimal(e.target.value))}
-                  error={errors.ExtraAreaPurchasedSqFt}
-                  placeholder="Enter Extra Area Purchased"
+                  label="Free Area Offered (SqFt)"
+                  value={Number(formData?.FlatCarpetAreaSqFt) * (formData?.FreeAreaOfferedPercent || 0) / 100}
+                  disabled
                   rightIcon="SqFt"
                 />
               </div>
+
               <div>
                 <Input
                   label="Total Area (SqFt)"
@@ -1444,6 +1457,24 @@ const AddUpdateTenant: React.FC = () => {
                   rightIcon="SqFt"
                 />
               </div>
+            </div>
+          </div>
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Extra Area Purchased</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+              <div>
+                <Input
+                  label="Extra Area Purchased (SqFt)"
+                  value={formData.ExtraAreaPurchasedSqFt ?? ''}
+                  onChange={(e) => handleFieldChange("ExtraAreaPurchasedSqFt", filterNumbersWithDecimal(e.target.value))}
+                  error={errors.ExtraAreaPurchasedSqFt}
+                  placeholder="Enter Extra Area Purchased"
+                  rightIcon="SqFt"
+                />
+              </div>
+
             </div>
           </div>
         </form>

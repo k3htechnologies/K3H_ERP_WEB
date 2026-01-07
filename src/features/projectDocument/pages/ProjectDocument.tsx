@@ -31,6 +31,7 @@ import type { FilterPullExcelSample } from '@/features/technical/models/Technica
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
+import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 
 
 const initialFormState = (): AddUpdateProjectDocumentRequest => ({
@@ -90,6 +91,8 @@ const ProjectDocument: React.FC = () => {
 
   const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
 
+  const [expandedParentId, setExpandedParentId] = useState<number | null>(null);
+
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
@@ -101,13 +104,13 @@ const ProjectDocument: React.FC = () => {
   // ADD EDIT UPDATE DOCUMENT DETAILS
   const [isAddUpdateDocumentDetailsModalOpen, setIsAddUpdateDocumentDetailsModalOpen] = useState(false);
 
-  //DELETE DEPARTMENT MASTER STATES
+  //DELETE PROJECT DOCUMENT MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
   const [deleteProjectDocumentDetailsData, setDeleteProjectDocumentDetailsData] = useState<ProjectDocumentData | null>(null)
 
-  //ADD UPDATE DEPARTMENT MASTER
+  //ADD UPDATE PROJECT DOCUMENT MASTER
   const [formData, setFormData] = useState<AddUpdateProjectDocumentRequest>(() => initialFormState());
 
   //EXCEL IMPORT 
@@ -126,22 +129,16 @@ const ProjectDocument: React.FC = () => {
   //#region INIT
 
   useEffect(() => {
+    
     if (!projectId) return;
 
-    setProjectDocumentList([]);
-    setProjectDocumentTabList([]);
-    setActiveTab('');
     setExpandedParentRow(null);
-    setEditingDocumentData(null);
-    setErrors({});
-    setPagination({
-      currentPage: 1,
-      totalPages: 0,
-      totalRecords: 0,
-      pageSize: pagination.pageSize
-    });
-    dtRef.current?.collapseAll?.();
+    setExpandedParentId(null);
 
+    setActiveTab("");
+
+    setProjectDocumentList([]);
+    
     loadProjectDocumentTabs();
 
   }, [projectId])
@@ -233,6 +230,8 @@ const ProjectDocument: React.FC = () => {
         else {
 
           setActiveTab('');
+
+          setProjectDocumentList([]);
 
         }
 
@@ -727,6 +726,8 @@ const ProjectDocument: React.FC = () => {
   //#region ADD UPDATE EDIT DOCUMENT
 
   const handleAddDocumentDetailsModal = useCallback((row: ProjectDocumentData) => {
+    setExpandedParentRow(row);
+    setExpandedParentId(row.ProjectDocumentId);
     setExpandHeaderProjectDocumentName(row.ProjectDocumentName);
     setExpandHeaderProjectDocumentId(row.ProjectDocumentId);
 
@@ -794,17 +795,8 @@ const ProjectDocument: React.FC = () => {
 
       newErrors.ProjectDocumentStatus = "Status is required"
     }
-    const hasNewFiles = projectDocumentFiles.length > 0;
 
-    const existingUrls = (projectDocumentURL ?? "").split(",").filter(x => x.trim() !== "");
-
-    const remainingExisting = existingUrls.filter(url => !RemoveProjectDocumentUrls.includes(url));
-
-    const hasRemainingExisting = remainingExisting.length > 0;
-
-    const hasFile = hasNewFiles || hasRemainingExisting;
-
-    if (!hasFile) {
+    if (!hasAnyDocumentFile(projectDocumentFiles, projectDocumentURL, RemoveProjectDocumentUrls)) {
       newErrors.ProjectDocumentURL = "File is required.";
     }
 
@@ -919,16 +911,25 @@ const ProjectDocument: React.FC = () => {
               });
             } else {
 
-              const parentId = expandedParentRow?.ProjectDocumentId;
+              const parentId = expandedParentId;
 
               await fetchProjectDocumentList(pagination.currentPage);
 
-              if (parentId) {
-                dtRef.current?.expandRow?.(
-                  String(parentId),
-                  expandedParentRow
-                );
+              // collapse all first
+              if (dtRef.current) {
+                dtRef.current.collapseAll?.();
               }
+
+              // reopen after table renders
+              setTimeout(() => {
+                if (parentId) {
+                  dtRef.current?.expandRow?.(
+                    String(parentId),
+                    expandedParentRow
+                  );
+                }
+              }, 50);
+
             }
 
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
@@ -949,21 +950,31 @@ const ProjectDocument: React.FC = () => {
             }
             else {
 
-              const parentId = expandedParentRow?.ProjectDocumentId;
+              const parentId = expandedParentId;
 
               await fetchProjectDocumentList(pagination.currentPage);
 
-              if (parentId) {
-                dtRef.current?.expandRow?.(
-                  String(parentId),
-                  expandedParentRow
-                );
+              // collapse all first
+              if (dtRef.current) {
+                dtRef.current.collapseAll?.();
               }
+
+              // reopen after table renders
+              setTimeout(() => {
+                if (parentId) {
+                  dtRef.current?.expandRow?.(
+                    String(parentId),
+                    expandedParentRow
+                  );
+                }
+              }, 50);
+
             }
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
           setEditingDocumentData(null);
+          
           dtRef.current?.collapseAll?.();
 
         } else {
@@ -1024,16 +1035,25 @@ const ProjectDocument: React.FC = () => {
           }
           else {
 
-            const parentId = expandedParentRow.ProjectDocumentId;
+            const parentId = expandedParentId;
 
             await fetchProjectDocumentList(pagination.currentPage);
 
-            if (parentId) {
-              dtRef.current?.expandRow?.(
-                String(parentId),
-                expandedParentRow
-              );
+            // collapse all first
+            if (dtRef.current) {
+              dtRef.current.collapseAll?.();
             }
+
+            // reopen after table renders
+            setTimeout(() => {
+              if (parentId) {
+                dtRef.current?.expandRow?.(
+                  String(parentId),
+                  expandedParentRow
+                );
+              }
+            }, 50);
+
 
           }
           addToast({ type: 'success', title: response.right.SuccessMessage[0] })
@@ -1150,7 +1170,7 @@ const ProjectDocument: React.FC = () => {
         onAdd={handleAddDocumentModal}
 
         // IMPORT
-        isShowImportButton={true}
+        isShowImportButton={canAction}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleProjectDocument}
         // EXPORT
@@ -1197,19 +1217,17 @@ const ProjectDocument: React.FC = () => {
           fetchRow: async (row) => {
 
             setExpandedParentRow(row);
+            setExpandedParentId(row.ProjectDocumentId);
+
 
             const params: FilterWithPaginationProjectDocument = {
               PageNumber: 1,
               PageSize: pagination.pageSize,
               ProjectId: Number(projectId),
               ProjectDocumentId: Number(row.ProjectDocumentId),
-              ProjectDocumentName: row.ProjectDocumentName,
-              ProjectDocumentStatus: row.ProjectDocumentStatus,
               ProjectDocumentCategory: row.ProjectDocumentCategory,
-              ProjectDocumentCategoryId: row.ProjectDocumentCategoryId
+              ProjectDocumentCategoryId: row.ProjectDocumentCategoryId,
             };
-
-
             const response = await ProjectDocumentService.apiCallPullProjectDocument(params);
 
             if (E.isRight(response)) {

@@ -22,7 +22,7 @@ export class ProjectDocumentDatasourceImpl implements ProjectDocumentDatasource 
                 PageNumber: (params.PageNumber ?? 1).toString(),
             })
 
-            if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
+            if (params.ProjectId) queryParams.append('ProjectId', String(params.ProjectId));
             if (params.ProjectDocumentId) queryParams.append('ProjectDocumentId', params.ProjectDocumentId.toString());
             if (params.ProjectDocumentCategoryId) queryParams.append('ProjectDocumentCategoryId', params.ProjectDocumentCategoryId.toString());
             if (params.ProjectDocumentName?.trim()) queryParams.append('ProjectDocumentName', params.ProjectDocumentName.trim());

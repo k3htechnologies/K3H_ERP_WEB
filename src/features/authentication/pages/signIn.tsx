@@ -193,7 +193,7 @@ export function SignIn() {
                                 <Input
                                     type="tel"
                                     label="Mobile Number"
-                                    placeholder="Enter mobile number"
+                                    placeholder="Enter Mobile Number"
                                     value={mobileNumber}
                                     onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
                                     maxLength={10}

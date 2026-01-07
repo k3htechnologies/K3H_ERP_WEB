@@ -296,6 +296,7 @@ export const ProjectMaster: React.FC = () => {
           sortInfo,
           searchTerm,
           projectId: row.ProjectId,
+          projectName:row.ProjectName
         },
       },
     });
@@ -316,7 +317,8 @@ export const ProjectMaster: React.FC = () => {
             sortInfo,
             searchTerm,
             projectId: row.ProjectId,
-            uniquekey:row.Uniquekey
+            uniquekey:row.Uniquekey,
+            projectName:row.ProjectName
           },
         },
       });
@@ -336,7 +338,8 @@ export const ProjectMaster: React.FC = () => {
             sortInfo,
             searchTerm,
             projectId: row.ProjectId,
-            uniquekey:row.Uniquekey
+            uniquekey:row.Uniquekey,
+            projectName:row.ProjectName
           },
         },
       });
@@ -355,7 +358,8 @@ export const ProjectMaster: React.FC = () => {
             filters,
             sortInfo,
             searchTerm,
-            projectId: row.ProjectId
+            projectId: row.ProjectId,
+            projectName:row.ProjectName
   
           },
         },

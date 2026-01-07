@@ -48,10 +48,15 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                     {titleText && <span>{titleText}</span>}
 
                     {subTitleText && (
-                        <span className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                        <span className="flex items-center gap-2 text-lg font-medium text-[#00000080]">
                             {subTitleText}
-                            <ChevronRight className="h-5 w-5 text-gray-500" />
-                            {subSubTitleText}
+                            {subSubTitleText && (
+                                <>
+                                    <ChevronRight className="h-5 w-5 text-gray-800" />
+
+                                    {subSubTitleText}
+                                </>
+                            )}
                         </span>
                     )}
 

@@ -239,7 +239,8 @@ export const ViewProjectMaster: React.FC = () => {
                     filters: preservedListState?.filters,
                     sortInfo: preservedListState?.sortInfo,
                     projectId: row.ProjectId,
-                    uniquekey: row.Uniquekey
+                    uniquekey: row.Uniquekey,
+                    projectName:row.ProjectName
                 }
             }
 
@@ -259,7 +260,8 @@ export const ViewProjectMaster: React.FC = () => {
                     filters: preservedListState?.filters,
                     sortInfo: preservedListState?.sortInfo,
                     projectId: row.ProjectId,
-                    uniquekey: row.Uniquekey
+                    uniquekey: row.Uniquekey,
+                    projectName:row.ProjectName
                 }
             }
         });
@@ -279,7 +281,8 @@ export const ViewProjectMaster: React.FC = () => {
                     filters: preservedListState?.filters,
                     sortInfo: preservedListState?.sortInfo,
                     projectId: row.ProjectId,
-                    uniquekey: row.Uniquekey
+                    uniquekey: row.Uniquekey,
+                    projectName:row.ProjectName
                 }
             }
         });
@@ -297,7 +300,8 @@ export const ViewProjectMaster: React.FC = () => {
             </Loader>
 
             <HeaderActionBar
-                titleText={'Project Details'}
+                titleText={'Project Details : '}
+                subTitleText={editProjectData?.ProjectName}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListProjectMaster()}

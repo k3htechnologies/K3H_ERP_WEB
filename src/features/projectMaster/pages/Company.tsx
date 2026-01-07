@@ -32,21 +32,23 @@ const Company: React.FC = () => {
   const navigate = useNavigate();
 
   const location = useLocation() as {
-      state?: {
-        listState?: {
-          page?: number;
-          filters?: any;
-          sortInfo?: any;
-          searchTerm?: string;
-          projectId?: number;
-          uniquekey?: string;
-        };
+    state?: {
+      listState?: {
+        page?: number;
+        filters?: any;
+        sortInfo?: any;
+        searchTerm?: string;
+        projectId?: number;
+        uniquekey?: string;
+        projectName?: string;
       };
     };
-    const preservedListState = location.state?.listState;
-    const projectId = preservedListState?.projectId || 0;
-    const uniquekey = preservedListState?.uniquekey || '';
-  
+  };
+  const preservedListState = location.state?.listState;
+  const projectId = preservedListState?.projectId || 0;
+  const uniquekey = preservedListState?.uniquekey || '';
+  const projectName = preservedListState?.projectName || '';
+
 
   //FILTER STATES
   const [filters, setFilters] = useState<FilterInfo>({});
@@ -309,7 +311,7 @@ const Company: React.FC = () => {
   const PushProjectMasterWithCompanyData = (): AddUpdateProjectMasterWithCompanyRequest => {
     return {
       ProjectId: projectId,
-          Uniquekey: uniquekey,
+      Uniquekey: uniquekey,
       CompanyId: selectedCompanyIds.join(',')
     };
 
@@ -404,7 +406,8 @@ const Company: React.FC = () => {
       </Loader>
 
       <HeaderActionBar
-        titleText={'Add Update Project Master With Employee Details'}
+        titleText={'Company Details : '}
+        subTitleText={projectName}
         cancelText="Cancel"
         EditText="Add | Update"
         onCancel={() => handleBackToListProjectMaster()}

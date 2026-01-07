@@ -778,7 +778,7 @@ export const TenantDocument: React.FC = () => {
       <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
 
         <HeaderActionBar
-          titleText={"Tenant Name"}
+          titleText={"Tenant Name : "}
           subTitleText={tenantName}
           cancelText="Cancel"
           EditText=""

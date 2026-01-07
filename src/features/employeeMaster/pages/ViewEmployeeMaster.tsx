@@ -69,6 +69,7 @@ export const ViewEmployeeMaster: React.FC = () => {
         };
     };
     const preservedListState = location.state?.listState;
+    const employeeName = preservedListState?.employeeName || '';
 
     //#endregion
 
@@ -474,7 +475,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                 <div></div>
             </Loader>
             <HeaderActionBar
-                titleText={'Employee Details'}
+                titleText={'Employee Details : '}
+                subTitleText={employeeName}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListEmployeeMaster()}
@@ -825,8 +827,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                     : employeeEducationDetailsDataList.map(e => (
                                                         <div key={e.Uniquekey} className="mb-3 border-b border-gray-200 pb-2 last:border-b-0 last:pb-0">
                                                             <FieldItem label="Qualification" value={e.Qualification} isRow />
-                                                            <FieldItem label="College" value={e.CollegeName}  isRow/>
-                                                            <FieldItem label="Passing Year" value={e.Passing}  isRow/>
+                                                            <FieldItem label="College" value={e.CollegeName} isRow />
+                                                            <FieldItem label="Passing Year" value={e.Passing} isRow />
                                                         </div>
                                                     ))
                                             )}

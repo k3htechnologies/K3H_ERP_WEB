@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, forwardRef, useCallback } from "react";
+import { useState, useEffect, useRef, forwardRef, useCallback, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, ChevronUp, InfoIcon, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, Info, InfoIcon, Search } from "lucide-react";
 import type { SinglePageSelectionProps } from "@/core/types/dropDownSelectionType";
 import { THEME } from "@/core/constants/theme";
 import { COLORS } from "@/core/constants";
@@ -15,6 +15,8 @@ export const SinglePageSelection = forwardRef<
     required?: boolean;
     className?: string;
     selectedTextColor?: string;
+    leftIcon?: ReactNode
+    leftIconClick?: () => void
   }
 >(
   (
@@ -33,6 +35,8 @@ export const SinglePageSelection = forwardRef<
       error,
       className,
       selectedTextColor,
+      leftIcon,
+      leftIconClick
     },
     ref
   ) => {
@@ -54,7 +58,7 @@ export const SinglePageSelection = forwardRef<
 
     const currentSize = sizeConfig[size];
 
-    /* ================= FILTER LOGIC (UNCHANGED) ================= */
+    /* ================= FILTER LOGIC (UNCHANGED)  ================= */
 
     useEffect(() => {
       if (!searchable) {
@@ -106,7 +110,7 @@ export const SinglePageSelection = forwardRef<
     const chosenSelectedColor =
       selectedTextColor ?? theme.colors.primary ?? "#0b5fff";
 
-      const isPlaceholder = !value;
+    const isPlaceholder = !value;
 
     /* ================= PORTAL POSITION (ONLY NEW LOGIC) ================= */
 
@@ -204,25 +208,51 @@ export const SinglePageSelection = forwardRef<
         <div
           onClick={handleToggle}
           style={{
+            position: "relative",   // 👈 IMPORTANT
             height: currentSize.height,
             fontSize: currentSize.fontSize,
             padding: currentSize.padding,
+            paddingLeft: leftIcon ? "38px" : "12px",    // 👈 SPACE FOR ICON
             borderRadius: "6px",
-            backgroundColor: disabled
-              ? "#f5f5f5"
-              : theme.colors.background,
+            backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
             cursor: disabled ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            border: `1px solid ${
-              error ? theme.colors.error : theme.colors.border
-            }`,
+            border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
           }}
         >
+          {/* LEFT CLICKABLE ICON */}
+          {leftIcon && (
+            <div
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                leftIconClick?.();
+
+              }}
+              style={{
+                position: "absolute",
+                left: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Info size={18} color="#135BEC" />
+            </div>
+          )}
+
           <span
             style={{
-              color: isPlaceholder ? COLORS.placeholder : selectedTextColor ? chosenSelectedColor : "#000",
+              color: isPlaceholder
+                ? COLORS.placeholder
+                : selectedTextColor
+                  ? chosenSelectedColor
+                  : "#000",
               fontWeight: selectedTextColor ? "700" : "400",
             }}
           >
@@ -235,6 +265,7 @@ export const SinglePageSelection = forwardRef<
             <ChevronDown size={20} color="#888" />
           )}
         </div>
+
 
         {/* ===== PORTAL DROPDOWN (UI UNCHANGED) ===== */}
         {isOpen &&

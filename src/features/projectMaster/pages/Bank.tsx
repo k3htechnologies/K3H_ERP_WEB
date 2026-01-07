@@ -56,11 +56,13 @@ const Bank: React.FC = () => {
         searchTerm?: string;
         projectId?: number;
         uniquekey?: string;
+        projectName?: string;
       };
     };
   };
   const preservedListState = location.state?.listState;
   const projectId = preservedListState?.projectId || 0;
+  const projectName = preservedListState?.projectName || '';
   //#endregion
 
   //#region PROJECT MASTER WITH BANK DETAILS MODULE
@@ -518,7 +520,8 @@ const Bank: React.FC = () => {
       </Loader>
 
       <HeaderActionBar
-        titleText={'Add Update Project Master With Bank Details'}
+        titleText={'Bank Details : '}
+        subTitleText={projectName}
         cancelText="Cancel"
         EditText="Add"
         onCancel={() => handleBackToListProjectMaster()}

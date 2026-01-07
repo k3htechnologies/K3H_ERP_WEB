@@ -20,9 +20,11 @@ import { ProjectMasterService } from '@/features/projectMaster/services/ProjectM
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData } from '@/features/projectMaster/models/ProjectMasterModel'
 import NoDataView from '../components/NoDataView/NoDataView'
 import TableActionToolbar from '../components/TableAction/TableActionToolbar'
-import type { EmployeeMasterData } from '@/features/employeeMaster/models/EmployeeMasterModel'
+import type { EmployeeMasterData, SetEmployeeMPINRequest } from '@/features/employeeMaster/models/EmployeeMasterModel'
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback'
 import Tabs from '../components/Tab/Tab'
+import { Input } from '../components/forms'
+import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService'
 
 interface HeaderProps {
     isSidebarOpen: boolean
@@ -66,6 +68,9 @@ export const Header: React.FC<HeaderProps> = ({
     ];
 
     const [activeTab, setActiveTab] = useState<string>(TabList[0].id);
+
+    const [MPIN, setMPIN] = useState('')
+    const [isMPINModalOpen, setIsMPINModalOpen] = useState(false);
     //#endregion
 
     // NOTIFICATION
@@ -295,6 +300,54 @@ export const Header: React.FC<HeaderProps> = ({
 
     //#endregion
     //#endregion
+
+    //#region VERIFY OTP
+    const handleSubmitMPIN = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                if (MPIN.length !== 4) {
+
+                    addToast({ type: 'error', title: 'Please enter a valid 4-digit MPIN' })
+                    return
+                }
+
+                const params: SetEmployeeMPINRequest = {
+                    EmployeeId: Number(LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0),
+                    UniqueKey: LocalStorageHelper.getStoredEmployeeData()?.UniqueKey ?? "",
+                    MPIN: MPIN
+                }
+
+                const response = await employeeMasterService.apiCallSetEmployeeMPIN(params)
+
+                if (E.isRight(response)) {
+
+                    addToast({
+                        type: 'success', title: response.right.SuccessMessage[0]
+                    });
+                    setIsMPINModalOpen(false);
+                    setMPIN('');
+                } else {
+
+                    addToast({
+                        type: 'error', title: response.left.message
+                    });
+
+                }
+
+            },
+            undefined,
+            (error: any) => {
+
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Set MPIN'
+        )
+    }
+    //#endregion
     return (
         <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex-shrink-0 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40">
             {/* Left side - Menu toggle and title */}
@@ -457,7 +510,11 @@ export const Header: React.FC<HeaderProps> = ({
                             View Profile
                         </button>
                         <button
-                            onClick={() => console.log('Set MPIN clicked')}
+                            onClick={() => {
+                                setIsEmployeeProfileModalOpen(false);
+                                setIsMPINModalOpen(true);
+                                setMPIN('');
+                            }}
                             type="button"
                             className="flex-1 ml-2 px-4 py-3 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-200"
                         >
@@ -671,7 +728,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                                                         </div>
 
-                                                       
+
 
                                                     </div>
                                                 </div>
@@ -693,7 +750,43 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
             </Modal>
 
-        </header>
+            <Modal
+                isOpen={isMPINModalOpen}
+                onClose={() => setIsMPINModalOpen(false)}
+                title="Set MPIN"
+                saveText="Set"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSubmitMPIN();
+                }}
+                size="md"
+                resetText=""
+
+            >
+                <div className="space-y-6">
+
+                    <div>
+                        <p className="text-sm text-gray-600 mb-2">
+                            For your security, please enter your 4-digit MPIN
+                        </p>
+
+                        <Input
+                            type="text"
+                            placeholder="Enter MPIN"
+                            value={MPIN}
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            data-testid="otp-input"
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 4)
+                                setMPIN(value)
+                            }}
+                        />
+                    </div>
+
+                </div>
+            </Modal>
+        </header >
 
     )
 }

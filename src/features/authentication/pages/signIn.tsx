@@ -16,7 +16,7 @@ export function SignIn() {
 
     const [mobileNumber, setMobileNumber] = useState('')
     const [otp, setOtp] = useState('')
-    const [step, setStep] = useState<'mobile' | 'otp'>('mobile')
+    const [step, setStep] = useState<'mobile' | 'otp' | 'mpin'>('mobile')
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
     const [isVerified, setIsVerified] = useState(false)
@@ -40,9 +40,20 @@ export function SignIn() {
 
                     if (E.isRight(response)) {
 
-                        showSuccess('OTP Sent', response.right.SuccessMessage?.[0]);
+                        const msg = response.right.SuccessMessage?.[0] ?? "";
 
-                        setStep('otp');
+                        if (msg.toLowerCase().includes("otp")) {
+                            setStep("otp");
+                            showSuccess('OTP Sent', response.right.SuccessMessage?.[0]);
+                        }
+
+                        else if (msg.toLowerCase().includes("mpin")) {
+                            setStep("mpin");
+                            showSuccess('MPIN', response.right.SuccessMessage?.[0]);
+                        }
+                        else {
+                            setStep("otp");
+                        }
 
                     } else {
 
@@ -77,7 +88,7 @@ export function SignIn() {
                     return
                 }
 
-                const response = await authenticationService.apicallIsValidOTP(mobileNumber, otp)
+                const response = await authenticationService.apicallIsValidOTP(mobileNumber, otp,step)
 
                 if (E.isRight(response)) {
 
@@ -179,7 +190,7 @@ export function SignIn() {
                             border: '1px solid rgba(255, 255, 255, 0.2)',
                         }}
                     >
-                        {step === 'mobile' ? (
+                        {step === 'mobile' && (
                             <form onSubmit={(e) => { e.preventDefault(); handleSendOTP() }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '32px' }}>
                                     <img
@@ -228,7 +239,9 @@ export function SignIn() {
                                     Send OTP
                                 </Button>
                             </form>
-                        ) : (
+                        )}
+
+                        {step === 'otp' && (
                             <form onSubmit={(e) => { e.preventDefault(); handleVerifyOTP() }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '32px' }}>
                                     <img
@@ -286,6 +299,52 @@ export function SignIn() {
                                         Resend OTP
                                     </Button>
                                 </div>
+                            </form>
+                        )}
+
+                        {step === 'mpin' && (
+                            <form onSubmit={(e) => { e.preventDefault(); handleVerifyOTP() }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '32px' }}>
+                                    <img
+                                        src={appLogo}
+                                        alt="App Logo"
+                                        style={{ height: '80px', objectFit: 'contain', marginBottom: '16px' }}
+                                    />
+                                    <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#1a1a1a' }}>Verify MPIN</h2>
+                                </div>
+
+                                <Input
+                                    type="text"
+                                    placeholder="Enter MPIN"
+                                    value={otp}
+                                    inputMode="numeric"
+                                    autoComplete="one-time-code"
+                                    data-testid="otp-input"
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/\D/g, '').slice(0, 4)
+                                        setOtp(value)
+                                    }}
+                                />
+
+
+
+                                <Button
+                                    data-testid="verify-otp-btn"
+                                    onClick={handleVerifyOTP}
+                                    type="submit"
+                                    disabled={isLoading || isVerified || otp.length !== 4}
+                                    loading={isLoading}
+                                    loadingText="Verifying..."
+                                    size="lg"
+                                    variant="solid"
+                                    color="primary"
+                                    fullWidth
+                                    style={{ marginTop: '20px' }}
+                                >
+                                    Verify MPIN
+                                </Button>
+
+
                             </form>
                         )}
 

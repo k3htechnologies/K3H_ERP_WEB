@@ -6,7 +6,7 @@ import type { AuthenticationResponse } from '@/features/authentication/models/Au
 export abstract class AuthenticationDatasource {
 
     abstract isValidMobileNumber(mobileNumber: string): Promise<ApiResponse<string>>;
-    abstract isValidOTP(mobileNumber: string, otp: string): Promise<AuthenticationResponse>;
+    abstract isValidOTP(mobileNumber: string, otp: string,type: string): Promise<AuthenticationResponse>;
 }
 
 export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
@@ -31,11 +31,12 @@ export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
         }
     }
 
-    async isValidOTP(mobileNumber: string, otp: string): Promise<AuthenticationResponse> {
+    async isValidOTP(mobileNumber: string, otp: string,type: string): Promise<AuthenticationResponse> {
         try {
             const queryParams = new URLSearchParams({
                 MobileNumber: mobileNumber.trim() ?? '',
-                OTP: otp.trim() ?? ''
+                OTP: otp.trim() ?? '',
+                Type:type.trim() ?? ''
             })
 
             const response = await this.k3hHttpClient.getRequestWithoutAuthentication(

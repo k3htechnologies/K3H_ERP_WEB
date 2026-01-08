@@ -75,7 +75,7 @@ export const DataTableWithOutBorder: React.FC<DataTableWithOutBorderProps> = ({
         if (!pagination) return null
 
         const { currentPage, totalPages, totalRecords, pageSize, onPageChange } = pagination
-       const startRecord = totalRecords===0 ? 0 :(currentPage - 1) * pageSize + 1
+        const startRecord = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1
         const endRecord = Math.min(currentPage * pageSize, totalRecords)
 
         return (
@@ -86,7 +86,7 @@ export const DataTableWithOutBorder: React.FC<DataTableWithOutBorderProps> = ({
                 <div className="flex items-center space-x-2">
                     <button
                         onClick={() => onPageChange(currentPage - 1)}
-                        disabled={totalRecords===0 ? true : currentPage === 1}
+                        disabled={totalRecords === 0 ? true : currentPage === 1}
                         className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                     >
                         <ChevronLeft className="h-4 w-4" />
@@ -122,7 +122,7 @@ export const DataTableWithOutBorder: React.FC<DataTableWithOutBorderProps> = ({
 
                     <button
                         onClick={() => onPageChange(currentPage + 1)}
-                        disabled={totalRecords===0 ? true :currentPage === totalPages}
+                        disabled={totalRecords === 0 ? true : currentPage === totalPages}
                         className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                     >
                         <ChevronRight className="h-4 w-4" />
@@ -165,18 +165,18 @@ export const DataTableWithOutBorder: React.FC<DataTableWithOutBorderProps> = ({
                             {columns.map((column) => (
                                 <th
                                     key={column.key}
-                                    className={`px-4 py-2 text-gray-800 tracking-wider whitespace-nowrap
-          ${column.align === 'center' ? 'text-center' :
-                                            column.align === 'right' ? 'text-right' : 'text-left'}
-          ${column.width ? `w-${column.width}` : ''}
-          ${column.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
-          ${column.fixed === 'left'
-                                            ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]'
-                                            : column.fixed === 'right'
-                                                ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
-                                                : ''
-                                        }
-        `}
+                                    className={`px-4 py-2  bg-white text-gray-800 tracking-wider whitespace-nowrap
+                                                    ${column.align === 'center' ? 'text-center' :
+                                                                                        column.align === 'right' ? 'text-right' : 'text-left'}
+                                                    ${column.width ? `w-${column.width}` : ''}
+                                                    ${column.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
+                                                    ${column.fixed === 'left'
+                                                                                        ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]'
+                                                                                        : column.fixed === 'right'
+                                                                                            ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
+                                                                                            : ''
+                                                                                    }
+                                                    `}
                                     style={{
                                         ...(column.width ? { width: column.width } : {}),
                                         fontSize: '14px',

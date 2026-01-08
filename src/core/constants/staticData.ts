@@ -42,7 +42,7 @@ export const MASTER_DATA = {
     businessCategory: ['Real Estate', 'Construction', 'Infrastructure', 'Residential', 'Commercial', 'Mixed Use'],
 
     documentStatus: [
-        'Applied', 'Doc Misssing', 'In Process', 'Issued', 'Not Applied', 'Not Applicable',
+        'Applied', 'Doc Missing', 'In Process', 'Issued', 'Not Applied', 'Not Applicable',
         'Paid', 'Payment Due', 'Rejected',
     ],
 

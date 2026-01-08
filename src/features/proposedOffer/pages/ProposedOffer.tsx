@@ -44,7 +44,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { Tabs } from '@/ui/components/Tab/Tab';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { filterNumbersWithDecimal, filterNumbers, isValidPercentage, calculatePercentageAmount } from '@/core/utils/fileValidation';
+import { filterNumbersWithDecimal, filterNumbers, isValidPercentage, calculatePercentageAmount, allowPercentage } from '@/core/utils/fileValidation';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { Modal } from '@/ui/components/Modal/Modal';
@@ -3295,7 +3295,12 @@ export const ProposedOffer: React.FC = () => {
                     required
                     type="text"
                     value={formDataExtraCarpetArea.ResidentialExtraCarpetPercent || ''}
-                    onChange={(e) => handleFieldChangeExtraCarpetArea('ResidentialExtraCarpetPercent', filterNumbersWithDecimal(e.target.value))}
+                    onChange={(e) => {
+                      const val = allowPercentage(e.target.value);
+                      if (val !== null) {
+                        handleFieldChangeExtraCarpetArea("ResidentialExtraCarpetPercent", filterNumbersWithDecimal(e.target.value));
+                      }
+                    }}
                     error={errors.ResidentialExtraCarpetPercent}
                     placeholder="Enter Residential Extra Carpet"
                     rightIcon="%"
@@ -3307,7 +3312,13 @@ export const ProposedOffer: React.FC = () => {
                     required
                     type="text"
                     value={formDataExtraCarpetArea.CommercialExtraCarpetPercent || ''}
-                    onChange={(e) => handleFieldChangeExtraCarpetArea('CommercialExtraCarpetPercent', filterNumbersWithDecimal(e.target.value))}
+                    onChange={(e) => {
+                      const val = allowPercentage(e.target.value);
+                      if (val !== null) {
+
+                        handleFieldChangeExtraCarpetArea('CommercialExtraCarpetPercent', filterNumbersWithDecimal(e.target.value))
+                      }
+                    }}
                     error={errors.CommercialExtraCarpetPercent}
                     placeholder="Enter Commercial Extra Carpet"
                     rightIcon="%"
@@ -3459,6 +3470,7 @@ export const ProposedOffer: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Type"
+                placeholder='Select Type'
                 required
                 value={formDataCorpusPaymentStage.Type || ''}
                 onChange={(e) => {
@@ -3471,10 +3483,13 @@ export const ProposedOffer: React.FC = () => {
                     formDataCorpusPaymentStage.StagePercentage
                   );
                 }}
-                options={FLAT_UNIT_TYPE.map(opt => ({
-                  label: opt.name,
-                  value: opt.id
-                }))}
+                options={FLAT_UNIT_TYPE
+                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .map(opt => ({
+                    label: opt.name,
+                    value: opt.id
+                  }))
+                }
                 error={errorsCorpusPaymentStage.Type}
               />
 
@@ -3502,6 +3517,9 @@ export const ProposedOffer: React.FC = () => {
                 }
                 onChange={(e) => {
                   const raw = filterNumbersWithDecimal(e.target.value);
+
+                  const safeValue = allowPercentage(raw);
+                  if (safeValue === null) return;
 
                   handleFieldChangeCorpusPaymentStage('StagePercentageText', raw);
 
@@ -3657,10 +3675,17 @@ export const ProposedOffer: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Type"
+                placeholder='Select Type'
                 required
                 value={formDataSecurityDepositPaymentStage.Type || ''}
                 onChange={(e) => handleFieldChangeSecurityDepositPaymentStage('Type', String(e))}
-                options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                options={FLAT_UNIT_TYPE
+                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .map(opt => ({
+                    label: opt.name,
+                    value: opt.id
+                  }))
+                }
                 error={errorsSecurityDepositPaymentStage.Type}
               />
             </div>
@@ -3825,6 +3850,7 @@ export const ProposedOffer: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Type"
+                placeholder='Select Type'
                 required
                 value={formDataShiftingPaymentStage.Type || ''}
 
@@ -3839,7 +3865,13 @@ export const ProposedOffer: React.FC = () => {
                   );
                 }}
 
-                options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                options={FLAT_UNIT_TYPE
+                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .map(opt => ({
+                    label: opt.name,
+                    value: opt.id
+                  }))
+                }
                 error={errorsShiftingPaymentStage.Type}
               />
             </div>
@@ -3867,6 +3899,9 @@ export const ProposedOffer: React.FC = () => {
                 onChange={(e) => {
 
                   const raw = filterNumbersWithDecimal(e.target.value);
+
+                  const safeValue = allowPercentage(raw);
+                  if (safeValue === null) return;
 
                   handleFieldChangeShiftingPaymentStage('StagePercentageText', raw);
 
@@ -4059,10 +4094,17 @@ export const ProposedOffer: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Type"
+                placeholder='Select Type'
                 required
                 value={formDataLienToSocietyPaymentStage.Type || ''}
                 onChange={(e) => handleFieldChangeLienToSocietyPaymentStage('Type', String(e))}
-                options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                options={FLAT_UNIT_TYPE
+                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .map(opt => ({
+                    label: opt.name,
+                    value: opt.id
+                  }))
+                }
                 error={errorsLienToSocietyPaymentStage.Type}
               />
             </div>
@@ -4146,7 +4188,13 @@ export const ProposedOffer: React.FC = () => {
                     type="text"
                     rightIcon="%"
                     value={formDataParkingAllotment.TotalParkingPercentageAllottedToSociety || ''}
-                    onChange={(e) => handleFieldChangeParkingAllotment('TotalParkingPercentageAllottedToSociety', filterNumbersWithDecimal(e.target.value))}
+                    onChange={(e) => {
+                      const val = allowPercentage(e.target.value);
+                      if (val !== null) {
+
+                        handleFieldChangeParkingAllotment('TotalParkingPercentageAllottedToSociety', filterNumbersWithDecimal(e.target.value))
+                      }
+                    }}
                     error={errorsParkingAllotment.TotalParkingPercentageAllottedToSociety}
                     placeholder="Enter Total Parking Percentage"
                   />
@@ -4188,7 +4236,13 @@ export const ProposedOffer: React.FC = () => {
                     type="text"
                     rightIcon="%"
                     value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent || ''}
-                    onChange={(e) => handleFieldChangeGSTonExistingPlusFreeArea('GSTOnAreaByMemberPercent', filterNumbersWithDecimal(e.target.value))}
+                    onChange={(e) => {
+                      const val = allowPercentage(e.target.value);
+                      if (val !== null) {
+
+                        handleFieldChangeGSTonExistingPlusFreeArea('GSTOnAreaByMemberPercent', filterNumbersWithDecimal(e.target.value))
+                      }
+                    }}
                     error={errorsGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent}
                     placeholder="Enter GST on Area by Member Percent"
                   />
@@ -4200,7 +4254,13 @@ export const ProposedOffer: React.FC = () => {
                     type="text"
                     rightIcon="%"
                     value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent || ''}
-                    onChange={(e) => handleFieldChangeGSTonExistingPlusFreeArea('GSTOnAreaByDeveloperPercent', filterNumbersWithDecimal(e.target.value))}
+                    onChange={(e) => {
+                      const val = allowPercentage(e.target.value);
+                      if (val !== null) {
+
+                        handleFieldChangeGSTonExistingPlusFreeArea('GSTOnAreaByDeveloperPercent', filterNumbersWithDecimal(e.target.value))
+                      }
+                    }}
                     error={errorsGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent}
                     placeholder="Enter GST on Area by Developer Percent"
                   />
@@ -4384,10 +4444,17 @@ export const ProposedOffer: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Type"
+                placeholder='Select Type'
                 required
                 value={formDataRentDetails.Type || ''}
                 onChange={(e) => handleFieldChangeRentDetails('Type', String(e))}
-                options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                options={FLAT_UNIT_TYPE
+                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .map(opt => ({
+                    label: opt.name,
+                    value: opt.id
+                  }))
+                }
                 error={errorsRentDetails.Type}
               />
             </div>

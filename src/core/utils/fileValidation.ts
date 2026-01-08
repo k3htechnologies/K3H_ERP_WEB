@@ -179,6 +179,22 @@ export const isValidPercentage = (value: string): boolean => {
   return num >= 0 && num <= 100;
 };
 
+export const allowPercentage = (value: string) => {
+  // Allow empty
+  if (value === "") return value;
+
+  // Allow only digits & single decimal
+  if (!/^\d*\.?\d*$/.test(value)) return null;
+
+  const num = Number(value);
+
+  // Block values greater than 100
+  if (num > 100) return null;
+
+  return value;
+};
+
+
 // ----------------------------------
 // CALCULATE PERCENTAGE
 // ----------------------------------

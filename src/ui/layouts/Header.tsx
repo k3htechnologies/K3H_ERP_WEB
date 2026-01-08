@@ -389,6 +389,8 @@ export const Header: React.FC<HeaderProps> = ({
                             disabled={readOnlyProject}
                             leftIcon={<Info size={18} color="#135BEC" />}
                             leftIconClick={() => {
+                                if (Number(projectId) < 0) return;
+
                                 loadProjectMaster();
                                 setIsProjectDetailsModalOpen(true);
                             }}
@@ -552,43 +554,59 @@ export const Header: React.FC<HeaderProps> = ({
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
 
+                                <FieldItem label="Redevelopment" value={projectMasterList[0]?.IsRedevelopment === true ? 'YES' : 'NO'} />
                                 <FieldItem label="Project Name" value={projectMasterList[0]?.ProjectName ?? '-'} />
-
-                                <FieldItem label="CTS Number" value={projectMasterList[0]?.CTSNumber ?? '-'} />
-
                                 <FieldItem label="Business Category" value={projectMasterList[0]?.BussinessCategory ?? '-'} />
-
-
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5 pb-4 border-b border-[#135bec2e]">
+                                <FieldItem label="CTS Number" value={projectMasterList[0]?.CTSNumber ?? '-'} />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
-
-                                <FieldItem
-                                    label="Project Area (Sq.ft)"
-                                    value={projectMasterList[0]?.ProjectAreaInSqft?.toString() ?? '0.00'} />
-                                <FieldItem label="Project Location" value={projectMasterList[0]?.ProjectLocation ?? '-'} />
-                            </div>
-
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-2">
                                 Location Details
                             </h4>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pb-4 border-b border-[#135bec2e]">
+
+                                <FieldItem label="Project Location" value={projectMasterList[0]?.ProjectLocation ?? '-'} />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pt-4  pb-4  border-b border-[#135bec2e]">
+                                <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+                                    Google Location
+                                </div>
+                                {projectMasterList[0]?.GoogleLocation !== "" ?
+                                    <span className="text-blue-600 underline cursor-pointer flex items-center"
+                                        onClick={() => window.open(projectMasterList[0]?.GoogleLocation, "_blank")}>
+                                        {projectMasterList[0]?.GoogleLocation}
+                                    </span> : "-"}
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
                                 <FieldItem label="Country" value={projectMasterList[0]?.CountryName ?? '-'} />
                                 <FieldItem label="State" value={projectMasterList[0]?.StateName ?? '-'} />
                                 <FieldItem label="District" value={projectMasterList[0]?.DistrictName ?? '-'} />
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 pt-4 border-b border-[#135bec2e]">
 
                                 <FieldItem label="City" value={projectMasterList[0]?.CityName ?? '-'} />
                                 <FieldItem label="PIN Code" value={projectMasterList[0]?.ZipCode ?? '-'} />
                             </div>
 
                             <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5">
+                                Scheme & Scope Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 border-b border-[#135bec2e]">
+
+                                <FieldItem label="Project Scope" value={projectMasterList[0]?.ProjectScope ?? '-'} />
+                                <FieldItem label="Project Scheme" value={projectMasterList[0]?.ProjectScheme ?? '-'} />
+                                <FieldItem label="Project Sub Scope" value={projectMasterList[0]?.ProjectSubScheme ?? '-'} />
+                            </div>
+
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5">
                                 Project Documentation
                             </h4>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 border-b border-[#135bec2e]">
 
                                 <FieldItem label="RERA Number" value={projectMasterList[0]?.RERANumber ?? '-'} />
 
@@ -608,16 +626,14 @@ export const Header: React.FC<HeaderProps> = ({
                                             : '-'
                                     }
                                 />
-
-
                             </div>
 
 
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5 ">
                                 Project Timeline
                             </h4>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 border-b border-[#135bec2e]">
                                 <FieldItem
                                     label="Survey Date"
                                     value={
@@ -658,6 +674,11 @@ export const Header: React.FC<HeaderProps> = ({
                                 <FieldItem
                                     label="Site Contact Mobile Number"
                                     value={projectMasterList[0]?.SiteContactMobileNumber ?? '-'}
+                                />
+
+                                <FieldItem
+                                    label="Project Status"
+                                    value={projectMasterList[0]?.ProjectStatus ?? '-'}
                                 />
                             </div>
                         </section>

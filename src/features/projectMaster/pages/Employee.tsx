@@ -611,7 +611,7 @@ const Employee: React.FC = () => {
         <DataTable
           data={employeeMasterList}
           columns={projectMasterWithEmployeeColumns}
-          emptyMessage="No Bank Data Found"
+          emptyMessage="No Employee Data Found"
           fixedHeight={true}
           maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}

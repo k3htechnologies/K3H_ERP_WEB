@@ -422,7 +422,7 @@ const Company: React.FC = () => {
         <DataTable
           data={compantMasterList}
           columns={projectMasterWithCompanyColumns}
-          emptyMessage="No Bank Data Found"
+          emptyMessage="No Company Data Found"
           fixedHeight={true}
           maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}

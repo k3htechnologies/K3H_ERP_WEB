@@ -412,21 +412,34 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+<<<<<<< HEAD
     //#region STORE ENQUIRY COLUMNS
     storeEnquiryTableColumns: (columns: string): void => {
         try {
             localStorage.setItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS, columns);
         } catch (error) {
+=======
+    //#region STORE ENQUIRY MASTER COLUMNS
+    storeEnquiryTableColumns:( columns: string): void => {
+        try{
+            localStorage.setItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS, columns);
+        }catch(error){
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
             console.error('Error Enquiry Columns Details:', error)
         }
     },
     //#endregion
+<<<<<<< HEAD
     //#region GET ENQUIRY COLUMNS
+=======
+    //#region GET ENQUIRY MASTER COLUMNS
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
     getEnquiryTableColumns: (): string | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS)
         if (stored) {
             try {
                 return localStorage.getItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS);
+<<<<<<< HEAD
             } catch (error) {
                 console.error('Error reading Enquiry Columns Details:', error)
                 return null
@@ -452,6 +465,10 @@ export const LocalStorageHelper = {
                 return localStorage.getItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
             } catch (error) {
                 console.error('Error reading Litigation Columns Details:', error)
+=======
+            }catch (error) {
+                console.error('Error reading Enquiry Columns Details:', error)
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
                 return null
             }
         }

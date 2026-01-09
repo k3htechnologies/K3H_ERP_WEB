@@ -8,8 +8,13 @@ import type {
     EnquiryDeleteResponse
 } from '@/features/enquiry/models/EnquiryModel'
 import * as E from 'fp-ts/Either';
+<<<<<<< HEAD
 import {  } from '@/features/enquiry/datasources/EnquiryDatasource';
 import { EnquiryDatasourceImpl } from '@/features/enquiry/datasources/EnquiryDatasource';
+=======
+import { } from '@/features/enquiry/datasources/EnquiryDatasource';
+import { EnquiryDatasourceImpl } from '../datasources/EnquiryDatasource';
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
 
 const EnquiryDatasource = new EnquiryDatasourceImpl();
 

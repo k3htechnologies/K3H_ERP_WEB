@@ -37,7 +37,11 @@ import { getStatusColor } from "./Status";
 export const Enquiry: React.FC = () => {
 
     //#region STATE MANAGEMENT
+<<<<<<< HEAD
     const [EnquiryList, setEnquiryMasterList] = useState<EnquiryData[]>([]);
+=======
+    const [EnquiryList, setEnquiryList] = useState<EnquiryData[]>([]);
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
 
@@ -56,7 +60,7 @@ export const Enquiry: React.FC = () => {
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-    //DELETE ENQUIRY MASTER
+    //DELETE ENQUIRY
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
     const [deleteEnquiryData, setDeleteEnquiryData] = useState<EnquiryData | null>(null)
 
@@ -67,16 +71,70 @@ export const Enquiry: React.FC = () => {
     const { canAction, canExport } = useMenuPermissions();
     //#endregion
 
+<<<<<<< HEAD
     //#region ENQUIRY LIST STATE CONTEXT
     const { listState, updateListState, resetFilters, clearEnquiryContext } = useEnquiryListState();
     const { page, filters, sortInfo, searchTerm } = listState;
     //#endregion
 
+=======
+    //#region LOCATION
+    const location = useLocation() as any;
+    //#endregion
+
+    //#region INIT
+    useEffect(() => {
+
+        if (!projectId) return;
+        const incoming = location.state?.listState;
+        const listState = incoming ?? {
+            page: 1, filters: {} as FilterInfo,
+            sortInfo: undefined,
+            searchTerm: ''
+        };
+
+        setPagination({ currentPage: listState.page ?? pagination.currentPage });
+
+        setSortInfo(listState.sortInfo);
+
+        setFilters(listState.filters ?? {});
+
+        setTempFilters(listState.filters ?? {});
+
+        setSearchTerm(listState.searchTerm ?? '');
+
+        if (listState.searchTerm && String(listState.searchTerm).trim()) {
+
+            loadEnquiry(listState.page ?? 1, {
+
+                Name: String(listState.searchTerm).trim()
+            });
+            return;
+        }
+
+        loadEnquiry(listState.page ?? 1, listState.filters ?? {});
+    }, [location.state, projectId]);
+
+    //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
+    useEffect(() => {
+        return () => {
+            debouncedSearch.cancel?.()
+        }
+    }, [debouncedSearch])
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
     //#endregion
 
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
+<<<<<<< HEAD
     const loadEnquiry = useCallback(async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+=======
+    const fetchEnquiryList = async (page: number = pagination.currentPage) => {
+
+        return await loadEnquiry(page, filters);
+    }
+    const loadEnquiry = async (page: number, filterParams: FilterInfo) => {
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
         await runApiWithLoader(
 
             setIsLoading,
@@ -92,7 +150,11 @@ export const Enquiry: React.FC = () => {
                     }
                 }
                 const params: FilterWithPaginationEnquiryRequest = {
+<<<<<<< HEAD
                     PageNumber: pageNum,
+=======
+                    PageNumber: page,
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
                     PageSize: pagination.pageSize,
                     Name: filterParams.Name?.trim() || undefined,
                     EnquiryId: filterParams.EnquiryId ? Number(filterParams.EnquiryId) : undefined,
@@ -104,7 +166,11 @@ export const Enquiry: React.FC = () => {
 
                 if (E.isRight(response)) {
 
+<<<<<<< HEAD
                     setEnquiryMasterList(response.right.Data);
+=======
+                    setEnquiryList(response.right.Data);
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
 
                     setPagination({
                         currentPage: pageNum,
@@ -154,9 +220,19 @@ export const Enquiry: React.FC = () => {
     const debouncedSearch = useDebouncedCallback((value: string, isSerach: boolean = true) => {
         let filterParams: FilterInfo = {};
 
+<<<<<<< HEAD
         if (value.trim() === '') {
             updateListState({ searchTerm: '', filters: {}, page: 1 });
             return;
+=======
+        setSearchTerm(searchValue);
+
+        if (searchValue.trim() === '') {
+
+            fetchEnquiryList();
+
+            return
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
         }
 
         if (isSerach) {
@@ -173,7 +249,7 @@ export const Enquiry: React.FC = () => {
     };
     //#endregion
 
-    //#region CLEAR ENQUIRY MASTER 
+    //#region CLEAR ENQUIRY 
     const clearSearchEnquiry = () => {
         debouncedSearch.cancel?.();
         resetFilters();
@@ -273,17 +349,40 @@ export const Enquiry: React.FC = () => {
     const handleDownloadExcelSampleEnquiry = () => downloadExcelSampleEnquiry()
     //#endregion
 
+<<<<<<< HEAD
 
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((newPage: number) => {
         updateListState({ page: newPage });
     }, [updateListState]);
+=======
+    //#region API | SERVICES CALL TO GET ENQUIRY
+    const getEnquiry = async (filterParams: FilterWithPaginationEnquiryRequest) => {
+
+        return await EnquiryService.apiCallPullEnquiry(filterParams);
+    }
+    //#endregion
+
+    //#region HANDLE PAGE CHNAGE EVENT
+    const handlePageChange = useCallback((page: number) => {
+
+        fetchEnquiryList(page);
+    }, []);
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
 
     //#region TABLE SORT COLUMN
 
+<<<<<<< HEAD
     const handleSortColumn = useCallback((sort: SortInfo) => {
         updateListState({ sortInfo: sort, page: 1 });
     }, [updateListState]);
+=======
+        setSortInfo(sortInfo);
+
+        fetchEnquiryList(1);
+
+    }, []);
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
 
     //#region TABLE PAGINATION INFO
     const EnquiryPaginationInfo: PaginationInfo = useMemo(
@@ -299,10 +398,24 @@ export const Enquiry: React.FC = () => {
     const EnquiryForTable = useMemo(() => EnquiryList, [EnquiryList]);
 
     //#region NAVIGATE TO  VIEW ENQUIRY
+<<<<<<< HEAD
     const handleNavigateToView = useCallback((row: EnquiryData) => {
         updateListState({
             enquiryId: row.EnquiryId ?? 0,
             enquiryName: row.Name ?? '',
+=======
+    const handleNavigateToView = (row: EnquiryData) => {
+        navigate('/enquiry/view', {
+            state: {
+                editEnquiryData: row,
+                listState: {
+                    page: pagination.currentPage,
+                    filters,
+                    sortInfo,
+                    searchTerm
+                }
+            }
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
         });
         navigate('/enquiry/view');
     }, [navigate, updateListState]);
@@ -323,6 +436,7 @@ export const Enquiry: React.FC = () => {
 
     //#region TABLE COLUMNS
     const EnquiryColumns = useMemo<TableColumn[]>(() => [
+<<<<<<< HEAD
 
         {
             key: 'SystemGeneratedCode',
@@ -343,6 +457,11 @@ export const Enquiry: React.FC = () => {
         {
             key: 'Name',
             label: 'Name',
+=======
+        {
+            key: 'Name',
+            label: 'Full Name',
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
             width: '20',
             sortable: true,
             fixed: 'left',
@@ -356,6 +475,7 @@ export const Enquiry: React.FC = () => {
                 />
             )
         },
+<<<<<<< HEAD
         {
             key: 'MobileNumber',
             label: 'Mobile Number',
@@ -365,6 +485,9 @@ export const Enquiry: React.FC = () => {
             render: value => value ? `+91 ${value}` : '-'
 
         },
+=======
+
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
         {
             key: 'EnquiryFollowUpDays',
             label: 'Enquiry Follow Up Days',
@@ -373,6 +496,7 @@ export const Enquiry: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
+
         {
             key: 'FinalStage',
             label: 'Final Stage',
@@ -459,6 +583,7 @@ export const Enquiry: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
+
         {
             key: 'Source',
             label: 'Source',
@@ -557,6 +682,7 @@ export const Enquiry: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
+
         {
             key: 'NextFollowUpDate',
             label: 'Next Follow-Up Date',
@@ -564,8 +690,9 @@ export const Enquiry: React.FC = () => {
             sortable: false,
             align: 'center',
             render: (value?: string) =>
-                value ? formatDate_dd_MonthName_yy(value) : 'N/A'
+                value ? formatDate_dd_MonthName_yy(value) : '-'
         },
+
         {
             key: 'EnquiryDate',
             label: 'Enquiry Date',
@@ -573,7 +700,7 @@ export const Enquiry: React.FC = () => {
             sortable: false,
             align: 'center',
             render: (value?: string) =>
-                value ? formatDate_dd_MonthName_yy(value) : 'N/A'
+                value ? formatDate_dd_MonthName_yy(value) : '-'
         },
         {
             key: 'SalesAdvisor',
@@ -687,7 +814,11 @@ export const Enquiry: React.FC = () => {
     }
     //#endregion
 
+<<<<<<< HEAD
     //#region DELETE ENQUIRY MASTER
+=======
+    //#region DELETE ENQUIRY
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
     const handleDeleteEnquiry = async () => {
 
         setIsConfirmationDialogBoxOpen(false);
@@ -713,7 +844,11 @@ export const Enquiry: React.FC = () => {
 
                 if (E.isRight(response)) {
 
+<<<<<<< HEAD
                     setEnquiryMasterList(prevData => prevData.filter(item => item.EnquiryId !== deleteEnquiryData?.EnquiryId));
+=======
+                    setEnquiryList(prevData => prevData.filter(item => item.EnquiryId !== deleteEnquiryData?.EnquiryId));
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
 
                     setPagination({
                         currentPage: pagination.currentPage,
@@ -752,7 +887,14 @@ export const Enquiry: React.FC = () => {
                 isShowSearchBar
                 searchTerm={searchTerm}
                 searchPlaceholder="Search By Full Name"
+<<<<<<< HEAD
                 onSearchChange={handleSearchEnquiry}
+=======
+                onSearchChange={v => {
+                    setSearchTerm(v);
+                    debouncedSearch(v);
+                }}
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
                 onClearSearch={clearSearchEnquiry}
                 isShowFilterButton
                 filters={filters}
@@ -834,7 +976,11 @@ export const Enquiry: React.FC = () => {
                 <div className="space-y-6">
                     <div className="space-y-4">
                         <Input type="text"
+<<<<<<< HEAD
                             label="Full Name"
+=======
+                            label="Full Name Name"
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
                             value={tempFilters?.Name ?? ''}
                             onChange={e => handleFilterChange('Name', e.target.value)}
                             placeholder="Enter Full Name" />

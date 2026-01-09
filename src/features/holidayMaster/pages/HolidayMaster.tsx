@@ -92,6 +92,12 @@ export const HolidayMaster: React.FC = () => {
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeHolidayMasterColumnsModal, setIsShowCustomizeHolidayMasterColumnsModal] = useState(false);
+<<<<<<< HEAD
+=======
+
+  // RESET CHOOSE FILE
+  const [resetfilePicker, setResetFilePicker] = useState(0);
+>>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -801,6 +807,7 @@ debugger
         saveText={editingHolidayMasterData ? 'Update Holiday' : 'Save Holiday'}
         onreset={handleResetForm}
         resetText='Reset'
+        onreset={handleResetForm}
         loading={isLoading}
         size="xl"
       >
@@ -821,6 +828,7 @@ debugger
             <div>
               <MultiFilePicker
                 label='Holiday URL'
+                key={resetfilePicker}
                 required
                 key={resetfilePicker}
                 error={errors.HolidayURL}

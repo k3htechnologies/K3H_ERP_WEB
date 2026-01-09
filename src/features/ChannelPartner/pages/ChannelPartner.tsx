@@ -664,7 +664,7 @@ export const ChannelPartner: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Channel Partner Name"
+        searchPlaceholder="Search By Full Name"
         onSearchChange={v => {
           setSearchTerm(v);
           debouncedSearch(v);
@@ -753,10 +753,10 @@ export const ChannelPartner: React.FC = () => {
         <div className="space-y-6">
           <div className="space-y-4">
             <Input type="text"
-              label='Channel Partner Name'
+              label='Full Name'
               value={tempFilters?.Name ?? ''}
               onChange={e => handleFilterChange('Name', e.target.value)}
-              placeholder="Enter Channel Partner Name" />
+              placeholder="Enter Full Name" />
           </div>
         </div>
       </Modal>

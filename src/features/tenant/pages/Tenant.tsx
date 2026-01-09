@@ -482,7 +482,7 @@ export const Tenant: React.FC = () => {
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
-  const requiredTenantColumnKeys: string[] = ['FlatType'];
+  const requiredTenantColumnKeys: string[] = ['FlatNumber'];
 
   const allTenantColumnKeys: string[] = tenantColumns.map(c => c.key);
 

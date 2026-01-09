@@ -411,9 +411,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                     return (
                       <>
-                        <div className="text-sm font-medium text-gray-800 truncate">{LocalStorageHelper.getStoredEmployeeData()?.FullName}</div>
-                        <div className="text-xs text-gray-600 truncate">{LocalStorageHelper.getStoredEmployeeData()?.Designation} • {LocalStorageHelper.getStoredEmployeeData()?.Department}</div>
-                        <div className="text-xs text-gray-500 truncate">{LocalStorageHelper.getStoredEmployeeData()?.PersonalMobileNumber}</div>
+                        <div className="w-[200px]">
+                          <div className="text-sm font-medium text-gray-800 truncate">
+                            {LocalStorageHelper.getStoredEmployeeData()?.FullName}
+                          </div>
+
+                          <div className="text-xs text-gray-600 truncate">
+                            {LocalStorageHelper.getStoredEmployeeData()?.Designation} •{" "}
+                            {LocalStorageHelper.getStoredEmployeeData()?.Department}
+                          </div>
+
+                          <div className="text-xs text-gray-500 truncate">
+                            {LocalStorageHelper.getStoredEmployeeData()?.PersonalMobileNumber}
+                          </div>
+                        </div>
+
                       </>
                     )
                   })()}

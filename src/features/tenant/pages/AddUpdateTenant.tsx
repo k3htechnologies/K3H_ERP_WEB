@@ -1112,6 +1112,7 @@ const AddUpdateTenant: React.FC = () => {
       RemoveChequeURL: removedChequeURLs.join(','),
     };
 
+
     setApplicantList(prev => {
       if (editingApplicantData) {
         const updated = [...prev];
@@ -1229,24 +1230,19 @@ const AddUpdateTenant: React.FC = () => {
       fd.append(`${prefix}.PassportNumber`, app.PassportNumber ?? '');
       fd.append(`${prefix}.DrivingLicenseNumber`, app.DrivingLicenseNumber ?? '');
       fd.append(`${prefix}.VotingIdNumber`, app.VotingIdNumber ?? '');
-      // be consistent with your model naming — use same casing as backend expects:
       fd.append(`${prefix}.GSTNumber`, app.GSTNumber ?? app.GSTNumber ?? '');
       fd.append(`${prefix}.BankListMasterId`, String(app.BankListMasterId ?? 0));
       fd.append(`${prefix}.AccountNumber`, app.AccountNumber ?? '');
       fd.append(`${prefix}.IFSCCode`, app.IFSCCode ?? '');
 
-      const appendIfNonEmpty = (key: string, val?: string) => {
-        if (val && String(val).trim().length > 0) fd.append(`${prefix}.${key}`, String(val));
-      };
-
-      appendIfNonEmpty('RemovePhotoURL', (app as any).RemovePhotoURL);
-      appendIfNonEmpty('RemoveAadharCardURL', (app as any).RemoveAadharCardURL);
-      appendIfNonEmpty('RemovePanCardURL', (app as any).RemovePanCardURL);
-      appendIfNonEmpty('RemovePassportURL', (app as any).RemovePassportURL);
-      appendIfNonEmpty('RemoveDrivingLicenseURL', (app as any).RemoveDrivingLicenseURL);
-      appendIfNonEmpty('RemoveVotingIdURL', (app as any).RemoveVotingIdURL);
-      appendIfNonEmpty('RemoveGSTNumberURL', (app as any).RemoveGSTNumberURL);
-      appendIfNonEmpty('RemoveChequeURL', (app as any).RemoveChequeURL);
+      fd.append(`${prefix}.RemovePhotoURL`, app.RemovePhotoURL ?? '');
+      fd.append(`${prefix}.RemoveAadharCardURL`, app.RemoveAadharCardURL ?? '');
+      fd.append(`${prefix}.RemovePanCardURL`, app.RemovePanCardURL ?? '');
+      fd.append(`${prefix}.RemovePassportURL`, app.RemovePassportURL ?? '');
+      fd.append(`${prefix}.RemoveDrivingLicenseURL`, app.RemoveDrivingLicenseURL ?? '');
+      fd.append(`${prefix}.RemoveVotingIdURL`, app.RemoveVotingIdURL ?? '');
+      fd.append(`${prefix}.RemoveGSTNumberURL`, app.RemoveGSTNumberURL ?? '');
+      fd.append(`${prefix}.RemoveChequeURL`, app.RemoveChequeURL ?? '');
 
       const realApp: any = app;
 
@@ -1280,13 +1276,12 @@ const AddUpdateTenant: React.FC = () => {
                 <HeaderActionBar
                   titleText="Applicant Detail : "
                   subTitleText={`${buildingName}`}
-                  subSubTitleText={`${tenantName}`}
+                  subSubTitleText={`${formData.TenantId === 0 ? "" : tenantName}`}
                   isLoading={isLoading}
                 />
 
 
               </div>
-
 
               <div className="ml-4">
                 <Button
@@ -1364,7 +1359,13 @@ const AddUpdateTenant: React.FC = () => {
                     handleFieldChange('FlatType', String(e));
                     handleFieldChange('FlatConfiguration', '');
                   }}
-                  options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                  options={FLAT_UNIT_TYPE
+                    .filter(opt => opt.id !== 'Void')
+                    .map(opt => ({
+                      label: opt.name,
+                      value: opt.id
+                    }))
+                  }
                   error={errors.FlatType}
                   placeholder="Enter Unit Type"
                 />
@@ -1445,7 +1446,7 @@ const AddUpdateTenant: React.FC = () => {
               <div>
                 <Input
                   label="Free Area Offered (SqFt)"
-                  value={Number(formData?.FlatCarpetAreaSqFt) * (formData?.FreeAreaOfferedPercent || 0) / 100}
+                  value={(Number(formData?.FlatCarpetAreaSqFt) * (formData?.FreeAreaOfferedPercent || 0) / 100).toFixed(2)}
                   disabled
                   rightIcon="SqFt"
                 />
@@ -1658,7 +1659,8 @@ const AddUpdateTenant: React.FC = () => {
                 ]}
                 maxFiles={2}
                 maxSizeMB={10}
-                onRemoveExisting={(url) => setRemovedAadharCardURLs((prev) => [...prev, url])}
+                onRemoveExisting={(url) =>
+                  setRemovedAadharCardURLs((prev) => [...prev, url])}
               />
             </div>
 

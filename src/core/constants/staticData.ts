@@ -60,7 +60,7 @@ export const MASTER_DATA = {
 
     applicant_type: ['Applicant', 'Co - Applicant'],
 
-    speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing','Commercial + Residential Sale','Commercial + Residential + Office Sale',],
+    speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing', 'Commercial + Residential Sale', 'Commercial + Residential + Office Sale',],
 
     carpet_area_type: ['MOFA', 'RERA'],
 
@@ -113,6 +113,10 @@ export const MASTER_DATA = {
     ethnicity: ['Bengali', 'Christian', 'Gujarati', 'Jain', 'Muslim', 'Marwari', 'Maharashtrian', 'North Indian', 'Parsi', 'Sindhi', 'south Indian', 'Others'],
 
     nationality: ['Indian', 'NRI'],
+
+    caseType: ['Civil', 'Criminal'],
+
+    courtType: ['Civil Court', 'District Court', 'High Court', 'Session Court', 'Supreme Court'],
 
     amenities: [
         '24x7 Security',
@@ -228,6 +232,8 @@ export const SOURCE_OF_FUNDING_TYPE = toOptions(MASTER_DATA.sourceOfFunding)
 export const ETHNICITY_TYPE_OPTION = toOptions(MASTER_DATA.ethnicity)
 export const POSSESSION_TYPE_OPTIONS = toOptions(MASTER_DATA.possessionType)
 export const NATIONALITY_TYPE_OPTION = toOptions(MASTER_DATA.nationality)
+export const CASE_TYPE_OPTION=toOptions(MASTER_DATA.caseType)
+export const COURT_TYPE_OPTION=toOptions(MASTER_DATA.courtType)
 export const BANK_ACCOUNT_TYPE = toOptions(MASTER_DATA.bankAccountType)
 export const LAND_OWNERSHIP_TYPE = toOptions(MASTER_DATA.landOwnershipType)
 export const FLAT_UNIT_TYPE = toOptions(MASTER_DATA.flat_unit_Type)

@@ -104,6 +104,8 @@ import EarningMaster from '@/features/earningMaster/pages/EarningMaster';
 import ProposedPlan from '@/features/proposedOffer/pages/ProposedPlan';
 import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
 import Litigation from '@/features/litigation/pages/Litigation';
+import AddUpdateLitigation from '@/features/litigation/pages/AddUpdateLitigation';
+import ViewLitigation from '@/features/litigation/pages/ViewLitigation';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -239,7 +241,11 @@ function App() {
 
             <Route path="event" element={<Event />} />
 
+            {/* LITIGATION */}
             <Route path='litigation' element={<Litigation />} />
+            <Route path='litigation/add/:LitigationId?' element={<AddUpdateLitigation />} />
+            <Route path='litigation/view' element={<ViewLitigation />} />
+
             {/* SALES */}
             <Route path="channelPartner" element={<ChannelPartner />} />
             <Route path="channelPartner/view" element={<ViewChannelPartner />} />

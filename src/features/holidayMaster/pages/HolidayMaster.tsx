@@ -439,7 +439,8 @@ export const HolidayMaster: React.FC = () => {
 
           <div className="space-y-4">
 
-            <FieldItem label="Week Off Policy Name" value={data.HolidayName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Holiday Name" value={data.HolidayName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Holiday Photo" urls={data.HolidayURL} isIcon isRow withBorder={true} />
 
             <div className="space-y-4">
               <h4 className="text-lg font-semibold pb-2">
@@ -563,7 +564,7 @@ export const HolidayMaster: React.FC = () => {
   //#region PUSH DATA
 
   const PushHolidayFormData = (): FormData => {
-
+debugger
     const fd = new FormData();
     fd.append('HolidayMasterId', formData.HolidayMasterId.toString());
     fd.append('Uniquekey', formData.Uniquekey ?? '');
@@ -829,8 +830,7 @@ export const HolidayMaster: React.FC = () => {
                 allowedTypes={[
                   "image/jpeg",
                   "image/png",
-                  "application/pdf",
-                ]}
+                  "image/jpg"]}
                 maxFiles={5}
                 maxSizeMB={50}
               />

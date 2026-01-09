@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { COLORS } from "@/core/constants";
 
 export interface TabItem {
@@ -22,8 +22,21 @@ export const Tabs: React.FC<TabsProps> = ({
   isChips = false
 }) => {
 
-  const [active, setActive] = useState(defaultActive || tabs[0].id);
+  const [active, setActive] = useState<string | undefined>(tabs[0]?.id);
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (defaultActive) {
+      setActive(defaultActive);
+    }
+  }, [defaultActive]);
+
+  // 🔹 Auto-select first tab when tabs change
+  useEffect(() => {
+    if (tabs.length > 0 && !defaultActive) {
+      setActive(tabs[0].id);
+    }
+  }, [tabs]);
 
   const handleChange = (tab: TabItem) => {
     setActive(tab.id);

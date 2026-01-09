@@ -114,65 +114,6 @@ export const MASTER_DATA = {
 
     nationality: ['Indian', 'NRI'],
 
-    amenities: [
-        '24x7 Security',
-        'Amphitheatre',
-        'ATM',
-        'Badminton Court',
-        'Banquet Hall',
-        'Basketball Court',
-        'Billiards Room',
-        'Cafeteria',
-        'Children Play Area',
-        'Club House',
-        'Conference Room',
-        'Convenience Store',
-        'Co-working Space',
-        'Covered Parking',
-        'CCTV Surveillance',
-        'Creche',
-        'Cycling Track',
-        'Day Care Centre',
-        'EV Charging Points',
-        'Earthquake Resistant Structure',
-        'Fire Fighting System',
-        'First Aid Room',
-        'Garden',
-        'Garbage Disposal System',
-        'Gym',
-        'Indoor Games',
-        'Intercom Facility',
-        'Jacuzzi',
-        'Jogging Track',
-        'Kids Pool',
-        'Laundry Service',
-        'Lift',
-        'Library',
-        'Lobby',
-        'Meditation Area',
-        'Parking',
-        'Pet Care Area',
-        'Pet Park',
-        'Pharmacy',
-        'Power Backup',
-        'Rainwater Harvesting',
-        'Reading Room',
-        'School Bus Bay',
-        'Security Cabin',
-        'Sewage Treatment Plant',
-        'Service Lift',
-        'Society Office',
-        'Spa',
-        'Squash Court',
-        'Steam Room',
-        'Swimming Pool',
-        'Table Tennis',
-        'Temple / Prayer Hall',
-        'Tennis Court',
-        'Visitor Parking',
-        'Water Supply',
-        'Yoga Room'
-    ],
     reasonsOfJobLeaving: [
         'Better career growth opportunity',
         'Business shutdown',
@@ -295,8 +236,106 @@ export const ROAD_WIDTH = toOptions(MASTER_DATA.road_width)
 export const CALENDER_VIEW_TYPE = toOptions(MASTER_DATA.calender_view_type)
 export const EVENT_TYPE = toOptions(MASTER_DATA.event_type)
 export const CONFERENCE_ROOM_NAME = toOptions(MASTER_DATA.conference_room_name)
-export const AMENITIES_OPTIONS = toOptions(MASTER_DATA.amenities)
 export const REASONS_OF_JOB_LEAVING_OPTIONS = toOptions(MASTER_DATA.reasonsOfJobLeaving)
+
+// ============================================================================
+// AMENITY CATEGORIES (Only for UI Grouping)
+// ============================================================================
+
+export const AMENITY_CATEGORIES: Record<string, readonly string[]> = {
+  "Safety & Security": [
+    "24x7 Security",
+    "CCTV Surveillance",
+    "Fire Fighting System",
+    "First Aid Room",
+    "Intercom Facility",
+    "Security Cabin",
+    "Earthquake Resistant Structure"
+  ],
+
+  "Sports & Fitness": [
+    "Swimming Pool",
+    "Gym",
+    "Yoga Room",
+    "Jogging Track",
+    "Badminton Court",
+    "Basketball Court",
+    "Tennis Court",
+    "Squash Court",
+    "Table Tennis",
+    "Kids Pool",
+    "Indoor Games",
+    "Cycling Track"
+  ],
+
+  "Community & Social Spaces": [
+    "Club House",
+    "Banquet Hall",
+    "Amphitheatre",
+    "Library",
+    "Reading Room",
+    "Society Office",
+    "Conference Room",
+    "Temple / Prayer Hall"
+  ],
+
+  "Kids & Family": [
+    "Children Play Area",
+    "Creche",
+    "Day Care Centre",
+    "School Bus Bay"
+  ],
+
+  "Pets - Friendly Facilities": [
+    "Pet Park",
+    "Pet Care Area"
+  ],
+
+   "Work & Business": [
+    "Co - Working Space",
+    "Conference Room",
+    "Society Office"
+  ],
+  
+  "Convenience & Utilities": [
+    "Lift",
+    "Power Backup",
+    "Water Supply",
+    "Parking",
+    "Visitor Parking",
+    "Covered Parking",
+    "EV Charging Points",
+    "Laundry Service",
+    "Garbage Disposal System",
+    "Sewage Treatment Plant",
+    "Rainwater Harvesting",
+    "Service Lift"
+  ],
+  "Health & Wellness": [
+    "Spa",
+    "Steam Room",
+    "Meditation Area",
+    "Jacuzzi"
+  ],
+
+  "Commercial & Services": [
+    "ATM",
+    "Pharmacy",
+    "Convenience Store",
+    "Co-working Space",
+    "Cafeteria"
+  ]
+}
+export const AMENITIES_BY_CATEGORY = Object.entries(AMENITY_CATEGORIES).map(
+  ([category, items]) => ({
+    category,
+    options: items.map(item => ({
+      label: item,
+      value: item
+    }))
+  })
+)
+
 
 
 

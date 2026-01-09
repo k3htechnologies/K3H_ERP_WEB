@@ -32,16 +32,18 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
 
 
             <div className="flex items-center gap-2">
-                <Button
-                    color="primary"
-                    size="sm"
-                    onClick={onCancel}
-                    leftIcon={<ChevronLeft className="w-5 h-5 text-gray-700" strokeWidth={3.0} />}
-                    title={cancelText}
-                    style={{ backgroundColor: "#DBEAFE" }}
-                    className="hover:bg-[#DBEAFE]"
-                >
-                </Button>
+                {onCancel && (
+                    <Button
+                        color="primary"
+                        size="sm"
+                        onClick={onCancel}
+                        leftIcon={<ChevronLeft className="w-5 h-5 text-gray-700" strokeWidth={3.0} />}
+                        title={cancelText}
+                        style={{ backgroundColor: "#DBEAFE" }}
+                        className="hover:bg-[#DBEAFE]"
+                    >
+                    </Button>
+                )}
 
                 <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2 pl-3">
 

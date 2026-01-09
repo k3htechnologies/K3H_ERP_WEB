@@ -789,7 +789,7 @@ const ProjectDocument: React.FC = () => {
       newErrors.ProjectDocumentStatus = "Status is required"
     }
 
-    if (!hasAnyDocumentFile(projectDocumentFiles, projectDocumentURL, RemoveProjectDocumentUrls)) {
+    if (formData.ProjectDocumentStatus?.toUpperCase()==="ISSUED" && !hasAnyDocumentFile(projectDocumentFiles, projectDocumentURL, RemoveProjectDocumentUrls)) {
       newErrors.ProjectDocumentURL = "File is required.";
     }
 
@@ -1325,7 +1325,7 @@ const ProjectDocument: React.FC = () => {
         }}
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(0, e)}
-        saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
+        saveText={editingDocumentData ? 'Update' : 'Add'}
         resetText='Reset'
         loading={isLoading}
         size='xl'
@@ -1337,7 +1337,7 @@ const ProjectDocument: React.FC = () => {
                 <Input
                   label='Document'
                   required
-                  readOnly
+                  disabled
                   type="text"
                   value={formData.ProjectDocumentName}
                   maxLength={250}
@@ -1345,13 +1345,6 @@ const ProjectDocument: React.FC = () => {
                 />
                 : ""}
 
-            </div>
-            <div>
-              <DatePickerInput
-                label="Expiry Date"
-                value={formatDate_dd_mm_yyyy(formData.ProjectDocumentExpiryDate)}
-                onChange={(val) => handleFieldChange('ProjectDocumentExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-              />
             </div>
             <div>
               <SinglePageSelection
@@ -1368,7 +1361,7 @@ const ProjectDocument: React.FC = () => {
               <MultiFilePicker
                 label="Files"
                 placeholder='Select Files'
-                required
+                required={formData.ProjectDocumentStatus?.toUpperCase()==="ISSUED" ? true:false}
                 value={projectDocumentFiles}
                 onChange={setProjectDocumentFiles}
                 availableFilesURL={projectDocumentURL ?? ""}
@@ -1382,9 +1375,16 @@ const ProjectDocument: React.FC = () => {
               />
             </div>
             <div>
+              <DatePickerInput
+                label="Expiry Date"
+                value={formatDate_dd_mm_yyyy(formData.ProjectDocumentExpiryDate)}
+                onChange={(val) => handleFieldChange('ProjectDocumentExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+              />
+            </div>
+
+            <div>
               <Input
                 label='Remark'
-
                 type="text"
                 value={formData.ProjectDocumentRemark}
                 maxLength={250}

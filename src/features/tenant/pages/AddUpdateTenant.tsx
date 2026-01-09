@@ -15,9 +15,9 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { APPLICANT_TYPE, COMMERCIAL_FLAT_CONFIGURATION, FLAT_UNIT_FACING, FLAT_UNIT_TYPE, RESIDENTIAL_FLAT_CONFIGURATION } from "@/core/constants";
-import { calculateMergedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidAccount, isValidDrivingLicenseNumber, isValidGST, isValidIFSC, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from "@/core/utils/fileValidation";
+import { allowPercentage, calculateMergedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidAccount, isValidDrivingLicenseNumber, isValidGST, isValidIFSC, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from "@/core/utils/fileValidation";
 import { Button } from "@/ui/components/forms";
-import { ChevronRight, Edit, IdCardIcon, Trash2 } from "lucide-react";
+import { Edit, IdCardIcon, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
@@ -26,6 +26,7 @@ import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialVa
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useTenantListState } from "@/features/tenant/context/TenantListStateContext";
+import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 
 
 const initialFormState = (): AddUpdateTenantRequest => ({
@@ -1276,17 +1277,14 @@ const AddUpdateTenant: React.FC = () => {
           <div className="space-y-4 pb-3">
             <div className="flex items-center justify-between">
               <div className="flex-1 border-b border-gray-300 pb-2">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <HeaderActionBar
+                  titleText="Applicant Detail : "
+                  subTitleText={`${buildingName}`}
+                  subSubTitleText={`${tenantName}`}
+                  isLoading={isLoading}
+                />
 
-                  <span>Applicant Detail :</span>
 
-                  <span className="flex items-center gap-2">
-                    {buildingName}
-                    <ChevronRight className="h-5 w-5 text-gray-500" />
-                    {tenantName}
-                  </span>
-
-                </h3>
               </div>
 
 
@@ -1431,7 +1429,13 @@ const AddUpdateTenant: React.FC = () => {
                 <Input
                   label="Free Area Offered (%)"
                   value={formData.FreeAreaOfferedPercent ?? ''}
-                  onChange={(e) => handleFieldChange("FreeAreaOfferedPercent", filterNumbersWithDecimal(e.target.value))}
+                  onChange={(e) => {
+                    const val = allowPercentage(e.target.value);
+                    if (val !== null) {
+
+                      handleFieldChange("FreeAreaOfferedPercent", filterNumbersWithDecimal(e.target.value))
+                    }
+                  }}
                   error={errors.FreeAreaOfferedPercent}
                   placeholder="Enter Free Area Offered"
                   rightIcon="%"

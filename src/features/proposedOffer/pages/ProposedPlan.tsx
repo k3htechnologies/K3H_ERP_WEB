@@ -16,9 +16,9 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { filterNumbers } from '@/core/utils/fileValidation';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
-import { AMENITIES_OPTIONS } from '@/core/constants';
+import { AMENITIES_BY_CATEGORY} from '@/core/constants';
 import MultiFilePicker from '@/ui/components/ImagePicker/MultiFilePicker';
-import MultiSelectCheckBox from '@/ui/components/forms/MultiselectCheckBox';
+import MultiSelectCheckBoxWithCategory from '@/ui/components/forms/MultiSelectCheckBoxWithCategory';
 
 //#region INITIAL FORM STATE - PROPOSED PLAN
 const initialFormStateProposedPlan = (): AddUpdateProposedOfferProposedPlanRequest => ({
@@ -298,20 +298,17 @@ export const ProposedPlan: React.FC = () => {
                         </div>
                     </div>
                     <div>
-                        
-                        <MultiSelectCheckBox
+
+                        <MultiSelectCheckBoxWithCategory
                             label="Select Amenities"
-                            placeholder='Search Amenities'
-                            options={AMENITIES_OPTIONS.map(a => ({
-                                label: a.name,
-                                value: a.id
-                            }))}
+                            placeholder="Search Amenities"
+                            options={AMENITIES_BY_CATEGORY}
                             value={
                                 Array.isArray(formDataProposedPlan.Amenities)
                                     ? formDataProposedPlan.Amenities
-                                    : (formDataProposedPlan.Amenities
+                                    : formDataProposedPlan.Amenities
                                         ? formDataProposedPlan.Amenities.split(",")
-                                        : [])
+                                        : []
                             }
                             onChange={(values) =>
                                 handleFieldChangeProposedPlan("Amenities", values)

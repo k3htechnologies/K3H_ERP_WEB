@@ -52,7 +52,7 @@ export const MASTER_DATA = {
 
     flat_unit_Type: ['Commercial', 'Gym', 'Residential', 'Void'],
 
-    residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', 'Duplex'],
+    residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', 'DUPLEX'],
 
     commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
 

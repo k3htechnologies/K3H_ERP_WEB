@@ -18,7 +18,6 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
     titleText,
     subTitleText,
     subSubTitleText,
-    cancelText = "Cancel",
     EditText = "Edit",
     onCancel,
     onEdit,
@@ -38,7 +37,6 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                         size="sm"
                         onClick={onCancel}
                         leftIcon={<ChevronLeft className="w-5 h-5 text-gray-700" strokeWidth={3.0} />}
-                        title={cancelText}
                         style={{ backgroundColor: "#DBEAFE" }}
                         className="hover:bg-[#DBEAFE]"
                     >

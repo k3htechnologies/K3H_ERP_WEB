@@ -271,11 +271,11 @@ export const ViewTenant: React.FC = () => {
                                                 <div className={`lg:col-span-3 pt-3 ${isLast ? '' : 'pb-3'}`}>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                         <FieldItem label="Type" value={tenantData.ApplicantType} className='text-blue-900' />
-                                                        <FieldItem label="Full Name" value={tenantData.ApplicantName} urls={tenantData?.PhotoURL} isIcon />
+                                                        <FieldItem label="Applicant Name" value={tenantData.ApplicantName} urls={tenantData?.PhotoURL} isIcon />
                                                         <FieldItem label="Contact Number" value={tenantData?.ApplicantMobileNumber} />
                                                         <FieldItem label="E-Mail ID" value={tenantData?.ApplicantEmailId} />
 
-                                                        <FieldItem label="Aadhar Card No." value={tenantData?.AadharCardNumber} urls={tenantData?.AadharCardURL} isIcon />
+                                                        <FieldItem label="Aadhaar Card No." value={tenantData?.AadharCardNumber} urls={tenantData?.AadharCardURL} isIcon />
                                                         <FieldItem label="PAN No." value={tenantData?.PanNumber} urls={tenantData?.PanCardURL} isIcon />
                                                         <FieldItem label="Driving License" value={tenantData?.DrivingLicenseNumber} urls={tenantData?.DrivingLicenseURL} isIcon />
                                                         <FieldItem label="Voting ID No." value={tenantData?.VotingIdNumber} urls={tenantData?.VotingIdURL} isIcon />
@@ -312,18 +312,24 @@ export const ViewTenant: React.FC = () => {
 
                                     <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Unit Number" value={editTenantData?.FlatNumber} />
+                                            <FieldItem label="Unit / Annexure / Survey Number" value={editTenantData?.FlatNumber} />
                                             <FieldItem label="Unit Type" value={editTenantData?.FlatType} />
-                                            <FieldItem label="Unit Configuration" value={editTenantData?.FlatConfiguration} />
-
+                                            {editTenantData?.FlatType.toUpperCase() !== "GYM"
+                                                ?
+                                                <FieldItem label="Unit Configuration" value={editTenantData?.FlatConfiguration} />
+                                                : <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.FlatCarpetAreaSqFt} />
+                                            }
 
                                         </div>
                                     </div>
 
-
                                     <div className="lg:col-span-3 pt-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.FlatCarpetAreaSqFt} />
+                                            {editTenantData?.FlatType.toUpperCase() !== "GYM"
+                                                ?
+                                                <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.FlatCarpetAreaSqFt} />
+                                                : ""
+                                            }
                                             <FieldItem label="Unit Facing" value={editTenantData?.Facing} />
 
                                         </div>
@@ -356,7 +362,7 @@ export const ViewTenant: React.FC = () => {
 
 
                             </section>
-                            {/* {editTenantData?.Flat==="" ?? ( */}
+                            {editTenantData?.Flat==="" && (
                             <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                     New Unit Details
@@ -398,7 +404,7 @@ export const ViewTenant: React.FC = () => {
 
 
                             </section>
-                            {/* )} */}
+                            )}
                         </div>
                         {/* ================= RIGHT SIDE (1/3) ================= */}
                         <div className="lg:col-span-1 space-y-6">

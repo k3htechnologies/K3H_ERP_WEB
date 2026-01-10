@@ -410,6 +410,39 @@ export const createFileUrlString = (mergedFiles: (File | string)[]): string => {
 };
 
 // ----------------------------------
+// 🔹 CALCULATED HOW MUCH REMOVED FILE WE MARGE FOR VALIDATION
+// ----------------------------------
+
+export const calculateRemovedFiles = (
+      originalFiles?: (File | string)[],
+      currentStateFiles?: (File | string)[],
+      existingRemovedUrls?: string[]
+    ): string[] => {
+      if (!originalFiles || originalFiles.length === 0) return existingRemovedUrls || [];
+      
+      
+      // Get original file URLs (strings only)
+      const originalUrls = originalFiles
+        .filter(file => typeof file === 'string')
+        .map(url => String(url).trim());
+      
+      // Get current state file URLs (strings only)
+      const currentStateUrls = (currentStateFiles || [])
+        .filter(file => typeof file === 'string')
+        .map(url => String(url).trim());
+      
+      const currentStateUrlSet = new Set(currentStateUrls);
+      
+      // Find files that were in original but not in current state (removed via onChange)
+      const removedViaOnChange = originalUrls.filter(url => !currentStateUrlSet.has(url));
+      
+      // Combine existing removed URLs with newly detected removed files
+      const allRemoved = [...(existingRemovedUrls || []), ...removedViaOnChange];
+      
+      // Remove duplicates
+      return Array.from(new Set(allRemoved.map(url => url.trim()).filter(Boolean)));
+    };
+// ----------------------------------
 //HAS ANY FILE PRESENT IN FILE DayPicker
 // ----------------------------------
 

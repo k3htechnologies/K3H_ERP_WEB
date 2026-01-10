@@ -15,7 +15,7 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { APPLICANT_TYPE, COMMERCIAL_FLAT_CONFIGURATION, FLAT_UNIT_FACING, FLAT_UNIT_TYPE, RESIDENTIAL_FLAT_CONFIGURATION } from "@/core/constants";
-import { allowPercentage, calculateMergedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidAccount, isValidDrivingLicenseNumber, isValidGST, isValidIFSC, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from "@/core/utils/fileValidation";
+import { allowPercentage, calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidAccount, isValidDrivingLicenseNumber, isValidGST, isValidIFSC, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from "@/core/utils/fileValidation";
 import { Button } from "@/ui/components/forms";
 import { Edit, IdCardIcon, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
@@ -327,17 +327,13 @@ const AddUpdateTenant: React.FC = () => {
 
 
     if (!formData.FlatNumber?.trim()) {
-      newErrors.FlatNumber = 'Flat Number is required.'
-    } else if (formData.FlatNumber.trim().length > 50) {
-      newErrors.FlatNumber = 'Flat Number must be at most 50 characters'
+      newErrors.FlatNumber = 'Unit / Annexure / Survey Number is required.'
+    } else if (formData.FlatNumber.trim().length > 15) {
+      newErrors.FlatNumber = 'Unit / Annexure / Survey Number must be at most 50 characters'
     }
 
     if (!formData.FlatType?.trim()) {
-      newErrors.FlatType = 'Flat Type is required.'
-    }
-
-    if (formData.FlatCarpetAreaSqFt != null && formData.FlatCarpetAreaSqFt < 0) {
-      newErrors.FlatCarpetAreaSqFt = 'Carpet area must be positive';
+      newErrors.FlatType = 'Unit Type is required.'
     }
 
     if (formData.TotalAreaSqFt != null && formData.TotalAreaSqFt < 0) {
@@ -345,12 +341,12 @@ const AddUpdateTenant: React.FC = () => {
     }
     if (formData.FlatType?.trim().toUpperCase() !== 'GYM') {
       if (!formData.FlatConfiguration?.trim()) {
-        newErrors.FlatConfiguration = 'Flat Configuration is required.'
+        newErrors.FlatConfiguration = 'Unit Configuration is required.'
       }
     }
 
     if (!formData.Facing?.trim()) {
-      newErrors.Facing = 'Facing is required.'
+      newErrors.Facing = 'Unit Facing is required.'
     }
 
     return {
@@ -520,7 +516,7 @@ const AddUpdateTenant: React.FC = () => {
     () => [
       {
         key: 'ApplicantName',
-        label: 'Name',
+        label: 'Applicant Name',
         width: '15',
         sortable: false,
         align: 'left',
@@ -564,7 +560,7 @@ const AddUpdateTenant: React.FC = () => {
       },
       {
         key: 'AadharCardNumber',
-        label: 'Aadhar',
+        label: 'Aadhaar',
         width: '15',
         sortable: false,
         align: 'center',
@@ -667,6 +663,15 @@ const AddUpdateTenant: React.FC = () => {
         width: '25',
         sortable: false,
         align: 'left',
+        render: (value) => value || '-'
+      },
+
+      {
+        key: 'AccountNumber',
+        label: 'Account Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
         render: (value: string, row: any) => {
           return (
             <MultiImageViewer
@@ -676,15 +681,7 @@ const AddUpdateTenant: React.FC = () => {
             />
           );
         }
-      },
-
-      {
-        key: 'AccountNumber',
-        label: 'Account Number',
-        width: '15',
-        sortable: false,
-        align: 'center',
-        render: (value) => value || '-'
+        
       },
       {
         key: 'IFSCCode',
@@ -1005,37 +1002,69 @@ const AddUpdateTenant: React.FC = () => {
 
     }
 
-    // Merge files for each document type
+    const finalRemovedPhotoURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, removedApplicantPhotoURLs)
+      : removedApplicantPhotoURLs;
+
+    const finalRemovedAadharURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._aadharFiles, aadharCardFiles, removedAadharCardURLs)
+      : removedAadharCardURLs;
+
+    const finalRemovedPanURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._panFiles, panCardFiles, removedPanCardURLs)
+      : removedPanCardURLs;
+
+    const finalRemovedPassportURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._passportFiles, passportFiles, removedPassportURLs)
+      : removedPassportURLs;
+
+    const finalRemovedDrivingURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._drivingFiles, drivingLicenseFiles, removedDrivingLicenseURLs)
+      : removedDrivingLicenseURLs;
+
+    const finalRemovedVotingURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._votingFiles, votingIdFiles, removedVotingIdURLs)
+      : removedVotingIdURLs;
+
+    const finalRemovedGstURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._gstFiles, gstFiles, removedGstURLs)
+      : removedGstURLs;
+
+    const finalRemovedChequeURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._chequeFiles, chequeFiles, removedChequeURLs)
+      : removedChequeURLs;
+
+    // Merge files for each document type (using final removed URLs)
     const mergedPhotoFiles = editingApplicantData
-      ? mergeFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, removedApplicantPhotoURLs)
+      ? mergeFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, finalRemovedPhotoURLs)
       : applicantPhotoFiles.slice();
 
     const mergedAadharFiles = editingApplicantData
-      ? mergeFiles(editingApplicantData.row._aadharFiles, aadharCardFiles, removedAadharCardURLs)
+      ? mergeFiles(editingApplicantData.row._aadharFiles, aadharCardFiles, finalRemovedAadharURLs)
       : aadharCardFiles.slice();
 
     const mergedPanFiles = editingApplicantData
-      ? mergeFiles(editingApplicantData.row._panFiles, panCardFiles, removedPanCardURLs)
+      ? mergeFiles(editingApplicantData.row._panFiles, panCardFiles, finalRemovedPanURLs)
       : panCardFiles.slice();
 
     const mergedPassportFiles = editingApplicantData
-      ? mergeFiles(editingApplicantData.row._passportFiles, passportFiles, removedPassportURLs)
+      ? mergeFiles(editingApplicantData.row._passportFiles, passportFiles, finalRemovedPassportURLs)
       : passportFiles.slice();
 
     const mergedDrivingFiles = editingApplicantData
-      ? mergeFiles(editingApplicantData.row._drivingFiles, drivingLicenseFiles, removedDrivingLicenseURLs)
+      ? mergeFiles(editingApplicantData.row._drivingFiles, drivingLicenseFiles, finalRemovedDrivingURLs)
       : drivingLicenseFiles.slice();
 
     const mergedVotingFiles = editingApplicantData
-      ? mergeFiles(editingApplicantData.row._votingFiles, votingIdFiles, removedVotingIdURLs)
+      ? mergeFiles(editingApplicantData.row._votingFiles, votingIdFiles, finalRemovedVotingURLs)
       : votingIdFiles.slice();
 
     const mergedGstFiles = editingApplicantData
-      ? mergeFiles(editingApplicantData.row._gstFiles, gstFiles, removedGstURLs)
+      ? mergeFiles(editingApplicantData.row._gstFiles, gstFiles, finalRemovedGstURLs)
       : gstFiles.slice();
 
     const mergedChequeFiles = editingApplicantData
-      ? mergeFiles(editingApplicantData.row._chequeFiles, chequeFiles, removedChequeURLs)
+      ? mergeFiles(editingApplicantData.row._chequeFiles, chequeFiles, finalRemovedChequeURLs)
       : chequeFiles.slice();
 
     const applicantToSave: TenantApplicant & {
@@ -1102,14 +1131,15 @@ const AddUpdateTenant: React.FC = () => {
       _gstFiles: mergedGstFiles,
       _chequeFiles: mergedChequeFiles,
 
-      RemovePhotoURL: removedApplicantPhotoURLs.join(','),
-      RemoveAadharCardURL: removedAadharCardURLs.join(','),
-      RemovePanCardURL: removedPanCardURLs.join(','),
-      RemovePassportURL: removedPassportURLs.join(','),
-      RemoveDrivingLicenseURL: removedDrivingLicenseURLs.join(','),
-      RemoveVotingIdURL: removedVotingIdURLs.join(','),
-      RemoveGSTNumberURL: removedGstURLs.join(','),
-      RemoveChequeURL: removedChequeURLs.join(','),
+      RemovePhotoURL: finalRemovedPhotoURLs.join(','),
+      RemoveAadharCardURL: finalRemovedAadharURLs.join(','),
+      RemovePanCardURL: finalRemovedPanURLs.join(','),
+      RemovePassportURL: finalRemovedPassportURLs.join(','),
+      RemoveDrivingLicenseURL: finalRemovedDrivingURLs.join(','),
+      RemoveVotingIdURL: finalRemovedVotingURLs.join(','),
+      RemoveGSTNumberURL: finalRemovedGstURLs.join(','),
+      RemoveChequeURL: finalRemovedChequeURLs.join(','),
+
     };
 
 
@@ -1341,11 +1371,12 @@ const AddUpdateTenant: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <Input
-                  label="Unit Number"
+                  label="Unit / Annexure / Survey Number"
                   value={formData.FlatNumber}
                   required
                   onChange={e => handleFieldChange('FlatNumber', e.target.value)}
                   error={errors.FlatNumber}
+                  maxLength={15}
                   placeholder="Enter Unit Number"
                 />
               </div>
@@ -1399,7 +1430,6 @@ const AddUpdateTenant: React.FC = () => {
                 <Input
                   label="Carpet Area (SqFt)"
                   value={formData.FlatCarpetAreaSqFt ?? ''}
-                  required
                   onChange={e => handleFieldChange('FlatCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
                   error={errors.FlatCarpetAreaSqFt}
                   placeholder="Enter Carpet Area"

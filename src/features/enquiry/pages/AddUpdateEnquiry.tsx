@@ -13,13 +13,8 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { EnquiryService } from "../services/EnquiryServices";
-<<<<<<< HEAD
 import { filterEmail, filterMobile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
 import { Mail, Phone } from "lucide-react";
-=======
-import { filterEmail, filterMobile, isValidEmail } from "@/core/utils/fileValidation";
-import { Mail } from "lucide-react";
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { ACCOMODATION_TYPE_OPTIONS, AGE_TYPE_OPTION, BUDGET_TYPE_OPTIONS, COMMERCIAL_FLAT_CONFIGURATION, CUSTOMER_CLASSIFICATION_TYPE, DESIRED_FLOOR_BAND, ETHNICITY_TYPE_OPTION, FINAL_STAGE_DETAILS_TYPE_OPTIONS, FINAL_STAGE_TYPE_OPTIONS, NEIGHBORHOOD_PLACES_TYPE_OPTION, OCCUPATION_TYPE_OPTIONS, POSSESSION_TYPE_OPTIONS, REQUIREMENT_TYPE_OPTIONS, RESIDENTIAL_FLAT_CONFIGURATION, SOURCE_OF_FUNDING_TYPE, SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from "@/core/constants";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
@@ -84,14 +79,14 @@ export const AddUpdateEnquiry: React.FC = () => {
     // NAVIGATE
     const navigate = useNavigate();
 
-    // GET VALUE FROM URL ENQUIRY ID
+    // GET VALUE FROM URL ENQUIRY MASTER ID
     const { EnquiryId } = useParams<{ EnquiryId?: string }>();
 
     const { projectId } = useProject();
 
-    const EnquiryMasterId = EnquiryId ? Number(EnquiryId) : 0;
+    const enquiryMasterId = EnquiryId ? Number(EnquiryId) : 0;
 
-    const isAddMode = EnquiryMasterId === 0;
+    const isAddMode = enquiryMasterId === 0;
 
     const [nationality, setNationality] = useState<string>("Indian");
 
@@ -140,11 +135,7 @@ export const AddUpdateEnquiry: React.FC = () => {
     }, [EnquiryId]);
     //#endregion
 
-<<<<<<< HEAD
     //#region FETCH ENQUIRY  MASTER DETAILS
-=======
-    //#region FETCH ENQUIRY DETAILS
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
     const fetchEnquiryDetails = async () => {
         await runApiWithLoader(
 
@@ -157,7 +148,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                 const params: FilterWithPaginationEnquiryRequest = {
                     PageNumber: 1,
                     PageSize: 1,
-                    EnquiryId: EnquiryMasterId,
+                    EnquiryId: enquiryMasterId,
                     ProjectId: Number(projectId)
                 };
 
@@ -240,15 +231,9 @@ export const AddUpdateEnquiry: React.FC = () => {
         const newErrors: { [key: string]: string } = {};
 
         if (!formData.Name) {
-<<<<<<< HEAD
             newErrors.Name = 'Full Name is required.';
         } else if (formData.Name.trim().length > 50) {
             newErrors.Name = 'Full Name must be at most 50 characters';
-=======
-            newErrors.Name = 'FULL Name is required.';
-        } else if (formData.Name.trim().length > 50) {
-            newErrors.Name = 'FULL Name must be at most 50 characters';
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
         }
 
         if (!formData.MobileNumber) {
@@ -257,7 +242,6 @@ export const AddUpdateEnquiry: React.FC = () => {
             newErrors.MobileNumber = 'Enter a valid 10-Digit Mobile Number'
         }
 
-<<<<<<< HEAD
 
         if (!formData.EmailId) {
             newErrors.EmailId = 'Email Id is required.';
@@ -277,23 +261,13 @@ export const AddUpdateEnquiry: React.FC = () => {
 
         }
 
-=======
-        if (!formData.EmailId?.trim()) {
-            newErrors.EmailId = "Email Id is required.";
-        } else if (!isValidEmail(formData.EmailId?.trim())) {
-            newErrors.EmailId = "Enter a valid email address.";
-        }
-
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
         if (!formData.AreaPreferred) {
             newErrors.AreaPreferred = 'Area Preferred is required.';
         }
-
         if (!formData.EnquiryDate) {
             newErrors.EnquiryDate = 'Enquiry Date  is required.';
         }
 
-<<<<<<< HEAD
         else if (formData.EnquiryDate) {
             const dob = new Date(formData.EnquiryDate as unknown as string)
             const today = new Date()
@@ -325,37 +299,10 @@ export const AddUpdateEnquiry: React.FC = () => {
 
         }
 
-=======
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
         if (!formData.NextFollowUpDate) {
             newErrors.NextFollowUpDate = 'Next Follow-Up Date  is required.';
         }
 
-<<<<<<< HEAD
-=======
-        if (formData.Nationality === "NRI") {
-
-            if (!formData.CountryOfResidence?.trim()) {
-                newErrors.CountryOfResidence = "Country of Residence is required";
-            }
-            if (!formData.CityOfResidence?.trim()) {
-                newErrors.CityOfResidence = "City of Residence is required";
-            }
-        }
-
-        if (formData.Source === "Advertisement" && !formData.SubSource) {
-            newErrors.SubSource = "Sub Source is required";
-        }
-
-        if (formData.Source === "Channel Partner" && !formData.ChannelPartnerId) {
-            newErrors.ChannelPartnerId = "Channel Partner is required";
-        }
-
-        if (formData.FinalStage === "Lost" && !formData.FinalStageDetail) {
-            newErrors.FinalStageDetail = "Final Stage Detail is required";
-        }
-    
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -410,11 +357,7 @@ export const AddUpdateEnquiry: React.FC = () => {
     }
     //#endregion
 
-<<<<<<< HEAD
     //#region HANDLE ADD AND UPDATE Enquiry  MASTER
-=======
-    //#region HANDLE ADD AND UPDATE ENQUIRY 
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
     const handleAddUpdateEnquiry = async () => {
 
         setErrors({});
@@ -486,11 +429,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     label='Full Name'
                                     value={formData.Name ?? ""}
                                     onChange={(e) => handleFieldChange("Name", e.target.value)}
-<<<<<<< HEAD
-                                    placeholder="Enter Full Name"
-=======
-                                    placeholder="Enter FULL Name"
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
+                                    placeholder="Enter Name"
                                     maxLength={250}
                                     error={errors.Name}
                                 />
@@ -507,13 +446,13 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     onChange={(e) => {
                                         const mobile = filterMobile(e.target.value)
                                         handleFieldChange("MobileNumber", mobile)
-                                    }}
+                                    }
+                                    }
                                     placeholder="Enter Mobile Number"
                                     maxLength={10}
                                     error={errors.MobileNumber}
                                 />
                             </div>
-
                             <div>
                                 <Input
                                     label='Email ID'
@@ -553,7 +492,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     error={errors.Accommodation}
                                 />
                             </div>
-
                             <div>
                                 <SinglePageSelection
                                     label="Occupation Type"
@@ -643,7 +581,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         error={errors.PossessionType}
                                     />
                                 </div>
-
                                 <div>
                                     <Input
                                         label='Area Preferred (In Sq. Ft)'
@@ -659,7 +596,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         placeholder="Enter Area Preferred"
                                     />
                                 </div>
-
                                 <div>
                                     <SinglePageSelection
                                         label="Desired Floor Band"
@@ -697,7 +633,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     error={errors.NeighborhoodPlaces}
                                 />
                             </div>
-
                             <div>
                                 <SinglePageSelection
                                     label="Requirement"
@@ -751,7 +686,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         error={errors.CustomerClassification}
                                     />
                                 </div>
-
                                 <div>
                                     <SinglePageSelection
                                         label="Source Of Funding"
@@ -762,7 +696,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         error={errors.SourceOfFunding}
                                     />
                                 </div>
-
                                 <div>
                                     <SinglePageSelection
                                         label="Ethnicity"
@@ -779,17 +712,12 @@ export const AddUpdateEnquiry: React.FC = () => {
                         <div className="space-y-4 pb-3">
                             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Enquiry Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
                                 <div>
                                     <SinglePageSelection
                                         label="Source"
                                         placeholder="Select Source"
                                         value={formData.Source ?? ''}
-<<<<<<< HEAD
-                                         onChange={(value) => handleFieldChange("Source", value)}
-=======
-                                        onChange={(value) => handleFieldChange('Source', value)}
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
+                                        onChange={(value) => handleFieldChange("Source", value)}
                                         options={SOURCE_TYPE_OPTIONS.map(opt => ({
                                             label: opt.name,
                                             value: opt.id
@@ -811,7 +739,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
+                                {/* Advertisement - Sub Source */}
                                 {formData.Source === 'Advertisement' && (
                                     <div>
                                         <SinglePageSelection
@@ -828,6 +756,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     </div>
                                 )}
 
+                                {/* Channel Partner - Channel Partner Dropdown */}
                                 {formData.Source === 'Channel Partner' && (
                                     <div>
                                         <SingleSelectDropdownWithPagination
@@ -937,7 +866,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     error={errors.EnquiryTimeIn}
                                 />
                             </div>
-
                             <div>
                                 <TimePicker
                                     label="Customer Time Out"
@@ -949,7 +877,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                 />
                             </div>
                         </div>
-
                         <div>
                             <TextArea
                                 label="Remarks"

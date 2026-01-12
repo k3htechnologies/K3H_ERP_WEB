@@ -21,12 +21,12 @@ const ViewWeekOffMaster: React.FC = () => {
     const { canAction } = useMenuPermissions('/WeekOffMaster');
     //#endregion
 
-    const editDeductionData = location.state?.WeekOffData as WeekOffMasterData;
+    const editWeekOffPolicyData = location.state?.WeekOffData as WeekOffMasterData;
 
     const listState = location.state?.listState;
 
     // MESSAGE IF DATA NOT FOUND
-    if (!editDeductionData) return <div>No Week Off Data Found</div>;
+    if (!editWeekOffPolicyData) return <div>No Week Off Data Found</div>;
 
 
     //#region EDIT WEEK OFF MASTER
@@ -36,7 +36,7 @@ const ViewWeekOffMaster: React.FC = () => {
 
         navigate(`/WeekOffMaster/add/${row.WeekOffPolicyMasterId}`, {
             state: {
-                editDeductionData: row,
+                editWeekOffPolicyData: row,
                 fromList: true,
                 listState: listState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
             }
@@ -54,15 +54,16 @@ const ViewWeekOffMaster: React.FC = () => {
     //#endregion
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
-            
+
             <HeaderActionBar
-                titleText={'Week Off Master'}
+                titleText={'Week Off Master : '}
+                subTitleText={editWeekOffPolicyData.WeekOffPolicyName}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListWeekOffMaster()}
                 canAction={canAction}
                 onEdit={() => {
-                    if (editDeductionData) handleEditWeekOffMaster(editDeductionData!);
+                    if (editWeekOffPolicyData) handleEditWeekOffMaster(editWeekOffPolicyData!);
                 }}
                 isLoading={isLoading}
             />
@@ -75,22 +76,21 @@ const ViewWeekOffMaster: React.FC = () => {
                     {/* ================= BASIC DETAILS ================= */}
                     <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
                         <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Basic Details
+                            WeekOff Policy Details
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Week Off Policy Name" value={editDeductionData.WeekOffPolicyName} />
-                                    <FieldItem label="Week Off Policy Code" value={editDeductionData.WeekOffPolicyCode} />
-                                    <FieldItem label="Week Days" value={editDeductionData.WeekDays} />
+                                    <FieldItem label="Week Off Policy Name" value={editWeekOffPolicyData.WeekOffPolicyName} />
+                                    <FieldItem label="Week Off Policy Code" value={editWeekOffPolicyData.WeekOffPolicyCode} />
+                                    <FieldItem label="Week Days" value={editWeekOffPolicyData.WeekDays} />
 
                                 </div>
                             </div>
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Weekly Off" value={editDeductionData.WeeklyOff} />
-
+                                    <FieldItem label="Week Days Starts On" value={editWeekOffPolicyData.WeekDaysStartsOn} />
                                 </div>
                             </div>
                         </div>
@@ -105,15 +105,16 @@ const ViewWeekOffMaster: React.FC = () => {
 
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Weekly Off2" value={editDeductionData.WeeklyOff2} />
-                                    <FieldItem label="Weekly Off2 Type" value={editDeductionData.WeeklyOff2Type} />
-                                    <FieldItem label="Week Days Starts On" value={editDeductionData.WeekDaysStartsOn} />
+                                    <FieldItem label="Weekly Off" value={editWeekOffPolicyData.WeeklyOff} />
+                                    <FieldItem label="Weekly Off2" value={editWeekOffPolicyData.WeeklyOff2} />
+                                    <FieldItem label="Weekly Off2 Type" value={editWeekOffPolicyData.WeeklyOff2Type} />
+
                                 </div>
                             </div>
 
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Not Applicable For Months" value={editDeductionData.NotApplicableForMonths} />
+                                    <FieldItem label="Not Applicable For Months" value={editWeekOffPolicyData.NotApplicableForMonths} />
 
                                 </div>
                             </div>
@@ -133,12 +134,12 @@ const ViewWeekOffMaster: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Created By" value={editDeductionData.CreatedBy} />
+                                    <FieldItem label="Created By" value={editWeekOffPolicyData.CreatedBy} />
                                     <FieldItem
                                         label="Created Date"
                                         value={
-                                            editDeductionData.CreatedDate
-                                                ? formatDate_dd_MonthName_yy(editDeductionData.CreatedDate)
+                                            editWeekOffPolicyData.CreatedDate
+                                                ? formatDate_dd_MonthName_yy(editWeekOffPolicyData.CreatedDate)
                                                 : "-"
                                         }
 
@@ -148,12 +149,12 @@ const ViewWeekOffMaster: React.FC = () => {
 
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Modified By" value={editDeductionData.ModifiedBy} />
+                                    <FieldItem label="Modified By" value={editWeekOffPolicyData.ModifiedBy} />
                                     <FieldItem
                                         label="Modified Date"
                                         value={
-                                            editDeductionData.ModifiedDate
-                                                ? formatDate_dd_MonthName_yy(editDeductionData.ModifiedDate)
+                                            editWeekOffPolicyData.ModifiedDate
+                                                ? formatDate_dd_MonthName_yy(editWeekOffPolicyData.ModifiedDate)
                                                 : "-"
                                         }
 

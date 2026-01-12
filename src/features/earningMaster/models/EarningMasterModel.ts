@@ -15,6 +15,8 @@ export interface EarningMasterData {
     Name: string | ''
     Type: string | ''
     Value: number | 0
+    MinSalary: number | 0
+    MaxSalary: number | 0
     BranchMasterId: number | 0
     BranchName: string | ''
     CreatedById: number | 0
@@ -33,6 +35,8 @@ export interface AddUpdateEarningMasterRequest {
     Name: string | ''
     Type: string | ''
     Value: number | 0
+    MinSalary: number | 0
+    MaxSalary: number | 0
     BranchMasterId: number | 0
 }
 

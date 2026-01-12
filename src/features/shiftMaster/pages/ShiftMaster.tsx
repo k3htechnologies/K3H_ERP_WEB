@@ -289,7 +289,8 @@ export const ShiftMaster: React.FC = () => {
           page: pagination.currentPage,
           filters,
           sortInfo,
-          searchTerm
+          searchTerm,
+          shiftName:row.ShiftName
         }
       }
     });
@@ -338,13 +339,7 @@ export const ShiftMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="150px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || '-'
     },
 
     {
@@ -353,13 +348,7 @@ export const ShiftMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="120px"
-          tooltipThreshold={12}
-        />
-      )
+      render: (value) => value || '-'
     },
 
     {
@@ -368,13 +357,7 @@ export const ShiftMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="120px"
-          tooltipThreshold={12}
-        />
-      )
+      render: (value) => value || '-'
     },
 
     {
@@ -383,13 +366,7 @@ export const ShiftMaster: React.FC = () => {
       width: '12',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="120px"
-          tooltipThreshold={12}
-        />
-      )
+      render: (value) => value || '-'
     },
 
     {
@@ -398,13 +375,7 @@ export const ShiftMaster: React.FC = () => {
       width: '12',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="120px"
-          tooltipThreshold={12}
-        />
-      )
+      render: (value) => value || '-'
     },
     {
       key: 'actions',

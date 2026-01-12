@@ -107,7 +107,7 @@ export const AssetMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchAssetMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadAssets(page, filters,sort);
+    return await loadAssets(page, filters, sort);
   }
 
   const loadAssets = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
@@ -129,6 +129,7 @@ export const AssetMaster: React.FC = () => {
           PageSize: pagination.pageSize,
           AssetMasterId: filterParams.AssetMasterId ? Number(filterParams.AssetMasterId) : undefined,
           AssetName: filterParams.AssetName?.trim() || undefined,
+          Status: filterParams.AssetStatus?.trim() || undefined,
           SortBy: sortByParam
         };
 
@@ -252,7 +253,7 @@ export const AssetMaster: React.FC = () => {
 
     setSortInfo(sort);
 
-    loadAssets(1,filters,sort);
+    loadAssets(1, filters, sort);
 
   }, [filters]);
   //#endregion
@@ -281,7 +282,8 @@ export const AssetMaster: React.FC = () => {
           page: pagination.currentPage,
           filters,
           sortInfo,
-          searchTerm
+          searchTerm,
+          assetName: row.AssetName
         }
       }
     });
@@ -394,13 +396,29 @@ export const AssetMaster: React.FC = () => {
       )
     },
     {
+      key: 'Status',
+      label: 'Status',
+      width: '20',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || ''
+    },
+    {
+      key: 'EmployeeName',
+      label: 'Employee Name',
+      width: '20',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || ''
+    },
+    {
       key: 'actions',
       label: 'Actions',
       width: '12',
       fixed: 'right',
       align: 'center',
       render: (_value, row) => (
-        canAction ? (
+        canAction && row.Status !== "Booked" ? (
           <div className="flex items-center justify-center gap-2">
 
             <Button
@@ -590,7 +608,7 @@ export const AssetMaster: React.FC = () => {
 
 
         // EXPORT
-        isShowExportButton={canExport && AssetsForTable.length>0}
+        isShowExportButton={canExport && AssetsForTable.length > 0}
         onExportExcel={handleExportAssetExcel}
         onExportPdf={handleExportAssetPdf}
         exportLoading={isLoading}
@@ -658,6 +676,13 @@ export const AssetMaster: React.FC = () => {
               value={tempFilters?.AssetName ?? ''}
               onChange={e => handleFilterChange('AssetName', e.target.value)}
               placeholder="Enter Asset Name" />
+          </div>
+          <div className="space-y-4">
+            <Input type="text"
+              label='Asset Status'
+              value={tempFilters?.AssetStatus ?? ''}
+              onChange={e => handleFilterChange('AssetStatus', e.target.value)}
+              placeholder="Enter Asset Status" />
           </div>
         </div>
       </Modal>

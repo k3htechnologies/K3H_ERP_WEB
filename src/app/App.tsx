@@ -8,7 +8,6 @@ import Dashboard from '@/features/dashboard/pages/Dashboard';
 import { Profile } from '@/features/profile/page/profile';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import EmployeeModuleAccess from '@/features/employeeModuleAccess/pages/EmployeeModuleAccess';
-import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMaster';
 import { DesignationMaster } from '@/features/designationMaster/pages/DesignationMaster';
 import { EmployeeMaster } from '@/features/employeeMaster/pages/EmployeeMaster';
 import { BranchMaster } from '@/features/branchMaster/pages/BranchMaster';
@@ -105,6 +104,7 @@ import ProposedPlan from '@/features/proposedOffer/pages/ProposedPlan';
 import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
 import EmployeeResignation from '@/features/resignation/pages/EmployeeResignation';
 import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
+import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (

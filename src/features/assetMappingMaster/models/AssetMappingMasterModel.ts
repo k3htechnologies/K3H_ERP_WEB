@@ -4,9 +4,11 @@ export interface FilterWithPaginationAssetMappingMasterRequest {
     PageSize: number
     PageNumber: number
     AssetMasterMappingId?: number
+    AssetMasterId?: number
     AssetName?: string
     EmployeeName?: string
     EmployeeId?: number
+    Status?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -17,6 +19,9 @@ export interface AssetMappingMasterData {
     AssignedDate: string | null
     EmployeeId: number | null
     EmployeeName: string | null
+    Department: string | null
+    Designation: string | null
+    Branch: string | null
     ReturnDate: string | null
     ConditionOnIssue: string | null
     ConditionOnReturn: string | null

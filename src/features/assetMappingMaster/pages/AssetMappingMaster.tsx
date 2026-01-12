@@ -6,7 +6,6 @@ import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AssetMappingMasterData,
-  DeleteAssetMappingMasterRequest,
   FilterWithPaginationAssetMappingMasterRequest
 } from '@/features/assetMappingMaster/models/AssetMappingMasterModel';
 
@@ -15,7 +14,7 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Button, Input } from '@/ui/components/forms';
+import { Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -24,8 +23,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { assetMappingMasterService } from '../services/AssetMappingMasterService';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import { Trash2 } from 'lucide-react';
 
 
 export const AssetMappingMaster: React.FC = () => {
@@ -57,10 +54,6 @@ export const AssetMappingMaster: React.FC = () => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-
-  //DELETE ASSET MAPPING MASTER
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-  const [deleteAssetMappingMasterData, setDeleteAssetMappingMasterData] = useState<AssetMappingMasterData | null>(null)
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeAssetMappingColumnsModal, setIsShowCustomizeAssetMappingColumnsModal] = useState(false);
@@ -113,7 +106,7 @@ export const AssetMappingMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchAssetMappingMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadAssetMappings(page, filters,sort);
+    return await loadAssetMappings(page, filters, sort);
   }
 
   const loadAssetMappings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
@@ -135,6 +128,7 @@ export const AssetMappingMaster: React.FC = () => {
           PageSize: pagination.pageSize,
           AssetMasterMappingId: filterParams.AssetMappingMasterId ? Number(filterParams.AssetMappingMasterId) : undefined,
           AssetName: filterParams.AssetName?.trim() || undefined,
+          EmployeeName: filterParams.EmployeeName?.trim() || undefined,
           SortBy: sortByParam
         };
 
@@ -225,6 +219,7 @@ export const AssetMappingMaster: React.FC = () => {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           AssetName: filters.AssetName?.trim() || undefined,
+          Status:'',
           SortBy: sortByParam,
           ExportType: exportType
         };
@@ -261,11 +256,11 @@ export const AssetMappingMaster: React.FC = () => {
   }, []);
 
   //#region TABLE SORT COLUMN
- const handleSortColumn = useCallback((sort: SortInfo) => {
+  const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sort);
 
-    loadAssetMappings(1,filters,sort);
+    loadAssetMappings(1, filters, sort);
 
   }, [filters]);
   //#endregion
@@ -294,7 +289,8 @@ export const AssetMappingMaster: React.FC = () => {
           page: pagination.currentPage,
           filters,
           sortInfo,
-          searchTerm
+          searchTerm,
+          assetName: row.AssetName
         }
       }
     });
@@ -311,12 +307,6 @@ export const AssetMappingMaster: React.FC = () => {
   }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
 
   //#endregion
-
-  //#region CONFIRMATION DIALOG BOX
-  const handleConfirmationDialogBoxOpen = useCallback((row: AssetMappingMasterData) => {
-    setDeleteAssetMappingMasterData(row)
-    setIsConfirmationDialogBoxOpen(true)
-  }, [])
 
   //#region TABLE COLUMNS
   const AssetMappingMasterColumns = useMemo<TableColumn[]>(() => [
@@ -360,15 +350,6 @@ export const AssetMappingMaster: React.FC = () => {
         value ? formatDate_dd_MonthName_yy(value) : '-'
     },
     {
-      key: 'ReturnDate',
-      label: 'Return Date',
-      width: '12',
-      sortable: false,
-      align: 'center',
-      render: (value) =>
-        value ? formatDate_dd_MonthName_yy(value) : '-'
-    },
-    {
       key: 'ConditionOnIssue',
       label: 'Condition On Issue',
       width: '12',
@@ -381,53 +362,9 @@ export const AssetMappingMaster: React.FC = () => {
           tooltipThreshold={12}
         />
       )
-    },
-    {
-      key: 'ConditionOnReturn',
-      label: 'Condition On Return',
-      width: '15',
-      sortable: false,
-      align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="150px"
-          tooltipThreshold={15}
-        />
-      )
-    },
-    {
-      key: 'actions',
-      label: 'Actions',
-      width: '12',
-      fixed: 'right',
-      align: 'center',
-      render: (_value, row) => (
-        canAction ? (
-          <div className="flex items-center justify-center gap-2">
-
-            <Button
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                handleConfirmationDialogBoxOpen(row)
-              }}
-              color='transparent'
-              isborderRadius
-              size='sm'
-              style={{
-                color: 'red',
-                padding: '4px 8px'
-              }}
-              title="Delete Asset"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : null
-      )
     }
-  ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
+
+  ], [handleNavigateToView]);
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
@@ -504,60 +441,6 @@ export const AssetMappingMaster: React.FC = () => {
   }
   //#endregion
 
-  //#region DELETE ASSET MAPPING MASTER
-  const handleDeleteAssetMappingMaster = async () => {
-
-    setIsConfirmationDialogBoxOpen(false);
-
-    if (!deleteAssetMappingMasterData) return;
-
-    await runApiWithLoader(
-
-      setIsLoading,
-
-      setIsLoadingMessage,
-      async () => {
-        const params: DeleteAssetMappingMasterRequest = {
-
-          AssetMasterMappingId: deleteAssetMappingMasterData.AssetMasterMappingId || 0,
-
-          UniqueKey: deleteAssetMappingMasterData.Uniquekey || ""
-        };
-
-        const response = await assetMappingMasterService.apiCallDeleteAssetMappingMaster(params);
-
-        if (E.isRight(response)) {
-
-          setAssetMappingMasterList(prevData => prevData.filter(item => item.AssetMasterMappingId !== deleteAssetMappingMasterData.AssetMasterMappingId));
-
-          setPagination({
-            currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords - 1,
-            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
-          });
-          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
-
-          setIsConfirmationDialogBoxOpen(false);
-
-          setDeleteAssetMappingMasterData(null);
-
-        } else {
-
-          addToast({ type: 'error', title: response.left.message });
-
-          setIsConfirmationDialogBoxOpen(false);
-
-        }
-        return response;
-      },
-      undefined,
-      (error: any) => addToast({ type: "error", title: error.message }),
-      undefined,
-      "Deleting Asset Mapping"
-    );
-  };
-
-
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
@@ -588,7 +471,7 @@ export const AssetMappingMaster: React.FC = () => {
 
 
         // EXPORT
-        isShowExportButton={canExport && AssetMappingsForTable.length> 0}
+        isShowExportButton={canExport && AssetMappingsForTable.length > 0}
         onExportExcel={handleExportAssetMappingExcel}
         onExportPdf={handleExportAssetMappingPdf}
         exportLoading={isLoading}
@@ -657,21 +540,17 @@ export const AssetMappingMaster: React.FC = () => {
               onChange={e => handleFilterChange('AssetName', e.target.value)}
               placeholder="Enter Asset Name" />
           </div>
+          <div className="space-y-4">
+            <Input type="text"
+              label='Employee Name'
+              value={tempFilters?.EmployeeName ?? ''}
+              onChange={e => handleFilterChange('EmployeeName', e.target.value)}
+              placeholder="Enter Employee Name" />
+          </div>
         </div>
       </Modal>
 
-      {/* DELETE CONFIRMATION ASSET MAPPING MODAL */}
-      <ConfirmationDialogBox
-        isOpen={isConfirmationDialogBoxOpen}
-        onClose={() => setIsConfirmationDialogBoxOpen(false)}
-        onConfirm={handleDeleteAssetMappingMaster}
-        title="You are about to delete this Asset?"
-        message="Deleting this Asset will permanently remove its data."
-        confirmText="Delete"
-        cancelText="Cancel"
-        loading={isLoading}
-        variant="danger"
-      />
+
     </div>
 
   );

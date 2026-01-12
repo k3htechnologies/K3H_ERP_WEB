@@ -290,7 +290,8 @@ export const WeekOffOffMasterMaster: React.FC = () => {
           page: pagination.currentPage,
           filters,
           sortInfo,
-          searchTerm
+          searchTerm,
+          weekOffPolicyName:row.WeekOffPolicyName
         }
       }
     });
@@ -341,13 +342,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || '-'
     },
     {
       key: 'WeekDays',
@@ -355,13 +350,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || '-'
     },
     {
       key: 'WeekDaysStartsOn',
@@ -369,13 +358,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || '-'
     },
     {
       key: 'WeeklyOff',
@@ -383,13 +366,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || '-'
     },
     {
       key: 'WeeklyOff2',
@@ -397,13 +374,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || '-'
     },
     {
       key: 'WeeklyOff2Type',
@@ -411,13 +382,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || '-'
     },
     {
       key: 'NotApplicableForMonths',
@@ -425,13 +390,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || '-'
     },
     {
       key: 'actions',

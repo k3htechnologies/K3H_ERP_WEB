@@ -43,12 +43,14 @@ const Employee: React.FC = () => {
         searchTerm?: string;
         projectId?: number;
         uniquekey?: string;
+        projectName?: string;
       };
     };
   };
   const preservedListState = location.state?.listState;
   const projectId = preservedListState?.projectId || 0;
   const uniquekey = preservedListState?.uniquekey || '';
+  const projectName = preservedListState?.projectName || '';
 
   //FILTER STATES
   const [filters, setFilters] = useState<FilterInfo>({});
@@ -593,7 +595,8 @@ const Employee: React.FC = () => {
       </Loader>
 
       <HeaderActionBar
-        titleText={'Add Update Project Master With Employee Details'}
+        titleText={'Employee Details : '}
+        subTitleText={projectName}
         cancelText="Cancel"
         EditText="Add"
         onCancel={() => handleBackToListProjectMaster()}
@@ -608,7 +611,7 @@ const Employee: React.FC = () => {
         <DataTable
           data={employeeMasterList}
           columns={projectMasterWithEmployeeColumns}
-          emptyMessage="No Bank Data Found"
+          emptyMessage="No Employee Data Found"
           fixedHeight={true}
           maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}

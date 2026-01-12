@@ -29,7 +29,8 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
   triggerLabel,
   size = "sm",
   closeOnOverlayClick = true,
-  overlayZIndex = 9999
+  overlayZIndex = 9999,
+  isIcon = true,
 }) => {
   // filter only truthy strings (defensive)
   const imageUrls = (images || []).filter((u) => typeof u === "string" && u.trim() !== "");
@@ -187,7 +188,10 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
       {triggerLabel ? (
         <>
           <div className="flex items-center gap-2">
-            <span className="truncate">{triggerLabel}</span>
+            
+            <span className="break-words whitespace-normal">
+            {isIcon && triggerLabel}
+            </span>
 
             <button
               type="button"
@@ -196,6 +200,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
               style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
             >
               <Eye size={16} />
+              
             </button>
           </div>
 

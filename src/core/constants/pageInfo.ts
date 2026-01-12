@@ -166,6 +166,16 @@ export const getPageInfo = (path: string) => {
                 title: "Outdoor Managemen",
                 description: "outdoor visit information",
             }
+        case 'resignation':
+            return {
+                title: "Resignation",
+                description: "Resignation information",
+            }
+        case 'payrollReport':
+            return {
+                title: "Payroll Report",
+                description: "Comprehensive payroll reports for accurate financial tracking",
+            }
 
 
 

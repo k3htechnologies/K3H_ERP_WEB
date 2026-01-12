@@ -289,39 +289,39 @@ const BuildingDescription: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <Input
-                  label="Gross Plot Area (SqFt)"
+                  label="Gross Plot Area (SqMt)"
                   required
                   error={errors.GrossPlotAreaSqFt}
                   type="text"
                   value={formData.GrossPlotAreaSqFt || ''}
                   onChange={(e) => handleFieldChange('GrossPlotAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter gross plot Area"
-                  rightIcon="SqFt"
+                  rightIcon="SqMt"
                 />
               </div>
               <div>
                 <Input
-                  label="Plot Area Physical Survey (SqFt)"
+                  label="Plot Area Physical Survey (SqMt)"
                   type="text"
                   value={formData.PlotAreaPhysicalSurveySqFt || ''}
                   onChange={(e) => handleFieldChange('PlotAreaPhysicalSurveySqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter Physical Survey Area"
-                  rightIcon="SqFt"
+                  rightIcon="SqMt"
                 />
               </div>
               <div>
                 <Input
-                  label="Plot Area Old Approved Plan (SqFt)"
+                  label="Plot Area Old Approved Plan (SqMt)"
                   type="text"
                   value={formData.PlotAreaOldApprovedPlanSqFt || ''}
                   onChange={(e) => handleFieldChange('PlotAreaOldApprovedPlanSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter Old Approved Plan Area"
-                  rightIcon="SqFt"
+                  rightIcon="SqMt"
                 />
               </div>
               <div>
                 <Input
-                  label="Plot Area Conveyance (SqFt)"
+                  label="Plot Area Conveyance (SqMt)"
                   type="text"
                   value={formData.PlotAreaConveyanceSqFt || ''}
                   onChange={(e) =>
@@ -329,17 +329,17 @@ const BuildingDescription: React.FC = () => {
                     handleFieldChange('PlotAreaConveyanceSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
 
                   placeholder="Enter Conveyance Area"
-                  rightIcon="SqFt"
+                  rightIcon="SqMt"
                 />
               </div>
               <div>
                 <Input
-                  label="Plot Area PR Card (SqFt)"
+                  label="Plot Area PR Card (SqMt)"
                   type="text"
                   value={formData.PlotAreaPRCardSqFt || ''}
                   onChange={(e) => handleFieldChange('PlotAreaPRCardSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter PR Card Area"
-                  rightIcon="SqFt"
+                  rightIcon="SqMt"
                 />
               </div>
             </div>

@@ -96,7 +96,6 @@ import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor'
 import Leave from '@/features/leave/pages/Leave';
 import AddUpdateLeave from '@/features/leave/pages/AddUpdateLeave';
 import ViewLeave from '@/features/leave/pages/ViewLeave';
-<<<<<<< HEAD
 import ViewEnquiry from '@/features/enquiry/pages/ViewEnquiry';
 import Enquiry from '@/features/enquiry/pages/Enquiry';
 import AddUpdateEnquiry from '@/features/enquiry/pages/AddUpdateEnquiry';
@@ -107,11 +106,9 @@ import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartn
 import Litigation from '@/features/litigation/pages/Litigation';
 import AddUpdateLitigation from '@/features/litigation/pages/AddUpdateLitigation';
 import ViewLitigation from '@/features/litigation/pages/ViewLitigation';
-=======
-import Enquiry from '@/features/enquiry/pages/Enquiry';
-import ViewEnquiry from '@/features/enquiry/pages/ViewEnquiry';
-import AddUpdateEnquiry from '@/features/enquiry/pages/AddUpdateEnquiry';
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
+import EmployeeResignation from '@/features/resignation/pages/EmployeeResignation';
+import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
+
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -185,6 +182,8 @@ function App() {
             <Route path="leave" element={<Leave />} />
             <Route path="leave/add/:id?" element={<AddUpdateLeave />} />
             <Route path="leave/view/:id?" element={<ViewLeave />} />
+            <Route path="resignation" element={<EmployeeResignation />} />
+            <Route path="payrollReport" element={<PayrollReport />} />
             <Route path="companyMaster" element={<CompanyMaster />} />
             <Route path="companyMaster/view" element={<ViewCompantMaster />} />
             <Route path="companyMaster/add/:companyId?" element={<AddCompany />} />
@@ -214,16 +213,13 @@ function App() {
             <Route path="WeekOffMaster/view" element={<ViewWeekOffMaster />} />
             <Route path="WeekOffMaster/add/:WeekOffMasterId?" element={<AddUpdateWeekOffMaster />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
-<<<<<<< HEAD
 
-=======
-            <Route path="channelPartner" element={<ChannelPartnerMaster />} />
-            <Route path="channelPartner/view" element={<ViewChannelPartnerMaster />} />
-            <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartnerMaster />} />
+            <Route path="channelPartner" element={<ChannelPartner />} />
+            <Route path="channelPartner/view" element={<ViewChannelPartner />} />
+            <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartner />} />
             <Route path="enquiry" element={<Enquiry />} />
             <Route path="enquiry/view" element={<ViewEnquiry />} />
             <Route path="enquiry/add/:EnquiryId?" element={<AddUpdateEnquiry />} />
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
             <Route path="vendor" element={<Vendor />} />
             <Route path="vendor/view" element={<ViewVendor />} />
             <Route path="projectMaster" element={<ProjectMaster />} />

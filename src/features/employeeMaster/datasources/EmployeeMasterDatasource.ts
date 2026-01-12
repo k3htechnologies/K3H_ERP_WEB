@@ -4,7 +4,9 @@ import type {
     FilterWithPaginationEmployeeMasterRequest,
     AddUpdateEmployeeMasterRequest,
     EmployeeMasterListResponse,
-    LocationResponse
+    LocationResponse,
+    SetEmployeeMPINRequest,
+    EmployeeMPINRequestResponse
 } from '@/features/employeeMaster/models/EmployeeMasterModel'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 
@@ -113,10 +115,34 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             return response
         } catch (error) {
+
             console.error('Error: Add Update Employee Master:', error)
 
             if (error === TokenExpiredException) {
                 await this.addUpdateEmployeeMaster(params);
+            }
+
+
+            throw error
+        }
+    }
+
+    async setEmployeeMPIN(params: SetEmployeeMPINRequest): Promise<EmployeeMPINRequestResponse> {
+
+        try {
+
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                EmployeeMasterApi.SET_EMPLOYEE_MPIN,
+                params
+            )
+
+            return response
+        } catch (error) {
+            
+            console.error('Error: SET MPIN:', error)
+
+            if (error === TokenExpiredException) {
+                await this.setEmployeeMPIN(params);
             }
 
 

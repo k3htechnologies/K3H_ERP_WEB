@@ -31,6 +31,8 @@ import type { FilterPullExcelSample } from '@/features/technical/models/Technica
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
+import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
+import { getDocumentStatusColor } from './ProjectDocumentStatus';
 
 
 const initialFormState = (): AddUpdateProjectDocumentRequest => ({
@@ -90,6 +92,8 @@ const ProjectDocument: React.FC = () => {
 
   const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
 
+  const [expandedParentId, setExpandedParentId] = useState<number | null>(null);
+
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
@@ -101,13 +105,13 @@ const ProjectDocument: React.FC = () => {
   // ADD EDIT UPDATE DOCUMENT DETAILS
   const [isAddUpdateDocumentDetailsModalOpen, setIsAddUpdateDocumentDetailsModalOpen] = useState(false);
 
-  //DELETE DEPARTMENT MASTER STATES
+  //DELETE PROJECT DOCUMENT MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
   const [deleteProjectDocumentDetailsData, setDeleteProjectDocumentDetailsData] = useState<ProjectDocumentData | null>(null)
 
-  //ADD UPDATE DEPARTMENT MASTER
+  //ADD UPDATE PROJECT DOCUMENT MASTER
   const [formData, setFormData] = useState<AddUpdateProjectDocumentRequest>(() => initialFormState());
 
   //EXCEL IMPORT 
@@ -126,21 +130,15 @@ const ProjectDocument: React.FC = () => {
   //#region INIT
 
   useEffect(() => {
+
     if (!projectId) return;
 
-    setProjectDocumentList([]);
-    setProjectDocumentTabList([]);
-    setActiveTab('');
     setExpandedParentRow(null);
-    setEditingDocumentData(null);
-    setErrors({});
-    setPagination({
-      currentPage: 1,
-      totalPages: 0,
-      totalRecords: 0,
-      pageSize: pagination.pageSize
-    });
-    dtRef.current?.collapseAll?.();
+    setExpandedParentId(null);
+
+    setActiveTab("");
+
+    setProjectDocumentList([]);
 
     loadProjectDocumentTabs();
 
@@ -186,6 +184,7 @@ const ProjectDocument: React.FC = () => {
 
   //#region ACTIVE TAB IF FIND OUT
   const getActiveTabId = (filterParams?: FilterInfo): number => {
+
     if (filterParams && filterParams.ProjectDocumentCategoryId != null) {
       const raw = filterParams.ProjectDocumentCategoryId;
       const num = typeof raw === 'number' ? raw : Number(raw);
@@ -233,6 +232,8 @@ const ProjectDocument: React.FC = () => {
         else {
 
           setActiveTab('');
+
+          setProjectDocumentList([]);
 
         }
 
@@ -283,6 +284,7 @@ const ProjectDocument: React.FC = () => {
         if (E.isRight(response)) {
 
           setProjectDocumentList(response.right.Data);
+
           setPagination({
             currentPage: page,
             totalRecords: response.right.TotalNumberOfRecord,
@@ -552,23 +554,6 @@ const ProjectDocument: React.FC = () => {
   )
   //#endregion
 
-  // #region STATUS COLOR 
-  const getStatusColor = (status: string = "") => {
-    const map: Record<string, { bg: string; text: string }> = {
-      "Applied": { bg: "bg-green-100", text: "text-green-800" },
-      "Doc Missing": { bg: "bg-red-100", text: "text-red-800" },
-      "In Process": { bg: "bg-yellow-100", text: "text-yellow-800" },
-      "Issued": { bg: "bg-blue-100", text: "text-blue-800" },
-      "Not Applied": { bg: "bg-gray-100", text: "text-gray-800" },
-      "Not Applicable": { bg: "bg-gray-200", text: "text-gray-900" },
-      "Paid": { bg: "bg-emerald-100", text: "text-emerald-800" },
-      "Payment Due": { bg: "bg-orange-100", text: "text-orange-800" },
-      "Rejected": { bg: "bg-red-200", text: "text-red-900" },
-    };
-
-    return map[status] || { bg: "bg-gray-100", text: "text-gray-800" };
-  };
-  //#endregion
 
   //#region TABLE COLUMN DOCUMENT DETAILS
 
@@ -611,14 +596,16 @@ const ProjectDocument: React.FC = () => {
         sortable: false,
         align: 'left',
         render: (value) => {
-          const { bg, text } = getStatusColor(value);
+
+          const statusClass = getDocumentStatusColor(value);
 
           return (
             <TooltipText
               text={value || "-"}
               maxWidth="180px"
               tooltipThreshold={18}
-              tooltipClassName={`inline-block px-2 py-1 rounded-full text-xs font-medium ${bg} ${text} overflow-hidden text-ellipsis whitespace-nowrap`}
+              isApplyBgTextColor
+              tooltipClassName={`inline-block px-2 py-1 rounded-full text-xs font-medium ${statusClass} overflow-hidden text-ellipsis whitespace-nowrap`}
             />
           );
         }
@@ -638,26 +625,31 @@ const ProjectDocument: React.FC = () => {
         )
       },
       {
-        key: 'CreatedBy',
+        key: 'ModifiedBy',
         label: 'Last Modified By',
         width: '33',
         sortable: false,
-        align: 'center',
-        render: (value) => (
+        align: 'left',
+        render: (value, row) => (
           <TooltipText
-            text={value || '-'}
+            text={value || row.CreatedBy || '-'}
             maxWidth="180px"
             tooltipThreshold={18}
           />
         )
       },
       {
-        key: 'CreatedDate',
+        key: 'ModifiedDate',
         label: 'Last Modified Date',
         width: '33',
         sortable: false,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+        align: 'left',
+        render: (value, row) =>
+          value
+            ? formatDate_dd_MonthName_yy(value)
+            : row.CreatedDate
+              ? formatDate_dd_MonthName_yy(row.CreatedDate)
+              : '-'
       },
       {
         key: 'actions',
@@ -727,6 +719,8 @@ const ProjectDocument: React.FC = () => {
   //#region ADD UPDATE EDIT DOCUMENT
 
   const handleAddDocumentDetailsModal = useCallback((row: ProjectDocumentData) => {
+    setExpandedParentRow(row);
+    setExpandedParentId(row.ProjectDocumentId);
     setExpandHeaderProjectDocumentName(row.ProjectDocumentName);
     setExpandHeaderProjectDocumentId(row.ProjectDocumentId);
 
@@ -794,17 +788,8 @@ const ProjectDocument: React.FC = () => {
 
       newErrors.ProjectDocumentStatus = "Status is required"
     }
-    const hasNewFiles = projectDocumentFiles.length > 0;
 
-    const existingUrls = (projectDocumentURL ?? "").split(",").filter(x => x.trim() !== "");
-
-    const remainingExisting = existingUrls.filter(url => !RemoveProjectDocumentUrls.includes(url));
-
-    const hasRemainingExisting = remainingExisting.length > 0;
-
-    const hasFile = hasNewFiles || hasRemainingExisting;
-
-    if (!hasFile) {
+    if (formData.ProjectDocumentStatus?.toUpperCase()==="ISSUED" && !hasAnyDocumentFile(projectDocumentFiles, projectDocumentURL, RemoveProjectDocumentUrls)) {
       newErrors.ProjectDocumentURL = "File is required.";
     }
 
@@ -919,16 +904,25 @@ const ProjectDocument: React.FC = () => {
               });
             } else {
 
-              const parentId = expandedParentRow?.ProjectDocumentId;
+              const parentId = expandedParentId;
 
               await fetchProjectDocumentList(pagination.currentPage);
 
-              if (parentId) {
-                dtRef.current?.expandRow?.(
-                  String(parentId),
-                  expandedParentRow
-                );
+              // collapse all first
+              if (dtRef.current) {
+                dtRef.current.collapseAll?.();
               }
+
+              // reopen after table renders
+              setTimeout(() => {
+                if (parentId) {
+                  dtRef.current?.expandRow?.(
+                    String(parentId),
+                    expandedParentRow
+                  );
+                }
+              }, 50);
+
             }
 
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
@@ -949,21 +943,31 @@ const ProjectDocument: React.FC = () => {
             }
             else {
 
-              const parentId = expandedParentRow?.ProjectDocumentId;
+              const parentId = expandedParentId;
 
               await fetchProjectDocumentList(pagination.currentPage);
 
-              if (parentId) {
-                dtRef.current?.expandRow?.(
-                  String(parentId),
-                  expandedParentRow
-                );
+              // collapse all first
+              if (dtRef.current) {
+                dtRef.current.collapseAll?.();
               }
+
+              // reopen after table renders
+              setTimeout(() => {
+                if (parentId) {
+                  dtRef.current?.expandRow?.(
+                    String(parentId),
+                    expandedParentRow
+                  );
+                }
+              }, 50);
+
             }
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
           setEditingDocumentData(null);
+
           dtRef.current?.collapseAll?.();
 
         } else {
@@ -1024,16 +1028,25 @@ const ProjectDocument: React.FC = () => {
           }
           else {
 
-            const parentId = expandedParentRow.ProjectDocumentId;
+            const parentId = expandedParentId;
 
             await fetchProjectDocumentList(pagination.currentPage);
 
-            if (parentId) {
-              dtRef.current?.expandRow?.(
-                String(parentId),
-                expandedParentRow
-              );
+            // collapse all first
+            if (dtRef.current) {
+              dtRef.current.collapseAll?.();
             }
+
+            // reopen after table renders
+            setTimeout(() => {
+              if (parentId) {
+                dtRef.current?.expandRow?.(
+                  String(parentId),
+                  expandedParentRow
+                );
+              }
+            }, 50);
+
 
           }
           addToast({ type: 'success', title: response.right.SuccessMessage[0] })
@@ -1150,7 +1163,7 @@ const ProjectDocument: React.FC = () => {
         onAdd={handleAddDocumentModal}
 
         // IMPORT
-        isShowImportButton={true}
+        isShowImportButton={canAction}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleProjectDocument}
         // EXPORT
@@ -1197,19 +1210,17 @@ const ProjectDocument: React.FC = () => {
           fetchRow: async (row) => {
 
             setExpandedParentRow(row);
+            setExpandedParentId(row.ProjectDocumentId);
+
 
             const params: FilterWithPaginationProjectDocument = {
               PageNumber: 1,
               PageSize: pagination.pageSize,
-              ProjectId: Number(projectId),
+              ProjectId: Number(row.ProjectId),
               ProjectDocumentId: Number(row.ProjectDocumentId),
-              ProjectDocumentName: row.ProjectDocumentName,
-              ProjectDocumentStatus: row.ProjectDocumentStatus,
               ProjectDocumentCategory: row.ProjectDocumentCategory,
-              ProjectDocumentCategoryId: row.ProjectDocumentCategoryId
+              ProjectDocumentCategoryId: row.ProjectDocumentCategoryId,
             };
-
-
             const response = await ProjectDocumentService.apiCallPullProjectDocument(params);
 
             if (E.isRight(response)) {
@@ -1314,7 +1325,7 @@ const ProjectDocument: React.FC = () => {
         }}
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(0, e)}
-        saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
+        saveText={editingDocumentData ? 'Update' : 'Add'}
         resetText='Reset'
         loading={isLoading}
         size='xl'
@@ -1326,7 +1337,7 @@ const ProjectDocument: React.FC = () => {
                 <Input
                   label='Document'
                   required
-                  readOnly
+                  disabled
                   type="text"
                   value={formData.ProjectDocumentName}
                   maxLength={250}
@@ -1334,13 +1345,6 @@ const ProjectDocument: React.FC = () => {
                 />
                 : ""}
 
-            </div>
-            <div>
-              <DatePickerInput
-                label="Expiry Date"
-                value={formatDate_dd_mm_yyyy(formData.ProjectDocumentExpiryDate)}
-                onChange={(val) => handleFieldChange('ProjectDocumentExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-              />
             </div>
             <div>
               <SinglePageSelection
@@ -1357,7 +1361,7 @@ const ProjectDocument: React.FC = () => {
               <MultiFilePicker
                 label="Files"
                 placeholder='Select Files'
-                required
+                required={formData.ProjectDocumentStatus?.toUpperCase()==="ISSUED" ? true:false}
                 value={projectDocumentFiles}
                 onChange={setProjectDocumentFiles}
                 availableFilesURL={projectDocumentURL ?? ""}
@@ -1371,9 +1375,16 @@ const ProjectDocument: React.FC = () => {
               />
             </div>
             <div>
+              <DatePickerInput
+                label="Expiry Date"
+                value={formatDate_dd_mm_yyyy(formData.ProjectDocumentExpiryDate)}
+                onChange={(val) => handleFieldChange('ProjectDocumentExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+              />
+            </div>
+
+            <div>
               <Input
                 label='Remark'
-
                 type="text"
                 value={formData.ProjectDocumentRemark}
                 maxLength={250}

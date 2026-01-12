@@ -302,6 +302,7 @@ export const CompanyMaster: React.FC = () => {
                     filters,
                     sortInfo,
                     searchTerm,
+                    companyName:row.CompanyName
                 },
             },
         });

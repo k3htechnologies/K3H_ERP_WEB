@@ -4,7 +4,7 @@ import { Input } from "@/ui/components/forms/Input";
 import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
 import { useToast } from "@/core/hooks/useToast";
-import { OutDoorDataService } from "@/features/outdoor/services/OutDoorDataService";
+import { OutDoorService } from "@/features/outdoor/services/OutDoorDataService";
 import type { OutDoorMasterData, AddUpdateOutDoor } from "../models/OutDoorModel";
 import * as E from "fp-ts/Either";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
@@ -93,7 +93,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        const apiResponse = await OutDoorDataService.apiCallPullOutDoorData({
+        const apiResponse = await OutDoorService.apiCallPullOutDoorData({
           PageNumber: 1,
           PageSize: 1000,
         });
@@ -354,7 +354,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       async () => {
         const pushOutDoorFormData = PushOutDoorFormData();
 
-        const apiResponse = await OutDoorDataService.apiCallAddUpdateOutDoor(pushOutDoorFormData);
+        const apiResponse = await OutDoorService.apiCallAddUpdateOutDoor(pushOutDoorFormData);
 
         if (E.isRight(apiResponse)) {
           const response = apiResponse.right;

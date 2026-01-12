@@ -1,5 +1,9 @@
 import React from "react";
-import type { Option } from "@/path/to/master-data-file";
+
+type Option = {
+  id: string;
+  name: string;
+};
 
 type RangeSelectorProps = {
   label?: string;

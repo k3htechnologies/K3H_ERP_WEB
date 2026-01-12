@@ -28,10 +28,12 @@ export const ViewCompantMaster: React.FC = () => {
                 filters: any;
                 sortInfo?: any;
                 searchTerm?: string;
+                companyName?: string;
             };
         };
     };
     const preservedListState = location.state?.listState;
+    const companyName = preservedListState?.companyName || '';
 
     //#endregion
     //#region Get COMPANY DATA FROM LOCATION STATE
@@ -68,7 +70,8 @@ export const ViewCompantMaster: React.FC = () => {
             </Loader>
             {/* Header */}
             <HeaderActionBar
-                titleText={'Company Details'}
+                titleText={'Company Details : '}
+                subTitleText={companyName}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListCompanyMaster()}
@@ -108,7 +111,7 @@ export const ViewCompantMaster: React.FC = () => {
                         </h4>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <FieldItem label="PAN Number" value={editCompanyData?.PANNumber ?? '-'} urls={editCompanyData?.PanCardURL} isIcon/>
+                            <FieldItem label="PAN Number" value={editCompanyData?.PANNumber ?? '-'} urls={editCompanyData?.PanCardURL} isIcon />
                             <FieldItem label="GST Number" value={editCompanyData?.GSTNumber ?? '-'} urls={editCompanyData?.GSTCertificateURL} isIcon />
                             <FieldItem label="CIN Number" value={editCompanyData?.CINNumber ?? '-'} urls={editCompanyData?.CINURL} isIcon />
                             <FieldItem label="RERA Number" value={editCompanyData?.RERANumber ?? '-'} />

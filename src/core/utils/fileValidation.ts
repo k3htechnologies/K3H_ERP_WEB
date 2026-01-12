@@ -179,6 +179,22 @@ export const isValidPercentage = (value: string): boolean => {
   return num >= 0 && num <= 100;
 };
 
+export const allowPercentage = (value: string) => {
+  // Allow empty
+  if (value === "") return value;
+
+  // Allow only digits & single decimal
+  if (!/^\d*\.?\d*$/.test(value)) return null;
+
+  const num = Number(value);
+
+  // Block values greater than 100
+  if (num > 100) return null;
+
+  return value;
+};
+
+
 // ----------------------------------
 // CALCULATE PERCENTAGE
 // ----------------------------------
@@ -392,4 +408,63 @@ export const createFileUrlString = (mergedFiles: (File | string)[]): string => {
     .filter(Boolean)
     .join(',');
 };
+
+// ----------------------------------
+// 🔹 CALCULATED HOW MUCH REMOVED FILE WE MARGE FOR VALIDATION
+// ----------------------------------
+
+export const calculateRemovedFiles = (
+      originalFiles?: (File | string)[],
+      currentStateFiles?: (File | string)[],
+      existingRemovedUrls?: string[]
+    ): string[] => {
+      if (!originalFiles || originalFiles.length === 0) return existingRemovedUrls || [];
+      
+      
+      // Get original file URLs (strings only)
+      const originalUrls = originalFiles
+        .filter(file => typeof file === 'string')
+        .map(url => String(url).trim());
+      
+      // Get current state file URLs (strings only)
+      const currentStateUrls = (currentStateFiles || [])
+        .filter(file => typeof file === 'string')
+        .map(url => String(url).trim());
+      
+      const currentStateUrlSet = new Set(currentStateUrls);
+      
+      // Find files that were in original but not in current state (removed via onChange)
+      const removedViaOnChange = originalUrls.filter(url => !currentStateUrlSet.has(url));
+      
+      // Combine existing removed URLs with newly detected removed files
+      const allRemoved = [...(existingRemovedUrls || []), ...removedViaOnChange];
+      
+      // Remove duplicates
+      return Array.from(new Set(allRemoved.map(url => url.trim()).filter(Boolean)));
+    };
+// ----------------------------------
+//HAS ANY FILE PRESENT IN FILE DayPicker
+// ----------------------------------
+
+export const hasAnyDocumentFile = (
+  documentFiles: (File | string)[] = [],
+  documentURL?: string | null,
+  removedDocumentURLs: string[] = []
+): boolean => {
+
+  const hasNewFiles = documentFiles?.some(f => f instanceof File);
+
+  const existingUrls = (documentURL ?? "")
+    .split(",")
+    .map(x => x.trim())
+    .filter(x => x !== "");
+
+  const remainingExisting = existingUrls.filter(
+    url => !removedDocumentURLs?.includes(url)
+  );
+
+  return hasNewFiles || remainingExisting.length > 0;
+};
+
+
 

@@ -31,6 +31,8 @@ import type { FilterPullExcelSample } from '@/features/technical/models/Technica
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
+import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
+import { getDocumentStatusColor } from '@/features/projectDocument/pages/ProjectDocumentStatus';
 
 
 const initialFormState = (): AddUpdateApprovalDocumentRequest => ({
@@ -127,20 +129,6 @@ const ApprovalDocument: React.FC = () => {
 
   useEffect(() => {
     if (!projectId) return;
-
-    setApprovalDocumentList([]);
-    setApprovalDocumentTabList([]);
-    setActiveTab('');
-    setExpandedParentRow(null);
-    setEditingDocumentData(null);
-    setErrors({});
-    setPagination({
-      currentPage: 1,
-      totalPages: 0,
-      totalRecords: 0,
-      pageSize: pagination.pageSize
-    });
-    dtRef.current?.collapseAll?.();
 
     loadApprovalDocumentTabs();
 
@@ -552,23 +540,6 @@ const ApprovalDocument: React.FC = () => {
   )
   //#endregion
 
-  // #region STATUS COLOR 
-  const getStatusColor = (status: string = "") => {
-    const map: Record<string, { bg: string; text: string }> = {
-      "Applied": { bg: "bg-green-100", text: "text-green-800" },
-      "Doc Missing": { bg: "bg-red-100", text: "text-red-800" },
-      "In Process": { bg: "bg-yellow-100", text: "text-yellow-800" },
-      "Issued": { bg: "bg-blue-100", text: "text-blue-800" },
-      "Not Applied": { bg: "bg-gray-100", text: "text-gray-800" },
-      "Not Applicable": { bg: "bg-gray-200", text: "text-gray-900" },
-      "Paid": { bg: "bg-emerald-100", text: "text-emerald-800" },
-      "Payment Due": { bg: "bg-orange-100", text: "text-orange-800" },
-      "Rejected": { bg: "bg-red-200", text: "text-red-900" },
-    };
-
-    return map[status] || { bg: "bg-gray-100", text: "text-gray-800" };
-  };
-  //#endregion
 
   //#region TABLE COLUMN DOCUMENT DETAILS
 
@@ -611,17 +582,18 @@ const ApprovalDocument: React.FC = () => {
         sortable: false,
         align: 'left',
         render: (value) => {
-          const { bg, text } = getStatusColor(value);
+          const statusClass = getDocumentStatusColor(value);
 
           return (
             <TooltipText
               text={value || "-"}
               maxWidth="180px"
               tooltipThreshold={18}
-              tooltipClassName={`inline-block px-2 py-1 rounded-full text-xs font-medium ${bg} ${text} overflow-hidden text-ellipsis whitespace-nowrap`}
+              isApplyBgTextColor
+              tooltipClassName={`inline-block px-2 py-1 rounded-full text-sm font-medium ${statusClass} overflow-hidden text-ellipsis whitespace-nowrap`}
             />
           );
-        }
+        },
       },
       {
         key: 'ApprovalDocumentRemark',
@@ -638,26 +610,31 @@ const ApprovalDocument: React.FC = () => {
         )
       },
       {
-        key: 'CreatedBy',
+        key: 'ModifiedBy',
         label: 'Last Modified By',
         width: '33',
         sortable: false,
-        align: 'center',
-        render: (value) => (
+        align: 'left',
+        render: (value, row) => (
           <TooltipText
-            text={value || '-'}
+            text={value || row.CreatedBy || '-'}
             maxWidth="180px"
             tooltipThreshold={18}
           />
         )
       },
       {
-        key: 'CreatedDate',
+        key: 'ModifiedDate',
         label: 'Last Modified Date',
         width: '33',
         sortable: false,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+        align: 'left',
+        render: (value, row) =>
+          value
+            ? formatDate_dd_MonthName_yy(value)
+            : row.CreatedDate
+              ? formatDate_dd_MonthName_yy(row.CreatedDate)
+              : '-'
       },
       {
         key: 'actions',
@@ -794,17 +771,8 @@ const ApprovalDocument: React.FC = () => {
 
       newErrors.ApprovalDocumentStatus = "Status is required"
     }
-    const hasNewFiles = approvalDocumentFiles.length > 0;
 
-    const existingUrls = (approvalDocumentURL ?? "").split(",").filter(x => x.trim() !== "");
-
-    const remainingExisting = existingUrls.filter(url => !RemoveApprovalDocumentUrls.includes(url));
-
-    const hasRemainingExisting = remainingExisting.length > 0;
-
-    const hasFile = hasNewFiles || hasRemainingExisting;
-
-    if (!hasFile) {
+    if (!hasAnyDocumentFile(approvalDocumentFiles, approvalDocumentURL, RemoveApprovalDocumentUrls)) {
       newErrors.ApprovalDocumentURL = "File is required.";
     }
 
@@ -1201,7 +1169,7 @@ const ApprovalDocument: React.FC = () => {
             const params: FilterWithPaginationApprovalDocument = {
               PageNumber: 1,
               PageSize: pagination.pageSize,
-              ProjectId: Number(projectId),
+              ProjectId: Number(row.ProjectId),
               ApprovalDocumentId: Number(row.ApprovalDocumentId),
               ApprovalDocumentName: row.ApprovalDocumentName,
               ApprovalDocumentStatus: row.ApprovalDocumentStatus,

@@ -347,7 +347,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
       },
       {
         key: 'OrderBy',
-        label: 'Order By',
+        label: 'Sequence',
         width: '20',
         sortable: false,
         align: 'center',

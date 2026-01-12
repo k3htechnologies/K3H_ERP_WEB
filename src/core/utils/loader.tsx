@@ -21,8 +21,8 @@ export const Loader: React.FC<LoaderProps> = ({
                 <div className="flex items-center space-x-3">
                     <div className="h-8 w-8">
                         <img
-                            src="/src/assets/images/appLogo.png"
-                            alt="K3H ERP"
+                            src="favicon.png"
+                            alt="ERP"
                             className="h-8 w-8"
                             onError={(e) => {
                                 e.currentTarget.src = '/src/assets/images/appLogo.png'

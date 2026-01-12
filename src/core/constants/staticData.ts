@@ -42,7 +42,7 @@ export const MASTER_DATA = {
     businessCategory: ['Real Estate', 'Construction', 'Infrastructure', 'Residential', 'Commercial', 'Mixed Use'],
 
     documentStatus: [
-        'Applied', 'Doc Misssing', 'In Process', 'Issued', 'Not Applied', 'Not Applicable',
+        'Applied', 'Doc Missing', 'In Process', 'Issued', 'Not Applied', 'Not Applicable',
         'Paid', 'Payment Due', 'Rejected',
     ],
 
@@ -52,7 +52,7 @@ export const MASTER_DATA = {
 
     flat_unit_Type: ['Commercial', 'Gym', 'Residential', 'Void'],
 
-    residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', 'Duplex'],
+    residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', 'DUPLEX'],
 
     commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
 
@@ -60,6 +60,7 @@ export const MASTER_DATA = {
 
     applicant_type: ['Applicant', 'Co - Applicant'],
 
+    speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing', 'Commercial + Residential Sale', 'Commercial + Residential + Office Sale',],
     speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing', 'Commercial + Residential Sale', 'Commercial + Residential + Office Sale',],
 
     carpet_area_type: ['MOFA', 'RERA'],
@@ -118,65 +119,55 @@ export const MASTER_DATA = {
 
     courtType: ['Civil Court', 'District Court', 'High Court', 'Session Court', 'Supreme Court'],
 
-    amenities: [
-        '24x7 Security',
-        'Amphitheatre',
-        'ATM',
-        'Badminton Court',
-        'Banquet Hall',
-        'Basketball Court',
-        'Billiards Room',
-        'Cafeteria',
-        'Children Play Area',
-        'Club House',
-        'Conference Room',
-        'Convenience Store',
-        'Co-working Space',
-        'Covered Parking',
-        'CCTV Surveillance',
-        'Creche',
-        'Cycling Track',
-        'Day Care Centre',
-        'EV Charging Points',
-        'Earthquake Resistant Structure',
-        'Fire Fighting System',
-        'First Aid Room',
-        'Garden',
-        'Garbage Disposal System',
-        'Gym',
-        'Indoor Games',
-        'Intercom Facility',
-        'Jacuzzi',
-        'Jogging Track',
-        'Kids Pool',
-        'Laundry Service',
-        'Lift',
-        'Library',
-        'Lobby',
-        'Meditation Area',
-        'Parking',
-        'Pet Care Area',
-        'Pet Park',
-        'Pharmacy',
-        'Power Backup',
-        'Rainwater Harvesting',
-        'Reading Room',
-        'School Bus Bay',
-        'Security Cabin',
-        'Sewage Treatment Plant',
-        'Service Lift',
-        'Society Office',
-        'Spa',
-        'Squash Court',
-        'Steam Room',
-        'Swimming Pool',
-        'Table Tennis',
-        'Temple / Prayer Hall',
-        'Tennis Court',
-        'Visitor Parking',
-        'Water Supply',
-        'Yoga Room'
+    reasonsOfJobLeaving: [
+        'Better career growth opportunity',
+        'Business shutdown',
+        'Career break for family reasons',
+        'Career change / domain shift',
+        'Company financial instability',
+        'Company relocation',
+        'Company restructuring / downsizing',
+        'Completed internship / traineeship',
+        'Contract completed',
+        'Department closed',
+        'End of probation period',
+        'Extensive travel requirements',
+        'Family responsibilities',
+        'Freelancing / consulting interest',
+        'Health issues in family',
+        'Limited promotion opportunities',
+        'Limited salary growth',
+        'Long commute distance',
+        'Looking for a more flexible work culture',
+        'Looking for a more structured environment',
+        'Looking for new challenges',
+        'Management / organizational change',
+        'Marriage relocation',
+        'Moving closer to home',
+        'Moving into leadership role',
+        'Mutual separation',
+        'Parental care responsibility',
+        'Personal health reasons',
+        'Professional certification / training',
+        'Project successfully completed',
+        'Pursuing higher education',
+        'Relocation to another city',
+        'Relocation to another country',
+        'Retirement / early retirement',
+        'Returning back to home country',
+        'Role not matching my skills',
+        'Role redundancy',
+        'Seasonal job completed',
+        'Seeking fair compensation',
+        'Shift timing not suitable long-term',
+        'Spouse / family relocation',
+        'Starting my own business',
+        'Temporary role ended',
+        'Unstable work schedule',
+        'Work profile / job expectation mismatch',
+        'Work-life balance improvement'
     ]
+
 
 } as const
 
@@ -252,7 +243,106 @@ export const ROAD_WIDTH = toOptions(MASTER_DATA.road_width)
 export const CALENDER_VIEW_TYPE = toOptions(MASTER_DATA.calender_view_type)
 export const EVENT_TYPE = toOptions(MASTER_DATA.event_type)
 export const CONFERENCE_ROOM_NAME = toOptions(MASTER_DATA.conference_room_name)
-export const AMENITIES_OPTIONS = toOptions(MASTER_DATA.amenities)
+export const REASONS_OF_JOB_LEAVING_OPTIONS = toOptions(MASTER_DATA.reasonsOfJobLeaving)
+
+// ============================================================================
+// AMENITY CATEGORIES (Only for UI Grouping)
+// ============================================================================
+
+export const AMENITY_CATEGORIES: Record<string, readonly string[]> = {
+  "Safety & Security": [
+    "24x7 Security",
+    "CCTV Surveillance",
+    "Fire Fighting System",
+    "First Aid Room",
+    "Intercom Facility",
+    "Security Cabin",
+    "Earthquake Resistant Structure"
+  ],
+
+  "Sports & Fitness": [
+    "Swimming Pool",
+    "Gym",
+    "Yoga Room",
+    "Jogging Track",
+    "Badminton Court",
+    "Basketball Court",
+    "Tennis Court",
+    "Squash Court",
+    "Table Tennis",
+    "Kids Pool",
+    "Indoor Games",
+    "Cycling Track"
+  ],
+
+  "Community & Social Spaces": [
+    "Club House",
+    "Banquet Hall",
+    "Amphitheatre",
+    "Library",
+    "Reading Room",
+    "Society Office",
+    "Conference Room",
+    "Temple / Prayer Hall"
+  ],
+
+  "Kids & Family": [
+    "Children Play Area",
+    "Creche",
+    "Day Care Centre",
+    "School Bus Bay"
+  ],
+
+  "Pets - Friendly Facilities": [
+    "Pet Park",
+    "Pet Care Area"
+  ],
+
+   "Work & Business": [
+    "Co - Working Space",
+    "Conference Room",
+    "Society Office"
+  ],
+  
+  "Convenience & Utilities": [
+    "Lift",
+    "Power Backup",
+    "Water Supply",
+    "Parking",
+    "Visitor Parking",
+    "Covered Parking",
+    "EV Charging Points",
+    "Laundry Service",
+    "Garbage Disposal System",
+    "Sewage Treatment Plant",
+    "Rainwater Harvesting",
+    "Service Lift"
+  ],
+  "Health & Wellness": [
+    "Spa",
+    "Steam Room",
+    "Meditation Area",
+    "Jacuzzi"
+  ],
+
+  "Commercial & Services": [
+    "ATM",
+    "Pharmacy",
+    "Convenience Store",
+    "Co-working Space",
+    "Cafeteria"
+  ]
+}
+export const AMENITIES_BY_CATEGORY = Object.entries(AMENITY_CATEGORIES).map(
+  ([category, items]) => ({
+    category,
+    options: items.map(item => ({
+      label: item,
+      value: item
+    }))
+  })
+)
+
 
 
 

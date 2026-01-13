@@ -182,8 +182,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
   //#region PUSH DATA
   const PushAssetMappingMasterFormData = (): AddUpdateAssetMappingMasterRequest => {
-    var c = formData.ReturnDate ?? "1997-01-01"
-    return {
+       return {
       AssetMasterMappingId: formData.AssetMasterMappingId ?? 0,
       Uniquekey: formData.Uniquekey,
       AssetMasterId: formData.AssetMasterId,

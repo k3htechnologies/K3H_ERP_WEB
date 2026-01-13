@@ -80,7 +80,7 @@ export const ConfirmationDialogBox: React.FC<ConfirmationDialogBoxProps> = ({
                         {variant === 'logout' ?
                             <LogOut className={`h-6 w-6 ${styles.icon}`} /> 
                             :
-                            variant === 'inactive' ? <Unlock className={`h-6 w-6 ${styles.icon}`} /> : <LogOut className={`h-6 w-6 ${styles.icon}`} /> 
+                            variant === 'inactive' ? <Unlock className={`h-6 w-6 ${styles.icon}`} /> : <Trash2 className={`h-6 w-6 ${styles.icon}`} /> 
                             }
                         <h3 className={`text-lg font-semibold ${styles.title}`}>
                             {title}

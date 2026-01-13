@@ -60,7 +60,7 @@ export const MASTER_DATA = {
 
   applicant_type: ['Applicant', 'Co - Applicant'],
 
-  speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing', 'Commercial + Residential Sale', 'Commercial + Residential + Office Sale',],
+  speciality_type: ['Commercial Sale', 'Residential Sale', 'Commercial + Residential Sale',],
 
   carpet_area_type: ['MOFA', 'RERA'],
 
@@ -212,8 +212,8 @@ export const MASTER_DATA = {
     'PL - Privilege / Paid Leave',
     'SL - Sick Leave',
   ],
-  weekdays: ['1', '2','3','4','5','6'],
-  weekoff_type: ['Every', 'Alt(2,4)','Alt(1,3)','1st','2nd','3rd','4th','5th'],
+  weekdays: ['1', '2', '3', '4', '5', '6'],
+  weekoff_type: ['Every', 'Alt(2,4)', 'Alt(1,3)', '1st', '2nd', '3rd', '4th', '5th'],
 } as const
 
 // ============================================================================

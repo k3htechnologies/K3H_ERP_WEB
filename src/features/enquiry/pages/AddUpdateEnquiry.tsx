@@ -65,6 +65,7 @@ const initialFormState = (): AddUpdateEnquiryRequest => ({
     NeighborhoodPlacesInterestedIn: "",
     SourceOfFunding: "",
     Age: '',
+    DateOfBirth: '',
     EnquiryTimeIn: '00:00',
     EnquiryTimeOut: '00:00'
 });
@@ -326,6 +327,7 @@ export const AddUpdateEnquiry: React.FC = () => {
             OccupationType: formData.OccupationType,
             Accommodation: formData.Accommodation,
             Budget: formData.Budget,
+            DateOfBirth: formData.DateOfBirth,
             Age: formData.Age,
             Nationality: formData.Nationality,
             NeighborhoodPlacesInterestedIn: formData.NeighborhoodPlacesInterestedIn,
@@ -423,6 +425,17 @@ export const AddUpdateEnquiry: React.FC = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
                             <div>
+                                <TimePicker
+                                    label="Customer Time In"
+                                    required
+                                    size="md"
+                                    format={24}
+                                    value={formData.EnquiryTimeIn || ""}
+                                    onChange={(val) => handleFieldChange("EnquiryTimeIn", val)}
+                                    error={errors.EnquiryTimeIn}
+                                />
+                            </div>
+                            <div>
                                 <Input
                                     type="text"
                                     required
@@ -468,10 +481,17 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     placeholder="Enter Valid Email Id"
                                 />
                             </div>
-                        </div>
+                            <div>
+                                <DatePickerInput
+                                    label="DOB"
+                                    value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
+                                    onChange={(val) => handleFieldChange('DateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                    required
+                                    error={errors.DateOfBirth}
 
-                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+                                />
 
+                            </div>
                             <div>
                                 <SinglePageSelection
                                     label="Age (Year)"
@@ -482,6 +502,11 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     error={errors.Age}
                                 />
                             </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+
+
                             <div>
                                 <SinglePageSelection
                                     label="Accommodation"
@@ -500,6 +525,19 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     onChange={(value) => handleFieldChange("OccupationType", value)}
                                     options={OCCUPATION_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
                                     error={errors.OccupationType}
+                                />
+                            </div>
+                            <div>
+                                <SinglePageSelection
+                                    label="Source"
+                                    placeholder="Select Source"
+                                    value={formData.Source ?? ''}
+                                    onChange={(value) => handleFieldChange("Source", value)}
+                                    options={SOURCE_TYPE_OPTIONS.map(opt => ({
+                                        label: opt.name,
+                                        value: opt.id
+                                    }))}
+                                    error={errors.Source}
                                 />
                             </div>
                         </div>
@@ -717,7 +755,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         label="Source"
                                         placeholder="Select Source"
                                         value={formData.Source ?? ''}
-                                         onChange={(value) => handleFieldChange("Source", value)}
+                                        onChange={(value) => handleFieldChange("Source", value)}
                                         options={SOURCE_TYPE_OPTIONS.map(opt => ({
                                             label: opt.name,
                                             value: opt.id
@@ -856,20 +894,11 @@ export const AddUpdateEnquiry: React.FC = () => {
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                            <div>
-                                <TimePicker
-                                    label="Customer Time In"
-                                    size="sm"
-                                    format={24}
-                                    value={formData.EnquiryTimeIn || ""}
-                                    onChange={(val) => handleFieldChange("EnquiryTimeIn", val)}
-                                    error={errors.EnquiryTimeIn}
-                                />
-                            </div>
+
                             <div>
                                 <TimePicker
                                     label="Customer Time Out"
-                                    size="sm"
+                                    size="md"
                                     format={24}
                                     value={formData.EnquiryTimeOut || ""}
                                     onChange={(val) => handleFieldChange("EnquiryTimeOut", val)}

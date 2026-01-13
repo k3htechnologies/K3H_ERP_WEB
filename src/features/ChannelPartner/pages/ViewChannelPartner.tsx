@@ -61,6 +61,7 @@ const ViewChannelPartner: React.FC = () => {
 
             {/* Header Details*/}
             <HeaderActionBar
+                titleText="Channel Partner : "
                 subTitleText={editChannelPartnerData.Name}
                 cancelText="Cancel"
                 EditText="Edit"
@@ -84,7 +85,7 @@ const ViewChannelPartner: React.FC = () => {
                         {/* HEADER  DETAILS */}
                         <div className="mt-2 pb-4 border-b-2 border-gray-300">
                             <div className="flex items-center gap-28">
-                                
+
                                 <div className="flex items-center gap-2">
                                     <span className="text-gray-500 font-medium text-sm">Company Name:</span>
                                     <span className="text-black text-sm">{editChannelPartnerData.CompanyName || '-'} </span>
@@ -99,11 +100,12 @@ const ViewChannelPartner: React.FC = () => {
                             <FieldItem label="E-Mail ID" value={editChannelPartnerData.EmailId} />
                             <FieldItem label="Alternative Contact No:" value={editChannelPartnerData.AlternativeMobileNumber ? `+91 ${editChannelPartnerData.AlternativeMobileNumber}` : '-'} />
                             <FieldItem label="Speciality" value={editChannelPartnerData.Speciality} />
+                            <FieldItem label="Is RERA Number" value={editChannelPartnerData.RERANumber != "" ? 'Yes' : 'No'} />
+                            <FieldItem label="RERA Number" value={editChannelPartnerData.RERANumber} />
+                            <FieldItem label="Office Address" value={editChannelPartnerData.OfficeAddress} />
                             <FieldItem label="PAN Number" value={editChannelPartnerData.PanNumber} urls={editChannelPartnerData.PanCardURL} isIcon />
                             <FieldItem label="Aadhar Number" value={editChannelPartnerData.AadharCardNumber} urls={editChannelPartnerData.AadharCardURL} isIcon />
                             <FieldItem label="GST Number" value={editChannelPartnerData.GSTNumber} />
-                            <FieldItem label="RERA Number" value={editChannelPartnerData.RERANumber} />
-                            <FieldItem label="Office Address" value={editChannelPartnerData.OfficeAddress} />
                             <FieldItem label="Created By" value={editChannelPartnerData.CreatedBy} />
                             <FieldItem label="Created Date" value={editChannelPartnerData.CreatedDate ? formatDate_dd_MonthName_yy(editChannelPartnerData.CreatedDate) : ""} />
                             <FieldItem label="Modified By" value={editChannelPartnerData.ModifiedBy} />

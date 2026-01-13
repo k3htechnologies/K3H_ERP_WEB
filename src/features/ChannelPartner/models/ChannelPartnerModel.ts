@@ -24,6 +24,7 @@ export interface ChannelPartnerData {
     OfficeAddress: string
     AlternativeMobileNumber: string
     GSTNumber: string
+    IsRERANumber:number | 0
     RERANumber: string
     PanNumber: string
     PanCardURL: string
@@ -61,6 +62,7 @@ export interface AddUpdateChannelPartnerRequest {
     RemoveAadharCardURL: string | ''
     GSTNumber: string
     RERANumber: string
+    IsRERANumber:number | 0
     Speciality: string
     OfficeAddress: string
     ProjectId: string

@@ -447,7 +447,7 @@ export const ChannelPartner: React.FC = () => {
       align: 'center',
       render: (value) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="120px"
           tooltipThreshold={12}
         />
@@ -455,13 +455,13 @@ export const ChannelPartner: React.FC = () => {
     },
     {
       key: 'AadharCardNumber',
-      label: 'Aadhar Card Number',
+      label: 'Aadhaar Card Number',
       width: '12',
       sortable: false,
       align: 'center',
       render: (value) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="120px"
           tooltipThreshold={12}
         />
@@ -475,7 +475,7 @@ export const ChannelPartner: React.FC = () => {
       align: 'center',
       render: (value) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="150px"
           tooltipThreshold={15}
         />
@@ -489,7 +489,7 @@ export const ChannelPartner: React.FC = () => {
       align: 'center',
       render: (value) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="120px"
           tooltipThreshold={12}
         />

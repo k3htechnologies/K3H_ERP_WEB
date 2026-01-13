@@ -182,7 +182,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
   //#region PUSH DATA
   const PushAssetMappingMasterFormData = (): AddUpdateAssetMappingMasterRequest => {
-       return {
+    return {
       AssetMasterMappingId: formData.AssetMasterMappingId ?? 0,
       Uniquekey: formData.Uniquekey,
       AssetMasterId: formData.AssetMasterId,
@@ -224,7 +224,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
         if (E.isRight(response)) {
 
 
-          addToast({ type: "success", title: action === "Inactive"? "Asset mapping inactive successfully" : response.right.SuccessMessage[0] });
+          addToast({ type: "success", title: action === "Inactive" ? "Asset mapping inactive successfully" : response.right.SuccessMessage[0] });
 
           const locationState = location.state as {
             listState?: {
@@ -306,7 +306,6 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
               />
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
             <div>
               <Input
@@ -329,45 +328,46 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                 error={errors.AssignedDate}
               />
             </div>
-
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+            <div>
+              <TextArea
+                label="Remarks"
+                className='thin-scroll'
+                value={formData.Remarks ?? ""}
+                placeholder="Enter Remarks"
+                onChange={(e) => handleFieldChange("Remarks", e.target.value)}
+                error={errors.Remarks} />
+            </div>
+          </div>
+
           {formData.AssetMasterMappingId !== 0 && (
             <>
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Return Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-
-              <div>
-                <Input
-                  type="text"
-                  label='Condition On Return'
-                  value={formData.ConditionOnReturn ?? ""}
-                  onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)}
-                  placeholder="Enter Condition On Return"
-                  maxLength={250}
-                  error={errors.ConditionOnReturn}
-                />
+              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300">Return Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Input
+                    type="text"
+                    label='Condition On Return'
+                    value={formData.ConditionOnReturn ?? ""}
+                    onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)}
+                    placeholder="Enter Condition On Return"
+                    maxLength={250}
+                    error={errors.ConditionOnReturn}
+                  />
+                </div>
+                <div>
+                  <DatePickerInput
+                    label="Return Date"
+                    value={formatDate_dd_mm_yyyy(formData.ReturnDate)}
+                    onChange={(val) => handleFieldChange('ReturnDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                    error={errors.ReturnDate}
+                  />
+                </div>
               </div>
-              <div>
-                <DatePickerInput
-                  label="Return Date"
-                  value={formatDate_dd_mm_yyyy(formData.ReturnDate)}
-                  onChange={(val) => handleFieldChange('ReturnDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                  error={errors.ReturnDate}
-                />
-              </div>
-            </div>
             </>
           )}
 
-          <div>
-            <TextArea
-              label="Remarks"
-              className='thin-scroll'
-              value={formData.Remarks ?? ""}
-              placeholder="Enter Remarks"
-              onChange={(e) => handleFieldChange("Remarks", e.target.value)}
-              error={errors.Remarks} />
-          </div>
 
         </div>
       </div>

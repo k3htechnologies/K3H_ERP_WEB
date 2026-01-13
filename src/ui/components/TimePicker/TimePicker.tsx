@@ -37,6 +37,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({
     m: number;
     ap: "AM" | "PM";
   };
+  
   // --- Parse value into hours, minutes, AM/PM ---
   const parseValue = useCallback(
     (val?: string): ParsedTime => {
@@ -146,7 +147,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({
       
       {label && (
 
-        <div style={{ marginBottom: "6px", fontSize: currentSize.fontSize, fontWeight: theme.fontWeight.medium, color: theme.colors.black }}>
+        <div style={{ marginBottom: "6px", fontSize: theme.fontSize.sm, fontWeight: theme.fontWeight.medium, color: theme.colors.text }}>
 
           {label}
 

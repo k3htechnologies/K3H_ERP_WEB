@@ -1000,7 +1000,7 @@ export const WeekOffMappingMaster: React.FC = () => {
         columns={weekOffMappingMasterColumns}
         selectedKeys={selectedWeekOffMappingMasterColumnKeys}
         requiredKeys={requiredWeekOffMappingMasterColumnKeys}
-        title="Customize Week Off Mapping Master Table Columns"
+        title="Customize Table Columns"
       />
 
       {/* FILTER WEEK OFF MAPPING MODAL */}

@@ -33,6 +33,7 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 import { getDocumentStatusColor } from './ProjectDocumentStatus';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 
 const initialFormState = (): AddUpdateProjectDocumentRequest => ({
@@ -139,6 +140,13 @@ const ProjectDocument: React.FC = () => {
     setActiveTab("");
 
     setProjectDocumentList([]);
+
+    setPagination({
+      currentPage: 1,
+      totalPages: 0,
+      totalRecords: 0,
+      pageSize: pagination.pageSize,
+    });
 
     loadProjectDocumentTabs();
 
@@ -789,7 +797,7 @@ const ProjectDocument: React.FC = () => {
       newErrors.ProjectDocumentStatus = "Status is required"
     }
 
-    if (formData.ProjectDocumentStatus?.toUpperCase()==="ISSUED" && !hasAnyDocumentFile(projectDocumentFiles, projectDocumentURL, RemoveProjectDocumentUrls)) {
+    if (formData.ProjectDocumentStatus?.toUpperCase() === "ISSUED" && !hasAnyDocumentFile(projectDocumentFiles, projectDocumentURL, RemoveProjectDocumentUrls)) {
       newErrors.ProjectDocumentURL = "File is required.";
     }
 
@@ -1178,6 +1186,7 @@ const ProjectDocument: React.FC = () => {
           defaultActive={activeTab}
           islarge={true}
           onTabChange={(t) => {
+            setSearchTerm('');
             setActiveTab(t.id);
 
             const newFilters: FilterInfo = {
@@ -1199,7 +1208,7 @@ const ProjectDocument: React.FC = () => {
         pagination={projectDocumentPaginationInfo}
         sortInfo={sortInfo}
         onSort={handleSortColumn}
-        emptyMessage='No Document Data Found'
+        emptyMessage='No Project Document Data Found'
         loading={isLoading}
         fixedHeight
         recordsPerPage={20}
@@ -1248,7 +1257,7 @@ const ProjectDocument: React.FC = () => {
               <DataTableWithOutBorder
                 data={details}
                 columns={projectDocumentDetailsColumns}
-                emptyMessage="No Departments Data Found"
+                emptyMessage="No Project Document Data Found"
                 fixedHeight={true}
                 maxHeight="calc(100vh - 255px)"
                 recordsPerPage={20}
@@ -1280,10 +1289,10 @@ const ProjectDocument: React.FC = () => {
           setFormData(initialFormState());
           setErrors({});
         }}
-        title={editingDocumentData ? 'Update Document' : 'Add Document'}
+        title={editingDocumentData ? 'Update Document Name' : 'Add Document Name'}
         onSubmit={(e) => handleAddUpdateDocument(1, e)}
         saveText={editingDocumentData ? 'Update' : 'Add'}
-        resetText='Reset'
+        resetText=''
         loading={isLoading}
         size='xl'
       >
@@ -1291,14 +1300,14 @@ const ProjectDocument: React.FC = () => {
           <div className="space-y-4" >
             <div>
               <Input
-                label='Document'
+                label='Document Name'
                 required
                 error={errors.ProjectDocumentName}
                 type="text"
                 value={formData.ProjectDocumentName}
-                maxLength={250}
+                maxLength={100}
                 onChange={(e) => handleFieldChange('ProjectDocumentName', e.target.value)}
-                placeholder="Enter Document"
+                placeholder="Enter Document Name"
               />
 
             </div>
@@ -1361,7 +1370,7 @@ const ProjectDocument: React.FC = () => {
               <MultiFilePicker
                 label="Files"
                 placeholder='Select Files'
-                required={formData.ProjectDocumentStatus?.toUpperCase()==="ISSUED" ? true:false}
+                required={formData.ProjectDocumentStatus?.toUpperCase() === "ISSUED" ? true : false}
                 value={projectDocumentFiles}
                 onChange={setProjectDocumentFiles}
                 availableFilesURL={projectDocumentURL ?? ""}
@@ -1383,14 +1392,13 @@ const ProjectDocument: React.FC = () => {
             </div>
 
             <div>
-              <Input
-                label='Remark'
-                type="text"
+              <TextArea
+                label="Remark"
+                placeholder="Enter Remark"
+                className='thin-scroll'
                 value={formData.ProjectDocumentRemark}
-                maxLength={250}
-                onChange={(e) => handleFieldChange('ProjectDocumentRemark', e.target.value)}
-                placeholder="Enter Remarks"
-              />
+                onChange={(e) => handleFieldChange("ProjectDocumentRemark", e.target.value)}
+                error={errors.ProjectDocumentRemark} />
 
             </div>
 

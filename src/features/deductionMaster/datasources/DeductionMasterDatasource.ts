@@ -54,30 +54,9 @@ export class DeductionMasterDatasourceImpl implements DeductionMasterDatasource 
     async addUpdateDeductionMaster(params: AddUpdateDeductionMasterRequest): Promise<DeductionMasterSaveResponse> {
 
         try {
-
-            const payLoad: AddUpdateDeductionMasterRequest = {
-                DeductionMasterId: params.DeductionMasterId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-
-                Name: params.Name?.trim() ?? '',
-                Type: params.Type?.trim() ?? '',
-                Value: params.Value ?? 0,
-
-                BranchMasterId: params.BranchMasterId ?? 0,
-                BranchName: params.BranchName?.trim() ?? '',
-
-                MinSalary: params.MinSalary ?? 0,
-                MaxSalary: params.MaxSalary ?? 0,
-
-                Gender: params.Gender?.trim() ?? '',
-
-                StateMasterId: params.StateMasterId ?? 0,
-                StateName: params.StateName?.trim() ?? ''
-            }
-
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 DeductionMasterApi.ADD_UPDATE,
-                payLoad
+                params
             )
 
             return response

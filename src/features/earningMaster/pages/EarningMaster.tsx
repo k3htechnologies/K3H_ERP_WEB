@@ -33,11 +33,13 @@ import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelectio
 import { CTC_EARNINGS } from '@/core/constants';
 import { allowPercentage, filterNumbersWithDecimal } from '@/core/utils/fileValidation';
 import { Edit, Trash2 } from 'lucide-react';
+import RadioPill from '@/ui/components/forms/RadioPill';
 
 const initialFormState = (): AddUpdateEarningMasterRequest => ({
   EarningMasterId: 0,
   Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   Name: "",
+  Applicable: "",
   Type: "",
   Value: 0,
   MinSalary: 0,
@@ -100,6 +102,8 @@ export const EarningMaster: React.FC = () => {
   const [dropdownLabels, setDropdownLabels] = useState<{
     branchName?: string;
   }>({});
+
+  const [applicable, setApplicable] = useState<string>("Percenatge");
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -133,13 +137,14 @@ export const EarningMaster: React.FC = () => {
           EarningMasterId: editingEarningMasterData.EarningMasterId,
           Uniquekey: editingEarningMasterData.Uniquekey || initialFormState().Uniquekey,
           Name: editingEarningMasterData.Name || '',
+          Applicable: editingEarningMasterData.Applicable || '',
           Type: editingEarningMasterData.Type || '',
           Value: editingEarningMasterData.Value || 0,
           MinSalary: editingEarningMasterData.MinSalary || 0,
           MaxSalary: editingEarningMasterData.MaxSalary || 0,
           BranchMasterId: editingEarningMasterData.BranchMasterId || 0
         });
-
+        setApplicable(editingEarningMasterData.Applicable);
         setDropdownLabels({
           branchName: editingEarningMasterData.BranchName || ""
         });
@@ -376,8 +381,16 @@ export const EarningMaster: React.FC = () => {
         render: (value) => value || '-'
       },
       {
+        key: 'Applicable',
+        label: 'Applicable',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || ''
+      },
+      {
         key: 'Value',
-        label: 'Value (%)',
+        label: 'Value',
         width: '15',
         sortable: false,
         align: 'center',
@@ -389,7 +402,7 @@ export const EarningMaster: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'left',
-         render: (value) => value ? `₹ ${value}` : '0'
+        render: (value) => value ? `₹ ${value}` : '0'
       },
 
       {
@@ -398,7 +411,7 @@ export const EarningMaster: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'left',
-         render: (value) => value ? `₹ ${value}` : '0'
+        render: (value) => value ? `₹ ${value}` : '0'
       },
       {
         key: 'BranchName',
@@ -514,7 +527,8 @@ export const EarningMaster: React.FC = () => {
           <div className="space-y-4">
             <FieldItem label="Earning Name" value={data.Name} isRow withBorder={true} className='font-medium text-blue-900 ' />
             <FieldItem label="Type" value={data.Type} isRow withBorder={true} />
-            <FieldItem label="Value (%)" value={data.Value} isRow withBorder={true} />
+            <FieldItem label="Applicable" value={data.Applicable} isRow withBorder={true} />
+            <FieldItem label="Value" value={data.Value} isRow withBorder={true} />
             <FieldItem label="Min Salary (₹)" value={data.MinSalary} isRow withBorder={true} />
             <FieldItem label="Max Salary (₹)" value={data.MaxSalary} isRow withBorder={true} />
             <FieldItem label="BranchName" value={data.BranchName} isRow withBorder={true} />
@@ -545,7 +559,7 @@ export const EarningMaster: React.FC = () => {
                       setIsViewModalOpen(false)
                       handleConfirmationDialogBoxOpen(data)
                     }}
-                     leftIcon={<Trash2 className="h-5 w-5" />}
+                    leftIcon={<Trash2 className="h-5 w-5" />}
                   >
                     Delete
                   </Button>
@@ -668,6 +682,7 @@ export const EarningMaster: React.FC = () => {
       EarningMasterId: formData.EarningMasterId,
       Uniquekey: formData.Uniquekey,
       Name: formData.Name,
+      Applicable: formData.Applicable,
       Type: formData.Type,
       Value: formData.Value,
       MinSalary: formData.MinSalary,
@@ -915,25 +930,62 @@ export const EarningMaster: React.FC = () => {
                 error={errors.Type}
               />
             </div>
+
+            <div >
+              <p className="text-sm text-gray-600 mb-2">
+                Applicable *
+              </p>
+              <div className="flex gap-3">
+                <RadioPill
+                  name="Applicable"
+                  label="Percenatge"
+                  value={formData.Applicable ?? ''}
+                  checked={applicable === "Percenatge"}
+                  onChange={() => {
+                    formData.Value = 0;
+                    setApplicable("Percenatge");
+
+                    handleFieldChange("Applicable", "Percenatge");
+                  }}
+                />
+
+                <RadioPill
+                  name="Applicable"
+                  label="Lumsum"
+                  value={formData.Applicable ?? ''}
+                  checked={applicable === "Lumsum"}
+                  onChange={() => {
+                    formData.Value = 0;
+                    setApplicable("Lumsum");
+                    handleFieldChange("Applicable", "Lumsum");
+                  }}
+                />
+              </div>
+            </div>
             <div>
               <Input
-                label='Value (%)'
+                label={formData.Applicable === "Lumsum" ? 'Value (Lumsum)' : 'Value (%)'}
                 required
                 error={errors.Value}
                 type="text"
                 value={formData.Value ?? ''}
-                rightIcon="%"
                 maxLength={10}
                 onChange={(e) => {
-                  const val = allowPercentage(e.target.value);
-                  if (val !== null) {
-
+                  if (formData.Applicable === "Lumsum") {
                     handleFieldChange("Value", filterNumbersWithDecimal(e.target.value))
+                  }
+                  else {
+                    const val = allowPercentage(e.target.value);
+                    if (val !== null) {
+
+                      handleFieldChange("Value", filterNumbersWithDecimal(e.target.value))
+                    }
                   }
                 }}
                 placeholder="Enter Value"
               />
             </div>
+
             <div>
               <Input
                 label='Min Salary (₹)'

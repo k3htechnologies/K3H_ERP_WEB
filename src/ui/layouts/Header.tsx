@@ -390,7 +390,7 @@ export const Header: React.FC<HeaderProps> = ({
                             leftIcon={<Info size={18} color="#135BEC" />}
                             leftIconClick={() => {
                                 
-                                if (Number(projectId) < 0) return;
+                                if (!projectId || projectId <= 0) return;
 
                                 loadProjectMaster();
                                 setIsProjectDetailsModalOpen(true);

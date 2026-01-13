@@ -987,7 +987,7 @@ export const ShiftMappingMaster: React.FC = () => {
         columns={shiftMappingMasterColumns}
         selectedKeys={selectedShiftMappingMasterColumnKeys}
         requiredKeys={requiredShiftMappingMasterColumnKeys}
-        title="Customize Shift Mapping Master Table Columns"
+        title="Customize Table Columns"
       />
 
       {/* FILTER SHIFT MAPPING  MASTER MODAL */}

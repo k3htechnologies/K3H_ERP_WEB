@@ -17,12 +17,14 @@ import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryS
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { allowPercentage, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import RadioPill from "@/ui/components/forms/RadioPill";
 
 const initialFormState = (): AddUpdateDeductionMasterRequest => ({
   DeductionMasterId: 0,
   Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   Name: "",
   Type: "",
+  Applicable: "",
   Value: 0,
   BranchMasterId: 0,
   MinSalary: 0,
@@ -50,7 +52,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
   const { DeductionMasterId } = useParams<{ DeductionMasterId?: string }>();
   const DeductionId = DeductionMasterId ? Number(DeductionMasterId) : 0;
   const isAddMode = DeductionId === 0;
-
+  const [applicable, setApplicable] = useState<string>("Percenatge");
   // TOAST
   const { addToast } = useToast();
 
@@ -131,6 +133,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
               DeductionMasterId: e.DeductionMasterId ?? prev.DeductionMasterId,
               Uniquekey: e.Uniquekey ?? prev.Uniquekey,
               Name: e.Name ?? prev.Name,
+              Applicable: e.Applicable ?? prev.Applicable,
               Type: e.Type ?? prev.Type,
               Value: e.Value ?? prev.Value,
               BranchMasterId: e.BranchMasterId ?? prev.BranchMasterId,
@@ -140,7 +143,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
               StateMasterId: e.StateMasterId ?? prev.StateMasterId,
               StateName: e.StateName ?? prev.StateName
             }));
-
+            setApplicable(e.Applicable);
             setDropdownLabels({
               branchName: e.BranchName || "",
               gender: e.Gender || "",
@@ -211,6 +214,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
       Name: formData.Name || '',
       Type: Array.isArray(formData.Type) ? formData.Type.join(',') : formData.Type,
       Value: formData.Value || 0,
+      Applicable: formData.Applicable,
       BranchMasterId: formData.BranchMasterId || 0,
       MinSalary: formData.MinSalary || 0,
       MaxSalary: formData.MaxSalary || 0,
@@ -327,19 +331,55 @@ export const AddUpdateDeductionMaster: React.FC = () => {
                   error={errors.Type}
                 />
               </div>
+              <div >
+                <p className="text-sm text-gray-600 mb-2">
+                  Applicable *
+                </p>
+                <div className="flex gap-3">
+                  <RadioPill
+                    name="Applicable"
+                    label="Percenatge"
+                    value={formData.Applicable ?? ''}
+                    checked={applicable === "Percenatge"}
+                    onChange={() => {
+                      formData.Value = 0;
+                      setApplicable("Percenatge");
+
+                      handleFieldChange("Applicable", "Percenatge");
+                    }}
+                  />
+
+                  <RadioPill
+                    name="Applicable"
+                    label="Lumsum"
+                    value={formData.Applicable ?? ''}
+                    checked={applicable === "Lumsum"}
+                    onChange={() => {
+                      formData.Value = 0;
+                      setApplicable("Lumsum");
+                      handleFieldChange("Applicable", "Lumsum");
+                    }}
+                  />
+                </div>
+              </div>
               <div>
                 <Input
-                  label='Value (%)'
+                  label={formData.Applicable === "Lumsum" ? 'Value (Lumsum)' : 'Value (%)'}
                   required
                   error={errors.Value}
                   type="text"
                   value={formData.Value ?? ''}
                   maxLength={10}
                   onChange={(e) => {
-                    const val = allowPercentage(e.target.value);
-                    if (val !== null) {
-
+                    if (formData.Applicable === "Lumsum") {
                       handleFieldChange("Value", filterNumbersWithDecimal(e.target.value))
+                    }
+                    else {
+                      const val = allowPercentage(e.target.value);
+                      if (val !== null) {
+
+                        handleFieldChange("Value", filterNumbersWithDecimal(e.target.value))
+                      }
                     }
                   }}
                   placeholder="Enter Value"

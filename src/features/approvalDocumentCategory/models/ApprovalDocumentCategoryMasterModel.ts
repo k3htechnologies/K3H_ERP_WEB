@@ -17,7 +17,7 @@ export interface ApprovalDocumentCategoryMasterData {
     ProjectId: number | 0,
     ApprovalDocumentCategoryName: string,
     OrderBy: number | 0,
-
+    DocumentCount: number | 0,
     CreatedById: number | 0,
     CreatedBy: string | '',
     CreatedDate: string | null,

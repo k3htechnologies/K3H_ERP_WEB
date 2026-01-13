@@ -106,7 +106,8 @@ const ViewDeductionMaster: React.FC = () => {
 
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Value (%)" value={editDeductionData.Value} />
+                                    <FieldItem label="Applicable" value={editDeductionData.Applicable} />
+                                    <FieldItem label="Value" value={editDeductionData.Value} />
 
                                     <FieldItem label="Min Salary (₹)" value={editDeductionData.MinSalary} />
                                     <FieldItem label="Max Salary (₹)" value={editDeductionData.MaxSalary} />

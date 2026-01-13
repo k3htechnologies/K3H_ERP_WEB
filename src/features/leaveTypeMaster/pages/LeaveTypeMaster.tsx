@@ -975,7 +975,7 @@ export const LeaveTypeMaster: React.FC = () => {
         columns={leaveTypeMasterColumns}
         selectedKeys={selectedLeaveTypeMasterColumnKeys}
         requiredKeys={requiredLeaveTypeMasterColumnKeys}
-        title="Customize Leave Type Master Table Columns"
+        title="Customize Table Columns"
       />
       <Modal
         isOpen={showFilterPopup}

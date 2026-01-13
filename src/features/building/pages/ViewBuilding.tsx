@@ -422,11 +422,16 @@ export const ViewBuilding: React.FC = () => {
                                 Location Details
                             </h4>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
                                 <FieldItem label="Country" value={buildingData?.CountryName ?? '-'} />
                                 <FieldItem label="State" value={buildingData?.StateName ?? '-'} />
                                 <FieldItem label="District" value={buildingData?.DistrictName ?? '-'} />
-                                <FieldItem label="City" value={buildingData?.CityName ?? '-'} />
+                                
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                             <FieldItem label="City" value={buildingData?.CityName ?? '-'} />
+                                <FieldItem label="Village" value={buildingData?.VillageName ?? '-'} />
+
                             </div>
 
                         </section>

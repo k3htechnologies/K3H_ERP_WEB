@@ -35,6 +35,9 @@ export interface BuildingData {
   CityMasterId: number | null;
   CityName: string;
 
+  VillageMasterId: number | null;
+  VillageName: string;
+
   TotalNumberOfUnits: number | null;
   TotalUnitsAreaUtilizedSqFt: number | null;
 
@@ -76,6 +79,7 @@ export interface AddUpdateBuildingRequest {
   DistrictMasterId: number | null;
   StateMasterId: number | null;
   CityMasterId: number | null;
+  VillageMasterId: number | null;
   TotalNumberOfUnits: number | null;
   TotalUnitsAreaUtilizedSqFt: number | null;
   IsGarden: boolean | null;

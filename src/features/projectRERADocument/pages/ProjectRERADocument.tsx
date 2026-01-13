@@ -28,6 +28,7 @@ import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWitho
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { getDocumentStatusColor } from '@/features/projectDocument/pages/ProjectDocumentStatus';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 
 const initialFormState = (): AddUpdateProjectRERADocumentRequest => ({
@@ -129,9 +130,17 @@ const ProjectRERADocument: React.FC = () => {
     if (!projectId) return;
 
     setExpandedParentRow(null);
+
     setExpandedParentId(null);
 
     setProjectRERADocumentList([]);
+
+    setPagination({
+      currentPage: 1,
+      totalPages: 0,
+      totalRecords: 0,
+      pageSize: pagination.pageSize,
+    });
 
     loadProjectRERADocumentTabs()
 
@@ -539,6 +548,7 @@ const ProjectRERADocument: React.FC = () => {
               <MultiImageViewer
                 images={parseDocumentUrls(row.RERAPortalScreenShotURL)}
                 title="Screenshot Document"
+                isIcon={false}
                 triggerLabel={value === '' || 'Screenshot'}
               />
 
@@ -960,6 +970,8 @@ const ProjectRERADocument: React.FC = () => {
           islarge={true}
           onTabChange={(t) => {
 
+            setSearchTerm('');
+            
             setActiveTab(t.id);
 
             setActiveTabName(t.label);
@@ -1032,7 +1044,7 @@ const ProjectRERADocument: React.FC = () => {
               <DataTableWithOutBorder
                 data={details}
                 columns={projectRERADocumentDetailsColumns}
-                emptyMessage="No RERA Document Found"
+                emptyMessage="No RERA Document Data Found"
                 fixedHeight={true}
                 recordsPerPage={20}
                 className="flex-1"
@@ -1127,15 +1139,13 @@ const ProjectRERADocument: React.FC = () => {
               />
             </div>
             <div>
-              <Input
-                label='Remark'
-                type="text"
+              <TextArea
+                label="Remark"
+                placeholder="Enter Remark"
+                className='thin-scroll'
                 value={formData.ProjectRERADocumentRemark}
-                maxLength={250}
-                onChange={(e) => handleFieldChange('ProjectRERADocumentRemark', e.target.value)}
-                placeholder="Enter Remarks"
-              />
-
+                onChange={(e) => handleFieldChange("ProjectRERADocumentRemark", e.target.value)}
+                error={errors.ProjectRERADocumentRemark} />
             </div>
 
           </div>

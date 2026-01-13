@@ -875,7 +875,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
         columns={leaveEncashmentMasterColumns}
         selectedKeys={selectedLeaveEncashmentMasterColumnKeys}
         requiredKeys={requiredLeaveEncashmentMasterColumnKeys}
-        title="Customize Leave Encashment Master Table Columns"
+        title="Customize Table Columns"
       />
 
       {/* DELETE CONFIRMATION LEAVE ENCASHMENT MODAL */}

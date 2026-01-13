@@ -30,13 +30,14 @@ import type { FilterPullExcelSample } from '@/features/technical/models/Technica
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import { filterNumbers } from '@/core/utils/fileValidation';
 
 const initialFormState = (): AddUpdateProjectRERADocumentCategoryMasterRequest => ({
   ProjectRERADocumentCategoryId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   ProjectId: 0,
   ProjectRERADocumentCategory: '',
-  OrderBy: 0
+  OrderBy: 0,
 });
 
 
@@ -101,9 +102,9 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
   //#endregion
 
   //#region INITIALIZATION
-  
+
   useEffect(() => {
- if (!projectId) return;
+    if (!projectId) return;
     fetchProjectRERADocumentCategoryList();
   }, [projectId]);
 
@@ -120,7 +121,7 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
         setFormData({
           ProjectRERADocumentCategoryId: editingProjectRERADocumentCategoryMasterData.ProjectRERADocumentCategoryId,
           Uniquekey: editingProjectRERADocumentCategoryMasterData.Uniquekey || initialFormState().Uniquekey,
-          ProjectId:Number(projectId),
+          ProjectId: Number(projectId),
           ProjectRERADocumentCategory: editingProjectRERADocumentCategoryMasterData.ProjectRERADocumentCategoryName || '',
           OrderBy: editingProjectRERADocumentCategoryMasterData.OrderBy || 0
         });
@@ -157,7 +158,7 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
           IsCheckPermission: true,
           ProjectRERADocumentCategoryId: filterParams.ProjectRERADocumentCategoryId ? Number(filterParams.ProjectRERADocumentCategoryId) : 0,
           ProjectRERADocumentCategory: filterParams.ProjectRERADocumentCategory?.trim() || undefined,
-           ProjectId: Number(projectId),
+          ProjectId: Number(projectId),
           SortBy: sortByParam
         };
 
@@ -324,7 +325,7 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
     () => [
       {
         key: 'ProjectRERADocumentCategoryName',
-        label: 'Project RERA Document Category',
+        label: 'RERA Document Category',
         width: '40',
         sortable: true,
         fixed: 'left',
@@ -344,17 +345,25 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
         key: 'OrderBy',
         label: 'Sequence',
         width: '20',
-        sortable: false,
+        sortable: true,
         align: 'center',
         render: value => value ?? ''
-      }
+      },
+      {
+        key: 'DocumentCount',
+        label: 'Document Count',
+        width: '20',
+        sortable: false,
+        align: 'center',
+        render: value => value ?? 0
+      },
     ],
     [canAction, handleViewProjectRERADocumentCategoryDetails, handleEditProjectRERADocumentCategoryMaster, handleConfirmationDialogBoxOpen]
   );
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
-  const requiredProjectRERADocumentCategoryMasterColumnKeys: string[] = ['ProjectRERADocumentCategory'];
+  const requiredProjectRERADocumentCategoryMasterColumnKeys: string[] = ['ProjectRERADocumentCategoryName'];
 
   const allProjectRERADocumentCategoryMasterColumnKeys: string[] = projectRERADocumentCategoryMasterColumns.map(c => c.key);
 
@@ -431,7 +440,8 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
               withBorder
               className="font-medium text-blue-900 "
             />
-            <FieldItem label="Order By" value={data.OrderBy} isRow withBorder />
+            <FieldItem label="Sequence" value={data.OrderBy} isRow withBorder />
+            <FieldItem label="Document Count" value={data.DocumentCount ?? 0} isRow withBorder />
           </div>
 
           <div className="space-y-4">
@@ -542,15 +552,12 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
   } => {
     const newErrors: { [key: string]: string } = {};
 
-    if (formData.ProjectRERADocumentCategory.trim() === '') {
+    if (!formData.ProjectRERADocumentCategory?.trim()) {
       newErrors.ProjectRERADocumentCategory = 'Project RERA Document Category is required';
-    } else if (formData.ProjectRERADocumentCategory.length < 3) {
-      newErrors.ProjectRERADocumentCategory = 'Project RERA Document Category must be at least 3 characters long';
     }
 
-
     if (formData.OrderBy === 0) {
-      newErrors.OrderBy = 'Order By is required';
+      newErrors.OrderBy = 'Sequence is required';
     }
 
     return {
@@ -785,7 +792,7 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
         onUploadExcel={handleExcelImportProjectRERADocumentCategoryMaster}
         onDownloadSampleExcel={handleDownloadExcelSampleProjectRERADocumentCategoryMaster}
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && projectRERADocumentCategoryListForTable.length > 0}
         onExportExcel={handleExportProjectRERADocumentCategoryExcel}
         onExportPdf={handleExportProjectRERADocumentCategoryPdf}
         exportLoading={isLoading}
@@ -833,9 +840,9 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
         title={editingProjectRERADocumentCategoryMasterData ? 'Update Project RERA Document Category' : 'Add Project RERA Document Category'}
         onSubmit={handleAddUpdateProjectRERADocumentCategoryMaster}
         saveText={
-          editingProjectRERADocumentCategoryMasterData ? 'Update Project RERA Document Category' : 'Save Project RERA Document Category'
+          editingProjectRERADocumentCategoryMasterData ? 'Update' : 'Add'
         }
-        resetText="Reset"
+        resetText=""
         loading={isLoading}
         size="xl"
       >
@@ -845,7 +852,7 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
               <Input
                 label="Project RERA Document Category"
                 required
-                error={errors.projectRERADocumentCategory}
+                error={errors.ProjectRERADocumentCategory}
                 type="text"
                 value={formData.ProjectRERADocumentCategory}
                 maxLength={200}
@@ -856,12 +863,11 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
 
             <div>
               <Input
-                label="Order By"
+                label="Sequence"
                 required
                 error={errors.OrderBy}
-                type="number"
                 value={formData.OrderBy.toString()}
-                onChange={e => handleFieldChange('OrderBy', Number(e.target.value))}
+                onChange={(e) => handleFieldChange('OrderBy', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                 placeholder="Enter Order"
               />
             </div>

@@ -339,8 +339,16 @@ export const DeductionMaster: React.FC = () => {
       render: (value) => value || ''
     },
     {
+      key: 'Applicable',
+      label: 'Applicable',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || ''
+    },
+    {
       key: 'Value',
-      label: 'Deduction Value (%)',
+      label: 'Deduction Value',
       width: '15',
       sortable: false,
       align: 'center',

@@ -31,6 +31,8 @@ export const DepartmentMasterFilterModal: React.FC<DepartmentFilterModalProps> =
       }}
       saveText="Apply Filter"
       onCancel={onClear}
+      resetText=''
+      cancelText="Clear Filter"
       size="small-half"
     >
       <div className="space-y-6">
@@ -41,7 +43,7 @@ export const DepartmentMasterFilterModal: React.FC<DepartmentFilterModalProps> =
               type="text"
               value={tempFilters.DepartmentName || ''}
               onChange={(e) => onFilterChange('DepartmentName', e.target.value)}
-              placeholder="Enter department name"
+              placeholder="Enter Department Name"
             />
           </div>
         </div>

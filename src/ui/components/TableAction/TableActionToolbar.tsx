@@ -157,7 +157,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
     <div className="pb-4">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         {/* SEARCH BAR */}
-        <div className={`relative min-w-0 w-[526px] ${isShowSearchBar ? 'block' : 'invisible' }`}>
+        <div className={`relative min-w-0 w-[526px] ${isShowSearchBar ? 'block' : 'invisible'}`}>
           <Input
             type="text"
             value={searchTerm}
@@ -181,7 +181,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                     title="Clear search"
                     aria-label="Clear search"
                   >
-                    <X />
+                    <X className="h-4 w-4" />
                   </Button>
                 )}
 

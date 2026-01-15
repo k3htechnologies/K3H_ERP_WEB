@@ -13,7 +13,7 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { handleExportFile } from '@/core/utils/exportFile';
-import { getInitialFormState, getDepartmentMasterColumns, REQUIRED_COLUMN_KEYS } from '../constants/departmentMasterConstants';
+import { getInitialFormState, getDepartmentMasterColumns, REQUIRED_COLUMN_KEYS } from '@/features/departmentMaster/constants/departmentMasterConstants';
 
 export const useDepartmentMaster = () => {
   //#region STATE MANAGEMENT

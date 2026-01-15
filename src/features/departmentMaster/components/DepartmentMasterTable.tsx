@@ -32,7 +32,7 @@ export const DepartmentMasterTable: React.FC<DepartmentMasterTableProps> = ({
   const tableColumns = useMemo<TableColumn[]>(() => {
     return columns.map(col => {
 
-      if (col.key === 'actions') {
+      if (col.key === 'Actions') {
 
         return {
 
@@ -65,8 +65,11 @@ export const DepartmentMasterTable: React.FC<DepartmentMasterTableProps> = ({
       }
 
       if (col.key === 'DepartmentName') {
+
         return {
+
           ...col,
+
           render: (value, row) => (
             <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
               <TooltipText
@@ -77,11 +80,12 @@ export const DepartmentMasterTable: React.FC<DepartmentMasterTableProps> = ({
               />
             </div>
           )
+
         };
       }
       return col;
     });
-    
+
   }, [columns, canAction, onView, onDelete]);
 
   return (

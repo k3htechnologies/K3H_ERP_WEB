@@ -4,7 +4,7 @@ import { Button } from '@/ui/components/forms';
 import { Edit, Trash2 } from 'lucide-react';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
-import type { DepartmentMasterData } from '../models/DepartmentMasterModel';
+import type { DepartmentMasterData } from '@/features/departmentMaster/models/DepartmentMasterModel';
 
 interface DepartmentMasterViewModalProps {
   isOpen: boolean;
@@ -23,6 +23,7 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
   onEdit,
   onDelete
 }) => {
+  
   if (!data) return null;
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -54,9 +55,13 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
     >
       <div className="space-y-6">
         <div className="space-y-4">
+
           <FieldItem label="Department Code" value={data.DepartmentCode} isRow withBorder={true} />
+
           <FieldItem label="Department Name" value={data.DepartmentName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+
           <FieldItem label="Number of Employees" value={data.NumberOfEmployee} isRow withBorder={true} />
+          
         </div>
 
         <div className="space-y-4">
@@ -85,6 +90,7 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
                 >
                   Delete
                 </Button>
+                
               ) : <div style={{ width: "120px", height: "44px" }}></div>}
 
               <Button

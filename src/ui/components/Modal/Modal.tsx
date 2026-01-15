@@ -27,7 +27,7 @@ export const Modal: React.FC<ModalProps> = ({
     saveText = '',
     cancelText,
     onCancel,
-    resetText = 'Reset',
+    resetText = '',
     onreset,
     loading = false,
     size = 'half-screen',

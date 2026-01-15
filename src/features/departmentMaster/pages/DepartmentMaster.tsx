@@ -27,6 +27,7 @@ export const DepartmentMaster: React.FC = () => {
     viewDepartmentMasterDetailsData,
     isViewModalOpen,
     showFilterPopup,
+    filters,
     tempFilters,
     errors,
     editingDepartmentMasterData,
@@ -101,19 +102,25 @@ export const DepartmentMaster: React.FC = () => {
   );
 
   const handleViewModalClose = useCallback(() => {
+
     setIsViewModalOpen(false);
+
     setViewDepartmentMasterDetailsData(null);
+
   }, [setIsViewModalOpen, setViewDepartmentMasterDetailsData]);
 
   const handleDeleteDialogClose = useCallback(() => {
+
     setIsConfirmationDialogBoxOpen(false);
+
     setDeleteDepartmentMasterDetailsData(null);
+
   }, [setIsConfirmationDialogBoxOpen, setDeleteDepartmentMasterDetailsData]);
 
   const handleOpenFilter = useCallback(() => {
-    setTempFilters({});
+    setTempFilters(filters);
     setShowFilterPopup(true);
-  }, [setTempFilters, setShowFilterPopup]);
+  }, [filters, setTempFilters, setShowFilterPopup]);
 
   return (
 
@@ -131,8 +138,8 @@ export const DepartmentMaster: React.FC = () => {
           debouncedSearch(v)
         }}
         onClearSearch={clearsearchDepartments}
-        isShowFilterButton={false}
-        filters={{}}
+        isShowFilterButton={true}
+        filters={filters}
         onOpenFilter={handleOpenFilter}
         isShowCustomizeButton
         onCustomize={() => setIsShowCustomizeDepartmentMasterColumnsModal(true)}
@@ -211,7 +218,10 @@ export const DepartmentMaster: React.FC = () => {
 
       <DepartmentMasterFilterModal
         isOpen={showFilterPopup}
-        onClose={() => setShowFilterPopup(false)}
+        onClose={() => {
+          setTempFilters(filters);
+          setShowFilterPopup(false);
+        }}
         onApply={applyFilters}
         onClear={clearFilters}
         tempFilters={tempFilters}

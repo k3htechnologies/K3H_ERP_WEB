@@ -142,7 +142,7 @@ export const useDepartmentMaster = () => {
         } else {
 
           addToast({ type: 'error', title: response.left.message });
-          
+
         }
 
         return response
@@ -194,7 +194,7 @@ export const useDepartmentMaster = () => {
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
           DepartmentName: filters.DepartmentName?.trim() || undefined,
-          SortBy:  getSortByParam(sortInfo ?? null, departmentMasterColumns),
+          SortBy: getSortByParam(sortInfo ?? null, departmentMasterColumns),
           ExportType: exportType
         }
 
@@ -439,7 +439,7 @@ export const useDepartmentMaster = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        
+
         const params: FilterPullExcelSample = {
           TableName: 'DEPARTMENT MASTER'
         }
@@ -507,6 +507,7 @@ export const useDepartmentMaster = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
+
         const params: DeleteDepartmentMasterRequest = {
           DepartmentMasterId: deleteDepartmentMasterDetailsData.DepartmentMasterId,
           UniqueKey: deleteDepartmentMasterDetailsData.Uniquekey
@@ -516,13 +517,27 @@ export const useDepartmentMaster = () => {
 
         if (E.isRight(response)) {
 
-          setDepartmentMasterList(prevData => prevData.filter(item => item.DepartmentMasterId !== deleteDepartmentMasterDetailsData.DepartmentMasterId));
+          const newTotalRecords = pagination.totalRecords - 1;
+
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (departmentMasterList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
 
           setPagination({
-            currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords - 1,
-            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+            currentPage: pageToShow,
+            totalRecords: newTotalRecords,
+            totalPages: newTotalPages
           });
+
+          await loadDepartments(pageToShow, filters, sortInfo);
 
           addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 

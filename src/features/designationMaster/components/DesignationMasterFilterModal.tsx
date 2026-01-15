@@ -10,7 +10,8 @@ interface FilterField {
   type?: 'text';
 }
 
-interface DepartmentFilterModalProps {
+
+interface DesignationMasterFilterModalProps {
   isOpen: boolean;
   onClose: () => void;
   onApply: () => void;
@@ -20,7 +21,7 @@ interface DepartmentFilterModalProps {
   filterFields?: FilterField[];
 }
 
-export const DepartmentMasterFilterModal: React.FC<DepartmentFilterModalProps> = ({
+export const DesignationMasterFilterModal: React.FC<DesignationMasterFilterModalProps> = ({
   isOpen,
   onClose,
   onApply,
@@ -28,21 +29,20 @@ export const DepartmentMasterFilterModal: React.FC<DepartmentFilterModalProps> =
   tempFilters,
   onFilterChange,
   filterFields = [
-     { key: 'DepartmentName', label: 'Department Name', placeholder: 'Enter Department Name' }
+    { key: 'DesignationName', label: 'Designation Name', placeholder: 'Enter Designation Name' }
   ]
 }) => {
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Filter - Department Master"
+      title="Filter - Designation Master"
       onSubmit={(e) => {
         e.preventDefault();
         onApply();
       }}
       saveText="Apply"
       onCancel={onClear}
-      resetText=''
       cancelText="Clear"
       size="small-half"
     >

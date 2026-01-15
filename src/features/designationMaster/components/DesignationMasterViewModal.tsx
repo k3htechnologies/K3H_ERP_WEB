@@ -3,18 +3,18 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { Button } from '@/ui/components/forms';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
-import type { DepartmentMasterData } from '@/features/departmentMaster/models/DepartmentMasterModel';
+import type { DesignationMasterData } from '@/features/designationMaster/models/DesignationMasterModel';
 
-interface DepartmentMasterViewModalProps {
+interface DesignationMasterViewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  data: DepartmentMasterData | null;
+  data: DesignationMasterData | null;
   canAction: boolean;
-  onEdit: (data: DepartmentMasterData) => void;
-  onDelete: (data: DepartmentMasterData) => void;
+  onEdit: (data: DesignationMasterData) => void;
+  onDelete: (data: DesignationMasterData) => void;
 }
 
-export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps> = ({
+export const DesignationMasterViewModal: React.FC<DesignationMasterViewModalProps> = ({
   isOpen,
   onClose,
   data,
@@ -22,7 +22,6 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
   onEdit,
   onDelete
 }) => {
-
   if (!data) return null;
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -43,7 +42,7 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Department Master Details"
+      title="Designation Master Details"
       onSubmit={(e) => {
         e.preventDefault()
         onClose()
@@ -54,22 +53,15 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
     >
       <div className="space-y-6">
         <div className="space-y-4">
-
-          <FieldItem label="Department Code" value={data.DepartmentCode} isRow withBorder={true} />
-
-          <FieldItem label="Department Name" value={data.DepartmentName} isRow withBorder={true} className='font-medium text-blue-900 ' />
-
+          <FieldItem label="Designation Code" value={data.DesignationName} isRow withBorder={true} />
+          <FieldItem label="Notice Period" value={data.NoticePeriod} isRow withBorder={true} />
           <FieldItem label="Number of Employees" value={data.NumberOfEmployee} isRow withBorder={true} />
-
         </div>
-
         <div className="space-y-4">
           <h4 className="text-lg font-semibold pb-2">
             Action Details
           </h4>
-
           <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
-
           {data.ModifiedBy !== '' ?
             <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
             :
@@ -88,7 +80,6 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
                 >
                   Delete
                 </Button>
-
               ) : <div style={{ width: "120px", height: "44px" }}></div>}
 
               <Button
@@ -99,7 +90,6 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
                 Edit
               </Button>
             </>
-            
           )}
         </div>
       </div>

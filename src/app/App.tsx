@@ -161,11 +161,16 @@ function App() {
           >
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+
+            //#region SETTING - COMPANY SETUP
             <Route path="departmentMaster" element={<DepartmentMaster />} />
-            <Route path="compoff" element={<CompOff />} />
-            <Route path="vendor/add/:vendorId?" element={<AddUpdateVendor />} />
             <Route path="designationMaster" element={<DesignationMaster />} />
             <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
+            //#endregion
+            
+            <Route path="compoff" element={<CompOff />} />
+            <Route path="vendor/add/:vendorId?" element={<AddUpdateVendor />} />
+
             <Route path="employeeMaster" element={<EmployeeMaster />} />
             <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />
             <Route path="employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />

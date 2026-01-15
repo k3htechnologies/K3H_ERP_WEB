@@ -22,6 +22,7 @@ import { getInitialFormState, getDesignationMasterColumns, REQUIRED_COLUMN_KEYS 
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const useDesignationMaster = () => {
+
   //#region STATE MANAGEMENT
   const [designationMasterList, setDesignationMasterList] = useState<DesignationMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -103,7 +104,7 @@ export const useDesignationMaster = () => {
   //#endregion
 
   //#region TABLE COLUMN DEFINITION
-
+  
   const designationMasterColumns = useMemo<TableColumn[]>(
     () => getDesignationMasterColumns(),
     []

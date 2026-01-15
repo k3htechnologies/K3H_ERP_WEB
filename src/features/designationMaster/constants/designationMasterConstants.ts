@@ -8,7 +8,7 @@ export const INITIAL_FORM_STATE: AddUpdateDesignationMasterRequest = {
   NoticePeriod: 0
 };
 
-export const REQUIRED_COLUMN_KEYS: string[] = ['DesignationName','Actions'];
+export const REQUIRED_COLUMN_KEYS: string[] = ['DesignationName', 'Actions'];
 
 export const getInitialFormState = (): AddUpdateDesignationMasterRequest => ({
   ...INITIAL_FORM_STATE

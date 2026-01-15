@@ -23,7 +23,7 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
   onEdit,
   onDelete
 }) => {
-  
+
   if (!data) return null;
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -61,7 +61,7 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
           <FieldItem label="Department Name" value={data.DepartmentName} isRow withBorder={true} className='font-medium text-blue-900 ' />
 
           <FieldItem label="Number of Employees" value={data.NumberOfEmployee} isRow withBorder={true} />
-          
+
         </div>
 
         <div className="space-y-4">
@@ -86,22 +86,21 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
                   colorMode="light"
                   size='md'
                   onClick={handleDelete}
-                  leftIcon={<Trash2 className="h-5 w-5" />}
                 >
                   Delete
                 </Button>
-                
+
               ) : <div style={{ width: "120px", height: "44px" }}></div>}
 
               <Button
                 color='blue'
                 size='md'
                 onClick={handleEdit}
-                leftIcon={<Edit className="h-5 w-5" />}
               >
                 Edit
               </Button>
             </>
+            
           )}
         </div>
       </div>

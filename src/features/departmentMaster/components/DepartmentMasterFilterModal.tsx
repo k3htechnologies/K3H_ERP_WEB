@@ -3,6 +3,13 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { Input } from '@/ui/components/forms';
 import type { FilterInfo } from '@/ui/components/DataTable/DataTable';
 
+interface FilterField {
+  key: string;
+  label: string;
+  placeholder?: string;
+  type?: 'text';
+}
+
 interface DepartmentFilterModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -10,6 +17,7 @@ interface DepartmentFilterModalProps {
   onClear: () => void;
   tempFilters: FilterInfo;
   onFilterChange: (key: string, value: string) => void;
+  filterFields?: FilterField[];
 }
 
 export const DepartmentMasterFilterModal: React.FC<DepartmentFilterModalProps> = ({
@@ -18,7 +26,10 @@ export const DepartmentMasterFilterModal: React.FC<DepartmentFilterModalProps> =
   onApply,
   onClear,
   tempFilters,
-  onFilterChange
+  onFilterChange,
+  filterFields = [
+    { key: 'DepartmentName', label: 'Department Name', placeholder: 'Enter Department Name' }
+  ]
 }) => {
   return (
     <Modal
@@ -29,22 +40,25 @@ export const DepartmentMasterFilterModal: React.FC<DepartmentFilterModalProps> =
         e.preventDefault();
         onApply();
       }}
-      saveText="Apply Filter"
+      saveText="Apply"
       onCancel={onClear}
       resetText=''
-      cancelText="Clear Filter"
+      cancelText="Clear"
       size="small-half"
     >
       <div className="space-y-6">
         <div className="space-y-4">
           <div>
-            <Input
-              label='Department Name'
-              type="text"
-              value={tempFilters.DepartmentName || ''}
-              onChange={(e) => onFilterChange('DepartmentName', e.target.value)}
-              placeholder="Enter Department Name"
-            />
+            {filterFields.map((field) => (
+              <Input
+                key={field.key}
+                label={field.label}
+                type={field.type}
+                value={tempFilters[field.key] ?? ''}
+                onChange={(e) => onFilterChange(field.key, e.target.value)}
+                placeholder={field.placeholder || ''}
+              />
+            ))}
           </div>
         </div>
       </div>

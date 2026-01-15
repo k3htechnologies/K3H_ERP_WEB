@@ -14,7 +14,7 @@ export interface ModalProps {
     resetText?: string
     onreset?: () => void
     loading?: boolean
-    size?: 'sm' | 'md' | 'lg' | 'xl' |'xxl' | 'half-screen' | 'small-half' | 'large-half' | 'large75' | 'large80' | 'large90' | 'large100' | 'small25' | 'small30' | 'small35' | 'small40' | 'small45' | 'small50'
+    size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'half-screen' | 'small-half' | 'large-half' | 'large75' | 'large80' | 'large90' | 'large100' | 'small25' | 'small30' | 'small35' | 'small40' | 'small45' | 'small50'
     className?: string
 }
 
@@ -145,8 +145,7 @@ export const Modal: React.FC<ModalProps> = ({
                                         size="md"
                                         disabled={loading}
                                     >
-                                        <Save className="h-4 w-4 gap-2" />
-                                        <span>{loading ? 'Saving...' : saveText}</span>
+                                        {saveText}
                                     </Button>
                                 </div>
 
@@ -230,8 +229,7 @@ export const Modal: React.FC<ModalProps> = ({
                                     size="md"
                                     disabled={loading}
                                 >
-                                    <Save className="h-4 w-4 gap-2" />
-                                    <span>{loading ? 'Saving...' : saveText}</span>
+                                    <span>{saveText}</span>
                                 </Button>
                             </div>
 

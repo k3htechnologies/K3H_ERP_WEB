@@ -14,12 +14,14 @@ import type { FilterPullExcelSample } from '@/features/technical/models/Technica
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { getInitialFormState, getDepartmentMasterColumns, REQUIRED_COLUMN_KEYS } from '@/features/departmentMaster/constants/departmentMasterConstants';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const useDepartmentMaster = () => {
+
   //#region STATE MANAGEMENT
   const [departmentMasterList, setDepartmentMasterList] = useState<DepartmentMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
   const { addToast } = useToast()
@@ -113,20 +115,8 @@ export const useDepartmentMaster = () => {
   const loadDepartments = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
-
-        let sortByParam = undefined;
-
-        if (sortInfo) {
-
-          const column = departmentMasterColumns.find(col => col.key === sortInfo.column)
-          if (column) {
-
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
-          }
-
-        }
 
         const params: FilterWithPaginationDepartmentMasterRequest = {
           PageNumber: page,
@@ -134,20 +124,25 @@ export const useDepartmentMaster = () => {
           IsCheckPermission: true,
           DepartmentMasterId: filterParams.DepartmentMasterId ? Number(filterParams.DepartmentMasterId) : 0,
           DepartmentName: filterParams.DepartmentName?.trim() || undefined,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, departmentMasterColumns)
         }
 
         const response = await departmentMasterService.apiCallPullDepartmentMaster(params);
 
         if (E.isRight(response)) {
+
           setDepartmentMasterList(response.right.Data);
+
           setPagination({
             currentPage: page,
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
           });
+
         } else {
+
           addToast({ type: 'error', title: response.left.message });
+          
         }
 
         return response
@@ -191,26 +186,15 @@ export const useDepartmentMaster = () => {
   const handleExportDepartments = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
-
-        let sortByParam = undefined;
-
-        if (sortInfo) {
-
-          const column = departmentMasterColumns.find(col => col.key === sortInfo.column)
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
-          }
-
-        }
 
         const params: FilterWithPaginationDepartmentMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
           DepartmentName: filters.DepartmentName?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy:  getSortByParam(sortInfo ?? null, departmentMasterColumns),
           ExportType: exportType
         }
 
@@ -349,6 +333,12 @@ export const useDepartmentMaster = () => {
   } => {
     const newErrors: { [key: string]: string } = {}
 
+    if (formData.DepartmentCode.trim() === "") {
+      newErrors.DepartmentCode = "Department Code is required";
+    } else if (formData.DepartmentCode.trim().length >= 5) {
+      newErrors.DepartmentCode = "Department Code must be at least 4 characters long";
+    }
+
     if (formData.DepartmentName.trim() === "") {
       newErrors.DepartmentName = "Department Name is required"
     }
@@ -356,11 +346,6 @@ export const useDepartmentMaster = () => {
       newErrors.DepartmentName = "Department Name must be at least 3 characters long"
     }
 
-    if (formData.DepartmentCode.trim() === "") {
-      newErrors.DepartmentCode = "Department Code is required";
-    } else if (formData.DepartmentCode.trim().length >= 5) {
-      newErrors.DepartmentCode = "Department Code must be at least 4 characters long";
-    }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -391,7 +376,7 @@ export const useDepartmentMaster = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const payload = PushDepartmentMasterFormData();
@@ -452,13 +437,15 @@ export const useDepartmentMaster = () => {
   const downloadExcelSampleDepartmentMaster = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
+        
         const params: FilterPullExcelSample = {
           TableName: 'DEPARTMENT MASTER'
         }
 
         const response = await technicalService.apiCallPullExcelSample(params);
+
         handleExportFile(response, 'Excel', 'Department Master', addToast, 'Sample file download successfully')
         return response;
       },
@@ -476,7 +463,7 @@ export const useDepartmentMaster = () => {
   const uploadExcel = async (file: File, mergeExisting: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const fd = new FormData();
@@ -518,7 +505,7 @@ export const useDepartmentMaster = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         const params: DeleteDepartmentMasterRequest = {
           DepartmentMasterId: deleteDepartmentMasterDetailsData.DepartmentMasterId,
@@ -528,6 +515,7 @@ export const useDepartmentMaster = () => {
         const response = await departmentMasterService.apiCallDeleteDepartmentMaster(params);
 
         if (E.isRight(response)) {
+
           setDepartmentMasterList(prevData => prevData.filter(item => item.DepartmentMasterId !== deleteDepartmentMasterDetailsData.DepartmentMasterId));
 
           setPagination({

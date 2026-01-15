@@ -23,6 +23,8 @@ import type { DeleteOutDoorRequest } from '@/features/outdoor/models/OutDoorMode
 import {
   Clock,
   MapPin,
+  FileText,
+  ExternalLink,
   Fingerprint,
   ClipboardCheck,
   AlertTriangle,
@@ -36,6 +38,7 @@ import { MultiImageViewer } from "@/ui/components/ImageViewer/ImageViewer";
 import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { Pagination, type PaginationInfo } from "@/ui/components/Pagination/Pagination";
+import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import { handleExportFile } from '@/core/utils/exportFile';
 
 export const OutDoor: React.FC = () => {
@@ -54,6 +57,13 @@ export const OutDoor: React.FC = () => {
 
   // TOAST
   const { addToast } = useToast()
+
+  // SINGLE SEARCH TEXT BOX
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    searchOutDoors(value)
+  }, 350)
 
   // FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
@@ -84,6 +94,7 @@ export const OutDoor: React.FC = () => {
         page?: number;
         filters?: FilterInfo;
         sortInfo?: any;
+        searchTerm?: string;
         outdoorId?: number;
       };
     };
@@ -95,10 +106,10 @@ export const OutDoor: React.FC = () => {
   useEffect(() => {
 
     const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: any; outdoorId?: number }
+      | { page?: number; filters?: FilterInfo; sortInfo?: any; searchTerm?: string; outdoorId?: number }
       | undefined;
 
-    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, outdoorId: 0 };
+    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '', outdoorId: 0 };
 
 
     setPagination({ currentPage: listState.page ?? pagination.currentPage });
@@ -109,10 +120,27 @@ export const OutDoor: React.FC = () => {
 
     setTempFilters(listState.filters ?? {});
 
+    setSearchTerm(listState.searchTerm ?? '');
+
+    if (listState.searchTerm && String(listState.searchTerm).trim()) {
+
+      setSearchTerm(String(listState.searchTerm));
+
+      loadOutDoors(listState.page ?? 1, { CompanyName: String(listState.searchTerm).trim() });
+
+      return;
+    }
+
+
     loadOutDoors(listState.page ?? 1, listState.filters ?? {});
 
   }, [location.state]);
 
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel?.()
+    }
+  }, [debouncedSearch])
   //#endregion
 
   //#region DATA LOAD
@@ -169,6 +197,42 @@ export const OutDoor: React.FC = () => {
       'Loading Outdoor Data'
     )
   }
+
+  //#endregion
+
+  //#region SEARCH OUTDOOR
+  const searchOutDoors = async (searchValue: string) => {
+
+    setSearchTerm(searchValue);
+
+    if (searchValue.trim() === '') {
+      fetchOutDoorList();
+      return;
+    }
+
+    const filterParams: FilterInfo = {
+      CompanyName: searchValue.trim()
+    };
+
+    await loadOutDoors(1, filterParams);
+  }
+  //#endregion
+
+  //#region CLEAR SEARCH OUTDOOR
+  const clearSearchOutDoors = () => {
+    setSearchTerm('');
+
+    debouncedSearch.cancel?.();
+
+    setFilters({});
+    setTempFilters({});
+    setPagination({ currentPage: 1 });
+    loadOutDoors(1, {});
+    try {
+      navigate(location.pathname, { replace: true, state: {} });
+    } catch {
+    }
+  };
 
   //#endregion
 
@@ -301,20 +365,29 @@ export const OutDoor: React.FC = () => {
       setIsLoadingMessage,
       async () => {
         try {
-          // Get current location - optimized for speed
+          // Capture time first to ensure accuracy
+          const now = new Date();
+          const currentDateTime = now.toISOString();
+
+          // Get current location with retry for better accuracy
           let location: LocationData | null = null;
-          try {
-            location = await getCurrentLocation();
-          } catch (error: any) {
-            // If location fails, use a fallback with coordinates only
-            // This allows punch in/out to proceed even if location service is slow/unavailable
-            location = {
-              latitude: 0,
-              longitude: 0,
-              address: 'Location unavailable',
-              timestamp: new Date().toISOString()
-            };
-            console.warn('Location fetch failed, using fallback:', error.message);
+          let retries = 0;
+          const maxRetries = 2;
+
+          while (retries <= maxRetries && !location) {
+            try {
+              location = await getCurrentLocation();
+            } catch (error) {
+              if (retries === maxRetries) {
+                throw error;
+              }
+              retries++;
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+          }
+
+          if (!location) {
+            throw new Error("Failed to get location after retries");
           }
 
           const locationString = formatLocationString(location);
@@ -328,9 +401,6 @@ export const OutDoor: React.FC = () => {
             setPunchingItemId(null);
             return;
           }
-
-          // Capture time right before API call to ensure accuracy
-          const currentDateTime = new Date().toISOString();
 
           // Use same API for both punch in and punch out
           const response = await OutDoorService.apiCallPunchInOut({
@@ -566,6 +636,14 @@ export const OutDoor: React.FC = () => {
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
       <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Company Name..."
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearSearchOutDoors}
         isShowFilterButton
         filters={filters}
         onOpenFilter={() => {
@@ -594,46 +672,42 @@ export const OutDoor: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            {outDoorList.map((item, index) => {
+            {outDoorList.map((item) => {
               const isMeetingStarted = canPunchInOut(item.OutDoorDate, item.OutDoorTime);
               const hasMissed = hasMissedPunch(item);
               const hasMissedPrevious = hasMissedPunchInPreviousDate(item);
 
               const isPunchedInAndOut = item.PunchIn && item.PunchOut;
-              const isFirstItem = index === 0; // Most recent/currently added outdoor
 
               return (
                 <ExpandableCard
                   key={item.OutdoorId}
-                  defaultOpen={isFirstItem}
                   title={
                     <div className="flex items-center justify-between w-full">
-                      <div className="flex flex-col gap-1">
-
-                        <div className="flex items-center gap-2">
-                          {hasMissed && (
-                            <div title={!item.PunchIn ? "Punch In missed" : "Punch Out missed"}>
-                              <AlertTriangle className="w-4 h-4 text-orange-400 flex-shrink-0" />
-                            </div>
-                          )}
-
-                          <h3 className="text-sm font-medium text-gray-900">
-                            {formatDate_dd_MonthName_yy(item.OutDoorDate)}
-                          </h3>
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium text-gray-900 mb-1">
+                          {formatDate_dd_MonthName_yy(item.OutDoorDate)}
+                        </h3>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-gray-600 flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            {formatTimeFromDateTime(item.OutDoorTime) || 'N/A'}
+                          </span>
                         </div>
-
-                        <div className="flex items-center gap-1 text-xs text-gray-600">
-                          <Clock className="w-4 h-4 flex-shrink-0" />
-                          {formatTimeFromDateTime(item.OutDoorTime) || 'N/A'}
-                        </div>
-
                       </div>
+
                     </div>
                   }
-
                   showline={true}
                   customizedIcon={
                     <div className="flex items-center gap-2">
+                      {/* Missed Punch Icon */}
+                      {hasMissed && (
+                        <div title={!item.PunchIn ? "Punch In missed" : "Punch Out missed"}>
+                          <AlertTriangle className="w-5 h-5 text-red-500" />
+                        </div>
+                      )}
+
                       {/* Conclusion Button */}
                       {isPunchedInAndOut && (
                         <button
@@ -820,28 +894,31 @@ export const OutDoor: React.FC = () => {
 
                       {/* Visiting Card Section */}
                       <div className="border-t border-gray-200 pt-3">
-                        <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                          <div className="flex-1">
-                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Visiting Card</p>
-                            <div className="text-sm font-medium text-gray-900 flex items-center justify-between">
-                              {item.VisitingCardURL ? (() => {
-                                const cardUrls = parseDocumentUrls(item.VisitingCardURL);
-                                return (
-                                  <div className="flex items-center gap-2 w-full">
-                                    <span className="flex-1">Document{cardUrls.length > 1 ? ` (${cardUrls.length})` : ''}</span>
-                                    <MultiImageViewer
-                                      images={cardUrls}
-                                      title="Visiting Card"
-                                      isIcon={true}
-                                      triggerLabel={null}
-                                    />
-                                  </div>
-                                );
-                              })() : (
-                                <span className="text-gray-400 italic">Not Uploaded</span>
-                              )}
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center gap-2.5">
+                            <FileText className="w-4 h-4 text-gray-400" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">Visiting Card</p>
+                              <p className="text-xs text-gray-500">Document attachment</p>
                             </div>
                           </div>
+                          {item.VisitingCardURL ? (() => {
+                            const cardUrls = parseDocumentUrls(item.VisitingCardURL);
+                            return (
+                              <MultiImageViewer
+                                images={cardUrls}
+                                title="Visiting Card"
+                                triggerLabel={
+                                  <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm">
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                    View Card{cardUrls.length > 1 ? ` (${cardUrls.length})` : ''}
+                                  </button>
+                                }
+                              />
+                            );
+                          })() : (
+                            <span className="text-xs text-gray-400 italic">Not Uploaded</span>
+                          )}
                         </div>
                       </div>
                     </div>

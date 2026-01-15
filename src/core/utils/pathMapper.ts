@@ -60,8 +60,6 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/enquiry': '/enquiry',
         '/resignation': '/resignation',
         '/payrollreport': '/payrollReport',
-        '/attendancecalendar': '/attendanceCalendar',
-        '/compoff': '/compoff',
     }
 
     // If a mapped route exists, return it (normalized)

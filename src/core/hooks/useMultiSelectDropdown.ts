@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export interface DropdownOption {
     label: string;
@@ -111,34 +111,18 @@ export const useMultiSelectDropdown = ({
 
     const [selectedValues, setSelectedValues] = useState<string[]>(() => parseValue(value));
     const [initialOptions, setInitialOptions] = useState<DropdownOption[]>([]);
-    const hasFetchedRef = useRef(false);
-    const lastFetchedValueRef = useRef<string>('');
 
     // Update selectedValues when value prop changes
     useEffect(() => {
         const parsed = parseValue(value);
-        const parsedString = parsed.join(',');
         setSelectedValues(parsed);
-        // Reset fetch flag if value changed externally (not from user selection)
-        if (parsedString !== lastFetchedValueRef.current) {
-            hasFetchedRef.current = false;
-        }
     }, [value, parseValue]);
 
     // Pre-fetch options for selected values
     const fetchOptionsForSelected = useCallback(async () => {
         const ids = parseValue(value);
-        const idsString = ids.join(',');
-        
-        // Skip if already fetched for this value
-        if (hasFetchedRef.current && lastFetchedValueRef.current === idsString) {
-            return;
-        }
-        
         if (ids.length === 0) {
             setInitialOptions([]);
-            hasFetchedRef.current = true;
-            lastFetchedValueRef.current = '';
             return;
         }
 
@@ -178,12 +162,9 @@ export const useMultiSelectDropdown = ({
             );
 
             setInitialOptions(selectedOptions);
-            hasFetchedRef.current = true;
-            lastFetchedValueRef.current = idsString;
         } catch (error) {
             console.error('Failed to pre-fetch options for multi-select:', error);
             setInitialOptions([]);
-            hasFetchedRef.current = false;
         }
     }, [value, fetchCallback, fetchParams, parseValue, maxPages]);
 
@@ -191,9 +172,6 @@ export const useMultiSelectDropdown = ({
     useEffect(() => {
         if (autoFetchOptions) {
             void fetchOptionsForSelected();
-        } else {
-            // Reset fetch flag when auto-fetch is disabled
-            hasFetchedRef.current = false;
         }
     }, [autoFetchOptions, fetchOptionsForSelected]);
 

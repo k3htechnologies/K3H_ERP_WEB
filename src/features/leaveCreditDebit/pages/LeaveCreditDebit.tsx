@@ -415,6 +415,14 @@ export const LeaveCreditDebit: React.FC = () => {
         render: (value) => value || '-'
       },
       {
+        key: 'Month',
+        label: 'Month',
+        width: '12',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
         key: 'actions',
         label: 'Actions',
         width: '12',

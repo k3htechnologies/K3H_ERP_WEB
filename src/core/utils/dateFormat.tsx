@@ -129,7 +129,61 @@ export const convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd = (date?: string | null) => {
 };
 
 /**
+ * Convert UTC datetime string to local time
+ * @param utcDateTimeString - UTC DateTime string in ISO format (e.g., "2025-12-03T15:26:50.513Z" or "2025-12-03T15:26:50.513")
+ * @returns Local Date object or null if invalid
+ */
+export const convertUtcToLocal = (utcDateTimeString?: string | null): Date | null => {
+  if (!utcDateTimeString || typeof utcDateTimeString !== 'string' || utcDateTimeString.trim() === '') {
+    return null;
+  }
+
+  try {
+    const trimmed = utcDateTimeString.trim();
+    
+    // If it already has timezone info (Z or offset), parse directly
+    if (trimmed.includes('Z') || trimmed.match(/[+-]\d{2}:\d{2}$/)) {
+      const date = new Date(trimmed);
+      if (!isNaN(date.getTime())) {
+        return date; // Date object automatically converts UTC to local time
+      }
+      return null;
+    }
+
+    // If no timezone indicator, treat as UTC by appending 'Z'
+    // Parse the ISO string and manually create UTC date
+    const isoMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.(\d+))?/);
+    if (isoMatch) {
+      const [, year, month, day, hour, minute, second = '00', millisecond = '000'] = isoMatch;
+      // Create UTC date using Date.UTC, then convert to local
+      const utcTime = Date.UTC(
+        parseInt(year, 10),
+        parseInt(month, 10) - 1, // Month is 0-indexed
+        parseInt(day, 10),
+        parseInt(hour, 10),
+        parseInt(minute, 10),
+        parseInt(second, 10),
+        parseInt(millisecond.padEnd(3, '0').substring(0, 3), 10) // Ensure 3 digits for milliseconds
+      );
+      return new Date(utcTime); // This creates a local Date object from UTC timestamp
+    }
+
+    // Fallback: try appending Z and parsing
+    const date = new Date(`${trimmed}Z`);
+    if (!isNaN(date.getTime())) {
+      return date;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error converting UTC to local time:', error);
+    return null;
+  }
+};
+
+/**
  * Extract time from datetime string and format to "HH:MM AM/PM" format
+ * Converts UTC to local time for display
  * @param dateTimeString - DateTime string in ISO format (e.g., "2025-12-03T15:26:50.513" or "2025-12-03T15:26:50.513Z")
  * @returns Formatted time string (e.g., "3:26 PM") or empty string if invalid
  */
@@ -146,26 +200,30 @@ export const formatTimeFromDateTime = (dateTimeString?: string | null): string =
       return trimmed;
     }
 
-    // Extract time from ISO format directly to avoid timezone conversion
-    // Formats: "2025-12-03T15:26:50.513", "2025-12-03T15:26:50", "2025-12-03T15:26:50Z"
-    const timeMatch = trimmed.match(/T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?/);
-    if (timeMatch) {
-      const hours = parseInt(timeMatch[1], 10);
-      const minutes = parseInt(timeMatch[2], 10);
+    // Check if it's an ISO datetime string (contains 'T')
+    const isIsoDateTime = trimmed.includes('T');
+    
+    if (isIsoDateTime) {
+      // Treat ISO datetime strings as UTC and convert to local time
+      // This handles both "2025-12-03T15:26:50.513Z" and "2025-12-03T15:26:50.513" (assumed UTC from API)
+      const localDate = convertUtcToLocal(trimmed);
+      if (localDate) {
+        let hours = localDate.getHours();
+        const minutes = localDate.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
 
-      // Format to 12-hour format with AM/PM
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      let displayHours = hours % 12;
-      displayHours = displayHours ? displayHours : 12; // 0 should be 12
+        hours = hours % 12;
+        hours = hours ? hours : 12;
 
-      return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+        return `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+      }
     }
 
-    // Fallback: try parsing as Date and use UTC methods
+    // Fallback: try parsing as Date (will use local time)
     const date = new Date(trimmed);
     if (!isNaN(date.getTime())) {
-      let hours = date.getUTCHours();
-      const minutes = date.getUTCMinutes();
+      let hours = date.getHours();
+      const minutes = date.getMinutes();
       const ampm = hours >= 12 ? 'PM' : 'AM';
 
       hours = hours % 12;

@@ -163,7 +163,7 @@ export const getPageInfo = (path: string) => {
             }
         case 'outdoor':
             return {
-                title: "Outdoor Managemen",
+                title: "Outdoor Management",
                 description: "outdoor visit information",
             }
         case 'resignation':

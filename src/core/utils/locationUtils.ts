@@ -17,9 +17,9 @@ export const getCurrentLocation = (): Promise<LocationData> => {
     }
 
     const options: PositionOptions = {
-      enableHighAccuracy: true,
-      timeout: 20000,
-      maximumAge: 0
+      enableHighAccuracy: false, // Faster, less accurate but sufficient for punch in/out
+      timeout: 8000, // Reduced from 20s to 8s for faster response
+      maximumAge: 60000 // Allow cached location up to 1 minute old for faster response
     };
 
     navigator.geolocation.getCurrentPosition(
@@ -69,15 +69,22 @@ export const getCurrentLocation = (): Promise<LocationData> => {
 
 const getAddressFromCoordinates = async (latitude: number, longitude: number): Promise<string> => {
   try {
+    // Add timeout to prevent blocking for too long
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout for address fetch
+
     const response = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
       {
         headers: {
           'User-Agent': 'K3H-ERP-Web-App',
           'Accept-Language': 'en'
-        }
+        },
+        signal: controller.signal
       }
     );
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error('Reverse geocoding failed');
@@ -143,8 +150,13 @@ const getAddressFromCoordinates = async (latitude: number, longitude: number): P
 
     // Last resort: return coordinates
     return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
-  } catch (error) {
-    console.error('Error getting address from coordinates:', error);
+  } catch (error: any) {
+    // If timeout or other error, return coordinates (non-blocking)
+    if (error.name === 'AbortError') {
+      console.warn('Address fetch timeout, using coordinates');
+    } else {
+      console.error('Error getting address from coordinates:', error);
+    }
     // If reverse geocoding fails, return coordinates
     return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
   }

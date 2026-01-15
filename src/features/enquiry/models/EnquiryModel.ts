@@ -52,6 +52,7 @@ export interface EnquiryData {
     DateOfBirth: string | null;
     Age: string | null
     SubSource: string | null
+    SubSubSource?: string | null
     FinalStage: string | null
     FinalStageDetail: string | null
     NextFollowUpDate: string | null
@@ -118,6 +119,7 @@ export interface AddUpdateEnquiryRequest {
     PossessionType?: string | null
     Source?: string | null
     SubSource?: string | null
+    SubSubSource?: string | null
     FinalStage?: string | null
     FinalStageDetail?: string | null
     NextFollowUpDate?: string | null

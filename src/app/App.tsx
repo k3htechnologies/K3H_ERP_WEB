@@ -105,6 +105,7 @@ import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartn
 import EmployeeResignation from '@/features/resignation/pages/EmployeeResignation';
 import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
 import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
+import DepartmentMasterPage from '@/features/departmentMaster/pages/DepartmentMasterPage';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -162,6 +163,7 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="departmentMaster" element={<DepartmentMaster />} />
+            <Route path="departmentMaster1" element={<DepartmentMasterPage />} />
             <Route path="compoff" element={<CompOff />} />
             <Route path="vendor/add/:vendorId?" element={<AddUpdateVendor />} />
             <Route path="designationMaster" element={<DesignationMaster />} />

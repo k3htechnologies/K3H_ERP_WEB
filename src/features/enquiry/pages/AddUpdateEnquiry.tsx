@@ -16,7 +16,7 @@ import { EnquiryService } from "../services/EnquiryServices";
 import { filterEmail, filterMobile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
 import { Mail, Phone } from "lucide-react";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { ACCOMODATION_TYPE_OPTIONS, AGE_TYPE_OPTION, BUDGET_TYPE_OPTIONS, COMMERCIAL_FLAT_CONFIGURATION, CUSTOMER_CLASSIFICATION_TYPE, DESIRED_FLOOR_BAND, ETHNICITY_TYPE_OPTION, FINAL_STAGE_DETAILS_TYPE_OPTIONS, FINAL_STAGE_TYPE_OPTIONS, NEIGHBORHOOD_PLACES_TYPE_OPTION, OCCUPATION_TYPE_OPTIONS, POSSESSION_TYPE_OPTIONS, REQUIREMENT_TYPE_OPTIONS, RESIDENTIAL_FLAT_CONFIGURATION, SOURCE_OF_FUNDING_TYPE, SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from "@/core/constants";
+import { ACCOMODATION_TYPE_OPTIONS, BUDGET_TYPE_OPTIONS, COMMERCIAL_FLAT_CONFIGURATION, CUSTOMER_CLASSIFICATION_TYPE, DESIRED_FLOOR_BAND, ETHNICITY_TYPE_OPTION, FINAL_STAGE_DETAILS_TYPE_OPTIONS, FINAL_STAGE_TYPE_OPTIONS, NEIGHBORHOOD_PLACES_TYPE_OPTION, OCCUPATION_TYPE_OPTIONS, POSSESSION_TYPE_OPTIONS, REQUIREMENT_TYPE_OPTIONS, RESIDENTIAL_FLAT_CONFIGURATION, SOURCE_OF_FUNDING_TYPE, SOURCE_TYPE_OPTIONS, SUB_SUB_SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from "@/core/constants";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
@@ -25,6 +25,8 @@ import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 import RadioPill from "@/ui/components/forms/RadioPill";
 import { RangeSelector } from "@/ui/components/forms/RangeSelector";
 import { fetchChannelPartnerDropdown } from "@/features/ChannelPartner/channelPartnerDropDown";
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
+import { calculateAge } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
     EnquiryId: 0,
@@ -47,6 +49,7 @@ const initialFormState = (): AddUpdateEnquiryRequest => ({
     PossessionType: "",
     Source: "",
     SubSource: "",
+    SubSubSource: "",
     FinalStage: "",
     FinalStageDetail: "",
     NextFollowUpDate: "",
@@ -134,6 +137,14 @@ export const AddUpdateEnquiry: React.FC = () => {
             fetchEnquiryDetails();
         }
     }, [EnquiryId]);
+
+    useEffect(() => {
+        if (formData.EnquiryTimeIn === "00:00") {
+            const currentTime = new Date().toTimeString().slice(0, 5)
+            handleFieldChange("EnquiryTimeIn", currentTime)
+        }
+    }, [])
+
     //#endregion
 
     //#region FETCH ENQUIRY  MASTER DETAILS
@@ -179,6 +190,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                             PossessionType: e.PossessionType ?? prev.PossessionType,
                             Source: e.Source ?? prev.Source,
                             SubSource: e.SubSource ?? prev.SubSource,
+                            SubSubSource: e.SubSubSource ?? prev.SubSubSource,
                             FinalStage: e.FinalStage ?? prev.FinalStage,
                             FinalStageDetail: e.FinalStageDetail ?? prev.FinalStageDetail,
                             NextFollowUpDate: e.NextFollowUpDate ?? prev.NextFollowUpDate,
@@ -232,28 +244,40 @@ export const AddUpdateEnquiry: React.FC = () => {
         const newErrors: { [key: string]: string } = {};
 
         if (!formData.Name) {
-            newErrors.Name = 'Full Name is required.';
+            newErrors.Name = 'Full Name is required';
         } else if (formData.Name.trim().length > 50) {
             newErrors.Name = 'Full Name must be at most 50 characters';
         }
 
         if (!formData.MobileNumber) {
-            newErrors.MobileNumber = 'Mobile Number is required.';
+            newErrors.MobileNumber = 'Mobile Number is required';
         } else if (!isValidMobile(formData.MobileNumber.trim())) {
             newErrors.MobileNumber = 'Enter a valid 10-Digit Mobile Number'
         }
 
 
         if (!formData.EmailId) {
-            newErrors.EmailId = 'Email Id is required.';
+            newErrors.EmailId = 'E-mail Id is required';
         } else if (!isValidEmail(formData.EmailId.trim())) {
             newErrors.EmailId = 'Enter a Valid E-mail Id'
+        }
+
+
+        if (!formData.DateOfBirth) {
+            newErrors.DateOfBirth = 'DOB is required'
+
+        } else if (formData.DateOfBirth) {
+            const dob = new Date(formData.DateOfBirth as unknown as string)
+            const today = new Date()
+            if (dob > today) {
+                newErrors.DateOfBirth = 'Date of Birth cannot be in the future'
+            }
         }
 
         if (formData.Nationality === "NRI") {
 
             if (!formData.CountryOfResidence) {
-                newErrors.CountryOfResidence = 'Country Of Residence is required.';
+                newErrors.CountryOfResidence = 'Country Of Residence is required';
             }
 
             if (!formData.CityOfResidence) {
@@ -263,10 +287,10 @@ export const AddUpdateEnquiry: React.FC = () => {
         }
 
         if (!formData.AreaPreferred) {
-            newErrors.AreaPreferred = 'Area Preferred is required.';
+            newErrors.AreaPreferred = 'Area Preferred is required';
         }
         if (!formData.EnquiryDate) {
-            newErrors.EnquiryDate = 'Enquiry Date  is required.';
+            newErrors.EnquiryDate = 'Enquiry Date  is required';
         }
 
         else if (formData.EnquiryDate) {
@@ -280,14 +304,14 @@ export const AddUpdateEnquiry: React.FC = () => {
         if (formData.Source?.toUpperCase() === "CHANNEL PARTNER") {
 
             if (!formData.ChannelPartnerId) {
-                newErrors.ChannelPartnerId = 'Channel Partner is required.';
+                newErrors.ChannelPartnerId = 'Channel Partner is required';
             }
 
         }
         if (formData.Source?.toUpperCase() === "ADVERTISEMENT") {
 
             if (!formData.SubSource) {
-                newErrors.SubSource = 'Sub Source is required.';
+                newErrors.SubSource = 'Sub Source is required';
             }
 
         }
@@ -295,13 +319,13 @@ export const AddUpdateEnquiry: React.FC = () => {
         if (formData.FinalStage?.toUpperCase() === "LOST") {
 
             if (!formData.FinalStageDetail) {
-                newErrors.FinalStageDetail = 'Final Stage Detail is required.';
+                newErrors.FinalStageDetail = 'Final Stage Detail is required';
             }
 
         }
 
         if (!formData.NextFollowUpDate) {
-            newErrors.NextFollowUpDate = 'Next Follow-Up Date  is required.';
+            newErrors.NextFollowUpDate = 'Next Follow-Up Date  is required';
         }
 
         return {
@@ -344,6 +368,7 @@ export const AddUpdateEnquiry: React.FC = () => {
             PossessionType: formData.PossessionType,
             Source: formData.Source,
             SubSource: formData.SubSource,
+            SubSubSource: formData.SubSubSource,
             FinalStage: formData.FinalStage,
             FinalStageDetail: formData.FinalStageDetail,
             NextFollowUpDate: formData.NextFollowUpDate,
@@ -428,6 +453,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                 <TimePicker
                                     label="Customer Time In"
                                     required
+                                    disabled
                                     size="md"
                                     format={24}
                                     value={formData.EnquiryTimeIn || ""}
@@ -468,7 +494,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                             </div>
                             <div>
                                 <Input
-                                    label='Email ID'
+                                    label='E-mail ID'
                                     type="text"
                                     required
                                     value={formData.EmailId ?? ""}
@@ -478,14 +504,23 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         const emailId = filterEmail(e.target.value);
                                         handleFieldChange('EmailId', emailId)
                                     }}
-                                    placeholder="Enter Valid Email Id"
+                                    placeholder="Enter Valid E-mail Id"
                                 />
                             </div>
                             <div>
                                 <DatePickerInput
                                     label="DOB"
                                     value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
-                                    onChange={(val) => handleFieldChange('DateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                    onChange={(val) => {
+
+                                        const dob = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val)
+
+                                        handleFieldChange('DateOfBirth', dob)
+
+                                        const age = calculateAge(dob || "")
+
+                                        handleFieldChange('Age', age)
+                                    }}
                                     required
                                     error={errors.DateOfBirth}
 
@@ -493,14 +528,18 @@ export const AddUpdateEnquiry: React.FC = () => {
 
                             </div>
                             <div>
-                                <SinglePageSelection
-                                    label="Age (Year)"
-                                    placeholder="Select Age"
-                                    value={formData.Age ?? ''}
-                                    onChange={(value) => handleFieldChange("Age", value)}
-                                    options={AGE_TYPE_OPTION.map(opt => ({ label: opt.name, value: opt.id }))}
+                                <Input
+                                    type="text"
+                                    required
+                                    disabled
+                                    label='Age'
+                                    value={formData.Age ?? ""}
+                                    onChange={(e) => handleFieldChange("Age", e.target.value)}
+                                    placeholder="Enter Age"
+                                    maxLength={250}
                                     error={errors.Age}
                                 />
+
                             </div>
                         </div>
 
@@ -509,8 +548,9 @@ export const AddUpdateEnquiry: React.FC = () => {
 
                             <div>
                                 <SinglePageSelection
-                                    label="Accommodation"
-                                    placeholder="Select Accommodation"
+                                    label="Current Accommodation"
+                                    required
+                                    placeholder="Select Current Accommodation"
                                     value={formData.Accommodation ?? ''}
                                     onChange={(value) => handleFieldChange("Accommodation", value)}
                                     options={ACCOMODATION_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
@@ -540,6 +580,58 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     error={errors.Source}
                                 />
                             </div>
+                            {/* Advertisement - Sub Source */}
+                            {formData.Source === 'Direct Walking' && (
+                                <div>
+                                    <SinglePageSelection
+                                        label="Sub Source"
+                                        placeholder="Select Sub Source"
+                                        value={formData.SubSource ?? ''}
+                                        onChange={(value) => handleFieldChange("SubSource", String(value))}
+                                        options={SUBSOURCE_TYPE_OPTIONS.map(opt => ({
+                                            label: opt.name,
+                                            value: opt.id
+                                        }))}
+                                        error={errors.SubSource}
+                                    />
+                                </div>
+                            )}
+                            {/* Advertisement - Sub Source */}
+                            {formData.SubSource === 'Advertisement' && (
+                                <div>
+                                    <SinglePageSelection
+                                        label="Sub Source"
+                                        placeholder="Select Sub Sub Source"
+                                        value={formData.SubSubSource ?? ''}
+                                        onChange={(value) => handleFieldChange("SubSubSource", String(value))}
+                                        options={SUB_SUB_SOURCE_TYPE_OPTIONS.map(opt => ({
+                                            label: opt.name,
+                                            value: opt.id
+                                        }))}
+                                        error={errors.SubSubSource}
+                                    />
+                                </div>
+                            )}
+
+                            {/* Channel Partner - Channel Partner Dropdown */}
+                            {formData.Source === 'Channel Partner' && (
+                                <div>
+                                    <SingleSelectDropdownWithPagination
+                                        label="Channel Partner"
+                                        title="Select Channel Partner"
+                                        size="lg"
+                                        dataFetchCallBack={fetchChannelPartnerDropdown}
+                                        onSelected={(item) =>
+                                            handleFieldChange("ChannelPartnerId", Number(item.value))
+                                        }
+                                        initialValue={createDropdownInitialValue(formData.ChannelPartnerId,
+                                            dropdownLabels.channelPartnerName
+                                        )}
+                                        error={errors.ChannelPartnerId}
+                                    />
+                                </div>
+                            )}
+
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
@@ -605,318 +697,275 @@ export const AddUpdateEnquiry: React.FC = () => {
                                 </>
                             )}
                         </div>
-
-                        <div className="space-y-4 pb-3">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Property Preferences</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
-                                <div>
-                                    <SinglePageSelection
-                                        label="Possession Type"
-                                        placeholder="Select Possession Type"
-                                        value={formData.PossessionType ?? ''}
-                                        onChange={(value) => handleFieldChange("PossessionType", value)}
-                                        options={POSSESSION_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                        error={errors.PossessionType}
-                                    />
-                                </div>
-                                <div>
-                                    <Input
-                                        label='Area Preferred (In Sq. Ft)'
-                                        error={errors.AreaPreferred}
-                                        type="text"
-                                        required
-                                        value={formData.AreaPreferred ?? ''}
-                                        maxLength={10}
-                                        onChange={(e) => {
-                                            const digits = e.target.value.replace(/\D/g, '');
-                                            handleFieldChange('AreaPreferred', digits === '' ? 0 : Number(digits));
-                                        }}
-                                        placeholder="Enter Area Preferred"
-                                    />
-                                </div>
-                                <div>
-                                    <SinglePageSelection
-                                        label="Desired Floor Band"
-                                        placeholder="Select Desired Floor Band"
-                                        value={formData.DesiredFloorBand ?? ''}
-                                        onChange={(value) => handleFieldChange("DesiredFloorBand", value)}
-                                        options={DESIRED_FLOOR_BAND.map(opt => ({ label: opt.name, value: opt.id }))}
-                                        error={errors.DesiredFloorBand}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
-
-                            <div>
-
-                                <RangeSelector
-                                    label="Budget (In Cr)"
-                                    required
-                                    value={formData.Budget ?? ""}
-                                    onChange={(v) => handleFieldChange("Budget", v)}
-                                    options={BUDGET_TYPE_OPTIONS}
-                                    error={errors.Budget}
-                                />
-                            </div>
-
-                            <div>
-                                <SinglePageSelection
-                                    label="Neighborhood Places"
-                                    placeholder="Select Neighborhood Places"
-                                    value={formData.NeighborhoodPlacesInterestedIn ?? ''}
-                                    onChange={(value) => handleFieldChange('NeighborhoodPlacesInterestedIn', value)}
-                                    options={NEIGHBORHOOD_PLACES_TYPE_OPTION.map(opt => ({ label: opt.name, value: opt.id }))}
-                                    error={errors.NeighborhoodPlaces}
-                                />
-                            </div>
-                            <div>
-                                <SinglePageSelection
-                                    label="Requirement"
-                                    placeholder="Select Requirement"
-                                    value={formData.Requirement ?? ''}
-                                    onChange={(value) => handleFieldChange("Requirement", value)}
-                                    options={REQUIREMENT_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                    error={errors.Requirement}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
-                            {formData.Requirement === 'Residential' && (
-                                <div>
-                                    <SinglePageSelection
-                                        label="Residential Type"
-                                        placeholder="Select Residential Type"
-                                        value={formData.RequirementType ?? ''}
-                                        onChange={(value) => handleFieldChange("RequirementType", value)}
-                                        options={RESIDENTIAL_FLAT_CONFIGURATION.map(opt => ({ label: opt.name, value: opt.id }))}
-                                        error={errors.Residential}
-                                    />
-                                </div>
-                            )}
-
-                            {formData.Requirement === 'Commercial' && (
-                                <div>
-                                    <SinglePageSelection
-                                        label="Commercial Type"
-                                        placeholder="Select Commercial Type"
-                                        value={formData.RequirementType ?? ''}
-                                        onChange={(value) => handleFieldChange("RequirementType", value)}
-                                        options={COMMERCIAL_FLAT_CONFIGURATION.map(opt => ({ label: opt.name, value: opt.id }))}
-                                        error={errors.CommercialType}
-                                    />
-                                </div>
-                            )}
-
-                        </div>
-                        <div className="space-y-4 pb-3">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Customer Details</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
-                                <div>
-                                    <SinglePageSelection
-                                        label="Customer Classification"
-                                        placeholder="Select Customer Classification"
-                                        value={formData.CustomerClassification ?? ''}
-                                        onChange={(value) => handleFieldChange("CustomerClassification", value)}
-                                        options={CUSTOMER_CLASSIFICATION_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
-                                        error={errors.CustomerClassification}
-                                    />
-                                </div>
-                                <div>
-                                    <SinglePageSelection
-                                        label="Source Of Funding"
-                                        placeholder="Select Source Of Funding"
-                                        value={formData.SourceOfFunding ?? ''}
-                                        onChange={(value) => handleFieldChange("SourceOfFunding", value)}
-                                        options={SOURCE_OF_FUNDING_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
-                                        error={errors.SourceOfFunding}
-                                    />
-                                </div>
-                                <div>
-                                    <SinglePageSelection
-                                        label="Ethnicity"
-                                        placeholder="Select Ethnicity"
-                                        value={formData.Ethnicity ?? ''}
-                                        onChange={(value) => handleFieldChange("Ethnicity", value)}
-                                        options={ETHNICITY_TYPE_OPTION.map(opt => ({ label: opt.name, value: opt.id }))}
-                                        error={errors.Ethnicity}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 pb-3">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Enquiry Information</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <SinglePageSelection
-                                        label="Source"
-                                        placeholder="Select Source"
-                                        value={formData.Source ?? ''}
-                                        onChange={(value) => handleFieldChange("Source", value)}
-                                        options={SOURCE_TYPE_OPTIONS.map(opt => ({
-                                            label: opt.name,
-                                            value: opt.id
-                                        }))}
-                                        error={errors.Source}
-                                    />
+                        {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (
+                            <>
+                                <div className="space-y-4 pb-3">
+                                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Property Preferences</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+                                        <div>
+                                            <SinglePageSelection
+                                                label="Possession Type"
+                                                placeholder="Select Possession Type"
+                                                value={formData.PossessionType ?? ''}
+                                                onChange={(value) => handleFieldChange("PossessionType", value)}
+                                                options={POSSESSION_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                                                error={errors.PossessionType}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Input
+                                                label='Area Preferred (In Sq. Ft)'
+                                                error={errors.AreaPreferred}
+                                                type="text"
+                                                required
+                                                value={formData.AreaPreferred ?? ''}
+                                                maxLength={10}
+                                                onChange={(e) => {
+                                                    const digits = e.target.value.replace(/\D/g, '');
+                                                    handleFieldChange('AreaPreferred', digits === '' ? 0 : Number(digits));
+                                                }}
+                                                placeholder="Enter Area Preferred"
+                                            />
+                                        </div>
+                                        <div>
+                                            <SinglePageSelection
+                                                label="Desired Floor Band"
+                                                placeholder="Select Desired Floor Band"
+                                                value={formData.DesiredFloorBand ?? ''}
+                                                onChange={(value) => handleFieldChange("DesiredFloorBand", value)}
+                                                options={DESIRED_FLOOR_BAND.map(opt => ({ label: opt.name, value: opt.id }))}
+                                                error={errors.DesiredFloorBand}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <SinglePageSelection
-                                        label="Final Stage"
-                                        placeholder="Select Final Stage"
-                                        value={formData.FinalStage ?? ''}
-                                        onChange={(value) => handleFieldChange("FinalStage", value)}
-                                        options={FINAL_STAGE_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                        error={errors.FinalStage}
-                                    />
-                                </div>
-                            </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Advertisement - Sub Source */}
-                                {formData.Source === 'Advertisement' && (
+                                    <div>
+
+                                        <RangeSelector
+                                            label="Budget (In Cr)"
+                                            required
+                                            value={formData.Budget ?? ""}
+                                            onChange={(v) => handleFieldChange("Budget", v)}
+                                            options={BUDGET_TYPE_OPTIONS}
+                                            error={errors.Budget}
+                                        />
+                                    </div>
+
                                     <div>
                                         <SinglePageSelection
-                                            label="Sub Source"
-                                            placeholder="Select Sub Source"
-                                            value={formData.SubSource ?? ''}
-                                            onChange={(value) => handleFieldChange("SubSource", String(value))}
-                                            options={SUBSOURCE_TYPE_OPTIONS.map(opt => ({
-                                                label: opt.name,
-                                                value: opt.id
-                                            }))}
-                                            error={errors.SubSource}
+                                            label="Neighborhood Places"
+                                            placeholder="Select Neighborhood Places"
+                                            value={formData.NeighborhoodPlacesInterestedIn ?? ''}
+                                            onChange={(value) => handleFieldChange('NeighborhoodPlacesInterestedIn', value)}
+                                            options={NEIGHBORHOOD_PLACES_TYPE_OPTION.map(opt => ({ label: opt.name, value: opt.id }))}
+                                            error={errors.NeighborhoodPlaces}
                                         />
                                     </div>
-                                )}
-
-                                {/* Channel Partner - Channel Partner Dropdown */}
-                                {formData.Source === 'Channel Partner' && (
-                                    <div>
-                                        <SingleSelectDropdownWithPagination
-                                            label="Channel Partner"
-                                            title="Select Channel Partner"
-                                            size="lg"
-                                            dataFetchCallBack={fetchChannelPartnerDropdown}
-                                            onSelected={(item) =>
-                                                handleFieldChange("ChannelPartnerId", Number(item.value))
-                                            }
-                                            initialValue={createDropdownInitialValue(formData.ChannelPartnerId,
-                                                dropdownLabels.channelPartnerName
-                                            )}
-                                            error={errors.ChannelPartnerId}
-                                        />
-                                    </div>
-                                )}
-
-                                {formData.FinalStage === 'Lost' && (
                                     <div>
                                         <SinglePageSelection
-                                            label="Final Stage Detail"
-                                            placeholder="Select Final Stage Detail"
-                                            value={formData.FinalStageDetail ?? ''}
-                                            onChange={(value) => handleFieldChange("FinalStageDetail", value)}
-                                            options={FINAL_STAGE_DETAILS_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                            error={errors.FinalStageDetail}
+                                            label="Requirement"
+                                            placeholder="Select Requirement"
+                                            value={formData.Requirement ?? ''}
+                                            onChange={(value) => handleFieldChange("Requirement", value)}
+                                            options={REQUIREMENT_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                                            error={errors.Requirement}
                                         />
                                     </div>
-                                )}
-                            </div>
-                        </div>
-                        <div className="space-y-4 pb-3">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Follow Up Details</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                                <div>
-                                    <DatePickerInput
-                                        label="Enquiry Date"
-                                        required
-                                        value={formatDate_dd_mm_yyyy(formData.EnquiryDate)}
-                                        onChange={(val) => handleFieldChange('EnquiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                        error={errors.EnquiryDate}
-                                    />
                                 </div>
 
-                                <div>
-                                    <DatePickerInput
-                                        label="Next Follow-Up Date"
-                                        required
-                                        value={formatDate_dd_mm_yyyy(formData.NextFollowUpDate)}
-                                        onChange={(val) => handleFieldChange('NextFollowUpDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                        error={errors.NextFollowUpDate}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="space-y-4 pb-3">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">  Sales Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
-                            <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Sales Advisor"
-                                    title="Select Advisor"
-                                    size="lg"
-                                    dataFetchCallBack={fetchEmployeesByDept("Sale")}
-                                    onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item.value))}
-                                    initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.employeeName)}
-                                    error={errors.SalesAdvisorId}
-                                />
-                            </div>
-
-                            <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Sourcing Manager"
-                                    title="Select Sourcing Manager"
-                                    size="lg"
-                                    dataFetchCallBack={fetchEmployeesByDept("Sale")}
-                                    onSelected={(item) => handleFieldChange("SourcingManagerId", Number(item.value))}
-                                    initialValue={createDropdownInitialValue(formData.SourcingManagerId, dropdownLabels.employeeName
+                                <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+                                    {formData.Requirement === 'Residential' && (
+                                        <div>
+                                            <SinglePageSelection
+                                                label="Residential Type"
+                                                placeholder="Select Residential Type"
+                                                value={formData.RequirementType ?? ''}
+                                                onChange={(value) => handleFieldChange("RequirementType", value)}
+                                                options={RESIDENTIAL_FLAT_CONFIGURATION.map(opt => ({ label: opt.name, value: opt.id }))}
+                                                error={errors.Residential}
+                                            />
+                                        </div>
                                     )}
-                                    error={errors.SourcingManagerId}
-                                />
 
-                            </div>
+                                    {formData.Requirement === 'Commercial' && (
+                                        <div>
+                                            <SinglePageSelection
+                                                label="Commercial Type"
+                                                placeholder="Select Commercial Type"
+                                                value={formData.RequirementType ?? ''}
+                                                onChange={(value) => handleFieldChange("RequirementType", value)}
+                                                options={COMMERCIAL_FLAT_CONFIGURATION.map(opt => ({ label: opt.name, value: opt.id }))}
+                                                error={errors.CommercialType}
+                                            />
+                                        </div>
+                                    )}
 
-                            <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Presales Executive"
-                                    title="Select Presales Executive"
-                                    size="lg"
-                                    dataFetchCallBack={fetchEmployeesByDept("Sale")}
-                                    onSelected={(item) => handleFieldChange("PresalesExecutiveId", Number(item.value))}
-                                    initialValue={createDropdownInitialValue(formData.PresalesExecutiveId, dropdownLabels.employeeName)}
-                                    error={errors.PresalesExecutiveId}
-                                />
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                                </div>
+                                <div className="space-y-4 pb-3">
+                                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Customer Details</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+                                        <div>
+                                            <SinglePageSelection
+                                                label="Customer Classification"
+                                                placeholder="Select Customer Classification"
+                                                value={formData.CustomerClassification ?? ''}
+                                                onChange={(value) => handleFieldChange("CustomerClassification", value)}
+                                                options={CUSTOMER_CLASSIFICATION_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
+                                                error={errors.CustomerClassification}
+                                            />
+                                        </div>
+                                        <div>
+                                            <SinglePageSelection
+                                                label="Source Of Funding"
+                                                placeholder="Select Source Of Funding"
+                                                value={formData.SourceOfFunding ?? ''}
+                                                onChange={(value) => handleFieldChange("SourceOfFunding", value)}
+                                                options={SOURCE_OF_FUNDING_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
+                                                error={errors.SourceOfFunding}
+                                            />
+                                        </div>
+                                        <div>
+                                            <SinglePageSelection
+                                                label="Ethnicity"
+                                                placeholder="Select Ethnicity"
+                                                value={formData.Ethnicity ?? ''}
+                                                onChange={(value) => handleFieldChange("Ethnicity", value)}
+                                                options={ETHNICITY_TYPE_OPTION.map(opt => ({ label: opt.name, value: opt.id }))}
+                                                error={errors.Ethnicity}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
 
-                            <div>
-                                <TimePicker
-                                    label="Customer Time Out"
-                                    size="md"
-                                    format={24}
-                                    value={formData.EnquiryTimeOut || ""}
-                                    onChange={(val) => handleFieldChange("EnquiryTimeOut", val)}
-                                    error={errors.EnquiryTimeOut}
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <TextArea
-                                label="Remarks"
-                                className='thin-scroll'
-                                value={formData.Remark ?? ""}
-                                placeholder="Enter Remarks"
-                                maxLength={500}
-                                onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                error={errors.Remark} />
-                        </div>
+                                <div className="space-y-4 pb-3">
+                                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Enquiry Information</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                        <div>
+                                            <SinglePageSelection
+                                                label="Final Stage"
+                                                placeholder="Select Final Stage"
+                                                value={formData.FinalStage ?? ''}
+                                                onChange={(value) => handleFieldChange("FinalStage", value)}
+                                                options={FINAL_STAGE_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                                                error={errors.FinalStage}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                        {formData.FinalStage === 'Lost' && (
+                                            <div>
+                                                <SinglePageSelection
+                                                    label="Final Stage Detail"
+                                                    placeholder="Select Final Stage Detail"
+                                                    value={formData.FinalStageDetail ?? ''}
+                                                    onChange={(value) => handleFieldChange("FinalStageDetail", value)}
+                                                    options={FINAL_STAGE_DETAILS_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                                                    error={errors.FinalStageDetail}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="space-y-4 pb-3">
+                                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Follow Up Details</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                                        <div>
+                                            <DatePickerInput
+                                                label="Enquiry Date"
+                                                required
+                                                value={formatDate_dd_mm_yyyy(formData.EnquiryDate)}
+                                                onChange={(val) => handleFieldChange('EnquiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                                error={errors.EnquiryDate}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <DatePickerInput
+                                                label="Next Follow-Up Date"
+                                                required
+                                                value={formatDate_dd_mm_yyyy(formData.NextFollowUpDate)}
+                                                onChange={(val) => handleFieldChange('NextFollowUpDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                                error={errors.NextFollowUpDate}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
+                    {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (
+                        <div className="space-y-4 pb-3">
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">  Sales Details</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+                                <div>
+                                    <SingleSelectDropdownWithPagination
+                                        label="Sales Advisor"
+                                        title="Select Advisor"
+                                        size="lg"
+                                        dataFetchCallBack={fetchEmployeesByDept("Sale")}
+                                        onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item.value))}
+                                        initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.employeeName)}
+                                        error={errors.SalesAdvisorId}
+                                    />
+                                </div>
+
+                                <div>
+                                    <SingleSelectDropdownWithPagination
+                                        label="Sourcing Manager"
+                                        title="Select Sourcing Manager"
+                                        size="lg"
+                                        dataFetchCallBack={fetchEmployeesByDept("Sale")}
+                                        onSelected={(item) => handleFieldChange("SourcingManagerId", Number(item.value))}
+                                        initialValue={createDropdownInitialValue(formData.SourcingManagerId, dropdownLabels.employeeName
+                                        )}
+                                        error={errors.SourcingManagerId}
+                                    />
+
+                                </div>
+
+                                <div>
+                                    <SingleSelectDropdownWithPagination
+                                        label="Presales Executive"
+                                        title="Select Presales Executive"
+                                        size="lg"
+                                        dataFetchCallBack={fetchEmployeesByDept("Sale")}
+                                        onSelected={(item) => handleFieldChange("PresalesExecutiveId", Number(item.value))}
+                                        initialValue={createDropdownInitialValue(formData.PresalesExecutiveId, dropdownLabels.employeeName)}
+                                        error={errors.PresalesExecutiveId}
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+
+                                <div>
+                                    <TimePicker
+                                        label="Customer Time Out"
+                                        size="md"
+                                        format={24}
+                                        value={formData.EnquiryTimeOut || ""}
+                                        onChange={(val) => handleFieldChange("EnquiryTimeOut", val)}
+                                        error={errors.EnquiryTimeOut}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <TextArea
+                                    label="Remarks"
+                                    className='thin-scroll'
+                                    value={formData.Remark ?? ""}
+                                    placeholder="Enter Remarks"
+                                    maxLength={500}
+                                    onChange={(e) => handleFieldChange("Remark", e.target.value)}
+                                    error={errors.Remark} />
+                            </div>
+                        </div>
+                    )}
 
                 </form>
             </div>

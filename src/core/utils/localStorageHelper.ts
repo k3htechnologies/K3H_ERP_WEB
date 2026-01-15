@@ -390,10 +390,10 @@ export const LocalStorageHelper = {
     },
     //#endregion
     //#region STORE CHANNEL PARTNER MASTER COLUMNS
-    storeChannelPartnerTableColumns:( columns: string): void => {
-        try{
+    storeChannelPartnerTableColumns: (columns: string): void => {
+        try {
             localStorage.setItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SELECTED_COLUMNS, columns);
-        }catch(error){
+        } catch (error) {
             console.error('Error Channel Partner Columns Details:', error)
         }
     },
@@ -404,7 +404,7 @@ export const LocalStorageHelper = {
         if (stored) {
             try {
                 return localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SELECTED_COLUMNS);
-            }catch (error) {
+            } catch (error) {
                 console.error('Error reading Channel Partner Columns Details:', error)
                 return null
             }
@@ -413,10 +413,10 @@ export const LocalStorageHelper = {
     },
     //#endregion
     //#region STORE ENQUIRY MASTER COLUMNS
-    storeEnquiryTableColumns:( columns: string): void => {
-        try{
+    storeEnquiryTableColumns: (columns: string): void => {
+        try {
             localStorage.setItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS, columns);
-        }catch(error){
+        } catch (error) {
             console.error('Error Enquiry Master Columns Details:', error)
         }
     },
@@ -427,7 +427,7 @@ export const LocalStorageHelper = {
         if (stored) {
             try {
                 return localStorage.getItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS);
-            }catch (error) {
+            } catch (error) {
                 console.error('Error reading Enquiry Columns Details:', error)
                 return null
             }
@@ -940,6 +940,28 @@ export const LocalStorageHelper = {
     //#endregion
     //#region GET SELECTED PROJECT
     getSelectedProject: (): number | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
+        if (stored) {
+            const parsed = Number(stored);
+            return isNaN(parsed) ? null : parsed;
+        }
+        return null;
+    },
+    //#endregion
+    //#region STORE SELECTED IS GRE
+    storeIsGRE: (projectId: number): void => {
+        try {
+            localStorage.setItem(
+                LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID,
+                String(projectId)
+            );
+        } catch (error) {
+            console.error('Error storing selected GRE:', error);
+        }
+    },
+    //#endregion
+    //#region GET SELECTED PROJECT
+    getSelectedIsGRE: (): number | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
         if (stored) {
             const parsed = Number(stored);

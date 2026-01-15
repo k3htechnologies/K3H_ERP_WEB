@@ -92,9 +92,11 @@ export const MASTER_DATA = {
 
   possessionType: ['Ready', 'Within 1 Year', 'More Than 2 Year'],
 
-  source: ['Advertisement', 'Channel Partner', 'Direct Walking', 'Exhibition', 'Enquiry', 'HRR Website', 'Reference'],
+  source: ['Channel Partner', 'Direct Walking'],
 
-  subsource: ['Facebook', 'Hoarding', 'Instagram', 'Google Ads', 'Newspaper'],
+  subSources: ['Advertisement', 'Exhibition', 'Enquiry', 'HRR Website', 'Reference'],
+
+  subSubsource: ['Facebook', 'Hoarding', 'Instagram', 'Google Ads', 'Newspaper'],
 
   finalStage: ['Booking Done', 'Enquiry', 'Follow-up', 'Lost', 'Inactive', 'Negotiation', 'Revisit', 'Site Visit'],
 
@@ -257,7 +259,8 @@ export const REQUIREMENT_TYPE_OPTIONS = toOptions(MASTER_DATA.requirement)
 export const BUDGET_TYPE_OPTIONS = toOptions(MASTER_DATA.budget)
 export const OCCUPATION_TYPE_OPTIONS = toOptions(MASTER_DATA.occupationType)
 export const SOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.source)
-export const SUBSOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.subsource)
+export const SUBSOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.subSources)
+export const SUB_SUB_SOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.subSubsource)
 export const FINAL_STAGE_TYPE_OPTIONS = toOptions(MASTER_DATA.finalStage)
 export const FINAL_STAGE_DETAILS_TYPE_OPTIONS = toOptions(MASTER_DATA.finalStageDetail)
 export const AGE_TYPE_OPTION = toOptions(MASTER_DATA.age)

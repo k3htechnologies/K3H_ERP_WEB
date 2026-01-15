@@ -1,20 +1,16 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import { LitigationDatasourceImpl } from '@/features/litigation/datasources/LitigationDataSource';
 import type {
+    
     FilterWithPaginationLitigationRequest,
     LitigationListResponse,
     LitigationSaveResponse,
     LitigationDeleteResponse,
-    LitigationHearingListResponse,
-    LitigationHearingSaveResponse,
-    LitigationHearingDeleteResponse,
-    LitigationClosureListResponse,
-    LitigationClosureSaveResponse,
-    DeleteLitigationHearingRequest,
     DeleteLitigationRequest,
-    FilterWithPaginationLitigationClosureRequest,
-    FilterWithPaginationLitigationHearingRequest,
     AddUpdateLitigationRequest,
+    UpdateLitigationReopenRequest,
+    LitigationReopenSaveResponse,
+
 } from '@/features/litigation/models/LitigationModel'
 
 import * as E from 'fp-ts/Either';
@@ -47,46 +43,12 @@ export const litigationService = {
         }
     },
 
-    apiCallPullLitigationHearing: async (params: FilterWithPaginationLitigationHearingRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, LitigationHearingListResponse>> => {
+    apiCallUpdateLitigationReopen: async (params: UpdateLitigationReopenRequest): Promise<E.Either<Failure, LitigationReopenSaveResponse>> => {
 
         try {
 
-            return E.right(await LitigationDataSource.pullLitigationHearing(params, options?.signal));
-        } catch (error: any) {
+            return E.right(await LitigationDataSource.UpadateLitigationReopen(params));
 
-            return E.left({ message: error.message, code: error.code });
-
-        }
-    },
-
-    apiCallAddUpdateLitigationHearing: async (formData: FormData): Promise<E.Either<Failure, LitigationHearingSaveResponse>> => {
-
-        try {
-
-            return E.right(await LitigationDataSource.addUpadateLitigationHearing(formData));
-        } catch (error: any) {
-
-            return E.left({ message: error.message, code: error.code });
-        }
-    },
-
-    apiCallPullLitigationClosure: async (params: FilterWithPaginationLitigationClosureRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, LitigationClosureListResponse>> => {
-
-        try {
-
-            return E.right(await LitigationDataSource.pullLitigationClosure(params, options?.signal));
-        } catch (error: any) {
-
-            return E.left({ message: error.message, code: error.code });
-
-        }
-    },
-
-    apiCallAddUpdateLitigationClosure: async (formData: FormData): Promise<E.Either<Failure, LitigationClosureSaveResponse>> => {
-
-        try {
-
-            return E.right(await LitigationDataSource.addUpadateLitigationClosure(formData));
         } catch (error: any) {
 
             return E.left({ message: error.message, code: error.code });
@@ -105,15 +67,5 @@ export const litigationService = {
         }
     },
 
-    apiCallDeleteLitigationHearing: async (params: DeleteLitigationHearingRequest): Promise<E.Either<Failure, LitigationHearingDeleteResponse>> => {
-
-        try {
-
-            return E.right(await LitigationDataSource.deleteLitigationHearing(params));
-        } catch (error: any) {
-
-            return E.left({ message: error.message, code: error.code });
-        }
-    },
 }
 

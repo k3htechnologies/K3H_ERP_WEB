@@ -53,11 +53,8 @@ export class EnquiryDatasourceImpl implements EnquiryDatasource {
             return response;
         } catch (error: any) {
 
-<<<<<<< HEAD
             console.error('ERROR: PULL ENQUIRY :', error);
-=======
-            console.error('ERROR: PULL ENQUIRY:', error);
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
+
 
             if (error === TokenExpiredException) {
                 await this.pullEnquiry(params);
@@ -107,18 +104,14 @@ export class EnquiryDatasourceImpl implements EnquiryDatasource {
                 EnquiryDate: params.EnquiryDate ?? null,
                 Remark: params.Remark?.trim() ?? ''
             }
-
+            
             const response = await this.k3hHttpclient.postRequestWithAuthentication(
                 EnquiryApi.ADD_UPDATE,
                 payLoad
             )
             return response
         } catch (error) {
-<<<<<<< HEAD
             console.log('ERROR:ADD UPDATE ENQUIRY:', error)
-=======
-            console.log('ERROR:ADD UPDATE ENQUIRY :', error)
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
 
             if (error == TokenExpiredException) {
                 await this.addUpadateEnquiry(params);

@@ -4,8 +4,8 @@
 // ============================================================================
 
 export interface Option {
-    id: string
-    name: string
+  id: string
+  name: string
 }
 
 // ============================================================================
@@ -13,160 +13,159 @@ export interface Option {
 // ============================================================================
 
 export const MASTER_DATA = {
-    emergencyRelations: [
-        'Father', 'Mother', 'Spouse', 'Child',
-        'Son', 'Daughter', 'Grandfather', 'Grandmother', 'Uncle', 'Aunt',
-        'Cousin', 'Friend', 'Other'
-    ],
+  emergencyRelations: [
+    'Father', 'Mother', 'Spouse', 'Child',
+    'Son', 'Daughter', 'Grandfather', 'Grandmother', 'Uncle', 'Aunt',
+    'Cousin', 'Friend', 'Other'
+  ],
 
-    employeeTypes: [
-        'Permanent', 'Contract', 'Intern', 'Part Time', 'Temporary'
-    ],
+  employeeTypes: [
+    'Permanent', 'Contract', 'Intern', 'Part Time', 'Temporary'
+  ],
 
-    genders: ['Male', 'Female', 'Other'],
+  genders: ['Male', 'Female', 'Other'],
 
-    months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+  months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
 
-    deductionType: ['Provident Fund', 'Professional Tax', "Tax Deduction at Source", 'Labor Welfare Fund', 'ESI', 'Labour WaleFare Fund', 'National Pension Scheme', 'Health Insurance Premiums'],
+  deductionType: ['Provident Fund', 'Professional Tax', "Tax Deduction at Source", 'Labor Welfare Fund', 'ESI', 'Labour WaleFare Fund', 'National Pension Scheme', 'Health Insurance Premiums'],
 
-    days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+  days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
 
-    maritalStatuses: ['Single', 'Married', 'Divorced', 'Widowed', 'Separated'],
+  maritalStatuses: ['Single', 'Married', 'Divorced', 'Widowed', 'Separated'],
 
-    bloodGroups: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+  bloodGroups: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
 
-    companyType: ['LLP', 'Private Limited Company', 'Proprietorship'],
+  companyType: ['LLP', 'Private Limited Company', 'Proprietorship'],
 
-    projectStatus: ['On-Going', 'Completed', 'On-Hold', 'Cancelled', 'Planning'],
+  projectStatus: ['On-Going', 'Completed', 'On-Hold', 'Cancelled', 'Planning'],
 
-    businessCategory: ['Real Estate', 'Construction', 'Infrastructure', 'Residential', 'Commercial', 'Mixed Use'],
+  businessCategory: ['Real Estate', 'Construction', 'Infrastructure', 'Residential', 'Commercial', 'Mixed Use'],
 
-    documentStatus: [
-        'Applied', 'Doc Missing', 'In Process', 'Issued', 'Not Applied', 'Not Applicable',
-        'Paid', 'Payment Due', 'Rejected',
-    ],
+  documentStatus: [
+    'Applied', 'Doc Missing', 'In Process', 'Issued', 'Not Applied', 'Not Applicable',
+    'Paid', 'Payment Due', 'Rejected',
+  ],
 
-    bankAccountType: ['Current', 'DEMAT', 'Fixed', 'Salary', 'Saving'],
+  bankAccountType: ['Current', 'DEMAT', 'Fixed', 'Salary', 'Saving'],
 
-    landOwnershipType: ['Government', 'Landlord', 'Society'],
+  landOwnershipType: ['Government', 'Landlord', 'Society'],
 
-    flat_unit_Type: ['Commercial', 'Gym', 'Residential', 'Void'],
+  flat_unit_Type: ['Commercial', 'Gym', 'Residential', 'Void'],
 
-    residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', 'DUPLEX'],
+  residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', 'DUPLEX'],
 
-    commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
+  commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
 
-    flat_unit_facing: ['EAST', 'FRONT', 'GARDEN', 'NORTH', 'PARK', 'ROAD', 'SOUTH', 'WEST'],
+  flat_unit_facing: ['EAST', 'FRONT', 'GARDEN', 'NORTH', 'PARK', 'ROAD', 'SOUTH', 'WEST'],
 
-    applicant_type: ['Applicant', 'Co - Applicant'],
+  applicant_type: ['Applicant', 'Co - Applicant'],
 
-    speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing', 'Commercial + Residential Sale', 'Commercial + Residential + Office Sale',],
-    speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing', 'Commercial + Residential Sale', 'Commercial + Residential + Office Sale',],
+  speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing', 'Commercial + Residential Sale', 'Commercial + Residential + Office Sale',],
 
-    carpet_area_type: ['MOFA', 'RERA'],
+  carpet_area_type: ['MOFA', 'RERA'],
 
-    tenure: ['Tenure 1', 'Tenure 2', 'Tenure 3', 'Tenure 4', 'Tenure 5', 'Tenure 6', 'Tenure 7', 'Tenure 8', 'Tenure 9', 'Tenure 10', 'Tenure 11', 'Tenure 12', 'Tenure 13', 'Tenure 14'],
+  tenure: ['Tenure 1', 'Tenure 2', 'Tenure 3', 'Tenure 4', 'Tenure 5', 'Tenure 6', 'Tenure 7', 'Tenure 8', 'Tenure 9', 'Tenure 10', 'Tenure 11', 'Tenure 12', 'Tenure 13', 'Tenure 14'],
 
-    unit_sqft_lumsum: ['Per Sq Ft', 'Lump Sum'],
+  unit_sqft_lumsum: ['Per Sq Ft', 'Lump Sum'],
 
-    business_category: ['Commercial', 'Gym', 'Residential', 'School'],
+  business_category: ['Commercial', 'Gym', 'Residential', 'School'],
 
-    project_scheme: ['BMC', 'MHADA', 'SRA', 'SLUM', 'TDR', 'Other'],
+  project_scheme: ['BMC', 'MHADA', 'SRA', 'SLUM', 'TDR', 'Other'],
 
-    project_sub_scheme: ['33 (20) B', '33 (19)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
+  project_sub_scheme: ['33 (20) B', '33 (19)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
 
-    road_width: ['6.10 M', '9.15 M', '12.20 M', '13.40 M', '18.3 M', '27.45 M', '36.6 M'],
+  road_width: ['6.10 M', '9.15 M', '12.20 M', '13.40 M', '18.3 M', '27.45 M', '36.6 M'],
 
-    calender_view_type: ['Month', 'Week', 'Day'],
+  calender_view_type: ['Month', 'Week', 'Day'],
 
-    event_type: ['Task', 'Meeting', 'Conference Room Booking'],
+  event_type: ['Task', 'Meeting', 'Conference Room Booking'],
 
-    conference_room_name: ['Room 1', 'Room 2', 'Room 3'],
+  conference_room_name: ['Room 1', 'Room 2', 'Room 3'],
 
-    occupationType: ['Business', 'Homemaker', 'Professional', 'Salaried', 'Retired',],
+  occupationType: ['Business', 'Homemaker', 'Professional', 'Salaried', 'Retired',],
 
-    budget: ['<1', '1.5', '2.5', '3', '4', '5', '5 <'],
+  budget: ['<1', '1.5', '2.5', '3', '4', '5', '5 <'],
 
-    accomodation: ["Rented", "Self-Owned",],
+  accomodation: ["Rented", "Self-Owned",],
 
-    requirement: ["Commercial", "Residential"],
+  requirement: ["Commercial", "Residential"],
 
-    possessionType: ['Ready', 'Within 1 Year', 'More Than 2 Year'],
+  possessionType: ['Ready', 'Within 1 Year', 'More Than 2 Year'],
 
-    source: ['Advertisement', 'Channel Partner', 'Direct Walking', 'Exhibition', 'Enquiry', 'HRR Website', 'Reference'],
+  source: ['Advertisement', 'Channel Partner', 'Direct Walking', 'Exhibition', 'Enquiry', 'HRR Website', 'Reference'],
 
-    subsource: ['Facebook', 'Hoarding', 'Instagram', 'Google Ads', 'Newspaper'],
+  subsource: ['Facebook', 'Hoarding', 'Instagram', 'Google Ads', 'Newspaper'],
 
-    finalStage: ['Booking Done', 'Enquiry', 'Follow-up', 'Lost', 'Inactive', 'Negotiation', 'Revisit', 'Site Visit'],
+  finalStage: ['Booking Done', 'Enquiry', 'Follow-up', 'Lost', 'Inactive', 'Negotiation', 'Revisit', 'Site Visit'],
 
-    finalStageDetail: ['TimeLine Issue', 'Location Issue', 'Low Budget', 'Did Not Like Project', 'Other Issues'],
+  finalStageDetail: ['TimeLine Issue', 'Location Issue', 'Low Budget', 'Did Not Like Project', 'Other Issues'],
 
-    age: ['21-25', '26-35', '36-45', '46-55', '56-65', '>65'],
+  age: ['21-25', '26-35', '36-45', '46-55', '56-65', '>65'],
 
-    desiredFloorBand: ['Higher', 'Middle', 'Lower'],
+  desiredFloorBand: ['Higher', 'Middle', 'Lower'],
 
-    neighborhoodPlaces: ['Creche', 'Colleges', 'Gardens', 'Gyms', 'Hospitals', 'IT Parks', 'Multiplexes', 'Nightclubs', 'Place of Worship', 'Restaurants', 'Schools', 'Others'],
+  neighborhoodPlaces: ['Creche', 'Colleges', 'Gardens', 'Gyms', 'Hospitals', 'IT Parks', 'Multiplexes', 'Nightclubs', 'Place of Worship', 'Restaurants', 'Schools', 'Others'],
 
-    customerclassification: ['Hot', 'Warm', 'Cold'],
+  customerclassification: ['Hot', 'Warm', 'Cold'],
 
-    sourceOfFunding: ['Loan', 'Self-funded', 'Sale Of Property', 'Subvention Loan'],
+  sourceOfFunding: ['Loan', 'Self-funded', 'Sale Of Property', 'Subvention Loan'],
 
-    ethnicity: ['Bengali', 'Christian', 'Gujarati', 'Jain', 'Muslim', 'Marwari', 'Maharashtrian', 'North Indian', 'Parsi', 'Sindhi', 'south Indian', 'Others'],
+  ethnicity: ['Bengali', 'Christian', 'Gujarati', 'Jain', 'Muslim', 'Marwari', 'Maharashtrian', 'North Indian', 'Parsi', 'Sindhi', 'south Indian', 'Others'],
 
-    nationality: ['Indian', 'NRI'],
+  nationality: ['Indian', 'NRI'],
 
-    caseType: ['Civil', 'Criminal'],
+  caseType: ['Civil', 'Criminal'],
 
-    courtType: ['Civil Court', 'District Court', 'High Court', 'Session Court', 'Supreme Court'],
+  courtType: ['Civil Court', 'District Court', 'High Court', 'Session Court', 'Supreme Court'],
 
-    reasonsOfJobLeaving: [
-        'Better career growth opportunity',
-        'Business shutdown',
-        'Career break for family reasons',
-        'Career change / domain shift',
-        'Company financial instability',
-        'Company relocation',
-        'Company restructuring / downsizing',
-        'Completed internship / traineeship',
-        'Contract completed',
-        'Department closed',
-        'End of probation period',
-        'Extensive travel requirements',
-        'Family responsibilities',
-        'Freelancing / consulting interest',
-        'Health issues in family',
-        'Limited promotion opportunities',
-        'Limited salary growth',
-        'Long commute distance',
-        'Looking for a more flexible work culture',
-        'Looking for a more structured environment',
-        'Looking for new challenges',
-        'Management / organizational change',
-        'Marriage relocation',
-        'Moving closer to home',
-        'Moving into leadership role',
-        'Mutual separation',
-        'Parental care responsibility',
-        'Personal health reasons',
-        'Professional certification / training',
-        'Project successfully completed',
-        'Pursuing higher education',
-        'Relocation to another city',
-        'Relocation to another country',
-        'Retirement / early retirement',
-        'Returning back to home country',
-        'Role not matching my skills',
-        'Role redundancy',
-        'Seasonal job completed',
-        'Seeking fair compensation',
-        'Shift timing not suitable long-term',
-        'Spouse / family relocation',
-        'Starting my own business',
-        'Temporary role ended',
-        'Unstable work schedule',
-        'Work profile / job expectation mismatch',
-        'Work-life balance improvement'
-    ]
+  reasonsOfJobLeaving: [
+    'Better career growth opportunity',
+    'Business shutdown',
+    'Career break for family reasons',
+    'Career change / domain shift',
+    'Company financial instability',
+    'Company relocation',
+    'Company restructuring / downsizing',
+    'Completed internship / traineeship',
+    'Contract completed',
+    'Department closed',
+    'End of probation period',
+    'Extensive travel requirements',
+    'Family responsibilities',
+    'Freelancing / consulting interest',
+    'Health issues in family',
+    'Limited promotion opportunities',
+    'Limited salary growth',
+    'Long commute distance',
+    'Looking for a more flexible work culture',
+    'Looking for a more structured environment',
+    'Looking for new challenges',
+    'Management / organizational change',
+    'Marriage relocation',
+    'Moving closer to home',
+    'Moving into leadership role',
+    'Mutual separation',
+    'Parental care responsibility',
+    'Personal health reasons',
+    'Professional certification / training',
+    'Project successfully completed',
+    'Pursuing higher education',
+    'Relocation to another city',
+    'Relocation to another country',
+    'Retirement / early retirement',
+    'Returning back to home country',
+    'Role not matching my skills',
+    'Role redundancy',
+    'Seasonal job completed',
+    'Seeking fair compensation',
+    'Shift timing not suitable long-term',
+    'Spouse / family relocation',
+    'Starting my own business',
+    'Temporary role ended',
+    'Unstable work schedule',
+    'Work profile / job expectation mismatch',
+    'Work-life balance improvement'
+  ]
 
 
 } as const
@@ -176,18 +175,18 @@ export const MASTER_DATA = {
 // ============================================================================
 
 export const toOptions = (list: readonly string[]): Option[] =>
-    list.map(item => ({ id: item, name: item }))
+  list.map(item => ({ id: item, name: item }))
 
 
 export const filterOptions = (
-    options: Option[],
-    searchTerm: string = ''
+  options: Option[],
+  searchTerm: string = ''
 ): Option[] =>
-    !searchTerm.trim()
-        ? options
-        : options.filter(opt =>
-            opt.name.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+  !searchTerm.trim()
+    ? options
+    : options.filter(opt =>
+      opt.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
 
 // ============================================================================
 // READY-TO-USE OPTION ARRAYS
@@ -223,8 +222,8 @@ export const SOURCE_OF_FUNDING_TYPE = toOptions(MASTER_DATA.sourceOfFunding)
 export const ETHNICITY_TYPE_OPTION = toOptions(MASTER_DATA.ethnicity)
 export const POSSESSION_TYPE_OPTIONS = toOptions(MASTER_DATA.possessionType)
 export const NATIONALITY_TYPE_OPTION = toOptions(MASTER_DATA.nationality)
-export const CASE_TYPE_OPTION=toOptions(MASTER_DATA.caseType)
-export const COURT_TYPE_OPTION=toOptions(MASTER_DATA.courtType)
+export const CASE_TYPE_OPTION = toOptions(MASTER_DATA.caseType)
+export const COURT_TYPE_OPTION = toOptions(MASTER_DATA.courtType)
 export const BANK_ACCOUNT_TYPE = toOptions(MASTER_DATA.bankAccountType)
 export const LAND_OWNERSHIP_TYPE = toOptions(MASTER_DATA.landOwnershipType)
 export const FLAT_UNIT_TYPE = toOptions(MASTER_DATA.flat_unit_Type)
@@ -298,12 +297,12 @@ export const AMENITY_CATEGORIES: Record<string, readonly string[]> = {
     "Pet Care Area"
   ],
 
-   "Work & Business": [
+  "Work & Business": [
     "Co - Working Space",
     "Conference Room",
     "Society Office"
   ],
-  
+
   "Convenience & Utilities": [
     "Lift",
     "Power Backup",

@@ -25,7 +25,7 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import { Trash2 } from 'lucide-react';
+import { FileText, Trash2 } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { litigationService } from '../services/LitigationServices';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
@@ -148,7 +148,6 @@ export const Litigation: React.FC = () => {
                 if (E.isRight(response)) {
 
                     setLitigationList(response.right.Data);
-
                     setPagination({
                         currentPage: page,
                         totalRecords: response.right.TotalNumberOfRecord,
@@ -182,7 +181,6 @@ export const Litigation: React.FC = () => {
         const filterParams: FilterInfo = {
             Title: searchValue.trim(),
         };
-
         await loadLitigation(1, filterParams);
     };
 
@@ -295,18 +293,14 @@ export const Litigation: React.FC = () => {
     const handleDownloadExcelSampleLitigation = () => downloadExcelSampleLitigation()
     //#endregion
 
-
     //#region HANDLE PAGE CHNAGE 
     const handlePageChange = useCallback((page: number) => {
         fetchLitigationList(page);
     }, []);
 
-
     //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sortInfo: SortInfo) => {
-
         setSortInfo(sortInfo);
-
         fetchLitigationList(1);
 
     }, []);
@@ -323,7 +317,6 @@ export const Litigation: React.FC = () => {
         }),
         [pagination, handlePageChange]
     );
-
     const LitigationForTable = useMemo(() => litigationList, [litigationList]);
     //#endregion
 
@@ -355,6 +348,12 @@ export const Litigation: React.FC = () => {
             }
         });
     }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    //#endregion
+
+    //#region VIEW LITIGATION DOCUMENT
+    const handleViewLitigationDocument = () => {
+        navigate('/litigation/document');
+    };
     //#endregion
 
     //#region CONFIRMATION DIALOG BOX
@@ -594,25 +593,50 @@ export const Litigation: React.FC = () => {
             render: (_value, row) => {
 
                 return canAction && row?.Status?.toLowerCase() === 'open' ? (
-                    <Button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleConfirmationDialogBoxOpen(row);
-                        }}
-                        color="transparent"
-                        isborderRadius
-                        size="sm"
-                        style={{ color: 'red', padding: '4px 8px' }}
-                        title="Delete Litigation"
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center justify-center gap-2">
+
+                        <Button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleConfirmationDialogBoxOpen(row);
+                            }}
+                            color="transparent"
+                            isborderRadius
+                            size="sm"
+                            style={{
+                                color: 'red',
+                                padding: '4px 8px'
+                            }}
+                            title="Delete Litigation"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+
+                        <Button
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                handleViewLitigationDocument()
+                            }}
+                            color='transparent'
+                            isborderRadius
+                            size='sm'
+                            style={{
+                                color: 'green',
+                                padding: '4px 8px'
+                            }}
+                            title="Litigation Document"
+                        >
+                            <FileText className="h-4 w-4" />
+                        </Button>
+                    </div>
+
                 ) : null;
 
             }
         }
-    ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
+    ], [handleNavigateToView, handleViewLitigationDocument, handleConfirmationDialogBoxOpen]);
     //#endregion
 
     //#region COLUMN CUSTOMIZATION
@@ -655,7 +679,6 @@ export const Litigation: React.FC = () => {
         setFilters(tempFilters);
 
         loadLitigation(1, tempFilters);
-
         setShowFilterPopup(false);
     };
     //#endregion
@@ -665,14 +688,10 @@ export const Litigation: React.FC = () => {
         setTempFilters({});
 
         setFilters({});
-
         setPagination({ currentPage: 1 });
-
         loadLitigation(1, {});
         setShowFilterPopup(false);
-
         navigate(location.pathname, { replace: true, state: {} });
-
     };
     //#endregion
 
@@ -692,9 +711,9 @@ export const Litigation: React.FC = () => {
         await runApiWithLoader(
 
             setIsLoading,
-
             setIsLoadingMessage,
             async () => {
+
                 const params: DeleteLitigationRequest = {
 
                     LitigationId: deleteLitigationDetailsData.LitigationId || 0,
@@ -709,23 +728,22 @@ export const Litigation: React.FC = () => {
                 if (E.isRight(response)) {
 
                     setLitigationList(prevData => prevData.filter(item => item.LitigationId !== deleteLitigationDetailsData.LitigationId));
-
                     setPagination({
+
                         currentPage: pagination.currentPage,
                         totalRecords: pagination.totalRecords - 1,
                         totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+
                     });
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
                     setIsConfirmationDialogBoxOpen(false);
-
                     setDeleteLitigationDetailsData(null);
 
                 } else {
 
                     addToast({ type: 'error', title: response.left.message });
                     setIsConfirmationDialogBoxOpen(false);
-
                 }
                 return response;
             },
@@ -735,7 +753,9 @@ export const Litigation: React.FC = () => {
             "Deleting Litigation"
         );
     };
+
     return (
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
             {/* Loader */}
@@ -854,9 +874,7 @@ export const Litigation: React.FC = () => {
                 loading={isLoading}
                 variant="danger"
             />
-
         </div>
-
     );
 };
 

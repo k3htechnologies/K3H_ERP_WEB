@@ -1,23 +1,27 @@
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import type { AddUpdateLitigationClosureRequest, AddUpdateLitigationHearingRequest, DeleteLitigationHearingRequest, FilterWithPaginationLitigationClosureRequest, FilterWithPaginationLitigationHearingRequest, LitigationClosureData, LitigationData, LitigationHearingData } from "../models/LitigationModel";
 import { useEffect, useState } from "react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import { litigationService } from "@/features/litigation/services/LitigationServices";
 import useToast from "@/core/hooks/useToast";
 import * as E from 'fp-ts/Either';
 import { runApiWithLoader } from "@/core/utils";
 import { Loader } from "@/core/utils/loader";
 import { Edit, Trash2 } from "lucide-react";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
+import type { AddUpdateLitigationClosureRequest, FilterWithPaginationLitigationClosureRequest, LitigationClosureData } from "@/features/litigation/models/LitigationClosureModel";
+import type { AddUpdateLitigationHearingRequest, DeleteLitigationHearingRequest, FilterWithPaginationLitigationHearingRequest, LitigationHearingData } from "@/features/litigation/models/LitigationHearingModel";
+import type { LitigationData, LitigationReopenData, UpdateLitigationReopenRequest } from "@/features/litigation/models/LitigationModel";
+import { litigationClosureService } from "@/features/litigation/services/LitigationClosureServices";
+import { litigationHearingService } from "@/features/litigation/services/LitigationHearingServices";
+import { litigationService } from "../services/LitigationServices";
 
 
 const ViewLitigation: React.FC = () => {
@@ -25,6 +29,8 @@ const ViewLitigation: React.FC = () => {
     //#region STATE MANAGEMENT
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isLitigationReopenDialogOpen, setIsLitigationReopenDialogOpen] = useState(false);
+    const [selectedLitigationItem, setSelectedLitigationItem] = useState<LitigationReopenData | null>(null);
 
     const [editClosureData, setEditClosureData] = useState<LitigationClosureData[]>([]);
     const [isClosureModalOpen, setIsClosureModalOpen] = useState(false);
@@ -34,7 +40,7 @@ const ViewLitigation: React.FC = () => {
     const [isHearingModalOpen, setIsHearingModalOpen] = useState(false);
     const [, setIsEditHearingMode] = useState(false);
 
-    // Delete confirmation states
+    // DELETE HEARING STATE
     const [isDeleteHearingDialogOpen, setIsDeleteHearingDialogOpen] = useState(false);
     const [selectedHearingItem, setSelectedHearingItem] = useState<LitigationHearingData | null>(null);
 
@@ -64,11 +70,10 @@ const ViewLitigation: React.FC = () => {
     // PROJECT CONTEXT
     const projectContext = useProject();
     const projectId = projectContext?.projectId;
-    const closureDetails = editClosureData?.[0];
 
     // EDIT LITIGATION DATA FROM STATE
     const editLitigationData = location.state?.editLitigationData as LitigationData;
-    const isEditable = canAction && editLitigationData?.Status === 'Open';
+    const isEditable = canAction && (editLitigationData?.Status === 'Open' || editLitigationData?.Status === 'Reopen');
 
     // MESSAGE IF DATA NOT FOUND
     if (!editLitigationData) return <div>No Litigation Data Found</div>;
@@ -76,21 +81,11 @@ const ViewLitigation: React.FC = () => {
     //#region ERROR STATE MANAGEMENT
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-    //#region HANDLE FIELD CHANGE EVENT
-    const handleFieldChange = (field: keyof AddUpdateLitigationClosureRequest, value: any) => {
-        setClosureFormData((prev) => ({ ...prev, [field]: value }));
-
-        if (errors[field]) {
-            setErrors((prev) => ({ ...prev, [field]: "" }));
-        }
-    };
-
     //#region USE EFFECT TO FETCH CLOSURE DETAILS
     useEffect(() => {
         if (!projectId) return;
         fetchClouserDetails();
         fetchHearingDetails();
-
     }, [projectId, addToast]);
     //#endregion
 
@@ -167,8 +162,18 @@ const ViewLitigation: React.FC = () => {
     };
     //endregion
 
+    //#region HANDLE FIELD CHANGE EVENT
+    const handleFieldChange = (field: keyof AddUpdateLitigationClosureRequest, value: any) => {
+        setClosureFormData((prev) => ({ ...prev, [field]: value }));
+
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+    };
+
     //#region FETCH CLOSURE DETAILS
     const fetchClouserDetails = async () => {
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -176,13 +181,11 @@ const ViewLitigation: React.FC = () => {
                 const params: FilterWithPaginationLitigationClosureRequest = {
                     PageNumber: 1,
                     PageSize: 100,
-                    LitigationClosureId: 0,
                     ProjectId: Number(projectId),
                     LitigationId: editLitigationData.LitigationId
-
                 };
 
-                const response = await litigationService.apiCallPullLitigationClosure(params);
+                const response = await litigationClosureService.apiCallPullLitigationClosure(params);
 
                 if (E.isRight(response)) {
 
@@ -224,9 +227,8 @@ const ViewLitigation: React.FC = () => {
         }
         const hasFile = closureFormData.ClosureAttachementURL || closureURLFile.length > 0 || closureFormData.ClosureAttachementURL;
         if (!hasFile) {
-            newErrors.ClosureAttachementURL = "Closure Attachment is required.";
+            newErrors.ClosureAttachementURL = "File is required.";
         }
-
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -234,10 +236,10 @@ const ViewLitigation: React.FC = () => {
     };
     //#endregion
 
-    //#region PUSH  DATA
+    //#region PUSH FORM DATA
     const PushClosureFormData = (): FormData => {
-        const fd = new FormData();
 
+        const fd = new FormData();
         fd.append('LitigationClosureId', closureFormData.LitigationClosureId.toString());
         fd.append('Uniquekey', closureFormData.Uniquekey ?? '');
         fd.append('LitigationId', editLitigationData.LitigationId!.toString());
@@ -258,7 +260,7 @@ const ViewLitigation: React.FC = () => {
     //#endregion
 
     //#region ADD AND UPDATE CLOSURE 
-    const handleUpdateClosure = async (e: React.FormEvent) => {
+    const handleAddUpdateClosure = async (e: React.FormEvent) => {
 
         e.preventDefault();
 
@@ -282,14 +284,13 @@ const ViewLitigation: React.FC = () => {
             async () => {
                 const payload = PushClosureFormData();
 
-                const response = await litigationService.apiCallAddUpdateLitigationClosure(payload);
+                const response = await litigationClosureService.apiCallAddUpdateLitigationClosure(payload);
 
                 if (E.isRight(response)) {
-                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
+                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
                     setIsClosureModalOpen(false);
                     editLitigationData.Status = "Closed";
-                    fetchClouserDetails();
 
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -298,6 +299,7 @@ const ViewLitigation: React.FC = () => {
             },
             undefined,
             (error: any) => {
+
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
@@ -332,6 +334,7 @@ const ViewLitigation: React.FC = () => {
             });
             setIsEditHearingMode(true);
         } else {
+
             setHearingFormData({
                 LitigationHearingId: 0,
                 Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
@@ -364,16 +367,14 @@ const ViewLitigation: React.FC = () => {
             Remark: '',
             HearingAttachementURL: '',
             RemoveHearingAttachementURL: '',
+
         });
         setErrors({});
     };
     //endregion
 
     //HEARING HANDLE CHANGE 
-    const handleHearingFieldChange = (
-        field: keyof AddUpdateLitigationHearingRequest,
-        value: any
-    ) => {
+    const handleHearingFieldChange = (field: keyof AddUpdateLitigationHearingRequest, value: any) => {
         setHearingFormData(prev => ({ ...prev, [field]: value }));
 
         if (errors[field]) {
@@ -383,6 +384,7 @@ const ViewLitigation: React.FC = () => {
 
     //#region FETCH HEARING DETAILS
     const fetchHearingDetails = async () => {
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -393,16 +395,12 @@ const ViewLitigation: React.FC = () => {
                     ProjectId: Number(projectId),
                     LitigationId: editLitigationData.LitigationId,
                 };
-
-                const response = await litigationService.apiCallPullLitigationHearing(params);
+                const response = await litigationHearingService.apiCallPullLitigationHearing(params);
 
                 if (E.isRight(response)) {
-                    const sorted = [...response.right.Data].sort(
-                        (a, b) =>
-                            new Date(b.HearingDate).getTime() -
-                            new Date(a.HearingDate).getTime()
-                    );
-                    setEditHearingData(sorted);
+
+                    setEditHearingData(response.right.Data);
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -412,10 +410,10 @@ const ViewLitigation: React.FC = () => {
             undefined,
             (error: any) => addToast({ type: 'error', title: error.message }),
             undefined,
+
             'Loading Hearing Details'
         );
     };
-
     //#endregion
 
     //Validation Function
@@ -435,7 +433,7 @@ const ViewLitigation: React.FC = () => {
         }
         const hasFile = hearingFormData.HearingAttachementURL || hearingURLFile.length > 0 || hearingFormData.HearingAttachementURL;
         if (!hasFile) {
-            newErrors.HearingAttachementURL = "Hearing Attachment is required.";
+            newErrors.HearingAttachementURL = "File is required.";
         }
 
         return {
@@ -448,24 +446,20 @@ const ViewLitigation: React.FC = () => {
     //#region PUSH HEARING DATA
     const PushHearingFormData = (): FormData => {
         const fd = new FormData();
-        fd.append(
-            'LitigationHearingId',
-            String(hearingFormData.LitigationHearingId ?? 0)
-        );
+        fd.append('LitigationHearingId', String(hearingFormData.LitigationHearingId ?? 0));
         fd.append('Uniquekey', hearingFormData.Uniquekey ?? '');
-        fd.append(
-            'LitigationId',
-            String(hearingFormData.LitigationId ?? 0)
-        );
+        fd.append('LitigationId', String(hearingFormData.LitigationId ?? 0));
         fd.append('ProjectId', projectId!.toString());
         fd.append('HearingDate', hearingFormData.HearingDate ?? '');
         fd.append('Remark', hearingFormData.Remark ?? '');
 
         hearingURLFile.forEach(file => {
+
             if (file instanceof File) {
                 fd.append('HearingAttachementURL', file);
             }
         });
+
         fd.append(
             'RemoveHearingAttachementURL',
             removeHearingAttachementURL.join(',')
@@ -474,13 +468,11 @@ const ViewLitigation: React.FC = () => {
     };
     //#endregion
 
-    //#region  AND UPDATE HEARING 
-    const handleUpdateHearing = async (e: React.FormEvent) => {
-
+    //#region AND UPDATE HEARING 
+    const handleAddUpdateHearing = async (e: React.FormEvent) => {
         e.preventDefault();
 
         setErrors({});
-
         const validation = validateAddHearingForm();
 
         if (!validation.isValid) {
@@ -488,18 +480,18 @@ const ViewLitigation: React.FC = () => {
             setErrors(validation.errors);
             return;
         }
-
         await runApiWithLoader(
 
             setIsLoading,
-
             setLoadingMessage,
             async () => {
+
                 const payload = PushHearingFormData();
 
-                const response = await litigationService.apiCallAddUpdateLitigationHearing(payload);
+                const response = await litigationHearingService.apiCallAddUpdateLitigationHearing(payload);
 
                 if (E.isRight(response)) {
+
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
                     setIsHearingModalOpen(false);
@@ -507,6 +499,7 @@ const ViewLitigation: React.FC = () => {
                     fetchHearingDetails();
 
                 } else {
+
                     addToast({ type: "error", title: response.left?.message });
                 }
                 return response;
@@ -525,34 +518,35 @@ const ViewLitigation: React.FC = () => {
         setSelectedHearingItem(item);
         setIsDeleteHearingDialogOpen(true);
     };
+
     const handleConfirmDeleteHearing = async () => {
         if (!selectedHearingItem) return;
 
         await runApiWithLoader(
+
             setIsLoading,
             setLoadingMessage,
             async () => {
 
                 const params: DeleteLitigationHearingRequest = {
+
                     LitigationHearingId: selectedHearingItem.LitigationHearingId || 0,
                     Uniquekey: selectedHearingItem.Uniquekey || '',
                     LitigationId: editLitigationData.LitigationId,
                     ProjectId: Number(projectId)
                 };
 
-                const response = await litigationService.apiCallDeleteLitigationHearing(params);
+                const response = await litigationHearingService.apiCallDeleteLitigationHearing(params);
 
                 if (E.isRight(response)) {
+
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
-
                     setIsDeleteHearingDialogOpen(false);
-
                     fetchHearingDetails();
-
                     setSelectedHearingItem(null);
 
-
                 } else {
+
                     addToast({ type: 'error', title: response.left.message });
                 }
 
@@ -580,121 +574,118 @@ const ViewLitigation: React.FC = () => {
     };
     //#endregion
 
+    //#region HANDLE LITIGATION REOEPN
+    const handleLitigationReopen = async () => {
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const payload: UpdateLitigationReopenRequest = {
+
+                    LitigationId: editLitigationData.LitigationId,
+                    Uniquekey: editLitigationData.Uniquekey,
+                    ProjectId: Number(projectId),
+                };
+                const response = await litigationService.apiCallUpdateLitigationReopen(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+                    editLitigationData.Status = "Reopen";
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                setIsLitigationReopenDialogOpen(false);
+                setSelectedLitigationItem(null);
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Reopening Case'
+        );
+    };
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
 
             {/* Loader */}
 
-            <Loader loading={isLoading} title={loadingMessage}>
-                <div></div>
-
-            </Loader>
+            <Loader loading={isLoading} title={loadingMessage}> <div></div> </Loader>
             {/* Header Details*/}
 
-            <div className="flex justify-between">
-                <HeaderActionBar
-                    titleText={editLitigationData.Title ?? ""}
-                    subTitleText={editLitigationData.Status ?? ""}
-                    cancelText="Cancel"
-                    EditText="Edit"
-                    onCancel={() => handleBackToListLitigation()}
-                    canAction={isEditable}
-                    onEdit={() => {
-                        if (editLitigationData) handleEditLitigation(editLitigationData!);
-                    }}
-                    isLoading={false}
-                />
-                {(editLitigationData?.Status === 'Open' || editLitigationData?.Status === 'Reopen') && (
-                    <Button
-                        className=" w-full "
-                        size="sm"
-                        onClick={() => handleopenClosureModal()}
-                    >
-                        Close Case
-                    </Button>
-                )}
-            </div>
+            <HeaderActionBar
+                titleText="Litigation : "
+                subTitleText={editLitigationData.Title ?? ""}
+                subSubTitleText={editLitigationData.Status ?? ""}
+                cancelText="Cancel"
+                EditText="Edit"
+                onCancel={() => handleBackToListLitigation()}
+                canAction={isEditable}
+                onEdit={() => {
+                    if (editLitigationData) handleEditLitigation(editLitigationData!);
+                }}
+                isLoading={false}
+            />
 
             <div className="grid grid-cols-12 gap-4 pt-5">
 
-                {/* LEFT SIDE PROFILE CARD */}
+                {/* LEFT SIDE */}
                 <div className="col-span-7">
 
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
 
-
-                        {/* <div className="flex items-center gap-28">
-
-                                <div className="flex items-center gap-2">
-                                    <span className="text-gray-900 font-medium text-md ml-4">Case Details</span>
-                                </div>
-                        </div> */}
-
-                        {/* <div className="grid grid-cols-3 gap-x-10 gap-y-6 p-4">
-                            <FieldItem label="Case Type" value={editLitigationData.Title} />
-                            <FieldItem label="Case Type" value={editLitigationData.CaseType} />
-                            <FieldItem label="Date Of Filling" value={editLitigationData.DateOfFilling ? formatDate_dd_MonthName_yy(editLitigationData.DateOfFilling) : ""} />
-                            <FieldItem label="Case Type" value={editLitigationData.CaseType} />
-                            <FieldItem label="Court Location" value={editLitigationData.CourtLocation} />
-                            <FieldItem label="Court Name" value={editLitigationData.CourtName} />
-                            <FieldItem label="Plantiff" value={editLitigationData.Plantiff} />
-                            <FieldItem label="Created By" value={editLitigationData.CreatedBy} />
-                            <FieldItem label="Created Date" value={editLitigationData.CreatedDate ? formatDate_dd_MonthName_yy(editLitigationData.CreatedDate) : ""} />
-                            <FieldItem label="Modified By" value={editLitigationData.ModifiedBy} />
-                            <FieldItem label="Modified Date" value={editLitigationData.ModifiedDate ? formatDate_dd_MonthName_yy(editLitigationData.ModifiedDate) : ""} />
-                        </div> */}
-                        <section className="bg-white rounded-md p-4">
-
+                        {/* ================= CASE DETAILS ================= */}
+                        <section className="bg-white border-b border-[#135bec2e] p-6">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Case Details
                             </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                <div className="lg:col-span-3 pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Case Title" value={editLitigationData.Title} />
-                                        <FieldItem label="Project Name" value={editLitigationData.ProjectName} />
-                                        <FieldItem label="Date Of Filling" value={editLitigationData.DateOfFilling ? formatDate_dd_MonthName_yy(editLitigationData.DateOfFilling) : ""} />
-                                        <FieldItem label="Case Type" value={editLitigationData.CaseType} />
-                                        <FieldItem label="Case Number" value={editLitigationData.CaseNumber} />
-                                    </div>
-                                </div>
 
-                                <div className="lg:col-span-3 pb-3 pt-1">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Case Brief" value={editLitigationData.CaseBrief} />
-                                        <FieldItem label="Remark" value={editLitigationData.Remark} />
-                                    </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <FieldItem label="Case Title" value={editLitigationData.Title} />
+                                <FieldItem label="Project Name" value={editLitigationData.ProjectName} />
+                                <FieldItem label="Date Of Filling" value={editLitigationData.DateOfFilling ? formatDate_dd_MonthName_yy(editLitigationData.DateOfFilling) : ""} />
+                                <FieldItem label="Case Type" value={editLitigationData.CaseType} />
+                                <FieldItem label="Case Number" value={editLitigationData.CaseNumber} />
+                            </div>
+
+                            <div className="lg:col-span-3 pt-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="Case Brief" value={editLitigationData.CaseBrief} />
+                                    <FieldItem label="Remark" value={editLitigationData.Remark} />
                                 </div>
                             </div>
                         </section>
 
-                        <section className="bg-white rounded-sm p-4">
+                        {/* ================= COURT DETAILS ================= */}
+                        <section className="bg-white border-b border-[#135bec2e] p-4">
 
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Court Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                <div className="lg:col-span-3 pb-1">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Court Type" value={editLitigationData.CourtType} />
-                                        <FieldItem label="Court Name" value={editLitigationData.CourtName} />
-                                        <FieldItem label="Court Location" value={editLitigationData.CourtLocation} />
-                                    </div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4"> Court Details</h4>
+                            <div className="lg:col-span-3 pb-1">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <FieldItem label="Court Type" value={editLitigationData.CourtType} />
+                                    <FieldItem label="Court Name" value={editLitigationData.CourtName} />
+                                    <FieldItem label="Court Location" value={editLitigationData.CourtLocation} />
                                 </div>
                             </div>
-
                         </section>
 
-                        <section className="bg-white rounded-sm p-4">
+                        {/* ================= PARTIES DETAILS ================= */}
+                        <section className="bg-white border-b border-[#135bec2e] p-4">
 
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Parties Details
-                            </h4>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">Parties Details </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
                                 <div className="lg:col-span-3 pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                         <FieldItem label="Plantiff" value={editLitigationData.Plantiff} />
                                         <FieldItem label="Defendant" value={editLitigationData.Defendant} />
+
                                     </div>
                                 </div>
 
@@ -702,81 +693,120 @@ const ViewLitigation: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                         <FieldItem label="Assigned Representative" value={editLitigationData.AssignedRepresentative} />
                                         <FieldItem label="Opposing Representative" value={editLitigationData.OpposingRepresentative} />
+
                                     </div>
                                 </div>
 
                             </div>
                         </section>
 
-                        <section className="bg-white rounded-sm p-4">
-
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Action Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                <div className="lg:col-span-3 pb-3">
+                        {/* ================= ACTION DETAILS ================= */}
+                        <section className="bg-white p-4 flex flex-col">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">Action Details</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 mb-4">
+                                <div className="lg:col-span-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                         <FieldItem label="Created By" value={editLitigationData.CreatedBy} />
-                                        <FieldItem label="Created Date" value={editLitigationData.CreatedDate ? formatDate_dd_MonthName_yy(editLitigationData.CreatedDate) : ""} />
+                                        <FieldItem
+                                            label="Created Date"
+                                            value={editLitigationData.CreatedDate ? formatDate_dd_MonthName_yy(editLitigationData.CreatedDate) : ""} />
                                     </div>
                                 </div>
 
-                                <div className="lg:col-span-3 pb-3 pt-1">
+                                <div className="lg:col-span-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                        <FieldItem
+                                            label="Modified Date"
+                                            value={editLitigationData.ModifiedDate ? formatDate_dd_MonthName_yy(editLitigationData.ModifiedDate) : ""}
+                                        />
                                         <FieldItem label="Modified By" value={editLitigationData.ModifiedBy} />
-                                        <FieldItem label="Modified Date" value={editLitigationData.ModifiedDate ? formatDate_dd_MonthName_yy(editLitigationData.ModifiedDate) : ""} />
                                     </div>
                                 </div>
+                            </div>
 
+                            <div className="flex justify-end gap-2">
+                                {(editLitigationData?.Status === 'Open' || editLitigationData?.Status === 'Reopen') && (
+                                    <Button
+                                        className="w-full sm:w-auto"
+                                        size="sm"
+                                        onClick={() => handleopenClosureModal()}
+                                    >
+                                        Close Case
+                                    </Button>
+                                )}
+
+                                {editLitigationData?.Status === 'Closed' && (
+                                    <Button
+                                        size="sm"
+                                        onClick={() => {
+                                            setSelectedLitigationItem(editLitigationData);
+                                            setIsLitigationReopenDialogOpen(true);
+                                        }}
+                                    >
+                                        Reopen
+                                    </Button>
+                                )}
                             </div>
                         </section>
                     </div>
 
+                    {/* ================= CLOSURE DETAILS ================= */}
 
-                    {/* LEFT SIDE PROFILE CARD */}
-                    {((editLitigationData?.Status === "Closed" || editLitigationData?.Status === "Reopen") && closureDetails
+                    {(editLitigationData?.Status === 'Closed' || editLitigationData?.Status === 'Reopen') && (
 
-                    ) && (
-                            <div className="col-span-7">
+                        <div className="col-span-7">
+                            <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-2 mt-2">
+                                <section className="bg-white p-4 flex flex-col">
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Closure Details</h4>
 
-                                <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-2 mt-2">
-                                    <section className="bg-white rounded-sm p-4">
+                                    {editClosureData.length === 0 ? (
+                                        <p className="text-gray-500 text-sm">No closure history found.</p>
+                                    ) : (
+                                        editClosureData.map((item, index) => {
+                                            const isLatest = index === 0;
+                                            const isCaseReopen =
+                                                editLitigationData?.Status === 'Reopen';
 
-                                        <div className="flex justify-between items-center mb-2">
-                                            <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                                                Closure Details
-                                            </h4>
+                                            return (
+                                                <div
+                                                    key={item.LitigationClosureId}
+                                                    className="pb-3"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                            {editLitigationData?.Status === "Reopen" && (
-                                                <Button
-                                                    color="transparent"
-                                                    isborderRadius
-                                                    size="sm"
-                                                    style={{ color: 'blue', padding: '4px 8px' }}
-                                                    title="Edit"
-                                                    onClick={() => handleopenClosureModal(closureDetails)}
-                                                    disabled={isLoading}
-                                                    leftIcon={<Edit className="h-4 w-4" />}
-                                                />
-                                            )}
-                                        </div>
+                                                            <div className="lg:col-span-3 pb-1">
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                                                    <FieldItem label="Closure Date" value={formatDate_dd_MonthName_yy(item.ClosureDate)} />
+                                                                    <FieldItem label="Remark" value={item.Remark} />
+                                                                    <FieldItem label="Conclusion" value={item.Conclusion} />
+                                                                </div>
+                                                            </div>
+                                                        </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                            <div className="lg:col-span-3 pb-1">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                    <FieldItem label="Closure Date" value={formatDate_dd_MonthName_yy(closureDetails.ClosureDate)} />
-                                                    <FieldItem label="Remark" value={closureDetails.Remark} />
-                                                    <FieldItem label="Conclusion" value={closureDetails.Conclusion} />
-                                                    <FieldItem label="Closure Attachment"
-                                                        urls={closureDetails.ClosureAttachementURL ?? []} isIcon isRow />
+                                                        {isLatest && isCaseReopen && (
+                                                            <Button
+                                                                color="transparent"
+                                                                isborderRadius
+                                                                size="sm"
+                                                                style={{ color: 'blue', padding: '4px 8px' }}
+                                                                title="Edit"
+                                                                onClick={() => handleopenClosureModal(item)}
+                                                                disabled={isLoading}
+                                                                leftIcon={<Edit className="h-4 w-4" />}
+                                                            />
+                                                        )}
+
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </section>
-                                </div>
-                            </div>
-                        )}
+                                            );
+                                        })
+                                    )}
 
+                                </section>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/*  RIGHT SIDE  */}
@@ -785,8 +815,7 @@ const ViewLitigation: React.FC = () => {
 
                         <div className="border-b pb-2 mt-1">
                             <div className="flex items-center justify-between">
-                                <h1 className="text-lg font-semibold text-black">
-                                    Hearing History</h1>
+                                <h1 className="text-lg font-semibold text-black"> Hearing History</h1>
 
                                 {(editLitigationData?.Status === 'Open' ||
                                     editLitigationData?.Status === 'Reopen') && (
@@ -806,15 +835,14 @@ const ViewLitigation: React.FC = () => {
                         </div>
 
                         <div className="mt-4 space-y-4">
+
                             {editHearingData.length === 0 ? (
                                 <p className="text-gray-500 text-sm">No hearing history found.</p>
                             ) : (
                                 editHearingData.map((item, index) => {
                                     const isLatest = index === 0;
-                                    const isCaseOpenOrReopen =
-                                        editLitigationData?.Status === 'Open' ||
-                                        editLitigationData?.Status === 'Reopen';
-
+                                    const isCaseOpen =
+                                        editLitigationData?.Status === 'Open';
                                     return (
                                         <div
                                             key={item.LitigationHearingId}
@@ -822,11 +850,12 @@ const ViewLitigation: React.FC = () => {
                                         >
                                             <div className="flex items-center gap-2">
                                                 <span className="font-semibold text-gray-900">
-                                                    {formatDate_dd_MonthName_yy_hh_mm(item.HearingDate)}
+                                                    {formatDate_dd_MonthName_yy(item.HearingDate)}
                                                 </span>
 
 
-                                                {isLatest && isCaseOpenOrReopen && (
+                                                {isLatest && isCaseOpen && (
+
                                                     <div className="flex">
                                                         <Button
                                                             color="transparent"
@@ -838,7 +867,6 @@ const ViewLitigation: React.FC = () => {
                                                             disabled={isLoading}
                                                             leftIcon={<Edit className="h-4 w-4" />}
                                                         />
-
                                                         <Button
                                                             color="transparent"
                                                             isborderRadius
@@ -856,7 +884,7 @@ const ViewLitigation: React.FC = () => {
                                             <p className="mt-2 text-sm text-gray-700">
                                                 {item.Remark || "-"}
                                             </p>
-                                            <FieldItem label="Attachement" urls={item.HearingAttachementURL} isIcon isRow={true} />
+                                            {/* <FieldItem label="Attachment" urls={item.HearingAttachementURL} isIcon isRow={true} /> */}
 
                                         </div>
                                     );
@@ -867,70 +895,84 @@ const ViewLitigation: React.FC = () => {
                 </div>
 
                 {/* CLOSURE MODAL */}
+
                 <Modal
                     isOpen={isClosureModalOpen}
                     title={"Close Case"}
                     onClose={handleClosureModal}
-                    onSubmit={handleUpdateClosure}
+                    onSubmit={handleAddUpdateClosure}
                     cancelText="Cancel"
-                    saveText={isEditable ? "close" : "Save"}
+                    saveText='Save'
                     onCancel={handleClosureModal}
                     loading={isLoading}
                     size="lg"
                 >
                     <div className="space-y-4">
+                        <div>
+                            <DatePickerInput
+                                label="Closure Date"
+                                value={formatDate_dd_mm_yyyy(closureFormData.ClosureDate ?? "")}
+                                onChange={(val) => handleFieldChange('ClosureDate',
+                                    convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                required
+                                error={errors.ClosureDate}
+                            />
+                        </div>
 
-                        <DatePickerInput
-                            label="Closure Date"
-                            value={formatDate_dd_mm_yyyy(closureFormData.ClosureDate ?? "")}
-                            onChange={(val) => handleFieldChange('ClosureDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                            required
-                            error={errors.ClosureDate}
-                        />
+                        <div>
+                            <MultiFilePicker
+                                label='Files'
+                                placeholder='Select Files'
+                                required
+                                error={errors.ClosureAttachementURL}
+                                value={closureURLFile}
+                                onChange={setClosureURLFiles}
+                                availableFilesURL={closureFormData.ClosureAttachementURL ?? ""}
+                                allowedTypes={[
+                                    "image/jpeg",
+                                    "image/png",
+                                    "image/jpg"]}
+                                maxFiles={5}
+                                maxSizeMB={50}
+                            />
+                        </div>
 
-                        <MultiFilePicker
-                            label='Attachement'
-                            required
-                            error={errors.ClosureAttachementURL}
-                            value={closureURLFile}
-                            onChange={setClosureURLFiles}
-                            availableFilesURL={closureFormData.ClosureAttachementURL ?? ""}
-                            allowedTypes={[
-                                "image/jpeg",
-                                "image/png",
-                                "image/jpg"]}
-                            maxFiles={5}
-                            maxSizeMB={50}
-                        />
-                        <Input
-                            type="text"
-                            required
-                            label='Remark'
-                            value={closureFormData.Remark ?? ""}
-                            onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                            placeholder="Enter Remark"
-                            maxLength={250}
-                            error={errors.Remark}
-                        />
-                        <Input
-                            type="text"
-                            required
-                            label='Conclusion'
-                            value={closureFormData.Conclusion ?? ""}
-                            onChange={(e) => handleFieldChange("Conclusion", e.target.value)}
-                            placeholder="Enter Conclusion"
-                            maxLength={250}
-                            error={errors.Conclusion}
-                        />
+                        <div>
+                            <Input
+                                type="text"
+                                required
+                                label='Remark'
+                                value={closureFormData.Remark ?? ""}
+                                onChange={(e) => handleFieldChange("Remark", e.target.value)}
+                                placeholder="Enter Remark"
+                                maxLength={250}
+                                error={errors.Remark}
+                            />
+                        </div>
+
+                        <div>
+                            <Input
+                                type="text"
+                                required
+                                label='Conclusion'
+                                value={closureFormData.Conclusion ?? ""}
+                                onChange={(e) => handleFieldChange("Conclusion", e.target.value)}
+                                placeholder="Enter Conclusion"
+                                maxLength={250}
+                                error={errors.Conclusion}
+                            />
+                        </div>
+
                     </div>
                 </Modal>
 
                 {/* HEARING MODAL */}
+
                 <Modal
                     isOpen={isHearingModalOpen}
-                    title={"Hearing"}
+                    title={"Add Hearing"}
                     onClose={handleHearingModal}
-                    onSubmit={handleUpdateHearing}
+                    onSubmit={handleAddUpdateHearing}
                     cancelText="Cancel"
                     saveText="Save"
                     onCancel={handleHearingModal}
@@ -938,41 +980,69 @@ const ViewLitigation: React.FC = () => {
                     size="lg"
                 >
                     <div className="space-y-4">
-                        <DatePickerInput
-                            label="Hearing Date"
-                            value={formatDate_dd_mm_yyyy(hearingFormData.HearingDate ?? "")}
-                            onChange={(val) => handleHearingFieldChange('HearingDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                            required
-                            error={errors.HearingDate}
-                        />
 
-                        <MultiFilePicker
-                            label='Attachement'
-                            required
-                            error={errors.HearingAttachementURL}
-                            value={hearingURLFile}
-                            onChange={setHearingURLFiles}
-                            availableFilesURL={hearingFormData.HearingAttachementURL ?? ""}
-                            allowedTypes={[
-                                "image/jpeg",
-                                "image/png",
-                                "image/jpg"]}
-                            maxFiles={5}
-                            maxSizeMB={50}
-                        />
-                        <Input
-                            type="text"
-                            required
-                            label="Remark"
-                            value={hearingFormData.Remark ?? ""}
-                            onChange={(e) => handleHearingFieldChange("Remark", e.target.value)}
-                            maxLength={250}
-                            error={errors.Remark}
-                        />
+                        <div>
+                            <DatePickerInput
+                                label="Hearing Date"
+                                value={formatDate_dd_mm_yyyy(hearingFormData.HearingDate ?? "")}
+                                onChange={(val) => handleHearingFieldChange('HearingDate',
+                                    convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                required
+                                error={errors.HearingDate}
+                            />
+                        </div>
+
+                        <div>
+                            <MultiFilePicker
+                                label='Files'
+                                required
+                                placeholder='Select Files'
+                                error={errors.HearingAttachementURL}
+                                value={hearingURLFile}
+                                onChange={setHearingURLFiles}
+                                availableFilesURL={hearingFormData.HearingAttachementURL ?? ""}
+                                allowedTypes={[
+                                    "image/jpeg",
+                                    "image/png",
+                                    "image/jpg"]}
+                                maxFiles={5}
+                                maxSizeMB={50}
+                            />
+                        </div>
+
+                        <div>
+                            <Input
+                                type="text"
+                                required
+                                label="Remark"
+                                value={hearingFormData.Remark ?? ""}
+                                onChange={(e) => handleHearingFieldChange("Remark", e.target.value)}
+                                maxLength={250}
+                                error={errors.Remark}
+                            />
+                        </div>
+
                     </div>
                 </Modal>
 
-                {/* ConfirmationDialogBox*/}
+                {/*Litigation Reopen Confirmation Dialog Box*/}
+
+                <ConfirmationDialogBox
+                    isOpen={isLitigationReopenDialogOpen}
+                    onClose={() => {
+                        setIsLitigationReopenDialogOpen(false);
+                        setSelectedLitigationItem(null);
+                    }}
+                    onConfirm={handleLitigationReopen}
+                    title="Reopen Litigation"
+                    message={`Are you sure you want to Reopen.`}
+                    confirmText="Reopen"
+                    cancelText="Cancel"
+                    loading={isLoading}
+                />
+
+                {/*Delete Hearing Confirmation Dialog Box*/}
+
                 <ConfirmationDialogBox
                     isOpen={isDeleteHearingDialogOpen}
                     onClose={() => {

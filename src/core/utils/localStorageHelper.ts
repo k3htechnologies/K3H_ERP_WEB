@@ -389,7 +389,7 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
-    //#region STORE CHANNEL PARTNER COLUMNS
+    //#region STORE CHANNEL PARTNER MASTER COLUMNS
     storeChannelPartnerTableColumns: (columns: string): void => {
         try {
             localStorage.setItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SELECTED_COLUMNS, columns);
@@ -398,7 +398,7 @@ export const LocalStorageHelper = {
         }
     },
     //#endregion
-    //#region GET CHANNEL PARTNER  COLUMNS
+    //#region GET CHANNEL PARTNER MASTER COLUMNS
     getChannelPartnerTableColumns: (): string | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SELECTED_COLUMNS)
         if (stored) {
@@ -412,63 +412,23 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
-<<<<<<< HEAD
-    //#region STORE ENQUIRY COLUMNS
+    //#region STORE ENQUIRY MASTER COLUMNS
     storeEnquiryTableColumns: (columns: string): void => {
         try {
             localStorage.setItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS, columns);
         } catch (error) {
-=======
-    //#region STORE ENQUIRY MASTER COLUMNS
-    storeEnquiryTableColumns:( columns: string): void => {
-        try{
-            localStorage.setItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS, columns);
-        }catch(error){
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
-            console.error('Error Enquiry Columns Details:', error)
+            console.error('Error Enquiry Master Columns Details:', error)
         }
     },
     //#endregion
-<<<<<<< HEAD
-    //#region GET ENQUIRY COLUMNS
-=======
     //#region GET ENQUIRY MASTER COLUMNS
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
     getEnquiryTableColumns: (): string | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS)
         if (stored) {
             try {
                 return localStorage.getItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS);
-<<<<<<< HEAD
             } catch (error) {
                 console.error('Error reading Enquiry Columns Details:', error)
-                return null
-            }
-        }
-        return null
-    },
-    //#endregion
-    //#region STORE LITIGATION COLUMNS
-    storeLitigationTableColumns: (columns: string): void => {
-        try {
-            localStorage.setItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS, columns);
-        } catch (error) {
-            console.error('Error Litigation Columns Details:', error)
-        }
-    },
-    //#endregion
-    //#region GET LITIGATION COLUMNS
-    getLitigationTableColumns: (): string | null => {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS)
-        if (stored) {
-            try {
-                return localStorage.getItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
-            } catch (error) {
-                console.error('Error reading Litigation Columns Details:', error)
-=======
-            }catch (error) {
-                console.error('Error reading Enquiry Columns Details:', error)
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
                 return null
             }
         }
@@ -751,6 +711,28 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE LITIGATION COLUMNS
+    storeLitigationTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Litigation Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET LITIGATION COLUMNS
+    getLitigationTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Litigation Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
     //#region STORE TNC MASTER COLUMNS
     storeTncMasterTableColumns: (columns: string): void => {
         try {

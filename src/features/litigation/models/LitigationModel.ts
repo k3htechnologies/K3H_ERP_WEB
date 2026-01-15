@@ -63,92 +63,26 @@ export interface AddUpdateLitigationRequest {
     CaseBrief: string | ''
 }
 
+export interface LitigationReopenData {
+    LitigationId: number | 0
+    Uniquekey: string | null
+    ProjectId: number | 0
+}
+
+export interface UpdateLitigationReopenRequest {
+    LitigationId: number | 0
+    Uniquekey: string | null
+    ProjectId: number | 0
+}
+
 export interface DeleteLitigationRequest {
     LitigationId: number
     Uniquekey: string
     ProjectId: number
 }
 
-export interface FilterWithPaginationLitigationHearingRequest {
-    PageSize: number
-    PageNumber: number
-    ProjectId?: number
-    LitigationId?: number
-    LitigationHearingId?: number
-    SortBy?: string
-    ExportType?: 'Excel' | 'PDF'
-}
-
-
-export interface LitigationHearingData {
-    LitigationHearingId: number | 0
-    Uniquekey: string | null
-    LitigationId: number | 0
-    ProjectId: number | 0
-    HearingDate: string | ''
-    HearingAttachementURL: string | ''
-    Remark: string | ''
-}
-
-export interface AddUpdateLitigationHearingRequest {
-    LitigationHearingId: number | 0
-    Uniquekey: string | null
-    LitigationId: number | 0
-    ProjectId: number | 0
-    HearingDate: string | ''
-    HearingAttachementURL: string | null
-    RemoveHearingAttachementURL: string | ''
-    Remark: string | ''
-}
-
-export interface DeleteLitigationHearingRequest {
-    LitigationHearingId: number
-    Uniquekey: string
-    LitigationId: number
-    ProjectId: number
-}
-
-export interface FilterWithPaginationLitigationClosureRequest {
-    PageSize: number
-    PageNumber: number
-    ProjectId?: number
-    LitigationId?: number
-    LitigationClosureId?: number
-    SortBy?: string
-    ExportType?: 'Excel' | 'PDF'
-}
-
-export interface LitigationClosureData {
-    LitigationClosureId: number | 0
-    Uniquekey: string | null
-    LitigationId: number | 0
-    ProjectId: number | 0
-    ClosureDate: string | ''
-    ClosureAttachementURL: string | ''
-    Remark: string | ''
-    Conclusion: string | ''
-}
-
-export interface AddUpdateLitigationClosureRequest {
-    LitigationClosureId: number | 0
-    Uniquekey: string | null
-    LitigationId: number | 0
-    ProjectId: number | 0
-    ClosureDate: string | ''
-    ClosureAttachementURL: string | null
-    RemoveClosureAttachementURL: string | ''
-    Remark: string | ''
-    Conclusion: string | ''
-}
-
 export type LitigationListResponse = ApiResponse<LitigationData[]>;
 export type LitigationSaveResponse = ApiResponse<LitigationData[]>;
+export type LitigationReopenSaveResponse = ApiResponse<LitigationReopenData[]>;
 export type LitigationDeleteResponse = ApiResponse<number[]>;
-
-export type LitigationHearingListResponse = ApiResponse<LitigationHearingData[]>;
-export type LitigationHearingSaveResponse = ApiResponse<LitigationHearingData[]>;
-export type LitigationHearingDeleteResponse = ApiResponse<number[]>;
-
-export type LitigationClosureListResponse = ApiResponse<LitigationClosureData[]>;
-export type LitigationClosureSaveResponse = ApiResponse<LitigationClosureData[]>;
 

@@ -108,6 +108,7 @@ import AddUpdateLitigation from '@/features/litigation/pages/AddUpdateLitigation
 import ViewLitigation from '@/features/litigation/pages/ViewLitigation';
 import EmployeeResignation from '@/features/resignation/pages/EmployeeResignation';
 import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
+import LitigationDocument from '@/features/litigation/pages/LitigationDocument';
 
 
 // Loading component for Suspense fallback
@@ -256,6 +257,7 @@ function App() {
             <Route path='litigation' element={<Litigation />} />
             <Route path='litigation/add/:LitigationId?' element={<AddUpdateLitigation />} />
             <Route path='litigation/view' element={<ViewLitigation />} />
+            <Route path='litigation/document' element={<LitigationDocument />} />
 
             {/* SALES */}
             <Route path="channelPartner" element={<ChannelPartner />} />

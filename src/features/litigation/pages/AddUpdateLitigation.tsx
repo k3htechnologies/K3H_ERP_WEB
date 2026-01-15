@@ -14,6 +14,7 @@ import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelectio
 import { CASE_TYPE_OPTION, COURT_TYPE_OPTION } from "@/core/constants";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { Loader } from "@/core/utils/loader";
+import { TextArea } from "@/ui/components/forms/Textarea";
 
 const initialFormState = (): AddUpdateLitigationRequest => ({
     LitigationId: 0,
@@ -74,19 +75,21 @@ export const AddUpdateLitigation: React.FC = () => {
     //#endregion
 
     //#region INITIALIZATION
+
     useEffect(() => {
         if (!isAddMode) {
             fetchLitigationDetails();
         }
+        
     }, [litigationId]);
     //#endregion
 
     //#region FETCH LITIGATION  DETAILS
     const fetchLitigationDetails = async () => {
+
         await runApiWithLoader(
 
             setIsLoading,
-
             setLoadingMessage,
 
             async () => {
@@ -143,7 +146,7 @@ export const AddUpdateLitigation: React.FC = () => {
     //#endregion
 
     // ============================================================= [VALIDATION FUNCTION] =============================================================================================
-    const validateAddAssetMasterForm = (): {
+    const validateAddLitigationForm = (): {
 
         isValid: boolean
 
@@ -203,6 +206,7 @@ export const AddUpdateLitigation: React.FC = () => {
 
     //#region PUSH DATA
     const PushAddUpdateLigitigationData = (): AddUpdateLitigationRequest => {
+
         return {
             LitigationId: formData.LitigationId ?? 0,
             Uniquekey: formData.Uniquekey ?? "",
@@ -225,10 +229,11 @@ export const AddUpdateLitigation: React.FC = () => {
     //#endregion
 
     //#region HANDLE  ADD UPDATE
+    
     const handleAddUpdateLitigation = async () => {
         setErrors({});
 
-        const validation = validateAddAssetMasterForm();
+        const validation = validateAddLitigationForm();
 
         if (!validation.isValid) {
 
@@ -236,7 +241,6 @@ export const AddUpdateLitigation: React.FC = () => {
 
             return;
         }
-
         await runApiWithLoader(
 
             setIsLoading,
@@ -287,6 +291,7 @@ export const AddUpdateLitigation: React.FC = () => {
     };
     //#endregion
 
+    //endregion
     return (
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -381,6 +386,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                     error={errors.CourtLocation}
                                 />
                             </div>
+
                             <div>
                                 <SinglePageSelection
                                     label="Court Type"
@@ -406,6 +412,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                     error={errors.Plantiff}
                                 />
                             </div>
+
                             <div>
                                 <Input
                                     type="text"
@@ -433,6 +440,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                     error={errors.AssignedRepresentative}
                                 />
                             </div>
+
                             <div>
                                 <Input
                                     type="text"
@@ -448,31 +456,32 @@ export const AddUpdateLitigation: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+
                             <div>
-                                <Input
-                                    type="text"
+                                <TextArea
+                                    label="Case Brief"
                                     required
-                                    label='Case Brief'
+                                    className='thin-scroll'
                                     value={formData.CaseBrief ?? ""}
-                                    onChange={(e) => handleFieldChange("CaseBrief", e.target.value)}
                                     placeholder="Enter Case Brief"
-                                    maxLength={250}
-                                    error={errors.CaseBrief}
-                                />
+                                    maxLength={400}
+                                    onChange={(e) => handleFieldChange("CaseBrief", e.target.value)}
+                                    error={errors.CaseBrief} />
                             </div>
+
                             <div>
-                                <Input
-                                    type="text"
+                                <TextArea
+                                    label="Remarks"
                                     required
-                                    label='Remark'
+                                    className='thin-scroll'
                                     value={formData.Remark ?? ""}
+                                    placeholder="Enter Remarks"
+                                    maxLength={400}
                                     onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                    placeholder="Enter Remark"
-                                    maxLength={250}
-                                    error={errors.Remark}
-                                />
+                                    error={errors.Remark} />
                             </div>
                         </div>
+
                     </div>
                 </form>
             </div>

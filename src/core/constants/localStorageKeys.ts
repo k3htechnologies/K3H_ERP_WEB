@@ -14,11 +14,7 @@ export const LOCAL_STORAGE_KEYS = {
     EARNING_MASTER_SELECTED_COLUMNS: 'earningMaster.selectedColumns',
     VENDOR_SELECTED_COLUMNS: 'vendor.selectedColumns',
     COMPANY_MASTER_SELECTED_COLUMNS: 'companyMaster.selectedColumns',
-<<<<<<< HEAD
     CHANNEL_PARTNER_SELECTED_COLUMNS: 'channelPartnerMaster.selectedColumns',
-=======
-    CHANNEL_PARTNER_MASTER_SELECTED_COLUMNS: 'channelPartnerMaster.selectedColumns',
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
     ENQUIRY_SELECTED_COLUMNS:'enquiry.selectedColumns',
     BANK_LIST_MASTER_SELECTED_COLUMNS: 'bankListMaster.selectedColumns',
     HOLIDAY_MASTER_SELECTED_COLUMNS: 'holidayMaster.selectedColumns',

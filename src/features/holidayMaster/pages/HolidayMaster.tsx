@@ -87,17 +87,9 @@ export const HolidayMaster: React.FC = () => {
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteHolidayMasterDetailsData, setDeleteHolidayMasterDetailsData] = useState<HolidayMasterData | null>(null)
 
-  // RESET CHOOSE FILE
-  const [resetfilePicker, setResetFilePicker] = useState(0);
-
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeHolidayMasterColumnsModal, setIsShowCustomizeHolidayMasterColumnsModal] = useState(false);
-<<<<<<< HEAD
-=======
 
-  // RESET CHOOSE FILE
-  const [resetfilePicker, setResetFilePicker] = useState(0);
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -115,16 +107,6 @@ export const HolidayMaster: React.FC = () => {
 
     fetchHolidayList()
   }, [])
-
-  //#region RESET FORM DATA
-  const handleResetForm = () => {
-    setFormData(initialFormState());
-    setHolidayURLFiles([]);
-    setRemoveHolidayURL([]);
-    setErrors({});
-    setResetFilePicker(prev => prev + 1);
-  };
-  //#endregion
 
   //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
@@ -445,8 +427,7 @@ export const HolidayMaster: React.FC = () => {
 
           <div className="space-y-4">
 
-            <FieldItem label="Holiday Name" value={data.HolidayName} isRow withBorder={true} className='font-medium text-blue-900 ' />
-            <FieldItem label="Holiday Photo" urls={data.HolidayURL} isIcon isRow withBorder={true} />
+            <FieldItem label="Week Off Policy Name" value={data.HolidayName} isRow withBorder={true} className='font-medium text-blue-900 ' />
 
             <div className="space-y-4">
               <h4 className="text-lg font-semibold pb-2">
@@ -570,7 +551,7 @@ export const HolidayMaster: React.FC = () => {
   //#region PUSH DATA
 
   const PushHolidayFormData = (): FormData => {
-debugger
+
     const fd = new FormData();
     fd.append('HolidayMasterId', formData.HolidayMasterId.toString());
     fd.append('Uniquekey', formData.Uniquekey ?? '');
@@ -805,9 +786,7 @@ debugger
         title={editingHolidayMasterData ? 'Update Holiday ' : 'Add Holiday'}
         onSubmit={handleAddUpdateHolidayMaster}
         saveText={editingHolidayMasterData ? 'Update Holiday' : 'Save Holiday'}
-        onreset={handleResetForm}
         resetText='Reset'
-        onreset={handleResetForm}
         loading={isLoading}
         size="xl"
       >
@@ -828,9 +807,7 @@ debugger
             <div>
               <MultiFilePicker
                 label='Holiday URL'
-                key={resetfilePicker}
                 required
-                key={resetfilePicker}
                 error={errors.HolidayURL}
                 value={HolidayURLFiles}
                 onChange={setHolidayURLFiles}
@@ -838,7 +815,8 @@ debugger
                 allowedTypes={[
                   "image/jpeg",
                   "image/png",
-                  "image/jpg"]}
+                  "application/pdf",
+                ]}
                 maxFiles={5}
                 maxSizeMB={50}
               />

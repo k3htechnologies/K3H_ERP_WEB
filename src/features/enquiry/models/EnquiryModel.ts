@@ -75,7 +75,6 @@ export interface EnquiryData {
     ModifiedDate?: string | null
 }
 
-<<<<<<< HEAD
 export interface ChannelPartnerWithEnquiryData {
     PageSize: number
     PageNumber: number
@@ -93,8 +92,6 @@ export interface ChannelPartnerWithEnquiryData {
     TimeDimension: string | null
 }
 
-=======
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
 export interface AddUpdateEnquiryRequest {
     EnquiryId: number | null
     Uniquekey: string | null
@@ -145,9 +142,6 @@ export interface DeleteEnquiryRequest {
 }
 
 export type EnquiryListResponse = ApiResponse<EnquiryData[]>
-<<<<<<< HEAD
 export type ChannelPartnerWithEnquiryListResponse = ApiResponse<ChannelPartnerWithEnquiryData[]>
-=======
->>>>>>> bfa44a9e8ca7f45ab97331bc2bbbfdc1c50e4df5
 export type EnquirySaveResponse = ApiResponse<EnquiryData[]>
 export type EnquiryDeleteResponse = ApiResponse<number>

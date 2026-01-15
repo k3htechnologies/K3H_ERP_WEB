@@ -14,7 +14,6 @@ import type {
     FilterWithPaginationLeaveCreditDebitRequest
 } from '@/features/leaveCreditDebit/models/leaveCreditDebit';
 import { leaveCreditDebitService } from '@/features/leaveCreditDebit/services/LeaveCreditDebitService';
-import { MONTHS_OPTIONS } from '@/core/constants/staticData';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
@@ -34,7 +33,6 @@ const initialFormState = (): AddUpdateLeaveCreditDebitRequest => ({
     Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
     LeavePeriodMode: '',
     FYyear: new Date().getFullYear(),
-    Month: '',
     DepartmentMasterId: 0,
     DesignationId: '',
     LeaveTypebalanceJSONList: '',
@@ -70,10 +68,13 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
     //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
+    // Only auto-fetch options on initial load, not on every selection change
+    const [shouldAutoFetch, setShouldAutoFetch] = useState(true);
+    
     const designationDropdown = useMultiSelectDropdown({
-        value: designationValue,
+        value: formData.DesignationId || designationValue,
         fetchCallback: fetchDesignationMasterDropdown,
-        autoFetchOptions: true,
+        autoFetchOptions: shouldAutoFetch && (!!formData.DesignationId || !!designationValue),
     });
 
     //#endregion
@@ -121,7 +122,6 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                             Uniquekey: row.Uniquekey ?? prev.Uniquekey,
                             LeavePeriodMode: row.LeavePeriodMode ?? prev.LeavePeriodMode ?? '',
                             FYyear: row.FYyear ?? prev.FYyear ?? new Date().getFullYear(),
-                            Month: row.Month ?? prev.Month ?? '',
                             DesignationId: row.DesignationId ?? prev.DesignationId ?? '',
                             DepartmentMasterId: row.DepartmentMasterId ?? prev.DepartmentMasterId ?? 0,
                             LeaveTypebalanceJSONList: '',
@@ -147,8 +147,10 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                                 ? row.DesignationId
                                 : String(row.DesignationId);
                             setDesignationValue(designationIdValue);
+                            setShouldAutoFetch(true); // Enable auto-fetch to load selected options
                         } else {
                             setDesignationValue(null);
+                            setShouldAutoFetch(false);
                         }
                     }
 
@@ -174,7 +176,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
     useEffect(() => {
 
         if (id) {
-
+            setShouldAutoFetch(true); // Enable auto-fetch when loading existing data
             fetchLeaveCreditDebitDetails();
             return;
         }
@@ -184,7 +186,19 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
         setLeaveTypeLabels({});
         setDropdownLabels({});
         setDesignationValue(null);
+        setShouldAutoFetch(false); // Disable auto-fetch for new entries
     }, [id, fetchLeaveCreditDebitDetails]);
+
+    // Disable auto-fetch after initial load to prevent re-fetching on every selection
+    useEffect(() => {
+        if (shouldAutoFetch && (formData.DesignationId || designationValue)) {
+            // After initial options are loaded, disable auto-fetch
+            const timer = setTimeout(() => {
+                setShouldAutoFetch(false);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [shouldAutoFetch, formData.DesignationId, designationValue]);
 
     //#endregion
 
@@ -273,10 +287,6 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
 
         if (!formData.FYyear || formData.FYyear === 0) {
             newErrors.FYyear = "Financial Year is required.";
-        }
-
-        if (formData.LeavePeriodMode === 'Monthly' && (!formData.Month || formData.Month.trim() === '')) {
-            newErrors.Month = "Month is required for Monthly mode.";
         }
 
         if (!formData.DepartmentMasterId || formData.DepartmentMasterId === 0) {
@@ -448,7 +458,6 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                             value={formData.LeavePeriodMode || ''}
                             onChange={(value) => {
                                 handleFieldChange('LeavePeriodMode', String(value));
-                                if (value !== 'Monthly') handleFieldChange('Month', '');
                             }}
                             error={errors.LeavePeriodMode}
                             placeholder="Select Leave Period Mode"
@@ -467,22 +476,6 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                             max={2100}
                         />
                     </div>
-
-                    {formData.LeavePeriodMode === 'Monthly' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <SinglePageSelection
-                                label="Month"
-                                required
-                                options={MONTHS_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                value={formData.Month || ''}
-                                onChange={(value) => handleFieldChange('Month', String(value))}
-                                error={errors.Month}
-                                placeholder="Select month"
-                                searchable
-                                size="md"
-                            />
-                        </div>
-                    )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <SingleSelectDropdownWithPagination
@@ -509,7 +502,10 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                             options={designationDropdown.initialOptions}
                             onChange={(values) => {
                                 const { idsString } = designationDropdown.handleChange(values);
-                                setDesignationValue(idsString || null);
+                                const newValue = idsString || null;
+                                setDesignationValue(newValue);
+                                handleFieldChange('DesignationId', idsString || '');
+                                setShouldAutoFetch(false); // Disable auto-fetch after user selection
                                 if (errors.DesignationId) {
                                     setErrors((prev) => ({ ...prev, DesignationId: '' }));
                                 }

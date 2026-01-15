@@ -155,6 +155,27 @@ export const AddUpdateLeave: React.FC = () => {
     };
     //#endregion
 
+    //#region RESET FORM
+    const handleResetForm = () => {
+        setFormData((prev) => ({
+            ...prev,
+            StartDate: null,
+            EndDate: null,
+            StartDateLeaveDuration: 'Full',
+            EndDateLeaveDuration: 'Full',
+        }));
+        setDropdownLabels({});
+        setErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors.StartDate;
+            delete newErrors.EndDate;
+            delete newErrors.StartDateLeaveDuration;
+            delete newErrors.EndDateLeaveDuration;
+            return newErrors;
+        });
+    };
+    //#endregion
+
     return (
         <div className="p-6" style={{ backgroundColor: '#F9FAFB' }}>
             <Loader loading={isLoading} title={loadingMessage}>
@@ -285,11 +306,29 @@ export const AddUpdateLeave: React.FC = () => {
                         });
                     }
                 }}
+                onReset={() => {
+                    setFormData((prev) => ({
+                        ...prev,
+                        StartDate: null,
+                        EndDate: null,
+                        StartDateLeaveDuration: 'Full',
+                        EndDateLeaveDuration: 'Full',
+                    }));
+                    setErrors((prev) => {
+                        const newErrors = { ...prev };
+                        delete newErrors.StartDate;
+                        delete newErrors.EndDate;
+                        delete newErrors.StartDateLeaveDuration;
+                        delete newErrors.EndDateLeaveDuration;
+                        return newErrors;
+                    });
+                }}
                 startDate={formData.StartDate || null}
                 endDate={formData.EndDate || null}
                 title="Select Leave Date Range"
                 confirmText="Confirm Dates"
                 cancelText="Cancel"
+                resetText="Reset"
                 showSummary={false}
                 renderChildren={({ startDate, endDate, onSelectField, onClearField, editingField }) => (
                     <div className="space-y-4">

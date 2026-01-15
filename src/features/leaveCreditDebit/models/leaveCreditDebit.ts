@@ -7,7 +7,6 @@ export interface FilterWithPaginationLeaveCreditDebitRequest {
     LeaveCreditDebitId?: number
     LeavePeriodMode?: string
     FYyear?: number
-    Month?: string
     DepartmentName?: string
     DesignationName?: string
     SortBy?: string
@@ -27,7 +26,6 @@ export interface LeaveCreditDebitData {
     Uniquekey: string | ''
     LeavePeriodMode: string | ''
     FYyear: number | 0
-    Month: string | ''
     DepartmentMasterId: number | 0
     DepartmentName: string | ''
     DesignationName: string | ''
@@ -48,7 +46,6 @@ export interface AddUpdateLeaveCreditDebitRequest {
     Uniquekey?: string
     LeavePeriodMode?: string
     FYyear?: number
-    Month?: string
     DepartmentMasterId?: number
     DesignationId?: string
     LeaveTypebalanceJSONList?: string

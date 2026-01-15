@@ -40,7 +40,7 @@ export const ViewTenant: React.FC = () => {
 
     //#region TENANT LIST STATE CONTEXT
     const { listState } = useTenantListState();
-    const { tenantId, buildingId, tenantName } = listState;
+    const { tenantId, buildingId, tenantName, buildingName } = listState;
     //#endregion
 
     //#region TAB ACTIVITY
@@ -205,8 +205,9 @@ export const ViewTenant: React.FC = () => {
             </Loader>
 
             <HeaderActionBar
-                titleText={`Tenant ${activeTab}`}
-                subTitleText={tenantName}
+                titleText={`Tenant ${activeTab} :`}
+                subTitleText={`${buildingName}`}
+                subSubTitleText={`${tenantName}`}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListTenant()}
@@ -270,11 +271,11 @@ export const ViewTenant: React.FC = () => {
                                                 <div className={`lg:col-span-3 pt-3 ${isLast ? '' : 'pb-3'}`}>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                         <FieldItem label="Type" value={tenantData.ApplicantType} className='text-blue-900' />
-                                                        <FieldItem label="Full Name" value={tenantData.ApplicantName} urls={tenantData?.PhotoURL} isIcon />
+                                                        <FieldItem label="Applicant Name" value={tenantData.ApplicantName} urls={tenantData?.PhotoURL} isIcon />
                                                         <FieldItem label="Contact Number" value={tenantData?.ApplicantMobileNumber} />
                                                         <FieldItem label="E-Mail ID" value={tenantData?.ApplicantEmailId} />
 
-                                                        <FieldItem label="Aadhar Card No." value={tenantData?.AadharCardNumber} urls={tenantData?.AadharCardURL} isIcon />
+                                                        <FieldItem label="Aadhaar Card No." value={tenantData?.AadharCardNumber} urls={tenantData?.AadharCardURL} isIcon />
                                                         <FieldItem label="PAN No." value={tenantData?.PanNumber} urls={tenantData?.PanCardURL} isIcon />
                                                         <FieldItem label="Driving License" value={tenantData?.DrivingLicenseNumber} urls={tenantData?.DrivingLicenseURL} isIcon />
                                                         <FieldItem label="Voting ID No." value={tenantData?.VotingIdNumber} urls={tenantData?.VotingIdURL} isIcon />
@@ -305,37 +306,34 @@ export const ViewTenant: React.FC = () => {
 
                             <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Old Unit Details
+                                    Exisiting Unit Details
                                 </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                     <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Flat Number" value={editTenantData?.FlatNumber} />
-                                            <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.FlatCarpetAreaSqFt} />
+                                            <FieldItem label="Unit / Annexure / Survey Number" value={editTenantData?.FlatNumber} />
                                             <FieldItem label="Unit Type" value={editTenantData?.FlatType} />
+                                            {editTenantData?.FlatType.toUpperCase() !== "GYM"
+                                                ?
+                                                <FieldItem label="Unit Configuration" value={editTenantData?.FlatConfiguration} />
+                                                : <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.FlatCarpetAreaSqFt} />
+                                            }
+
                                         </div>
                                     </div>
-
-
-                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Unit Configuration" value={editTenantData?.FlatConfiguration} />
-                                            <FieldItem label="Unit Facing" value={editTenantData?.Facing} />
-                                            <FieldItem label="Free Area Offered (%)" value={editTenantData?.FreeAreaOfferedPercent} />
-                                        </div>
-                                    </div>
-
 
                                     <div className="lg:col-span-3 pt-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {editTenantData?.FlatType.toUpperCase() !== "GYM"
+                                                ?
+                                                <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.FlatCarpetAreaSqFt} />
+                                                : ""
+                                            }
+                                            <FieldItem label="Unit Facing" value={editTenantData?.Facing} />
 
-                                            <FieldItem label="Extra Area Purchased (SqFt)" value={editTenantData?.ExtraAreaPurchasedSqFt} />
-                                            <FieldItem label="Total Area (SqFt)" value={editTenantData?.TotalAreaSqFt} />
                                         </div>
                                     </div>
-
-
 
 
                                 </div>
@@ -345,24 +343,48 @@ export const ViewTenant: React.FC = () => {
 
                             <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Offer
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+
+                                    <div className="lg:col-span-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Free Area Offered (%)" value={editTenantData?.FreeAreaOfferedPercent} />
+                                            <FieldItem label="Free Area Offered (SqFt)" value={Number(editTenantData?.FlatCarpetAreaSqFt) * (editTenantData?.FreeAreaOfferedPercent || 0) / 100} />
+                                            <FieldItem label="Total Area (SqFt)" value={editTenantData?.TotalAreaSqFt} />
+
+                                        </div>
+                                    </div>
+
+
+                                </div>
+
+
+                            </section>
+                            {editTenantData?.Flat==="" && (
+                            <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                     New Unit Details
                                 </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                     <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Wing" value={editTenantData?.Wing} />
-                                            <FieldItem label="Floor" value={editTenantData?.Floor} />
                                             <FieldItem label="Building Number" value={editTenantData?.BuildingNumber} />
+                                            <FieldItem label="Floor" value={editTenantData?.Floor} />
+                                            <FieldItem label="Unit Number" value={editTenantData?.Flat} />
+
+
                                         </div>
                                     </div>
 
 
                                     <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Flat" value={editTenantData?.Flat} />
                                             <FieldItem label="Unit Type" value={editTenantData?.InventoryFlatType} />
                                             <FieldItem label="Unit Configuration" value={editTenantData?.InventoryFlatConfiguration} />
+                                            <FieldItem label="Unit Facing" value={'-'} />
 
                                         </div>
                                     </div>
@@ -370,6 +392,7 @@ export const ViewTenant: React.FC = () => {
 
                                     <div className="lg:col-span-3 pt-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Extra Area Purchased (SqFt)" value={editTenantData?.ExtraAreaPurchasedSqFt} />
                                             <FieldItem label="RERA Carpet Area (SqFt)" value={editTenantData?.RERACarpetAreaSqFt} />
                                             <FieldItem label="Parking Number" value={editTenantData?.ParkingNumber} />
 
@@ -381,7 +404,7 @@ export const ViewTenant: React.FC = () => {
 
 
                             </section>
-
+                            )}
                         </div>
                         {/* ================= RIGHT SIDE (1/3) ================= */}
                         <div className="lg:col-span-1 space-y-6">

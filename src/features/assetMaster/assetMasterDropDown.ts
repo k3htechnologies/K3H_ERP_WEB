@@ -6,7 +6,8 @@ export const fetchAssetMasterDropdown = async (pageNumber: number, params?: { va
         const responseEither = await assetMasterService.apiCallPullAssetMaster({
             PageSize: 10,
             PageNumber: pageNumber,
-            AssetName: params?.value || ""
+            AssetName: params?.value || "",
+            Status: "Available",
         });
 
         if (E.isLeft(responseEither)) {

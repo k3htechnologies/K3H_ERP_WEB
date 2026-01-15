@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
-import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   AddUpdateBranchAssociationsMasterRequest,
   BranchAssociationsMasterData,
+  DeleteBranchAssociationsRequest,
   FilterWithPaginationBranchAssociationsMasterRequest
 } from '@/features/branchAssociationsMaster/models/BranchAssociationsMasterModel';
 
@@ -16,18 +17,17 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
-import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Button, Input } from '@/ui/components/forms';
+import { Button } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
-import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { updateFilter } from '@/core/utils/filterHelper';
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
 import { fetchBranchMasterDropdown } from "@/features/branchMaster/branchMasterDropDown";
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
+import { Edit, Trash2 } from 'lucide-react';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 
 const initialFormState = (): AddUpdateBranchAssociationsMasterRequest => ({
   BranchAssociationsId: 0,
@@ -63,10 +63,11 @@ export const BranchAssociationsMaster: React.FC = () => {
   const [viewBranchAssociationsMasterDetailsData, setViewBranchAssociationsMasterDetailsData] = useState<BranchAssociationsMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
-  //FILTER STATES
-  const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
-  const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+  //DELETE ASSET MASTER
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+
+  const [deleteBranchAssociationsData, setDeleteBranchAssociationsData] = useState<BranchAssociationsMasterData | null>(null)
+
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -80,9 +81,6 @@ export const BranchAssociationsMaster: React.FC = () => {
 
   //DROP DOWN RESET KEY
   const [dropdownResetKey, setDropdownResetKey] = useState(0);
-
-  //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeBranchAssociationsMasterColumnsModal, setIsShowCustomizeBranchAssociationsMasterColumnsModal] = useState(false);
 
   const [dropdownLabels, setDropdownLabels] = useState<{
     branchName?: string;
@@ -142,10 +140,10 @@ export const BranchAssociationsMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchBranchAssociationsList = async (page: number = pagination.currentPage) => {
-    return await loadBranchAssociations(page, filters);
+    return await loadBranchAssociations(page);
   }
 
-  const loadBranchAssociations = async (page: number, filterParams: FilterInfo) => {
+  const loadBranchAssociations = async (page: Number, searchValue?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -163,11 +161,9 @@ export const BranchAssociationsMaster: React.FC = () => {
         }
 
         const params: FilterWithPaginationBranchAssociationsMasterRequest = {
-          PageNumber: page,
+          PageNumber: Number(page),
           PageSize: pagination.pageSize,
-          BranchAssociationsId: filterParams.BranchAssociationsId ? Number(filterParams.BranchAssociationsId) : undefined,
-          EmployeeName: filterParams.EmployeeName?.trim() || undefined,
-          BranchMasterId: String(filterParams.BranchMasterId ?? "").trim() || undefined,
+          EmployeeName: searchValue || undefined,
           SortBy: sortByParam
         }
 
@@ -178,7 +174,7 @@ export const BranchAssociationsMaster: React.FC = () => {
           setBranchAssociationsMasterList(response.right.Data);
 
           setPagination({
-            currentPage: page,
+            currentPage: Number(page),
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
           });
@@ -212,12 +208,7 @@ export const BranchAssociationsMaster: React.FC = () => {
 
       return
     }
-
-    const filterParams: FilterInfo = {
-      EmployeeName: searchValue.trim(),
-    };
-
-    await loadBranchAssociations(1, filterParams)
+    await loadBranchAssociations(1, searchValue)
 
   }
   //#endregion
@@ -253,8 +244,6 @@ export const BranchAssociationsMaster: React.FC = () => {
         const params: FilterWithPaginationBranchAssociationsMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
-          EmployeeName: filters.EmployeeName?.trim() || undefined,
-          BranchMasterId: filters.BranchMasterId?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         }
@@ -347,6 +336,13 @@ export const BranchAssociationsMaster: React.FC = () => {
 
   //#endregion
 
+  //#region CONFIRMATION DIALOG BOX
+  const handleConfirmationDialogBoxOpen = useCallback((row: BranchAssociationsMasterData) => {
+    setDeleteBranchAssociationsData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
+  //#endregion
+
   //#region TABLE COLUMN
   const branchAssociationsMasterColumns = useMemo<TableColumn[]>(
     () => [
@@ -382,52 +378,41 @@ export const BranchAssociationsMaster: React.FC = () => {
             tooltipThreshold={20}
           />
         )
+      },
+
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction && row.Status !== "Booked" ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Asset"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )
       }
     ],
-    // dependencies: include everything used inside that might change
-    [handleViewBranchAssociationsDetails]
-  )
-
-  //#endregion
-
-  //#region CUSTOMIZE TABLE COLUMNS
-
-  const requiredBranchAssociationsMasterColumnKeys: string[] = ['EmployeeName'];
-
-  const allBranchAssociationsMasterColumnKeys: string[] = branchAssociationsMasterColumns.map(c => c.key)
-
-  const [selectedBranchAssociationsMasterColumnKeys, setSelectedBranchAssociationsMasterColumnKeys] = useState<string[]>(() => {
-
-    try {
-
-      const saved = LocalStorageHelper.getBranchAssociationsMasterTableColumns();
-
-      if (saved) {
-
-        const parsed = JSON.parse(saved) as string[]
-        // Ensure required columns are always present
-
-        const withRequired = Array.from(new Set([...parsed, ...requiredBranchAssociationsMasterColumnKeys]));
-
-        // Filter out any keys that no longer exist
-        return withRequired.filter(k => allBranchAssociationsMasterColumnKeys.includes(k));
-
-      }
-    } catch { }
-    return allBranchAssociationsMasterColumnKeys
-  })
-
-  useEffect(() => {
-    // Guarantee required columns remain selected if state changes elsewhere
-
-    setSelectedBranchAssociationsMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredBranchAssociationsMasterColumnKeys])).filter(k => allBranchAssociationsMasterColumnKeys.includes(k)));
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [branchAssociationsMasterColumns.length])
-
-  const visibleBranchAssociationsMasterColumns = useMemo(
-    () => branchAssociationsMasterColumns.filter(col => selectedBranchAssociationsMasterColumnKeys.includes(col.key)),
-    [branchAssociationsMasterColumns, selectedBranchAssociationsMasterColumnKeys]
+    [handleViewBranchAssociationsDetails, handleConfirmationDialogBoxOpen]
   )
 
   //#endregion
@@ -478,61 +463,49 @@ export const BranchAssociationsMaster: React.FC = () => {
                 :
                 ''}
             </div>
-            <div className="flex justify-end items-center pt-4">
+            <div className="flex justify-between items-center pt-4">
 
               {canAction && (
                 <>
+
+                  <Button
+                    color='red'
+                    variant='solid'
+                    colorMode="light"
+                    size='md'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsViewModalOpen(false)
+                      handleConfirmationDialogBoxOpen(data)
+                    }}
+                    leftIcon={<Trash2 className="h-5 w-5" />}
+                  >
+                    Delete
+                  </Button>
                   <Button
                     color='blue'
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleEditBranchAssociationsMaster(data)
                     }}
+                    leftIcon={<Edit className="h-5 w-5" />}
                   >
-
                     Edit
                   </Button>
                 </>
               )}
             </div>
+
           </div>
         </div>
       </Modal>
     )
   }
 
-
-  //#endregion
-
-  //#region FILTER MODAL HELPERS
-  const applyFilters = () => {
-    setFilters(tempFilters)
-    loadBranchAssociations(1, tempFilters)
-    setShowFilterPopup(false)
-  }
-  //#endregion
-
-  //#region CLEAR FILTER 
-  const clearFilters = () => {
-    setTempFilters({})
-
-    setFilters({})
-
-    loadBranchAssociations(1, {})
-
-    setShowFilterPopup(false)
-  }
-
-  //#endregion
-
-  //#region HANDLE FILTER CHNAGE
-
-  const handleFilterChange = (key: string, value: string) => {
-    setTempFilters(prev => updateFilter(prev, key, value));
-  };
 
   //#endregion
 
@@ -680,6 +653,61 @@ export const BranchAssociationsMaster: React.FC = () => {
   };
 
   //#endregion
+  //#region  DELETE BRANCH ASSOCIATIONS  EVENT
+
+  const handleDeleteBranchAssociations = async () => {
+
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteBranchAssociationsData) return;
+
+    await runApiWithLoader(
+
+      setIsLoading,
+
+      setIsLoadingMessage,
+      async () => {
+        const params: DeleteBranchAssociationsRequest = {
+
+          BranchAssociationsId: deleteBranchAssociationsData.BranchAssociationsId || 0,
+
+          UniqueKey: deleteBranchAssociationsData.Uniquekey || ""
+        };
+
+        const response = await branchAssociationsService.apiCallDeleteBranchAssociations(params);
+
+        if (E.isRight(response)) {
+
+          setBranchAssociationsMasterList(prevData => prevData.filter(item => item.BranchAssociationsId !== deleteBranchAssociationsData.BranchAssociationsId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteBranchAssociationsData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+        }
+        return response;
+      },
+      undefined,
+      (error: any) => addToast({ type: "error", title: error.message }),
+      undefined,
+      "Deleting Branch Associations"
+    );
+  };
+
+  //#endregion
 
   return (
 
@@ -704,19 +732,13 @@ export const BranchAssociationsMaster: React.FC = () => {
           debouncedSearch(v)
         }}
         onClearSearch={clearsearchBranchAssociations}
-        isShowFilterButton
-        filters={filters}
-        onOpenFilter={() => {
-          setTempFilters(filters)
-          setShowFilterPopup(true)
-        }}
-        isShowCustomizeButton
-        onCustomize={() => setIsShowCustomizeBranchAssociationsMasterColumnsModal(true)}
+        isShowFilterButton={false}
+        isShowCustomizeButton={false}
         isShowAddButton={canAction}
         addTitle='Add'
         onAdd={handleAddBranchAssociationsMaster}
         isShowImportButton={false}
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && branchAssociationsListForTable.length > 0}
         onExportExcel={handleExportBranchAssociationsExcel}
         onExportPdf={handleExportBranchAssociationsPdf}
         exportLoading={isLoading}
@@ -725,7 +747,7 @@ export const BranchAssociationsMaster: React.FC = () => {
       {/* DATA TABLE BRANCH ASSOCIATIONS */}
       <DataTable
         data={branchAssociationsListForTable}
-        columns={visibleBranchAssociationsMasterColumns}
+        columns={branchAssociationsMasterColumns}
         pagination={branchAssociationsMasterPaginationInfo}
         emptyMessage="No Branch Associations Data Found"
         fixedHeight={true}
@@ -762,7 +784,7 @@ export const BranchAssociationsMaster: React.FC = () => {
         }}
         title={editingBranchAssociationMasterData ? 'Update Branch Associations' : 'Add Branch Associations'}
         onSubmit={handleAddUpdateBranchAssociationsMaster}
-        saveText={editingBranchAssociationMasterData ? 'Update Branch Associations' : 'Save Branch Associations'}
+        saveText={editingBranchAssociationMasterData ? 'Update' : 'Add'}
         resetText='Reset'
         onreset={handleResetForm}
         loading={isLoading}
@@ -801,59 +823,21 @@ export const BranchAssociationsMaster: React.FC = () => {
 
       </Modal>
 
-      {/* CUSTOMIZE COLUMNS MODAL */}
-      <CustomizeColumnsModal
-        isOpen={isShowCustomizeBranchAssociationsMasterColumnsModal}
-        onClose={() => setIsShowCustomizeBranchAssociationsMasterColumnsModal(false)}
-        onApply={(keys) => {
-          const withRequired = Array.from(
-            new Set([...keys, ...requiredBranchAssociationsMasterColumnKeys]),
-          )
-
-          setSelectedBranchAssociationsMasterColumnKeys(withRequired)
-
-          try {
-            LocalStorageHelper.storeBranchAssociationsMasterTableColumns(
-              JSON.stringify(withRequired),
-            )
-          } catch { }
+      {/* DELETE CONFIRMATION MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteBranchAssociationsData(null)
         }}
-        columns={branchAssociationsMasterColumns}
-        selectedKeys={selectedBranchAssociationsMasterColumnKeys}
-        requiredKeys={requiredBranchAssociationsMasterColumnKeys}
-        title="Customize Branch Associations Master Table Columns"
+        onConfirm={handleDeleteBranchAssociations}
+        title="You are about to delete a Branch Associations?"
+        message="Deleting this Branch Associations will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
       />
-
-      {/* FILTER BRANCH ASSOCIATIONS MODAL */}
-      <Modal
-        isOpen={showFilterPopup}
-        onClose={() => setShowFilterPopup(false)}
-        title="Filter - Branch Associations Master"
-        onSubmit={(e) => {
-          e.preventDefault()
-          applyFilters()
-        }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
-        onCancel={() => clearFilters()}
-        size="small-half"
-      >
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Employee Name
-              </label>
-              <Input
-                type="text"
-                value={tempFilters.EmployeeName || ''}
-                onChange={(e) => handleFilterChange('EmployeeName', e.target.value)}
-                placeholder="Enter Employee Name"
-              />
-            </div>
-          </div>
-        </div>
-      </Modal>
     </div>
 
   )

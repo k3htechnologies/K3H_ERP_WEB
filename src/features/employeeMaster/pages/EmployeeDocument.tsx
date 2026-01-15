@@ -791,7 +791,7 @@ export const EmployeeDocument: React.FC = () => {
       />
       <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
         <HeaderActionBar
-          titleText="Employee Name"
+          titleText="Employee Name : "
           subTitleText={employeeName}
           cancelText="Cancel"
           onCancel={() => handleBackToListEmployee()}

@@ -1,4 +1,4 @@
-import React, { useEffect,  useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
@@ -85,7 +85,7 @@ export const ViewProjectMaster: React.FC = () => {
 
         else if (activeTab === 'Employee') {
 
-            loadProjectMasterWithEmployee(editProjectData!.ProjectId,'');
+            loadProjectMasterWithEmployee(editProjectData!.ProjectId, '');
         }
         else if (activeTab === 'Bank Details') {
 
@@ -110,7 +110,7 @@ export const ViewProjectMaster: React.FC = () => {
             setIsLoadingMessage,
             async () => {
 
-                const response = await ProjectMasterService.apiCallPullProjectMasterWithEmployee(ProjectId,searchText);
+                const response = await ProjectMasterService.apiCallPullProjectMasterWithEmployee(ProjectId, searchText);
 
                 if (E.isRight(response)) {
 
@@ -239,7 +239,8 @@ export const ViewProjectMaster: React.FC = () => {
                     filters: preservedListState?.filters,
                     sortInfo: preservedListState?.sortInfo,
                     projectId: row.ProjectId,
-                    uniquekey: row.Uniquekey
+                    uniquekey: row.Uniquekey,
+                    projectName: row.ProjectName
                 }
             }
 
@@ -259,7 +260,8 @@ export const ViewProjectMaster: React.FC = () => {
                     filters: preservedListState?.filters,
                     sortInfo: preservedListState?.sortInfo,
                     projectId: row.ProjectId,
-                    uniquekey: row.Uniquekey
+                    uniquekey: row.Uniquekey,
+                    projectName: row.ProjectName
                 }
             }
         });
@@ -279,7 +281,8 @@ export const ViewProjectMaster: React.FC = () => {
                     filters: preservedListState?.filters,
                     sortInfo: preservedListState?.sortInfo,
                     projectId: row.ProjectId,
-                    uniquekey: row.Uniquekey
+                    uniquekey: row.Uniquekey,
+                    projectName: row.ProjectName
                 }
             }
         });
@@ -297,7 +300,8 @@ export const ViewProjectMaster: React.FC = () => {
             </Loader>
 
             <HeaderActionBar
-                titleText={'Project Details'}
+                titleText={'Project Details : '}
+                subTitleText={editProjectData?.ProjectName}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListProjectMaster()}
@@ -352,18 +356,17 @@ export const ViewProjectMaster: React.FC = () => {
                                     </h4>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ">
-
+                                        <FieldItem label="Redevelopment" value={editProjectData?.IsRedevelopment === true ? 'YES' : 'NO'} />
                                         <FieldItem label="Project Name" value={editProjectData?.ProjectName ?? '-'} />
-                                        <FieldItem label="CTS Number" value={editProjectData?.CTSNumber ?? '-'} />
+
                                         <FieldItem label="Business Category" value={editProjectData?.BussinessCategory ?? '-'} />
 
-                                        <FieldItem
-                                            label="Project Area (Sq.ft)"
-                                            value={editProjectData?.ProjectAreaInSqft?.toString() ?? '0.00'}
-                                        />
-                                        <FieldItem label="Project Location" value={editProjectData?.ProjectLocation ?? '-'} />
-
                                     </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
+
+                                        <FieldItem label="CTS Number" value={editProjectData?.CTSNumber ?? '-'} />
+                                    </div>
+
                                 </section>
 
                                 {/* ================= LOCATION DETAILS ================= */}
@@ -371,13 +374,40 @@ export const ViewProjectMaster: React.FC = () => {
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                         Location Details
                                     </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Project Location" value={editProjectData?.ProjectLocation ?? '-'} />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pt-4 ">
+                                        <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+                                            Google Location
+                                        </div>
+                                        {editProjectData?.GoogleLocation !== "" ?
+                                            <span className="text-blue-600 underline cursor-pointer flex items-center"
+                                                onClick={() => window.open(editProjectData?.GoogleLocation, "_blank")}>
+                                                {editProjectData?.GoogleLocation}
+                                            </span> : "-"}
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
                                         <FieldItem label="Country" value={editProjectData?.CountryName ?? '-'} />
                                         <FieldItem label="State" value={editProjectData?.StateName ?? '-'} />
                                         <FieldItem label="District" value={editProjectData?.DistrictName ?? '-'} />
                                         <FieldItem label="City" value={editProjectData?.CityName ?? '-'} />
                                         <FieldItem label="PIN Code" value={editProjectData?.ZipCode ?? '-'} />
+                                    </div>
+                                </section>
+
+                                {/* ================= PROJECT SCHEME & SCOPE ================= */}
+                                <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        Scheme & Scope Details
+                                    </h4>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Project Scope" value={editProjectData?.ProjectScope ?? '-'} />
+                                        <FieldItem label="Project Scheme" value={editProjectData?.ProjectScheme ?? '-'} />
+                                        <FieldItem label="Project Sub Scope" value={editProjectData?.ProjectSubScheme ?? '-'} />
+
                                     </div>
                                 </section>
 
@@ -480,6 +510,10 @@ export const ViewProjectMaster: React.FC = () => {
                                         <FieldItem
                                             label="Site Contact Mobile Number"
                                             value={editProjectData?.SiteContactMobileNumber ?? '-'}
+                                        />
+                                        <FieldItem
+                                            label="Project Status"
+                                            value={editProjectData?.ProjectStatus ?? '-'}
                                         />
                                     </div>
                                 </section>

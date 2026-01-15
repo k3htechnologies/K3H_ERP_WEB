@@ -44,7 +44,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { Tabs } from '@/ui/components/Tab/Tab';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { filterNumbersWithDecimal, filterNumbers, isValidPercentage, calculatePercentageAmount } from '@/core/utils/fileValidation';
+import { filterNumbersWithDecimal, filterNumbers, isValidPercentage, calculatePercentageAmount, allowPercentage } from '@/core/utils/fileValidation';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { Modal } from '@/ui/components/Modal/Modal';
@@ -421,7 +421,7 @@ export const ProposedOffer: React.FC = () => {
       fetchGSTonExistingPlusFreeAreaData();
     } else if (activeTab === 'ProjectCompletion') {
       fetchProjectCompletionData();
-    }  else if (activeTab === 'RentDetails') {
+    } else if (activeTab === 'RentDetails') {
       fetchRentDetailsData();
     }
   }, [activeTab, projectId, buildingId]);
@@ -812,7 +812,45 @@ export const ProposedOffer: React.FC = () => {
     }
   }
 
+  const validateCorpusTotals = ({
+    stages,
+    residentialCorpus,
+    commercialCorpus
+  }: {
+    stages: typeof corpusPaymentStageList;
+    residentialCorpus: number;
+    commercialCorpus: number;
+  }) => {
+
+    const residentialTotal = stages
+      .filter(x => x.Type === "Residential")
+      .reduce((sum, cur) => sum + (cur.Amount ?? 0), 0);
+
+    const commercialTotal = stages
+      .filter(x => x.Type === "Commercial")
+      .reduce((sum, cur) => sum + (cur.Amount ?? 0), 0);
+
+    return {
+      residentialTotal,
+      commercialTotal,
+      residentialOk: residentialTotal <= (residentialCorpus ?? 0),
+      commercialOk: commercialTotal <= (commercialCorpus ?? 0)
+    };
+  };
+
+
   const handleSaveCorpusDetails = async () => {
+
+    const {
+      residentialTotal,
+      commercialTotal,
+      residentialOk,
+      commercialOk
+    } = validateCorpusTotals({
+      stages: corpusPaymentStageList,
+      residentialCorpus: formDataCorpusDetails.CorpusOfferedToResidentialAmount ?? 0,
+      commercialCorpus: formDataCorpusDetails.CorpusOfferedToCommercialAmount ?? 0
+    });
 
     if (buildingId === 0) {
       addToast({ type: "error", title: "Please select proper building first" });
@@ -823,6 +861,25 @@ export const ProposedOffer: React.FC = () => {
       addToast({ type: "error", title: "Please add atleast one corpus" });
       return
     }
+
+    else if (!residentialOk) {
+      addToast({
+        type: "error",
+        title: `Residential total (${residentialTotal}) cannot be greater than corpus amount (${formDataCorpusDetails.CorpusOfferedToResidentialAmount}).`
+      });
+      return;
+    }
+
+    else if (!commercialOk) {
+      addToast({
+        type: "error",
+        title: `Commercial total (${commercialTotal}) cannot be greater than corpus amount (${formDataCorpusDetails.CorpusOfferedToCommercialAmount}).`
+      });
+      return;
+    }
+
+
+
 
     setErrorsCorpusDetails({})
 
@@ -1254,8 +1311,31 @@ export const ProposedOffer: React.FC = () => {
     }
   }
 
-  const handleSaveSecurityDepositDetails = async () => {
+  const validateSecurityDepositTotals = ({
+    stages,
+    securityDepositAmount,
+  }: {
+    stages: typeof securityDepositPaymentStageList;
+    securityDepositAmount: number;
+  }) => {
 
+    const total = stages.reduce(
+      (sum, cur) => sum + (Number(cur.Amount) || 0),
+      0
+    );
+
+    return {
+      total,
+      ok: total <= (securityDepositAmount ?? 0)
+    };
+  };
+
+
+  const handleSaveSecurityDepositDetails = async () => {
+    const { total, ok } = validateSecurityDepositTotals({
+      stages: securityDepositPaymentStageList,
+      securityDepositAmount: formDataSecurityDepositDetails.SecurityDepositToSocietyAmount ?? 0
+    });
     if (buildingId === 0) {
       addToast({ type: "error", title: "Please select proper building first" });
       return
@@ -1264,6 +1344,14 @@ export const ProposedOffer: React.FC = () => {
     else if (securityDepositPaymentStageList.length === 0) {
       addToast({ type: "error", title: "Please add atleast one security deposit" });
       return
+    }
+
+    else if (!ok) {
+      addToast({
+        type: "error",
+        title: `Total security deposit amount (${total}) cannot be greater than Security Deposit Amount (${formDataSecurityDepositDetails.SecurityDepositToSocietyAmount}).`
+      });
+      return;
     }
 
     setErrorsSecurityDepositDetails({})
@@ -1605,7 +1693,43 @@ export const ProposedOffer: React.FC = () => {
     }
   }
 
+  const validateShiftingDetailsTotals = ({
+    stages,
+    residentialShiftingAmount,
+    commercialShiftingAmount
+  }: {
+    stages: typeof shiftingPaymentStageList;
+    residentialShiftingAmount: number;
+    commercialShiftingAmount: number;
+  }) => {
+
+    const residentialTotal = stages
+      .filter(x => x.Type === "Residential")
+      .reduce((sum, cur) => sum + (cur.Amount ?? 0), 0);
+
+    const commercialTotal = stages
+      .filter(x => x.Type === "Commercial")
+      .reduce((sum, cur) => sum + (cur.Amount ?? 0), 0);
+
+    return {
+      residentialTotal,
+      commercialTotal,
+      residentialOk: residentialTotal <= (residentialShiftingAmount ?? 0),
+      commercialOk: commercialTotal <= (commercialShiftingAmount ?? 0)
+    };
+  };
   const handleSaveShiftingDetails = async () => {
+
+    const {
+      residentialTotal,
+      commercialTotal,
+      residentialOk,
+      commercialOk
+    } = validateShiftingDetailsTotals({
+      stages: shiftingPaymentStageList,
+      residentialShiftingAmount: formDataShiftingDetails.ShiftingOfferedToResidentialAmount ?? 0,
+      commercialShiftingAmount: formDataShiftingDetails.ShiftingOfferedToCommercialAmount ?? 0
+    });
 
     if (buildingId === 0) {
       addToast({ type: "error", title: "Please select proper building first" });
@@ -1615,6 +1739,22 @@ export const ProposedOffer: React.FC = () => {
     else if (shiftingPaymentStageList.length === 0) {
       addToast({ type: "error", title: "Please add atleast one Shifting details" });
       return
+    }
+
+    if (!residentialOk) {
+      addToast({
+        type: "error",
+        title: `Residential total (${residentialTotal}) cannot be greater than Residential shifting amount (${formDataShiftingDetails.ShiftingOfferedToResidentialAmount}).`
+      });
+      return;
+    }
+
+    if (!commercialOk) {
+      addToast({
+        type: "error",
+        title: `Commercial total (${commercialTotal}) cannot be greater than Commercial shifting amount (${formDataShiftingDetails.ShiftingOfferedToCommercialAmount}).`
+      });
+      return;
     }
 
     setErrorsShiftingDetails({})
@@ -2533,6 +2673,9 @@ export const ProposedOffer: React.FC = () => {
       newErrors.GSTOnAreaByDeveloperPercent = 'Enter a valid percentage'
     }
 
+    if (Number(formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent) + Number(formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent) > 100) {
+      newErrors.TotalGSTPercent = "Total GST percentage cannot be more than 100%";
+    }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -3152,7 +3295,12 @@ export const ProposedOffer: React.FC = () => {
                     required
                     type="text"
                     value={formDataExtraCarpetArea.ResidentialExtraCarpetPercent || ''}
-                    onChange={(e) => handleFieldChangeExtraCarpetArea('ResidentialExtraCarpetPercent', filterNumbersWithDecimal(e.target.value))}
+                    onChange={(e) => {
+                      const val = allowPercentage(e.target.value);
+                      if (val !== null) {
+                        handleFieldChangeExtraCarpetArea("ResidentialExtraCarpetPercent", filterNumbersWithDecimal(e.target.value));
+                      }
+                    }}
                     error={errors.ResidentialExtraCarpetPercent}
                     placeholder="Enter Residential Extra Carpet"
                     rightIcon="%"
@@ -3164,7 +3312,13 @@ export const ProposedOffer: React.FC = () => {
                     required
                     type="text"
                     value={formDataExtraCarpetArea.CommercialExtraCarpetPercent || ''}
-                    onChange={(e) => handleFieldChangeExtraCarpetArea('CommercialExtraCarpetPercent', filterNumbersWithDecimal(e.target.value))}
+                    onChange={(e) => {
+                      const val = allowPercentage(e.target.value);
+                      if (val !== null) {
+
+                        handleFieldChangeExtraCarpetArea('CommercialExtraCarpetPercent', filterNumbersWithDecimal(e.target.value))
+                      }
+                    }}
                     error={errors.CommercialExtraCarpetPercent}
                     placeholder="Enter Commercial Extra Carpet"
                     rightIcon="%"
@@ -3316,6 +3470,7 @@ export const ProposedOffer: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Type"
+                placeholder='Select Type'
                 required
                 value={formDataCorpusPaymentStage.Type || ''}
                 onChange={(e) => {
@@ -3328,10 +3483,13 @@ export const ProposedOffer: React.FC = () => {
                     formDataCorpusPaymentStage.StagePercentage
                   );
                 }}
-                options={FLAT_UNIT_TYPE.map(opt => ({
-                  label: opt.name,
-                  value: opt.id
-                }))}
+                options={FLAT_UNIT_TYPE
+                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .map(opt => ({
+                    label: opt.name,
+                    value: opt.id
+                  }))
+                }
                 error={errorsCorpusPaymentStage.Type}
               />
 
@@ -3359,6 +3517,9 @@ export const ProposedOffer: React.FC = () => {
                 }
                 onChange={(e) => {
                   const raw = filterNumbersWithDecimal(e.target.value);
+
+                  const safeValue = allowPercentage(raw);
+                  if (safeValue === null) return;
 
                   handleFieldChangeCorpusPaymentStage('StagePercentageText', raw);
 
@@ -3514,10 +3675,17 @@ export const ProposedOffer: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Type"
+                placeholder='Select Type'
                 required
                 value={formDataSecurityDepositPaymentStage.Type || ''}
                 onChange={(e) => handleFieldChangeSecurityDepositPaymentStage('Type', String(e))}
-                options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                options={FLAT_UNIT_TYPE
+                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .map(opt => ({
+                    label: opt.name,
+                    value: opt.id
+                  }))
+                }
                 error={errorsSecurityDepositPaymentStage.Type}
               />
             </div>
@@ -3682,6 +3850,7 @@ export const ProposedOffer: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Type"
+                placeholder='Select Type'
                 required
                 value={formDataShiftingPaymentStage.Type || ''}
 
@@ -3696,7 +3865,13 @@ export const ProposedOffer: React.FC = () => {
                   );
                 }}
 
-                options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                options={FLAT_UNIT_TYPE
+                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .map(opt => ({
+                    label: opt.name,
+                    value: opt.id
+                  }))
+                }
                 error={errorsShiftingPaymentStage.Type}
               />
             </div>
@@ -3724,6 +3899,9 @@ export const ProposedOffer: React.FC = () => {
                 onChange={(e) => {
 
                   const raw = filterNumbersWithDecimal(e.target.value);
+
+                  const safeValue = allowPercentage(raw);
+                  if (safeValue === null) return;
 
                   handleFieldChangeShiftingPaymentStage('StagePercentageText', raw);
 
@@ -3916,10 +4094,17 @@ export const ProposedOffer: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Type"
+                placeholder='Select Type'
                 required
                 value={formDataLienToSocietyPaymentStage.Type || ''}
                 onChange={(e) => handleFieldChangeLienToSocietyPaymentStage('Type', String(e))}
-                options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                options={FLAT_UNIT_TYPE
+                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .map(opt => ({
+                    label: opt.name,
+                    value: opt.id
+                  }))
+                }
                 error={errorsLienToSocietyPaymentStage.Type}
               />
             </div>
@@ -4003,7 +4188,13 @@ export const ProposedOffer: React.FC = () => {
                     type="text"
                     rightIcon="%"
                     value={formDataParkingAllotment.TotalParkingPercentageAllottedToSociety || ''}
-                    onChange={(e) => handleFieldChangeParkingAllotment('TotalParkingPercentageAllottedToSociety', filterNumbersWithDecimal(e.target.value))}
+                    onChange={(e) => {
+                      const val = allowPercentage(e.target.value);
+                      if (val !== null) {
+
+                        handleFieldChangeParkingAllotment('TotalParkingPercentageAllottedToSociety', filterNumbersWithDecimal(e.target.value))
+                      }
+                    }}
                     error={errorsParkingAllotment.TotalParkingPercentageAllottedToSociety}
                     placeholder="Enter Total Parking Percentage"
                   />
@@ -4045,7 +4236,13 @@ export const ProposedOffer: React.FC = () => {
                     type="text"
                     rightIcon="%"
                     value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent || ''}
-                    onChange={(e) => handleFieldChangeGSTonExistingPlusFreeArea('GSTOnAreaByMemberPercent', filterNumbersWithDecimal(e.target.value))}
+                    onChange={(e) => {
+                      const val = allowPercentage(e.target.value);
+                      if (val !== null) {
+
+                        handleFieldChangeGSTonExistingPlusFreeArea('GSTOnAreaByMemberPercent', filterNumbersWithDecimal(e.target.value))
+                      }
+                    }}
                     error={errorsGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent}
                     placeholder="Enter GST on Area by Member Percent"
                   />
@@ -4057,9 +4254,28 @@ export const ProposedOffer: React.FC = () => {
                     type="text"
                     rightIcon="%"
                     value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent || ''}
-                    onChange={(e) => handleFieldChangeGSTonExistingPlusFreeArea('GSTOnAreaByDeveloperPercent', filterNumbersWithDecimal(e.target.value))}
+                    onChange={(e) => {
+                      const val = allowPercentage(e.target.value);
+                      if (val !== null) {
+
+                        handleFieldChangeGSTonExistingPlusFreeArea('GSTOnAreaByDeveloperPercent', filterNumbersWithDecimal(e.target.value))
+                      }
+                    }}
                     error={errorsGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent}
                     placeholder="Enter GST on Area by Developer Percent"
+                  />
+                </div>
+
+                <div>
+                  <Input
+                    label="Total GST (%)"
+                    required
+                    type="text"
+                    rightIcon="%"
+                    disabled
+                    value={Number(formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent) + Number(formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent) || 0}
+                    error={errorsGSTonExistingPlusFreeArea.TotalGSTPercent}
+                    placeholder="System Calculated Total GST"
                   />
                 </div>
               </div>
@@ -4228,10 +4444,17 @@ export const ProposedOffer: React.FC = () => {
             <div>
               <SinglePageSelection
                 label="Type"
+                placeholder='Select Type'
                 required
                 value={formDataRentDetails.Type || ''}
                 onChange={(e) => handleFieldChangeRentDetails('Type', String(e))}
-                options={FLAT_UNIT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                options={FLAT_UNIT_TYPE
+                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .map(opt => ({
+                    label: opt.name,
+                    value: opt.id
+                  }))
+                }
                 error={errorsRentDetails.Type}
               />
             </div>

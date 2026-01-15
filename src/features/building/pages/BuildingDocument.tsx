@@ -967,6 +967,7 @@ const BuildingDocument: React.FC = () => {
         expandable={{
 
           keyField: 'BuildingDocumentId',
+
           alwaysFetchOnOpen: true,
 
           fetchRow: async (row) => {
@@ -998,6 +999,7 @@ const BuildingDocument: React.FC = () => {
           renderRow: (fetchedData) => {
 
             const details: BuildingDocumentData[] = Array.isArray(fetchedData) ? fetchedData : (fetchedData ? [fetchedData] : []);
+            
             if (!details || details.length === 0) {
 
               return (

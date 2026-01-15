@@ -31,6 +31,7 @@ import { technicalService } from '@/features/technical/services/TechnicalService
 import { updateFilter } from '@/core/utils/filterHelper';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
+import { filterNumbers } from '@/core/utils/fileValidation';
 
 const initialFormState = (): AddUpdateProjectDocumentCategoryMasterRequest => ({
   ProjectDocumentCategoryId: 0,
@@ -347,11 +348,19 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
       },
       {
         key: 'OrderBy',
-        label: 'Order By',
+        label: 'Sequence',
+        width: '20',
+        sortable: true,
+        align: 'center',
+        render: value => value ?? ''
+      },
+      {
+        key: 'DocumentCount',
+        label: 'Document Count',
         width: '20',
         sortable: false,
         align: 'center',
-        render: value => value ?? ''
+        render: value => value ?? 0
       },
       {
         key: 'actions',
@@ -390,7 +399,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
-  const requiredProjectDocumentCategoryMasterColumnKeys: string[] = ['ProjectDocumentCategory'];
+  const requiredProjectDocumentCategoryMasterColumnKeys: string[] = ['ProjectDocumentCategoryName'];
 
   const allProjectDocumentCategoryMasterColumnKeys: string[] = projectDocumentCategoryMasterColumns.map(c => c.key);
 
@@ -401,10 +410,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
 
         if (saved) {
           const parsed = JSON.parse(saved) as string[];
-          // Ensure required columns are always present
           const withRequired = Array.from(new Set([...parsed, ...requiredProjectDocumentCategoryMasterColumnKeys]));
-
-          // Filter out any keys that no longer exist
           return withRequired.filter(k => allProjectDocumentCategoryMasterColumnKeys.includes(k));
         }
       } catch { }
@@ -449,7 +455,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Project Document Category Master Details"
+        title="Project Document Category Details"
         onSubmit={e => {
           e.preventDefault();
           onClose();
@@ -467,7 +473,8 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
               withBorder
               className="font-medium text-blue-900 "
             />
-            <FieldItem label="Order By" value={data.OrderBy} isRow withBorder />
+            <FieldItem label="Sequence" value={data.OrderBy} isRow withBorder />
+            <FieldItem label="Document Count" value={data.DocumentCount ?? 0} isRow withBorder />
           </div>
 
           <div className="space-y-4">
@@ -583,7 +590,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
     }
 
     if (formData.OrderBy === 0) {
-      newErrors.OrderBy = 'Order By is required';
+      newErrors.OrderBy = 'Sequence is required';
     }
 
     return {
@@ -836,7 +843,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleProjectDocumentCategoryMaster}
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && projectDocumentCategoryListForTable.length > 0}
         onExportExcel={handleExportProjectDocumentCategoryExcel}
         onExportPdf={handleExportProjectDocumentCategoryPdf}
         exportLoading={isLoading}
@@ -886,7 +893,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
         saveText={
           editingProjectDocumentCategoryMasterData ? 'Update' : 'Add'
         }
-        resetText="Reset"
+        resetText=""
         loading={isLoading}
         size="xl"
       >
@@ -907,11 +914,11 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
 
             <div>
               <Input
-                label="Order By"
+                label="Sequence"
                 required
                 error={errors.OrderBy}
                 value={formData.OrderBy.toString()}
-                onChange={e => handleFieldChange('OrderBy', Number(e.target.value))}
+                onChange={(e) => handleFieldChange('OrderBy', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                 placeholder="Enter Order"
               />
             </div>

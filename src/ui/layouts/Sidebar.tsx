@@ -11,6 +11,7 @@ import {
 import type { ModuleData, SubModuleData, SubSubModuleData } from '@/features/menu/models/MenuModel'
 import { normalizePath, mapPathToRoute } from '@/core/utils/pathMapper';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 
 interface SidebarProps {
   isOpen: boolean
@@ -50,6 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
   const normalizedLocationPath = normalizePath(location.pathname);
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
   const findActiveMenuItem = (currentPath: string) => {
     const normalizedCurrent = normalizePath(currentPath.split("/").filter(Boolean)[0])
@@ -120,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'dashboard',
       label: 'Dashboard',
-      icon: <Home className="h-5 w-5" />,
+      icon: renderIcon("assets/sideDrawer/dashboard.svg", <Home className="h-5 w-5" />),
       path: '/dashboard'
     },
 
@@ -284,26 +286,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
       } else {
         return {
           container: `${item.path?.toUpperCase() === '/DASHBOARD'
-            ? 'relative'
+            ? 'relative '
             : 'relative ml-3 pl-2'
             }`,
           button: `
             w-full flex items-center space-x-3  py-1.5 rounded-md transition-all duration-200
-            ${!isOpen ? 'px-2' : 'px-4'}
+            ${!isOpen ? 'px-3' : 'px-4'}
             ${isCurrentPage
               ? 'text-blue-800 font-semibold'
               : isInActivePath
-                ? 'text-blue-600 font-medium'
+                ? 'text-blue-700 font-medium'
                 : isParentSelected
-                  ? 'text-blue-600'
+                  ? 'text-blue-700'
                   : isSelected
-                    ? 'text-blue-600'
-                    : 'text-gray-500 hover:bg-gray-100 active:bg-gray-200'
+                    ? 'text-blue-700'
+                    : 'text-gray-800 hover:bg-gray-100 active:bg-gray-200'
             }
             touch-manipulation
           `,
-          icon: 'h-4 w-4',
-          text: 'text-sm',
+          icon: 'h-5 w-5',
+          text: 'text-sm font-medium',
           chevron: 'h-4 w-4'
         }
       }
@@ -409,9 +411,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                     return (
                       <>
-                        <div className="text-sm font-medium text-gray-800 truncate">{LocalStorageHelper.getStoredEmployeeData()?.FullName}</div>
-                        <div className="text-xs text-gray-600 truncate">{LocalStorageHelper.getStoredEmployeeData()?.Designation} • {LocalStorageHelper.getStoredEmployeeData()?.Department}</div>
-                        <div className="text-xs text-gray-500 truncate">{LocalStorageHelper.getStoredEmployeeData()?.PersonalMobileNumber}</div>
+                        <div className="w-[200px]">
+                          <div className="text-sm font-medium text-gray-800 truncate">
+                            {LocalStorageHelper.getStoredEmployeeData()?.FullName}
+                          </div>
+
+                          <div className="text-xs text-gray-600 truncate">
+                            {LocalStorageHelper.getStoredEmployeeData()?.Designation} •{" "}
+                            {LocalStorageHelper.getStoredEmployeeData()?.Department}
+                          </div>
+
+                          <div className="text-xs text-gray-500 truncate">
+                            {LocalStorageHelper.getStoredEmployeeData()?.PersonalMobileNumber}
+                          </div>
+                        </div>
+
                       </>
                     )
                   })()}
@@ -460,7 +474,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {isOpen ? (
               <div className="space-y-3">
                 <button
-                  onClick={onLogout}
+                  onClick={() => setIsConfirmationDialogBoxOpen(true)}
                   className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-md transition-colors duration-200 touch-manipulation"
                   aria-label="Logout"
                 >
@@ -476,7 +490,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             ) : (
               <div className="flex flex-col items-center space-y-2">
                 <button
-                  onClick={onLogout}
+                  onClick={() => setIsConfirmationDialogBoxOpen(true)}
                   className="h-8 w-8 bg-red-500 hover:bg-red-600 active:bg-red-700 rounded flex items-center justify-center transition-colors duration-200 touch-manipulation"
                   aria-label="Logout"
                 >
@@ -490,6 +504,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
       </aside>
+
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+        }}
+        onConfirm={onLogout}
+        title="You are sure you want to logout?"
+        message="Are you sure you want to logout from the application? Please save all your work before confirming."
+        confirmText="Logout"
+        cancelText="Cancel"
+        loading={false}
+        variant="logout"
+      />
     </>
   )
 }

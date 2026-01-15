@@ -9,6 +9,7 @@ interface TooltipTextProps {
     tooltipThreshold?: number
     onClick?: () => void
     tooltipClassName?: string
+    isApplyBgTextColor?:boolean
 }
 
 const TooltipText: React.FC<TooltipTextProps> = ({
@@ -16,7 +17,8 @@ const TooltipText: React.FC<TooltipTextProps> = ({
     maxWidth = "150px",
     tooltipThreshold = 20,
     onClick,
-    tooltipClassName = ""
+    tooltipClassName = "",
+    isApplyBgTextColor=false
 }) => {
     const displayText = text === null || text === undefined || text === "" ? "-" : String(text).trim();
     const isLong = displayText.length > tooltipThreshold;
@@ -47,7 +49,7 @@ const TooltipText: React.FC<TooltipTextProps> = ({
                         {displayText}
                     </button>
                 ) : (
-                    <span className={`block truncate text-gray-900 ${tooltipClassName}`} style={{ maxWidth }} title="">
+                    <span className={`block truncate ${isApplyBgTextColor ? '' :'text-gray-900'} ${tooltipClassName}`} style={{ maxWidth }} title="">
                         {displayText}
                     </span>
                 )}

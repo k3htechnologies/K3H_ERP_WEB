@@ -62,7 +62,7 @@ export interface AddUpdateShiftMasterRequest {
     BreakBeginTime: string | ''           // TimeSpan
     BreakEndTime: string | ''             // TimeSpan
     BreakDurationTime: string | ''        // TimeSpan
-    GraceTime: string | ''                // TimeSpan
+    GraceTime: string | ''                
 
     Remarks: string | ''
 }

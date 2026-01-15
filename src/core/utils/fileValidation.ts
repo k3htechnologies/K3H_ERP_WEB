@@ -179,6 +179,22 @@ export const isValidPercentage = (value: string): boolean => {
   return num >= 0 && num <= 100;
 };
 
+export const allowPercentage = (value: string) => {
+  // Allow empty
+  if (value === "") return value;
+
+  // Allow only digits & single decimal
+  if (!/^\d*\.?\d*$/.test(value)) return null;
+
+  const num = Number(value);
+
+  // Block values greater than 100
+  if (num > 100) return null;
+
+  return value;
+};
+
+
 // ----------------------------------
 // CALCULATE PERCENTAGE
 // ----------------------------------
@@ -371,10 +387,10 @@ export const mergeFiles = (
     .map(url => String(url).trim());
 
   const currentStateUrlSet = new Set(currentStateUrls);
-  
+
   const preservedExisting = existingUrls
-    .filter(url => !removedSet.has(url)) 
-    .filter(url => currentStateUrlSet.has(url)) 
+    .filter(url => !removedSet.has(url))
+    .filter(url => currentStateUrlSet.has(url))
     .map(url => url);
 
   const newFiles = (currentStateFiles || [])
@@ -393,6 +409,39 @@ export const createFileUrlString = (mergedFiles: (File | string)[]): string => {
     .join(',');
 };
 
+// ----------------------------------
+// 🔹 CALCULATED HOW MUCH REMOVED FILE WE MARGE FOR VALIDATION
+// ----------------------------------
+
+export const calculateRemovedFiles = (
+  originalFiles?: (File | string)[],
+  currentStateFiles?: (File | string)[],
+  existingRemovedUrls?: string[]
+): string[] => {
+  if (!originalFiles || originalFiles.length === 0) return existingRemovedUrls || [];
+
+
+  // Get original file URLs (strings only)
+  const originalUrls = originalFiles
+    .filter(file => typeof file === 'string')
+    .map(url => String(url).trim());
+
+  // Get current state file URLs (strings only)
+  const currentStateUrls = (currentStateFiles || [])
+    .filter(file => typeof file === 'string')
+    .map(url => String(url).trim());
+
+  const currentStateUrlSet = new Set(currentStateUrls);
+
+  // Find files that were in original but not in current state (removed via onChange)
+  const removedViaOnChange = originalUrls.filter(url => !currentStateUrlSet.has(url));
+
+  // Combine existing removed URLs with newly detected removed files
+  const allRemoved = [...(existingRemovedUrls || []), ...removedViaOnChange];
+
+  // Remove duplicates
+  return Array.from(new Set(allRemoved.map(url => url.trim()).filter(Boolean)));
+};
 // ----------------------------------
 //HAS ANY FILE PRESENT IN FILE DayPicker
 // ----------------------------------
@@ -416,6 +465,21 @@ export const hasAnyDocumentFile = (
 
   return hasNewFiles || remainingExisting.length > 0;
 };
+// ----------------------------------
+//CHECK END TIME GREATER THAN START TIME
+// ----------------------------------
+export function isEndTimeGreater(startTime: string, endTime: string): boolean {
+  if (!startTime || !endTime) return false;
+
+  const [sH, sM] = startTime.split(":").map(Number);
+  const [eH, eM] = endTime.split(":").map(Number);
+
+  const startMinutes = sH * 60 + sM;
+  const endMinutes = eH * 60 + eM;
+
+  return endMinutes > startMinutes;
+}
+
 
 
 

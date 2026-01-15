@@ -366,9 +366,8 @@ export const DepartmentMaster: React.FC = () => {
               text={value || 'N/A'}
               maxWidth="300px"
               tooltipThreshold={40}
-              onClick={() => handleViewDepartmentDetails(row)} // just pass a function, no need for e.preventDefault here
+              onClick={() => handleViewDepartmentDetails(row)}
             />
-
           </div>
         )
       },
@@ -945,7 +944,7 @@ export const DepartmentMaster: React.FC = () => {
         }}
         title={editingDepartmentMasterData ? 'Update Department' : 'Add Department'}
         onSubmit={handleAddUpdateDepartmentMaster}
-        saveText={'Save'}
+       saveText={editingDepartmentMasterData ? 'Update' : 'Add'}
         resetText='Reset'
         loading={isLoading}
         size='xl'

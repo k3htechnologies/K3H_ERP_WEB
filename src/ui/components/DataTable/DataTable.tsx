@@ -167,14 +167,13 @@ export const DataTable: React.FC<DataTableProps> = ({
                 <th
                   key={column.key}
                   className={`px-4 py-2 text-gray-800 tracking-wider whitespace-nowrap
-          ${column.align === 'center' ? 'text-center' :
-                      column.align === 'right' ? 'text-right' : 'text-left'}
-          ${column.width ? `w-${column.width}` : ''}
-          ${column.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
-          ${column.fixed === 'left'
-                      ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]'
+                  ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
+                  ${column.width ? `w-${column.width}` : ''}
+                  ${column.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
+                  ${column.fixed === 'left'
+                      ? 'sticky left-0 z-35 shadow-[2px_0_4px_rgba(0,0,0,0.1)]'
                       : column.fixed === 'right'
-                        ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
+                        ? 'sticky right-0 z-35 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
                         : ''
                     }
         `}

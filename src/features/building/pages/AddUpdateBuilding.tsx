@@ -32,6 +32,7 @@ const initialFormState = (): AddUpdateBuildingRequest => ({
   DistrictMasterId: null,
   StateMasterId: null,
   CityMasterId: null,
+  VillageMasterId: null,
   TotalNumberOfUnits: null,
   TotalUnitsAreaUtilizedSqFt: null,
   IsGarden: null,
@@ -84,12 +85,14 @@ const AddUpdateBuilding: React.FC = () => {
     statesByCountryId,
     districtsByStateId,
     citiesByDistrictId,
+    villagesByCityId
   } = useCountryStateCityDistrictVillageData()
 
   const [selectedCountryId, setSelectedCountryId] = React.useState<number | null>(1)
   const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null)
   const [selectedDistrictId, setSelectedDistrictId] = React.useState<number | null>(null)
   const [selectedCityId, setSelectedCityId] = React.useState<number | null>(null)
+  const [selectedVillageId, setSelectedVillageId] = React.useState<number | null>(null)
 
   const countryOptions = countries.map(c => ({ label: c.name, value: c.id }))
 
@@ -112,6 +115,14 @@ const AddUpdateBuilding: React.FC = () => {
   const cityOptions =
     selectedDistrictId != null
       ? (citiesByDistrictId[selectedDistrictId] || []).map(c => ({
+        label: c.name,
+        value: c.id,
+      }))
+      : [];
+
+  const villageOptions =
+    selectedCityId != null
+      ? (villagesByCityId[selectedCityId] || []).map(c => ({
         label: c.name,
         value: c.id,
       }))
@@ -183,6 +194,7 @@ const AddUpdateBuilding: React.FC = () => {
               DistrictMasterId: e.DistrictMasterId ?? prev.DistrictMasterId,
               StateMasterId: e.StateMasterId ?? prev.StateMasterId,
               CityMasterId: e.CityMasterId ?? prev.CityMasterId,
+              VillageMasterId: e.VillageMasterId ?? prev.VillageMasterId,
               TotalNumberOfUnits: e.TotalNumberOfUnits ?? prev.TotalNumberOfUnits,
               TotalUnitsAreaUtilizedSqFt: e.TotalUnitsAreaUtilizedSqFt ?? prev.TotalUnitsAreaUtilizedSqFt,
               IsGarden: e.IsGarden ?? prev.IsGarden,
@@ -201,6 +213,7 @@ const AddUpdateBuilding: React.FC = () => {
             setSelectedStateId(e.StateMasterId ?? null);
             setSelectedDistrictId(e.DistrictMasterId ?? null);
             setSelectedCityId(e.CityMasterId ?? null);
+            setSelectedVillageId(e.VillageMasterId ?? null);
           }
         } else {
 
@@ -259,8 +272,6 @@ const AddUpdateBuilding: React.FC = () => {
     if (formData.IsLitigation && !formData.LitigationRemarks) {
       newErrors.LitigationRemarks = 'Litigation Remarks is required'
     }
-
-
     if (!formData.RoadWidth) {
       newErrors.RoadWidth = 'Road width is required'
     }
@@ -275,6 +286,9 @@ const AddUpdateBuilding: React.FC = () => {
     }
     if (!formData.CityMasterId) {
       newErrors.CityMasterId = "City is required";
+    }
+    if (!formData.VillageMasterId) {
+      newErrors.VillageMasterId = "Village is required";
     }
 
     return {
@@ -297,6 +311,7 @@ const AddUpdateBuilding: React.FC = () => {
       DistrictMasterId: formData.DistrictMasterId,
       StateMasterId: formData.StateMasterId,
       CityMasterId: formData.CityMasterId,
+      VillageMasterId: formData.VillageMasterId,
       TotalNumberOfUnits: formData.TotalNumberOfUnits || 0,
       TotalUnitsAreaUtilizedSqFt: formData.TotalUnitsAreaUtilizedSqFt || 0,
       IsGarden: formData.IsGarden || false,
@@ -338,7 +353,7 @@ const AddUpdateBuilding: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          addToast({ type: "success", title: response.right.SuccessMessage[0]});
+          addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
           navigate("/building");
 
@@ -383,6 +398,7 @@ const AddUpdateBuilding: React.FC = () => {
                   required
                   onChange={e => handleFieldChange('BuildingName', e.target.value)}
                   error={errors.BuildingName}
+                  maxLength={150}
                   placeholder="Enter Building Name"
                 />
 
@@ -394,6 +410,7 @@ const AddUpdateBuilding: React.FC = () => {
                   required
                   onChange={e => handleFieldChange('CTSNumber', e.target.value)}
                   error={errors.CTSNumber}
+                  maxLength={150}
                   placeholder="Enter CTS Number"
                 />
               </div>
@@ -443,6 +460,7 @@ const AddUpdateBuilding: React.FC = () => {
                   required
                   error={errors.TotalPlotAreaSqFt}
                   placeholder="Enter Total Plot Area"
+                  maxLength={9}
                   onChange={e => handleFieldChange('TotalPlotAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   rightIcon="SqFt"
                 />
@@ -453,6 +471,7 @@ const AddUpdateBuilding: React.FC = () => {
                   label="Utilized Units Area (SqFt)"
                   placeholder="Enter Utilized Units Area"
                   rightIcon="SqFt"
+                  maxLength={9}
                   error={errors.TotalUnitsAreaUtilizedSqFt}
                   onChange={e => handleFieldChange('TotalUnitsAreaUtilizedSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                 />
@@ -461,6 +480,7 @@ const AddUpdateBuilding: React.FC = () => {
                 <Input
                   value={formData.TotalNumberOfUnits ?? ''}
                   label="Total Units"
+                  maxLength={9}
                   placeholder="Enter Total Units"
                   error={errors.TotalNumberOfUnits}
                   onChange={e => handleFieldChange('TotalNumberOfUnits', filterNumbersWithDecimal(e.target.value) || 0)}
@@ -470,6 +490,7 @@ const AddUpdateBuilding: React.FC = () => {
                 <Input
                   value={formData.NumberOfFloors ?? ''}
                   label="Number Of Floors"
+                  maxLength={9}
                   placeholder="Enter Number Of Floors"
                   error={errors.NumberOfFloors}
                   onChange={e => handleFieldChange('NumberOfFloors', Number(filterNumbers(e.target.value) || 0))}
@@ -485,6 +506,7 @@ const AddUpdateBuilding: React.FC = () => {
                     label="Property Age (Years)"
                     placeholder="Enter Property Age (Years)"
                     error={errors.PropertyAgeYears}
+                    maxLength={20}
                     onChange={e => handleFieldChange('PropertyAgeYears', filterNumbersWithDecimal(e.target.value) || 0)}
                   />
                 </div>
@@ -492,6 +514,7 @@ const AddUpdateBuilding: React.FC = () => {
                   <Input
                     value={formData.FSI_TDR_UtilizationSqFt ?? ''}
                     label="FSI / TDR Utilization (SqFt)"
+                    maxLength={9}
                     placeholder="Enter FSI / TDR Utilization"
                     error={errors.FSI_TDR_UtilizationSqFt}
                     rightIcon="SqFt"
@@ -521,6 +544,7 @@ const AddUpdateBuilding: React.FC = () => {
                       label="Garden Area (SqFt)"
                       required
                       placeholder="Garden Area"
+                      maxLength={9}
                       onChange={e => handleFieldChange('TotalGardenAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                       error={errors.TotalGardenAreaSqFt}
                       rightIcon="SqFt"
@@ -544,6 +568,7 @@ const AddUpdateBuilding: React.FC = () => {
                       label="Religious Structure Area (SqFt)"
                       required
                       placeholder="Religious Structure Area"
+                      maxLength={9}
                       onChange={e => handleFieldChange('TotalReligiousStructureAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                       error={errors.TotalReligiousStructureAreaSqFt}
                       rightIcon="SqFt"
@@ -583,6 +608,7 @@ const AddUpdateBuilding: React.FC = () => {
               <div>
                 <SinglePageSelection
                   label="Country"
+                  placeholder="Select Country"
                   value={selectedCountryId || ''} required
                   onChange={val => {
                     const id = Number(val)
@@ -602,6 +628,7 @@ const AddUpdateBuilding: React.FC = () => {
 
                 <SinglePageSelection
                   label="State"
+                  placeholder="Select State"
                   value={selectedStateId ?? ''} required
                   onChange={val => {
                     const id = Number(val)
@@ -619,6 +646,7 @@ const AddUpdateBuilding: React.FC = () => {
               <div>
                 <SinglePageSelection
                   label="District"
+                  placeholder="Select District"
                   value={selectedDistrictId ?? ''} required
                   onChange={val => {
                     const id = Number(val)
@@ -635,7 +663,9 @@ const AddUpdateBuilding: React.FC = () => {
               <div>
                 <SinglePageSelection
                   label="City"
-                  value={selectedCityId ?? ''} required
+                  placeholder="Select City"
+                  value={selectedCityId ?? ''} 
+                  required
                   onChange={val => {
                     const id = Number(val)
                     setSelectedCityId(id)
@@ -644,6 +674,22 @@ const AddUpdateBuilding: React.FC = () => {
                   disabled={!selectedDistrictId || cityOptions.length === 0}
                   options={cityOptions}
                   error={errors.CityMasterId}
+                />
+              </div>
+              <div>
+                <SinglePageSelection
+                  label="Village"
+                  placeholder="Select Village"
+                  value={selectedVillageId ?? ''} 
+                  required
+                  onChange={val => {
+                    const id = Number(val)
+                    setSelectedVillageId(id)
+                    handleFieldChange('VillageMasterId', id)
+                  }}
+                  disabled={!selectedCityId || villageOptions.length === 0}
+                  options={villageOptions}
+                  error={errors.VillageMasterId}
                 />
               </div>
 

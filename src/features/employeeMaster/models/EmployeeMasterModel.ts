@@ -179,6 +179,14 @@ export interface LocationListResponse {
 export interface LocationDataWrapper {
   CountryStateCityDistrictVillageData: LocationListResponse[];
 }
+
+export interface SetEmployeeMPINRequest {
+  EmployeeId: number;
+  UniqueKey: string | null;
+  MPIN: string;
+}
+
 export type LocationResponse = ApiResponse<LocationDataWrapper>;
 export type EmployeeMasterListResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMasterSaveResponse = ApiResponse<EmployeeMasterData[]>;
+export type EmployeeMPINRequestResponse = ApiResponse<String>;

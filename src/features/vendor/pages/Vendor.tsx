@@ -304,6 +304,7 @@ export const Vendor: React.FC = () => {
           filters,
           sortInfo,
           searchTerm,
+          vendorName:row.VendorName
         },
       },
     })

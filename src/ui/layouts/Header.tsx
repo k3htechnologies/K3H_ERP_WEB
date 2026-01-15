@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { Menu, Bell, User } from 'lucide-react'
+import { Menu, Bell, User, Info } from 'lucide-react'
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
 import { Modal } from '@/ui/components/Modal/Modal'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { FieldItem } from '@/ui/components/forms/FieldItem'
-import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat'
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat'
 import usePagination from '@/core/hooks/usePagination'
 import { runApiWithLoader } from '@/core/utils'
 import type { FilterWithPaginationNotificationRequest, NotificationData } from '@/features/technical/models/TechnicalModel'
@@ -16,6 +16,15 @@ import { SinglePageSelection } from '../components/DropDown/SinglePageSelection'
 import { useProject } from '@/features/projectMaster/context/ProjectContext'
 import { shouldShowProjectSelection } from '@/core/utils/projectSelectionVisibility'
 import { isSubSubRoute } from '@/core/utils/fileValidation'
+import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService'
+import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData } from '@/features/projectMaster/models/ProjectMasterModel'
+import NoDataView from '../components/NoDataView/NoDataView'
+import TableActionToolbar from '../components/TableAction/TableActionToolbar'
+import type { EmployeeMasterData, SetEmployeeMPINRequest } from '@/features/employeeMaster/models/EmployeeMasterModel'
+import useDebouncedCallback from '@/core/hooks/useDebouncedCallback'
+import Tabs from '../components/Tab/Tab'
+import { Input } from '../components/forms'
+import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService'
 
 interface HeaderProps {
     isSidebarOpen: boolean
@@ -40,6 +49,29 @@ export const Header: React.FC<HeaderProps> = ({
     const readOnlyProject = isSubSubRoute(location.pathname);
     // EMPLOYEE PROFILE MODAL
     const [isEmployeeProfileModalOpen, setIsEmployeeProfileModalOpen] = useState(false);
+
+    // PROJECT MODAL
+    const [isProjectDetailsModalOpen, setIsProjectDetailsModalOpen] = useState(false);
+    const [projectMasterList, setProjectMasterList] = useState<ProjectMasterData[]>([]);
+
+    const [employeeMasterList, setEmployeeMasterList] = useState<EmployeeMasterData[]>([]);
+    // SINGLE SEARCH TEXT BOX
+    const [searchTermForEmployee, setSearchTermForEmployeeName] = useState('')
+    const debouncedSearchForEmployeeName = useDebouncedCallback((value: string) => {
+        searchEmployeeName(value)
+    }, 350)
+
+    //#region TAB ACTIVITY
+    const TabList = [
+        { id: "Project Overview", label: 'Overview' },
+        { id: "Employee", label: 'Employee' },
+    ];
+
+    const [activeTab, setActiveTab] = useState<string>(TabList[0].id);
+
+    const [MPIN, setMPIN] = useState('')
+    const [isMPINModalOpen, setIsMPINModalOpen] = useState(false);
+    //#endregion
 
     // NOTIFICATION
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -80,6 +112,21 @@ export const Header: React.FC<HeaderProps> = ({
         fetchNotificationList()
     }, [])
 
+
+    //#region INIT
+    useEffect(() => {
+        if (activeTab === 'Project Overview') {
+            loadProjectMaster();
+        }
+
+        else if (activeTab === 'Employee') {
+
+            loadProjectMasterWithEmployee();
+        }
+
+    }, [activeTab]);
+
+    //#endregion
     //#endregion
 
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
@@ -170,6 +217,137 @@ export const Header: React.FC<HeaderProps> = ({
     const { projectId, setProjectId } = useProject()
     //#endregion
 
+    //#region DATA LOAD PROJECT WITH EMPLOYEE
+
+    const loadProjectMaster = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationProjectMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    IsProjectAccess: false,
+                    ProjectId: Number(projectId)
+                }
+
+                const response = await ProjectMasterService.apiCallPullProjectMaster(params);
+
+                if (E.isRight(response)) {
+
+                    setProjectMasterList(response.right.Data);
+
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Employee'
+        );
+    };
+
+    const loadProjectMasterWithEmployee = async (searchText = "") => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                const response = await ProjectMasterService.apiCallPullProjectMasterWithEmployee(Number(projectId), searchText);
+
+                if (E.isRight(response)) {
+
+                    setEmployeeMasterList(response.right.Data);
+
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Employee'
+        );
+    };
+
+    //#region SERACH EMPLOYEE NAME 
+    const searchEmployeeName = async (searchValue: string) => {
+
+        setSearchTermForEmployeeName(searchValue);
+        await loadProjectMasterWithEmployee(searchValue);
+
+    }
+    //#endregion
+
+    //#region CLEAR SERACH DEPARTMENT 
+    const clearsearchForEmployeeName = async () => {
+        setSearchTermForEmployeeName('');
+        debouncedSearchForEmployeeName.cancel?.();
+        await loadProjectMasterWithEmployee('');
+    }
+
+    //#endregion
+    //#endregion
+
+    //#region VERIFY OTP
+    const handleSubmitMPIN = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                if (MPIN.length !== 4) {
+
+                    addToast({ type: 'error', title: 'Please enter a valid 4-digit MPIN' })
+                    return
+                }
+
+                const params: SetEmployeeMPINRequest = {
+                    EmployeeId: Number(LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0),
+                    UniqueKey: LocalStorageHelper.getStoredEmployeeData()?.UniqueKey ?? "",
+                    MPIN: MPIN
+                }
+
+                const response = await employeeMasterService.apiCallSetEmployeeMPIN(params)
+
+                if (E.isRight(response)) {
+
+                    addToast({
+                        type: 'success', title: response.right.SuccessMessage[0]
+                    });
+                    setIsMPINModalOpen(false);
+                    setMPIN('');
+                } else {
+
+                    addToast({
+                        type: 'error', title: response.left.message
+                    });
+
+                }
+
+            },
+            undefined,
+            (error: any) => {
+
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Set MPIN'
+        )
+    }
+    //#endregion
     return (
         <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex-shrink-0 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40">
             {/* Left side - Menu toggle and title */}
@@ -209,9 +387,15 @@ export const Header: React.FC<HeaderProps> = ({
                             placeholder="Select Project"
                             selectedTextColor="#135BEC"
                             disabled={readOnlyProject}
+                            leftIcon={<Info size={18} color="#135BEC" />}
+                            leftIconClick={() => {
+                                
+                                if (!projectId || projectId <= 0) return;
+
+                                loadProjectMaster();
+                                setIsProjectDetailsModalOpen(true);
+                            }}
                         />
-
-
                     </div>
                 )}
                 {/* Notifications - Hidden on small mobile */}
@@ -329,7 +513,11 @@ export const Header: React.FC<HeaderProps> = ({
                             View Profile
                         </button>
                         <button
-                            onClick={() => console.log('Set MPIN clicked')}
+                            onClick={() => {
+                                setIsEmployeeProfileModalOpen(false);
+                                setIsMPINModalOpen(true);
+                                setMPIN('');
+                            }}
                             type="button"
                             className="flex-1 ml-2 px-4 py-3 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-200"
                         >
@@ -339,7 +527,288 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
             </Modal>
 
-        </header>
+            {/* PROJECT DETAILS MODAL  */}
+            <Modal
+                isOpen={isProjectDetailsModalOpen}
+                onClose={() => setIsProjectDetailsModalOpen(false)}
+                title={`Project Details : ${projectMasterList[0]?.ProjectName ?? '-'}`}
+                size="small50"
+            >
+                <Tabs
+                    tabs={TabList}
+                    defaultActive={activeTab}
+                    islarge={true}
+                    onTabChange={(t) => {
+                        setActiveTab(t.id);
+
+                    }}
+                />
+                {activeTab === 'Project Overview' && (
+
+                    <div className="lg:col-span-2 space-y-6">
+
+                        {/* ================= BASIC PROJECT DETAILS ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Basic Project Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+
+                                <FieldItem label="Redevelopment" value={projectMasterList[0]?.IsRedevelopment === true ? 'YES' : 'NO'} />
+                                <FieldItem label="Project Name" value={projectMasterList[0]?.ProjectName ?? '-'} />
+                                <FieldItem label="Business Category" value={projectMasterList[0]?.BussinessCategory ?? '-'} />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5 pb-4 border-b border-[#135bec2e]">
+                                <FieldItem label="CTS Number" value={projectMasterList[0]?.CTSNumber ?? '-'} />
+                            </div>
+
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-2">
+                                Location Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pb-4 border-b border-[#135bec2e]">
+
+                                <FieldItem label="Project Location" value={projectMasterList[0]?.ProjectLocation ?? '-'} />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pt-4  pb-4  border-b border-[#135bec2e]">
+                                <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+                                    Google Location
+                                </div>
+                                {projectMasterList[0]?.GoogleLocation !== "" ?
+                                    <span className="text-blue-600 underline cursor-pointer flex items-center"
+                                        onClick={() => window.open(projectMasterList[0]?.GoogleLocation, "_blank")}>
+                                        {projectMasterList[0]?.GoogleLocation}
+                                    </span> : "-"}
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                <FieldItem label="Country" value={projectMasterList[0]?.CountryName ?? '-'} />
+                                <FieldItem label="State" value={projectMasterList[0]?.StateName ?? '-'} />
+                                <FieldItem label="District" value={projectMasterList[0]?.DistrictName ?? '-'} />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 pt-4 border-b border-[#135bec2e]">
+
+                                <FieldItem label="City" value={projectMasterList[0]?.CityName ?? '-'} />
+                                <FieldItem label="PIN Code" value={projectMasterList[0]?.ZipCode ?? '-'} />
+                            </div>
+
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5">
+                                Scheme & Scope Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 border-b border-[#135bec2e]">
+
+                                <FieldItem label="Project Scope" value={projectMasterList[0]?.ProjectScope ?? '-'} />
+                                <FieldItem label="Project Scheme" value={projectMasterList[0]?.ProjectScheme ?? '-'} />
+                                <FieldItem label="Project Sub Scope" value={projectMasterList[0]?.ProjectSubScheme ?? '-'} />
+                            </div>
+
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5">
+                                Project Documentation
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 border-b border-[#135bec2e]">
+
+                                <FieldItem label="RERA Number" value={projectMasterList[0]?.RERANumber ?? '-'} />
+
+                                <FieldItem
+                                    label="RERA Certificate Date"
+                                    value={
+                                        projectMasterList[0]?.RERACertificateDate
+                                            ? formatDate_dd_MonthName_yy(projectMasterList[0]?.RERACertificateDate)
+                                            : '-'
+                                    }
+                                />
+                                <FieldItem
+                                    label="RERA Completion Date"
+                                    value={
+                                        projectMasterList[0]?.RERAComplitionDate
+                                            ? formatDate_dd_MonthName_yy(projectMasterList[0]?.RERAComplitionDate)
+                                            : '-'
+                                    }
+                                />
+                            </div>
+
+
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5 ">
+                                Project Timeline
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 border-b border-[#135bec2e]">
+                                <FieldItem
+                                    label="Survey Date"
+                                    value={
+                                        projectMasterList[0]?.SurveyDate
+                                            ? formatDate_dd_MonthName_yy(projectMasterList[0]?.SurveyDate)
+                                            : '-'
+                                    }
+                                />
+                                <FieldItem
+                                    label="Expected Start Date"
+                                    value={
+                                        projectMasterList[0]?.ExpectedStartDate
+                                            ? formatDate_dd_MonthName_yy(projectMasterList[0]?.ExpectedStartDate)
+                                            : '-'
+                                    }
+                                />
+                                <FieldItem
+                                    label="Execution Start Date"
+                                    value={
+                                        projectMasterList[0]?.ExecutionStartDate
+                                            ? formatDate_dd_MonthName_yy(projectMasterList[0]?.ExecutionStartDate)
+                                            : '-'
+                                    }
+                                />
+
+                            </div>
+
+
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5">
+                                Contact Information
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <FieldItem
+                                    label="Site Contact Name"
+                                    value={projectMasterList[0]?.SiteContactName ?? '-'}
+                                />
+                                <FieldItem
+                                    label="Site Contact Mobile Number"
+                                    value={projectMasterList[0]?.SiteContactMobileNumber ?? '-'}
+                                />
+
+                                <FieldItem
+                                    label="Project Status"
+                                    value={projectMasterList[0]?.ProjectStatus ?? '-'}
+                                />
+                            </div>
+                        </section>
+
+                    </div>
+
+                )}
+                {activeTab === 'Employee' && (
+                    <>
+                        {/* ================= RIGHT SIDE (1/3 WIDTH) ================= */}
+                        <div className="lg:col-span-1 space-y-6">
+
+                            {/* ================= PROJECT IMAGE ================= */}
+                            <section className="bg-white rounded-xl ">
+                                <TableActionToolbar
+                                    isShowSearchBar
+                                    searchTerm={searchTermForEmployee}
+                                    searchPlaceholder="Search By Employee Name"
+                                    onSearchChange={(v) => {
+                                        setSearchTermForEmployeeName(v)
+                                        debouncedSearchForEmployeeName(v)
+                                    }}
+                                    onClearSearch={clearsearchForEmployeeName}
+                                    isShowFilterButton={false}
+                                    exportLoading={false}
+                                />
+
+                                {employeeMasterList?.length ? (
+                                    employeeMasterList.map(emp => {
+
+                                        const fullName = (emp?.FullName ?? '').trim();
+
+                                        const initials = fullName
+                                            ? fullName.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2)
+                                            : 'NA';
+
+                                        return (
+                                            <section
+                                                key={emp.EmployeeCode}
+                                                className="bg-white p-2 border-b border-[#3333334f] mb-2"
+                                            >
+                                                <div className="flex items-start gap-4">
+
+                                                    {/* Avatar */}
+                                                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-800 
+                                                                    flex items-center justify-center text-xs font-semibold 
+                                                                    border border-blue-300 shadow-sm">
+                                                        {initials}
+                                                    </div>
+
+                                                    {/* Right side */}
+                                                    <div className="flex flex-col gap-1 w-full">
+
+                                                        {/* NAME + MOBILE SAME LINE */}
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <h4 className="text-md font-medium text-gray-900 leading-tight">
+                                                                {emp.FullName || '-'}
+                                                            </h4>
+
+                                                            <span className="text-sm text-gray-500">
+                                                                ({emp.PersonalMobileNumber || '-'})
+                                                            </span>
+                                                            <span>{emp.Department || '-'}</span>
+
+                                                            <span className="text-gray-400"> | </span>
+
+                                                            <span>{emp.Designation || '-'}</span>
+
+                                                        </div>
+
+
+
+                                                    </div>
+                                                </div>
+                                            </section>
+                                        )
+                                    })
+                                ) : (
+                                    <p className="text-center text-gray-500 py-6">
+                                        <NoDataView />
+                                    </p>
+                                )}
+
+
+
+                            </section>
+
+                        </div>
+                    </>
+                )}
+            </Modal>
+
+            <Modal
+                isOpen={isMPINModalOpen}
+                onClose={() => setIsMPINModalOpen(false)}
+                title="Set MPIN"
+                saveText="Set"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSubmitMPIN();
+                }}
+                size="md"
+                resetText=""
+
+            >
+                <div className="space-y-6">
+
+                    <div>
+                        <p className="text-sm text-gray-600 mb-2">
+                            For your security, please enter your 4-digit MPIN
+                        </p>
+
+                        <Input
+                            type="text"
+                            placeholder="Enter MPIN"
+                            value={MPIN}
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            data-testid="otp-input"
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 4)
+                                setMPIN(value)
+                            }}
+                        />
+                    </div>
+
+                </div>
+            </Modal>
+        </header >
 
     )
 }

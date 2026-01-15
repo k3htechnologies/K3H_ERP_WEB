@@ -31,6 +31,8 @@ import { fetchEmployeeMasterDropdown } from '@/features/employeeMaster/employeeM
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import { fetchDepartmentMasterDropdown } from '@/features/departmentMaster/departmentMasterDropdown';
 import { fetchWeekOffMasterDropdown } from '../weekOffMasterDropDown';
+import { Edit, Trash2 } from 'lucide-react';
+import RadioPill from '@/ui/components/forms/RadioPill';
 
 
 const initialFormState = (): AddUpdateWeekOffMappingMasterRequest => ({
@@ -97,6 +99,8 @@ export const WeekOffMappingMaster: React.FC = () => {
     employeeName?: string;
     weekOffPolicyName?: string
   }>({});
+
+  const [mappingWeekoff, setMappingWeekoff] = useState<string>("Department");
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -132,6 +136,9 @@ export const WeekOffMappingMaster: React.FC = () => {
           DepartmentMasterId: editingWeekOffMappingMasterData.DepartmentMasterId || '',
           EmployeeId: editingWeekOffMappingMasterData.EmployeeId || '',
         });
+        
+        setMappingWeekoff(editingWeekOffMappingMasterData.DepartmentMasterId ? 'Department' : 'Employee')
+
         setDropdownLabels({
           departmentName: editingWeekOffMappingMasterData.DepartmentName || "",
           employeeName: editingWeekOffMappingMasterData.EmployeeName || "",
@@ -381,13 +388,7 @@ export const WeekOffMappingMaster: React.FC = () => {
         width: '18',
         sortable: true,
         align: 'center',
-        render: (value) => (
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="200px"
-            tooltipThreshold={20}
-          />
-        )
+        render: (value) => value || '-'
       },
       {
         key: 'EmployeeName',
@@ -395,13 +396,7 @@ export const WeekOffMappingMaster: React.FC = () => {
         width: '18',
         sortable: true,
         align: 'center',
-        render: (value) => (
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="200px"
-            tooltipThreshold={20}
-          />
-        )
+        render: (value) => value || '-'
       },
       {
         key: 'WeeklyOff',
@@ -409,11 +404,7 @@ export const WeekOffMappingMaster: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            {value || 'N/A'}
-          </span>
-        )
+        render: (value) => value || '-'
       },
       {
         key: 'WeeklyOff2',
@@ -421,15 +412,42 @@ export const WeekOffMappingMaster: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-            {value || 'N/A'}
-          </span>
-        )
+        render: (value) => value || '-'
       },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction && !row.NumberOfEmployee ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Department"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )
+      }
     ],
     // dependencies: include everything used inside that might change
-    [handleViewWeekOffMappingDetails]
+    [handleViewWeekOffMappingDetails, handleConfirmationDialogBoxOpen]
   )
   //#endregion
 
@@ -508,8 +526,8 @@ export const WeekOffMappingMaster: React.FC = () => {
 
             <FieldItem label="Week Off Policy Name" value={data.WeekOffPolicyName} isRow withBorder={true} className='font-medium text-blue-900 ' />
             <FieldItem label="Week Off Policy Code" value={data.WeekOffPolicyCode} isRow withBorder={true} />
-            <FieldItem label="Department Name" value={data.DepartmentName} isRow withBorder={true} />
-            <FieldItem label="Employee Name" value={data.EmployeeName} isRow withBorder={true} />
+             {data.DepartmentName && (<FieldItem label="Department Name" value={data.DepartmentName} isRow withBorder={true} />)}
+             {data.EmployeeName && (<FieldItem label="Employee Name" value={data.EmployeeName} isRow withBorder={true} />)}
             <FieldItem label="Week Days" value={data.WeekDays} isRow withBorder={true} />
             <FieldItem label="Week Days Starts On" value={data.WeekDaysStartsOn} isRow withBorder={true} />
             <FieldItem label="Weekly Off" value={data.WeeklyOff} isRow withBorder={true} />
@@ -533,29 +551,31 @@ export const WeekOffMappingMaster: React.FC = () => {
               {canAction && (
                 <>
                   <Button
-                    color='gray'
+                    color='red'
                     variant='solid'
                     colorMode="light"
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleConfirmationDialogBoxOpen(data)
                     }}
+                    leftIcon={<Trash2 className="h-5 w-5" />}
                   >
                     Delete
                   </Button>
 
                   <Button
                     color='blue'
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleEditWeekOffMappingMaster(data)
                     }}
+                    leftIcon={<Edit className="h-5 w-5" />}
                   >
                     Edit
                   </Button>
@@ -632,11 +652,11 @@ export const WeekOffMappingMaster: React.FC = () => {
 
     const newErrors: { [key: string]: string } = {}
 
-    if (!formData.DepartmentMasterId) {
+    if (mappingWeekoff === "Department" && !formData.DepartmentMasterId) {
       newErrors.DepartmentMasterId = "Department Name is required.";
     }
 
-    if (!formData.EmployeeId) {
+    if (mappingWeekoff === "Employee" && !formData.EmployeeId) {
       newErrors.EmployeeId = "Employee Name is required.";
     }
 
@@ -881,8 +901,8 @@ export const WeekOffMappingMaster: React.FC = () => {
         }}
         title={editingWeekOffMappingMasterData ? 'Update Week Off Mapping ' : 'Add Week Off Mapping'}
         onSubmit={handleAddUpdateWeekOffMappingMaster}
-        saveText={editingWeekOffMappingMasterData ? 'Update Week Off Mapping' : 'Save Week Off Mapping'}
-        resetText='Reset'
+        saveText={editingWeekOffMappingMasterData ? 'Update' : 'Add'}
+        resetText=''
         onreset={handleResetForm}
         loading={isLoading}
         size="xl"
@@ -903,31 +923,58 @@ export const WeekOffMappingMaster: React.FC = () => {
               />
             </div>
 
-            <SingleSelectDropdownWithPagination
-              label="Employee"
-              key={dropdownResetKey}
-              title="Select Employee"
-              size="lg"
-              required
-              dataFetchCallBack={fetchEmployeeMasterDropdown}
-              onSelected={(item) => handleFieldChange("EmployeeId", item.value)}
-              initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
-              error={errors.EmployeeId}
-            />
-          </div>
+            <div>
+              <p className="text-sm text-gray-600 mb-2">Mapping</p>
 
-          <div>
-            <SingleSelectDropdownWithPagination
-              label="Department"
-              key={dropdownResetKey}
-              title="Select Department"
-              size="lg"
-              required
-              dataFetchCallBack={fetchDepartmentMasterDropdown}
-              onSelected={(item) => handleFieldChange("DepartmentMasterId", item.value)}
-              initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
-              error={errors.DepartmentMasterId}
-            />
+              <div className="flex gap-3">
+                <RadioPill
+                  name="Mapping"
+                  label="Department"
+                  checked={mappingWeekoff === "Department"}
+                  onChange={() => setMappingWeekoff("Department")}
+                />
+
+                <RadioPill
+                  name="Mapping"
+                  label="Employee"
+                  checked={mappingWeekoff === "Employee"}
+                  onChange={() => setMappingWeekoff("Employee")}
+                />
+              </div>
+            </div>
+
+            {mappingWeekoff === 'Employee' && (
+              <div>
+
+                <SingleSelectDropdownWithPagination
+                  label="Employee"
+                  key={dropdownResetKey}
+                  title="Select Employee"
+                  size="lg"
+                  required
+                  dataFetchCallBack={fetchEmployeeMasterDropdown}
+                  onSelected={(item) => handleFieldChange("EmployeeId", item.value)}
+                  initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
+                  error={errors.EmployeeId}
+                />
+              </div>
+            )}
+            {mappingWeekoff === 'Department' && (
+
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Department"
+                  key={dropdownResetKey}
+                  title="Select Department"
+                  size="lg"
+                  required
+                  dataFetchCallBack={fetchDepartmentMasterDropdown}
+                  onSelected={(item) => handleFieldChange("DepartmentMasterId", item.value)}
+                  initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
+                  error={errors.DepartmentMasterId}
+                />
+              </div>
+            )}
           </div>
         </div>
       </Modal >
@@ -953,7 +1000,7 @@ export const WeekOffMappingMaster: React.FC = () => {
         columns={weekOffMappingMasterColumns}
         selectedKeys={selectedWeekOffMappingMasterColumnKeys}
         requiredKeys={requiredWeekOffMappingMasterColumnKeys}
-        title="Customize Week Off Mapping Master Table Columns"
+        title="Customize Table Columns"
       />
 
       {/* FILTER WEEK OFF MAPPING MODAL */}

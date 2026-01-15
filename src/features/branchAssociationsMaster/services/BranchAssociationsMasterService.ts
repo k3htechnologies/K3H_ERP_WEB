@@ -4,6 +4,8 @@ import type {
     AddUpdateBranchAssociationsMasterRequest,
     BranchAssociationsMasterListResponse,
     BranchAssociationsMasterSaveResponse,
+    DeleteBranchAssociationsRequest,
+    BranchAssociationsDeleteResponse,
 } from '@/features/branchAssociationsMaster/models/BranchAssociationsMasterModel'
 import * as E from 'fp-ts/Either';
 import { BranchAssociationsMasterDatasourceImpl } from '@/features/branchAssociationsMaster/datasources/BranchAssociationsMasterDatasource';
@@ -34,5 +36,17 @@ export const branchAssociationsService = {
             return E.left({ message: error.message, code: error.code });
 
         }
-    }
+    },
+
+    apiCallDeleteBranchAssociations: async (params: DeleteBranchAssociationsRequest): Promise<E.Either<Failure, BranchAssociationsDeleteResponse>> => {
+        try {
+
+            return E.right(await branchAssociationsMasterDatasource.deleteBranchAssociations(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
 }

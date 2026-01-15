@@ -222,6 +222,8 @@ export const Rent: React.FC = () => {
     const headers = new Set<string>();
 
     tenantApplicantChargesList.forEach(item => {
+      if (item.Date === "1997-01-01T00:00:00" || item.Date === "1997-01-02T00:00:00") return
+
       if (isMonthBasedTab && item.Date) {
         headers.add(formatDate_dd_MonthName_yy(item.Date));
       }
@@ -273,13 +275,14 @@ export const Rent: React.FC = () => {
       }
 
       const row = map.get(item.FlatNumber)!;
+
       const amount = Number(item.Amount || 0);
 
       // MONTH BASED
-      if (isMonthBasedTab && item.Date) {
+      if (isMonthBasedTab && item.Date && item.Date !== "1997-01-01T00:00:00" &&
+        item.Date !== "1997-01-02T00:00:00") {
         const key = formatDate_dd_MonthName_yy(item.Date);
         row[key] = amount ? `₹${amount}` : '-';
-        row['Total'] += amount;
       }
 
       // STAGE BASED
@@ -288,9 +291,14 @@ export const Rent: React.FC = () => {
         row['Total'] += amount;
       }
 
-      // PAID TOTAL (future ready)
-      if ((item as any).IsPaid) {
-        row['Paid Total'] += amount;
+      // ───────── TOTAL INDICATOR ─────────
+      if (item.Date === "1997-01-01T00:00:00") {
+        row.Total = amount; // ✅ ONLY HERE
+      }
+
+      // ───────── PAID TOTAL INDICATOR ─────────
+      if (item.Date === "1997-01-02T00:00:00") {
+        row['Paid Total'] = amount;
       }
 
     });
@@ -457,7 +465,7 @@ export const Rent: React.FC = () => {
         // NO IMPORT BUTTON - VIEW ONLY
         isShowImportButton={false}
         // EXPORT
-        isShowExportButton={canExport && tableData.length >0}
+        isShowExportButton={canExport && tableData.length > 0}
         onExportExcel={handleExportRentExcel}
         onExportPdf={handleExportRentPdf}
         exportLoading={isLoading}

@@ -79,8 +79,6 @@ export const Layout: React.FC = () => {
 
         hasFetchedMenu.current = true;
 
-
-
         loadMenuData();
 
     }, [])
@@ -135,6 +133,7 @@ export const Layout: React.FC = () => {
     const handleLogout = () => {
 
         LocalStorageHelper.clearLocalStorageData();
+
         window.location.href = '/sign-in'
     }
 
@@ -240,5 +239,6 @@ export const Layout: React.FC = () => {
             </div>
             <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
         </MenuProvider>
+
     )
 }

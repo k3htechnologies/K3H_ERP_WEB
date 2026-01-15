@@ -49,8 +49,10 @@ export interface EnquiryData {
     AreaPreferred: number
     PossessionType: string | null
     Source: string | null
+    DateOfBirth: string | null;
     Age: string | null
     SubSource: string | null
+    SubSubSource?: string | null
     FinalStage: string | null
     FinalStageDetail: string | null
     NextFollowUpDate: string | null
@@ -117,6 +119,7 @@ export interface AddUpdateEnquiryRequest {
     PossessionType?: string | null
     Source?: string | null
     SubSource?: string | null
+    SubSubSource?: string | null
     FinalStage?: string | null
     FinalStageDetail?: string | null
     NextFollowUpDate?: string | null
@@ -126,6 +129,7 @@ export interface AddUpdateEnquiryRequest {
     CityOfResidence?: string | null
     DesiredFloorBand?: string | null
     Age?: string | null
+    DateOfBirth: string | null
     NeighborhoodPlacesInterestedIn?: string | null
     CustomerClassification?: string | null
     SourceOfFunding?: string | null

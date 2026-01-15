@@ -26,10 +26,12 @@ export const ViewVendor: React.FC = () => {
         filters: any;
         sortInfo?: any;
         searchTerm?: string;
+        vendorName?: string;
       };
     };
   };
   const preservedListState = location.state?.listState;
+  const vendorName = preservedListState?.vendorName || '';
 
   //#region Get VENDOR DATA FROM LOCATION STATE
 
@@ -69,7 +71,8 @@ export const ViewVendor: React.FC = () => {
       </Loader>
 
       <HeaderActionBar
-        titleText={'Vendor Details'}
+        titleText={'Vendor Details : '}
+        subTitleText={vendorName}
         cancelText="Cancel"
         EditText="Edit"
         onCancel={() => navigateBackToList()}

@@ -17,6 +17,8 @@ export interface DeductionMasterData {
     Type: string | ''
     Value: number | 0
 
+    Applicable: string | ''
+
     BranchMasterId: number | 0
     BranchName: string | ''
 
@@ -44,6 +46,7 @@ export interface AddUpdateDeductionMasterRequest {
     Name: string | ''
     Type: string | ''
     Value: number | 0
+    Applicable: string | ''
 
     BranchMasterId: number | 0
     BranchName: string | ''

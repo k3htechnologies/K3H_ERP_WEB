@@ -14,7 +14,10 @@ export interface EarningMasterData {
     Uniquekey: string | null
     Name: string | ''
     Type: string | ''
+    Applicable: string | ''
     Value: number | 0
+    MinSalary: number | 0
+    MaxSalary: number | 0
     BranchMasterId: number | 0
     BranchName: string | ''
     CreatedById: number | 0
@@ -32,7 +35,10 @@ export interface AddUpdateEarningMasterRequest {
     Uniquekey: string | null
     Name: string | ''
     Type: string | ''
+    Applicable: string | ''
     Value: number | 0
+    MinSalary: number | 0
+    MaxSalary: number | 0
     BranchMasterId: number | 0
 }
 

@@ -121,7 +121,7 @@ export const ProjectMaster: React.FC = () => {
 
   //#region DATA LOAD
   const fetchProjectList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadProjects(page, filters,sort ?? sortInfo);
+    return await loadProjects(page, filters, sort ?? sortInfo);
   }
 
   const loadProjects = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
@@ -265,9 +265,9 @@ export const ProjectMaster: React.FC = () => {
   }, []);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
-      setSortInfo(sort);
-      loadProjects(1, filters, sort);
-    }, [filters]);
+    setSortInfo(sort);
+    loadProjects(1, filters, sort);
+  }, [filters]);
 
   const projectMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -296,6 +296,7 @@ export const ProjectMaster: React.FC = () => {
           sortInfo,
           searchTerm,
           projectId: row.ProjectId,
+          projectName: row.ProjectName
         },
       },
     });
@@ -304,65 +305,68 @@ export const ProjectMaster: React.FC = () => {
   //#endregion
 
   //#region VIEW BANK DETAILS
-  
-    const handleViewProjectBank = useCallback((row: ProjectMasterData) => {
-      navigate('/projectMaster/bank', {
-        state: {
-          editProjectMasterData: row,
-          fromList: true,
-          listState: {
-            page: pagination.currentPage,
-            filters,
-            sortInfo,
-            searchTerm,
-            projectId: row.ProjectId,
-            uniquekey:row.Uniquekey
-          },
+
+  const handleViewProjectBank = useCallback((row: ProjectMasterData) => {
+    navigate('/projectMaster/bank', {
+      state: {
+        editProjectMasterData: row,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm,
+          projectId: row.ProjectId,
+          uniquekey: row.Uniquekey,
+          projectName: row.ProjectName
         },
-      });
-    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
-    //#endregion
-  
-    //#region VIEW EMPLOYEE DETAILS
-  
-    const handleViewProjectEmployee = useCallback((row: ProjectMasterData) => {
-      navigate('/projectMaster/employee', {
-        state: {
-          editProjectMasterData: row,
-          fromList: true,
-          listState: {
-            page: pagination.currentPage,
-            filters,
-            sortInfo,
-            searchTerm,
-            projectId: row.ProjectId,
-            uniquekey:row.Uniquekey
-          },
+      },
+    });
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  //#endregion
+
+  //#region VIEW EMPLOYEE DETAILS
+
+  const handleViewProjectEmployee = useCallback((row: ProjectMasterData) => {
+    navigate('/projectMaster/employee', {
+      state: {
+        editProjectMasterData: row,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm,
+          projectId: row.ProjectId,
+          uniquekey: row.Uniquekey,
+          projectName: row.ProjectName
         },
-      });
-    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
-    //#endregion
-  
-    //#region VIEW COMPANY DETAILS
-  
-    const handleViewProjectCompany = useCallback((row: ProjectMasterData) => {
-      navigate('/projectMaster/company', {
-        state: {
-          editProjectMasterData: row,
-          fromList: true,
-          listState: {
-            page: pagination.currentPage,
-            filters,
-            sortInfo,
-            searchTerm,
-            projectId: row.ProjectId
-  
-          },
+      },
+    });
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  //#endregion
+
+  //#region VIEW COMPANY DETAILS
+
+  const handleViewProjectCompany = useCallback((row: ProjectMasterData) => {
+    navigate('/projectMaster/company', {
+      state: {
+        editProjectMasterData: row,
+        fromList: true,
+        listState: {
+          page: pagination.currentPage,
+          filters,
+          sortInfo,
+          searchTerm,
+          projectId: row.ProjectId,
+          projectName: row.ProjectName
+
         },
-      });
-    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
-    //#endregion
-  
+      },
+    });
+  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  //#endregion
+
 
   //#region TABLE COLUMN
 
@@ -385,6 +389,14 @@ export const ProjectMaster: React.FC = () => {
             />
           </div>
         )
+      },
+      {
+        key: 'IsRedevelopment',
+        label: 'Redevelopment',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value == 1 ? 'Yes' : 'No'
       },
       {
         key: 'ProjectLocation',
@@ -502,7 +514,7 @@ export const ProjectMaster: React.FC = () => {
                 <Building2Icon className="h-4 w-4" />
               </Button>
 
-               <Button
+              <Button
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
@@ -526,7 +538,7 @@ export const ProjectMaster: React.FC = () => {
         )
       }
     ],
-    [handleViewProjectDetails,handleViewProjectEmployee,handleViewProjectCompany,handleViewProjectBank]
+    [handleViewProjectDetails, handleViewProjectEmployee, handleViewProjectCompany, handleViewProjectBank]
   )
 
   //#endregion

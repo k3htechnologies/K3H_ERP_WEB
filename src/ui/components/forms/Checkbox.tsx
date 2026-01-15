@@ -46,6 +46,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(({
     gap: theme.spacing.sm,
     width: fullWidth ? '100%' : 'auto',
     marginBottom: theme.spacing.sm,
+    
   }
 
   const labelStyle: React.CSSProperties = {
@@ -65,7 +66,11 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(({
     display: 'inline-block',
     margin: 0,
     cursor: disabled ? 'not-allowed' : 'pointer',
-    accentColor: theme.colors.success, // modern browsers
+    accentColor: theme.colors.primary1, 
+    
+    border: `1px solid ${theme.colors.primary1}`,  
+    borderRadius: 4, 
+    
   }
 
   const helperStyle: React.CSSProperties = {

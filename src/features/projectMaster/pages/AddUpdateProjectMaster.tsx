@@ -11,14 +11,14 @@ import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
-import { filterMobile, filterNumbers, filterRERA, isValidMobile, isValidRERA } from "@/core/utils/fileValidation";
+import { filterGoogleMapsUrl, filterMobile, filterNumbers, filterRERA, isValidGoogleMapsUrl, isValidMobile, isValidRERA } from "@/core/utils/fileValidation";
 import type { AddUpdateProjectMasterRequest, FilterWithPaginationProjectMasterRequest } from "@/features/projectMaster/models/ProjectMasterModel";
 import { ProjectMasterService } from "../services/ProjectMasterService";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
-import { IndianRupee, Phone } from "lucide-react";
+import { IndianRupee, MapPin, Phone } from "lucide-react";
 
 const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ProjectId: 0,
@@ -254,12 +254,18 @@ const AddUpdateProjectMaster: React.FC = () => {
             newErrors.ProjectName = "Project Name is required.";
         }
 
-        if (!formData.CTSNumber?.trim()) {
+        if (formData.IsRedevelopment === 0 && !formData.CTSNumber?.trim()) {
             newErrors.CTSNumber = "CTS Number is required.";
         }
 
         if (!formData.ProjectLocation?.trim()) {
             newErrors.ProjectLocation = "Project Location is required.";
+        }
+
+        if (!formData.GoogleLocation?.trim()) {
+            newErrors.GoogleLocation = 'Google Location is required'
+        } else if (!isValidGoogleMapsUrl(formData.GoogleLocation.trim())) {
+            newErrors.GoogleLocation = 'Enter a valid Google Location'
         }
 
         if (!formData.StateMasterId) {
@@ -300,7 +306,7 @@ const AddUpdateProjectMaster: React.FC = () => {
         fd.append('Uniquekey', formData.Uniquekey ?? '');
         fd.append('ProjectName', formData.ProjectName ?? '');
         fd.append('ProjectLocation', formData.ProjectLocation ?? '');
-        fd.append('CTSNumber', formData.CTSNumber ?? '');
+        fd.append('CTSNumber', formData.IsRedevelopment === 1 ? "System Generated CTS Number" : formData.CTSNumber ?? '');
         fd.append('IsRedevelopment', String(formData.IsRedevelopment ?? 0));
         fd.append('BussinessCategory', formData.BussinessCategory ?? '');
         fd.append('ProjectShortName', formData.ProjectShortName ?? '');
@@ -421,6 +427,16 @@ const AddUpdateProjectMaster: React.FC = () => {
                     <div className="space-y-4 pb-4">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {/* Redevelopment Checkbox */}
+                            <div className="space-y-4 pb-4">
+                                <Checkbox
+                                    label="Is This Project a Redevelopment Project?"
+                                    checked={formData.IsRedevelopment === 1}
+                                    onChange={(e) => handleFieldChange('IsRedevelopment', e.target.checked ? 1 : 0)}
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div>
                                 <Input
                                     label="Project Name"
@@ -435,12 +451,13 @@ const AddUpdateProjectMaster: React.FC = () => {
                             <div>
                                 <Input
                                     label="CTS Number"
-                                    required
+                                    required={formData.IsRedevelopment === 1 ? false : true}
                                     error={errors.CTSNumber}
+                                    disabled={formData.IsRedevelopment === 1 ? true : false}
                                     type="text"
                                     value={formData.CTSNumber}
                                     onChange={(e) => handleFieldChange('CTSNumber', e.target.value)}
-                                    placeholder="Enter CTS Number"
+                                    placeholder={formData.IsRedevelopment === 1 ? "System Generated CTS Number" : "Enter CTS Number"}
                                 />
                             </div>
                             <div>
@@ -458,6 +475,48 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     onRemoveExisting={(url) => {
                                         setRemovedProjectPhotoUrls((prev) => [...prev, url])
                                     }}
+                                />
+                            </div>
+
+                            <div>
+
+                                <SinglePageSelection
+                                    label="Business Category"
+                                    placeholder="Select Business Category"
+                                    value={formData.BussinessCategory}
+                                    onChange={(val) => handleFieldChange('BussinessCategory', String(val))}
+                                    options={BUSINESS_CATEGORY.map(opt => ({ label: opt.name, value: opt.id }))}
+                                />
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {/* Scheme & Scope Details */}
+                    <div className="space-y-4 pb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Location Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <Input
+                                    label="Project Location"
+                                    required
+                                    error={errors.ProjectLocation}
+                                    type="text"
+                                    value={formData.ProjectLocation}
+                                    onChange={(e) => handleFieldChange('ProjectLocation', e.target.value)}
+                                    placeholder="Enter Project Location"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Google Location"
+                                    required
+                                    type="text"
+                                    value={formData.GoogleLocation}
+                                    onChange={e => handleFieldChange('GoogleLocation', filterGoogleMapsUrl(e.target.value))}
+                                    rightIcon={<MapPin className="w-4 h-4" />}
+                                    error={errors.GoogleLocation}
+                                    placeholder="Enter Google Location"
                                 />
                             </div>
                             <div>
@@ -536,36 +595,6 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     value={formData.ZipCode}
                                     onChange={(e) => handleFieldChange('ZipCode', e.target.value)}
                                     placeholder="Enter PIN Code"
-                                />
-                            </div>
-                            <div>
-                                
-                                <SinglePageSelection
-                                    label="Business Category"
-                                    placeholder="Select Business Category"
-                                    value={formData.BussinessCategory}
-                                    onChange={(val) => handleFieldChange('BussinessCategory', String(val))}
-                                    options={BUSINESS_CATEGORY.map(opt => ({ label: opt.name, value: opt.id }))}
-                                />
-                            </div>
-                            <div>
-                                <Input
-                                    label="Project Location"
-                                    required
-                                    error={errors.ProjectLocation}
-                                    type="text"
-                                    value={formData.ProjectLocation}
-                                    onChange={(e) => handleFieldChange('ProjectLocation', e.target.value)}
-                                    placeholder="Enter Project Location"
-                                />
-                            </div>
-                            <div>
-                                <Input
-                                    label="Google Location"
-                                    type="text"
-                                    value={formData.GoogleLocation}
-                                    onChange={(e) => handleFieldChange('GoogleLocation', e.target.value)}
-                                    placeholder="Enter Google Location"
                                 />
                             </div>
                         </div>
@@ -737,25 +766,18 @@ const AddUpdateProjectMaster: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Redevelopment Checkbox */}
-                    <div className="space-y-4 pb-4">
-                        <Checkbox
-                            label="Is This Project a Redevelopment Project?"
-                            checked={formData.IsRedevelopment === 1}
-                            onChange={(e) => handleFieldChange('IsRedevelopment', e.target.checked ? 1 : 0)}
-                        />
-                    </div>
+
                 </form>
             </div>
 
             <BottomActionBar
                 cancelText="Cancel"
-                saveText={formData.ProjectId ? "Update Project" : "Add Project"}
+                saveText={formData.ProjectId ? "Update" : "Add"}
                 onCancel={() => navigate(-1)}
                 onSave={() => {
                     handleSubmit();
                 }}
-                canAction={canAction} 
+                canAction={canAction}
                 isLoading={isLoading}
             />
         </div>

@@ -6,7 +6,8 @@ import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type {
   TenantData,
-  FilterWithPaginationTenantRequest
+  FilterWithPaginationTenantRequest,
+  DeleteTenantRequest
 } from '@/features/tenant/models/TenantModel';
 
 import { tenantService } from '@/features/tenant/services/TenantService';
@@ -24,12 +25,13 @@ import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { fetchBuildingDropdown } from '@/features/building/buildingDropdown';
-import { FileText } from 'lucide-react';
+import { FileText, Trash2 } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { useTenantListState } from '@/features/tenant/context/TenantListStateContext';
+import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 
 export const Tenant: React.FC = () => {
   //#region STATE
@@ -52,6 +54,11 @@ export const Tenant: React.FC = () => {
 
 
   const { canAction, canExport } = useMenuPermissions();
+
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+
+    const [deleteTenantData, setDeleteTenantData] = useState<TenantData | null>(null)
+
 
   //#endregion
 
@@ -269,10 +276,18 @@ export const Tenant: React.FC = () => {
   }, [navigate, updateListState]);
   //#endregion
 
+  //#region CONFIRMATION DIALOG BOX
+  
+    const handleConfirmationDialogBoxOpen = useCallback((row: TenantData) => {
+      setDeleteTenantData(row)
+      setIsConfirmationDialogBoxOpen(true)
+    }, [])
+  
+    //#endregion
   //#region TABLE COLUMN
   const tenantColumns = useMemo<TableColumn[]>(
     () => [
-      
+
       {
         key: 'FlatNumber',
         label: 'Flat Number',
@@ -419,6 +434,23 @@ export const Tenant: React.FC = () => {
         render: (_value, row) => (
           canAction ? (
             <div className="flex items-center justify-center gap-2">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Tenant"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
 
               <Button
                 onClick={(e) => {
@@ -444,13 +476,13 @@ export const Tenant: React.FC = () => {
         )
       }
     ],
-    [handleViewTenantDetails, handleViewTenantDocument]
+    [handleViewTenantDetails, handleViewTenantDocument,handleConfirmationDialogBoxOpen, canAction]
 
   );
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
-  const requiredTenantColumnKeys: string[] = ['FlatType'];
+  const requiredTenantColumnKeys: string[] = ['FlatNumber'];
 
   const allTenantColumnKeys: string[] = tenantColumns.map(c => c.key);
 
@@ -591,6 +623,63 @@ export const Tenant: React.FC = () => {
 
   //#endregion
 
+  //#region  DELETE TENANT EVENT
+    const handleDeleteTenant = async () => {
+      setIsConfirmationDialogBoxOpen(false);
+
+      if (!deleteTenantData) return;
+
+      await runApiWithLoader(
+        setIsLoading,
+        setIsLoadingMessage,
+        async () => {
+  
+          const params: DeleteTenantRequest = {
+            TenantId: deleteTenantData.TenantId,
+            UniqueKey: deleteTenantData.Uniquekey ?? "",
+            BuildingId: Number(buildingId),
+            ProjectId: Number(projectId)
+          }
+  
+          const response = await tenantService.apiCallDeleteTenant(params);
+  
+          if (E.isRight(response)) {
+  
+            setTenantList(prevData => prevData.filter(item => item.TenantId !== deleteTenantData.TenantId));
+  
+            setPagination({
+              currentPage: pagination.currentPage,
+              totalRecords: pagination.totalRecords - 1,
+              totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+            });
+            addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+  
+            setIsConfirmationDialogBoxOpen(false);
+  
+            setDeleteTenantData(null);
+  
+          } else {
+  
+            addToast({ type: 'error', title: response.left.message });
+  
+            setIsConfirmationDialogBoxOpen(false);
+  
+          }
+  
+          return response
+        },
+        undefined,
+        (error: unknown) => {
+          const err = error as { message?: string };
+          addToast({ type: 'error', title: err.message || 'An error occurred' })
+        },
+        undefined,
+        'Delete Tenant'
+      )
+    }
+  
+    //#endregion
+  
   return (
 
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -746,6 +835,22 @@ export const Tenant: React.FC = () => {
           uploadExcel(file, mergeExisting);
         }}
       />
+
+      {/* DELETE CONFIRMATION MODAL */}
+            <ConfirmationDialogBox
+              isOpen={isConfirmationDialogBoxOpen}
+              onClose={() => {
+                setIsConfirmationDialogBoxOpen(false)
+                setDeleteTenantData(null)
+              }}
+              onConfirm={handleDeleteTenant}
+              title="You are about to delete a tenant?"
+              message="Deleting this tenant will permanently remove its contents."
+              confirmText="Delete"
+              cancelText="Cancel"
+              loading={isLoading}
+              variant="danger"
+            />
     </div>
   );
 };

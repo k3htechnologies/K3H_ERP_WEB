@@ -364,10 +364,10 @@ export const ViewBuilding: React.FC = () => {
             </div>
 
             {activeTab === 'Overview' && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-6">
 
                     {/* ================= LEFT SIDE (2/3) ================= */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="lg:col-span-3 space-y-6">
 
                         {/* ================= HEADER / BASIC DETAILS ================= */}
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
@@ -404,8 +404,8 @@ export const ViewBuilding: React.FC = () => {
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
-                                <FieldItem label="Total Plot Area (sq ft)" value={buildingData?.TotalPlotAreaSqFt ?? '-'} />
-                                <FieldItem label="Utilized Units Area (sq ft" value={buildingData?.TotalUnitsAreaUtilizedSqFt ?? '-'} />
+                                <FieldItem label="Total Plot Area (SqFt)" value={buildingData?.TotalPlotAreaSqFt ?? '-'} />
+                                <FieldItem label="Utilized Units Area (SqFt)" value={buildingData?.TotalUnitsAreaUtilizedSqFt ?? '-'} />
                                 <FieldItem label="Total Units" value={buildingData?.TotalNumberOfUnits ?? '-'} />
 
                             </div>
@@ -422,11 +422,16 @@ export const ViewBuilding: React.FC = () => {
                                 Location Details
                             </h4>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
                                 <FieldItem label="Country" value={buildingData?.CountryName ?? '-'} />
                                 <FieldItem label="State" value={buildingData?.StateName ?? '-'} />
                                 <FieldItem label="District" value={buildingData?.DistrictName ?? '-'} />
-                                <FieldItem label="City" value={buildingData?.CityName ?? '-'} />
+                                
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                             <FieldItem label="City" value={buildingData?.CityName ?? '-'} />
+                                <FieldItem label="Village" value={buildingData?.VillageName ?? '-'} />
+
                             </div>
 
                         </section>
@@ -435,7 +440,7 @@ export const ViewBuilding: React.FC = () => {
                     </div>
 
                     {/* ================= RIGHT SIDE (1/3) ================= */}
-                    <div className="lg:col-span-1 space-y-6">
+                    <div className="lg:col-span-2 space-y-6">
 
 
 
@@ -446,8 +451,8 @@ export const ViewBuilding: React.FC = () => {
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Garden Structure" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
-                                <FieldItem label="Garden Area (sq ft)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
+                                <FieldItem label="Garden" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
+                                <FieldItem label="Garden Area (SqFt)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
 
                             </div>
 
@@ -461,7 +466,7 @@ export const ViewBuilding: React.FC = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <FieldItem label="Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
-                                <FieldItem label="Structure Area (sq ft)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
+                                <FieldItem label="Structure Area (SqFt)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
 
                             </div>
 
@@ -474,7 +479,7 @@ export const ViewBuilding: React.FC = () => {
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="FSI / TDR Utilization (sq ft)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />
+                                <FieldItem label="FSI / TDR Utilization (SqFt)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />
                                 <FieldItem label="Property Age (Years)" value={buildingData?.PropertyAgeYears ?? '-'} />
 
                             </div>
@@ -622,17 +627,17 @@ export const ViewBuilding: React.FC = () => {
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem
-                                            label="Gross Plot Area (SqFt)"
+                                            label="Gross Plot Area (SqMt)"
                                             value={buildingDetailsList?.[0]?.GrossPlotAreaSqFt ?? 0}
                                         />
 
                                         <FieldItem
-                                            label="Physical Survey Area (SqFt)"
+                                            label="Physical Survey Area (SqMt)"
                                             value={buildingDetailsList?.[0]?.PlotAreaPhysicalSurveySqFt ?? 0}
                                         />
 
                                         <FieldItem
-                                            label="Old Approved Plan Area (SqFt)"
+                                            label="Old Approved Plan Area (SqMt)"
                                             value={buildingDetailsList?.[0]?.PlotAreaOldApprovedPlanSqFt ?? 0}
                                         />
                                     </div>
@@ -643,12 +648,12 @@ export const ViewBuilding: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                                         <FieldItem
-                                            label="Conveyance Area (SqFt)"
+                                            label="Conveyance Area (SqMt)"
                                             value={buildingDetailsList?.[0]?.PlotAreaConveyanceSqFt ?? 0}
                                         />
 
                                         <FieldItem
-                                            label="PR Card Area (SqFt)"
+                                            label="PR Card Area (SqMt)"
                                             value={buildingDetailsList?.[0]?.PlotAreaPRCardSqFt ?? 0}
                                         />
 

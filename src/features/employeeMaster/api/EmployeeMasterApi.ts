@@ -13,6 +13,8 @@ export const EmployeeMasterApi = {
     PULL_EMPLOYEE_EDUCATION_DETAILS: '/EmployeeEducationDetails/PullEmployeeEducationDetails',
     ADD_UPDATE_EMPLOYEE_EDUCATION_DETAILS: '/EmployeeEducationDetails/AddUpdateEmployeeEducationDetails',
     DELETE_EMPLOYEE_EDUCATION_DETAILS: '/EmployeeEducationDetails/DeleteEmployeeEducationDetails',
+
+    SET_EMPLOYEE_MPIN: '/Employee/SetEmployeeMPIN',
     
 } as const
 

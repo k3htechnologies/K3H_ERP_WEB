@@ -106,7 +106,7 @@ export const TenantDocument: React.FC = () => {
 
   //#region TENANT LIST STATE CONTEXT
   const { listState } = useTenantListState();
-  const { tenantId, buildingId, tenantName } = listState;
+  const { tenantId, buildingId, tenantName,buildingName } = listState;
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -778,8 +778,9 @@ export const TenantDocument: React.FC = () => {
       <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
 
         <HeaderActionBar
-          titleText={"Tenant Name"}
-          subTitleText={tenantName}
+          titleText={"Tenant Document : "}
+          subTitleText={buildingName}
+          subSubTitleText={tenantName}
           cancelText="Cancel"
           EditText=""
           onCancel={() => handleBackToListTenant()}

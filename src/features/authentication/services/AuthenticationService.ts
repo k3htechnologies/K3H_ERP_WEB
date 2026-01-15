@@ -21,10 +21,10 @@ export const authenticationService = {
         }
     },
 
-    apicallIsValidOTP: async (mobileNumber: string, otp: string): Promise<E.Either<Failure, AuthenticationResponse>> => {
+    apicallIsValidOTP: async (mobileNumber: string, otp: string,type: string): Promise<E.Either<Failure, AuthenticationResponse>> => {
         try {
 
-            return E.right(await authenticationDatasource.isValidOTP(mobileNumber, otp));
+            return E.right(await authenticationDatasource.isValidOTP(mobileNumber, otp,type));
 
         } catch (error: any) {
 

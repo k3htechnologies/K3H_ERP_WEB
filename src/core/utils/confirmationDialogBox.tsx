@@ -52,7 +52,7 @@ export const ConfirmationDialogBox: React.FC<ConfirmationDialogBoxProps> = ({
                     title: 'text-red-600',
                     confirmButton: 'bg-red-500 hover:bg-red-600 text-white'
                 }
-                case 'inactive':
+            case 'inactive':
                 return {
                     icon: 'text-red-500',
                     title: 'text-red-600',
@@ -78,10 +78,13 @@ export const ConfirmationDialogBox: React.FC<ConfirmationDialogBoxProps> = ({
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
                     <div className="flex items-center space-x-3">
                         {variant === 'logout' ?
-                            <LogOut className={`h-6 w-6 ${styles.icon}`} /> 
+                            <LogOut className={`h-6 w-6 ${styles.icon}`} />
                             :
-                            variant === 'inactive' ? <Unlock className={`h-6 w-6 ${styles.icon}`} /> : <Trash2 className={`h-6 w-6 ${styles.icon}`} /> 
-                            }
+                            variant === 'inactive' ? 
+                            <Unlock className={`h-6 w-6 ${styles.icon}`} /> 
+                            :
+                            <Trash2 className={`h-6 w-6 ${styles.icon}`} />
+                        }
                         <h3 className={`text-lg font-semibold ${styles.title}`}>
                             {title}
                         </h3>

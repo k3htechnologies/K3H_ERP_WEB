@@ -9,6 +9,7 @@ export interface ExpandableCardProps {
   expandedheight?: number;
   customizedIcon?: ReactNode;
   child: ReactNode;
+  defaultOpen?: boolean;
 }
 
 export const ExpandableCard: React.FC<ExpandableCardProps> = ({
@@ -17,9 +18,10 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   customizedIcon,
   child,
   height = 50,
-  expandedheight = 250
+  expandedheight = 250,
+  defaultOpen = false
 }) => {
-  const [isExpandableOpen, setExpandableOpen] = useState(true);
+  const [isExpandableOpen, setExpandableOpen] = useState(defaultOpen);
 
   return (
     <div className="bg-[#F9FAFB] border border-[#135BEC30] rounded-md shadow-md">

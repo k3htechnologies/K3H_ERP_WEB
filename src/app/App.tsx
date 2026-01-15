@@ -87,6 +87,7 @@ import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
 import Event from '@/features/event/pages/Event';
+import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditDebit from '@/features/leaveCreditDebit/pages/LeaveCreditDebit';
 import AddUpdateLeaveCreditDebit from '@/features/leaveCreditDebit/pages/AddUpdateLeaveCreditDebit';
@@ -243,6 +244,7 @@ function App() {
 
 
             <Route path="event" element={<Event />} />
+            <Route path="attendanceCalendar" element={<AttendanceCalendar />} />
 
             {/* SALES */}
             <Route path="channelPartner" element={<ChannelPartner />} />

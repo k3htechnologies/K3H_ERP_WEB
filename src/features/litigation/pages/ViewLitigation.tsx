@@ -749,51 +749,28 @@ const ViewLitigation: React.FC = () => {
                     {/* ================= CLOSURE DETAILS ================= */}
 
                     {(litigationStatus === 'Closed' || litigationStatus === 'Reopen') && (
-
                         <div className="col-span-7">
-                            <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-2 mt-2">
-                                <section className="bg-white p-4 flex flex-col">
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Closure Details</h4>
+                            <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-2">
+                                <section>
+                                    <h4 className="text-lg font-semibold text-gray-900">
+                                        Closure Details
+                                    </h4>
 
                                     {editClosureData.length === 0 ? (
                                         <p className="text-gray-500 text-sm">No closure history found.</p>
-
                                     ) : (
                                         editClosureData.map((item, index) => {
                                             const isLatest = index === 0;
-                                            const isCaseReopen =
-                                                litigationStatus === 'Reopen';
+                                            const isCaseReopen = litigationStatus === 'Reopen';
 
                                             return (
                                                 <div
                                                     key={item.LitigationClosureId}
-                                                    className="pb-3"
+                                                    className="mb-4 pb-4 last:border-none last:pb-0"
                                                 >
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 mb-2">
-
-                                                            <div className="lg:col-span-3 pb-1">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                                    <FieldItem label="Closure Date" value={formatDate_dd_MonthName_yy(item.ClosureDate)} />
-                                                                    <FieldItem label="Remark" value={item.Remark} />
-                                                                    <FieldItem label="Conclusion" value={item.Conclusion} />
-
-                                                                    <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
-                                                                        <p>Document</p>
-                                                                        <MultiImageViewer
-                                                                            images={parseDocumentUrls(item.ClosureAttachementURL)}
-                                                                            title="Closure Document"
-                                                                            isIcon={false}
-                                                                            triggerLabel="Document"
-                                                                        />
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
+                                                    <div className="flex justify-end">
                                                         {isLatest && isCaseReopen && (
-                                                            <Button className="flex mb-20"
+                                                            <Button
                                                                 color="transparent"
                                                                 isborderRadius
                                                                 size="sm"
@@ -804,19 +781,26 @@ const ViewLitigation: React.FC = () => {
                                                                 leftIcon={<Edit className="h-4 w-4" />}
                                                             />
                                                         )}
-
+                                                    </div>
+                                                    
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                        <FieldItem
+                                                            label="Closure Date"
+                                                            value={formatDate_dd_MonthName_yy(item.ClosureDate)}
+                                                        />
+                                                        <FieldItem label="Remark" value={item.Remark || '-'} />
+                                                        <FieldItem label="Conclusion" value={item.Conclusion || '-'} />
                                                     </div>
                                                 </div>
                                             );
                                         })
                                     )}
                                 </section>
-
                             </div>
                         </div>
                     )}
-                </div>
 
+                </div>
                 {/*  RIGHT SIDE  */}
                 <div className="col-span-5">
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">

@@ -13,7 +13,7 @@ import * as E from 'fp-ts/Either';
 
 const leaveEncashmentMasterDatasource = new LeaveEncashmentMasterDatasourceImpl();
 
-export const LeaveEncashmentMasterService = {
+export const leaveEncashmentMasterService = {
 
     apiCallPullLeaveEncashmentMaster: async (params: FilterWithPaginationLeaveEncashmentMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, LeaveEncashmentMasterListResponse>> => {
         try {

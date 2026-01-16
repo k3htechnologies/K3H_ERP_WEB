@@ -112,7 +112,7 @@ export const useDepartmentMaster = () => {
     return await loadDepartments(page, filters, sort ?? sortInfo);
   }
 
-  const loadDepartments = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadDepartments = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -123,7 +123,7 @@ export const useDepartmentMaster = () => {
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           DepartmentMasterId: filterParams.DepartmentMasterId ? Number(filterParams.DepartmentMasterId) : 0,
-          DepartmentName: filterParams.DepartmentName?.trim() || undefined,
+          DepartmentName: searchtext ?? filterParams.DepartmentName ?? undefined,
           SortBy: getSortByParam(sortInfo ?? null, departmentMasterColumns)
         }
 
@@ -159,27 +159,30 @@ export const useDepartmentMaster = () => {
 
   //#region SEARCH DEPARTMENT 
   const searchDepartments = async (searchValue: string) => {
+
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
+
       fetchDepartmentList();
+
       return
     }
 
-    const filterParams: FilterInfo = {
-      DepartmentName: searchValue.trim(),
-    };
-
-    await loadDepartments(1, filterParams)
+    await loadDepartments(1, filters, sortInfo, searchValue)
   }
   //#endregion
 
   //#region CLEAR SEARCH DEPARTMENT 
   const clearsearchDepartments = () => {
-    setSearchTerm('');
+
     debouncedSearch.cancel?.();
-    fetchDepartmentList();
-  }
+
+    setSearchTerm('');
+
+    loadDepartments(1, { DepartmentName: '' }, sortInfo, undefined);
+  };
+
   //#endregion
 
   //#region EXPORT EXCEL | PDF
@@ -223,9 +226,13 @@ export const useDepartmentMaster = () => {
 
   //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback((sort: SortInfo) => {
+
     setSortInfo(sort);
-    loadDepartments(1, filters, sort);
-  }, [filters]);
+
+    loadDepartments(1, filters, sort, searchTerm || undefined);
+
+  }, [filters, searchTerm]);
+
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS

@@ -1,10 +1,10 @@
 import * as E from 'fp-ts/Either';
-import { ShiftMasterService } from '../shiftMaster/services/ShiftMasterService';
+import { shiftMasterService } from '@/features/shiftMaster/services/ShiftMasterService';
 
 export const fetchShiftMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
-        const responseEither = await ShiftMasterService.apiCallPullShiftMaster({
-            PageSize: 10,
+        const responseEither = await shiftMasterService.apiCallPullShiftMaster({
+            PageSize: 20,
             PageNumber: pageNumber,
             ShiftName: params?.value || "",
         });

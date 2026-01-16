@@ -13,7 +13,7 @@ import * as E from 'fp-ts/Either';
 
 const shiftMasterDatasource = new ShiftMasterDatasourceImpl();
 
-export const ShiftMasterService = {
+export const shiftMasterService = {
 
     apiCallPullShiftMaster: async (params: FilterWithPaginationShiftMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ShiftMasterListResponse>> => {
         try {

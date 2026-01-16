@@ -8,7 +8,8 @@ export const getPageInfo = (path: string) => {
                 title: 'Dashboard',
                 description: 'Quick insights, smarter decisions',
             }
-        // SETTING
+
+        //#region  SETTING ------> COMPANY SETUP
         case 'departmentMaster':
             return {
                 title: 'Department Master',
@@ -25,6 +26,14 @@ export const getPageInfo = (path: string) => {
                 title: 'Designation Master',
                 description: 'Define roles and designations across the organization',
             }
+
+        case 'bankListMaster':
+            return {
+                title: 'Bank List Master',
+                description: 'Centralized list of banks for seamless financial operations',
+            }
+        //#endregion
+
         case 'companyMaster':
             return {
                 title: 'Company Master',
@@ -35,11 +44,7 @@ export const getPageInfo = (path: string) => {
                 title: 'Terms & Conditions Master',
                 description: 'Clear terms for every transaction',
             }
-        case 'bankListMaster':
-            return {
-                title: 'Bank List Master',
-                description: 'Centralized list of banks for seamless financial operations',
-            }
+
         case 'vendor':
             return {
                 title: 'Vendor Management',

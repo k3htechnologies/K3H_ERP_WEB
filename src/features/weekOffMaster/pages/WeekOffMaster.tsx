@@ -21,7 +21,7 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { WeekOffMasterService } from '../services/WeekOffMasterService';
+import { weekOffMasterService } from '@/features/weekOffMaster/services/WeekOffMasterService';
 import { updateFilter } from '@/core/utils/filterHelper';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Trash2 } from 'lucide-react';
@@ -134,7 +134,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
           SortBy: sortByParam
         };
 
-        const response = await WeekOffMasterService.apiCallPullWeekOffMaster(params);
+        const response = await weekOffMasterService.apiCallPullWeekOffMaster(params);
 
         if (E.isRight(response)) {
 
@@ -244,7 +244,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   //#region API | SERVICES CALL TO GET WEEK OFF
   const getWeekOff = async (filterParams: FilterWithPaginationWeekOffMasterRequest) => {
 
-    return await WeekOffMasterService.apiCallPullWeekOffMaster(filterParams);
+    return await weekOffMasterService.apiCallPullWeekOffMaster(filterParams);
   }
   //#endregion
 
@@ -518,7 +518,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
           UniqueKey: deleteWeekOffMasterData.Uniquekey || ""
         };
 
-        const response = await WeekOffMasterService.apiCallDeleteWeekOffMaster(params);
+        const response = await weekOffMasterService.apiCallDeleteWeekOffMaster(params);
 
         if (E.isRight(response)) {
 

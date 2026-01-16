@@ -10,7 +10,7 @@ import type {
   DeleteShiftMasterRequest
 } from '@/features/shiftMaster/models/ShiftMasterModel';
 
-import { ShiftMasterService } from '@/features/shiftMaster/services/ShiftMasterService'
+import { shiftMasterService } from '@/features/shiftMaster/services/ShiftMasterService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -135,7 +135,7 @@ export const ShiftMaster: React.FC = () => {
           SortBy: sortByParam
         };
 
-        const response = await ShiftMasterService.apiCallPullShiftMaster(params);
+        const response = await shiftMasterService.apiCallPullShiftMaster(params);
         if (E.isRight(response)) {
 
           setShiftMasterList(response.right.Data);
@@ -243,7 +243,7 @@ export const ShiftMaster: React.FC = () => {
   //#region API | SERVICES CALL TO GET SHIFT
   const getShifts = async (filterParams: FilterWithPaginationShiftMasterRequest) => {
 
-    return await ShiftMasterService.apiCallPullShiftMaster(filterParams);
+    return await shiftMasterService.apiCallPullShiftMaster(filterParams);
   }
   //#endregion
 
@@ -499,7 +499,7 @@ export const ShiftMaster: React.FC = () => {
           UniqueKey: deleteShiftMasterDetailsData.Uniquekey || ""
         };
 
-        const response = await ShiftMasterService.apiCallDeleteShiftMaster(params);
+        const response = await shiftMasterService.apiCallDeleteShiftMaster(params);
 
         if (E.isRight(response)) {
 

@@ -15,8 +15,8 @@ import type { AssetMappingMasterData, FilterWithPaginationAssetMappingMasterRequ
 import type { FilterWithPaginationWeekOffMappingMasterRequest, WeekOffMappingMasterData } from '@/features/weekOffMappingMaster/models/WeekOffMappingMasterModel';
 import { assetMappingMasterService } from '@/features/assetMappingMaster/services/AssetMappingMasterService';
 import { employeeDocumentService } from '@/features/employeeMaster/services/EmployeeDocumentService';
-import { ShiftMappingMasterService } from '@/features/shiftMappingMaster/services/ShiftMappingMasterService';
-import { WeekOffMappingMasterService } from '@/features/weekOffMappingMaster/services/WeekOffMappingMasterService';
+import { shiftMappingMasterService } from '@/features/shiftMappingMaster/services/ShiftMappingMasterService';
+import { weekOffMappingMasterService } from '@/features/weekOffMappingMaster/services/WeekOffMappingMasterService';
 import Tabs from '@/ui/components/Tab/Tab';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
@@ -281,7 +281,7 @@ export const Profile: React.FC = () => {
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
                 }
 
-                const response = await ShiftMappingMasterService.apiCallPullShiftMappingMaster(params);
+                const response = await shiftMappingMasterService.apiCallPullShiftMappingMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -318,7 +318,7 @@ export const Profile: React.FC = () => {
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
                 }
 
-                const response = await WeekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
+                const response = await weekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
 
                 if (E.isRight(response)) {
 

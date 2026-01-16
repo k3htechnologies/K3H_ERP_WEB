@@ -6,8 +6,8 @@ import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
-import type { AddUpdateWeekOffMasterRequest, FilterWithPaginationWeekOffMasterRequest } from "../models/WeekOffMasterModel";
-import { WeekOffMasterService } from "../services/WeekOffMasterService";
+import type { AddUpdateWeekOffMasterRequest, FilterWithPaginationWeekOffMasterRequest } from "@/features/weekOffMaster/models/WeekOffMasterModel";
+import { weekOffMasterService } from "@/features/weekOffMaster/services/WeekOffMasterService";
 import { MultiSelectDropdown } from "@/ui/components/DropDown/MultiSelectDropdown";
 import { DAYS_OPTIONS, MONTHS_OPTIONS, WEEK_OFF_TYPE, WEEKDAYS } from "@/core/constants";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
@@ -92,7 +92,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
           WeekOffPolicyMasterId: WeekOffId
         };
 
-        const response = await WeekOffMasterService.apiCallPullWeekOffMaster(params);
+        const response = await weekOffMasterService.apiCallPullWeekOffMaster(params);
 
         if (E.isRight(response)) {
 
@@ -228,7 +228,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
       async () => {
         const payload = PushWeekOffMasterFormData();
 
-        const response = await WeekOffMasterService.apiCallAddUpdateWeekOffMaster(payload);
+        const response = await weekOffMasterService.apiCallAddUpdateWeekOffMaster(payload);
 
         if (E.isRight(response)) {
 

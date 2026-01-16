@@ -7,7 +7,7 @@ import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateShiftMasterRequest, FilterWithPaginationShiftMasterRequest } from "../models/ShiftMasterModel";
-import { ShiftMasterService } from "../services/ShiftMasterService";
+import { shiftMasterService } from "@/features/shiftMaster/services/ShiftMasterService";
 import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -136,7 +136,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
           ShiftManagementMasterId: ShiftId
         };
 
-        const response = await ShiftMasterService.apiCallPullShiftMaster(params);
+        const response = await shiftMasterService.apiCallPullShiftMaster(params);
 
         if (E.isRight(response)) {
 
@@ -294,7 +294,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
         const payload = PushShiftMasterFormData();
         console.log("payload", payload);
-        const response = await ShiftMasterService.apiCallAddUpdateShiftMaster(payload);
+        const response = await shiftMasterService.apiCallAddUpdateShiftMaster(payload);
 
         if (E.isRight(response)) {
           addToast({ type: "success", title: isAddMode ? "Shift added successfully" : "Shift updated successfully" });

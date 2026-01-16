@@ -57,19 +57,10 @@ export class ShiftMappingMasterDatasourceImpl implements ShiftMappingMasterDatas
     async addUpdateShiftMappingMaster(params: AddUpdateShiftMappingMasterRequest): Promise<ShiftMappingMasterSaveResponse> {
 
         try {
-
-            const payLoad: AddUpdateShiftMappingMasterRequest = {
-                ShiftManagementMasterMappingId: params.ShiftManagementMasterMappingId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-
-                ShiftManagementMasterId: params.ShiftManagementMasterId ?? 0,
-                DepartmentMasterId: params.DepartmentMasterId ?? '',
-                EmployeeId: params.EmployeeId ?? '',
-            }
-
+            
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 ShiftMappingMasterApi.ADD_UPDATE,
-                payLoad
+                params
             )
 
             return response

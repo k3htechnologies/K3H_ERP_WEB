@@ -1,9 +1,9 @@
 import * as E from 'fp-ts/Either';
-import { DesignationMasterService } from '@/features/designationMaster/services/DesignationMasterService';
+import { designationMasterService } from '@/features/designationMaster/services/DesignationMasterService';
 
 export const fetchDesignationMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
-        const responseEither = await DesignationMasterService.apiCallPullDesignationMaster({
+        const responseEither = await designationMasterService.apiCallPullDesignationMaster({
             PageSize: 10,
             PageNumber: pageNumber,
             DesignationName: params?.value || '',

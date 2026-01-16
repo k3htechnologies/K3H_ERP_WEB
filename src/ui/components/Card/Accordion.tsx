@@ -68,7 +68,7 @@ export const Accordion: React.FC<AccordionProps> = ({
 
                 if (renderItem) {
                     return (
-                        <div key={item.key} className="bg-white border border-gray-200 rounded shadow-sm mb-3">
+                        <div key={item.key} className="bg-white rounded-xl border-[0.5px] border-[#3333334f] shadow-sm mb-3">
                             {renderItem(item, open, () => toggle(item.key))}
                         </div>
                     );

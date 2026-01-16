@@ -55,21 +55,9 @@ export class LeaveTypeMasterDatasourceImpl implements LeaveTypeMasterDatasource 
 
         try {
 
-            const payLoad: AddUpdateLeaveTypeMasterRequest = {
-                LeaveTypeMasterId: params.LeaveTypeMasterId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-
-                LeaveType: params.LeaveType?.trim() ?? '',
-                LeaveTypeCode: params.LeaveTypeCode?.trim() ?? '',
-
-                IsCarryForward: params.IsCarryForward ?? false,
-                MaxCarryForward: params.MaxCarryForward ?? 0,
-                IsEncashable: params.IsEncashable ?? false,
-            }
-
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 LeaveTypeMasterApi.ADD_UPDATE,
-                payLoad
+                params
             )
 
             return response

@@ -163,18 +163,73 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
 
             //#region SETTING - COMPANY SETUP
+
             <Route path="departmentMaster" element={<DepartmentMaster />} />
+
             <Route path="designationMaster" element={<DesignationMaster />} />
             <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
-            //#endregion
-            
-            <Route path="compoff" element={<CompOff />} />
-            <Route path="vendor/add/:vendorId?" element={<AddUpdateVendor />} />
 
             <Route path="employeeMaster" element={<EmployeeMaster />} />
             <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />
             <Route path="employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
             <Route path="employeeMaster/document" element={<EmployeeDocument />} />
+
+            <Route path="companyMaster" element={<CompanyMaster />} />
+            <Route path="companyMaster/view" element={<ViewCompantMaster />} />
+            <Route path="companyMaster/add/:companyId?" element={<AddCompany />} />
+
+            <Route path="tnc" element={<TncMaster />} />
+
+            <Route path="bankListMaster" element={<BankListMaster />} />
+
+            <Route path="materialMaster" element={<MaterialMaster />} />
+            <Route path="subMaterialMaster" element={<SubMaterialMaster />} />
+            <Route path="uomMaster" element={<UomMaster />} />
+
+            <Route path="branchMaster" element={<BranchMaster />} />
+
+            <Route path="branchAssociationsMaster" element={<BranchAssociationsMaster />} />
+
+            <Route path="assetMaster" element={<AssetMaster />} />
+            <Route path="assetMaster/view" element={<ViewAssetMaster />} />
+            <Route path="assetMaster/add/:AssetMasterId?" element={<AddUpdateAssetMaster />} />
+
+            <Route path="assetMappingMaster" element={<AssetMappingMaster />} />
+            <Route path="assetMappingMaster/view" element={< ViewAssetMappingMaster />} />
+            <Route path="assetMappingMaster/add/:AssetMasterMappingId?" element={<AddUpdateAssetMappingMaster />} />
+
+            <Route path="deductionMaster" element={<DeductionMaster />} />
+            <Route path="deductionMaster/view" element={< ViewDeductionMaster />} />
+            <Route path="deductionMaster/add/:DeductionMasterId?" element={<AddUpdateDeductionMaster />} />
+
+            <Route path="earningMaster" element={<EarningMaster />} />
+
+            <Route path="holidayMaster" element={<HolidayMaster />} />
+
+            <Route path="holidayMappingMaster" element={<HolidayMappingMaster />} />
+
+            <Route path="leaveEncashmentMaster" element={<LeaveEncashmentMaster />} />
+
+            <Route path="leaveTypeMaster" element={<LeaveTypeMaster />} />
+
+            <Route path="shiftMaster" element={<ShiftMaster />} />
+            <Route path="shiftMaster/view" element={< ViewShiftMaster />} />
+            <Route path="shiftMaster/add/:ShiftManagementMasterId?" element={<AddUpdateShiftMaster />} />
+
+            <Route path="shiftMappingMaster" element={<ShiftMappingMaster />} />
+
+            <Route path="weekOffMaster" element={<WeekOffMasterMaster />} />
+
+            <Route path="WeekOffMaster/view" element={<ViewWeekOffMaster />} />
+            <Route path="WeekOffMaster/add/:WeekOffMasterId?" element={<AddUpdateWeekOffMaster />} />
+            <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
+
+            //#endregion
+
+            <Route path="compoff" element={<CompOff />} />
+            <Route path="vendor/add/:vendorId?" element={<AddUpdateVendor />} />
+
+
             <Route path="outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
             <Route path="leaveCreditDebit" element={<LeaveCreditDebit />} />
             <Route path="leaveCreditDebit/add/:id?" element={<AddUpdateLeaveCreditDebit />} />
@@ -185,35 +240,6 @@ function App() {
             <Route path="leave/view/:id?" element={<ViewLeave />} />
             <Route path="resignation" element={<EmployeeResignation />} />
             <Route path="payrollReport" element={<PayrollReport />} />
-            <Route path="companyMaster" element={<CompanyMaster />} />
-            <Route path="companyMaster/view" element={<ViewCompantMaster />} />
-            <Route path="companyMaster/add/:companyId?" element={<AddCompany />} />
-            <Route path="tnc" element={<TncMaster />} />
-            <Route path="bankListMaster" element={<BankListMaster />} />
-            <Route path="branchMaster" element={<BranchMaster />} />
-            <Route path="branchAssociationsMaster" element={<BranchAssociationsMaster />} />
-            <Route path="assetMaster" element={<AssetMaster />} />
-            <Route path="assetMaster/view" element={<ViewAssetMaster />} />
-            <Route path="assetMaster/add/:AssetMasterId?" element={<AddUpdateAssetMaster />} />
-            <Route path="assetMappingMaster" element={<AssetMappingMaster />} />
-            <Route path="assetMappingMaster/view" element={< ViewAssetMappingMaster />} />
-            <Route path="assetMappingMaster/add/:AssetMasterMappingId?" element={<AddUpdateAssetMappingMaster />} />
-            <Route path="deductionMaster" element={<DeductionMaster />} />
-            <Route path="deductionMaster/view" element={< ViewDeductionMaster />} />
-            <Route path="deductionMaster/add/:DeductionMasterId?" element={<AddUpdateDeductionMaster />} />
-            <Route path="earningMaster" element={<EarningMaster />} />
-            <Route path="holidayMaster" element={<HolidayMaster />} />
-            <Route path="holidayMappingMaster" element={<HolidayMappingMaster />} />
-            <Route path="leaveEncashmentMaster" element={<LeaveEncashmentMaster />} />
-            <Route path="leaveTypeMaster" element={<LeaveTypeMaster />} />
-            <Route path="shiftMaster" element={<ShiftMaster />} />
-            <Route path="shiftMaster/view" element={< ViewShiftMaster />} />
-            <Route path="shiftMaster/add/:ShiftManagementMasterId?" element={<AddUpdateShiftMaster />} />
-            <Route path="shiftMappingMaster" element={<ShiftMappingMaster />} />
-            <Route path="weekOffMaster" element={<WeekOffMasterMaster />} />
-            <Route path="WeekOffMaster/view" element={<ViewWeekOffMaster />} />
-            <Route path="WeekOffMaster/add/:WeekOffMasterId?" element={<AddUpdateWeekOffMaster />} />
-            <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
 
             <Route path="vendor" element={<Vendor />} />
             <Route path="vendor/view" element={<ViewVendor />} />
@@ -224,11 +250,10 @@ function App() {
             <Route path="projectMaster/bank" element={<Bank />} />
             <Route path="projectMaster/Company" element={<Company />} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
-            <Route path="materialMaster" element={<MaterialMaster />} />
+
             <Route path="inventory" element={<Inventory></Inventory>} />
             <Route path="inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
-            <Route path="subMaterialMaster" element={<SubMaterialMaster />} />
-            <Route path="uomMaster" element={<UomMaster />} />
+
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />
             <Route path="document" element={<ProjectDocument />} />
             <Route path="approvalCategory" element={<ApprovalDocumentCategoryMaster />} />

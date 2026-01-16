@@ -26,20 +26,20 @@ export interface ShiftMappingMasterData {
     ShiftCode: string | ''
     ShiftName: string | ''
 
-    ShiftBeginTime: string | ''            // TimeSpan
-    ShiftEndTime: string | ''              // TimeSpan
-    ShiftDurationTime: string | ''         // TimeSpan
-    ShiftWorkDurationTime: string | ''     // TimeSpan
-    FirstHalfUpTo: string | ''             // TimeSpan
-    AbsentWorkingHours: string | ''        // TimeSpan
-    HalfDayWorkingHours: string | ''       // TimeSpan
-    HalfDayInTimeAfter: string | ''        // TimeSpan
-    HalfDayOutTimeBefore: string | ''      // TimeSpan
+    ShiftBeginTime: string | ''            
+    ShiftEndTime: string | ''              
+    ShiftDurationTime: string | ''         
+    ShiftWorkDurationTime: string | ''     
+    FirstHalfUpTo: string | ''             
+    AbsentWorkingHours: string | ''        
+    HalfDayWorkingHours: string | ''       
+    HalfDayInTimeAfter: string | ''        
+    HalfDayOutTimeBefore: string | ''      
 
-    BreakBeginTime: string | ''            // TimeSpan
-    BreakEndTime: string | ''              // TimeSpan
-    BreakDurationTime: string | ''         // TimeSpan
-    GraceTime: string | ''                 // TimeSpan
+    BreakBeginTime: string | ''            
+    BreakEndTime: string | ''              
+    BreakDurationTime: string | ''         
+    GraceTime: string | ''                 
 
     Remarks: string | ''
     CreatedById: number | 0

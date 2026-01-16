@@ -16,9 +16,9 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import type { EmployeeDocumentData, FilterWithPaginationEmployeeDocumentRequest } from '@/features/employeeMaster/models/EmployeeDocumentModel';
 import { employeeDocumentService } from '@/features/employeeMaster/services/EmployeeDocumentService';
-import { ShiftMappingMasterService } from '@/features/shiftMappingMaster/services/ShiftMappingMasterService'
+import { shiftMappingMasterService } from '@/features/shiftMappingMaster/services/ShiftMappingMasterService'
 import type { FilterWithPaginationShiftMappingMasterRequest, ShiftMappingMasterData } from '@/features/shiftMappingMaster/models/ShiftMappingMasterModel';
-import { WeekOffMappingMasterService } from '@/features/weekOffMappingMaster/services/WeekOffMappingMasterService'
+import { weekOffMappingMasterService } from '@/features/weekOffMappingMaster/services/WeekOffMappingMasterService'
 import type { FilterWithPaginationWeekOffMappingMasterRequest, WeekOffMappingMasterData } from '@/features/weekOffMappingMaster/models/WeekOffMappingMasterModel';
 import { employeeMasterService } from '../services/EmployeeMasterService';
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData } from '@/features/projectMaster/models/ProjectMasterModel';
@@ -249,7 +249,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     EmployeeId: preservedListState!.employeeId,
                 }
 
-                const response = await ShiftMappingMasterService.apiCallPullShiftMappingMaster(params);
+                const response = await shiftMappingMasterService.apiCallPullShiftMappingMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -286,7 +286,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     EmployeeId: preservedListState!.employeeId,
                 }
 
-                const response = await WeekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
+                const response = await weekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
 
                 if (E.isRight(response)) {
 

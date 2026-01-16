@@ -178,10 +178,6 @@ export const AddUpdateAssetMaster: React.FC = () => {
       newErrors.PurchaseDate = "Purchase Date is required";
     }
 
-    if (!formData.WarrantyExpiryDate) {
-      newErrors.WarrantyExpiryDate = "Warranty Expiry Date is required";
-    }
-
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors
@@ -234,7 +230,8 @@ export const AddUpdateAssetMaster: React.FC = () => {
         const response = await assetMasterService.apiCallAddUpdateAssetMaster(payload);
 
         if (E.isRight(response)) {
-          addToast({ type: "success", title: isAddMode ? "Asset added successfully" : "Asset updated successfully" });
+
+          addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
           const locationState = location.state as {
             listState?: {
@@ -290,7 +287,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
 
           <div className="space-y-4 pb-3">
             <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Asset Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <Input
                   type="text"
@@ -311,28 +308,11 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   value={formData.AssetCode?.toUpperCase() ?? ""}
                   onChange={(e) => handleFieldChange("AssetCode", e.target.value)}
                   placeholder="Enter Asset Code"
-                  maxLength={4}
+                  maxLength={20}
                   error={errors.AssetCode}
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-              <div>
-                <Input
-                  label='Asset Cost'
-                  required
-                  error={errors.AssetCost}
-                  type="text"
-                  value={formData.AssetCost ?? ''}
-                  maxLength={10}
-                  onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, '');
-                    handleFieldChange('AssetCost', digits === '' ? 0 : Number(digits));
-                  }}
-                  placeholder="Enter Asset Cost"
-                />
-              </div>
+              
               <div>
                 <Input
                   type="text"
@@ -341,13 +321,10 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   value={formData.AssetBrand ?? ""}
                   onChange={(e) => handleFieldChange("AssetBrand", e.target.value)}
                   placeholder="Enter Asset Brand"
-                  maxLength={250}
+                  maxLength={100}
                   error={errors.AssetBrand}
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <Input
                   type="text"
@@ -372,9 +349,15 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   error={errors.AssetType}
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              <div>
+                <DatePickerInput
+                  label="Purchase Date"
+                  value={formatDate_dd_mm_yyyy(formData.PurchaseDate)}
+                  onChange={(val) => handleFieldChange('PurchaseDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={errors.PurchaseDate}
+                />
+              </div>
               <div>
                 <Input
                   type="text"
@@ -399,16 +382,21 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   error={errors.SerialNumber}
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              
               <div>
-                <DatePickerInput
-                  label="Purchase Date"
-                  value={formatDate_dd_mm_yyyy(formData.PurchaseDate)}
-                  onChange={(val) => handleFieldChange('PurchaseDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                <Input
+                  label='Asset Cost (₹)'
                   required
-                  error={errors.PurchaseDate}
+                  error={errors.AssetCost}
+                  type="text"
+                  value={formData.AssetCost ?? ''}
+                  maxLength={4}
+                  rightIcon="₹"
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '');
+                    handleFieldChange('AssetCost', digits === '' ? 0 : Number(digits));
+                  }}
+                  placeholder="Enter Asset Cost"
                 />
               </div>
 
@@ -417,7 +405,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   label="Warranty Expiry Date"
                   value={formatDate_dd_mm_yyyy(formData.WarrantyExpiryDate)}
                   onChange={(val) => handleFieldChange('WarrantyExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                  required
+                  
                   error={errors.WarrantyExpiryDate}
                 />
               </div>

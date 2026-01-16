@@ -1,21 +1,44 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AssetMasterData } from "../models/AssetMasterModel";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import Tabs from "@/ui/components/Tab/Tab";
+import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
+import type { AssetMappingMasterData, FilterWithPaginationAssetMappingMasterRequest } from "@/features/assetMappingMaster/models/AssetMappingMasterModel";
+import { assetMappingMasterService } from "@/features/assetMappingMaster/services/AssetMappingMasterService";
+import * as E from 'fp-ts/Either';
+import { Loader } from "@/core/utils/loader";
+import useToast from "@/core/hooks/useToast";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 const ViewAssetPage: React.FC = () => {
 
-    //#region  LOADING STATE MANAGEMENT
-    const [isLoading] = useState(false);
+    //#region STATE MANAGEMENT
+    const [assetMappingMasterList, setAssetMappingMasterList] = useState<AssetMappingMasterData[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setIsLoadingMessage] = useState('');
+    // TOAST
+    const { addToast } = useToast();
 
     //LOCATION
     const location = useLocation();
 
     // NAVIGATION
     const navigate = useNavigate();
+
+    //#region TAB ACTIVITY
+    const assetTabList = [
+        { id: "Overview", label: "Overview" },
+        { id: "Return History", label: "Return History" },
+    ];
+
+    const [activeTab, setActiveTab] = useState<string>(assetTabList[0].id);
+
+    //#endregion
+
 
     const { canAction } = useMenuPermissions('/assetMaster');
 
@@ -26,6 +49,47 @@ const ViewAssetPage: React.FC = () => {
     // MESSAGE IF DATA NOT FOUND
     if (!editAssetData) return <div>No Asset Data Found</div>;
 
+    //#region INIT
+
+    useEffect(() => {
+
+        if (activeTab === "Return History") loadAssetMappings()
+
+    }, [activeTab]);
+
+    //#endregion
+
+    //#region LOAD ASSET MAING
+    const loadAssetMappings = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationAssetMappingMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 100,
+                    AssetMasterId: editAssetData.AssetMasterId || 0,
+                    Status: 'Inactive'
+                };
+
+                const response = await assetMappingMasterService.apiCallPullAssetMappingMaster(params);
+                if (E.isRight(response)) {
+
+                    setAssetMappingMasterList(response.right.Data);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                    return response;
+                }
+            },
+            undefined,
+            (error: any) => addToast({ type: 'error', title: error.message }),
+            undefined,
+            'Loading Asset Mapping'
+        );
+    };
+    //#endregion
 
     //#region EDIT ASSET
     const handleEditAssetMaster = (row: AssetMasterData) => {
@@ -57,139 +121,221 @@ const ViewAssetPage: React.FC = () => {
     //#endregion
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+
+            <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+
             <HeaderActionBar
-                titleText={'Asset Master'}
+                titleText={'Asset Master : '}
+                subTitleText={editAssetData.AssetName ?? ''}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListAssetMaster()}
-                canAction={canAction}
+                canAction={canAction && activeTab === "Overview" && editAssetData.Status !== "Booked"}
                 onEdit={() => {
-
-                    if (editAssetData) handleEditAssetMaster(editAssetData!);
-
+                    if (activeTab === 'Overview') {
+                        if (editAssetData) handleEditAssetMaster(editAssetData!);
+                    }
                 }}
                 isLoading={isLoading}
             />
+            <div className='pt-3'>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
+                <Tabs
+                    tabs={assetTabList}
+                    defaultActive={activeTab}
+                    islarge={true}
+                    onTabChange={(t) => {
 
-                {/* ================= LEFT SIDE (2/3) ================= */}
-                <div className="lg:col-span-2 space-y-6">
+                        setActiveTab(t.id);
 
-                    {/* ================= ASSET INFORMATION ================= */}
-                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Asset Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                        if (t.id === "Return History") loadAssetMappings()
 
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Asset Name" value={editAssetData.AssetName} />
-                                    <FieldItem label="Asset Code" value={editAssetData.AssetCode} />
-                                    <FieldItem label="Serial Type" value={editAssetData.AssetType} />
-
-                                </div>
-                            </div>
-
-                            <div className="lg:col-span-3 pb-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Asset Brand" value={editAssetData.AssetBrand} />
-                                    <FieldItem label="Asset Model" value={editAssetData.AssetModel} />
-                                    <FieldItem label="Serial Number" value={editAssetData.SerialNumber} />
-
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* ================= PURCHASE DETAILS ================= */}
-                    <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Purchase Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem
-                                        label="Purchase Date"
-                                        value={
-                                            editAssetData.PurchaseDate
-                                                ? formatDate_dd_MonthName_yy(editAssetData.PurchaseDate)
-                                                : "-"
-                                        }
-
-                                    />
-                                    <FieldItem
-                                        label="Warranty Expiry Date"
-                                        value={
-                                            editAssetData.WarrantyExpiryDate
-                                                ? formatDate_dd_MonthName_yy(editAssetData.WarrantyExpiryDate)
-                                                : "-"
-                                        }
-
-                                    />
-                                    <FieldItem label="Supplier Name" value={editAssetData.SupplierName} />
-
-                                </div>
-                            </div>
-
-                            <div className="lg:col-span-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Asset Cost" value={editAssetData.AssetCost} />
-                                </div>
-                            </div>
-                        </div>
-
-                    </section>
-
-                </div>
-
-                {/* ================= RIGHT SIDE (1/3) ================= */}
-                <div className="lg:col-span-1 space-y-6">
-
-                    {/* ================= AUDIT TRAIL ================= */}
-                    <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
-
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Action Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Created By" value={editAssetData.CreatedBy} />
-                                    <FieldItem
-                                        label="Created Date"
-                                        value={
-                                            editAssetData.CreatedDate
-                                                ? formatDate_dd_MonthName_yy(editAssetData.CreatedDate)
-                                                : "-"
-                                        }
-
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="lg:col-span-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Modified By" value={editAssetData.ModifiedBy} />
-                                    <FieldItem
-                                        label="Modified Date"
-                                        value={
-                                            editAssetData.ModifiedDate
-                                                ? formatDate_dd_MonthName_yy(editAssetData.ModifiedDate)
-                                                : "-"
-                                        }
-
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                </div>
-
+                    }}
+                />
             </div>
+            {activeTab === 'Overview' && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
+
+                    {/* ================= LEFT SIDE (2/3) ================= */}
+                    <div className="lg:col-span-2 space-y-6">
+
+                        {/* ================= ASSET INFORMATION ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Asset Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Asset Name" value={editAssetData.AssetName} />
+                                        <FieldItem label="Asset Code" value={editAssetData.AssetCode} />
+                                        <FieldItem label="Serial Type" value={editAssetData.AssetType} />
+
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-3 pb-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Asset Brand" value={editAssetData.AssetBrand} />
+                                        <FieldItem label="Asset Model" value={editAssetData.AssetModel} />
+                                        <FieldItem label="Serial Number" value={editAssetData.SerialNumber} />
+
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* ================= PURCHASE DETAILS ================= */}
+                        <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Purchase Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem
+                                            label="Purchase Date"
+                                            value={
+                                                editAssetData.PurchaseDate
+                                                    ? formatDate_dd_MonthName_yy(editAssetData.PurchaseDate)
+                                                    : "-"
+                                            }
+
+                                        />
+                                        <FieldItem
+                                            label="Warranty Expiry Date"
+                                            value={
+                                                editAssetData.WarrantyExpiryDate
+                                                    ? formatDate_dd_MonthName_yy(editAssetData.WarrantyExpiryDate)
+                                                    : "-"
+                                            }
+
+                                        />
+                                        <FieldItem label="Supplier Name" value={editAssetData.SupplierName} />
+
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Asset Cost (₹)" value={editAssetData.AssetCost} />
+                                    </div>
+                                </div>
+                            </div>
+
+                        </section>
+
+                    </div>
+
+                    {/* ================= RIGHT SIDE (1/3) ================= */}
+                    <div className="lg:col-span-1 space-y-6">
+
+                        {/* ================= AUDIT TRAIL ================= */}
+                        <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Action Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Created By" value={editAssetData.CreatedBy} />
+                                        <FieldItem
+                                            label="Created Date"
+                                            value={
+                                                editAssetData.CreatedDate
+                                                    ? formatDate_dd_MonthName_yy(editAssetData.CreatedDate)
+                                                    : "-"
+                                            }
+
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Modified By" value={editAssetData.ModifiedBy} />
+                                        <FieldItem
+                                            label="Modified Date"
+                                            value={
+                                                editAssetData.ModifiedDate
+                                                    ? formatDate_dd_MonthName_yy(editAssetData.ModifiedDate)
+                                                    : "-"
+                                            }
+
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* ================= AUDIT TRAIL ================= */}
+                        <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Alloted Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                <div className="lg:col-span-3 pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Employee Name" value={editAssetData.EmployeeName} />
+
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                    </div>
+
+                </div>
+            )}
+
+            {activeTab === 'Return History' && assetMappingMasterList && (
+                <div className="space-y-4">
+                    {assetMappingMasterList.length === 0 ? (
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                            <NoDataView message='No Assets Found' />
+                        </section>
+                    ) : (
+                        <div className="space-y-3">
+                            {assetMappingMasterList.map((asset) => {
+
+                                return (
+                                    <>
+
+                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                Asset Details
+                                            </h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                        <FieldItem label="Employee Name" value={asset.EmployeeName} />
+                                                        <FieldItem label="ReturnDate" value={formatDate_dd_MonthName_yy(asset.ReturnDate ?? '')} />
+                                                        <FieldItem label="Condition On Return" value={asset.ConditionOnReturn} />
+                                                    </div>
+                                                </div>
+
+                                                <div className="lg:col-span-3 pt-3">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                        <FieldItem label="Department" value={asset.Department} />
+                                                        <FieldItem label="Designation" value={asset.Designation} />
+                                                        <FieldItem label="Branch" value={asset.Branch} />
+
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </section>
+                                    </>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
 
         </div>
     );

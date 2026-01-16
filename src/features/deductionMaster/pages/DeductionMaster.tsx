@@ -286,7 +286,8 @@ export const DeductionMaster: React.FC = () => {
           page: pagination.currentPage,
           filters,
           sortInfo,
-          searchTerm
+          searchTerm,
+          name:row.Name
         }
       }
     });
@@ -335,13 +336,15 @@ export const DeductionMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="150px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || ''
+    },
+    {
+      key: 'Applicable',
+      label: 'Applicable',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || ''
     },
     {
       key: 'Value',
@@ -349,44 +352,24 @@ export const DeductionMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          {value || 0}
-        </span>
-      )
-    },
-    {
-      key: 'BranchName',
-      label: 'Branch Name',
-      width: '12',
-      sortable: false,
-      align: 'left',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="120px"
-          tooltipThreshold={12}
-        />
-      )
+      render: (value) => value || '0'
     },
     {
       key: 'MinSalary',
-      label: 'Min Salary',
+      label: 'Min Salary (₹)',
       width: '12',
       sortable: false,
       align: 'left',
-      render: (value) =>
-        value ? `₹${value.toLocaleString('en-IN')}` : 'N/A'
+      render: (value) => value ? `₹ ${value}` : '0'
     },
 
     {
       key: 'MaxSalary',
-      label: 'Max Salary',
+      label: 'Max Salary (₹)',
       width: '12',
       sortable: false,
       align: 'left',
-      render: (value) =>
-        value ? `₹${value.toLocaleString('en-IN')}` : 'N/A'
+      render: (value) => value ? `₹ ${value}` : '0'
     },
 
     {
@@ -395,11 +378,15 @@ export const DeductionMaster: React.FC = () => {
       width: '10',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          {value || 'N/A'}
-        </span>
-      )
+      render: (value) => value || ''
+    },
+    {
+      key: 'BranchName',
+      label: 'Branch Name',
+      width: '12',
+      sortable: false,
+      align: 'left',
+      render: (value) => value || ''
     },
     {
       key: 'StateName',
@@ -407,13 +394,7 @@ export const DeductionMaster: React.FC = () => {
       width: '12',
       sortable: false,
       align: 'left',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="120px"
-          tooltipThreshold={12}
-        />
-      )
+      render: (value) => value || ''
     },
     {
       key: 'actions',

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
-import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
@@ -16,17 +16,18 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
-import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
-import { updateFilter } from '@/core/utils/filterHelper';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
+import { Edit, Trash2 } from 'lucide-react';
+import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 
 const initialFormState = (): AddUpdateHolidayMasterRequest => ({
   HolidayMasterId: 0,
@@ -62,19 +63,12 @@ export const HolidayMaster: React.FC = () => {
   const [viewHolidayMasterDetailsData, setViewHolidayMasterDetailsData] = useState<HolidayMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
-  //FILTER STATES
-  const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
-  const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-
-  //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
   // ADD UPDATE HOLIDAY URL
-  const [HolidayURLFiles, setHolidayURLFiles] = useState<(File | string)[]>([]);
-
-  // REMOVE HOLIDAY URL
-  const [removeHolidayURL, setRemoveHolidayURL] = useState<string[]>([]);
+  const [holidayFiles, setHolidayFiles] = useState<(File | string)[]>([]);
+  const [removedHolidayUrls, setRemovedHolidayUrls] = useState<string[]>([]);
+  const [holidayURL, setHolidayURL] = useState<string>();
 
   // EDIT HOLIDAY MASTER
   const [editingHolidayMasterData, setEditingHolidayMasterData] = useState<HolidayMasterData | null>(null);
@@ -86,9 +80,6 @@ export const HolidayMaster: React.FC = () => {
   //DELETE HOLIDAY MASTER STATES
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteHolidayMasterDetailsData, setDeleteHolidayMasterDetailsData] = useState<HolidayMasterData | null>(null)
-
-  //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeHolidayMasterColumnsModal, setIsShowCustomizeHolidayMasterColumnsModal] = useState(false);
 
   //#endregion
 
@@ -119,17 +110,20 @@ export const HolidayMaster: React.FC = () => {
     if (isAddUpdateModalOpen) {
       if (editingHolidayMasterData) {
         setFormData({
+
           HolidayMasterId: editingHolidayMasterData.HolidayMasterId,
           Uniquekey: editingHolidayMasterData.Uniquekey || initialFormState().Uniquekey,
           HolidayName: editingHolidayMasterData.HolidayName || "",
-          HolidayURL: editingHolidayMasterData.HolidayURL || "",
+          HolidayURL: null,
           RemoveHolidayURL: '',
+
         });
 
       } else {
         setFormData(initialFormState());
-        setHolidayURLFiles([]);
-        setRemoveHolidayURL([]);
+        setHolidayFiles([]);
+        setHolidayURL("")
+        setRemovedHolidayUrls([]);
       }
       setErrors({});
     }
@@ -138,10 +132,10 @@ export const HolidayMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
   const fetchHolidayList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadHolidays(page, filters, sort);
+    return await loadHolidays(page, "", sort);
   }
 
-  const loadHolidays = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadHolidays = async (page: number, searchValue?: string, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
@@ -160,8 +154,7 @@ export const HolidayMaster: React.FC = () => {
         const params: FilterWithPaginationHolidayMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          HolidayMasterId: filterParams.HolidayMasterId ? Number(filterParams.HolidayMasterId) : undefined,
-          HolidayName: filterParams.HolidayName?.trim() || undefined,
+          HolidayName: searchValue?.trim() || undefined,
           SortBy: sortByParam
         }
 
@@ -204,11 +197,8 @@ export const HolidayMaster: React.FC = () => {
 
       return
     }
-    const filterParams: FilterInfo = {
-      HolidayName: searchValue.trim(),
-    };
 
-    await loadHolidays(1, filterParams)
+    await loadHolidays(1, searchValue)
   }
   //#endregion
 
@@ -238,7 +228,6 @@ export const HolidayMaster: React.FC = () => {
         const params: FilterWithPaginationHolidayMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
-          HolidayName: filters.HolidayName?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         }
@@ -281,9 +270,9 @@ export const HolidayMaster: React.FC = () => {
 
     setSortInfo(sortInfo);
 
-    loadHolidays(1, filters, sort);
+    loadHolidays(1, "", sort);
 
-  }, [filters]);
+  }, []);
 
   //#endregion
 
@@ -342,56 +331,67 @@ export const HolidayMaster: React.FC = () => {
           <div className="flex items-center justify-start">
             <TooltipText
               text={value || 'N/A'}
-              maxWidth="300px"
-              tooltipThreshold={30}
+              maxWidth="400px"
+              tooltipThreshold={50}
               onClick={() => handleViewHolidayDetails(row)}
+            />
+          </div>
+        )
+      },
+      {
+        key: 'HolidayURL',
+        label: 'Holiday File',
+        width: '30',
+        sortable: false,
+        align: 'left',
+        render: (value, row) => (
+          <div className="flex items-center justify-start">
+
+
+            <MultiImageViewer
+              images={parseDocumentUrls(row.HolidayURL)}
+              title="Holiday"
+              isIcon={false}
+              triggerLabel={value || '-'}
             />
 
           </div>
         )
       },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction && !row.NumberOfEmployee ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Department"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )
+      }
     ],
     // dependencies: include everything used inside that might change
-    [handleViewHolidayDetails]
-  )
-  //#endregion
-
-  //#region CUSTOMIZE TABLE COLUMNS
-  const requiredHolidayMasterColumnKeys: string[] = ['HolidayName'];
-
-  const allHolidayMasterColumnKeys: string[] = holidayMasterColumns.map(c => c.key)
-
-  const [selectedHolidayMasterColumnKeys, setSelectedHolidayMasterColumnKeys] = useState<string[]>(() => {
-
-    try {
-
-      const saved = LocalStorageHelper.getHolidayMasterTableColumns();
-
-      if (saved) {
-
-        const parsed = JSON.parse(saved) as string[]
-        // Ensure required columns are always present
-
-        const withRequired = Array.from(new Set([...parsed, ...requiredHolidayMasterColumnKeys]));
-
-        // Filter out any keys that no longer exist
-        return withRequired.filter(k => allHolidayMasterColumnKeys.includes(k));
-      }
-    } catch { }
-    return allHolidayMasterColumnKeys
-  })
-
-  useEffect(() => {
-    // Guarantee required columns remain selected if state changes elsewhere
-
-    setSelectedHolidayMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredHolidayMasterColumnKeys])).filter(k => allHolidayMasterColumnKeys.includes(k)));
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [holidayMasterColumns.length])
-
-  const visibleHolidayMasterColumns = useMemo(
-    () => holidayMasterColumns.filter(col => selectedHolidayMasterColumnKeys.includes(col.key)),
-    [holidayMasterColumns, selectedHolidayMasterColumnKeys]
+    [handleViewHolidayDetails, handleConfirmationDialogBoxOpen]
   )
   //#endregion
 
@@ -427,7 +427,7 @@ export const HolidayMaster: React.FC = () => {
 
           <div className="space-y-4">
 
-            <FieldItem label="Week Off Policy Name" value={data.HolidayName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Holiday Name" value={data.HolidayName} isRow withBorder={true} className='font-medium text-blue-900 ' />
 
             <div className="space-y-4">
               <h4 className="text-lg font-semibold pb-2">
@@ -445,29 +445,31 @@ export const HolidayMaster: React.FC = () => {
               {canAction && (
                 <>
                   <Button
-                    color='gray'
+                    color='red'
                     variant='solid'
                     colorMode="light"
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleConfirmationDialogBoxOpen(data)
                     }}
+                    leftIcon={<Trash2 className="h-5 w-5" />}
                   >
                     Delete
                   </Button>
 
                   <Button
                     color='blue'
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleEditHolidayMaster(data)
                     }}
+                    leftIcon={<Edit className="h-5 w-5" />}
                   >
                     Edit
                   </Button>
@@ -479,29 +481,6 @@ export const HolidayMaster: React.FC = () => {
       </Modal>
     )
   }
-  //#endregion
-
-  //#region FILTER MODAL HELPERS
-  const applyFilters = () => {
-    setFilters(tempFilters)
-    loadHolidays(1, tempFilters)
-    setShowFilterPopup(false)
-  }
-  //#endregion
-
-  //#region CLEAR FILTER
-  const clearFilters = () => {
-    setTempFilters({})
-    setFilters({})
-    loadHolidays(1, {})
-    setShowFilterPopup(false)
-  }
-  //#endregion
-
-  //#region HANDLE FILTER CHNAGE
-  const handleFilterChange = (key: string, value: string) => {
-    setTempFilters(prev => updateFilter(prev, key, value));
-  };
   //#endregion
 
   //#region  ADD UPDATE EDIT HOLIDAY MASTER
@@ -517,7 +496,9 @@ export const HolidayMaster: React.FC = () => {
   const handleAddHolidayMasterModal = () => {
     setEditingHolidayMasterData(null);
     setFormData(initialFormState());
-    setHolidayURLFiles([]);
+    setHolidayFiles([]);
+    setHolidayURL('')
+    setRemovedHolidayUrls([]);
     setErrors({});
     setIsAddUpdateModalOpen(true);
   }
@@ -539,10 +520,11 @@ export const HolidayMaster: React.FC = () => {
       newErrors.HolidayName = 'Holiday Name must be at most 50 characters'
     }
 
-    const hasFile = formData.HolidayURL || HolidayURLFiles.length > 0 || editingHolidayMasterData?.HolidayURL;
-    if (!hasFile) {
-      newErrors.HolidayURL = "Holiday URL is required.";
+    if (!hasAnyDocumentFile(holidayFiles, holidayURL, removedHolidayUrls)) {
+      newErrors.HolidayURL = "File is required.";
     }
+
+
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors,
@@ -556,13 +538,15 @@ export const HolidayMaster: React.FC = () => {
     fd.append('HolidayMasterId', formData.HolidayMasterId.toString());
     fd.append('Uniquekey', formData.Uniquekey ?? '');
     fd.append('HolidayName', formData.HolidayName.trim() ?? '');
-    HolidayURLFiles.forEach(file => {
+
+    holidayFiles.forEach(file => {
       if (file instanceof File) {
         fd.append('HolidayURL', file);
       }
     });
 
-    fd.append('RemoveHolidayURL', removeHolidayURL.join(','));
+    fd.append('RemoveHolidayURL', removedHolidayUrls.join(','));
+
     return fd;
   };
   //#endregion
@@ -609,7 +593,7 @@ export const HolidayMaster: React.FC = () => {
               totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
             });
 
-            addToast({ type: 'success', title: 'Holiday added successfully' })
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           } else {
 
             const updatedRecord = response.right.Data[0] as HolidayMasterData;
@@ -721,14 +705,6 @@ export const HolidayMaster: React.FC = () => {
           debouncedSearch(v)
         }}
         onClearSearch={clearsearchHolidays}
-        isShowFilterButton
-        filters={filters}
-        onOpenFilter={() => {
-          setTempFilters(filters)
-          setShowFilterPopup(true)
-        }}
-        isShowCustomizeButton
-        onCustomize={() => setIsShowCustomizeHolidayMasterColumnsModal(true)}
 
         // ADD
         isShowAddButton={canAction}
@@ -749,11 +725,10 @@ export const HolidayMaster: React.FC = () => {
 
       <DataTable
         data={holidayListForTable}
-        columns={visibleHolidayMasterColumns}
+        columns={holidayMasterColumns}
         pagination={holidayMasterPaginationInfo}
         emptyMessage="No Holiday Data Found"
         fixedHeight={true}
-        maxHeight="calc(100vh - 200px)"
         recordsPerPage={20}
         className="flex-1"
         sortInfo={sortInfo}
@@ -785,7 +760,7 @@ export const HolidayMaster: React.FC = () => {
         }}
         title={editingHolidayMasterData ? 'Update Holiday ' : 'Add Holiday'}
         onSubmit={handleAddUpdateHolidayMaster}
-        saveText={editingHolidayMasterData ? 'Update Holiday' : 'Save Holiday'}
+        saveText={editingHolidayMasterData ? 'Update' : 'Add'}
         resetText='Reset'
         loading={isLoading}
         size="xl"
@@ -799,85 +774,31 @@ export const HolidayMaster: React.FC = () => {
                 value={formData.HolidayName ?? ''}
                 onChange={(e) => handleFieldChange("HolidayName", e.target.value)}
                 required
-                maxLength={20}
+                maxLength={100}
                 placeholder="Enter Holiday Name"
                 error={errors.HolidayName}
               />
             </div>
             <div>
               <MultiFilePicker
-                label='Holiday URL'
+                label="Holiday Photo"
+                placeholder="Select Holiday Photo"
                 required
                 error={errors.HolidayURL}
-                value={HolidayURLFiles}
-                onChange={setHolidayURLFiles}
-                availableFilesURL={editingHolidayMasterData?.HolidayURL ?? ""}
-                allowedTypes={[
-                  "image/jpeg",
-                  "image/png",
-                  "application/pdf",
-                ]}
+                value={holidayFiles}
+                onChange={setHolidayFiles}
+                availableFilesURL={holidayURL ?? ""}
+                allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                 maxFiles={5}
-                maxSizeMB={50}
+                maxSizeMB={10}
+                onRemoveExisting={(url) => {
+                  setRemovedHolidayUrls((prev) => [...prev, url])
+                }}
               />
             </div>
           </div>
         </div>
 
-      </Modal>
-      {/* CUSTOMIZE COLUMNS MODAL */}
-
-      <CustomizeColumnsModal
-        isOpen={isShowCustomizeHolidayMasterColumnsModal}
-        onClose={() => setIsShowCustomizeHolidayMasterColumnsModal(false)}
-        onApply={(keys) => {
-
-          const withRequired = Array.from(
-            new Set([...keys, ...requiredHolidayMasterColumnKeys])
-          )
-
-          setSelectedHolidayMasterColumnKeys(withRequired)
-
-          try {
-            LocalStorageHelper.storeHolidayMasterTableColumns(
-              JSON.stringify(withRequired)
-            )
-          } catch { }
-        }}
-        columns={holidayMasterColumns}
-        selectedKeys={selectedHolidayMasterColumnKeys}
-        requiredKeys={requiredHolidayMasterColumnKeys}
-        title="Customize Holiday Master Table Columns"
-      />
-
-      {/* FILTER HOLIDAY MODAL */}
-
-      <Modal
-        isOpen={showFilterPopup}
-        onClose={() => setShowFilterPopup(false)}
-        title="Filter - Holiday Master"
-        onSubmit={(e) => {
-          e.preventDefault()
-          applyFilters()
-        }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
-        onCancel={() => clearFilters()}
-        size="small-half"
-      >
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Holiday Name</label>
-              <Input
-                type="text"
-                value={tempFilters.HolidayName || ''}
-                onChange={(e) => handleFilterChange('HolidayName', e.target.value)}
-                placeholder="Enter Holiday Name"
-              />
-            </div>
-          </div>
-        </div>
       </Modal>
 
       {/* DELETE CONFIRMATION HOLIDAY MODAL */}

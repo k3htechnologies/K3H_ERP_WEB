@@ -27,6 +27,9 @@ import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import Checkbox from '@/ui/components/forms/Checkbox';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { updateFilter } from '@/core/utils/filterHelper';
+import { Edit, Trash2 } from 'lucide-react';
+import { LEAVE_TYPE_MASTER } from '@/core/constants';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 
 const initialFormState = (): AddUpdateLeaveTypeMasterRequest => ({
   LeaveTypeMasterId: 0,
@@ -137,7 +140,7 @@ export const LeaveTypeMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
   const fetchLeaveTypeList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadLeaveTypes(page, filters,sort);
+    return await loadLeaveTypes(page, filters, sort);
   }
 
   const loadLeaveTypes = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
@@ -362,14 +365,7 @@ export const LeaveTypeMaster: React.FC = () => {
         width: '20',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <TooltipText
-            text={value}
-            maxWidth="170px"
-            tooltipThreshold={15}
-            tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
-          />
-        )
+        render: (value) => value || '-'
       },
       {
         key: 'IsCarryForward',
@@ -377,11 +373,7 @@ export const LeaveTypeMaster: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${value ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-            {value ? 'Yes' : 'No'}
-          </span>
-        )
+        render: (value) => value ? 'Yes' : 'No'
       },
       {
         key: 'MaxCarryForward',
@@ -389,11 +381,7 @@ export const LeaveTypeMaster: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-            {value || 0}
-          </span>
-        )
+        render: (value) => value || '0'
       },
       {
         key: 'IsEncashable',
@@ -401,15 +389,41 @@ export const LeaveTypeMaster: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${value ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-            {value ? 'Yes' : 'No'}
-          </span>
+        render: (value) => value ? 'Yes' : 'No'
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction && !row.NumberOfEmployee ? (
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Department"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
         )
       }
     ],
     // dependencies: include everything used inside that might change
-    [handleViewLeaveTypeDetails]
+    [handleViewLeaveTypeDetails, handleConfirmationDialogBoxOpen]
   )
 
   //#endregion
@@ -510,29 +524,31 @@ export const LeaveTypeMaster: React.FC = () => {
               {canAction && (
                 <>
                   <Button
-                    color='gray'
+                    color='red'
                     variant='solid'
                     colorMode="light"
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleConfirmationDialogBoxOpen(data)
                     }}
+                    leftIcon={<Trash2 className="h-5 w-5" />}
                   >
                     Delete
                   </Button>
 
                   <Button
                     color='blue'
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleEditLeaveTypeMaster(data)
                     }}
+                    leftIcon={<Edit className="h-5 w-5" />}
                   >
                     Edit
                   </Button>
@@ -878,27 +894,26 @@ export const LeaveTypeMaster: React.FC = () => {
         }}
         title={editingLeaveTypeMasterData ? 'Update Leave Type' : 'Add Leave Type'}
         onSubmit={handleAddUpdateLeaveTypeMaster}
-        saveText="Save"
-        resetText='Reset'
+        saveText={editingLeaveTypeMasterData ? 'Update' : 'Add'}
+        resetText=''
         onreset={handleResetForm}
         loading={isLoading}
         size="xl"
       >
         <div className="space-y-10 p-6 bg-blue-100">
           <div className="space-y-4" >
+
             <div>
-              <Input
-                type="text"
+              <SinglePageSelection
+                label="Leave Type"
+                placeholder="Select Leave Type"
                 required
-                label='Leave Type'
-                value={formData.LeaveType ?? ""}
-                onChange={(e) => handleFieldChange("LeaveType", e.target.value)}
-                placeholder="Enter Leave Type"
-                maxLength={250}
+                value={formData.LeaveType}
+                onChange={(e) => handleFieldChange('LeaveType', String(e))}
+                options={LEAVE_TYPE_MASTER.map((opt) => ({ label: opt.name, value: opt.id }))}
                 error={errors.LeaveType}
               />
             </div>
-
             <div>
               <Input
                 type="text"
@@ -960,7 +975,7 @@ export const LeaveTypeMaster: React.FC = () => {
         columns={leaveTypeMasterColumns}
         selectedKeys={selectedLeaveTypeMasterColumnKeys}
         requiredKeys={requiredLeaveTypeMasterColumnKeys}
-        title="Customize Leave Type Master Table Columns"
+        title="Customize Table Columns"
       />
       <Modal
         isOpen={showFilterPopup}

@@ -970,6 +970,28 @@ export const LocalStorageHelper = {
         return null;
     },
     //#endregion
+    //#region STORE SELECTED IS GRE
+    storeIsGRE: (projectId: number): void => {
+        try {
+            localStorage.setItem(
+                LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID,
+                String(projectId)
+            );
+        } catch (error) {
+            console.error('Error storing selected GRE:', error);
+        }
+    },
+    //#endregion
+    //#region GET SELECTED PROJECT
+    getSelectedIsGRE: (): number | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
+        if (stored) {
+            const parsed = Number(stored);
+            return isNaN(parsed) ? null : parsed;
+        }
+        return null;
+    },
+    //#endregion
     //#region STORE REDEVELOPMENT BUILDING COLUMNS
     storeRedevelopmentBuildingTableColumns: (columns: string): void => {
         try {

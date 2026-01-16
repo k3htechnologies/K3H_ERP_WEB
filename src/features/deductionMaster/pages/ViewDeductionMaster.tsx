@@ -51,7 +51,8 @@ const ViewDeductionMaster: React.FC = () => {
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             <HeaderActionBar
-                titleText={'Deduction Master'}
+                titleText={'Deduction Master : '}
+                subTitleText={editDeductionData.Name}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListDeductionMaster()}
@@ -77,15 +78,18 @@ const ViewDeductionMaster: React.FC = () => {
 
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Gender" value={editDeductionData.Gender} />
                                     <FieldItem label="Name" value={editDeductionData.Name} />
+
                                     <FieldItem label="Type" value={editDeductionData.Type} />
+                                    <FieldItem label="Gender" value={editDeductionData.Gender} />
 
                                 </div>
                             </div>
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Value" value={editDeductionData.Value} />
+
+                                    <FieldItem label="Branch Name" value={editDeductionData.BranchName} />
+                                    <FieldItem label="State Name" value={editDeductionData.StateName} />
 
                                 </div>
                             </div>
@@ -100,18 +104,13 @@ const ViewDeductionMaster: React.FC = () => {
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Max Salary" value={editDeductionData.MaxSalary} />
-                                    <FieldItem label="Min Salary" value={editDeductionData.MinSalary} />
-                                    <FieldItem label="Branch Name" value={editDeductionData.BranchName} />
-                                </div>
-                            </div>
-
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="State Name" value={editDeductionData.StateName} />
+                                    <FieldItem label="Applicable" value={editDeductionData.Applicable} />
+                                    <FieldItem label="Value" value={editDeductionData.Value} />
 
+                                    <FieldItem label="Min Salary (₹)" value={editDeductionData.MinSalary} />
+                                    <FieldItem label="Max Salary (₹)" value={editDeductionData.MaxSalary} />
                                 </div>
                             </div>
                         </div>

@@ -54,21 +54,9 @@ export class EarningMasterDatasourceImpl implements EarningMasterDatasource {
     async addUpdateEarningMaster(params: AddUpdateEarningMasterRequest): Promise<EarningMasterSaveResponse> {
 
         try {
-
-            const payLoad: AddUpdateEarningMasterRequest = {
-                EarningMasterId: params.EarningMasterId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-
-                Name: params.Name?.trim() ?? '',
-                Type: params.Type?.trim() ?? '',
-                Value: params.Value ?? 0,
-
-                BranchMasterId: params.BranchMasterId ?? 0,
-            }
-
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 EarningMasterApi.ADD_UPDATE,
-                payLoad
+                params
             )
 
             return response

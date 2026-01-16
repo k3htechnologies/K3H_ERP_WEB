@@ -40,12 +40,15 @@ export const CustomizeColumnsModal: React.FC<CustomizeColumnsModalProps> = ({
 
   // Derived booleans for the two checkboxes
   const allColumnKeys = useMemo(() => columns.map(c => c.key), [columns])
+
   const selectAllChecked = useMemo(
     () => allColumnKeys.every(k => localKeys.includes(k)),
     [allColumnKeys, localKeys]
   )
   const clearAllChecked = useMemo(
+
     () => localKeys.length === requiredKeys.length,
+
     [localKeys, requiredKeys]
   )
 
@@ -75,7 +78,6 @@ export const CustomizeColumnsModal: React.FC<CustomizeColumnsModalProps> = ({
     if (checked) {
       selectAll()
     } else {
-      // unchecking sets to required-only (consistent with Clear All)
       clearAll()
     }
   }
@@ -84,7 +86,6 @@ export const CustomizeColumnsModal: React.FC<CustomizeColumnsModalProps> = ({
     if (checked) {
       clearAll()
     } else {
-      // unchecking sets to all selected
       selectAll()
     }
   }
@@ -106,7 +107,7 @@ export const CustomizeColumnsModal: React.FC<CustomizeColumnsModalProps> = ({
       size='small30'
     >
       <div className="space-y-4">
-        {/* Top action checkboxes */}
+
         <div className="flex items-center justify-end space-x-4">
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -118,7 +119,7 @@ export const CustomizeColumnsModal: React.FC<CustomizeColumnsModalProps> = ({
           </div>
 
           <div className="flex items-center space-x-2">
-            <Checkbox 
+            <Checkbox
               label="Clear All"
               checked={clearAllChecked}
               onChange={(e) => handleClearAllCheckbox(e.target.checked)}

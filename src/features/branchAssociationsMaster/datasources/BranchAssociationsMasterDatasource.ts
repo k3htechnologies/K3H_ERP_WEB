@@ -6,13 +6,15 @@ import type {
     AddUpdateBranchAssociationsMasterRequest,
     BranchAssociationsMasterListResponse,
     BranchAssociationsMasterSaveResponse,
+    DeleteBranchAssociationsRequest,
+    BranchAssociationsDeleteResponse,
 } from '@/features/branchAssociationsMaster/models/BranchAssociationsMasterModel'
 
 export abstract class BranchAssociationsMasterDatasource {
 
     abstract pullBranchAssociationsMaster(params: FilterWithPaginationBranchAssociationsMasterRequest, signal?: AbortSignal): Promise<BranchAssociationsMasterListResponse>;
     abstract addUpdateBranchAssociationsMaster(data: AddUpdateBranchAssociationsMasterRequest): Promise<BranchAssociationsMasterSaveResponse>;
-
+    abstract deleteBranchAssociations(params: DeleteBranchAssociationsRequest): Promise<BranchAssociationsDeleteResponse>;
 }
 
 export class BranchAssociationsMasterDatasourceImpl implements BranchAssociationsMasterDatasource {
@@ -82,4 +84,30 @@ export class BranchAssociationsMasterDatasourceImpl implements BranchAssociation
         }
     }
 
+    async deleteBranchAssociations(params: DeleteBranchAssociationsRequest): Promise<BranchAssociationsDeleteResponse> {
+            try {
+                const queryParams = new URLSearchParams({
+                    BranchAssociationsId: (params.BranchAssociationsId ?? 0).toString(),
+                    UniqueKey: params.UniqueKey ?? '',
+                })
+    
+                const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+                    `${BranchAssociationsMasterApi.DELETE}?${queryParams.toString()}`
+                )
+    
+                return response
+    
+            } catch (error) {
+                
+                if (error === TokenExpiredException) {
+    
+                    console.error('ERROR: DELETE BRANCH ASSOCIATIONS :', error);
+    
+                    await this.deleteBranchAssociations(params);
+    
+                }
+    
+                throw error
+            }
+        }
 }

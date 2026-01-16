@@ -24,7 +24,6 @@ export class LitigationDatasourceImpl implements LitigationDatasource {
         return baseClient
     }
 
-
     async pullLitigation(params: FilterWithPaginationLitigationRequest, signal?: AbortSignal): Promise<LitigationListResponse> {
         try {
             const queryParams = new URLSearchParams({
@@ -52,7 +51,6 @@ export class LitigationDatasourceImpl implements LitigationDatasource {
             if (error === TokenExpiredException) {
                 await this.pullLitigation(params);
             }
-
             throw error
         }
     }

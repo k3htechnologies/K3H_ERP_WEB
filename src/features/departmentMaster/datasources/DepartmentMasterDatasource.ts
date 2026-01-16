@@ -25,6 +25,7 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
 
     async pullDepartmentMaster(params: FilterWithPaginationDepartmentMasterRequest, signal?: AbortSignal): Promise<DepartmentMasterListResponse> {
         try {
+            
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
@@ -56,17 +57,7 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
 
         try {
 
-            const payLoad: AddUpdateDepartmentMasterRequest = {
-                DepartmentMasterId: params.DepartmentMasterId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-                DepartmentCode: params.DepartmentCode?.trim() ?? '',
-                DepartmentName: params.DepartmentName?.trim() ?? '',
-            }
-
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                DepartmentMasterApi.ADD_UPDATE,
-                payLoad
-            )
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(DepartmentMasterApi.ADD_UPDATE, params);
 
             return response
         } catch (error) {
@@ -87,15 +78,13 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
                 UniqueKey: params.UniqueKey ?? '',
             })
 
-            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
-                `${DepartmentMasterApi.DELETE}?${queryParams.toString()}`
-            )
+            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(`${DepartmentMasterApi.DELETE}?${queryParams.toString()}`);
 
-            return response
+            return response;
 
         } catch (error) {
 
-            console.error('ERROR: DELETE DEPARTMENT MASTER :', error)
+            console.error('ERROR: DELETE DEPARTMENT MASTER :', error);
 
             if (error === TokenExpiredException) {
 

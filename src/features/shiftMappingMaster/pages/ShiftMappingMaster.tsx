@@ -31,6 +31,8 @@ import { fetchEmployeeMasterDropdown } from '@/features/employeeMaster/employeeM
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import { fetchDepartmentMasterDropdown } from '@/features/departmentMaster/departmentMasterDropdown';
 import { fetchShiftMasterDropdown } from '../ShiftMasterDropDown';
+import RadioPill from '@/ui/components/forms/RadioPill';
+import { Edit, Trash2 } from 'lucide-react';
 
 const initialFormState = (): AddUpdateShiftMappingMasterRequest => ({
   ShiftManagementMasterMappingId: 0,
@@ -96,6 +98,8 @@ export const ShiftMappingMaster: React.FC = () => {
     EmployeeName?: string;
     shiftName?: string
   }>({});
+
+  const [mappingShift, setMappingShift] = useState<string>("Department");
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -130,6 +134,7 @@ export const ShiftMappingMaster: React.FC = () => {
           DepartmentMasterId: editingShiftMappingMasterData.DepartmentMasterId || '',
           EmployeeId: editingShiftMappingMasterData.EmployeeId || '',
         });
+        setMappingShift(editingShiftMappingMasterData.DepartmentMasterId ? 'Department' : 'Employee')
         setDropdownLabels({
           departmentName: editingShiftMappingMasterData.DepartmentName || "",
           EmployeeName: editingShiftMappingMasterData.EmployeeName || "",
@@ -147,7 +152,7 @@ export const ShiftMappingMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchShiftMappingList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadShiftMappings(page, filters,sort);
+    return await loadShiftMappings(page, filters, sort);
   }
 
   const loadShiftMappings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
@@ -373,13 +378,7 @@ export const ShiftMappingMaster: React.FC = () => {
         width: '20',
         sortable: true,
         align: 'center',
-        render: (value) => (
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="200px"
-            tooltipThreshold={20}
-          />
-        )
+        render: (value) => value || '-'
       },
       {
         key: 'EmployeeName',
@@ -387,13 +386,7 @@ export const ShiftMappingMaster: React.FC = () => {
         width: '20',
         sortable: true,
         align: 'center',
-        render: (value) => (
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="200px"
-            tooltipThreshold={20}
-          />
-        )
+        render: (value) => value || '-'
       },
       {
         key: 'ShiftCode',
@@ -401,14 +394,7 @@ export const ShiftMappingMaster: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="150px"
-            tooltipThreshold={15}
-            tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
-          />
-        )
+        render: (value) => value || '-'
       },
       {
         key: 'ShiftBeginTime',
@@ -416,7 +402,7 @@ export const ShiftMappingMaster: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: (value) => value || 'N/A'
+        render: (value) => value || '-'
       },
       {
         key: 'ShiftEndTime',
@@ -424,11 +410,42 @@ export const ShiftMappingMaster: React.FC = () => {
         width: '12',
         sortable: false,
         align: 'center',
-        render: (value) => value || 'N/A'
+        render: (value) => value || '-'
       },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction && !row.NumberOfEmployee ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Department"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )
+      }
     ],
     // dependencies: include everything used inside that might change
-    [handleViewShiftMappingDetails]
+    [handleViewShiftMappingDetails, handleConfirmationDialogBoxOpen]
   )
   //#endregion
 
@@ -502,15 +519,13 @@ export const ShiftMappingMaster: React.FC = () => {
 
           <div className="space-y-4">
 
-            <FieldItem label="Department Name" value={data.DepartmentName} isRow withBorder={true} className='font-medium text-blue-900 ' />
-            <FieldItem label="Employee Name" value={data.EmployeeName} isRow withBorder={true} />
+            {data.DepartmentName && (<FieldItem label="Department Name" value={data.DepartmentName} isRow withBorder={true} className='font-medium text-blue-900 ' />)}
+            {data.EmployeeName && (<FieldItem label="Employee Name" value={data.EmployeeName} isRow withBorder={true} />)}
             <FieldItem label="Shift Name" value={data.ShiftName} isRow withBorder={true} />
             <FieldItem label="Shift Code" value={data.ShiftCode} isRow withBorder={true} />
-            <FieldItem label="Shift Begin Time" value={data.ShiftBeginTime} isRow withBorder={true} />
-            <FieldItem label="Shift End Time" value={data.ShiftEndTime} isRow withBorder={true} />
+            <FieldItem label="Shift Time" value={`${data.ShiftBeginTime} - ${data.ShiftEndTime}`} isRow withBorder={true} />
             <FieldItem label="Shift Duration Time" value={data.ShiftDurationTime} isRow withBorder={true} />
-            <FieldItem label="Shift Work Duration Time" value={data.ShiftWorkDurationTime} isRow withBorder={true} />
-            <FieldItem label="Remarks" value={data.Remarks} isRow withBorder={true} />
+            <FieldItem label="Duration Time" value={data.ShiftWorkDurationTime} isRow />
 
             <div className="space-y-4">
               <h4 className="text-lg font-semibold pb-2">
@@ -528,29 +543,31 @@ export const ShiftMappingMaster: React.FC = () => {
               {canAction && (
                 <>
                   <Button
-                    color='gray'
+                    color='red'
                     variant='solid'
                     colorMode="light"
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleConfirmationDialogBoxOpen(data)
                     }}
+                    leftIcon={<Trash2 className="h-5 w-5" />}
                   >
                     Delete
                   </Button>
 
                   <Button
                     color='blue'
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleEditShiftMappingMaster(data)
                     }}
+                    leftIcon={<Edit className="h-5 w-5" />}
                   >
                     Edit
                   </Button>
@@ -626,11 +643,11 @@ export const ShiftMappingMaster: React.FC = () => {
 
     const newErrors: { [key: string]: string } = {}
 
-    if (!formData.DepartmentMasterId) {
+    if (mappingShift === "Department" && !formData.DepartmentMasterId) {
       newErrors.DepartmentMasterId = "Department Name is required.";
     }
 
-    if (!formData.EmployeeId) {
+    if (mappingShift === "Employee" && !formData.EmployeeId) {
       newErrors.EmployeeId = "Employee Name is required.";
     }
 
@@ -698,7 +715,7 @@ export const ShiftMappingMaster: React.FC = () => {
             });
 
 
-            addToast({ type: 'success', title: 'Shift Mapping added successfully' })
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           } else {
 
             const updatedRecord = response.right.Data[0] as ShiftMappingMasterData;
@@ -873,8 +890,8 @@ export const ShiftMappingMaster: React.FC = () => {
         }}
         title={editingShiftMappingMasterData ? 'Update Shift Mapping ' : 'Add Shift Mapping'}
         onSubmit={handleAddUpdateShiftMappingMaster}
-        saveText={editingShiftMappingMasterData ? 'Update Shift Mapping' : 'Save Shift Mapping'}
-        resetText='Reset'
+        saveText={editingShiftMappingMasterData ? 'Update' : 'Add'}
+        resetText=''
         onreset={handleResetForm}
         loading={isLoading}
         size="xl"
@@ -894,32 +911,57 @@ export const ShiftMappingMaster: React.FC = () => {
                 error={errors.ShiftManagementMasterId}
               />
             </div>
+            <div>
+              <p className="text-sm text-gray-600 mb-2">Mapping</p>
 
-            <SingleSelectDropdownWithPagination
-              label="Employee"
-              key={dropdownResetKey}
-              title="Select Employee"
-              size="lg"
-              required
-              dataFetchCallBack={fetchEmployeeMasterDropdown}
-              onSelected={(item) => handleFieldChange("EmployeeId", item.value)}
-              initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.EmployeeName)}
-              error={errors.EmployeeId}
-            />
-          </div>
+              <div className="flex gap-3">
+                <RadioPill
+                  name="Mapping"
+                  label="Department"
+                  checked={mappingShift === "Department"}
+                  onChange={() => setMappingShift("Department")}
+                />
 
-          <div>
-            <SingleSelectDropdownWithPagination
-              label="Department"
-              key={dropdownResetKey}
-              title="Select Department"
-              size="lg"
-              required
-              dataFetchCallBack={fetchDepartmentMasterDropdown}
-              onSelected={(item) => handleFieldChange("DepartmentMasterId", item.value)}
-              initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
-              error={errors.DepartmentMasterId}
-            />
+                <RadioPill
+                  name="Mapping"
+                  label="Employee"
+                  checked={mappingShift === "Employee"}
+                  onChange={() => setMappingShift("Employee")}
+                />
+              </div>
+            </div>
+
+            {mappingShift === 'Employee' && (
+              <div>
+
+                <SingleSelectDropdownWithPagination
+                  label="Employee"
+                  key={dropdownResetKey}
+                  title="Select Employee"
+                  size="lg"
+                  required
+                  dataFetchCallBack={fetchEmployeeMasterDropdown}
+                  onSelected={(item) => handleFieldChange("EmployeeId", item.value)}
+                  initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.EmployeeName)}
+                  error={errors.EmployeeId}
+                />
+              </div>
+            )}
+            {mappingShift === 'Department' && (
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Department"
+                  key={dropdownResetKey}
+                  title="Select Department"
+                  size="lg"
+                  required
+                  dataFetchCallBack={fetchDepartmentMasterDropdown}
+                  onSelected={(item) => handleFieldChange("DepartmentMasterId", item.value)}
+                  initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
+                  error={errors.DepartmentMasterId}
+                />
+              </div>
+            )}
           </div>
         </div>
       </Modal >
@@ -945,7 +987,7 @@ export const ShiftMappingMaster: React.FC = () => {
         columns={shiftMappingMasterColumns}
         selectedKeys={selectedShiftMappingMasterColumnKeys}
         requiredKeys={requiredShiftMappingMasterColumnKeys}
-        title="Customize Shift Mapping Master Table Columns"
+        title="Customize Table Columns"
       />
 
       {/* FILTER SHIFT MAPPING  MASTER MODAL */}

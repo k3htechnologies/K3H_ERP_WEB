@@ -11,6 +11,7 @@ export interface FilterWithPaginationLeaveEncashmentMasterRequest {
 export interface LeaveEncashmentMasterData {
     LeaveEncashmentMasterSlabsId: number | 0
     Uniquekey: string | null
+    EarningMasterName: string | ''
     MinSalary: number | 0
     MaxSalary: number | 0
     EncashmentRate: number | 0
@@ -27,6 +28,7 @@ export interface LeaveEncashmentMasterData {
 export interface AddUpdateLeaveEncashmentMasterRequest {
     LeaveEncashmentMasterSlabsId: number | 0
     Uniquekey: string | null
+    EarningMasterName: string | null
     MinSalary: number | 0
     MaxSalary: number | 0
     EncashmentRate: number | 0

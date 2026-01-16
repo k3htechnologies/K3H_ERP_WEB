@@ -34,5 +34,12 @@ export interface AddUpdateBranchAssociationsMasterRequest {
     EmployeeId: number | null
 }
 
+export interface DeleteBranchAssociationsRequest {
+    BranchAssociationsId: number
+    UniqueKey: string
+}
+
+
 export type BranchAssociationsMasterListResponse = ApiResponse<BranchAssociationsMasterData[]>;
 export type BranchAssociationsMasterSaveResponse = ApiResponse<BranchAssociationsMasterData[]>;
+export type BranchAssociationsDeleteResponse = ApiResponse<number>;

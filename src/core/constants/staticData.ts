@@ -60,7 +60,7 @@ export const MASTER_DATA = {
 
   applicant_type: ['Applicant', 'Co - Applicant'],
 
-  speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Office Sale', 'Office Leasing', 'Commercial + Residential Sale', 'Commercial + Residential + Office Sale',],
+  speciality_type: ['Commercial Sale', 'Residential Sale', 'Commercial + Residential Sale',],
 
   carpet_area_type: ['MOFA', 'RERA'],
 
@@ -92,9 +92,11 @@ export const MASTER_DATA = {
 
   possessionType: ['Ready', 'Within 1 Year', 'More Than 2 Year'],
 
-  source: ['Advertisement', 'Channel Partner', 'Direct Walking', 'Exhibition', 'Enquiry', 'HRR Website', 'Reference'],
+  source: ['Channel Partner', 'Direct Walking'],
 
-  subsource: ['Facebook', 'Hoarding', 'Instagram', 'Google Ads', 'Newspaper'],
+  subSources: ['Advertisement', 'Exhibition', 'Enquiry', 'HRR Website', 'Reference'],
+
+  subSubsource: ['Facebook', 'Hoarding', 'Instagram', 'Google Ads', 'Newspaper'],
 
   finalStage: ['Booking Done', 'Enquiry', 'Follow-up', 'Lost', 'Inactive', 'Negotiation', 'Revisit', 'Site Visit'],
 
@@ -165,9 +167,59 @@ export const MASTER_DATA = {
     'Unstable work schedule',
     'Work profile / job expectation mismatch',
     'Work-life balance improvement'
-  ]
+  ],
 
-
+  ctc_earning: [
+    "Basic Salary",
+    "HRA",
+    "DA",
+    "Conveyance Allowance",
+    "Medical Allowance",
+    "Special Allowance",
+    "Other Allowance",
+    "LTA",
+    "Performance Bonus",
+    "Incentive",
+    "Variable Pay",
+    "Annual Bonus",
+    "Joining Bonus",
+    "Retention Bonus",
+    "Mobile Reimbursement",
+    "Internet Reimbursement",
+    "Fuel Reimbursement",
+    "Food Allowance",
+    "Shift Allowance",
+    "Night Shift Allowance",
+    "City Compensatory Allowance",
+    "Employer PF",
+    "Employer ESI",
+    "Gratuity",
+    "Superannuation",
+    "NPS Employer",
+    "Health Insurance",
+    "Overtime Pay",
+    "Leave Encashment",
+    "Arrears",
+    "Ex-Gratia",
+    "Relocation Allowance"
+  ],
+  leaveTypeMaster: [
+    'Adoption - Adoption Leave',
+    'Birthday - Birthday Leave',
+    'CL - Casual Leave',
+    'CO - Compensatory Off',
+    'ChildCare - Child Care Leave',
+    'Conference - Conference / Seminar Leave',
+    'Emergency - Emergency Leave',
+    'LOP - Loss of Pay',
+    'Marriage - Marriage Leave',
+    'Maternity - Maternity Leave',
+    'Paternity - Paternity Leave',
+    'PL - Privilege / Paid Leave',
+    'SL - Sick Leave',
+  ],
+  weekdays: ['1', '2', '3', '4', '5', '6'],
+  weekoff_type: ['Every', 'Alt(2,4)', 'Alt(1,3)', '1st', '2nd', '3rd', '4th', '5th'],
 } as const
 
 // ============================================================================
@@ -211,7 +263,8 @@ export const REQUIREMENT_TYPE_OPTIONS = toOptions(MASTER_DATA.requirement)
 export const BUDGET_TYPE_OPTIONS = toOptions(MASTER_DATA.budget)
 export const OCCUPATION_TYPE_OPTIONS = toOptions(MASTER_DATA.occupationType)
 export const SOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.source)
-export const SUBSOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.subsource)
+export const SUBSOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.subSources)
+export const SUB_SUB_SOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.subSubsource)
 export const FINAL_STAGE_TYPE_OPTIONS = toOptions(MASTER_DATA.finalStage)
 export const FINAL_STAGE_DETAILS_TYPE_OPTIONS = toOptions(MASTER_DATA.finalStageDetail)
 export const AGE_TYPE_OPTION = toOptions(MASTER_DATA.age)
@@ -243,6 +296,10 @@ export const CALENDER_VIEW_TYPE = toOptions(MASTER_DATA.calender_view_type)
 export const EVENT_TYPE = toOptions(MASTER_DATA.event_type)
 export const CONFERENCE_ROOM_NAME = toOptions(MASTER_DATA.conference_room_name)
 export const REASONS_OF_JOB_LEAVING_OPTIONS = toOptions(MASTER_DATA.reasonsOfJobLeaving)
+export const CTC_EARNINGS = toOptions(MASTER_DATA.ctc_earning)
+export const LEAVE_TYPE_MASTER = toOptions(MASTER_DATA.leaveTypeMaster)
+export const WEEKDAYS = toOptions(MASTER_DATA.weekdays)
+export const WEEK_OFF_TYPE = toOptions(MASTER_DATA.weekoff_type)
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

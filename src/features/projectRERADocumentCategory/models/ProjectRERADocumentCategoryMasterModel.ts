@@ -17,6 +17,7 @@ export interface ProjectRERADocumentCategoryMasterData {
     ProjectId: number | 0,
     ProjectRERADocumentCategoryName: string,
     OrderBy: number | 0,
+    DocumentCount: number | 0,
     CreatedById: number | 0,
     CreatedBy: string | '',
     CreatedDate: string | null,

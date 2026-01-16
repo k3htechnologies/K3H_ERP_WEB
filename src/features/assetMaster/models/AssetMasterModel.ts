@@ -24,6 +24,7 @@ export interface AssetMasterData {
     AssetCost: number | null
     SupplierName: string | null
     Status: string | null
+    EmployeeName: string | null
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

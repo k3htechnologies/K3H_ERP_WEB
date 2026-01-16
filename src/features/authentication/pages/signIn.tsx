@@ -71,7 +71,7 @@ export function SignIn() {
                 addToast({ type: 'error', title: error.message })
             },
             undefined,
-            'Send OTP...'
+            'Send OTP'
         ) // ✅ Properly closed
     }
     //#endregion
@@ -118,7 +118,7 @@ export function SignIn() {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Verify OTP...'
+            'Verify OTP'
         ) // ✅ Properly closed
     }
     //#endregion
@@ -154,7 +154,7 @@ export function SignIn() {
             },
 
             undefined,
-            'Resend OTP...'
+            'Resend OTP'
         )
     }
     //#endregion
@@ -229,7 +229,7 @@ export function SignIn() {
                                     type="submit"
                                     disabled={isLoading || mobileNumber.length !== 10}
                                     loading={isLoading}
-                                    loadingText="Sending..."
+                                    loadingText="Sending"
                                     size="lg"
                                     variant="solid"
                                     color="primary"
@@ -274,7 +274,7 @@ export function SignIn() {
                                     type="submit"
                                     disabled={isLoading || isVerified || otp.length !== 4}
                                     loading={isLoading}
-                                    loadingText="Verifying..."
+                                    loadingText="Verifying"
                                     size="lg"
                                     variant="solid"
                                     color="primary"
@@ -334,7 +334,7 @@ export function SignIn() {
                                     type="submit"
                                     disabled={isLoading || isVerified || otp.length !== 4}
                                     loading={isLoading}
-                                    loadingText="Verifying..."
+                                    loadingText="Verifying"
                                     size="lg"
                                     variant="solid"
                                     color="primary"

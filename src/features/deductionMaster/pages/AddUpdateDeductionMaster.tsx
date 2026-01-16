@@ -12,17 +12,19 @@ import type { AddUpdateDeductionMasterRequest, FilterWithPaginationDeductionMast
 import { DeductionMasterService } from "../services/DeductionMasterService";
 import { fetchBranchMasterDropdown } from "@/features/branchMaster/branchMasterDropDown";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { DEDUCTION_TYPE_OPTIONS, GENDER_OPTIONS } from "@/core/constants";
+import { CTC_EARNINGS, DEDUCTION_TYPE_OPTIONS, GENDER_OPTIONS } from "@/core/constants";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
-import { MultiSelectDropdown } from "@/ui/components/DropDown/MultiSelectDropdown";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
+import { allowPercentage, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import RadioPill from "@/ui/components/forms/RadioPill";
 
 const initialFormState = (): AddUpdateDeductionMasterRequest => ({
   DeductionMasterId: 0,
   Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   Name: "",
   Type: "",
+  Applicable: "",
   Value: 0,
   BranchMasterId: 0,
   MinSalary: 0,
@@ -50,7 +52,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
   const { DeductionMasterId } = useParams<{ DeductionMasterId?: string }>();
   const DeductionId = DeductionMasterId ? Number(DeductionMasterId) : 0;
   const isAddMode = DeductionId === 0;
-
+  const [applicable, setApplicable] = useState<string>("Percenatge");
   // TOAST
   const { addToast } = useToast();
 
@@ -131,6 +133,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
               DeductionMasterId: e.DeductionMasterId ?? prev.DeductionMasterId,
               Uniquekey: e.Uniquekey ?? prev.Uniquekey,
               Name: e.Name ?? prev.Name,
+              Applicable: e.Applicable ?? prev.Applicable,
               Type: e.Type ?? prev.Type,
               Value: e.Value ?? prev.Value,
               BranchMasterId: e.BranchMasterId ?? prev.BranchMasterId,
@@ -140,7 +143,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
               StateMasterId: e.StateMasterId ?? prev.StateMasterId,
               StateName: e.StateName ?? prev.StateName
             }));
-
+            setApplicable(e.Applicable);
             setDropdownLabels({
               branchName: e.BranchName || "",
               gender: e.Gender || "",
@@ -176,36 +179,26 @@ export const AddUpdateDeductionMaster: React.FC = () => {
 
     if (!formData.Name) {
       newErrors.Name = 'Deduction Name is required.';
-    }else if (formData.Name.trim().length > 50) {
+    } else if (formData.Name.trim().length > 50) {
       newErrors.Name = 'Deduction Name must be at most 50 characters'
-    }
-
-    if (!formData.BranchMasterId) {
-      newErrors.BranchMasterId = 'Branch Name is required.';
-    }
-
-    if (!formData.Type) {
-      newErrors.Type = 'Type is required.';
     }
 
     if (!formData.Value || Number(formData.Value) <= 0) {
       newErrors.Value = "Value is required";
     }
 
-    if (!formData.MaxSalary || Number(formData.MaxSalary) <= 0) {
-      newErrors.MaxSalary = "Max Salary is required";
-    }
-
     if (!formData.MinSalary || Number(formData.MinSalary) <= 0) {
       newErrors.MinSalary = "Min Salary is required";
     }
 
-    if (!formData.Gender?.trim()) {
-      newErrors.Gender = 'Gender is required.';
+    if (!formData.MaxSalary || Number(formData.MaxSalary) <= 0) {
+      newErrors.MaxSalary = "Max Salary is required";
     }
-    if (!formData.StateMasterId) {
-      newErrors.StateMasterId = 'State Name is required.';
+
+    if (formData.MinSalary && formData.MaxSalary && Number(formData.MaxSalary) <= Number(formData.MinSalary)) {
+      newErrors.MaxSalary = "Max Salary must be greater than Min Salary";
     }
+
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors
@@ -218,14 +211,15 @@ export const AddUpdateDeductionMaster: React.FC = () => {
     return {
       DeductionMasterId: formData.DeductionMasterId,
       Uniquekey: formData.Uniquekey,
-      Name: formData.Name,
+      Name: formData.Name || '',
       Type: Array.isArray(formData.Type) ? formData.Type.join(',') : formData.Type,
-      Value: formData.Value,
-      BranchMasterId: formData.BranchMasterId,
-      MinSalary: formData.MinSalary,
-      MaxSalary: formData.MaxSalary,
-      Gender: formData.Gender,
-      StateMasterId: formData.StateMasterId,
+      Value: formData.Value || 0,
+      Applicable: formData.Applicable,
+      BranchMasterId: formData.BranchMasterId || 0,
+      MinSalary: formData.MinSalary || 0,
+      MaxSalary: formData.MaxSalary || 0,
+      Gender: formData.Gender || '',
+      StateMasterId: formData.StateMasterId || 0,
       BranchName: formData.BranchName,
       StateName: formData.StateName
     };
@@ -258,7 +252,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
         const response = await DeductionMasterService.apiCallAddUpdateDeductionMaster(payload);
 
         if (E.isRight(response)) {
-          addToast({ type: "success", title: isAddMode ? "Deduction added successfully" : "Deduction updated successfully" });
+          addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
 
           const locationState = location.state as {
             listState?: {
@@ -310,72 +304,136 @@ export const AddUpdateDeductionMaster: React.FC = () => {
         <form onSubmit={handleAddUpdateDeductionMaster}>
 
           {/* Basic Deduction Details */}
-          
+
           <div className="space-y-4 pb-3">
             <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Deduction Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
 
               <div>
-                <Input
-                  type="text"
+                <SinglePageSelection
+                  label="Name"
+                  placeholder="Select Name"
                   required
-                  label='Name'
-                  value={formData.Name ?? ""}
-                  onChange={(e) => handleFieldChange("Name", e.target.value)}
-                  placeholder="Enter Deduction Name"
-                  maxLength={250}
+                  value={formData.Name}
+                  onChange={(value) => handleFieldChange("Name", value)}
+                  options={DEDUCTION_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
                   error={errors.Name}
                 />
               </div>
 
               <div>
-                <MultiSelectDropdown
+                <SinglePageSelection
                   label="Type"
-                  options={DEDUCTION_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                  selectedValues={Array.isArray(formData.Type) ? formData.Type : formData.Type ? [formData.Type] : []}
-                  onChange={(values) => handleFieldChange("Type", values)}
-                  required
+                  placeholder="Select Type"
+                  value={formData.Type}
+                  onChange={(e) => handleFieldChange('Type', String(e))}
+                  options={CTC_EARNINGS.map((opt) => ({ label: opt.name, value: opt.id }))}
                   error={errors.Type}
                 />
               </div>
-            </div>
+              <div >
+                <p className="text-sm text-gray-600 mb-2">
+                  Applicable *
+                </p>
+                <div className="flex gap-3">
+                  <RadioPill
+                    name="Applicable"
+                    label="Percenatge"
+                    value={formData.Applicable ?? ''}
+                    checked={applicable === "Percenatge"}
+                    onChange={() => {
+                      formData.Value = 0;
+                      setApplicable("Percenatge");
 
-            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                      handleFieldChange("Applicable", "Percenatge");
+                    }}
+                  />
+
+                  <RadioPill
+                    name="Applicable"
+                    label="Lumsum"
+                    value={formData.Applicable ?? ''}
+                    checked={applicable === "Lumsum"}
+                    onChange={() => {
+                      formData.Value = 0;
+                      setApplicable("Lumsum");
+                      handleFieldChange("Applicable", "Lumsum");
+                    }}
+                  />
+                </div>
+              </div>
               <div>
                 <Input
-                  label='Value'
+                  label={formData.Applicable === "Lumsum" ? 'Value (Lumsum)' : 'Value (%)'}
                   required
                   error={errors.Value}
                   type="text"
                   value={formData.Value ?? ''}
                   maxLength={10}
                   onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, '');
-                    handleFieldChange('Value', digits === '' ? 0 : Number(digits));
+                    if (formData.Applicable === "Lumsum") {
+                      handleFieldChange("Value", filterNumbersWithDecimal(e.target.value))
+                    }
+                    else {
+                      const val = allowPercentage(e.target.value);
+                      if (val !== null) {
+
+                        handleFieldChange("Value", filterNumbersWithDecimal(e.target.value))
+                      }
+                    }
                   }}
                   placeholder="Enter Value"
                 />
               </div>
+              <div>
+                <Input
+                  label='Min Salary (₹)'
+                  required
+                  error={errors.MinSalary}
+                  type="text"
+                  value={formData.MinSalary ?? ''}
+                  maxLength={9}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '');
+                    handleFieldChange('MinSalary', digits === '' ? 0 : Number(digits));
+                  }}
+                  placeholder="Enter Min Salary"
+                />
+              </div>
+
+              <div>
+                <Input
+                  label='Max Salary (₹)'
+                  required
+                  error={errors.MaxSalary}
+                  type="text"
+                  value={formData.MaxSalary ?? ''}
+                  maxLength={9}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '');
+                    handleFieldChange('MaxSalary', digits === '' ? 0 : Number(digits));
+                  }}
+                  placeholder="Enter Max Salary"
+                />
+              </div>
+
 
               <div>
                 <SinglePageSelection
                   label="Gender"
-                  required
+                  placeholder="Select Gender"
                   value={formData.Gender}
                   onChange={(value) => handleFieldChange("Gender", value)}
                   options={GENDER_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
                   error={errors.Gender}
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
 
               <div>
                 <SinglePageSelection
                   label="State Name"
+                  placeholder="Select State"
                   value={selectedStateId ?? ''}
-                  required
                   onChange={val => {
                     const id = Number(val)
                     setSelectedStateId(id)
@@ -392,48 +450,13 @@ export const AddUpdateDeductionMaster: React.FC = () => {
                   label="Branch Name"
                   title="Select Branch"
                   size="lg"
-                  required
                   dataFetchCallBack={fetchBranchMasterDropdown}
                   onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
                   initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
                   error={errors.BranchMasterId}
                 />
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-
-              <div>
-                <Input
-                  label='Min Salary'
-                  required
-                  error={errors.MinSalary}
-                  type="text"
-                  value={formData.MinSalary ?? ''}
-                  maxLength={10}
-                  onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, '');
-                    handleFieldChange('MinSalary', digits === '' ? 0 : Number(digits));
-                  }}
-                  placeholder="Enter Min Salary"
-                />
-              </div>
-
-              <div>
-                <Input
-                  label='Max Salary'
-                  required
-                  error={errors.MaxSalary}
-                  type="text"
-                  value={formData.MaxSalary ?? ''}
-                  maxLength={10}
-                  onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, '');
-                    handleFieldChange('MaxSalary', digits === '' ? 0 : Number(digits));
-                  }}
-                  placeholder="Enter Max Salary"
-                />
-              </div>
 
             </div>
 

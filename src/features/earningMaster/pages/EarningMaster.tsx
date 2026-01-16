@@ -29,13 +29,21 @@ import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { fetchBranchMasterDropdown } from '@/features/branchMaster/branchMasterDropDown';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { CTC_EARNINGS } from '@/core/constants';
+import { allowPercentage, filterNumbersWithDecimal } from '@/core/utils/fileValidation';
+import { Edit, Trash2 } from 'lucide-react';
+import RadioPill from '@/ui/components/forms/RadioPill';
 
 const initialFormState = (): AddUpdateEarningMasterRequest => ({
   EarningMasterId: 0,
   Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   Name: "",
+  Applicable: "",
   Type: "",
   Value: 0,
+  MinSalary: 0,
+  MaxSalary: 0,
   BranchMasterId: 0
 });
 
@@ -94,6 +102,8 @@ export const EarningMaster: React.FC = () => {
   const [dropdownLabels, setDropdownLabels] = useState<{
     branchName?: string;
   }>({});
+
+  const [applicable, setApplicable] = useState<string>("Percenatge");
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -127,11 +137,14 @@ export const EarningMaster: React.FC = () => {
           EarningMasterId: editingEarningMasterData.EarningMasterId,
           Uniquekey: editingEarningMasterData.Uniquekey || initialFormState().Uniquekey,
           Name: editingEarningMasterData.Name || '',
+          Applicable: editingEarningMasterData.Applicable || '',
           Type: editingEarningMasterData.Type || '',
           Value: editingEarningMasterData.Value || 0,
+          MinSalary: editingEarningMasterData.MinSalary || 0,
+          MaxSalary: editingEarningMasterData.MaxSalary || 0,
           BranchMasterId: editingEarningMasterData.BranchMasterId || 0
         });
-
+        setApplicable(editingEarningMasterData.Applicable);
         setDropdownLabels({
           branchName: editingEarningMasterData.BranchName || ""
         });
@@ -148,7 +161,7 @@ export const EarningMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchEarningList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadEarnings(page, filters,sort);
+    return await loadEarnings(page, filters, sort);
   }
 
   const loadEarnings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
@@ -286,12 +299,12 @@ export const EarningMaster: React.FC = () => {
 
   //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback((sort: SortInfo) => {
-  
-      setSortInfo(sortInfo);
-  
-      loadEarnings(1, filters, sort);
-  
-    }, [filters]);
+
+    setSortInfo(sortInfo);
+
+    loadEarnings(1, filters, sort);
+
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -343,7 +356,7 @@ export const EarningMaster: React.FC = () => {
       {
         key: 'Name',
         label: 'Earning Name',
-        width: '25',
+        width: '15',
         sortable: true,
         fixed: 'left',
         align: 'left',
@@ -365,13 +378,15 @@ export const EarningMaster: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-        render: (value) => (
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="150px"
-            tooltipThreshold={15}
-          />
-        )
+        render: (value) => value || '-'
+      },
+      {
+        key: 'Applicable',
+        label: 'Applicable',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || ''
       },
       {
         key: 'Value',
@@ -379,11 +394,24 @@ export const EarningMaster: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            {value || 0}
-          </span>
-        )
+        render: (value) => value || '0'
+      },
+      {
+        key: 'MinSalary',
+        label: 'Min Salary (₹)',
+        width: '12',
+        sortable: false,
+        align: 'left',
+        render: (value) => value ? `₹ ${value}` : '0'
+      },
+
+      {
+        key: 'MaxSalary',
+        label: 'Max Salary (₹)',
+        width: '12',
+        sortable: false,
+        align: 'left',
+        render: (value) => value ? `₹ ${value}` : '0'
       },
       {
         key: 'BranchName',
@@ -391,12 +419,37 @@ export const EarningMaster: React.FC = () => {
         width: '20',
         sortable: false,
         align: 'left',
-        render: (value) => (
-          <TooltipText
-            text={value || 'N/A'}
-            maxWidth="200px"
-            tooltipThreshold={20}
-          />
+        render: (value) => value || '-'
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Deduction"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
         )
       }
     ],
@@ -474,7 +527,10 @@ export const EarningMaster: React.FC = () => {
           <div className="space-y-4">
             <FieldItem label="Earning Name" value={data.Name} isRow withBorder={true} className='font-medium text-blue-900 ' />
             <FieldItem label="Type" value={data.Type} isRow withBorder={true} />
+            <FieldItem label="Applicable" value={data.Applicable} isRow withBorder={true} />
             <FieldItem label="Value" value={data.Value} isRow withBorder={true} />
+            <FieldItem label="Min Salary (₹)" value={data.MinSalary} isRow withBorder={true} />
+            <FieldItem label="Max Salary (₹)" value={data.MaxSalary} isRow withBorder={true} />
             <FieldItem label="BranchName" value={data.BranchName} isRow withBorder={true} />
             <div className="space-y-4">
               <h4 className="text-lg font-semibold pb-2">
@@ -494,16 +550,16 @@ export const EarningMaster: React.FC = () => {
               {canAction && (
                 <>
                   <Button
-                    color='gray'
+                    color='red'
                     variant='solid'
                     colorMode="light"
-                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleConfirmationDialogBoxOpen(data)
                     }}
+                    leftIcon={<Trash2 className="h-5 w-5" />}
                   >
                     Delete
                   </Button>
@@ -517,6 +573,7 @@ export const EarningMaster: React.FC = () => {
                       setIsViewModalOpen(false)
                       handleEditEarningMaster(data)
                     }}
+                    leftIcon={<Edit className="h-5 w-5" />}
                   >
                     Edit
                   </Button>
@@ -559,7 +616,7 @@ export const EarningMaster: React.FC = () => {
     setFormData(initialFormState());
     setDropdownLabels({});
     setErrors({});
-    setDropdownResetKey(prev => prev + 1); 
+    setDropdownResetKey(prev => prev + 1);
   };
   //#endregion
 
@@ -594,20 +651,22 @@ export const EarningMaster: React.FC = () => {
     if (formData.Name.trim() === "") {
 
       newErrors.Name = "Name is required"
-    } else if (formData.Name.trim().length > 50) {
-      newErrors.Name = ' Name must be at most 50 characters'
-    }
-
-    if (formData.Type.trim() === "") {
-      newErrors.Type = "Type is required";
     }
 
     if (!formData.Value || Number(formData.Value) <= 0) {
       newErrors.Value = "Value is required";
     }
 
-    if (formData.BranchMasterId === 0) {
-      newErrors.BranchMasterId = "Branch is required";
+    if (!formData.MinSalary || Number(formData.MinSalary) <= 0) {
+      newErrors.MinSalary = "Min Salary is required";
+    }
+
+    if (!formData.MaxSalary || Number(formData.MaxSalary) <= 0) {
+      newErrors.MaxSalary = "Max Salary is required";
+    }
+
+    if (formData.MinSalary && formData.MaxSalary && Number(formData.MaxSalary) <= Number(formData.MinSalary)) {
+      newErrors.MaxSalary = "Max Salary must be greater than Min Salary";
     }
 
     return {
@@ -623,8 +682,11 @@ export const EarningMaster: React.FC = () => {
       EarningMasterId: formData.EarningMasterId,
       Uniquekey: formData.Uniquekey,
       Name: formData.Name,
+      Applicable: formData.Applicable,
       Type: formData.Type,
       Value: formData.Value,
+      MinSalary: formData.MinSalary,
+      MaxSalary: formData.MaxSalary,
       BranchMasterId: formData.BranchMasterId
     };
 
@@ -790,7 +852,7 @@ export const EarningMaster: React.FC = () => {
         isShowImportButton={false}
 
         // EXPORT
-        isShowExportButton={canExport && earningListForTable.length >0}
+        isShowExportButton={canExport && earningListForTable.length > 0}
         onExportExcel={handleExportEarningExcel}
         onExportPdf={handleExportEarningPdf}
         exportLoading={isLoading}
@@ -837,7 +899,7 @@ export const EarningMaster: React.FC = () => {
         }}
         title={editingEarningMasterData ? 'Update Earning' : 'Add Earning'}
         onSubmit={handleAddUpdateEarningMaster}
-        saveText={editingEarningMasterData ? 'Update Earning' : 'Save Earning'}
+        saveText={editingEarningMasterData ? 'Update' : 'Add'}
         resetText='Reset'
         onreset={handleResetForm}
         loading={isLoading}
@@ -845,54 +907,121 @@ export const EarningMaster: React.FC = () => {
       >
         <div className="space-y-10 p-6 bg-blue-100">
           <div className="space-y-4" >
-            <div>
-              <Input
-                type="text"
-                required
-                label='Earning Name'
-                value={formData.Name ?? ""}
-                onChange={(e) => handleFieldChange("Name", e.target.value)}
-                placeholder="Enter Earning Name"
-                maxLength={250}
-                error={errors.Name} />
 
+            <div>
+              <SinglePageSelection
+                label="Name"
+                placeholder="Select Name"
+                required
+                value={formData.Name}
+                onChange={(e) => handleFieldChange('Name', String(e))}
+                options={CTC_EARNINGS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                error={errors.Name}
+              />
             </div>
 
             <div>
-              <Input
-                type="text"
-                label='Type'
-                value={formData.Type ?? ""}
-                onChange={(e) => handleFieldChange("Type", e.target.value)}
-                required
-                maxLength={20}
-                placeholder="Enter Type"
-                error={errors.Type} />
+              <SinglePageSelection
+                label="Type"
+                placeholder="Select Type"
+                value={formData.Type}
+                onChange={(e) => handleFieldChange('Type', String(e))}
+                options={CTC_EARNINGS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                error={errors.Type}
+              />
             </div>
 
+            <div >
+              <p className="text-sm text-gray-600 mb-2">
+                Applicable *
+              </p>
+              <div className="flex gap-3">
+                <RadioPill
+                  name="Applicable"
+                  label="Percenatge"
+                  value={formData.Applicable ?? ''}
+                  checked={applicable === "Percenatge"}
+                  onChange={() => {
+                    formData.Value = 0;
+                    setApplicable("Percenatge");
+
+                    handleFieldChange("Applicable", "Percenatge");
+                  }}
+                />
+
+                <RadioPill
+                  name="Applicable"
+                  label="Lumsum"
+                  value={formData.Applicable ?? ''}
+                  checked={applicable === "Lumsum"}
+                  onChange={() => {
+                    formData.Value = 0;
+                    setApplicable("Lumsum");
+                    handleFieldChange("Applicable", "Lumsum");
+                  }}
+                />
+              </div>
+            </div>
             <div>
               <Input
-                label='Value'
+                label={formData.Applicable === "Lumsum" ? 'Value (Lumsum)' : 'Value (%)'}
                 required
                 error={errors.Value}
                 type="text"
                 value={formData.Value ?? ''}
                 maxLength={10}
                 onChange={(e) => {
-                  const digits = e.target.value.replace(/\D/g, '');
-                  handleFieldChange('Value', digits === '' ? 0 : Number(digits));
+                  if (formData.Applicable === "Lumsum") {
+                    handleFieldChange("Value", filterNumbersWithDecimal(e.target.value))
+                  }
+                  else {
+                    const val = allowPercentage(e.target.value);
+                    if (val !== null) {
+
+                      handleFieldChange("Value", filterNumbersWithDecimal(e.target.value))
+                    }
+                  }
                 }}
                 placeholder="Enter Value"
               />
             </div>
 
             <div>
+              <Input
+                label='Min Salary (₹)'
+                required
+                error={errors.MinSalary}
+                type="text"
+                value={formData.MinSalary ?? ''}
+                maxLength={9}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, '');
+                  handleFieldChange('MinSalary', digits === '' ? 0 : Number(digits));
+                }}
+                placeholder="Enter Min Salary"
+              />
+            </div>
+
+            <div>
+              <Input
+                label='Max Salary (₹)'
+                required
+                error={errors.MaxSalary}
+                type="text"
+                value={formData.MaxSalary ?? ''}
+                maxLength={9}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, '');
+                  handleFieldChange('MaxSalary', digits === '' ? 0 : Number(digits));
+                }}
+                placeholder="Enter Max Salary"
+              />
+            </div>
+            <div>
               <SingleSelectDropdownWithPagination
                 label="Branch"
                 key={dropdownResetKey}
                 title="Select Branch"
-                size="lg"
-                required
                 dataFetchCallBack={fetchBranchMasterDropdown}
                 onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
                 initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}

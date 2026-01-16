@@ -8,7 +8,6 @@ import Dashboard from '@/features/dashboard/pages/Dashboard';
 import { Profile } from '@/features/profile/page/profile';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import EmployeeModuleAccess from '@/features/employeeModuleAccess/pages/EmployeeModuleAccess';
-import { DepartmentMaster } from '@/features/departmentMaster/pages/DepartmentMaster';
 import { DesignationMaster } from '@/features/designationMaster/pages/DesignationMaster';
 import { EmployeeMaster } from '@/features/employeeMaster/pages/EmployeeMaster';
 import { BranchMaster } from '@/features/branchMaster/pages/BranchMaster';
@@ -108,6 +107,7 @@ import AddUpdateLitigation from '@/features/litigation/pages/AddUpdateLitigation
 import ViewLitigation from '@/features/litigation/pages/ViewLitigation';
 import EmployeeResignation from '@/features/resignation/pages/EmployeeResignation';
 import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
+import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
 import LitigationDocument from '@/features/litigation/pages/LitigationDocument';
 
 

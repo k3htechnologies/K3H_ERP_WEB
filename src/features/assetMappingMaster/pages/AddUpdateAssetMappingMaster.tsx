@@ -139,7 +139,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
   //#endregion
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
-  const validateAddAssetMappingMasterForm = (): {
+  const validateAddAssetMappingMasterForm = (action: string): {
 
     isValid: boolean
 
@@ -149,32 +149,29 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.AssetMasterId) {
-      newErrors.AssetMasterId = 'Asset Name is required.';
+      newErrors.AssetMasterId = 'Asset is required';
     }
 
     if (!formData.EmployeeId) {
-      newErrors.EmployeeId = 'Employee Name is required.';
+      newErrors.EmployeeId = 'Employee Name is required';
     }
 
     if (!formData.ConditionOnIssue?.trim()) {
-      newErrors.ConditionOnIssue = 'Condition On Issue is required.';
+      newErrors.ConditionOnIssue = 'Condition On Issue is required';
     }
 
-    if (!formData.ConditionOnReturn?.trim()) {
+    if (action === "Inactive" && !formData.ConditionOnReturn?.trim()) {
       newErrors.ConditionOnReturn = "Condition On Return is required";
     }
 
-    if (!formData.ReturnDate) {
+    if (action === "Inactive" && !formData.ReturnDate) {
       newErrors.ReturnDate = "Return Date is required";
     }
 
     if (!formData.AssignedDate?.trim()) {
-      newErrors.AssignedDate = 'Assigned Date is required.';
+      newErrors.AssignedDate = 'Assigned Date is required';
     }
 
-    if (!formData.Remarks?.trim()) {
-      newErrors.Remarks = 'Remarks is required.';
-    }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -186,25 +183,25 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
   //#region PUSH DATA
   const PushAssetMappingMasterFormData = (): AddUpdateAssetMappingMasterRequest => {
     return {
-      AssetMasterMappingId: formData.AssetMasterMappingId,
+      AssetMasterMappingId: formData.AssetMasterMappingId ?? 0,
       Uniquekey: formData.Uniquekey,
       AssetMasterId: formData.AssetMasterId,
       AssignedDate: formData.AssignedDate,
       EmployeeId: formData.EmployeeId,
-      ReturnDate: formData.ReturnDate,
+      ReturnDate: formData.ReturnDate === "" ? "1997-01-01" : formData.ReturnDate,
       ConditionOnIssue: formData.ConditionOnIssue,
-      ConditionOnReturn: formData.ConditionOnReturn,
+      ConditionOnReturn: formData.ConditionOnReturn ?? "",
       Remarks: formData.Remarks
     };
   }
   //#endregion
 
   //#region HANDLE ADD AND UPDATE ASSET MAPPING MASTER
-  const handleAddUpdateAssetMappingMaster = async () => {
+  const handleAddUpdateAssetMappingMaster = async (action: string) => {
 
     setErrors({});
 
-    const validation = validateAddAssetMappingMasterForm();
+    const validation = validateAddAssetMappingMasterForm(action);
 
     if (!validation.isValid) {
 
@@ -225,7 +222,9 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
         const response = await assetMappingMasterService.apiCallAddUpdateAssetMappingMaster(payload);
 
         if (E.isRight(response)) {
-          addToast({ type: "success", title: isAddMode ? "Asset Mapping added successfully" : "Asset Mapping updated successfully" });
+
+
+          addToast({ type: "success", title: action === "Inactive" ? "Asset mapping inactive successfully" : response.right.SuccessMessage[0] });
 
           const locationState = location.state as {
             listState?: {
@@ -275,105 +274,102 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
 
-        <form onSubmit={handleAddUpdateAssetMappingMaster}>
+        {/* Basic AssetMapping Details */}
 
-          {/* Basic AssetMapping Details */}
+        <div className="space-y-4 pb-3">
+          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic AssetMapping Details</h3>
 
-          <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic AssetMapping Details</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-              <div>
-                <SingleSelectDropdownWithPagination
-                  label="Asset"
-                  title="Select Asset"
-                  size="lg"
-                  required
-                  dataFetchCallBack={fetchAssetMasterDropdown}
-                  onSelected={(item) => handleFieldChange("AssetMasterId", Number(item.value))}
-                  initialValue={createDropdownInitialValue(formData.AssetMasterId, dropdownLabels.assetName)}
-                  error={errors.AssetMasterId}
-                />
-              </div>
-
-              <div>
-                <SingleSelectDropdownWithPagination
-                  label="Employee"
-                  title="Select Employee"
-                  size="lg"
-                  required
-                  dataFetchCallBack={fetchEmployeeMasterDropdown}
-                  onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
-                  initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
-                  error={errors.EmployeeId}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-              <div>
-                <Input
-                  type="text"
-                  required
-                  label='Condition On Issue'
-                  value={formData.ConditionOnIssue ?? ""}
-                  onChange={(e) => handleFieldChange("ConditionOnIssue", e.target.value)}
-                  placeholder="Enter Condition On Issue"
-                  maxLength={250}
-                  error={errors.ConditionOnIssue}
-                />
-              </div>
-
-              <div>
-                <Input
-                  type="text"
-                  required
-                  label='Condition On Return'
-                  value={formData.ConditionOnReturn ?? ""}
-                  onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)}
-                  placeholder="Enter Condition On Return"
-                  maxLength={250}
-                  error={errors.ConditionOnReturn}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-              <div>
-                <DatePickerInput
-                  label="Assigned Date"
-                  value={formatDate_dd_mm_yyyy(formData.AssignedDate)}
-                  onChange={(val) => handleFieldChange('AssignedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                  required
-                  error={errors.AssignedDate}
-                />
-              </div>
-
-              <div>
-                <DatePickerInput
-                  label="Return Date"
-                  value={formatDate_dd_mm_yyyy(formData.ReturnDate)}
-                  onChange={(val) => handleFieldChange('ReturnDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                  required
-                  error={errors.ReturnDate}
-                />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+            <div>
+              <SingleSelectDropdownWithPagination
+                label="Asset"
+                title="Select Asset"
+                size="lg"
+                required
+                dataFetchCallBack={fetchAssetMasterDropdown}
+                onSelected={(item) => handleFieldChange("AssetMasterId", Number(item.value))}
+                initialValue={createDropdownInitialValue(formData.AssetMasterId, dropdownLabels.assetName)}
+                error={errors.AssetMasterId}
+              />
             </div>
 
             <div>
+              <SingleSelectDropdownWithPagination
+                label="Employee"
+                title="Select Employee"
+                size="lg"
+                required
+                dataFetchCallBack={fetchEmployeeMasterDropdown}
+                onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
+                initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
+                error={errors.EmployeeId}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+            <div>
+              <Input
+                type="text"
+                required
+                label='Condition On Issue'
+                value={formData.ConditionOnIssue ?? ""}
+                onChange={(e) => handleFieldChange("ConditionOnIssue", e.target.value)}
+                placeholder="Enter Condition On Issue"
+                maxLength={250}
+                error={errors.ConditionOnIssue}
+              />
+            </div>
+            <div>
+              <DatePickerInput
+                label="Assigned Date"
+                value={formatDate_dd_mm_yyyy(formData.AssignedDate)}
+                onChange={(val) => handleFieldChange('AssignedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                required
+                error={errors.AssignedDate}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+            <div>
               <TextArea
                 label="Remarks"
-                required
                 className='thin-scroll'
                 value={formData.Remarks ?? ""}
                 placeholder="Enter Remarks"
-                maxLength={500}
                 onChange={(e) => handleFieldChange("Remarks", e.target.value)}
                 error={errors.Remarks} />
             </div>
-
           </div>
-        </form>
+
+          {formData.AssetMasterMappingId !== 0 && (
+            <>
+              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300">Return Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Input
+                    type="text"
+                    label='Condition On Return'
+                    value={formData.ConditionOnReturn ?? ""}
+                    onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)}
+                    placeholder="Enter Condition On Return"
+                    maxLength={250}
+                    error={errors.ConditionOnReturn}
+                  />
+                </div>
+                <div>
+                  <DatePickerInput
+                    label="Return Date"
+                    value={formatDate_dd_mm_yyyy(formData.ReturnDate)}
+                    onChange={(val) => handleFieldChange('ReturnDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                    error={errors.ReturnDate}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+
+        </div>
       </div>
 
       <BottomActionBar
@@ -382,7 +378,11 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
         onCancel={() => navigate(-1)}
         canAction={canAction}
         onSave={() => {
-          handleAddUpdateAssetMappingMaster();
+          handleAddUpdateAssetMappingMaster("");
+        }}
+        onOtherActionText={formData.AssetMasterMappingId !== 0 ? "Inactive" : ""}
+        onOtherAction={() => {
+          handleAddUpdateAssetMappingMaster("Inactive");
         }}
         isLoading={isLoading}
       />

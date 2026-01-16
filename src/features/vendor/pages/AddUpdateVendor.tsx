@@ -310,6 +310,7 @@ export const AddUpdateVendor: React.FC = () => {
   const validateAddVendorForm = (): {
 
     isValid: boolean;
+
     errors: { [key: string]: string };
   } => {
     const newErrors: { [key: string]: string } = {};
@@ -361,8 +362,7 @@ export const AddUpdateVendor: React.FC = () => {
 
     if (!formData.AadharCardNumber?.trim()) {
       newErrors.AadharCardNumber = "Please enter a valid 12-digit Aadhaar number";
-    }
-    else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
+    }else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
       newErrors.AadharCardNumber = "Enter a valid Aadhar Card Number.";
     }
 
@@ -403,6 +403,7 @@ export const AddUpdateVendor: React.FC = () => {
   const PushVendorFormData = (): FormData => {
 
     const materialIds = Array.from(selectedMaterials).join(",");
+
     const fd = new FormData();
 
     fd.append('VendorId', String(formData.VendorId ?? 0));

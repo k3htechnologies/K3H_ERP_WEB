@@ -27,6 +27,8 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import Checkbox from '@/ui/components/forms/Checkbox';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { updateFilter } from '@/core/utils/filterHelper';
+import { Edit, Trash2 } from 'lucide-react';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 
 const initialFormState = (): AddUpdateBranchMasterRequest => ({
@@ -53,7 +55,7 @@ export const BranchMaster: React.FC = () => {
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
-  const {addToast } = useToast()
+  const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
@@ -138,7 +140,7 @@ export const BranchMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchBranchList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadBranches(page, filters,sort);
+    return await loadBranches(page, filters, sort);
   }
 
   const loadBranches = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
@@ -289,9 +291,9 @@ export const BranchMaster: React.FC = () => {
 
     setSortInfo(sort);
 
-     loadBranches(1,filters,sort);
+    loadBranches(1, filters, sort);
 
-   }, [filters]);
+  }, [filters]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -368,14 +370,7 @@ export const BranchMaster: React.FC = () => {
         sortable: false,
         fixed: 'left',
         align: 'left',
-        render: (value) => (
-          <TooltipText
-            text={value}
-            maxWidth="170px"
-            tooltipThreshold={15}
-            tooltipClassName='inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap'
-          />
-        )
+        render: (value) => value || ''
       },
       {
         key: 'IsHeadOffice',
@@ -383,11 +378,8 @@ export const BranchMaster: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${value ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
-            {value ? 'Yes' : 'No'}
-          </span>
-        )
+        render: (value) => value ? 'Yes' : 'No'
+
       },
       {
         key: 'Location',
@@ -409,10 +401,37 @@ export const BranchMaster: React.FC = () => {
         width: '20',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            {value}
-          </span>
+        render: (value) => value || '0'
+      },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction && !row.NumberOfEmployee ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Branch"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
         )
       }
     ],
@@ -521,16 +540,17 @@ export const BranchMaster: React.FC = () => {
               <>
                 {(data.NumberOfEmployee || 0) === 0 ? (
                   <Button
-                    color='gray'
+                    color='red'
                     variant='solid'
                     colorMode="light"
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleConfirmationDialogBoxOpen(data)
                     }}
+                    leftIcon={<Trash2 className="h-5 w-5" />}
                   >
                     Delete
                   </Button>
@@ -538,13 +558,14 @@ export const BranchMaster: React.FC = () => {
 
                 <Button
                   color='blue'
-                  size='sm'
+                  size='md'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
                     setIsViewModalOpen(false)
                     handleEditBranchMaster(data)
                   }}
+                  leftIcon={<Edit className="h-5 w-5" />}
                 >
                   Edit
                 </Button>
@@ -786,220 +807,218 @@ export const BranchMaster: React.FC = () => {
   //#endregion
 
   return (
-    
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {/* ============================================================================
+
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
 
-        <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-        {/* ============================================================================
+      {/* ============================================================================
           COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
            ============================================================================ */}
 
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Branch Name"
-          onSearchChange={(v) => {
-            setSearchTerm(v)
-            debouncedSearch(v)
-          }}
-          onClearSearch={clearsearchBranches}
-          isShowFilterButton={true}
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters)
-            setShowFilterPopup(true)
-          }}
-          isShowCustomizeButton
-          onCustomize={() => setIsShowCustomizeBranchMasterColumnsModal(true)}
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Branch Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchBranches}
+        isShowFilterButton={false}
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters)
+          setShowFilterPopup(true)
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeBranchMasterColumnsModal(true)}
 
-          // ADD
-          isShowAddButton={canAction}
-          addTitle="Add"
-          onAdd={handleAddBranchMasterModal}
+        // ADD
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddBranchMasterModal}
 
-          // IMPORT
-          isShowImportButton={canAction}
+        // IMPORT
+        isShowImportButton={canAction}
 
-          // EXPORT
-          isShowExportButton={canExport && branchListForTable.length >0}
-          onExportExcel={handleExportBranchExcel}
-          onExportPdf={handleExportBranchPdf}
-          exportLoading={isLoading}
-        />
+        // EXPORT
+        isShowExportButton={canExport && branchListForTable.length > 0}
+        onExportExcel={handleExportBranchExcel}
+        onExportPdf={handleExportBranchPdf}
+        exportLoading={isLoading}
+      />
 
-        {/* DATA TABLE BRANCH */}
-        <DataTable
-          data={branchListForTable}
-          columns={visibleBranchMasterColumns}
-          pagination={branchMasterPaginationInfo}
-          emptyMessage="No Branch Data Found"
-          fixedHeight={true}
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
+      {/* DATA TABLE BRANCH */}
+      <DataTable
+        data={branchListForTable}
+        columns={visibleBranchMasterColumns}
+        pagination={branchMasterPaginationInfo}
+        emptyMessage="No Branch Data Found"
+        fixedHeight={true}
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
 
-        {/* VIEW BRANCH MODAL */}
-        <ViewBranchDetailsModal isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false)
-            setViewBranchMasterDetailsData(null)
-          }}
-          data={viewBranchMasterDetailsData}
-        />
+      {/* VIEW BRANCH MODAL */}
+      <ViewBranchDetailsModal isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setViewBranchMasterDetailsData(null)
+        }}
+        data={viewBranchMasterDetailsData}
+      />
 
-        {/*  ADD EDIT UPDATE BRANCH MODAL */}
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingBranchMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingBranchMasterData(null);
-            setFormData(initialFormState());
-          }}
-          title={editingBranchMasterData ? 'Update Branch' : 'Add Branch'}
-          onSubmit={handleAddUpdateBranchMaster}
-          saveText={editingBranchMasterData ? 'Update Branch' : 'Save Branch'}
-          resetText='Reset'
-          onreset={handleResetForm}
-          loading={isLoading}
-          size='xl'
-        >
-          <div className="space-y-10 p-6 bg-blue-100">
-            <div className="space-y-4" >
-              <div>
-                <Input
-                  type="text"
-                  required
-                  label='Branch Name'
-                  value={formData.BranchName ?? ""}
-                  onChange={(e) => handleFieldChange("BranchName", e.target.value)}
-                  placeholder="Enter Branch Name"
-                  maxLength={250}
-                  error={errors.BranchName}
-                />
-              </div>
+      {/*  ADD EDIT UPDATE BRANCH MODAL */}
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingBranchMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingBranchMasterData(null);
+          setFormData(initialFormState());
+        }}
+        title={editingBranchMasterData ? 'Update Branch' : 'Add Branch'}
+        onSubmit={handleAddUpdateBranchMaster}
+        saveText={editingBranchMasterData ? 'Update' : 'Add'}
+        resetText='Reset'
+        onreset={handleResetForm}
+        loading={isLoading}
+        size='xl'
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4" >
+            <div>
+              <Input
+                type="text"
+                required
+                label='Branch Name'
+                value={formData.BranchName ?? ""}
+                onChange={(e) => handleFieldChange("BranchName", e.target.value)}
+                placeholder="Enter Branch Name"
+                maxLength={250}
+                error={errors.BranchName}
+              />
+            </div>
 
-              <div>
-                <Input
-                  type="text"
-                  label='Branch Code'
-                  value={formData.BranchCode.toUpperCase() ?? ""}
-                  onChange={(e) => handleFieldChange("BranchCode", e.target.value)}
-                  required
-                  maxLength={4}
-                  placeholder="Enter Branch Code"
-                  error={errors.BranchCode}
-                />
+            <div>
+              <Input
+                type="text"
+                label='Branch Code'
+                value={formData.BranchCode.toUpperCase() ?? ""}
+                onChange={(e) => handleFieldChange("BranchCode", e.target.value)}
+                required
+                maxLength={4}
+                placeholder="Enter Branch Code"
+                error={errors.BranchCode}
+              />
 
-              </div>
-              <div>
-                <Input
-                  type="text"
-                  label='Location'
-                  value={formData.Location ?? ""}
-                  onChange={(e) => handleFieldChange("Location", e.target.value)}
-                  required
-                  placeholder="Enter Location"
-                  maxLength={250}
-                  error={errors.Location}
-                />
-              </div>
+            </div>
+            <div>
+              <TextArea
+                label="Location"
+                placeholder="Enter Location"
+                required
+                className='thin-scroll'
+                value={formData.Location}
+                onChange={(e) => handleFieldChange("Location", e.target.value)}
+                error={errors.Location} />
+            </div>
 
-              <div>
-                <Checkbox
-                  label="Head Office"
-                  checked={formData.IsHeadOffice ?? false}
-                  onChange={(e) => handleFieldChange("IsHeadOffice", e.target.checked)}
-                />
-              </div>
+            <div>
+              <Checkbox
+                label="Head Office"
+                checked={formData.IsHeadOffice ?? false}
+                onChange={(e) => handleFieldChange("IsHeadOffice", e.target.checked)}
+              />
             </div>
           </div>
+        </div>
 
-        </Modal>
+      </Modal>
 
-        {/* CUSTOMIZE COLUMNS MODAL */}
+      {/* CUSTOMIZE COLUMNS MODAL */}
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeBranchMasterColumnsModal}
-          onClose={() => setIsShowCustomizeBranchMasterColumnsModal(false)}
-          onApply={(keys) => {
-            const withRequired = Array.from(
-              new Set([...keys, ...requiredBranchMasterColumnKeys]),
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeBranchMasterColumnsModal}
+        onClose={() => setIsShowCustomizeBranchMasterColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(
+            new Set([...keys, ...requiredBranchMasterColumnKeys]),
+          )
+
+          setSelectedBranchMasterColumnKeys(withRequired)
+
+          try {
+            LocalStorageHelper.storeBranchMasterTableColumns(
+              JSON.stringify(withRequired),
             )
+          } catch { }
+        }}
+        columns={branchMasterColumns}
+        selectedKeys={selectedBranchMasterColumnKeys}
+        requiredKeys={requiredBranchMasterColumnKeys}
+        title="Customize Table Columns"
+      />
 
-            setSelectedBranchMasterColumnKeys(withRequired)
-
-            try {
-              LocalStorageHelper.storeBranchMasterTableColumns(
-                JSON.stringify(withRequired),
-              )
-            } catch { }
-          }}
-          columns={branchMasterColumns}
-          selectedKeys={selectedBranchMasterColumnKeys}
-          requiredKeys={requiredBranchMasterColumnKeys}
-          title="Customize Branch Master Table Columns"
-        />
-
-        {/* FILTER BRANCH MODAL */}
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Branch Master"
-          onSubmit={(e) => {
-            e.preventDefault()
-            applyFilters()
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          resetText=''
-          size="small-half"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Branch Name
-                </label>
-                <Input
-                  type="text"
-                  value={tempFilters.BranchName || ''}
-                  onChange={(e) => handleFilterChange('BranchName', e.target.value)}
-                  placeholder="Enter branch name"
-                />
-              </div>
+      {/* FILTER BRANCH MODAL */}
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Branch Master"
+        onSubmit={(e) => {
+          e.preventDefault()
+          applyFilters()
+        }}
+        saveText="Apply Filter"
+        cancelText="Clear Filter"
+        onCancel={() => clearFilters()}
+        resetText=''
+        size="small-half"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Branch Name
+              </label>
+              <Input
+                type="text"
+                value={tempFilters.BranchName || ''}
+                onChange={(e) => handleFilterChange('BranchName', e.target.value)}
+                placeholder="Enter branch name"
+              />
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        {/* DELETE CONFIRMATION BRANCH MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteBranchMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteBranchMaster}
-          title="You are about to delete a Branch?"
-          message="Deleting this Branch will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
-      </div>
+      {/* DELETE CONFIRMATION BRANCH MODAL */}
+      <ConfirmationDialogBox
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteBranchMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteBranchMaster}
+        title="You are about to delete a Branch?"
+        message="Deleting this Branch will permanently remove its contents."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isLoading}
+        variant="danger"
+      />
+    </div>
 
   )
 }

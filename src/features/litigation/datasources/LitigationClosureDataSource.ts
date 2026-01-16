@@ -44,7 +44,7 @@ export class LitigationClosureDatasourceImpl implements LitigationClosureDatasou
             if (error === TokenExpiredException) {
                 await this.pullLitigationClosure(params);
             }
-
+            
             throw error
         }
     }

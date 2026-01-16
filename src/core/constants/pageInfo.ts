@@ -207,7 +207,7 @@ export const getPageInfo = (path: string) => {
             }
         case 'approvalCategory':
             return {
-                title: 'Approval Document Category Master',
+                title: 'Approval Document Category',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
         //PROFILE

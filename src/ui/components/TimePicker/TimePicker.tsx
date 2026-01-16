@@ -37,6 +37,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({
     m: number;
     ap: "AM" | "PM";
   };
+  
   // --- Parse value into hours, minutes, AM/PM ---
   const parseValue = useCallback(
     (val?: string): ParsedTime => {
@@ -124,7 +125,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({
     borderRadius: theme.borderRadius.lg,
     border: `1px solid ${error ? theme.colors.error : isFocused ? theme.colors.primary : theme.colors.border}`,
     backgroundColor: disabled ? theme.colors.backgroundSecondary : theme.colors.background,
-    color: theme.colors.text,
+    color: disabled ? theme.colors.textLight :'',
     outline: "none",
     transition: theme.transitions.normal,
     boxSizing: "border-box",
@@ -146,7 +147,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({
       
       {label && (
 
-        <div style={{ marginBottom: "6px", fontSize: currentSize.fontSize, fontWeight: theme.fontWeight.medium, color: theme.colors.black }}>
+        <div style={{ marginBottom: "6px", fontSize: theme.fontSize.sm, fontWeight: theme.fontWeight.medium, color: theme.colors.text }}>
 
           {label}
 
@@ -165,11 +166,10 @@ export const TimePicker: React.FC<TimePickerProps> = ({
           <select
             value={hours}
             onChange={(e) => handleChange(Number(e.target.value), minutes, ampm)}
-
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             disabled={disabled}
-            style={{ ...getSelectStyles(), paddingLeft: "40px" }}
+            style={{ ...getSelectStyles(), paddingLeft: "42px" }}
           >
             {Array.from({ length: format === 12 ? 12 : 24 }, (_, i) => i + (format === 12 ? 1 : 0)).map((h) => (
               <option key={h} value={h}>

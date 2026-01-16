@@ -31,6 +31,7 @@ import { fetchBranchMasterDropdown } from '@/features/branchMaster/branchMasterD
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import { fetchHolidayMasterDropdown } from '../HolidayMasterDropDown';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
+import { Edit, Trash2 } from 'lucide-react';
 
 const initialFormState = (): AddUpdateHolidayMappingMasterRequest => ({
   HolidayMappingMasterId: 0,
@@ -146,7 +147,7 @@ export const HolidayMappingMaster: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
   const fetchHolidayMappingList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadHolidayMappings(page, filters,sort);
+    return await loadHolidayMappings(page, filters, sort);
   }
 
   const loadHolidayMappings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
@@ -360,6 +361,14 @@ export const HolidayMappingMaster: React.FC = () => {
         )
       },
       {
+        key: 'HolidayDate',
+        label: 'Holiday Date',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value ? formatDate_dd_MonthName_yy(value) : 'N/A'
+      },
+      {
         key: 'BranchName',
         label: 'Branch Name',
         width: '20',
@@ -374,16 +383,39 @@ export const HolidayMappingMaster: React.FC = () => {
         )
       },
       {
-        key: 'HolidayDate',
-        label: 'Holiday Date',
-        width: '15',
-        sortable: false,
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
         align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : 'N/A'
-      },
+        render: (_value, row) => (
+          canAction && !row.NumberOfEmployee ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Holiday Mapping"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )
+      }
     ],
     // dependencies: include everything used inside that might change
-    [handleViewHolidayMappingDetails]
+    [handleViewHolidayMappingDetails, handleConfirmationDialogBoxOpen]
   )
   //#endregion
 
@@ -462,8 +494,8 @@ export const HolidayMappingMaster: React.FC = () => {
           <div className="space-y-4">
 
             <FieldItem label="Holiday Name" value={data.HolidayName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Holiday Date" value={data.HolidayDate ? formatDate_dd_MonthName_yy(data.HolidayDate) : ""} isRow />
             <FieldItem label="Branch Name" value={data.BranchName} isRow withBorder={true} />
-            <FieldItem label="Assigned Date" value={data.HolidayDate ? formatDate_dd_MonthName_yy(data.HolidayDate) : ""} isRow />
 
             <div className="space-y-4">
               <h4 className="text-lg font-semibold pb-2">
@@ -481,29 +513,31 @@ export const HolidayMappingMaster: React.FC = () => {
               {canAction && (
                 <>
                   <Button
-                    color='gray'
+                    color='red'
                     variant='solid'
                     colorMode="light"
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleConfirmationDialogBoxOpen(data)
                     }}
+                    leftIcon={<Trash2 className="h-5 w-5" />}
                   >
                     Delete
                   </Button>
 
                   <Button
                     color='blue'
-                    size='sm'
+                    size='md'
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       setIsViewModalOpen(false)
                       handleEditHolidayMappingMaster(data)
                     }}
+                    leftIcon={<Edit className="h-5 w-5" />}
                   >
                     Edit
                   </Button>
@@ -584,10 +618,6 @@ export const HolidayMappingMaster: React.FC = () => {
 
     if (!formData.HolidayMasterId) {
       newErrors.HolidayMasterId = "Holiday Name is required.";
-    }
-
-    if (!formData.BranchMasterId) {
-      newErrors.BranchMasterId = "Branch Name is required.";
     }
 
     if (!formData.HolidayDate) {
@@ -826,8 +856,8 @@ export const HolidayMappingMaster: React.FC = () => {
         }}
         title={editingHolidayMappingMasterData ? 'Update Holiday Mapping ' : 'Add Holiday Mapping'}
         onSubmit={handleAddUpdateHolidayMappingMaster}
-        saveText={editingHolidayMappingMasterData ? 'Update Holiday Mapping' : 'Save Holiday Mapping'}
-        resetText='Reset'
+        saveText={editingHolidayMappingMasterData ? 'Update' : 'Add'}
+        resetText=''
         onreset={handleResetForm}
         loading={isLoading}
         size="xl"
@@ -849,12 +879,20 @@ export const HolidayMappingMaster: React.FC = () => {
               />
             </div>
             <div>
+              <DatePickerInput
+                label="Holiday Date"
+                value={formatDate_dd_mm_yyyy(formData.HolidayDate)}
+                onChange={(val) => handleFieldChange('HolidayDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                required
+                error={errors.HolidayDate}
+              />
+            </div>
+            <div>
               <SingleSelectDropdownWithPagination
                 label="Branch"
                 key={dropdownResetKey}
                 title="Select Branch "
                 size="lg"
-                required
                 dataFetchCallBack={fetchBranchMasterDropdown}
                 onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
                 initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
@@ -864,15 +902,7 @@ export const HolidayMappingMaster: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <DatePickerInput
-              label="Holiday Date"
-              value={formatDate_dd_mm_yyyy(formData.HolidayDate)}
-              onChange={(val) => handleFieldChange('HolidayDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-              required
-              error={errors.HolidayDate}
-            />
-          </div>
+
         </div>
       </Modal>
 

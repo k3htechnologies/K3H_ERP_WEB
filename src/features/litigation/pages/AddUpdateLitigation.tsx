@@ -91,7 +91,6 @@ export const AddUpdateLitigation: React.FC = () => {
 
             setIsLoading,
             setLoadingMessage,
-
             async () => {
 
                 const params: FilterWithPaginationLitigationRequest = {
@@ -127,7 +126,6 @@ export const AddUpdateLitigation: React.FC = () => {
                             Remark: e.Remark ?? prev.Remark,
                             CaseBrief: e.CaseBrief ?? prev.CaseBrief
                         }));
-
                     }
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -278,7 +276,6 @@ export const AddUpdateLitigation: React.FC = () => {
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
-
                 return response;
             },
             undefined,
@@ -309,6 +306,7 @@ export const AddUpdateLitigation: React.FC = () => {
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Case Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                            
                             <div>
                                 <Input
                                     type="text"
@@ -374,6 +372,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                     error={errors.CourtName}
                                 />
                             </div>
+
                             <div>
                                 <Input
                                     type="text"

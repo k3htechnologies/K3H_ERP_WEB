@@ -157,62 +157,60 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
     <div className="pb-4">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         {/* SEARCH BAR */}
-        {isShowSearchBar && (
-          <div className="relative min-w-0 w-[526px]">
-            <Input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-              placeholder={searchPlaceholder}
-              leftIcon={<Search className="h-4 w-4 text-gray-400" />}
-              rightIcon={
-                <div className={`flex items-center space-x-1 ${searchTerm ? 'pr-8' : 'pr-2'}`}>
-                  {/* CLEAR SEARCH */}
-                  {searchTerm && onClearSearch && (
-                    <Button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        onClearSearch()
-                      }}
-                      color="transparent"
-                      fullWidth
-                      isborderRadius
-                      size="sm"
-                      title="Clear search"
-                      aria-label="Clear search"
-                    >
-                      <X />
-                    </Button>
-                  )}
+        <div className={`relative min-w-0 w-[526px] ${isShowSearchBar ? 'block' : 'invisible'}`}>
+          <Input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => onSearchChange?.(e.target.value)}
+            placeholder={searchPlaceholder}
+            leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+            rightIcon={
+              <div className={`flex items-center space-x-1 ${searchTerm ? 'pr-8' : 'pr-2'}`}>
+                {/* CLEAR SEARCH */}
+                {searchTerm && onClearSearch && (
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      onClearSearch()
+                    }}
+                    color="transparent"
+                    fullWidth
+                    isborderRadius
+                    size="sm"
+                    title="Clear search"
+                    aria-label="Clear search"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
 
-                  {/* FILTER BUTTON */}
-                  {isShowFilterButton && onOpenFilter && (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        onOpenFilter()
-                      }}
-                      className="flex items-center p-1.5 rounded-md transition-colors relative bg-blue-100"
-                      title={computedFilterTooltip}
-                      aria-label="Open filters"
-                    >
-                      <SlidersHorizontal className="h-4 w-4 text-black" />
-                      {hasFilters && (
-                        <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
-                          <span className="text-xs text-white font-bold">
-                            {activeFilterCount}
-                          </span>
-                        </div>
-                      )}
-                    </button>
-                  )}
-                </div>
-              }
-            />
-          </div>
-        )}
+                {/* FILTER BUTTON */}
+                {isShowFilterButton && onOpenFilter && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      onOpenFilter()
+                    }}
+                    className="flex items-center p-1.5 rounded-md transition-colors relative bg-blue-100"
+                    title={computedFilterTooltip}
+                    aria-label="Open filters"
+                  >
+                    <SlidersHorizontal className="h-4 w-4 text-black" />
+                    {hasFilters && (
+                      <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
+                        <span className="text-xs text-white font-bold">
+                          {activeFilterCount}
+                        </span>
+                      </div>
+                    )}
+                  </button>
+                )}
+              </div>
+            }
+          />
+        </div>
 
         {/* RIGHT SIDE ACTIONS */}
         {hasAnyActions && (

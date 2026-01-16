@@ -20,6 +20,7 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 import { fetchProjectDropdown } from "@/features/projectMaster/projectDropdown";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
+import Checkbox from "@/ui/components/forms/Checkbox";
 
 const initialFormState = (): AddUpdateChannelPartnerRequest => ({
     ChannelPartnerId: 0,
@@ -35,6 +36,7 @@ const initialFormState = (): AddUpdateChannelPartnerRequest => ({
     RemovePanCardURL: '',
     RemoveAadharCardURL: '',
     GSTNumber: '',
+    IsRERANumber: 0,
     RERANumber: '',
     Speciality: '',
     OfficeAddress: '',
@@ -91,7 +93,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
     const { canAction } = useMenuPermissions('/channelPartner');
     //#endregion
 
-        //#region HANDLE FIELD CHANGE EVENT
+    //#region HANDLE FIELD CHANGE EVENT
     const handleFieldChange = (field: keyof AddUpdateChannelPartnerRequest, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -149,6 +151,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
                             RemoveAadharCardURL: '',
                             PanCardURL: null,
                             RemovePanCardURL: '',
+                            IsRERANumber: e.RERANumber !== '' ? 1 : 0,
                             RERANumber: e.RERANumber ?? prev.RERANumber,
                             GSTNumber: e.GSTNumber ?? prev.GSTNumber,
                             Speciality: e.Speciality ?? prev.Speciality,
@@ -192,11 +195,11 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
 
         if (!formData.Name) {
-            newErrors.Name = 'Name is required.';
+            newErrors.Name = 'Full Name is required.';
         }
 
         if (!formData.EmailId?.trim()) {
-            newErrors.EmailId = 'Email is required.';
+            newErrors.EmailId = 'E-mail Id is required.';
         } else if (!isValidEmail(formData.EmailId.trim())) {
             newErrors.EmailId = 'Enter a Valid email address.';
         }
@@ -208,40 +211,16 @@ export const AddUpdateChannelPartner: React.FC = () => {
             newErrors.MobileNumber = 'Enter a Valid 10-digit mobile number.'
         }
 
-        if (!formData.AadharCardNumber?.trim()) {
-            newErrors.AadharCardNumber = 'Aadhar Number is required.'
-        } else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
-            newErrors.AadharCardNumber = 'Enter a Valid 12-digit Aadhar Number.'
+        if (formData.AlternativeMobileNumber?.trim()) {
+            if (!isValidMobile(formData.AlternativeMobileNumber.trim())) {
+                newErrors.AlternativeMobileNumber = 'Enter a valid 10-digit Alternative Mobile Number'
+            }
         }
 
-        if (!formData.PanNumber?.trim()) {
-            newErrors.PanNumber = 'PAN Number is required.'
-        } else if (!isValidPAN(formData.PanNumber.trim())) {
-            newErrors.PanNumber = 'Enter a Valid PAN Number.'
-        }
 
         if (!formData.CompanyName) {
             newErrors.CompanyName = ' Company Name is required.';
         }
-
-
-        if (!formData.RERANumber) {
-            newErrors.RERANumber = ' RERA Number is required.';
-        }
-
-        if (!formData.GSTNumber) {
-            newErrors.GSTNumber = 'GST Number is required.';
-        }
-
-        if (!panCardURLFiles.length && !panCardURL.length) {
-            newErrors.PanCardURL = "Pan Card is required.";
-        }
-
-        if (!aadharCardURLFiles.length && !aadharCardURL.length) {
-            newErrors.AadharCardURL = "Aadhar Card is required.";
-        }
-
-
         if (!formData.Speciality) {
             newErrors.Speciality = 'Speciality is required.';
         }
@@ -249,6 +228,40 @@ export const AddUpdateChannelPartner: React.FC = () => {
         if (!formData.OfficeAddress) {
             newErrors.OfficeAddress = 'Office Address is required.';
         }
+
+        if (formData.IsRERANumber === 1 && !formData.RERANumber) {
+            newErrors.RERANumber = ' RERA Number is required.';
+        }
+
+        if (formData.ChannelPartnerId != 0) {
+
+
+            if (!formData.AadharCardNumber?.trim()) {
+                newErrors.AadharCardNumber = 'Aadhar Number is required.'
+            } else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
+                newErrors.AadharCardNumber = 'Enter a Valid 12-digit Aadhar Number.'
+            }
+
+            if (!formData.PanNumber?.trim()) {
+                newErrors.PanNumber = 'PAN Number is required.'
+            } else if (!isValidPAN(formData.PanNumber.trim())) {
+                newErrors.PanNumber = 'Enter a Valid PAN Number.'
+            }
+
+
+            if (!formData.GSTNumber) {
+                newErrors.GSTNumber = 'GST Number is required.';
+            }
+
+            if (!panCardURLFiles.length && !panCardURL.length) {
+                newErrors.PanCardURL = "Pan Card is required.";
+            }
+
+            if (!aadharCardURLFiles.length && !aadharCardURL.length) {
+                newErrors.AadharCardURL = "Aadhar Card is required.";
+            }
+        }
+
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -452,89 +465,20 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
                         </div>
                     </div>
-
-                    {/* ============================================================= [BANK DETAILS] ============================================================================================= */}
-                    <div className="space-y-4 pb-3">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
+                    <div className="space-y-4 pb-3 pt-3">
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+                            <Checkbox
+                                label="Do you have RERA Number?"
+                                checked={formData.IsRERANumber === 1}
+                                onChange={(e) => handleFieldChange('IsRERANumber', e.target.checked ? 1 : 0)}
+                            />
+                        </h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div>
                                 <Input
-                                    type="text"
-                                    required
-                                    label="Aadhaar Number"
-                                    value={formData.AadharCardNumber ?? ""}
-                                    onChange={(e) => {
-                                        const digits = e.target.value.replace(/\D/g, '');
-                                        handleFieldChange("AadharCardNumber", filterAadhaar(digits));
-                                    }}
-                                    placeholder="Enter Aadhaar Number"
-                                    rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-                                    maxLength={12}
-                                    error={errors.AadharCardNumber}
-                                />
-                            </div>
-                            <div>
-                                <Input
-                                    type="text"
-                                    required
-                                    label='PAN Number'
-                                    value={formData.PanNumber.toUpperCase() ?? ""}
-                                    rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-                                    onChange={(e) => handleFieldChange("PanNumber", filterPAN(e.target.value).toUpperCase())}
-                                    placeholder="Enter Pan Number"
-                                    maxLength={10}
-                                    error={errors.PanNumber}
-                                />
-                            </div>
-                            <div>
-                                <MultiFilePicker
-                                    label=' Upload Aadhaar Card'
-                                    placeholder="Select Aadhaar Card"
-                                    required
-                                    error={errors.AadharCardURL}
-                                    value={aadharCardURLFiles}
-                                    onChange={setAadharCardURLFiles}
-                                    availableFilesURL={aadharCardURL ?? ""}
-                                    allowedTypes={[
-                                        "image/jpeg",
-                                        "image/png",
-                                        "image/jpg"]}
-                                    maxFiles={5}
-                                    maxSizeMB={50}
-                                    onRemoveExisting={(url) => {
-                                        setRemoveAadharCardUrls(prev => [...prev, url]);
-
-                                    }}
-
-                                />
-                            </div>
-                            <div>
-                                <MultiFilePicker
-                                    label=' Upload PAN Card'
-                                    placeholder="Select PAN Card"
-                                    required
-                                    error={errors.PanCardURL}
-                                    value={panCardURLFiles}
-                                    onChange={setPanCardURLFiles}
-                                    availableFilesURL={panCardURL ?? ""}
-                                    allowedTypes={[
-                                        "image/jpeg",
-                                        "image/png",
-                                        "image/jpg"]}
-                                    maxFiles={5}
-                                    maxSizeMB={50}
-                                    onRemoveExisting={(url) => {
-                                        setRemovePanCardUrls(prev => [...prev, url]);
-                                    }}
-                                />
-
-                            </div>
-
-                            <div>
-                                <Input
                                     label='RERA Number'
-                                    required
+                                    required={formData.IsRERANumber === 1 ? true : false}
                                     type="text"
                                     value={formData.RERANumber}
                                     error={errors.RERANumber}
@@ -547,21 +491,12 @@ export const AddUpdateChannelPartner: React.FC = () => {
                                     placeholder="Enter Valid RERA Number"
                                 />
                             </div>
-                            <div>
-                                <Input
-                                    label='GST Number'
-                                    required
-                                    type="text"
-                                    value={formData.GSTNumber}
-                                    rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-                                    error={errors.GSTNumber}
-                                    onChange={(e) => {
-                                        const gstNumber = filterGST(e.target.value);
-                                        handleFieldChange('GSTNumber', gstNumber)
-                                    }}
-                                    placeholder="Enter Valid GST Number"
-                                />
-                            </div>
+                        </div>
+                    </div>
+                    <div className="space-y-4 pb-3">
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Speciality</h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                             <div>
                                 <SinglePageSelection
@@ -573,8 +508,108 @@ export const AddUpdateChannelPartner: React.FC = () => {
                                     error={errors.Speciality}
                                 />
                             </div>
+
                         </div>
                     </div>
+                    {/* ============================================================= [DOCUMENT DETAILS] ============================================================================================= */}
+                    {formData.ChannelPartnerId != 0 && (
+                        <div className="space-y-4 pb-3">
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                                <div>
+                                    <Input
+                                        type="text"
+                                        required
+                                        label="Aadhaar Number"
+                                        value={formData.AadharCardNumber ?? ""}
+                                        onChange={(e) => {
+                                            const digits = e.target.value.replace(/\D/g, '');
+                                            handleFieldChange("AadharCardNumber", filterAadhaar(digits));
+                                        }}
+                                        placeholder="Enter Aadhaar Number"
+                                        rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                                        maxLength={12}
+                                        error={errors.AadharCardNumber}
+                                    />
+                                </div>
+                                <div>
+                                    <Input
+                                        type="text"
+                                        required
+                                        label='PAN Number'
+                                        value={formData.PanNumber.toUpperCase() ?? ""}
+                                        rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                                        onChange={(e) => handleFieldChange("PanNumber", filterPAN(e.target.value).toUpperCase())}
+                                        placeholder="Enter Pan Number"
+                                        maxLength={10}
+                                        error={errors.PanNumber}
+                                    />
+                                </div>
+                                <div>
+                                    <MultiFilePicker
+                                        label=' Upload Aadhaar Card'
+                                        placeholder="Select Aadhaar Card"
+                                        required
+                                        error={errors.AadharCardURL}
+                                        value={aadharCardURLFiles}
+                                        onChange={setAadharCardURLFiles}
+                                        availableFilesURL={aadharCardURL ?? ""}
+                                        allowedTypes={[
+                                            "image/jpeg",
+                                            "image/png",
+                                            "image/jpg"]}
+                                        maxFiles={5}
+                                        maxSizeMB={50}
+                                        onRemoveExisting={(url) => {
+                                            setRemoveAadharCardUrls(prev => [...prev, url]);
+
+                                        }}
+
+                                    />
+                                </div>
+                                <div>
+                                    <MultiFilePicker
+                                        label=' Upload PAN Card'
+                                        placeholder="Select PAN Card"
+                                        required
+                                        error={errors.PanCardURL}
+                                        value={panCardURLFiles}
+                                        onChange={setPanCardURLFiles}
+                                        availableFilesURL={panCardURL ?? ""}
+                                        allowedTypes={[
+                                            "image/jpeg",
+                                            "image/png",
+                                            "image/jpg"]}
+                                        maxFiles={5}
+                                        maxSizeMB={50}
+                                        onRemoveExisting={(url) => {
+                                            setRemovePanCardUrls(prev => [...prev, url]);
+                                        }}
+                                    />
+
+                                </div>
+                                <div>
+                                    <Input
+                                        label='GST Number'
+                                        required
+                                        type="text"
+                                        value={formData.GSTNumber}
+                                        rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                                        error={errors.GSTNumber}
+                                        onChange={(e) => {
+                                            const gstNumber = filterGST(e.target.value);
+                                            handleFieldChange('GSTNumber', gstNumber)
+                                        }}
+                                        placeholder="Enter Valid GST Number"
+                                    />
+                                </div>
+
+                            </div>
+                        </div>
+                    )}
+
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Details</h3>
 

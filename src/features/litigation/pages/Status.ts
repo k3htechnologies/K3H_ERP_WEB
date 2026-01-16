@@ -1,9 +1,9 @@
-export const getStatuscolor = (status: string = "") => {
+export const getLitigationStatuscolor = (status: string = "") => {
   const map: Record<string, { bg: string; text: string }> = {
     
     "Open": { bg: "#51E5514A", text: "#48C848" },
     "Closed": { bg: "#FF003726", text: "#FF0037" },
-    "Reopen": { bg: "#FECACA", text: "#7F1D1D" },
+    "Reopen": { bg: "#FFA5004A", text: "#FF6600" },
 
   };
   

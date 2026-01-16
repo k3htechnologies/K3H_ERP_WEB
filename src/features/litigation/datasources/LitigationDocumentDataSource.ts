@@ -23,7 +23,6 @@ export class LitigationDocumentDatasourceImpl implements LitigationDocumentDatas
         return baseClient
     }
 
-
     async pullLitigationDocument(params: FilterWithPaginationLitigationDocumentRequest, signal?: AbortSignal): Promise<LitigationDocumentListResponse> {
         try {
             const queryParams = new URLSearchParams({

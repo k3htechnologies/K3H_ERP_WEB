@@ -33,6 +33,7 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 import { getDocumentStatusColor } from '@/features/projectDocument/pages/ProjectDocumentStatus';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 
 const initialFormState = (): AddUpdateApprovalDocumentRequest => ({
@@ -129,6 +130,13 @@ const ApprovalDocument: React.FC = () => {
 
   useEffect(() => {
     if (!projectId) return;
+
+    setPagination({
+      currentPage: 1,
+      totalPages: 0,
+      totalRecords: 0,
+      pageSize: pagination.pageSize,
+    });
 
     loadApprovalDocumentTabs();
 
@@ -1133,6 +1141,7 @@ const ApprovalDocument: React.FC = () => {
           defaultActive={activeTab}
           islarge={true}
           onTabChange={(t) => {
+            setSearchTerm('');
             setActiveTab(t.id);
 
             const newFilters: FilterInfo = {
@@ -1154,7 +1163,7 @@ const ApprovalDocument: React.FC = () => {
         pagination={approvalDocumentPaginationInfo}
         sortInfo={sortInfo}
         onSort={handleSortColumn}
-        emptyMessage='No Document Data Found'
+        emptyMessage='No Approval Document Data Found'
         loading={isLoading}
         fixedHeight
         recordsPerPage={20}
@@ -1205,7 +1214,7 @@ const ApprovalDocument: React.FC = () => {
               <DataTableWithOutBorder
                 data={details}
                 columns={approvalDocumentDetailsColumns}
-                emptyMessage="No Departments Data Found"
+                emptyMessage="No Approval Document Data Found"
                 fixedHeight={true}
                 maxHeight="calc(100vh - 255px)"
                 recordsPerPage={20}
@@ -1237,10 +1246,10 @@ const ApprovalDocument: React.FC = () => {
           setFormData(initialFormState());
           setErrors({});
         }}
-        title={editingDocumentData ? 'Update Document' : 'Add Document'}
+        title={editingDocumentData ? 'Update Document Name' : 'Add Document Name'}
         onSubmit={(e) => handleAddUpdateDocument(1, e)}
         saveText={editingDocumentData ? 'Update' : 'Add'}
-        resetText='Reset'
+        resetText=''
         loading={isLoading}
         size='xl'
       >
@@ -1248,14 +1257,14 @@ const ApprovalDocument: React.FC = () => {
           <div className="space-y-4" >
             <div>
               <Input
-                label='Document'
+                label='Document Name'
                 required
                 error={errors.ApprovalDocumentName}
                 type="text"
                 value={formData.ApprovalDocumentName}
-                maxLength={250}
+                maxLength={100}
                 onChange={(e) => handleFieldChange('ApprovalDocumentName', e.target.value)}
-                placeholder="Enter Document"
+                placeholder="Enter Document Name"
               />
 
             </div>
@@ -1282,8 +1291,8 @@ const ApprovalDocument: React.FC = () => {
         }}
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(0, e)}
-        saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
-        resetText='Reset'
+        saveText={editingDocumentData ? 'Update' : 'Add'}
+        resetText=''
         loading={isLoading}
         size='xl'
       >
@@ -1339,15 +1348,14 @@ const ApprovalDocument: React.FC = () => {
               />
             </div>
             <div>
-              <Input
-                label='Remark'
-
-                type="text"
+              <TextArea
+                label="Remark"
+                placeholder="Enter Remark"
+                className='thin-scroll'
                 value={formData.ApprovalDocumentRemark}
-                maxLength={250}
-                onChange={(e) => handleFieldChange('ApprovalDocumentRemark', e.target.value)}
-                placeholder="Enter Remarks"
-              />
+                onChange={(e) => handleFieldChange("ApprovalDocumentRemark", e.target.value)}
+                error={errors.ApprovalDocumentRemark} />
+
 
             </div>
 

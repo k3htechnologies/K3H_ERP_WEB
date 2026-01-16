@@ -29,7 +29,7 @@ import { FileText, Trash2 } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { litigationService } from '../services/LitigationServices';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
-import { getStatuscolor } from './Status';
+import { getLitigationStatuscolor } from './Status';
 
 export const Litigation: React.FC = () => {
 
@@ -49,7 +49,6 @@ export const Litigation: React.FC = () => {
 
     // TOAST
     const { addToast } = useToast();
-
     const { projectId } = useProject();
 
     // SINGLE SEARCH TEXT BOX
@@ -110,6 +109,7 @@ export const Litigation: React.FC = () => {
 
     //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
     useEffect(() => {
+
         return () => {
             debouncedSearch.cancel?.()
         }
@@ -123,6 +123,7 @@ export const Litigation: React.FC = () => {
 
     const loadLitigation = async (page: number, filterParams: FilterInfo) => {
         await runApiWithLoader(
+
             setIsLoading,
             setIsLoadingMessage,
             async () => {
@@ -196,6 +197,7 @@ export const Litigation: React.FC = () => {
         setPagination({ currentPage: 1 });
         loadLitigation(1, {});
         try {
+
             navigate(location.pathname, {
                 replace: true,
                 state: {}
@@ -212,7 +214,8 @@ export const Litigation: React.FC = () => {
             setIsLoadingMessage,
             async () => {
 
-                let sortByParam = undefined
+                let sortByParam: string | undefined;
+
                 if (sortInfo) {
                     const column = LitigationColumns.find(col => col.key === sortInfo.column);
                     if (column) {
@@ -365,6 +368,7 @@ export const Litigation: React.FC = () => {
 
     //#region TABLE COLUMNS
     const LitigationColumns = useMemo<TableColumn[]>(() => [
+
         {
             key: 'Title',
             label: 'Title',
@@ -384,30 +388,18 @@ export const Litigation: React.FC = () => {
         {
             key: 'CaseNumber',
             label: 'Case Number',
-            width: '15',
+            width: '16',
             sortable: false,
             align: 'center',
-            render: (value) => (
-                <TooltipText
-                    text={value || 'N/A'}
-                    maxWidth="170px"
-                    tooltipThreshold={25}
-                />
-            )
+            render: value => value || '-'
         },
         {
             key: 'CaseType',
             label: 'Case Type',
             width: '15',
-            sortable: false,
+            sortable: true,
             align: 'center',
-            render: (value) => (
-                <TooltipText
-                    text={value || 'N/A'}
-                    maxWidth="170px"
-                    tooltipThreshold={15}
-                />
-            )
+            render: value => value || '-'
         },
         {
             key: 'HearingDate',
@@ -441,9 +433,9 @@ export const Litigation: React.FC = () => {
             label: 'Status',
             width: '14',
             sortable: false,
-            align: 'left',
+            align: 'center',
             render: (value) => {
-                const { bg, text } = getStatuscolor(value);
+                const { bg, text } = getLitigationStatuscolor(value);
 
                 return (
                     <span
@@ -462,8 +454,8 @@ export const Litigation: React.FC = () => {
             key: 'CourtName',
             label: 'Court Name',
             width: '15',
-            sortable: false,
-            align: 'left',
+            sortable: true,
+            align: 'center',
             render: (value) => (
                 <TooltipText
                     text={value || 'N/A'}
@@ -477,7 +469,7 @@ export const Litigation: React.FC = () => {
             label: 'Court Location',
             width: '15',
             sortable: false,
-            align: 'left',
+            align: 'center',
             render: (value) => (
                 <TooltipText
                     text={value || 'N/A'}
@@ -489,16 +481,10 @@ export const Litigation: React.FC = () => {
         {
             key: 'CourtType',
             label: 'Court Type',
-            width: '15',
+            width: '16',
             sortable: false,
-            align: 'left',
-            render: (value) => (
-                <TooltipText
-                    text={value || 'N/A'}
-                    maxWidth="170px"
-                    tooltipThreshold={15}
-                />
-            )
+            align: 'center',
+            render: value => value || '-'
         },
         {
             key: 'Plantiff',
@@ -561,7 +547,7 @@ export const Litigation: React.FC = () => {
             label: 'Case Brief',
             width: '15',
             sortable: false,
-            align: 'left',
+            align: 'center',
             render: (value) => (
                 <TooltipText
                     text={value || 'N/A'}
@@ -575,7 +561,7 @@ export const Litigation: React.FC = () => {
             label: 'Remark',
             width: '15',
             sortable: false,
-            align: 'left',
+            align: 'center',
             render: (value) => (
                 <TooltipText
                     text={value || 'N/A'}
@@ -591,49 +577,53 @@ export const Litigation: React.FC = () => {
             fixed: 'right',
             align: 'center',
             render: (_value, row) => {
+                const status = row?.Status?.toLowerCase();
 
-                return canAction && row?.Status?.toLowerCase() === 'open' ? (
+                if (!canAction) return null;
+
+                return (
                     <div className="flex items-center justify-center gap-2">
+                        {status === 'open' && (
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleConfirmationDialogBoxOpen(row);
+                                }}
+                                color="transparent"
+                                isborderRadius
+                                size="sm"
+                                style={{
+                                    color: 'red',
+                                    padding: '4px 8px',
+                                }}
+                                title="Delete Litigation"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        )}
 
-                        <Button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleConfirmationDialogBoxOpen(row);
-                            }}
-                            color="transparent"
-                            isborderRadius
-                            size="sm"
-                            style={{
-                                color: 'red',
-                                padding: '4px 8px'
-                            }}
-                            title="Delete Litigation"
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-
-                        <Button
-                            onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                                handleViewLitigationDocument()
-                            }}
-                            color='transparent'
-                            isborderRadius
-                            size='sm'
-                            style={{
-                                color: 'green',
-                                padding: '4px 8px'
-                            }}
-                            title="Litigation Document"
-                        >
-                            <FileText className="h-4 w-4" />
-                        </Button>
+                        {(status === 'open' || status === 'reopen') && (
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleViewLitigationDocument();
+                                }}
+                                color="transparent"
+                                isborderRadius
+                                size="sm"
+                                style={{
+                                    color: 'green',
+                                    padding: '4px 8px',
+                                }}
+                                title="Litigation Document"
+                            >
+                                <FileText className="h-4 w-4" />
+                            </Button>
+                        )}
                     </div>
-
-                ) : null;
-
+                );
             }
         }
     ], [handleNavigateToView, handleViewLitigationDocument, handleConfirmationDialogBoxOpen]);

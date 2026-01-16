@@ -31,6 +31,7 @@ import { technicalService } from '@/features/technical/services/TechnicalService
 import { updateFilter } from '@/core/utils/filterHelper';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
+import { filterNumbers } from '@/core/utils/fileValidation';
 
 const initialFormState = (): AddUpdateApprovalDocumentCategoryMasterRequest => ({
   ApprovalDocumentCategoryId: 0,
@@ -349,9 +350,17 @@ export const ApprovalDocumentCategoryMaster: React.FC = () => {
         key: 'OrderBy',
         label: 'Sequence',
         width: '20',
-        sortable: false,
+        sortable: true,
         align: 'center',
         render: value => value ?? ''
+      },
+      {
+        key: 'DocumentCount',
+        label: 'Document Count',
+        width: '20',
+        sortable: false,
+        align: 'center',
+        render: value => value ?? 0
       },
       {
         key: 'actions',
@@ -390,7 +399,7 @@ export const ApprovalDocumentCategoryMaster: React.FC = () => {
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
-  const requiredApprovalDocumentCategoryMasterColumnKeys: string[] = ['ApprovalDocumentCategory'];
+  const requiredApprovalDocumentCategoryMasterColumnKeys: string[] = ['ApprovalDocumentCategoryName'];
 
   const allApprovalDocumentCategoryMasterColumnKeys: string[] = approvalDocumentCategoryMasterColumns.map(c => c.key);
 
@@ -467,7 +476,8 @@ export const ApprovalDocumentCategoryMaster: React.FC = () => {
               withBorder
               className="font-medium text-blue-900 "
             />
-            <FieldItem label="Order By" value={data.OrderBy} isRow withBorder />
+            <FieldItem label="Sequence" value={data.OrderBy} isRow withBorder />
+            <FieldItem label="Document Count" value={data.DocumentCount ?? 0} isRow withBorder />
           </div>
 
           <div className="space-y-4">
@@ -583,7 +593,7 @@ export const ApprovalDocumentCategoryMaster: React.FC = () => {
     }
 
     if (formData.OrderBy === 0) {
-      newErrors.OrderBy = 'Order By is required';
+      newErrors.OrderBy = 'Sequence is required';
     }
 
     return {
@@ -836,7 +846,7 @@ export const ApprovalDocumentCategoryMaster: React.FC = () => {
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleApprovalDocumentCategoryMaster}
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && approvalDocumentCategoryListForTable.length > 0}
         onExportExcel={handleExportApprovalDocumentCategoryExcel}
         onExportPdf={handleExportApprovalDocumentCategoryPdf}
         exportLoading={isLoading}
@@ -886,7 +896,7 @@ export const ApprovalDocumentCategoryMaster: React.FC = () => {
         saveText={
           editingApprovalDocumentCategoryMasterData ? 'Update' : 'Add'
         }
-        resetText="Reset"
+        resetText=""
         loading={isLoading}
         size="xl"
       >
@@ -907,12 +917,12 @@ export const ApprovalDocumentCategoryMaster: React.FC = () => {
 
             <div>
               <Input
-                label="Order By"
+                label="Sequence"
                 required
                 error={errors.OrderBy}
-                value={formData.OrderBy.toString()}
-                onChange={e => handleFieldChange('OrderBy', Number(e.target.value))}
-                placeholder="Enter Order"
+                value={formData.OrderBy}
+                onChange={(e) => handleFieldChange('OrderBy', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
+                placeholder="Enter Sequence"
               />
             </div>
           </div>

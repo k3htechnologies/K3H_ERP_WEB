@@ -53,19 +53,9 @@ export class LeaveEncashmentMasterDatasourceImpl implements LeaveEncashmentMaste
     async addUpdateLeaveEncashmentMaster(params: AddUpdateLeaveEncashmentMasterRequest): Promise<LeaveEncashmentMasterSaveResponse> {
 
         try {
-
-            const payLoad: AddUpdateLeaveEncashmentMasterRequest = {
-                LeaveEncashmentMasterSlabsId: params.LeaveEncashmentMasterSlabsId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-
-                MinSalary: params.MinSalary ?? 0,
-                MaxSalary: params.MaxSalary ?? 0,
-                EncashmentRate: params.EncashmentRate ?? 0,
-            }
-
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 LeaveEncashmentMasterApi.ADD_UPDATE,
-                payLoad
+                params
             )
 
             return response

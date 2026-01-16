@@ -772,7 +772,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
             <BottomActionBar
                 cancelText="Cancel"
-                saveText={formData.ProjectId ? "Update Project" : "Add Project"}
+                saveText={formData.ProjectId ? "Update" : "Add"}
                 onCancel={() => navigate(-1)}
                 onSave={() => {
                     handleSubmit();

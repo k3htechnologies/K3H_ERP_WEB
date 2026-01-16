@@ -23,11 +23,17 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Button, Input } from '@/ui/components/forms';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import { Edit, Trash2 } from 'lucide-react';
+import { allowPercentage, filterNumbersWithDecimal } from '@/core/utils/fileValidation';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { CTC_EARNINGS } from '@/core/constants';
 
 
 const initialFormState = (): AddUpdateLeaveEncashmentMasterRequest => ({
   LeaveEncashmentMasterSlabsId: 0,
   Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  EarningMasterName: '',
   MinSalary: 0,
   MaxSalary: 0,
   EncashmentRate: 0,
@@ -95,6 +101,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
         setFormData({
           LeaveEncashmentMasterSlabsId: editingLeaveEncashmentMasterData.LeaveEncashmentMasterSlabsId,
           Uniquekey: editingLeaveEncashmentMasterData.Uniquekey || initialFormState().Uniquekey,
+          EarningMasterName: editingLeaveEncashmentMasterData.EarningMasterName || '',
           MinSalary: editingLeaveEncashmentMasterData.MinSalary || 0,
           MaxSalary: editingLeaveEncashmentMasterData.MaxSalary || 0,
           EncashmentRate: editingLeaveEncashmentMasterData.EncashmentRate || 0,
@@ -281,53 +288,83 @@ export const LeaveEncashmentMaster: React.FC = () => {
   const leaveEncashmentMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
-        key: 'EncashmentRate',
-        label: 'Encashment Rate',
+        key: 'EarningMasterName',
+        label: 'Earning Name',
         width: '20',
         sortable: true,
         fixed: 'left',
         align: 'left',
         render: (value, row) => (
-          <div
-            onClick={() => handleViewLeaveEncashmentDetails(row)}
-            className="flex items-center cursor-pointer"
-          >
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full 
-                       text-xs font-medium bg-blue-100 text-blue-800">
-              {value || 0}%
-            </span>
+
+          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
+
+            <TooltipText
+              text={value || 'N/A'}
+              maxWidth="300px"
+              tooltipThreshold={40}
+              onClick={() => handleViewLeaveEncashmentDetails(row)}
+            />
           </div>
         )
+      },
+      {
+        key: 'EncashmentRate',
+        label: 'Encashment Rate',
+        width: '20',
+        sortable: false,
+        align: 'left',
+        render: (value) => value ? `${value} % ` : '0'
       },
 
       {
         key: 'MinSalary',
-        label: 'Min Salary',
+        label: 'Min Salary (₹)',
         width: '20',
-        sortable: true,
-        fixed: 'left',
+        sortable: false,
         align: 'left',
-        render: (value) => (
-          <span className="text-sm font-medium">
-            {value ? `₹${value.toLocaleString('en-IN')}` : 'N/A'}
-          </span>
-        )
+        render: (value) => value ? `₹ ${value}` : '0'
       },
       {
         key: 'MaxSalary',
-        label: 'Max Salary',
+        label: 'Max Salary (₹)',
         width: '20',
-        sortable: true,
-        fixed: 'left',
+        sortable: false,
         align: 'left',
-        render: (value) => (
-          <span className="text-sm font-medium">
-            {value ? `₹${value.toLocaleString('en-IN')}` : 'N/A'}
-          </span>
-        )
+        render: (value) => value ? `₹ ${value}` : '0'
       },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Rate"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )
+      }
     ],
-    // dependencies: include everything used inside that might change
+
     [handleViewLeaveEncashmentDetails]
   )
 
@@ -404,10 +441,10 @@ export const LeaveEncashmentMaster: React.FC = () => {
         <div className="space-y-6">
 
           <div className="space-y-4">
-
-            <FieldItem label="Encashment Rate" value={data.EncashmentRate} isRow withBorder={true} className='font-medium text-blue-900 ' />
-            <FieldItem label="MinSalary" value={data.MinSalary} isRow withBorder={true} />
-            <FieldItem label="MaxSalary" value={data.MaxSalary} isRow withBorder={true} />
+            <FieldItem label="Earning Name" value={data.EarningMasterName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+            <FieldItem label="Encashment Rate (%" value={data.EncashmentRate} isRow withBorder={true} />
+            <FieldItem label="Min Salary (₹)" value={data.MinSalary} isRow withBorder={true} />
+            <FieldItem label="Max Salary (₹)" value={data.MaxSalary} isRow withBorder={true} />
 
           </div>
           <div className="space-y-4">
@@ -428,16 +465,17 @@ export const LeaveEncashmentMaster: React.FC = () => {
             {canAction && (
               <>
                 <Button
-                  color='gray'
+                  color='red'
                   variant='solid'
                   colorMode="light"
-                  size='sm'
+                  size='md'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
                     setIsViewModalOpen(false)
                     handleConfirmationDialogBoxOpen(data)
                   }}
+                  leftIcon={<Trash2 className="h-5 w-5" />}
                 >
                   Delete
                 </Button>
@@ -451,6 +489,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
                     setIsViewModalOpen(false)
                     handleEditLeaveEncashmentMasterData(data)
                   }}
+                  leftIcon={<Edit className="h-5 w-5" />}
                 >
                   Edit
                 </Button>
@@ -499,14 +538,23 @@ export const LeaveEncashmentMaster: React.FC = () => {
 
     const newErrors: { [key: string]: string } = {}
 
+    if (!formData.EarningMasterName) {
+      newErrors.EarningMasterName = "Earning Name is required";
+    }
+
     if (!formData.EncashmentRate || Number(formData.EncashmentRate) <= 0) {
       newErrors.EncashmentRate = "Encashment Rate is required";
     }
     if (!formData.MinSalary || Number(formData.MinSalary) <= 0) {
-      newErrors.MinSalary = "Min Salary required";
+      newErrors.MinSalary = "Min Salary is required";
     }
+
     if (!formData.MaxSalary || Number(formData.MaxSalary) <= 0) {
       newErrors.MaxSalary = "Max Salary is required";
+    }
+
+    if (formData.MinSalary && formData.MaxSalary && Number(formData.MaxSalary) <= Number(formData.MinSalary)) {
+      newErrors.MaxSalary = "Max Salary must be greater than Min Salary";
     }
 
     return {
@@ -519,6 +567,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
     return {
       LeaveEncashmentMasterSlabsId: formData.LeaveEncashmentMasterSlabsId,
       Uniquekey: formData.Uniquekey,
+      EarningMasterName: formData.EarningMasterName,
       MinSalary: formData.MinSalary,
       MaxSalary: formData.MaxSalary,
       EncashmentRate: formData.EncashmentRate,
@@ -567,7 +616,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
             });
 
 
-            addToast({ type: 'success', title: 'Leave Encashment added successfully' })
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           } else {
 
             const updatedRecord = response.right.Data[0] as LeaveEncashmentMasterData;
@@ -731,7 +780,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
         }}
         title={editingLeaveEncashmentMasterData ? 'Update LeaveEncashment Master' : 'Add LeaveEncashment Master'}
         onSubmit={handleAddUpdateLeaveEncashmentMaster}
-        saveText={editingLeaveEncashmentMasterData ? 'Update LeaveEncashment' : 'Save LeaveEncashment'}
+        saveText={editingLeaveEncashmentMasterData ? 'Update' : 'Add'}
         resetText='Reset'
         onreset={handleResetForm}
         loading={isLoading}
@@ -740,14 +789,32 @@ export const LeaveEncashmentMaster: React.FC = () => {
         <div className="space-y-6 p-6 bg-blue-100">
           <div className='space-y-4'>
             <div>
-
+              <SinglePageSelection
+                label="Name"
+                placeholder="Select Name"
+                required
+                value={formData.EarningMasterName || ''}
+                onChange={(e) => handleFieldChange('EarningMasterName', String(e))}
+                options={CTC_EARNINGS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                error={errors.EarningMasterName}
+              />
+            </div>
+            <div>
               <Input
-                label='Encashment Rate'
+                label='Encashment Rate (%)'
                 required
                 error={errors.EncashmentRate}
+                type="text"
                 value={formData.EncashmentRate ?? ''}
-                maxLength={4}
-                onChange={(e) => handleFieldChange("EncashmentRate", e.target.value)}
+                rightIcon="%"
+                maxLength={10}
+                onChange={(e) => {
+                  const val = allowPercentage(e.target.value);
+                  if (val !== null) {
+
+                    handleFieldChange("EncashmentRate", filterNumbersWithDecimal(e.target.value))
+                  }
+                }}
                 placeholder="Enter Encashment Rate"
               />
             </div>
@@ -808,7 +875,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
         columns={leaveEncashmentMasterColumns}
         selectedKeys={selectedLeaveEncashmentMasterColumnKeys}
         requiredKeys={requiredLeaveEncashmentMasterColumnKeys}
-        title="Customize Leave Encashment Master Table Columns"
+        title="Customize Table Columns"
       />
 
       {/* DELETE CONFIRMATION LEAVE ENCASHMENT MODAL */}

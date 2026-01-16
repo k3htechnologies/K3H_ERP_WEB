@@ -7,7 +7,7 @@ import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useEffect, useState } from "react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { Modal } from "@/ui/components/Modal/Modal";
-import { Button, Input } from "@/ui/components/forms";
+import { Button } from "@/ui/components/forms";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import useToast from "@/core/hooks/useToast";
@@ -24,6 +24,7 @@ import { litigationHearingService } from "@/features/litigation/services/Litigat
 import { litigationService } from "../services/LitigationServices";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
+import { TextArea } from "@/ui/components/forms/Textarea";
 
 
 const ViewLitigation: React.FC = () => {
@@ -776,7 +777,7 @@ const ViewLitigation: React.FC = () => {
                                                                     <FieldItem label="Closure Date" value={formatDate_dd_MonthName_yy(item.ClosureDate)} />
                                                                     <FieldItem label="Remark" value={item.Remark} />
                                                                     <FieldItem label="Conclusion" value={item.Conclusion} />
-                                                                    
+
                                                                     <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
                                                                         <p>Document</p>
                                                                         <MultiImageViewer
@@ -923,7 +924,7 @@ const ViewLitigation: React.FC = () => {
                     size="lg"
                 >
                     <div className="space-y-4">
-                        
+
                         <div>
                             <DatePickerInput
                                 label="Closure Date"
@@ -957,32 +958,29 @@ const ViewLitigation: React.FC = () => {
                             />
                         </div>
 
-                        <div>
-                            <Input
-                                type="text"
-                                required
-                                label='Remark'
-                                value={closureFormData.Remark ?? ""}
-                                onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                placeholder="Enter Remark"
-                                maxLength={250}
-                                error={errors.Remark}
-                            />
-                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                            <div>
+                                <TextArea
+                                    label="Remarks"
+                                    className='thin-scroll'
+                                    value={closureFormData.Remark ?? ""}
+                                    placeholder="Enter Remarks"
+                                    onChange={(e) => handleFieldChange("Remark", e.target.value)}
+                                    error={errors.Remarks} />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
 
-                        <div>
-                            <Input
-                                type="text"
-                                required
-                                label='Conclusion'
-                                value={closureFormData.Conclusion ?? ""}
-                                onChange={(e) => handleFieldChange("Conclusion", e.target.value)}
-                                placeholder="Enter Conclusion"
-                                maxLength={250}
-                                error={errors.Conclusion}
-                            />
+                                <div>
+                                    <TextArea
+                                        label="Conclusion"
+                                        className='thin-scroll'
+                                        value={closureFormData.Conclusion ?? ""}
+                                        placeholder="Enter Conclusion"
+                                        onChange={(e) => handleFieldChange("Conclusion", e.target.value)}
+                                        error={errors.Conclusion} />
+                                </div>
+                            </div>
                         </div>
-
                     </div>
                 </Modal>
 
@@ -1034,16 +1032,16 @@ const ViewLitigation: React.FC = () => {
                             />
                         </div>
 
-                        <div>
-                            <Input
-                                type="text"
-                                required
-                                label="Remark"
-                                value={hearingFormData.Remark ?? ""}
-                                onChange={(e) => handleHearingFieldChange("Remark", e.target.value)}
-                                maxLength={250}
-                                error={errors.Remark}
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                            <div>
+                                <TextArea
+                                    label="Remarks"
+                                    className='thin-scroll'
+                                    value={hearingFormData.Remark ?? ""}
+                                    placeholder="Enter Remarks"
+                                    onChange={(e) => handleFieldChange("Remark", e.target.value)}
+                                    error={errors.Remarks} />
+                            </div>
                         </div>
 
                     </div>

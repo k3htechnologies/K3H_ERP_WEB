@@ -392,7 +392,6 @@ const ViewLitigation: React.FC = () => {
                     PageSize: 100,
                     ProjectId: Number(projectId),
                     LitigationId: editLitigationData.LitigationId,
-
                 };
                 const response = await litigationHearingService.apiCallPullLitigationHearing(params);
 
@@ -402,7 +401,6 @@ const ViewLitigation: React.FC = () => {
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
-
                 return response;
             },
             undefined,
@@ -1015,12 +1013,12 @@ const ViewLitigation: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                             <div>
                                 <TextArea
-                                    label="Remarks"
+                                    label="Remark"
                                     className='thin-scroll'
                                     value={hearingFormData.Remark ?? ""}
                                     placeholder="Enter Remarks"
-                                    onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                    error={errors.Remarks} />
+                                    onChange={(e) => handleHearingFieldChange("Remark", e.target.value)}
+                                    error={errors.Remark} />
                             </div>
                         </div>
 

@@ -733,6 +733,30 @@ export const LocalStorageHelper = {
         }
         return null
     },
+    //#endregion
+    //#region STORE APPROVED BANK COLUMNS
+    storeApprovedBankTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.APPROVED_BANK_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Approved Bank Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET APPROVED BANK COLUMNS
+    getApprovedBankTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.APPROVED_BANK_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.APPROVED_BANK_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Approved Bank Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
     //#region STORE TNC MASTER COLUMNS
     storeTncMasterTableColumns: (columns: string): void => {
         try {

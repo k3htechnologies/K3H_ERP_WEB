@@ -1,4 +1,5 @@
 import baseClient from '@/core/config/baseClient'
+import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { DesignationMasterApi } from '@/features/designationMaster/api/DesignationMasterApi'
 import type {
     FilterWithPaginationDesignationMasterRequest,
@@ -21,7 +22,7 @@ export class DesignationMasterDatasourceImpl implements DesignationMasterDatasou
     }
 
 
-    async pullDesignationMaster(params: FilterWithPaginationDesignationMasterRequest,signal?: AbortSignal): Promise<DesignationMasterListResponse> {
+    async pullDesignationMaster(params: FilterWithPaginationDesignationMasterRequest, signal?: AbortSignal): Promise<DesignationMasterListResponse> {
         try {
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
@@ -35,36 +36,42 @@ export class DesignationMasterDatasourceImpl implements DesignationMasterDatasou
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${DesignationMasterApi.PULL}?${queryParams.toString()}`,{ signal }
+                `${DesignationMasterApi.PULL}?${queryParams.toString()}`, { signal }
             )
 
-            return response 
+            return response
         } catch (error) {
 
             console.error('ERROR: PULL  DESIGNATION MASTER:', error);
+
+            if (error === TokenExpiredException) {
+
+                await this.pullDesignationMaster(params);
+
+            }
             throw error
         }
     }
 
-    async addUpdateDesignationMaster(data: AddUpdateDesignationMasterRequest): Promise<DesignationMasterListResponse> {
+    async addUpdateDesignationMaster(params: AddUpdateDesignationMasterRequest): Promise<DesignationMasterListResponse> {
 
         try {
 
-            const payLoad: AddUpdateDesignationMasterRequest = {
-                DesignationMasterId: data.DesignationMasterId ?? 0,
-                Uniquekey: data.Uniquekey ?? '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-                DesignationName: data.DesignationName?.trim() ?? '',
-                NoticePeriod: data.NoticePeriod ?? 0,
-            }
-
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 DesignationMasterApi.ADD_UPDATE,
-                payLoad
+                params
             )
 
             return response;
+
         } catch (error) {
-            console.error('ERROR: ADD UPDATE  DESIGNATION MASTER:', error)
+
+            console.error('ERROR: ADD UPDATE DESIGNATION MASTER:', error)
+
+            if (error === TokenExpiredException) {
+                await this.addUpdateDesignationMaster(params);
+            }
+
             throw error
         }
     }
@@ -85,6 +92,11 @@ export class DesignationMasterDatasourceImpl implements DesignationMasterDatasou
         } catch (error) {
 
             console.error('ERRPR : DELETE DESIGNATION MASTER:', error)
+
+            if (error === TokenExpiredException) {
+                await this.deleteDesignationMaster(params);
+            }
+
             throw error
         }
     }

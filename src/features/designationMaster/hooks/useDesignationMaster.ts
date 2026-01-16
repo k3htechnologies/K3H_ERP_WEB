@@ -4,8 +4,13 @@ import type { FilterInfo, SortInfo, TableColumn } from '@/ui/components/DataTabl
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import type { AddUpdateDepartmentMasterRequest, DeleteDepartmentMasterRequest, DepartmentMasterData, FilterWithPaginationDepartmentMasterRequest } from '@/features/departmentMaster/models/DepartmentMasterModel';
-import { departmentMasterService } from '@/features/departmentMaster/services/DepartmentMasterService'
+import type {
+  AddUpdateDesignationMasterRequest,
+  DeleteDesignationMasterRequest,
+  DesignationMasterData,
+  FilterWithPaginationDesignationMasterRequest
+} from '@/features/designationMaster/models/DesignationMasterModel';
+import { designationMasterService } from '@/features/designationMaster/services/DesignationMasterService';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
@@ -13,13 +18,13 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { handleExportFile } from '@/core/utils/exportFile';
-import { getInitialFormState, getDepartmentMasterColumns, REQUIRED_COLUMN_KEYS } from '@/features/departmentMaster/constants/departmentMasterConstants';
+import { getInitialFormState, getDesignationMasterColumns, REQUIRED_COLUMN_KEYS } from '@/features/designationMaster/constants/designationMasterConstants';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
-export const useDepartmentMaster = () => {
+export const useDesignationMaster = () => {
 
   //#region STATE MANAGEMENT
-  const [departmentMasterList, setDepartmentMasterList] = useState<DepartmentMasterData[]>([]);
+  const [designationMasterList, setDesignationMasterList] = useState<DesignationMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const { pagination, setPagination } = usePagination(20);
@@ -27,9 +32,9 @@ export const useDepartmentMaster = () => {
   const { addToast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchDepartments(value)
+    searchDesignationMaster(value)
   }, 350)
-  const [viewDepartmentMasterDetailsData, setViewDepartmentMasterDetailsData] = useState<DepartmentMasterData | null>(null)
+  const [viewDesignationMasterDetailsData, setViewDesignationMasterDetailsData] = useState<DesignationMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   //FILTER STATES
@@ -40,19 +45,19 @@ export const useDepartmentMaster = () => {
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  // EDIT DEPARTMENT MASTER
-  const [editingDepartmentMasterData, setEditingDepartmentMasterData] = useState<DepartmentMasterData | null>(null);
+  // EDIT DESIGNATION MASTER
+  const [editingDesignationMasterData, setEditingDesignationMasterData] = useState<DesignationMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  //ADD UPDATE DEPARTMENT MASTER
-  const [formData, setFormData] = useState<AddUpdateDepartmentMasterRequest>(() => getInitialFormState());
+  //ADD UPDATE DESIGNATION MASTER
+  const [formData, setFormData] = useState<AddUpdateDesignationMasterRequest>(() => getInitialFormState());
 
-  //DELETE DEPARTMENT MASTER STATES
+  //DELETE DESIGNATION MASTER STATES
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-  const [deleteDepartmentMasterDetailsData, setDeleteDepartmentMasterDetailsData] = useState<DepartmentMasterData | null>(null)
+  const [deleteDesignationMasterDetailsData, setDeleteDesignationMasterDetailsData] = useState<DesignationMasterData | null>(null)
 
   //CUSTOMIZE COLUMN MODAL
-  const [isShowCustomizeDepartmentMasterColumnsModal, setIsShowCustomizeDepartmentMasterColumnsModal] = useState(false);
+  const [isShowCustomizeDesignationMasterColumnsModal, setIsShowCustomizeDesignationMasterColumnsModal] = useState(false);
 
   //EXCEL IMPORT 
   const [showImportModal, setShowImportModal] = useState(false);
@@ -65,12 +70,12 @@ export const useDepartmentMaster = () => {
 
   //#region INITIALIZATION
 
-  const hasFetchedInitialDepartments = useRef(false)
+  const hasFetchedInitialDesignations = useRef(false)
 
   useEffect(() => {
-    if (hasFetchedInitialDepartments.current) return
-    hasFetchedInitialDepartments.current = true;
-    fetchDepartmentList()
+    if (hasFetchedInitialDesignations.current) return
+    hasFetchedInitialDesignations.current = true;
+    fetchDesignationMasterList()
   }, [])
 
   //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
@@ -82,67 +87,62 @@ export const useDepartmentMaster = () => {
 
   useEffect(() => {
     if (isAddUpdateModalOpen) {
-      if (editingDepartmentMasterData) {
+      if (editingDesignationMasterData) {
         setFormData({
-          DepartmentMasterId: editingDepartmentMasterData.DepartmentMasterId,
-          Uniquekey: editingDepartmentMasterData.Uniquekey || getInitialFormState().Uniquekey,
-          DepartmentCode: editingDepartmentMasterData.DepartmentCode || '',
-          DepartmentName: editingDepartmentMasterData.DepartmentName || ''
+          DesignationMasterId: editingDesignationMasterData.DesignationMasterId,
+          Uniquekey: editingDesignationMasterData.Uniquekey || getInitialFormState().Uniquekey,
+          DesignationName: editingDesignationMasterData.DesignationName || '',
+          NoticePeriod: editingDesignationMasterData.NoticePeriod || 0
         });
       } else {
         setFormData(getInitialFormState());
       }
       setErrors({});
     }
-  }, [isAddUpdateModalOpen, editingDepartmentMasterData]);
+  }, [isAddUpdateModalOpen, editingDesignationMasterData]);
 
   //#endregion
 
-  //#region TABLE COLUMN DEFINITION (moved earlier for use in loadDepartments)
-
-  const departmentMasterColumns = useMemo<TableColumn[]>(
-    () => getDepartmentMasterColumns(),
+  //#region TABLE COLUMN DEFINITION
+  
+  const designationMasterColumns = useMemo<TableColumn[]>(
+    () => getDesignationMasterColumns(),
     []
   )
   //#endregion
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchDepartmentList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadDepartments(page, filters, sort ?? sortInfo);
+  const fetchDesignationMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadDesignationMaster(page, filters, sort ?? sortInfo);
   }
 
-  const loadDepartments = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadDesignationMaster = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
 
-        const params: FilterWithPaginationDepartmentMasterRequest = {
+        const params: FilterWithPaginationDesignationMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
-          DepartmentMasterId: filterParams.DepartmentMasterId ? Number(filterParams.DepartmentMasterId) : 0,
-          DepartmentName: filterParams.DepartmentName?.trim() || undefined,
-          SortBy: getSortByParam(sortInfo ?? null, departmentMasterColumns)
+          DesignationMasterId: filterParams.DesignationMasterId ? Number(filterParams.DesignationMasterId) : 0,
+          DesignationName: filterParams.DesignationName?.trim() || undefined,
+          SortBy: getSortByParam(sortInfo ?? null, designationMasterColumns)
         }
 
-        const response = await departmentMasterService.apiCallPullDepartmentMaster(params);
+        const response = await designationMasterService.apiCallPullDesignationMaster(params);
 
         if (E.isRight(response)) {
-
-          setDepartmentMasterList(response.right.Data);
-
+          setDesignationMasterList(response.right.Data);
           setPagination({
             currentPage: page,
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
           });
-
         } else {
-
           addToast({ type: 'error', title: response.left.message });
-
         }
 
         return response
@@ -152,54 +152,54 @@ export const useDepartmentMaster = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Department'
+      'Loading Designation'
     )
   }
   //#endregion
 
-  //#region SEARCH DEPARTMENT 
-  const searchDepartments = async (searchValue: string) => {
+  //#region SEARCH DESIGNATION MASTER 
+  const searchDesignationMaster = async (searchValue: string) => {
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
-      fetchDepartmentList();
+      fetchDesignationMasterList();
       return
     }
 
     const filterParams: FilterInfo = {
-      DepartmentName: searchValue.trim(),
+      DesignationName: searchValue.trim(),
     };
 
-    await loadDepartments(1, filterParams)
+    await loadDesignationMaster(1, filterParams)
   }
   //#endregion
 
-  //#region CLEAR SEARCH DEPARTMENT 
-  const clearsearchDepartments = () => {
+  //#region CLEAR SEARCH DESIGNATION 
+  const clearsearchDesignationMaster = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
-    fetchDepartmentList();
+    fetchDesignationMasterList();
   }
   //#endregion
 
   //#region EXPORT EXCEL | PDF
-  const handleExportDepartments = async (exportType: 'Excel' | 'PDF') => {
+  const handleExportDesignationMaster = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
 
-        const params: FilterWithPaginationDepartmentMasterRequest = {
+        const params: FilterWithPaginationDesignationMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
-          DepartmentName: filters.DepartmentName?.trim() || undefined,
-          SortBy: getSortByParam(sortInfo ?? null, departmentMasterColumns),
+          DesignationName: filters.DesignationName?.trim() || undefined,
+          SortBy: getSortByParam(sortInfo ?? null, designationMasterColumns),
           ExportType: exportType
         }
 
-        const response = await departmentMasterService.apiCallPullDepartmentMaster(params);
-        handleExportFile(response, exportType, 'Department Master', addToast)
+        const response = await designationMasterService.apiCallPullDesignationMaster(params);
+        handleExportFile(response, exportType, 'Designation Master', addToast)
         return response;
       },
       undefined,
@@ -211,76 +211,72 @@ export const useDepartmentMaster = () => {
     )
   }
 
-  const handleExportDepartmentExcel = () => handleExportDepartments('Excel')
-  const handleExportDepartmentPdf = () => handleExportDepartments('PDF')
+  const handleExportDesignationExcel = () => handleExportDesignationMaster('Excel')
+  const handleExportDesignationPdf = () => handleExportDesignationMaster('PDF')
   //#endregion
 
   //#region HANDLE PAGE CHANGE EVENT
   const handlePageChange = (page: number) => {
-    fetchDepartmentList(page);
+    fetchDesignationMasterList(page);
   };
   //#endregion
 
   //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
-    loadDepartments(1, filters, sort);
+    loadDesignationMaster(1, filters, sort);
   }, [filters]);
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
-  const requiredDepartmentMasterColumnKeys: string[] = REQUIRED_COLUMN_KEYS;
+  const requiredDesignationMasterColumnKeys: string[] = REQUIRED_COLUMN_KEYS;
 
-  const allDepartmentMasterColumnKeys: string[] = departmentMasterColumns.map(c => c.key)
+  const allDesignationMasterColumnKeys: string[] = designationMasterColumns.map(c => c.key)
 
-  const [selectedDepartmentMasterColumnKeys, setSelectedDepartmentMasterColumnKeys] = useState<string[]>(() => {
+  const [selectedDesignationMasterColumnKeys, setSelectedDesignationMasterColumnKeys] = useState<string[]>(() => {
     try {
-      const saved = LocalStorageHelper.getDepartmentMasterTableColumns();
+      const saved = LocalStorageHelper.getDesignationMasterTableColumns();
       if (saved) {
         const parsed = JSON.parse(saved) as string[]
-        const withRequired = Array.from(new Set([...parsed, ...requiredDepartmentMasterColumnKeys]));
-        return withRequired.filter(k => allDepartmentMasterColumnKeys.includes(k));
+        const withRequired = Array.from(new Set([...parsed, ...requiredDesignationMasterColumnKeys]));
+        return withRequired.filter(k => allDesignationMasterColumnKeys.includes(k));
       }
     } catch { }
-    return allDepartmentMasterColumnKeys
+    return allDesignationMasterColumnKeys
   })
 
   useEffect(() => {
+    setSelectedDesignationMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredDesignationMasterColumnKeys])).filter(k => allDesignationMasterColumnKeys.includes(k)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [designationMasterColumns.length])
 
-    setSelectedDepartmentMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredDepartmentMasterColumnKeys])).filter(k => allDepartmentMasterColumnKeys.includes(k)));
-
-  }, [departmentMasterColumns.length])
-
-  const visibleDepartmentMasterColumns = useMemo(
-    () => departmentMasterColumns.filter(col => selectedDepartmentMasterColumnKeys.includes(col.key)),
-    [departmentMasterColumns, selectedDepartmentMasterColumnKeys]
+  const visibleDesignationMasterColumns = useMemo(
+    () => designationMasterColumns.filter(col => selectedDesignationMasterColumnKeys.includes(col.key)),
+    [designationMasterColumns, selectedDesignationMasterColumnKeys]
   )
   //#endregion
 
   //#region VIEW EDIT
-  const handleViewDepartmentDetails = useCallback((row: DepartmentMasterData) => {
-
-    setViewDepartmentMasterDetailsData(row);
-
-    setIsViewModalOpen(true);
-
+  const handleViewDesignationDetails = useCallback((row: DesignationMasterData) => {
+    setViewDesignationMasterDetailsData(row)
+    setIsViewModalOpen(true)
   }, [])
   //#endregion
 
-  //#region EDIT DEPARTMENT MASTER
-  const handleEditDepartmentMaster = useCallback((row: DepartmentMasterData) => {
-    setEditingDepartmentMasterData({
+  //#region EDIT DESIGNATION MASTER
+  const handleEditDesignationMaster = useCallback((row: DesignationMasterData) => {
+    setEditingDesignationMasterData({
       ...row,
-      DepartmentCode: row.DepartmentCode || '',
-      DepartmentName: row.DepartmentName || ''
+      NoticePeriod: row.NoticePeriod ?? 0,
+      DesignationName: row.DesignationName ?? ''
     })
-    setIsAddUpdateModalOpen(true);
+    setIsAddUpdateModalOpen(true)
   }, [])
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
-  const handleConfirmationDialogBoxOpen = useCallback((row: DepartmentMasterData) => {
-    setDeleteDepartmentMasterDetailsData(row)
+  const handleConfirmationDialogBoxOpen = useCallback((row: DesignationMasterData) => {
+    setDeleteDesignationMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
   //#endregion
@@ -288,7 +284,7 @@ export const useDepartmentMaster = () => {
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
     setFilters(tempFilters)
-    loadDepartments(1, tempFilters)
+    loadDesignationMaster(1, tempFilters)
     setShowFilterPopup(false)
   }
   //#endregion
@@ -297,55 +293,48 @@ export const useDepartmentMaster = () => {
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
-    loadDepartments(1, {})
+    loadDesignationMaster(1, {})
     setShowFilterPopup(false)
   }
   //#endregion
 
   //#region HANDLE FILTER CHANGE
   const handleFilterChange = (key: string, value: string) => {
-
     setTempFilters(prev => updateFilter(prev, key, value));
-
   };
   //#endregion
 
-  //#region ADD UPDATE EDIT DEPARTMENT MASTER
-  const handleFieldChange = (field: keyof AddUpdateDepartmentMasterRequest, value: any) => {
-
+  //#region ADD UPDATE EDIT DESIGNATION MASTER
+  const handleFieldChange = (field: keyof AddUpdateDesignationMasterRequest, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
-  const handleAddDepartmentModal = () => {
-    setEditingDepartmentMasterData(null);
+  const handleAddDesignationModal = () => {
+    setEditingDesignationMasterData(null);
     setFormData(getInitialFormState());
     setErrors({});
     setIsAddUpdateModalOpen(true);
   }
 
-  const validateAddDepartmentMasterForm = (): {
+  const validateAddDesignationMasterForm = (): {
     isValid: boolean
     errors: { [key: string]: string }
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (formData.DepartmentCode.trim() === "") {
-      newErrors.DepartmentCode = "Department Code is required";
-    } else if (formData.DepartmentCode.trim().length >= 5) {
-      newErrors.DepartmentCode = "Department Code must be at least 4 characters long";
+    if (formData.DesignationName.trim() === "") {
+      newErrors.DesignationName = "Designation Name is required"
+    }
+    else if (formData.DesignationName.length < 3) {
+      newErrors.DesignationName = "Designation Name must be at least 3 characters long"
     }
 
-    if (formData.DepartmentName.trim() === "") {
-      newErrors.DepartmentName = "Department Name is required"
+    if (!formData.NoticePeriod || Number(formData.NoticePeriod) <= 0) {
+      newErrors.NoticePeriod = "Notice Period is required";
     }
-    else if (formData.DepartmentName.length < 3) {
-      newErrors.DepartmentName = "Department Name must be at least 3 characters long"
-    }
-
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -353,21 +342,21 @@ export const useDepartmentMaster = () => {
     }
   }
 
-  const PushDepartmentMasterFormData = (): AddUpdateDepartmentMasterRequest => {
+  const PushDesignationMasterFormData = (): AddUpdateDesignationMasterRequest => {
     return {
-      DepartmentMasterId: formData.DepartmentMasterId,
+      DesignationMasterId: formData.DesignationMasterId,
       Uniquekey: formData.Uniquekey,
-      DepartmentCode: formData.DepartmentCode,
-      DepartmentName: formData.DepartmentName
+      DesignationName: (formData.DesignationName || '').trim(),
+      NoticePeriod: Number(formData.NoticePeriod) || 0
     };
   };
 
-  const handleAddUpdateDepartmentMaster = async (e: React.FormEvent) => {
+  const handleAddUpdateDesignationMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
     setErrors({})
 
-    const validation = validateAddDepartmentMasterForm()
+    const validation = validateAddDesignationMasterForm()
 
     if (!validation.isValid) {
       setErrors(validation.errors)
@@ -378,38 +367,28 @@ export const useDepartmentMaster = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-
-        const payload = PushDepartmentMasterFormData();
-
-        const response = await departmentMasterService.apiCallAddUpdateDepartmentMaster(payload);
+        const payload = PushDesignationMasterFormData();
+        const response = await designationMasterService.apiCallAddUpdateDesignationMaster(payload);
 
         if (E.isRight(response)) {
-
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = formData.DepartmentMasterId === 0;
+          const isAdd = formData.DesignationMasterId === 0;
 
           if (isAdd) {
-
-            const newRecord = response.right.Data[0] as DepartmentMasterData
-
-            setDepartmentMasterList(prevData => [newRecord, ...prevData]);
-
+            const newRecord = response.right.Data[0] as DesignationMasterData
+            setDesignationMasterList(prevData => [newRecord, ...prevData]);
             setPagination({
               currentPage: pagination.currentPage,
               totalRecords: pagination.totalRecords + 1,
               totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
             });
-
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-
           } else {
-
-            const updatedRecord = response.right.Data[0] as DepartmentMasterData;
-
-            setDepartmentMasterList(prevData =>
+            const updatedRecord = response.right.Data[0] as DesignationMasterData;
+            setDesignationMasterList(prevData =>
               prevData.map(item =>
-                item.DepartmentMasterId === formData.DepartmentMasterId
+                item.DesignationMasterId === formData.DesignationMasterId
                   ? updatedRecord
                   : item
               )
@@ -417,7 +396,7 @@ export const useDepartmentMaster = () => {
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
-          setEditingDepartmentMasterData(null);
+          setEditingDesignationMasterData(null);
         } else {
           addToast({ type: "error", title: response.left?.message });
         }
@@ -428,25 +407,23 @@ export const useDepartmentMaster = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      Number(formData.DepartmentMasterId) === 0 ? 'Add Department' : 'Update Department'
+      Number(formData.DesignationMasterId) === 0 ? 'Add Designation' : 'Update Designation'
     )
   };
   //#endregion
 
   //#region IMPORT EXCEL | DOWNLOAD
-  const downloadExcelSampleDepartmentMaster = async () => {
+  const downloadExcelSampleDesignationMaster = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-
         const params: FilterPullExcelSample = {
-          TableName: 'DEPARTMENT MASTER'
+          TableName: 'DESIGNATION MASTER'
         }
 
         const response = await technicalService.apiCallPullExcelSample(params);
-
-        handleExportFile(response, 'Excel', 'Department Master', addToast, 'Sample file download successfully')
+        handleExportFile(response, 'Excel', 'Designation Master', addToast, 'Sample file download successfully')
         return response;
       },
       undefined,
@@ -458,32 +435,25 @@ export const useDepartmentMaster = () => {
     )
   }
 
-  const handleDownloadExcelSampleDepartmentMaster = () => downloadExcelSampleDepartmentMaster()
+  const handleDownloadExcelSampleDesignationMaster = () => downloadExcelSampleDesignationMaster()
 
   const uploadExcel = async (file: File, mergeExisting: string) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-
         const fd = new FormData();
-
         fd.append("ExcelFile", file);
         fd.append("IsAllDelete", mergeExisting);
-        fd.append("TableName", 'DEPARTMENT MASTER');
+        fd.append("TableName", 'DESIGNATION MASTER');
 
         const response = await technicalService.apiCallExcelImport(fd);
 
         if (E.isRight(response)) {
-
-          addToast({ type: 'success', title: "Excel imported sucessfully" });
-
-          fetchDepartmentList();
-
+          addToast({ type: 'success', title: "Excel imported sucessfully" })
+          fetchDesignationMasterList();
         } else {
-
           addToast({ type: "error", title: response.left.message });
-
         }
 
         return response;
@@ -496,29 +466,25 @@ export const useDepartmentMaster = () => {
   };
   //#endregion
 
-  //#region DELETE DEPARTMENT MASTER
-  const handleDeleteDepartmentMaster = async () => {
-
+  //#region DELETE DESIGNATION MASTER
+  const handleDeleteDesignationMaster = async () => {
     setIsConfirmationDialogBoxOpen(false);
 
-    if (!deleteDepartmentMasterDetailsData) return
+    if (!deleteDesignationMasterDetailsData) return
 
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-
-        const params: DeleteDepartmentMasterRequest = {
-          DepartmentMasterId: deleteDepartmentMasterDetailsData.DepartmentMasterId,
-          UniqueKey: deleteDepartmentMasterDetailsData.Uniquekey
+        const params: DeleteDesignationMasterRequest = {
+          DesignationMasterId: deleteDesignationMasterDetailsData.DesignationMasterId,
+          UniqueKey: deleteDesignationMasterDetailsData.Uniquekey
         }
 
-        const response = await departmentMasterService.apiCallDeleteDepartmentMaster(params);
+        const response = await designationMasterService.apiCallDeleteDesignationMaster(params);
 
         if (E.isRight(response)) {
-
           const newTotalRecords = pagination.totalRecords - 1;
-
           const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
 
           let pageToShow = pagination.currentPage;
@@ -527,7 +493,7 @@ export const useDepartmentMaster = () => {
             pageToShow = newTotalPages;
           }
 
-          else if (departmentMasterList.length === 1 && pagination.currentPage > 1) {
+          else if (designationMasterList.length === 1 && pagination.currentPage > 1) {
             pageToShow = pagination.currentPage - 1;
           }
 
@@ -537,18 +503,14 @@ export const useDepartmentMaster = () => {
             totalPages: newTotalPages
           });
 
-          await loadDepartments(pageToShow, filters, sortInfo);
+          await loadDesignationMaster(pageToShow, filters, sortInfo);
 
           addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
           setIsConfirmationDialogBoxOpen(false);
-
-          setDeleteDepartmentMasterDetailsData(null);
-
+          setDeleteDesignationMasterDetailsData(null);
         } else {
-
           addToast({ type: 'error', title: response.left.message });
-
           setIsConfirmationDialogBoxOpen(false);
         }
 
@@ -559,75 +521,75 @@ export const useDepartmentMaster = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Department'
+      'Delete Designation'
     )
   }
   //#endregion
 
   return {
-    departmentMasterList,
+    designationMasterList,
     isLoading,
     loadingMessage,
     pagination,
     sortInfo,
     searchTerm,
-    viewDepartmentMasterDetailsData,
+    viewDesignationMasterDetailsData,
     isViewModalOpen,
     showFilterPopup,
     filters,
     tempFilters,
     errors,
-    editingDepartmentMasterData,
+    editingDesignationMasterData,
     isAddUpdateModalOpen,
     formData,
     isConfirmationDialogBoxOpen,
-    deleteDepartmentMasterDetailsData,
-    isShowCustomizeDepartmentMasterColumnsModal,
+    deleteDesignationMasterDetailsData,
+    isShowCustomizeDesignationMasterColumnsModal,
     showImportModal,
     canAction,
     canExport,
-    departmentMasterColumns,
-    visibleDepartmentMasterColumns,
-    selectedDepartmentMasterColumnKeys,
-    requiredDepartmentMasterColumnKeys,
-    allDepartmentMasterColumnKeys,
+    designationMasterColumns,
+    visibleDesignationMasterColumns,
+    selectedDesignationMasterColumnKeys,
+    requiredDesignationMasterColumnKeys,
+    allDesignationMasterColumnKeys,
 
     // Setters
     setSearchTerm,
     setIsViewModalOpen,
-    setViewDepartmentMasterDetailsData,
+    setViewDesignationMasterDetailsData,
     setShowFilterPopup,
     setTempFilters,
     setFilters,
     setErrors,
-    setEditingDepartmentMasterData,
+    setEditingDesignationMasterData,
     setIsAddUpdateModalOpen,
     setFormData,
     setIsConfirmationDialogBoxOpen,
-    setDeleteDepartmentMasterDetailsData,
-    setIsShowCustomizeDepartmentMasterColumnsModal,
+    setDeleteDesignationMasterDetailsData,
+    setIsShowCustomizeDesignationMasterColumnsModal,
     setShowImportModal,
-    setSelectedDepartmentMasterColumnKeys,
+    setSelectedDesignationMasterColumnKeys,
 
     // Actions
-    fetchDepartmentList,
+    fetchDesignationMasterList,
     handlePageChange,
     handleSortColumn,
-    handleViewDepartmentDetails,
-    handleEditDepartmentMaster,
+    handleViewDesignationDetails,
+    handleEditDesignationMaster,
     handleConfirmationDialogBoxOpen,
     applyFilters,
     clearFilters,
     handleFilterChange,
     handleFieldChange,
-    handleAddDepartmentModal,
-    handleAddUpdateDepartmentMaster,
-    handleDeleteDepartmentMaster,
-    handleExportDepartmentExcel,
-    handleExportDepartmentPdf,
-    handleDownloadExcelSampleDepartmentMaster,
+    handleAddDesignationModal,
+    handleAddUpdateDesignationMaster,
+    handleDeleteDesignationMaster,
+    handleExportDesignationExcel,
+    handleExportDesignationPdf,
+    handleDownloadExcelSampleDesignationMaster,
     uploadExcel,
     debouncedSearch,
-    clearsearchDepartments,
+    clearsearchDesignationMaster,
   }
 }

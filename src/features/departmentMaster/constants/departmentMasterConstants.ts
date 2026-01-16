@@ -8,7 +8,7 @@ export const INITIAL_FORM_STATE: AddUpdateDepartmentMasterRequest = {
   DepartmentName: ''
 };
 
-export const REQUIRED_COLUMN_KEYS: string[] = ['DepartmentName'];
+export const REQUIRED_COLUMN_KEYS: string[] = ['DepartmentName','Actions'];
 
 export const getInitialFormState = (): AddUpdateDepartmentMasterRequest => ({
   ...INITIAL_FORM_STATE
@@ -38,7 +38,7 @@ export const getDepartmentMasterColumns = (): TableColumn[] => [
     align: 'center'
   },
   {
-    key: 'actions',
+    key: 'Actions',
     label: 'Actions',
     width: '12',
     fixed: 'right',

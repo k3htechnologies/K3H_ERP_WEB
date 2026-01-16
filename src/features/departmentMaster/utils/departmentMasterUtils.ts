@@ -1,5 +1,5 @@
-import type { AddUpdateDepartmentMasterRequest } from '../models/DepartmentMasterModel';
-import { INITIAL_FORM_STATE } from '../constants/departmentMasterConstants';
+import type { AddUpdateDepartmentMasterRequest } from '@/features/departmentMaster/models/DepartmentMasterModel';
+import { INITIAL_FORM_STATE } from '@/features/departmentMaster/constants/departmentMasterConstants';
 
 export const resetFormData = (): AddUpdateDepartmentMasterRequest => ({
   ...INITIAL_FORM_STATE

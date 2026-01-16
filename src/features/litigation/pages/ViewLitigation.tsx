@@ -958,28 +958,24 @@ const ViewLitigation: React.FC = () => {
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-                            <div>
-                                <TextArea
-                                    label="Remarks"
-                                    className='thin-scroll'
-                                    value={closureFormData.Remark ?? ""}
-                                    placeholder="Enter Remarks"
-                                    onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                    error={errors.Remarks} />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                        <div>
+                            <TextArea
+                                label="Remarks"
+                                className='thin-scroll'
+                                value={closureFormData.Remark ?? ""}
+                                placeholder="Enter Remarks"
+                                onChange={(e) => handleFieldChange("Remark", e.target.value)}
+                                error={errors.Remarks} />
+                        </div>
 
-                                <div>
-                                    <TextArea
-                                        label="Conclusion"
-                                        className='thin-scroll'
-                                        value={closureFormData.Conclusion ?? ""}
-                                        placeholder="Enter Conclusion"
-                                        onChange={(e) => handleFieldChange("Conclusion", e.target.value)}
-                                        error={errors.Conclusion} />
-                                </div>
-                            </div>
+                        <div>
+                            <TextArea
+                                label="Conclusion"
+                                className='thin-scroll'
+                                value={closureFormData.Conclusion ?? ""}
+                                placeholder="Enter Conclusion"
+                                onChange={(e) => handleFieldChange("Conclusion", e.target.value)}
+                                error={errors.Conclusion} />
                         </div>
                     </div>
                 </Modal>

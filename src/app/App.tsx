@@ -79,6 +79,7 @@ import BuildingDescription from '@/features/building/pages/BuildingDescription';
 import BuildingDocument from '@/features/building/pages/BuildingDocument';
 import { BuildingListStateProvider } from '@/features/building/context/BuildingListStateContext';
 import { TenantListStateProvider } from '@/features/tenant/context/TenantListStateContext';
+import { EmployeeListStateProvider } from '@/features/employeeMaster/context/EmployeeListStateContext';
 import TenantDocument from '@/features/tenant/pages/TenantDocument';
 import ProposedOffer from '@/features/proposedOffer/pages/ProposedOffer';
 import Company from '@/features/projectMaster/pages/Company';
@@ -169,10 +170,10 @@ function App() {
             <Route path="designationMaster" element={<DesignationMaster />} />
             <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
 
-            <Route path="employeeMaster" element={<EmployeeMaster />} />
-            <Route path="employeeMaster/view" element={<ViewEmployeeMaster />} />
-            <Route path="employeeMaster/add/:employeeId?" element={<AddUpdateEmployeeMaster />} />
-            <Route path="employeeMaster/document" element={<EmployeeDocument />} />
+            <Route path="employeeMaster" element={<EmployeeListStateProvider><EmployeeMaster /></EmployeeListStateProvider>} />
+            <Route path="employeeMaster/view" element={<EmployeeListStateProvider><ViewEmployeeMaster /></EmployeeListStateProvider>} />
+            <Route path="employeeMaster/add/:employeeId?" element={<EmployeeListStateProvider><AddUpdateEmployeeMaster /></EmployeeListStateProvider>} />
+            <Route path="employeeMaster/document" element={<EmployeeListStateProvider><EmployeeDocument /></EmployeeListStateProvider>} />
 
             <Route path="companyMaster" element={<CompanyMaster />} />
             <Route path="companyMaster/view" element={<ViewCompantMaster />} />
@@ -267,7 +268,7 @@ function App() {
             <Route path="siteProgress/SiteProgressFlatConstruction" element={<SiteProgressFlatConstruction />} />
             <Route path="siteProgress/SiteProgressConstructionActivity" element={<SiteProgressConstructionActivity />} />
             <Route path="siteProgress/SiteProgressConstructionSubActivity" element={<SiteProgressConstructionSubActivity />} />
-            <Route path="profile" element={<Profile />} />
+            <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
 
 
             <Route path="event" element={<Event />} />

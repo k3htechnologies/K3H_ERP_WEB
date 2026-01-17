@@ -46,3 +46,4 @@ export type ApprovalDocumentCategoryMasterSaveReponse = ApiResponse<ApprovalDocu
 export type ApprovalDocumentCategoryMasterDeleteResponse = ApiResponse<number>;
 
 
+

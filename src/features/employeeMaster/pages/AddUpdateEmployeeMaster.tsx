@@ -1,4 +1,5 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEmployeeListState } from "@/features/employeeMaster/context/EmployeeListStateContext";
 import { Input } from "@/ui/components/forms/Input";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
@@ -79,7 +80,6 @@ const AddUpdateEmployeePage: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate();
-  const location = useLocation();
 
   //GET VALUE FROM URL :EMPLOYEEID
   const { employeeId } = useParams<{ employeeId?: string }>();
@@ -505,26 +505,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
           addToast({ type: "success", title: formData.EmployeeId ? "Employee updated successfully" : "Employee added successfully" });
 
-          // Get list state from navigation if available, otherwise use defaults
-          const locationState = location.state as {
-            listState?: {
-              page?: number;
-              filters?: any;
-              sortInfo?: any;
-              searchTerm?: string;
-            };
-          } | null;
-
-          const listState = locationState?.listState || {
-            page: 1,
-            filters: {},
-            sortInfo: undefined,
-            searchTerm: '',
-          };
-
-          navigate("/employeeMaster", {
-            state: { listState }
-          });
+          navigate("/employeeMaster");
 
         } else {
 

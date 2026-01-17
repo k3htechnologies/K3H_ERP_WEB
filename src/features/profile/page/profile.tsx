@@ -9,6 +9,7 @@ import { Loader } from '@/core/utils/loader';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { useNavigate } from 'react-router-dom';
+import { useEmployeeListState } from '@/features/employeeMaster/context/EmployeeListStateContext';
 import type { EmployeeDocumentData, FilterWithPaginationEmployeeDocumentRequest } from '@/features/employeeMaster/models/EmployeeDocumentModel';
 import type { FilterWithPaginationShiftMappingMasterRequest, ShiftMappingMasterData } from '@/features/shiftMappingMaster/models/ShiftMappingMasterModel';
 import type { AssetMappingMasterData, FilterWithPaginationAssetMappingMasterRequest } from '@/features/assetMappingMaster/models/AssetMappingMasterModel';
@@ -103,6 +104,7 @@ export const Profile: React.FC = () => {
 
     //#region NAVIGATE PREVIOUS PAGE
     const navigate = useNavigate() // ✅ initialize router navigate
+    const { updateListState } = useEmployeeListState();
     //#endregion
 
     //#region TAB ACTIVITY
@@ -454,18 +456,12 @@ export const Profile: React.FC = () => {
     //#region EDIT EMPLOYEE DOCUMENT
 
     const handleEditEmployeeDocument = (row: EmployeeMasterData) => {
-        navigate('/employeeMaster/document', {
-            state: {
-                employeeId: row.EmployeeId!,
-                employeeName: row.FullName,
-
-                listState: {
-                    employeeId: row.EmployeeId!,
-                    employeeName: row.FullName,
-                    pageName: 'profile',
-                }
-            }
+        updateListState({
+            employeeId: row.EmployeeId!,
+            employeeName: row.FullName,
+            pageName: 'PROFILE',
         });
+        navigate('/employeeMaster/document');
     };
 
 

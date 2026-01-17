@@ -332,7 +332,6 @@ export const AMENITY_CATEGORIES: Record<string, readonly string[]> = {
     "Library",
     "Reading Room",
     "Society Office",
-    "Conference Room",
     "Temple / Prayer Hall"
   ],
 

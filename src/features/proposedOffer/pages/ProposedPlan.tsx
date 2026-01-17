@@ -16,7 +16,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { filterNumbers } from '@/core/utils/fileValidation';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
-import { AMENITIES_BY_CATEGORY} from '@/core/constants';
+import { AMENITIES_BY_CATEGORY } from '@/core/constants';
 import MultiFilePicker from '@/ui/components/ImagePicker/MultiFilePicker';
 import MultiSelectCheckBoxWithCategory from '@/ui/components/forms/MultiSelectCheckBoxWithCategory';
 
@@ -202,24 +202,18 @@ export const ProposedPlan: React.FC = () => {
                 const response = await ProposedOfferService.apiCallAddUpdateProposedPlan(formDataPayload);
 
                 if (E.isRight(response)) {
-                    const isAdd = formDataProposedPlan.ProposedOfferProposedPlanId === 0;
 
-                    if (isAdd) {
-                        const newRecord = response.right.Data[0] as ProposedOfferProposedPlanData;
-                        setProposedPlanData(newRecord);
-                        setFormDataProposedPlan({
-                            ...formDataProposedPlan,
-                            ProposedOfferProposedPlanId: newRecord.ProposedOfferProposedPlanId || 0,
-                            Uniquekey: newRecord.Uniquekey || formDataProposedPlan.Uniquekey
-                        });
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    } else {
-                        const updatedRecord = response.right.Data[0] as ProposedOfferProposedPlanData;
-                        setProposedPlanData(updatedRecord);
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    }
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+                    await fetchProposedPlanData();
+                    
+                    setPlanDocumentFiles([]);
+                    setRemovedPlanDocumentUrls([]);
+
                 } else {
+
                     addToast({ type: "error", title: response.left?.message });
+
                 }
                 return response;
             },
@@ -289,8 +283,6 @@ export const ProposedPlan: React.FC = () => {
                                 onChange={setPlanDocumentFiles}
                                 availableFilesURL={planDocumentURL ?? ""}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                                maxFiles={5}
-                                maxSizeMB={10}
                                 onRemoveExisting={(url) => {
                                     setRemovedPlanDocumentUrls((prev) => [...prev, url])
                                 }}

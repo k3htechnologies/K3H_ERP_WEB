@@ -11,7 +11,7 @@ import { VendorService } from "@/features/vendor/services/VendorService";
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { runApiWithLoader } from "@/core/utils";
-import { filterEmail, filterMobile, filterPAN, filterGST, filterAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidGST, isValidAadhaar } from "@/core/utils/fileValidation";
+import { filterEmail, filterMobile, filterPAN, filterGST, filterAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidGST, isValidAadhaar, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import { COMPANY_TYPE_OPTIONS } from "@/core/constants/staticData";
 import type { AddUpdateVendorRequest, FilterWithPaginationVendorRequest } from "../models/VendorModel";
 import type { FilterWithPaginationMaterialSubMaterialMasterUOM, MaterialSubMaterialUOM } from "@/features/technical/models/TechnicalModel";
@@ -362,7 +362,7 @@ export const AddUpdateVendor: React.FC = () => {
 
     if (!formData.AadharCardNumber?.trim()) {
       newErrors.AadharCardNumber = "Please enter a valid 12-digit Aadhaar number";
-    }else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
+    } else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
       newErrors.AadharCardNumber = "Enter a valid Aadhar Card Number.";
     }
 
@@ -379,15 +379,16 @@ export const AddUpdateVendor: React.FC = () => {
     } else if (!isValidPAN(formData.PanCardNumber?.trim())) {
       newErrors.PanCardNumber = "Enter a valid PAN Number.";
     }
-
-    if (!aadharCardURLFiles.length && !aadharCardURL) {
+    
+    if (!hasAnyDocumentFile(aadharCardURLFiles, aadharCardURL, removedAadharCardUrls)) {
       newErrors.AadharCardURL = "Aadhaar card file is required.";
     }
 
-    if (!panCardURLFiles.length && !panCardURL) {
+    if (!hasAnyDocumentFile(panCardURLFiles, panCardURL, removedPanCardUrls)) {
       newErrors.PanCardURL = "PAN card file is required.";
     }
-    if (!gstGSTCertificateFiles.length && !gSTCertificateURL) {
+
+    if (!hasAnyDocumentFile(gstGSTCertificateFiles, gSTCertificateURL, removedGSTCertificateUrls)) {
       newErrors.GSTCertificateURL = "GST certificate file is required.";
     }
 
@@ -644,7 +645,7 @@ export const AddUpdateVendor: React.FC = () => {
             />
 
             <MultiFilePicker
-              label='Aadhar Card'
+              label='Aadhaar Card'
               placeholder="Select Aadhaar Card"
               required
               error={errors.AadharCardURL}

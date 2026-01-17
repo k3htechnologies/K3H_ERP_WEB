@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
-import { filterGoogleMapsUrl, filterMobile, filterNumbers, filterRERA, isValidGoogleMapsUrl, isValidMobile, isValidRERA } from "@/core/utils/fileValidation";
+import { filterGoogleMapsUrl, filterMobile, filterNumbers, filterRERA, hasAnyDocumentFile, isValidGoogleMapsUrl, isValidMobile, isValidRERA } from "@/core/utils/fileValidation";
 import type { AddUpdateProjectMasterRequest, FilterWithPaginationProjectMasterRequest } from "@/features/projectMaster/models/ProjectMasterModel";
 import { ProjectMasterService } from "../services/ProjectMasterService";
 import Checkbox from "@/ui/components/forms/Checkbox";
@@ -288,8 +288,8 @@ const AddUpdateProjectMaster: React.FC = () => {
             newErrors.RERANumber = "Enter a valid RERA Number.";
         }
 
-        if (!projectPhotoFiles.length && !projectPhotoURL) {
-            newErrors.ProjectPhotoURL = "Project photo is required.";
+        if (!hasAnyDocumentFile(projectPhotoFiles, projectPhotoURL, removedProjectPhotoUrls)) {
+            newErrors.ProjectPhotoURL = "Project Photo is required.";
         }
 
         return {

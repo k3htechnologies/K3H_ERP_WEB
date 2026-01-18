@@ -28,6 +28,7 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import { FileText } from 'lucide-react';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import { useEmployeeListState } from '@/features/employeeMaster/context/EmployeeListStateContext';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -94,14 +95,6 @@ export const EmployeeMaster: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const column = employeeColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
 
         const params: FilterWithPaginationEmployeeMasterRequest = {
           PageNumber: page,
@@ -116,7 +109,7 @@ export const EmployeeMaster: React.FC = () => {
           MobileNumber: filterParams.MobileNumber?.trim() || undefined,
           ReportPersonName: filterParams.ReportPersonName?.trim() || undefined,
           BankBranchName: filterParams.BankBranchName?.trim() || undefined,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, employeeColumns)
         };
 
         const response = await employeeMasterService.apiCallPullEmployeeMaster(params);
@@ -179,14 +172,6 @@ export const EmployeeMaster: React.FC = () => {
       setIsLoadingMessage,
       async () => {
 
-        let sortByParam: string | undefined;
-        if (sortInfo) {
-          const column = employeeColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
-
         const params: FilterWithPaginationEmployeeMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -197,7 +182,7 @@ export const EmployeeMaster: React.FC = () => {
           DesignationName: filters.DesignationName?.trim() || undefined,
           EmailId: filters.EmailId?.trim() || undefined,
           MobileNumber: filters.MobileNumber?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, employeeColumns),
           ExportType: exportType
         };
 

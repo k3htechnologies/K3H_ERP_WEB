@@ -46,5 +46,5 @@ export const LOCAL_STORAGE_KEYS = {
 
 export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     EMPLOYEE: 'employeeMaster.listState',
-    
+    COMPANY: 'companyMaster.listState',
 } as const

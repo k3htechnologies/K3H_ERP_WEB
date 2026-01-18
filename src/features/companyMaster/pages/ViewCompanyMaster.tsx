@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import type { CompanyMasterData } from "@/features/companyMaster/models/CompanyMasterModel";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import type { CompanyMasterData, FilterWithPaginationCompanyMasterRequest } from "@/features/companyMaster/models/CompanyMasterModel";
+import { useCompanyListState } from "@/features/companyMaster/context/CompanyListStateContext";
 import { Loader } from "@/core/utils/loader";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
@@ -8,59 +9,82 @@ import { CollapseCard } from "@/ui/components/Card/CollapseCard";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import { CompanyMasterService } from "@/features/companyMaster/services/CompanyMasterService";
+import { runApiWithLoader } from "@/core/utils";
+import * as E from "fp-ts/Either";
+import { useToast } from "@/core/hooks/useToast";
 
 export const ViewCompantMaster: React.FC = () => {
     //#region STATE MANAGEMENT
-    const [isLoading] = useState(false);
-    const [loadingMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [editCompanyData, setEditCompanyData] = useState<CompanyMasterData | null>(null);
 
     const { canAction } = useMenuPermissions('/companyMaster');
+    const { addToast } = useToast();
 
     //LOCATION
     const navigate = useNavigate();
-
-    const location = useLocation() as {
-        state?: {
-            editCompanyMasterData?: CompanyMasterData | null;
-            fromList?: boolean;
-            listState?: {
-                page: number;
-                filters: any;
-                sortInfo?: any;
-                searchTerm?: string;
-                companyName?: string;
-            };
-        };
-    };
-    const preservedListState = location.state?.listState;
-    const companyName = preservedListState?.companyName || '';
+    const { listState } = useCompanyListState();
+    const companyName = listState.companyName || '';
 
     //#endregion
-    //#region Get COMPANY DATA FROM LOCATION STATE
-    const editCompanyData = (location.state?.editCompanyMasterData ?? null) as CompanyMasterData | null;
+
+    //#region INIT - Load Company Data
+    useEffect(() => {
+        if (listState.companyId) {
+            loadCompany();
+        }
+    }, [listState.companyId]);
+    //#endregion
+
+    //#region LOAD COMPANY DATA
+    const loadCompany = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+                const filterParams: FilterWithPaginationCompanyMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    IsCheckPermission: false,
+                    CompanyId: Number(listState.companyId)
+                };
+
+                const response = await CompanyMasterService.apiCallPullCompanyMaster(filterParams);
+
+                if (E.isRight(response)) {
+                    const companyList = Array.isArray(response.right.Data) ? response.right.Data : [];
+                    setEditCompanyData(companyList[0] || null);
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Company Data'
+        );
+    };
     //#endregion
 
     //#region EDIT COMPANY
 
     const handleEditCompany = (row: CompanyMasterData) => {
         if (!row?.CompanyId) return;
-        navigate(`/companyMaster/add/${row.CompanyId}`, {
-            state: {
-                editCompanyMasterData: row,
-                fromList: true,
-                listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
-            }
-        });
+        navigate(`/companyMaster/add/${row.CompanyId}`);
     };
 
 
     //#endregion
 
-    //#region BACK COMPANY EMASTER PAGE
+    //#region BACK COMPANY MASTER PAGE
     const handleBackToListCompanyMaster = () => {
-        navigate('/companyMaster', {
-            state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' } }
-        });
+        navigate('/companyMaster');
     };
     //#endregion
     return (

@@ -80,6 +80,7 @@ import BuildingDocument from '@/features/building/pages/BuildingDocument';
 import { BuildingListStateProvider } from '@/features/building/context/BuildingListStateContext';
 import { TenantListStateProvider } from '@/features/tenant/context/TenantListStateContext';
 import { EmployeeListStateProvider } from '@/features/employeeMaster/context/EmployeeListStateContext';
+import { CompanyListStateProvider } from '@/features/companyMaster/context/CompanyListStateContext';
 import TenantDocument from '@/features/tenant/pages/TenantDocument';
 import ProposedOffer from '@/features/proposedOffer/pages/ProposedOffer';
 import Company from '@/features/projectMaster/pages/Company';
@@ -175,9 +176,9 @@ function App() {
             <Route path="employeeMaster/add/:employeeId?" element={<EmployeeListStateProvider><AddUpdateEmployeeMaster /></EmployeeListStateProvider>} />
             <Route path="employeeMaster/document" element={<EmployeeListStateProvider><EmployeeDocument /></EmployeeListStateProvider>} />
 
-            <Route path="companyMaster" element={<CompanyMaster />} />
-            <Route path="companyMaster/view" element={<ViewCompantMaster />} />
-            <Route path="companyMaster/add/:companyId?" element={<AddCompany />} />
+            <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
+            <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompantMaster /></CompanyListStateProvider>} />
+            <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
 
             <Route path="tnc" element={<TncMaster />} />
 

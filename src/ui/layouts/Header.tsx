@@ -389,7 +389,7 @@ export const Header: React.FC<HeaderProps> = ({
                             disabled={readOnlyProject}
                             leftIcon={<Info size={18} color="#135BEC" />}
                             leftIconClick={() => {
-                                
+
                                 if (!projectId || projectId <= 0) return;
 
                                 loadProjectMaster();

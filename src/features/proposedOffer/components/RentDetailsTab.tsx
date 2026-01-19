@@ -403,7 +403,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
         {/* Rent Details List Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex-1 border-b border-gray-300 pb-2">
+            <div className="flex-1 border-b border-gray-500 pb-2">
               <h3 className="text-lg font-semibold text-gray-900">
                 Rent Details List
               </h3>

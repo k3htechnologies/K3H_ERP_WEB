@@ -915,10 +915,10 @@ const BuildingDocument: React.FC = () => {
         <div></div>
       </Loader>
 
-      <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
+      <div className="flex items-center gap-3 mb-6 border-b border-gray-500 pb-3">
 
         <HeaderActionBar
-          titleText={"Building Name"}
+          titleText={"Building Name : "}
           subTitleText={buildingName}
           cancelText="Cancel"
           EditText=""

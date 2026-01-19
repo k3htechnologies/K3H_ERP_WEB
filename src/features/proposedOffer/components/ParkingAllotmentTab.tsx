@@ -181,7 +181,7 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
       <div className="space-y-6 pb-5">
         {/* Parking Allotment Details Section */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
             Parking Allotment Details*
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

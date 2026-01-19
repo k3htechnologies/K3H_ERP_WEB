@@ -12,7 +12,7 @@ import * as E from 'fp-ts/Either';
 
 const companyMasterDatasource = new CompanyMasterDatasourceImpl();
 
-export const CompanyMasterService = {
+export const companyMasterService = {
 
     apiCallPullCompanyMaster: async (params: FilterWithPaginationCompanyMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, CompanyMasterListResponse>> => {
         try {

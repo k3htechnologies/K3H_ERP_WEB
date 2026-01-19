@@ -7,7 +7,7 @@ import type {
   FilterWithPaginationProposedOfferProjectCompletionRequest,
   AddUpdateProposedOfferProjectCompletionRequest,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
-import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { filterNumbers } from '@/core/utils/fileValidation';
@@ -57,7 +57,7 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
           BuildingId: buildingId
         };
 
-        const response = await ProposedOfferService.apiCallPullProjectCompletion(params);
+        const response = await proposedOfferService.apiCallPullProjectCompletion(params);
 
         if (E.isRight(response)) {
           const data = response.right.Data?.[0] || null;
@@ -141,7 +141,7 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
           GracePeriodMonths: formDataProjectCompletion.GracePeriodMonths
         };
 
-        const response = await ProposedOfferService.apiCallAddUpdateProjectCompletion(payload);
+        const response = await proposedOfferService.apiCallAddUpdateProjectCompletion(payload);
 
         if (E.isRight(response)) {
           const isAdd = formDataProjectCompletion.ProposedOfferProjectCompletionId === 0;

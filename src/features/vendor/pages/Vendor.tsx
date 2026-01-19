@@ -9,7 +9,7 @@ import type {
   FilterWithPaginationVendorRequest
 } from '@/features/vendor/models/VendorModel';
 
-import { VendorService } from '@/features/vendor/services/VendorService'
+import { vendorService } from '@/features/vendor/services/VendorService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -112,7 +112,7 @@ export const Vendor: React.FC = () => {
           SortBy: getSortByParam(sortInfo ?? null, vendorColumns)
         }
 
-        const response = await VendorService.apiCallPullVendor(params);
+        const response = await vendorService.apiCallPullVendor(params);
 
         if (E.isRight(response)) {
 
@@ -189,7 +189,7 @@ export const Vendor: React.FC = () => {
           ExportType: exportType
         }
 
-        const response = await VendorService.apiCallPullVendor(params);
+        const response = await vendorService.apiCallPullVendor(params);
 
         handleExportFile(response, exportType, 'Vendor Master', addToast);
 
@@ -496,7 +496,7 @@ export const Vendor: React.FC = () => {
           UniqueKey: deleteVendorDetailsData.Uniquekey ?? ""
         }
 
-        const response = await VendorService.apiCallDeleteVendor(params);
+        const response = await vendorService.apiCallDeleteVendor(params);
 
         if (E.isRight(response)) {
 
@@ -714,7 +714,7 @@ export const Vendor: React.FC = () => {
         }}
         saveText="Apply"
         cancelText="Clear"
-        resetText=''
+       
         onCancel={() => clearFilters()}
         size="small-half"
       >

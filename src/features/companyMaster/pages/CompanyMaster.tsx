@@ -10,7 +10,7 @@ import type {
     FilterWithPaginationCompanyMasterRequest
 } from '@/features/companyMaster/models/CompanyMasterModel';
 
-import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
+import { companyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -116,7 +116,7 @@ export const CompanyMaster: React.FC = () => {
                     SortBy: getSortByParam(sortInfo ?? null, companyColumns)
                 };
 
-                const response = await CompanyMasterService.apiCallPullCompanyMaster(params);
+                const response = await companyMasterService.apiCallPullCompanyMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -187,7 +187,7 @@ export const CompanyMaster: React.FC = () => {
                     ExportType: exportType
                 };
 
-                const response = await CompanyMasterService.apiCallPullCompanyMaster(params);
+                const response = await companyMasterService.apiCallPullCompanyMaster(params);
 
                 handleExportFile(response, exportType, 'Company Master', addToast);
 
@@ -577,7 +577,7 @@ export const CompanyMaster: React.FC = () => {
                     Uniquekey: deleteCompanyMasterDetailsData.Uniquekey
                 }
 
-                const response = await CompanyMasterService.apiCallDeleteCompanyMaster(params);
+                const response = await companyMasterService.apiCallDeleteCompanyMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -710,7 +710,7 @@ export const CompanyMaster: React.FC = () => {
                 saveText="Apply"
                 cancelText="Clear"
                 onCancel={() => clearFilters()}
-                resetText=''
+               
                 size="small-half"
             >
                 <div className="space-y-6">

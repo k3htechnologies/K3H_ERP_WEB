@@ -11,7 +11,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import type { AddUpdateProjectMasterWithEmployeeRequest, DeleteProjectMasterWithEmployeeRequest } from '@/features/projectMaster/models/ProjectMasterModel';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 import * as E from 'fp-ts/Either';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import usePagination from '@/core/hooks/usePagination';
@@ -139,7 +139,7 @@ const Employee: React.FC = () => {
       setLoadingMessage,
       async () => {
 
-        const response = await ProjectMasterService.apiCallPullProjectMasterWithEmployee(ProjectId);
+        const response = await projectMasterService.apiCallPullProjectMasterWithEmployee(ProjectId);
 
         if (E.isRight(response)) {
 
@@ -471,7 +471,7 @@ const Employee: React.FC = () => {
           EmployeeId: String(deleteProjectMasterWithEmployeeData.EmployeeId)
         }
 
-        const response = await ProjectMasterService.apiCallDeleteProjectMasterWithEmployee(params);
+        const response = await projectMasterService.apiCallDeleteProjectMasterWithEmployee(params);
 
         if (E.isRight(response)) {
 
@@ -538,7 +538,7 @@ const Employee: React.FC = () => {
 
         const payload = PushProjectMasterWithEmployeeData();
 
-        const response = await ProjectMasterService.apiCallAddUpdateProjectMasterWithEmployee(payload);
+        const response = await projectMasterService.apiCallAddUpdateProjectMasterWithEmployee(payload);
 
         if (E.isRight(response)) {
 

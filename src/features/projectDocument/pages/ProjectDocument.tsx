@@ -8,7 +8,7 @@ import type { AddUpdateProjectDocumentRequest, DeleteProjectDocumentRequest, Fil
 import usePagination from '@/core/hooks/usePagination';
 import { type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import * as E from 'fp-ts/Either';
-import { ProjectDocumentService } from '../services/ProjectDocumentService';
+import { projectDocumentService } from '@/features/projectDocument/services/ProjectDocumentService';
 import DataTableExpandable, { type DataTableExpandableRef } from '@/ui/components/DataTable/DataTableExpandable';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
@@ -287,7 +287,7 @@ const ProjectDocument: React.FC = () => {
           SortBy: sortByParam
         };
 
-        const response = await ProjectDocumentService.apiCallPullProjectDocument(params);
+        const response = await projectDocumentService.apiCallPullProjectDocument(params);
 
         if (E.isRight(response)) {
 
@@ -889,7 +889,7 @@ const ProjectDocument: React.FC = () => {
 
         const payload = ismaster === 1 ? PushDocumentFormData() : PushDocumentDetailsFormData();
 
-        const response = await ProjectDocumentService.apiCallAddUpdateProjectDocument(payload);
+        const response = await projectDocumentService.apiCallAddUpdateProjectDocument(payload);
 
         if (E.isRight(response)) {
 
@@ -1019,7 +1019,7 @@ const ProjectDocument: React.FC = () => {
           ProjectDocumentCategoryId: deleteProjectDocumentDetailsData.ProjectDocumentCategoryId
         }
 
-        const response = await ProjectDocumentService.apiCallDeleteProjectDocument(params);
+        const response = await projectDocumentService.apiCallDeleteProjectDocument(params);
 
         if (E.isRight(response)) {
 
@@ -1230,7 +1230,7 @@ const ProjectDocument: React.FC = () => {
               ProjectDocumentCategory: row.ProjectDocumentCategory,
               ProjectDocumentCategoryId: row.ProjectDocumentCategoryId,
             };
-            const response = await ProjectDocumentService.apiCallPullProjectDocument(params);
+            const response = await projectDocumentService.apiCallPullProjectDocument(params);
 
             if (E.isRight(response)) {
 
@@ -1292,7 +1292,7 @@ const ProjectDocument: React.FC = () => {
         title={editingDocumentData ? 'Update Document Name' : 'Add Document Name'}
         onSubmit={(e) => handleAddUpdateDocument(1, e)}
         saveText={editingDocumentData ? 'Update' : 'Add'}
-        resetText=''
+       
         loading={isLoading}
         size='xl'
       >

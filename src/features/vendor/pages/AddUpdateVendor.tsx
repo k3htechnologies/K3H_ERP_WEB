@@ -7,7 +7,7 @@ import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { Loader } from "@/core/utils/loader";
 import { useToast } from "@/core/hooks/useToast";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
-import { VendorService } from "@/features/vendor/services/VendorService";
+import { vendorService } from "@/features/vendor/services/VendorService";
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { runApiWithLoader } from "@/core/utils";
@@ -188,7 +188,7 @@ export const AddUpdateVendor: React.FC = () => {
           IsCheckPermission: true,
         };
 
-        const response = await VendorService.apiCallPullVendor(params);
+        const response = await vendorService.apiCallPullVendor(params);
 
         if (E.isRight(response)) {
 
@@ -515,7 +515,7 @@ export const AddUpdateVendor: React.FC = () => {
 
         const formDataToSubmit = PushVendorFormData();
 
-        const response = await VendorService.apiCallAddUpdateVendor(formDataToSubmit);
+        const response = await vendorService.apiCallAddUpdateVendor(formDataToSubmit);
 
         if (E.isRight(response)) {
 

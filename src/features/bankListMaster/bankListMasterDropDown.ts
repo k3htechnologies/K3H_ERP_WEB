@@ -1,9 +1,9 @@
 import * as E from 'fp-ts/Either';
-import { BankListMasterService } from '@/features/bankListMaster/services/BankListMasterService';
+import { bankListMasterService } from '@/features/bankListMaster/services/BankListMasterService';
 
 export const fetchBankListMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
-        const responseEither = await BankListMasterService.apiCallPullBankListMaster({
+        const responseEither = await bankListMasterService.apiCallPullBankListMaster({
             PageSize: 10,
             PageNumber: pageNumber,
             BankName: params?.value || ""

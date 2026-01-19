@@ -8,7 +8,7 @@ import { Tabs } from '@/ui/components/Tab/Tab';
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData, ProjectWithBankDetails } from '@/features/projectMaster/models/ProjectMasterModel';
 import ImageCarousel from '@/ui/components/ImageViewer/ImageCarousel';
 import { runApiWithLoader } from '@/core/utils';
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 import * as E from 'fp-ts/Either';
 import type { EmployeeMasterData } from '@/features/employeeMaster/models/EmployeeMasterModel';
 import useToast from '@/core/hooks/useToast';
@@ -98,7 +98,7 @@ export const ViewProjectMaster: React.FC = () => {
                     PageSize: 1,
                     ProjectId: listState.projectId
                 };
-                const response = await ProjectMasterService.apiCallPullProjectMaster(params);
+                const response = await projectMasterService.apiCallPullProjectMaster(params);
                  if (E.isRight(response)) {
                     setEditProjectData(response.right.Data[0]);
                 } else {
@@ -124,7 +124,7 @@ export const ViewProjectMaster: React.FC = () => {
             setLoadingMessage,
             async () => {
 
-                const response = await ProjectMasterService.apiCallPullProjectMasterWithEmployee(ProjectId, searchText);
+                const response = await projectMasterService.apiCallPullProjectMasterWithEmployee(ProjectId, searchText);
 
                 if (E.isRight(response)) {
 
@@ -171,7 +171,7 @@ export const ViewProjectMaster: React.FC = () => {
             setLoadingMessage,
             async () => {
 
-                const response = await ProjectMasterService.apiCallPullProjectMasterWithCompany(ProjectId);
+                const response = await projectMasterService.apiCallPullProjectMasterWithCompany(ProjectId);
 
                 if (E.isRight(response)) {
 
@@ -198,7 +198,7 @@ export const ViewProjectMaster: React.FC = () => {
             setLoadingMessage,
             async () => {
 
-                const response = await ProjectMasterService.apiCallPullProjectMasterWithBankDetails(ProjectId);
+                const response = await projectMasterService.apiCallPullProjectMasterWithBankDetails(ProjectId);
 
                 if (E.isRight(response)) {
 

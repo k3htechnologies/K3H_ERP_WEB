@@ -554,7 +554,7 @@ export const ShiftMaster: React.FC = () => {
         saveText="Apply"
         cancelText="Clear"
         onCancel={() => clearFilters()}
-        resetText=''
+       
         size="small-half"
       >
         <div className="space-y-6">

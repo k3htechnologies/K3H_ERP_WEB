@@ -678,7 +678,7 @@ export const Building: React.FC = () => {
           setShowFilterPopup(false);
         }}
 
-        resetText=''
+       
         size="small-half"
       >
         <div className="space-y-6">

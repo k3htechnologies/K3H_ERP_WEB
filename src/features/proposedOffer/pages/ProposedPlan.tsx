@@ -9,7 +9,7 @@ import type {
     AddUpdateProposedOfferProposedPlanRequest
 } from '@/features/proposedOffer/models/ProposedOfferModel';
 
-import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Loader } from '@/core/utils/loader';
 import { Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
@@ -101,7 +101,7 @@ export const ProposedPlan: React.FC = () => {
                     ProjectId: projectId ?? undefined,
                 };
 
-                const response = await ProposedOfferService.apiCallPullProposedPlan(params);
+                const response = await proposedOfferService.apiCallPullProposedPlan(params);
 
                 if (E.isRight(response)) {
                     const data = response.right.Data?.[0] || null;
@@ -199,7 +199,7 @@ export const ProposedPlan: React.FC = () => {
                 });
                 formDataPayload.append('RemovePlanDocumentURL', removedPlanDocumentUrls.join(','));
 
-                const response = await ProposedOfferService.apiCallAddUpdateProposedPlan(formDataPayload);
+                const response = await proposedOfferService.apiCallAddUpdateProposedPlan(formDataPayload);
 
                 if (E.isRight(response)) {
 

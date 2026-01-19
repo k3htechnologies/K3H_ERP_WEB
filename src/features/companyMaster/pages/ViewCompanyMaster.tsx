@@ -9,7 +9,7 @@ import { CollapseCard } from "@/ui/components/Card/CollapseCard";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import { CompanyMasterService } from "@/features/companyMaster/services/CompanyMasterService";
+import { companyMasterService } from "@/features/companyMaster/services/CompanyMasterService";
 import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { useToast } from "@/core/hooks/useToast";
@@ -51,7 +51,7 @@ export const ViewCompantMaster: React.FC = () => {
                     CompanyId: Number(listState.companyId)
                 };
 
-                const response = await CompanyMasterService.apiCallPullCompanyMaster(filterParams);
+                const response = await companyMasterService.apiCallPullCompanyMaster(filterParams);
 
                 if (E.isRight(response)) {
                     const companyList = Array.isArray(response.right.Data) ? response.right.Data : [];

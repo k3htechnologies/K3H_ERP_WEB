@@ -839,7 +839,7 @@ export const CompOff: React.FC = () => {
                     saveText="Apply Filter"
                     cancelText="Clear Filter"
                     onCancel={() => clearFilters()}
-                    resetText=''
+                   
                     size="small-half"
                 >
                     <div className="space-y-6">
@@ -881,7 +881,6 @@ export const CompOff: React.FC = () => {
                     showTimePicker={false}
                     confirmText="Save"
                     cancelText=""
-                    resetText="Reset"
                     loading={isLoading}
                     showSummary={false}
                     renderChildren={({ startDate, endDate, onSelectField, onClearField, editingField }) => {

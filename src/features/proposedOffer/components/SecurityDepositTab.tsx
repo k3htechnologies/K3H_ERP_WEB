@@ -8,7 +8,7 @@ import type {
   AddUpdateProposedOfferSecurityDepositDetailsRequest,
   ProposedOfferSecurityDepositDetailsWithPaymentStageData,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
-import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { filterNumbersWithDecimal } from '@/core/utils/fileValidation';
@@ -81,7 +81,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
           BuildingId: buildingId
         };
 
-        const response = await ProposedOfferService.apiCallPullSecurityDepositDetails(params);
+        const response = await proposedOfferService.apiCallPullSecurityDepositDetails(params);
 
         if (E.isRight(response)) {
           const data = response.right.Data?.[0] || null;
@@ -210,7 +210,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
           SecurityDepositToSocietyWithPaymentStageJSON: paymentStageJSON
         };
 
-        const response = await ProposedOfferService.apiCallAddUpdateSecurityDepositDetails(payload);
+        const response = await proposedOfferService.apiCallAddUpdateSecurityDepositDetails(payload);
 
         if (E.isRight(response)) {
           const isAdd = formDataSecurityDepositDetails.ProposedOfferSecurityDepositDetailsId === 0;

@@ -23,7 +23,7 @@ import { fetchBuildingDropdown } from '@/features/building/buildingDropdown';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import Tabs, { type TabItem } from '@/ui/components/Tab/Tab';
-import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 
 type PivotRentRow = {
   FlatNumber?: string;
@@ -113,7 +113,7 @@ export const Rent: React.FC = () => {
     }
 
     (async () => {
-      const response = await ProposedOfferService.apiCallPullRentDetails({
+      const response = await proposedOfferService.apiCallPullRentDetails({
         ProjectId: Number(projectId),
         BuildingId: buildingId
       });
@@ -542,7 +542,7 @@ export const Rent: React.FC = () => {
         saveText="Apply Filter"
         cancelText="Clear Filter"
         onCancel={() => clearFilters()}
-        resetText=''
+       
         size="small-half"
       >
         <div className="space-y-6">

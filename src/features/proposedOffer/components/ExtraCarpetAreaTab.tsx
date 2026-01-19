@@ -7,7 +7,7 @@ import type {
   FilterWithPaginationProposedOfferExtraCarpetAreaRequest,
   AddUpdateProposedOfferExtraCarpetAreaRequest,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
-import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { filterNumbersWithDecimal, isValidPercentage, allowPercentage } from '@/core/utils/fileValidation';
@@ -59,7 +59,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
           BuildingId: buildingId
         };
 
-        const response = await ProposedOfferService.apiCallPullExtraCarpetArea(params);
+        const response = await proposedOfferService.apiCallPullExtraCarpetArea(params);
 
         if (E.isRight(response)) {
           const data = response.right.Data?.[0] || null;
@@ -152,7 +152,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
           CommercialExtraCarpetPercent: formDataExtraCarpetArea.CommercialExtraCarpetPercent ?? 0
         };
 
-        const response = await ProposedOfferService.apiCallAddUpdateExtraCarpetArea(payload);
+        const response = await proposedOfferService.apiCallAddUpdateExtraCarpetArea(payload);
 
         if (E.isRight(response)) {
           const isAdd = formDataExtraCarpetArea.ProposedOfferExtraCarpetAreaId === 0;

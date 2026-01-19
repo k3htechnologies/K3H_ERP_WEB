@@ -9,7 +9,7 @@ import type {
   DeleteDeductionMasterRequest,
   FilterWithPaginationDeductionMasterRequest
 } from '@/features/deductionMaster/models/DeductionMasterModel';
-import { DeductionMasterService } from '@/features/deductionMaster/services/DeductionMasterService'
+import { deductionMasterService } from '@/features/deductionMaster/services/DeductionMasterService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -109,7 +109,7 @@ export const DeductionMaster: React.FC = () => {
           SortBy: getSortByParam(sortInfo ?? null, DeductionMasterColumns)
         };
 
-        const response = await DeductionMasterService.apiCallPullDeductionMaster(params);
+        const response = await deductionMasterService.apiCallPullDeductionMaster(params);
         if (E.isRight(response)) {
 
           setDeductionMasterList(response.right.Data);
@@ -177,7 +177,7 @@ export const DeductionMaster: React.FC = () => {
           ExportType: exportType
         };
 
-        const response = await DeductionMasterService.apiCallPullDeductionMaster(params);
+        const response = await deductionMasterService.apiCallPullDeductionMaster(params);
 
         handleExportFile(response, exportType, 'Deduction Master', addToast);
 
@@ -447,7 +447,7 @@ export const DeductionMaster: React.FC = () => {
           UniqueKey: deleteDeductionMasterData.Uniquekey || ""
         };
 
-        const response = await DeductionMasterService.apiCallDeleteDeductionMaster(params);
+        const response = await deductionMasterService.apiCallDeleteDeductionMaster(params);
 
         if (E.isRight(response)) {
 
@@ -587,7 +587,7 @@ export const DeductionMaster: React.FC = () => {
         saveText="Apply"
         cancelText="Clear"
         onCancel={() => clearFilters()}
-        resetText=''
+       
         size="small-half"
       >
         <div className="space-y-6">

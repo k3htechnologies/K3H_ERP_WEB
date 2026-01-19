@@ -10,7 +10,7 @@ import type {
   HolidayMasterData,
   FilterWithPaginationHolidayMasterRequest
 } from '@/features/holidayMaster/models/HolidayMasterModel';
-import { HolidayMasterService } from '@/features/holidayMaster/services/HolidayMasterService';
+import { holidayMasterService } from '@/features/holidayMaster/services/HolidayMasterService';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { handleExportFile } from '@/core/utils/exportFile';
@@ -126,7 +126,7 @@ export const useHolidayMaster = () => {
           SortBy: getSortByParam(sortInfo ?? null, holidayMasterColumns)
         }
 
-        const response = await HolidayMasterService.apiCallPullHolidayMaster(params);
+        const response = await holidayMasterService.apiCallPullHolidayMaster(params);
 
         if (E.isRight(response)) {
           setHolidayMasterList(response.right.Data);
@@ -185,7 +185,7 @@ export const useHolidayMaster = () => {
           ExportType: exportType
         }
 
-        const response = await HolidayMasterService.apiCallPullHolidayMaster(params);
+        const response = await holidayMasterService.apiCallPullHolidayMaster(params);
         handleExportFile(response, exportType, 'Holiday Master', addToast)
         return response;
       },
@@ -311,7 +311,7 @@ export const useHolidayMaster = () => {
       setLoadingMessage,
       async () => {
         const payload = PushHolidayFormData();
-        const response = await HolidayMasterService.apiCallAddUpdateHolidayMaster(payload);
+        const response = await holidayMasterService.apiCallAddUpdateHolidayMaster(payload);
 
         if (E.isRight(response)) {
           setIsAddUpdateModalOpen(false);
@@ -372,7 +372,7 @@ export const useHolidayMaster = () => {
           UniqueKey: deleteHolidayMasterDetailsData.Uniquekey ?? ""
         }
 
-        const response = await HolidayMasterService.apiCallDeleteHolidayMaster(params);
+        const response = await holidayMasterService.apiCallDeleteHolidayMaster(params);
 
         if (E.isRight(response)) {
           const newTotalRecords = pagination.totalRecords - 1;

@@ -16,7 +16,7 @@ import { SinglePageSelection } from '../components/DropDown/SinglePageSelection'
 import { useProject } from '@/features/projectMaster/context/ProjectContext'
 import { shouldShowProjectSelection } from '@/core/utils/projectSelectionVisibility'
 import { isSubSubRoute } from '@/core/utils/fileValidation'
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService'
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService'
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData } from '@/features/projectMaster/models/ProjectMasterModel'
 import NoDataView from '../components/NoDataView/NoDataView'
 import TableActionToolbar from '../components/TableAction/TableActionToolbar'
@@ -232,7 +232,7 @@ export const Header: React.FC<HeaderProps> = ({
                     ProjectId: Number(projectId)
                 }
 
-                const response = await ProjectMasterService.apiCallPullProjectMaster(params);
+                const response = await projectMasterService.apiCallPullProjectMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -260,7 +260,7 @@ export const Header: React.FC<HeaderProps> = ({
             setLoadingMessage,
             async () => {
 
-                const response = await ProjectMasterService.apiCallPullProjectMasterWithEmployee(Number(projectId), searchText);
+                const response = await projectMasterService.apiCallPullProjectMasterWithEmployee(Number(projectId), searchText);
 
                 if (E.isRight(response)) {
 

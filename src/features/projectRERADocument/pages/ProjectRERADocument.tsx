@@ -8,7 +8,7 @@ import type { AddUpdateProjectRERADocumentRequest, DeleteProjectRERADocumentRequ
 import usePagination from '@/core/hooks/usePagination';
 import { type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import * as E from 'fp-ts/Either';
-import { ProjectRERADocumentService } from '../services/ProjectRERADocumentService';
+import { projectRERADocumentService } from '@/features/projectRERADocument/services/ProjectRERADocumentService';
 import DataTableExpandable, { type DataTableExpandableRef } from '@/ui/components/DataTable/DataTableExpandable';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
@@ -289,7 +289,7 @@ const ProjectRERADocument: React.FC = () => {
           SortBy: sortByParam
         };
 
-        const response = await ProjectRERADocumentService.apiCallPullProjectRERADocument(params);
+        const response = await projectRERADocumentService.apiCallPullProjectRERADocument(params);
 
         if (E.isRight(response)) {
 
@@ -809,7 +809,7 @@ const ProjectRERADocument: React.FC = () => {
 
         const payload = PushDocumentDetailsFormData();
 
-        const response = await ProjectRERADocumentService.apiCallAddUpdateProjectRERADocument(payload);
+        const response = await projectRERADocumentService.apiCallAddUpdateProjectRERADocument(payload);
 
         if (E.isRight(response)) {
 
@@ -895,7 +895,7 @@ const ProjectRERADocument: React.FC = () => {
 
         }
 
-        const response = await ProjectRERADocumentService.apiCallDeleteProjectRERADocument(params);
+        const response = await projectRERADocumentService.apiCallDeleteProjectRERADocument(params);
 
         if (E.isRight(response)) {
 
@@ -1017,7 +1017,7 @@ const ProjectRERADocument: React.FC = () => {
             };
 
 
-            const response = await ProjectRERADocumentService.apiCallPullProjectRERADocument(params);
+            const response = await projectRERADocumentService.apiCallPullProjectRERADocument(params);
 
             if (E.isRight(response)) {
 

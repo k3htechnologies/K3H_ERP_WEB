@@ -43,7 +43,7 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
       title={editingData ? 'Update Holiday Mapping ' : 'Add Holiday Mapping'}
       onSubmit={onSubmit}
       saveText={editingData ? 'Update' : 'Add'}
-      resetText=''
+     
       loading={loading}
       size="xl"
     >

@@ -23,7 +23,7 @@ import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import Accordion from '@/ui/components/Card/Accordion';
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData } from '@/features/projectMaster/models/ProjectMasterModel';
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 import type { EmployeeEducationDetailsData, FilterWithPaginationEmployeeEducationDetailsRequest, AddUpdateEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
 import type { EmployeeExperienceDetailsData, FilterWithPaginationEmployeeExperienceDetailsRequest, AddUpdateEmployeeExperienceDetailsRequest } from '@/features/employeeMaster/models/EmployeeExperienceDetailsModal';
 import { employeeEducationDetailsService } from '@/features/employeeMaster/services/EmployeeEducationDetailsService';
@@ -431,7 +431,7 @@ export const Profile: React.FC = () => {
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
                 }
 
-                const response = await ProjectMasterService.apiCallPullProjectMaster(params);
+                const response = await projectMasterService.apiCallPullProjectMaster(params);
 
                 if (E.isRight(response)) {
 

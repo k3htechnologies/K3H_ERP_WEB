@@ -42,7 +42,7 @@ export const DepartmentMasterFilterModal: React.FC<DepartmentFilterModalProps> =
       }}
       saveText="Apply"
       onCancel={onClear}
-      resetText=''
+     
       cancelText="Clear"
       size="small-half"
     >

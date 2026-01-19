@@ -787,7 +787,7 @@ export const Tenant: React.FC = () => {
         saveText="Apply Filter"
         cancelText="Clear Filter"
         onCancel={() => clearFilters()}
-        resetText=''
+       
         size="small-half"
       >
         <div className="space-y-6">

@@ -11,7 +11,7 @@ import type {
   DeleteTncMasterRequest
 } from '@/features/tnc/models/TncMasterModel';
 
-import { TncMasterService } from '@/features/tnc/services/TncMasterService';
+import { tncMasterService } from '@/features/tnc/services/TncMasterService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -169,7 +169,7 @@ export const TncMaster: React.FC = () => {
           SortBy: getSortByParam(sortInfo ?? null, tncColumns)
         };
 
-        const response = await TncMasterService.apiCallPullTncMaster(params);
+        const response = await tncMasterService.apiCallPullTncMaster(params);
 
         if (E.isRight(response)) {
           setTncList(response.right.Data);
@@ -241,7 +241,7 @@ export const TncMaster: React.FC = () => {
           ExportType: exportType
         };
 
-        const response = await TncMasterService.apiCallPullTncMaster(params);
+        const response = await tncMasterService.apiCallPullTncMaster(params);
 
         handleExportFile(response, exportType, 'Terms & Conditions Master', addToast);
 
@@ -611,7 +611,7 @@ export const TncMaster: React.FC = () => {
 
         const payload = PushTncMasterFormData();
 
-        const response = await TncMasterService.apiCallAddUpdateTncMaster(payload);
+        const response = await tncMasterService.apiCallAddUpdateTncMaster(payload);
 
         if (E.isRight(response)) {
 
@@ -690,7 +690,7 @@ export const TncMaster: React.FC = () => {
           UniqueKey: deleteTncMasterDetailsData.Uniquekey ?? ""
         }
 
-        const response = await TncMasterService.apiCallDeleteTncMaster(params);
+        const response = await tncMasterService.apiCallDeleteTncMaster(params);
 
         if (E.isRight(response)) {
 

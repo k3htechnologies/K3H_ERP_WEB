@@ -76,7 +76,7 @@ const proposedOfferDatasource = new ProposedOfferDatasourceImpl()
 //=============================================================
 // [ SERVICE ]
 //=============================================================
-export const ProposedOfferService = {
+export const proposedOfferService = {
 
     //==================== EXTRA CARPET ====================
     apiCallPullExtraCarpetArea: async (

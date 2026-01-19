@@ -10,7 +10,7 @@ import type {
   LeaveTypeMasterData,
   FilterWithPaginationLeaveTypeMasterRequest
 } from '@/features/leaveTypeMaster/models/LeaveTypeMasterModel';
-import { LeaveTypeMasterService } from '@/features/leaveTypeMaster/services/LeaveTypeMasterService';
+import { leaveTypeMasterService } from '@/features/leaveTypeMaster/services/LeaveTypeMasterService';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
@@ -130,7 +130,7 @@ export const useLeaveTypeMaster = () => {
           SortBy: getSortByParam(sortInfo ?? null, leaveTypeMasterColumns)
         }
 
-        const response = await LeaveTypeMasterService.apiCallPullLeaveTypeMaster(params);
+        const response = await leaveTypeMasterService.apiCallPullLeaveTypeMaster(params);
 
         if (E.isRight(response)) {
           setLeaveTypeMasterList(response.right.Data);
@@ -189,7 +189,7 @@ export const useLeaveTypeMaster = () => {
           ExportType: exportType
         }
 
-        const response = await LeaveTypeMasterService.apiCallPullLeaveTypeMaster(params);
+        const response = await leaveTypeMasterService.apiCallPullLeaveTypeMaster(params);
         handleExportFile(response, exportType, 'Leave Type Master', addToast)
         return response;
       },
@@ -392,7 +392,7 @@ export const useLeaveTypeMaster = () => {
       setLoadingMessage,
       async () => {
         const payload = PushLeaveTypeMasterFormData();
-        const response = await LeaveTypeMasterService.apiCallAddUpdateLeaveTypeMaster(payload);
+        const response = await leaveTypeMasterService.apiCallAddUpdateLeaveTypeMaster(payload);
 
         if (E.isRight(response)) {
           setIsAddUpdateModalOpen(false);
@@ -451,7 +451,7 @@ export const useLeaveTypeMaster = () => {
           UniqueKey: deleteLeaveTypeMasterDetailsData.Uniquekey || ""
         }
 
-        const response = await LeaveTypeMasterService.apiCallDeleteLeaveTypeMaster(params);
+        const response = await leaveTypeMasterService.apiCallDeleteLeaveTypeMaster(params);
 
         if (E.isRight(response)) {
           const newTotalRecords = pagination.totalRecords - 1;

@@ -8,7 +8,7 @@ import type {
   AddUpdateProposedOfferRentDetailsRequest,
   DeleteProposedOfferRentDetailsRequest,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
-import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { filterNumbersWithDecimal } from '@/core/utils/fileValidation';
@@ -74,7 +74,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
           BuildingId: buildingId
         };
 
-        const response = await ProposedOfferService.apiCallPullRentDetails(params);
+        const response = await proposedOfferService.apiCallPullRentDetails(params);
 
         if (E.isRight(response)) {
 
@@ -200,7 +200,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
           IsPayBrokerage: formDataRentDetails.IsPayBrokerage || false
         };
 
-        const response = await ProposedOfferService.apiCallAddUpdateRentDetails(payload);
+        const response = await proposedOfferService.apiCallAddUpdateRentDetails(payload);
 
         if (E.isRight(response)) {
 
@@ -249,7 +249,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
           ProjectId: Number(projectId)
         };
 
-        const response = await ProposedOfferService.apiCallDeleteRentDetails(payload);
+        const response = await proposedOfferService.apiCallDeleteRentDetails(payload);
 
         if (E.isRight(response)) {
 

@@ -7,7 +7,7 @@ import type {
   FilterWithPaginationProposedOfferParkingAllotmentRequest,
   AddUpdateProposedOfferParkingAllotmentRequest,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
-import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { filterNumbers, filterNumbersWithDecimal, isValidPercentage, allowPercentage } from '@/core/utils/fileValidation';
@@ -57,7 +57,7 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
           BuildingId: buildingId
         };
 
-        const response = await ProposedOfferService.apiCallPullParkingAllotment(params);
+        const response = await proposedOfferService.apiCallPullParkingAllotment(params);
 
         if (E.isRight(response)) {
           const data = response.right.Data?.[0] || null;
@@ -143,7 +143,7 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
           TotalParkingPercentageAllottedToSociety: formDataParkingAllotment.TotalParkingPercentageAllottedToSociety
         };
 
-        const response = await ProposedOfferService.apiCallAddUpdateParkingAllotment(payload);
+        const response = await proposedOfferService.apiCallAddUpdateParkingAllotment(payload);
 
         if (E.isRight(response)) {
           const isAdd = formDataParkingAllotment.ProposedOfferParkingAllotmentId === 0;

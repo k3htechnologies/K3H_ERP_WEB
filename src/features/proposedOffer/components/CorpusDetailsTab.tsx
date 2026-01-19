@@ -8,7 +8,7 @@ import type {
   AddUpdateProposedOfferCorpusDetailsRequest,
   ProposedOfferCorpusDetailsWithPaymentStageData,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
-import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { filterNumbersWithDecimal, isValidPercentage, allowPercentage, calculatePercentageAmount } from '@/core/utils/fileValidation';
@@ -81,7 +81,7 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
           BuildingId: buildingId
         };
 
-        const response = await ProposedOfferService.apiCallPullCorpusDetails(params);
+        const response = await proposedOfferService.apiCallPullCorpusDetails(params);
 
         if (E.isRight(response)) {
           const data = response.right.Data?.[0] || null;
@@ -238,7 +238,7 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
           CorpusDetailsWithPaymentStageJSON: paymentStageJSON
         };
 
-        const response = await ProposedOfferService.apiCallAddUpdateCorpusDetails(payload);
+        const response = await proposedOfferService.apiCallAddUpdateCorpusDetails(payload);
 
         if (E.isRight(response)) {
           const isAdd = formDataCorpusDetails.ProposedOfferCorpusDetailsId === 0;

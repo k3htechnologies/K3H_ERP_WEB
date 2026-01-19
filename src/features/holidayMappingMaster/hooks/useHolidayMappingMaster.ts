@@ -10,7 +10,7 @@ import type {
   HolidayMappingMasterData,
   FilterWithPaginationHolidayMappingMasterRequest
 } from '@/features/holidayMappingMaster/models/HolidayMappingMasterModel';
-import { HolidayMappingMasterService } from '@/features/holidayMappingMaster/services/HolidayMappingMasterService';
+import { holidayMappingMasterService } from '@/features/holidayMappingMaster/services/HolidayMappingMasterService';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
@@ -141,7 +141,7 @@ export const useHolidayMappingMaster = () => {
           ToHolidayDate: filterParams.ToHolidayDate?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, holidayMappingMasterColumns)
         }
-        const response = await HolidayMappingMasterService.apiCallPullHolidayMappingMaster(params);
+        const response = await holidayMappingMasterService.apiCallPullHolidayMappingMaster(params);
 
         if (E.isRight(response)) {
           setHolidayMappingMasterList(response.right.Data);
@@ -202,7 +202,7 @@ export const useHolidayMappingMaster = () => {
           ExportType: exportType
         }
 
-        const response = await HolidayMappingMasterService.apiCallPullHolidayMappingMaster(params);
+        const response = await holidayMappingMasterService.apiCallPullHolidayMappingMaster(params);
         handleExportFile(response, exportType, 'Holiday Mapping Master', addToast)
         return response;
       },
@@ -375,7 +375,7 @@ export const useHolidayMappingMaster = () => {
       setLoadingMessage,
       async () => {
         const payload = PushHolidayMappingMasterFormData();
-        const response = await HolidayMappingMasterService.apiCallAddUpdateHolidayMappingMaster(payload);
+        const response = await holidayMappingMasterService.apiCallAddUpdateHolidayMappingMaster(payload);
 
         if (E.isRight(response)) {
           setIsAddUpdateModalOpen(false);
@@ -443,7 +443,7 @@ export const useHolidayMappingMaster = () => {
           UniqueKey: deleteHolidayMappingMasterDetailsData.Uniquekey || ""
         }
 
-        const response = await HolidayMappingMasterService.apiCallDeleteHolidayMappingMaster(params);
+        const response = await holidayMappingMasterService.apiCallDeleteHolidayMappingMaster(params);
 
         if (E.isRight(response)) {
           const newTotalRecords = pagination.totalRecords - 1;

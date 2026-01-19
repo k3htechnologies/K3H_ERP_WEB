@@ -10,7 +10,7 @@ import * as E from 'fp-ts/Either';
 import useToast from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { runApiWithLoader } from "@/core/utils";
-import { DeductionMasterService } from "@/features/deductionMaster/services/DeductionMasterService";
+import { deductionMasterService } from "@/features/deductionMaster/services/DeductionMasterService";
 
 const ViewDeductionMaster: React.FC = () => {
 
@@ -48,7 +48,7 @@ const ViewDeductionMaster: React.FC = () => {
                     DeductionMasterId: listState.deductionMasterId
                 };
 
-                const response = await DeductionMasterService.apiCallPullDeductionMaster(params);
+                const response = await deductionMasterService.apiCallPullDeductionMaster(params);
 
                 if (E.isRight(response)) {
 

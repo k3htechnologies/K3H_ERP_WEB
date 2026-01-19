@@ -8,7 +8,7 @@ import type {
   AddUpdateProposedOfferLienToSocietyDetailsRequest,
   ProposedOfferLienToSocietyDetailsWithPaymentStageData,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
-import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { filterNumbers, filterNumbersWithDecimal } from '@/core/utils/fileValidation';
@@ -82,7 +82,7 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
           BuildingId: buildingId
         };
 
-        const response = await ProposedOfferService.apiCallPullLienToSocietyDetails(params);
+        const response = await proposedOfferService.apiCallPullLienToSocietyDetails(params);
 
         if (E.isRight(response)) {
           const data = response.right.Data?.[0] || null;
@@ -200,7 +200,7 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
           LienToSocietyWithPaymentStageJSON: paymentStageJSON
         };
 
-        const response = await ProposedOfferService.apiCallAddUpdateLienToSocietyDetails(payload);
+        const response = await proposedOfferService.apiCallAddUpdateLienToSocietyDetails(payload);
 
         if (E.isRight(response)) {
           const isAdd = formDataLienToSocietyDetails.ProposedOfferLienToSocietyDetailsId === 0;

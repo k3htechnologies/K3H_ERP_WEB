@@ -6,7 +6,7 @@ import type { CompanyMasterData, FilterWithPaginationCompanyMasterRequest } from
 import useToast from '@/core/hooks/useToast';
 import { useNavigate } from 'react-router-dom';
 import { runApiWithLoader } from '@/core/utils';
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 import * as E from 'fp-ts/Either';
 import usePagination from '@/core/hooks/usePagination';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
@@ -17,7 +17,7 @@ import Checkbox from '@/ui/components/forms/Checkbox';
 import { Input } from '@/ui/components/forms';
 import { Search } from 'lucide-react';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
-import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
+import { companyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import { useProjectMasterListState } from '@/features/projectMaster/context/ProjectMasterListStateContext';
 
 const Company: React.FC = () => {
@@ -108,7 +108,7 @@ const Company: React.FC = () => {
       setLoadingMessage,
       async () => {
 
-        const response = await ProjectMasterService.apiCallPullProjectMasterWithCompany(ProjectId);
+        const response = await projectMasterService.apiCallPullProjectMasterWithCompany(ProjectId);
 
         if (E.isRight(response)) {
 
@@ -230,7 +230,7 @@ const Company: React.FC = () => {
           CompanyName: filterParams.CompanyName?.trim() || undefined,
         }
 
-        const response = await CompanyMasterService.apiCallPullCompanyMaster(params);
+        const response = await companyMasterService.apiCallPullCompanyMaster(params);
 
         if (E.isRight(response)) {
 
@@ -322,7 +322,7 @@ const Company: React.FC = () => {
 
         const payload = PushProjectMasterWithCompanyData();
 
-        const response = await ProjectMasterService.apiCallAddUpdateProjectMasterWithCompany(payload);
+        const response = await projectMasterService.apiCallAddUpdateProjectMasterWithCompany(payload);
 
         if (E.isRight(response)) {
 

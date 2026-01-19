@@ -9,7 +9,7 @@ import type {
   FilterWithPaginationProjectMasterRequest,
 } from '@/features/projectMaster/models/ProjectMasterModel';
 
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService'
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -194,7 +194,7 @@ export const ProjectMaster: React.FC = () => {
 
   //#region GET PROJECT MASTER DATA FROM API
   const getProjects = async (filterParams: FilterWithPaginationProjectMasterRequest) => {
-    return await ProjectMasterService.apiCallPullProjectMaster(filterParams);
+    return await projectMasterService.apiCallPullProjectMaster(filterParams);
   }
   //#endregion
 
@@ -586,7 +586,7 @@ export const ProjectMaster: React.FC = () => {
         saveText="Apply"
         cancelText="Clear"
         onCancel={() => clearFilters()}
-        resetText=''
+       
         size="small-half"
       >
         <div className="space-y-6">

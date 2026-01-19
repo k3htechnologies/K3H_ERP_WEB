@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Loader } from '@/core/utils/loader';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
@@ -120,7 +120,7 @@ const Bank: React.FC = () => {
       setLoadingMessage,
       async () => {
 
-        const response = await ProjectMasterService.apiCallPullProjectMasterWithBankDetails(ProjectId);
+        const response = await projectMasterService.apiCallPullProjectMasterWithBankDetails(ProjectId);
 
         if (E.isRight(response)) {
 
@@ -391,7 +391,7 @@ const Bank: React.FC = () => {
 
         const payload = PushProjectMasterWithBankDetailsFormData();
 
-        const response = await ProjectMasterService.apiCallAddUpdateProjectMasterWithBankDetails(payload);
+        const response = await projectMasterService.apiCallAddUpdateProjectMasterWithBankDetails(payload);
 
         if (E.isRight(response)) {
 
@@ -465,7 +465,7 @@ const Bank: React.FC = () => {
           ProjectId: deleteProjectMasterWithBankDetailsData.ProjectId
         }
 
-        const response = await ProjectMasterService.apiCallDeleteProjectMasterWithBankDetails(params);
+        const response = await projectMasterService.apiCallDeleteProjectMasterWithBankDetails(params);
 
         if (E.isRight(response)) {
 

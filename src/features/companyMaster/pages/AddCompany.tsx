@@ -16,7 +16,7 @@ import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { Edit, IdCard, Mail, Phone, Trash2 } from 'lucide-react';
 import { calculateMergedFiles, createFileUrlString, filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterRERA, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidRERA, mergeFiles } from '@/core/utils/fileValidation';
 import { runApiWithLoader } from '@/core/utils';
-import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
+import { companyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import * as E from 'fp-ts/Either';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
@@ -241,7 +241,7 @@ const AddCompany: React.FC = () => {
           CompanyId: Number(companyId)
         }
 
-        const response = await CompanyMasterService.apiCallPullCompanyMaster(params);
+        const response = await companyMasterService.apiCallPullCompanyMaster(params);
 
         if (E.isRight(response)) {
 
@@ -511,7 +511,7 @@ const AddCompany: React.FC = () => {
 
         const pushCompanyFormData = buildCompanyMultipartFormData();
 
-        const response = await CompanyMasterService.apiCallAddUpdateCompanyMaster(pushCompanyFormData);
+        const response = await companyMasterService.apiCallAddUpdateCompanyMaster(pushCompanyFormData);
 
         if (E.isRight(response)) {
 

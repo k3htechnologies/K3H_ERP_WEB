@@ -13,7 +13,7 @@ import React from "react";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { filterGoogleMapsUrl, filterMobile, filterNumbers, filterRERA, hasAnyDocumentFile, isValidGoogleMapsUrl, isValidMobile, isValidRERA } from "@/core/utils/fileValidation";
 import type { AddUpdateProjectMasterRequest, FilterWithPaginationProjectMasterRequest } from "@/features/projectMaster/models/ProjectMasterModel";
-import { ProjectMasterService } from "../services/ProjectMasterService";
+import { projectMasterService } from "@/features/projectMaster/services/ProjectMasterService";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
@@ -168,7 +168,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     ProjectId: Number(projectId)
                 }
 
-                const response = await ProjectMasterService.apiCallPullProjectMaster(params);
+                const response = await projectMasterService.apiCallPullProjectMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -363,7 +363,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                 const payload = PushProjectMasterFormData();
 
-                const response = await ProjectMasterService.apiCallAddUpdateProjectMaster(payload);
+                const response = await projectMasterService.apiCallAddUpdateProjectMaster(payload);
 
                 if (E.isRight(response)) {
 

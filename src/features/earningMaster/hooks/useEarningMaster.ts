@@ -10,7 +10,7 @@ import type {
   EarningMasterData,
   FilterWithPaginationEarningMasterRequest
 } from '@/features/earningMaster/models/EarningMasterModel';
-import { EarningMasterService } from '@/features/earningMaster/services/EarningMasterService';
+import { earningMasterService } from '@/features/earningMaster/services/EarningMasterService';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
@@ -138,7 +138,7 @@ export const useEarningMaster = () => {
           Name: searchtext ?? filterParams.Name ?? undefined,
           SortBy: getSortByParam(sortInfo ?? null, earningMasterColumns)
         }
-        const response = await EarningMasterService.apiCallPullEarningMaster(params);
+        const response = await earningMasterService.apiCallPullEarningMaster(params);
 
         if (E.isRight(response)) {
           setEarningMasterList(response.right.Data);
@@ -198,7 +198,7 @@ export const useEarningMaster = () => {
           ExportType: exportType
         }
 
-        const response = await EarningMasterService.apiCallPullEarningMaster(params);
+        const response = await earningMasterService.apiCallPullEarningMaster(params);
         handleExportFile(response, exportType, 'Earning Master', addToast)
         return response;
       },
@@ -394,7 +394,7 @@ export const useEarningMaster = () => {
       setLoadingMessage,
       async () => {
         const payload = PushEarningMasterFormData();
-        const response = await EarningMasterService.apiCallAddUpdateEarningMaster(payload);
+        const response = await earningMasterService.apiCallAddUpdateEarningMaster(payload);
 
         if (E.isRight(response)) {
           setIsAddUpdateModalOpen(false);
@@ -452,7 +452,7 @@ export const useEarningMaster = () => {
           EarningMasterId: deleteEarningMasterDetailsData.EarningMasterId || 0,
           UniqueKey: deleteEarningMasterDetailsData.Uniquekey || ""
         }
-        const response = await EarningMasterService.apiCallDeleteEarningMaster(params);
+        const response = await earningMasterService.apiCallDeleteEarningMaster(params);
 
         if (E.isRight(response)) {
           const newTotalRecords = pagination.totalRecords - 1;

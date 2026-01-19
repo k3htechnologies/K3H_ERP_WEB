@@ -1288,7 +1288,6 @@ const ApprovalDocument: React.FC = () => {
         title={editingDocumentData ? 'Update Document Name' : 'Add Document Name'}
         onSubmit={(e) => handleAddUpdateDocument(1, e)}
         saveText={editingDocumentData ? 'Update' : 'Add'}
-        resetText=''
         loading={isLoading}
         size='xl'
       >
@@ -1331,7 +1330,7 @@ const ApprovalDocument: React.FC = () => {
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(0, e)}
         saveText={editingDocumentData ? 'Update' : 'Add'}
-        resetText=''
+       
         loading={isLoading}
         size='xl'
       >

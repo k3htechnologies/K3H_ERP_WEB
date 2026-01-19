@@ -8,7 +8,7 @@ import type {
   AddUpdateProposedOfferShiftingDetailsRequest,
   ProposedOfferShiftingDetailsWithPaymentStageData,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
-import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { filterNumbersWithDecimal, isValidPercentage, allowPercentage, calculatePercentageAmount } from '@/core/utils/fileValidation';
@@ -81,7 +81,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
           BuildingId: buildingId
         };
 
-        const response = await ProposedOfferService.apiCallPullShiftingDetails(params);
+        const response = await proposedOfferService.apiCallPullShiftingDetails(params);
 
         if (E.isRight(response)) {
           const data = response.right.Data?.[0] || null;
@@ -239,7 +239,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
           ShiftingDetailsWithPaymentStageJSON: paymentStageJSON
         };
 
-        const response = await ProposedOfferService.apiCallAddUpdateShiftingDetails(payload);
+        const response = await proposedOfferService.apiCallAddUpdateShiftingDetails(payload);
 
         if (E.isRight(response)) {
           const isAdd = formDataShiftingDetails.ProposedOfferShiftingDetailsId === 0;

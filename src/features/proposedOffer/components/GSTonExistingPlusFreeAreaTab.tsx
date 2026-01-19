@@ -7,7 +7,7 @@ import type {
   FilterWithPaginationProposedOfferGSTonExistingPlusFreeAreaRequest,
   AddUpdateProposedOfferGSTonExistingPlusFreeAreaRequest,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
-import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { filterNumbersWithDecimal, isValidPercentage, allowPercentage } from '@/core/utils/fileValidation';
@@ -57,7 +57,7 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
           BuildingId: buildingId
         };
 
-        const response = await ProposedOfferService.apiCallPullGSTonExistingPlusFreeArea(params);
+        const response = await proposedOfferService.apiCallPullGSTonExistingPlusFreeArea(params);
 
         if (E.isRight(response)) {
           const data = response.right.Data?.[0] || null;
@@ -149,7 +149,7 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
           GSTOnAreaByDeveloperPercent: formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent
         };
 
-        const response = await ProposedOfferService.apiCallAddUpdateGSTonExistingPlusFreeArea(payload);
+        const response = await proposedOfferService.apiCallAddUpdateGSTonExistingPlusFreeArea(payload);
 
         if (E.isRight(response)) {
           const isAdd = formDataGSTonExistingPlusFreeArea.ProposedOfferGSTonExistingPlusFreeAreaId === 0;

@@ -43,7 +43,7 @@ export const BranchMasterFilterModal: React.FC<BranchMasterFilterModalProps> = (
       saveText="Apply"
       cancelText="Clear"
       onCancel={onClear}
-      resetText=''
+     
       size="small-half"
     >
       <div className="space-y-6">

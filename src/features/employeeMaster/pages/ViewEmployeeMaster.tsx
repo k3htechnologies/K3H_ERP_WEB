@@ -23,7 +23,7 @@ import { weekOffMappingMasterService } from '@/features/weekOffMappingMaster/ser
 import type { FilterWithPaginationWeekOffMappingMasterRequest, WeekOffMappingMasterData } from '@/features/weekOffMappingMaster/models/WeekOffMappingMasterModel';
 import { employeeMasterService } from '../services/EmployeeMasterService';
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData } from '@/features/projectMaster/models/ProjectMasterModel';
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 import type { EmployeeExperienceDetailsData, FilterWithPaginationEmployeeExperienceDetailsRequest } from '@/features/employeeMaster/models/EmployeeExperienceDetailsModal';
 import type { EmployeeEducationDetailsData, FilterWithPaginationEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
 import { employeeExperienceDetailsService } from '@/features/employeeMaster/services/EmployeeExperienceDetailsService';
@@ -311,7 +311,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     EmployeeId: listState.employeeId,
                 }
 
-                const response = await ProjectMasterService.apiCallPullProjectMaster(params);
+                const response = await projectMasterService.apiCallPullProjectMaster(params);
 
                 if (E.isRight(response)) {
 

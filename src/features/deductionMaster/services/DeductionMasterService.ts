@@ -13,7 +13,7 @@ import * as E from 'fp-ts/Either';
 
 const deductionMasterDatasource = new DeductionMasterDatasourceImpl();
 
-export const DeductionMasterService = {
+export const deductionMasterService = {
 
     apiCallPullDeductionMaster: async (params: FilterWithPaginationDeductionMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, DeductionMasterListResponse>> => {
         try {

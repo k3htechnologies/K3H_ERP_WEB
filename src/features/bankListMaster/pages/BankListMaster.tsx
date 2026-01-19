@@ -9,7 +9,7 @@ import type {
   FilterWithPaginationBankListMasterRequest
 } from '@/features/bankListMaster/models/BankListMasterModel';
 
-import { BankListMasterService } from '@/features/bankListMaster/services/BankListMasterService';
+import { bankListMasterService } from '@/features/bankListMaster/services/BankListMasterService';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
@@ -65,7 +65,7 @@ const BankListMaster: React.FC = () => {
           SortBy: sortInfo ? getSortByParam(sortInfo, bankColumns) : undefined
         };
 
-        const response = await BankListMasterService.apiCallPullBankListMaster(params);
+        const response = await bankListMasterService.apiCallPullBankListMaster(params);
 
         if (E.isRight(response)) {
 
@@ -129,7 +129,7 @@ const BankListMaster: React.FC = () => {
           SortBy: getSortByParam(sortInfo ?? null, bankColumns)
         };
 
-        const response = await BankListMasterService.apiCallPullBankListMaster(params);
+        const response = await bankListMasterService.apiCallPullBankListMaster(params);
 
         handleExportFile(response, exportType, 'Bank List', addToast);
 

@@ -14,28 +14,13 @@ export const ViewVendor: React.FC = () => {
 
   //LOCATION
   const navigate = useNavigate();
+  const { listState } = useVendorListState();
+  const vendorName = listState.vendorName || '';
 
   const { canAction } = useMenuPermissions('/vendor');
 
-  const location = useLocation() as {
-    state?: {
-      editVendorData?: VendorData | null;
-      fromList?: boolean;
-      listState?: {
-        page: number;
-        filters: any;
-        sortInfo?: any;
-        searchTerm?: string;
-        vendorName?: string;
-      };
-    };
-  };
-  const preservedListState = location.state?.listState;
-  const vendorName = preservedListState?.vendorName || '';
-
-  //#region Get VENDOR DATA FROM LOCATION STATE
-
-  const editVendorMasterData = (location.state?.editVendorData ?? null) as VendorData | null;
+  //#region Get VENDOR DATA - Will be loaded from API if needed
+  const editVendorMasterData = null as VendorData | null;
 
   //#endregion
 
@@ -43,22 +28,14 @@ export const ViewVendor: React.FC = () => {
 
   const handleEditVendor = (row: VendorData) => {
     if (!row?.VendorId) return;
-    navigate(`/vendor/add/${row.VendorId}`, {
-      state: {
-        editVendorData: row,
-        fromList: true,
-        listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
-      }
-    });
+    navigate(`/vendor/add/${row.VendorId}`);
   };
 
   //#endregion
 
   //#region BACK  VENDOR PAGE
   const navigateBackToList = () => {
-    navigate('/vendor', {
-      state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' } }
-    });
+    navigate('/vendor');
   };
   //#endregion
 

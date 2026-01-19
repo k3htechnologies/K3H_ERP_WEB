@@ -1,4 +1,5 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAssetMasterListState } from "@/features/assetMaster/context/AssetMasterListStateContext";
 import type { AssetMasterData } from "../models/AssetMasterModel";
 import { useEffect, useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
@@ -13,6 +14,8 @@ import * as E from 'fp-ts/Either';
 import { Loader } from "@/core/utils/loader";
 import useToast from "@/core/hooks/useToast";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import type { FilterWithPaginationAssetMasterRequest } from "@/features/assetMaster/models/AssetMasterModel";
+import { assetMasterService } from "../services/AssetMasterService";
 
 const ViewAssetPage: React.FC = () => {
 
@@ -23,11 +26,9 @@ const ViewAssetPage: React.FC = () => {
     // TOAST
     const { addToast } = useToast();
 
-    //LOCATION
-    const location = useLocation();
-
     // NAVIGATION
     const navigate = useNavigate();
+    const { listState } = useAssetMasterListState();
 
     //#region TAB ACTIVITY
     const assetTabList = [
@@ -36,26 +37,51 @@ const ViewAssetPage: React.FC = () => {
     ];
 
     const [activeTab, setActiveTab] = useState<string>(assetTabList[0].id);
+    const [editAssetData, setEditAssetData] = useState<AssetMasterData | null>(null);
 
     //#endregion
 
-
     const { canAction } = useMenuPermissions('/assetMaster');
 
-    const editAssetData = location.state?.assetData as AssetMasterData;
+    // Load asset data from API
+    useEffect(() => {
+        if (listState.assetMasterId) {
+            loadAssetData();
+        }
+    }, [listState.assetMasterId]);
 
-    const listState = location.state?.listState;
-
-    // MESSAGE IF DATA NOT FOUND
-    if (!editAssetData) return <div>No Asset Data Found</div>;
+    const loadAssetData = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationAssetMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    AssetMasterId: listState.assetMasterId
+                };
+                const response = await assetMasterService.apiCallPullAssetMaster(params);
+                if (E.isRight(response) && response.right.Data.length > 0) {
+                    setEditAssetData(response.right.Data[0]);
+                } else {
+                    addToast({ type: 'error', title: response.left?.message || 'Failed to load asset data' });
+                }
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Asset Data'
+        );
+    };
 
     //#region INIT
-
     useEffect(() => {
-
-        if (activeTab === "Return History") loadAssetMappings()
-
-    }, [activeTab]);
+        if (activeTab === "Return History" && editAssetData) {
+            loadAssetMappings();
+        }
+    }, [activeTab, editAssetData]);
 
     //#endregion
 
@@ -94,29 +120,13 @@ const ViewAssetPage: React.FC = () => {
     //#region EDIT ASSET
     const handleEditAssetMaster = (row: AssetMasterData) => {
         if (!row?.AssetMasterId) return;
-        navigate(`/assetMaster/add/${row.AssetMasterId}`, {
-            state: {
-                editProjectMasterData: row,
-                fromList: true,
-                listState: listState ?? {
-                    page: 1, filters: {},
-                    sortInfo: undefined, searchTerm: ''
-                }
-            }
-        });
+        navigate(`/assetMaster/add/${row.AssetMasterId}`);
     };
     //#endregion
 
     //#region BACK PROJECT PAGE
     const handleBackToListAssetMaster = () => {
-        navigate('/assetMaster', {
-            state: {
-                listState: listState ?? {
-                    page: 1, filters: {},
-                    sortInfo: undefined, searchTerm: ''
-                }
-            }
-        });
+        navigate('/assetMaster');
     };
     //#endregion
     return (
@@ -130,10 +140,10 @@ const ViewAssetPage: React.FC = () => {
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListAssetMaster()}
-                canAction={canAction && activeTab === "Overview" && editAssetData.Status !== "Booked"}
+                canAction={canAction && activeTab === "Overview" && editAssetData?.Status !== "Booked"}
                 onEdit={() => {
                     if (activeTab === 'Overview') {
-                        if (editAssetData) handleEditAssetMaster(editAssetData!);
+                        if (editAssetData) handleEditAssetMaster(editAssetData);
                     }
                 }}
                 isLoading={isLoading}

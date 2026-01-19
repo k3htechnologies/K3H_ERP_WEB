@@ -1,4 +1,5 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useDeductionMasterListState } from "@/features/deductionMaster/context/DeductionMasterListStateContext";
 
 import { useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
@@ -12,17 +13,14 @@ const ViewDeductionMaster: React.FC = () => {
     //#region  LOADING STATE MANAGEMENT
     const [isLoading] = useState(false);
 
-    //LOCATION
-    const location = useLocation();
-
     // NAVIGATION
     const navigate = useNavigate();
+    const { listState } = useDeductionMasterListState();
 
     const { canAction } = useMenuPermissions('/deductionMaster');
 
-    const editDeductionData = location.state?.deductionData as DeductionMasterData;
-
-    const listState = location.state?.listState;
+    // Will be loaded from API if needed
+    const [editDeductionData, setEditDeductionData] = useState<DeductionMasterData | null>(null);
 
     // MESSAGE IF DATA NOT FOUND
     if (!editDeductionData) return <div>No Deduction Data Found</div>;
@@ -30,21 +28,13 @@ const ViewDeductionMaster: React.FC = () => {
     //#region EDIT DEDUCTION 
     const handleEditDeductionMaster = (row: DeductionMasterData) => {
         if (!row?.DeductionMasterId) return;
-        navigate(`/deductionMaster/add/${row.DeductionMasterId}`, {
-            state: {
-                editDeductionData: row,
-                fromList: true,
-                listState: listState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
-            }
-        });
+        navigate(`/deductionMaster/add/${row.DeductionMasterId}`);
     };
     //#endregion
 
     //#region BACK PROJECT PAGE
     const handleBackToListDeductionMaster = () => {
-        navigate('/deductionMaster', {
-            state: { listState: listState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' } }
-        });
+        navigate('/deductionMaster');
     };
     //#endregion
 

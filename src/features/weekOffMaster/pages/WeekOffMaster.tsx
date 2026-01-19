@@ -20,11 +20,13 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useWeekOffMasterListState } from '@/features/weekOffMaster/context/WeekOffMasterListStateContext';
 import { weekOffMasterService } from '@/features/weekOffMaster/services/WeekOffMasterService';
 import { updateFilter } from '@/core/utils/filterHelper';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Trash2 } from 'lucide-react';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 
 export const WeekOffOffMasterMaster: React.FC = () => {
@@ -36,26 +38,22 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
   // USE NAVIGATE
   const navigate = useNavigate();
+  const { listState, updateListState } = useWeekOffMasterListState();
+  const { searchTerm, filters, sortInfo } = listState;
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
-
-  //TABLE SORT INFO
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
   const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
-  const [searchTerm, setSearchTerm] = useState('');
-
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchWeekOff(value)
   }, 350);
 
   //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   //DELETE WEEK OFF MASTER
@@ -69,34 +67,20 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
-  const location = useLocation() as any;
-
   //#endregion
 
   //#region INIT
   useEffect(() => {
-    const incoming = location.state?.listState;
-    const listState = incoming ?? {
-      page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: ''
-    };
+    // Sync pagination with context state
+    setPagination({ currentPage: listState.page });
 
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
+    // Load week offs with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadWeekOff(listState.page ?? 1, { WeekOffOffName: String(listState.searchTerm).trim() });
-      return;
+      loadWeekOff(listState.page, { WeekOffOffName: String(listState.searchTerm).trim() }, listState.sortInfo);
+    } else {
+      loadWeekOff(listState.page, listState.filters, listState.sortInfo);
     }
-
-    loadWeekOff(listState.page ?? 1, listState.filters ?? {});
-  }, [location.state]);
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
@@ -109,29 +93,21 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchWeekOffMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadWeekOff(page, filters,sort);
+    return await loadWeekOff(page, filters, sort);
   }
 
-  const loadWeekOff = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadWeekOff = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        let sortByParam = undefined;
 
-        if (sortInfo) {
-
-          const column = WeekOffMasterColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
         const params: FilterWithPaginationWeekOffMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           WeekOffPolicyMasterId: filterParams.WeekOffPolicyMasterId ? Number(filterParams.WeekOffPolicyMasterId) : undefined,
-          WeekOffPolicyName: filterParams.WeekOffPolicyName?.trim() || undefined,
-          SortBy: sortByParam
+          WeekOffPolicyName: searchtext ?? filterParams.WeekOffPolicyName?.trim() ?? undefined,
+          SortBy: getSortByParam(sortInfo ?? null, WeekOffMasterColumns)
         };
 
         const response = await weekOffMasterService.apiCallPullWeekOffMaster(params);
@@ -161,39 +137,28 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
   //#region SEARCH & CLEAR WEEK OFF MASTER
   const searchWeekOff = async (searchValue: string) => {
-
-    setSearchTerm(searchValue);
+    updateListState({ searchTerm: searchValue });
 
     if (searchValue.trim() === '') {
-
       fetchWeekOffMasterList();
-
       return
     }
 
-    const filterParams: FilterInfo = {
-      WeekOffPolicyName: searchValue.trim(),
-    };
-
-    await loadWeekOff(1, filterParams);
+    updateListState({ searchTerm: searchValue, page: 1 });
+    await loadWeekOff(1, filters, sortInfo, searchValue);
   };
 
   //#endregion
 
   //#region CLEAR WEEK OFF MASTER 
   const clearSearchWeekOff = () => {
-    setSearchTerm('');
+    updateListState({ searchTerm: '', filters: {}, page: 1 });
 
     debouncedSearch.cancel?.();
 
-    setFilters({});
     setTempFilters({});
     setPagination({ currentPage: 1 });
-    loadWeekOff(1, {});
-    try {
-      navigate(location.pathname, { replace: true, state: {} });
-    } catch {
-    }
+    loadWeekOff(1, { WeekOffPolicyName: '' }, sortInfo, undefined);
   };
   //#endregion
 
@@ -203,23 +168,12 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        // Find the column label for sorting
-        let sortByParam = undefined
 
-        if (sortInfo) {
-
-          const column = WeekOffMasterColumns.find(col => col.key === sortInfo.column);
-
-          if (column) {
-
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
         const params: FilterWithPaginationWeekOffMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           WeekOffPolicyName: filters.WeekOffPolicyName?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, WeekOffMasterColumns),
           ExportType: exportType
         };
 
@@ -256,14 +210,10 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
   //#region TABLE SORT COLUMN
 
-
   const handleSortColumn = useCallback((sort: SortInfo) => {
-
-    setSortInfo(sortInfo);
-
-    loadWeekOff(1, filters, sort);
-
-  }, [filters]);
+    updateListState({ sortInfo: sort, page: 1 });
+    loadWeekOff(1, filters, sort, searchTerm || undefined);
+  }, [filters, updateListState, searchTerm]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -283,29 +233,14 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
   //#region NAVIGATE TO  VIEW WEEK OFF VIEW PAGE
   const handleNavigateToView = (row: WeekOffMasterData) => {
-    navigate('/WeekOffMaster/view', {
-      state: {
-        WeekOffData: row,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          weekOffPolicyName:row.WeekOffPolicyName
-        }
-      }
-    });
+    updateListState({ weekOffMasterId: row.WeekOffPolicyMasterId, weekOffName: row.WeekOffPolicyName });
+    navigate('/WeekOffMaster/view');
   };
 
   //#region NAVIGATE TO ADD WEEK OFF
   const handleAddWeekOffModal = useCallback(() => {
-    navigate('/WeekOffMaster/add', {
-      state: {
-        fromList: true,
-        listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
-      }
-    });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    navigate('/WeekOffMaster/add');
+  }, [navigate]);
 
   //#endregion
 
@@ -467,7 +402,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters);
+    updateListState({ filters: tempFilters, page: 1 });
     loadWeekOff(1, tempFilters);
     setShowFilterPopup(false);
   };
@@ -476,19 +411,9 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   //#region CLEAR FILTER
   const clearFilters = () => {
     setTempFilters({});
-    setFilters({});
-
-    // reset page
-    setPagination({ currentPage: 1 });
-
-    // load empty filters
+    updateListState({ filters: {}, page: 1 });
     loadWeekOff(1, {});
-
     setShowFilterPopup(false);
-    // clear router state (very important)
-
-    navigate(location.pathname, { replace: true, state: {} });
-
   };
   //#endregion
 
@@ -522,13 +447,27 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          setWeekOffOffMasterList(prevData => prevData.filter(item => item.WeekOffPolicyMasterId !== deleteWeekOffMasterData.WeekOffPolicyMasterId));
+          const newTotalRecords = pagination.totalRecords - 1;
 
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (WeekOffOffMasterList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
           setPagination({
             currentPage: pagination.currentPage,
             totalRecords: pagination.totalRecords - 1,
             totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
           });
+
+          await loadWeekOff(pageToShow, filters, sortInfo);
+
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
           setIsConfirmationDialogBoxOpen(false);
@@ -568,7 +507,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
         searchTerm={searchTerm}
         searchPlaceholder="Search By WeekOff Name"
         onSearchChange={v => {
-          setSearchTerm(v);
+          updateListState({ searchTerm: v });
           debouncedSearch(v);
         }}
         onClearSearch={clearSearchWeekOff}
@@ -660,17 +599,14 @@ export const WeekOffOffMasterMaster: React.FC = () => {
         </div>
       </Modal>
       {/* DELETE CONFIRMATION  WEEK OFF MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => setIsConfirmationDialogBoxOpen(false)}
         onConfirm={handleDeleteWeekOffMaster}
-        title="You are about to delete this WeekOff?"
-        message="Deleting this WeekOff will permanently remove its data."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='weekOff'
       />
+
     </div>
   );
 };

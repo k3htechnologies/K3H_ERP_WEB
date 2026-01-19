@@ -81,6 +81,13 @@ import { BuildingListStateProvider } from '@/features/building/context/BuildingL
 import { TenantListStateProvider } from '@/features/tenant/context/TenantListStateContext';
 import { EmployeeListStateProvider } from '@/features/employeeMaster/context/EmployeeListStateContext';
 import { CompanyListStateProvider } from '@/features/companyMaster/context/CompanyListStateContext';
+import { VendorListStateProvider } from '@/features/vendor/context/VendorListStateContext';
+import { ProjectMasterListStateProvider } from '@/features/projectMaster/context/ProjectMasterListStateContext';
+import { AssetMasterListStateProvider } from '@/features/assetMaster/context/AssetMasterListStateContext';
+import { AssetMappingMasterListStateProvider } from '@/features/assetMappingMaster/context/AssetMappingMasterListStateContext';
+import { DeductionMasterListStateProvider } from '@/features/deductionMaster/context/DeductionMasterListStateContext';
+import { ShiftMasterListStateProvider } from '@/features/shiftMaster/context/ShiftMasterListStateContext';
+import { WeekOffMasterListStateProvider } from '@/features/weekOffMaster/context/WeekOffMasterListStateContext';
 import TenantDocument from '@/features/tenant/pages/TenantDocument';
 import ProposedOffer from '@/features/proposedOffer/pages/ProposedOffer';
 import Company from '@/features/projectMaster/pages/Company';
@@ -192,17 +199,17 @@ function App() {
 
             <Route path="branchAssociationsMaster" element={<BranchAssociationsMaster />} />
 
-            <Route path="assetMaster" element={<AssetMaster />} />
-            <Route path="assetMaster/view" element={<ViewAssetMaster />} />
-            <Route path="assetMaster/add/:AssetMasterId?" element={<AddUpdateAssetMaster />} />
+            <Route path="assetMaster" element={<AssetMasterListStateProvider><AssetMaster /></AssetMasterListStateProvider>} />
+            <Route path="assetMaster/view" element={<AssetMasterListStateProvider><ViewAssetMaster /></AssetMasterListStateProvider>} />
+            <Route path="assetMaster/add/:AssetMasterId?" element={<AssetMasterListStateProvider><AddUpdateAssetMaster /></AssetMasterListStateProvider>} />
 
-            <Route path="assetMappingMaster" element={<AssetMappingMaster />} />
-            <Route path="assetMappingMaster/view" element={< ViewAssetMappingMaster />} />
-            <Route path="assetMappingMaster/add/:AssetMasterMappingId?" element={<AddUpdateAssetMappingMaster />} />
+            <Route path="assetMappingMaster" element={<AssetMappingMasterListStateProvider><AssetMappingMaster /></AssetMappingMasterListStateProvider>} />
+            <Route path="assetMappingMaster/view" element={<AssetMappingMasterListStateProvider><ViewAssetMappingMaster /></AssetMappingMasterListStateProvider>} />
+            <Route path="assetMappingMaster/add/:AssetMasterMappingId?" element={<AssetMappingMasterListStateProvider><AddUpdateAssetMappingMaster /></AssetMappingMasterListStateProvider>} />
 
-            <Route path="deductionMaster" element={<DeductionMaster />} />
-            <Route path="deductionMaster/view" element={< ViewDeductionMaster />} />
-            <Route path="deductionMaster/add/:DeductionMasterId?" element={<AddUpdateDeductionMaster />} />
+            <Route path="deductionMaster" element={<DeductionMasterListStateProvider><DeductionMaster /></DeductionMasterListStateProvider>} />
+            <Route path="deductionMaster/view" element={<DeductionMasterListStateProvider><ViewDeductionMaster /></DeductionMasterListStateProvider>} />
+            <Route path="deductionMaster/add/:DeductionMasterId?" element={<DeductionMasterListStateProvider><AddUpdateDeductionMaster /></DeductionMasterListStateProvider>} />
 
             <Route path="earningMaster" element={<EarningMaster />} />
 
@@ -214,22 +221,22 @@ function App() {
 
             <Route path="leaveTypeMaster" element={<LeaveTypeMaster />} />
 
-            <Route path="shiftMaster" element={<ShiftMaster />} />
-            <Route path="shiftMaster/view" element={< ViewShiftMaster />} />
-            <Route path="shiftMaster/add/:ShiftManagementMasterId?" element={<AddUpdateShiftMaster />} />
+            <Route path="shiftMaster" element={<ShiftMasterListStateProvider><ShiftMaster /></ShiftMasterListStateProvider>} />
+            <Route path="shiftMaster/view" element={<ShiftMasterListStateProvider><ViewShiftMaster /></ShiftMasterListStateProvider>} />
+            <Route path="shiftMaster/add/:ShiftManagementMasterId?" element={<ShiftMasterListStateProvider><AddUpdateShiftMaster /></ShiftMasterListStateProvider>} />
 
             <Route path="shiftMappingMaster" element={<ShiftMappingMaster />} />
 
-            <Route path="weekOffMaster" element={<WeekOffMasterMaster />} />
+            <Route path="weekOffMaster" element={<WeekOffMasterListStateProvider><WeekOffMasterMaster /></WeekOffMasterListStateProvider>} />
 
-            <Route path="WeekOffMaster/view" element={<ViewWeekOffMaster />} />
-            <Route path="WeekOffMaster/add/:WeekOffMasterId?" element={<AddUpdateWeekOffMaster />} />
+            <Route path="WeekOffMaster/view" element={<WeekOffMasterListStateProvider><ViewWeekOffMaster /></WeekOffMasterListStateProvider>} />
+            <Route path="WeekOffMaster/add/:WeekOffMasterId?" element={<WeekOffMasterListStateProvider><AddUpdateWeekOffMaster /></WeekOffMasterListStateProvider>} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
 
             //#endregion
 
             <Route path="compoff" element={<CompOff />} />
-            <Route path="vendor/add/:vendorId?" element={<AddUpdateVendor />} />
+            <Route path="vendor/add/:vendorId?" element={<VendorListStateProvider><AddUpdateVendor /></VendorListStateProvider>} />
 
 
             <Route path="outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
@@ -243,14 +250,14 @@ function App() {
             <Route path="resignation" element={<EmployeeResignation />} />
             <Route path="payrollReport" element={<PayrollReport />} />
 
-            <Route path="vendor" element={<Vendor />} />
-            <Route path="vendor/view" element={<ViewVendor />} />
-            <Route path="projectMaster" element={<ProjectMaster />} />
-            <Route path="projectMaster/view" element={<ViewProjectMaster />} />
-            <Route path="projectMaster/add/:projectId?" element={<AddUpdateProjectMaster />} />
-            <Route path="projectMaster/employee" element={<Employee />} />
-            <Route path="projectMaster/bank" element={<Bank />} />
-            <Route path="projectMaster/Company" element={<Company />} />
+            <Route path="vendor" element={<VendorListStateProvider><Vendor /></VendorListStateProvider>} />
+            <Route path="vendor/view" element={<VendorListStateProvider><ViewVendor /></VendorListStateProvider>} />
+            <Route path="projectMaster" element={<ProjectMasterListStateProvider><ProjectMaster /></ProjectMasterListStateProvider>} />
+            <Route path="projectMaster/view" element={<ProjectMasterListStateProvider><ViewProjectMaster /></ProjectMasterListStateProvider>} />
+            <Route path="projectMaster/add/:projectId?" element={<ProjectMasterListStateProvider><AddUpdateProjectMaster /></ProjectMasterListStateProvider>} />
+            <Route path="projectMaster/employee" element={<ProjectMasterListStateProvider><Employee /></ProjectMasterListStateProvider>} />
+            <Route path="projectMaster/bank" element={<ProjectMasterListStateProvider><Bank /></ProjectMasterListStateProvider>} />
+            <Route path="projectMaster/Company" element={<ProjectMasterListStateProvider><Company /></ProjectMasterListStateProvider>} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
 
             <Route path="inventory" element={<Inventory></Inventory>} />

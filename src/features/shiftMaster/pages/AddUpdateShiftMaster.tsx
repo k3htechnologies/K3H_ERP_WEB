@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
@@ -45,7 +45,6 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate();
-  const location = useLocation();
 
   // GET VALUE FROM URL SHIFT ID
   const { ShiftManagementMasterId } = useParams<{ ShiftManagementMasterId?: string }>();
@@ -299,26 +298,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
         if (E.isRight(response)) {
           addToast({ type: "success", title: isAddMode ? "Shift added successfully" : "Shift updated successfully" });
 
-          const locationState = location.state as {
-            listState?: {
-              page?: number;
-              filters?: any;
-              sortInfo?: any;
-              searchTerm?: string;
-            };
-          } | null;
-
-          const listState = locationState?.listState || {
-            page: 1,
-            filters: {},
-            sortInfo: undefined,
-            searchTerm: '',
-          };
-
-          navigate("/ShiftMaster",
-            {
-              state: { listState }
-            });
+          navigate("/shiftMaster");
 
         } else {
           addToast({ type: "error", title: response.left?.message });

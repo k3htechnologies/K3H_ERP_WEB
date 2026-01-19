@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useProjectMasterListState } from '@/features/projectMaster/context/ProjectMasterListStateContext';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { Tabs } from '@/ui/components/Tab/Tab';
@@ -41,28 +42,14 @@ export const ViewProjectMaster: React.FC = () => {
 
     //LOCATION
     const navigate = useNavigate();
-
-    const location = useLocation() as {
-        state?: {
-            editProjectMasterData?: ProjectMasterData | null;
-            fromList?: boolean;
-            listState?: {
-                page: number;
-                filters: any;
-                sortInfo?: any;
-                searchTermForEmployee?: string;
-            };
-        };
-    };
-    const preservedListState = location.state?.listState;
+    const { listState } = useProjectMasterListState();
 
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/projectMaster');
     //#endregion
 
-
-    //#region Get PROJECT MASTER DATA FROM LOCATION STATE
-    const editProjectData = (location.state?.editProjectMasterData ?? null) as ProjectMasterData | null;
+    //#region Get PROJECT MASTER DATA - Will be loaded from API if needed
+    const [editProjectData, setEditProjectData] = useState<ProjectMasterData | null>(null);
     //#endregion
 
     //#region TAB ACTIVITY
@@ -79,26 +66,53 @@ export const ViewProjectMaster: React.FC = () => {
 
     //#region INIT
     useEffect(() => {
+        if (listState.projectId) {
+            loadProjectData();
+        }
+    }, [listState.projectId]);
+
+    useEffect(() => {
+        if (!editProjectData) return;
+
         if (activeTab === 'Project Overview') {
 
         }
-
         else if (activeTab === 'Employee') {
-
-            loadProjectMasterWithEmployee(editProjectData!.ProjectId, '');
+            loadProjectMasterWithEmployee(editProjectData.ProjectId, '');
         }
         else if (activeTab === 'Bank Details') {
-
-            loadProjectMasterWithBankDetails(editProjectData!.ProjectId);
-
+            loadProjectMasterWithBankDetails(editProjectData.ProjectId);
         }
         else if (activeTab === 'Company') {
-
-            loadProjectMasterWithCompany(editProjectData!.ProjectId);
-
+            loadProjectMasterWithCompany(editProjectData.ProjectId);
         }
+    }, [activeTab, editProjectData]);
 
-    }, [activeTab]);
+    const loadProjectData = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationProjectMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    ProjectId: listState.projectId
+                };
+                const response = await ProjectMasterService.apiCallPullProjectMaster(params);
+                if (E.isRight(response) && response.right.Data.length > 0) {
+                    setEditProjectData(response.right.Data[0]);
+                } else {
+                    addToast({ type: 'error', title: response.left?.message || 'Failed to load project data' });
+                }
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Project Data'
+        );
+    };
 
     //#endregion
 
@@ -209,62 +223,28 @@ export const ViewProjectMaster: React.FC = () => {
 
     //#region BACK VIEW PROJECT PAGE TO TABLE PROJECT MASTER
     const handleBackToListProjectMaster = () => {
-        navigate('/projectMaster', {
-            state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTermForEmployee: '' } }
-        });
+        navigate('/projectMaster');
     };
     //#endregion
 
     //#region EDIT PROJECT
     const handleEditProjectMaster = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
-        navigate(`/projectMaster/add/${row.ProjectId}`, {
-            state: {
-                editProjectMasterData: row,
-                fromList: true,
-                listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTermForEmployee: '' }
-            }
-        });
+        navigate(`/projectMaster/add/${row.ProjectId}`);
     };
     //#endregion
 
     //#region EDIT PROJECT WITH EMPLOYEE
     const handleEditProjectMasterWithEmployee = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
-        navigate('/projectMaster/employee', {
-            state: {
-                projectId: row.ProjectId,
-                listState: {
-                    page: preservedListState?.page,
-                    filters: preservedListState?.filters,
-                    sortInfo: preservedListState?.sortInfo,
-                    projectId: row.ProjectId,
-                    uniquekey: row.Uniquekey,
-                    projectName: row.ProjectName
-                }
-            }
-
-        });
+        navigate('/projectMaster/employee');
     };
     //#endregion
 
     //#region EDIT PROJECT WITH COMPANY
     const handleEditProjectMasterWithCompany = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
-
-        navigate('/projectMaster/company', {
-            state: {
-                projectId: row.ProjectId,
-                listState: {
-                    page: preservedListState?.page,
-                    filters: preservedListState?.filters,
-                    sortInfo: preservedListState?.sortInfo,
-                    projectId: row.ProjectId,
-                    uniquekey: row.Uniquekey,
-                    projectName: row.ProjectName
-                }
-            }
-        });
+        navigate('/projectMaster/company');
     };
     //#endregion
 
@@ -272,20 +252,7 @@ export const ViewProjectMaster: React.FC = () => {
     //#region EDIT PROJECT WITH BANK
     const handleEditProjectMasterWithBank = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
-
-        navigate('/projectMaster/bank', {
-            state: {
-                projectId: row.ProjectId,
-                listState: {
-                    page: preservedListState?.page,
-                    filters: preservedListState?.filters,
-                    sortInfo: preservedListState?.sortInfo,
-                    projectId: row.ProjectId,
-                    uniquekey: row.Uniquekey,
-                    projectName: row.ProjectName
-                }
-            }
-        });
+        navigate('/projectMaster/bank');
     };
     //#endregion
 

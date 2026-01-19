@@ -1,4 +1,5 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useShiftMasterListState } from "@/features/shiftMaster/context/ShiftMasterListStateContext";
 
 import { useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
@@ -12,19 +13,16 @@ const ViewShiftMaster: React.FC = () => {
     //#region  LOADING STATE MANAGEMENT
     const [isLoading] = useState(false);
 
-    //LOCATION
-    const location = useLocation();
-
     // NAVIGATION
     const navigate = useNavigate();
+    const { listState } = useShiftMasterListState();
 
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/shiftMaster');
     //#endregion
 
-    const editShiftData = location.state?.ShiftData as ShiftMasterData;
-
-    const listState = location.state?.listState;
+    // Will be loaded from API if needed
+    const [editShiftData, setEditShiftData] = useState<ShiftMasterData | null>(null);
 
     // MESSAGE IF DATA NOT FOUND
     if (!editShiftData) return <div>No Shift Data Found</div>;
@@ -32,21 +30,13 @@ const ViewShiftMaster: React.FC = () => {
     //#region ADD SHIFT MASTER
     const handleEditShiftMaster = (row: ShiftMasterData) => {
         if (!row?.ShiftManagementMasterId) return;
-        navigate(`/shiftMaster/add/${row.ShiftManagementMasterId}`, {
-            state: {
-                editShiftData: row,
-                fromList: true,
-                listState: listState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
-            }
-        });
+        navigate(`/shiftMaster/add/${row.ShiftManagementMasterId}`);
     };
     //#endregion
 
     //#region BACK PROJECT PAGE
     const handleBackToListShiftMaster = () => {
-        navigate('/ShiftMaster', {
-            state: { listState: listState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' } }
-        });
+        navigate('/shiftMaster');
     };
     //#endregion
 

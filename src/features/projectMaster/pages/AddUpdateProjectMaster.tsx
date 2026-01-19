@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
 import * as E from "fp-ts/Either";
@@ -66,7 +66,6 @@ const AddUpdateProjectMaster: React.FC = () => {
     const [projectPhotoURL, setProjectPhotoURL] = useState<string>();
     // NAVIGATE
     const navigate = useNavigate();
-    const location = useLocation();
 
     //GET VALUE FROM URL :PROJECTID
     const { projectId } = useParams<{ projectId?: string }>();
@@ -368,29 +367,9 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                 if (E.isRight(response)) {
 
-                    addToast({ type: "success", title: formData.ProjectId ? "Project details updated successfully" : "New Project added successfully" });
+                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-
-                    // Get list state from navigation if available, otherwise use defaults
-                    const locationState = location.state as {
-                        listState?: {
-                            page?: number;
-                            filters?: any;
-                            sortInfo?: any;
-                            searchTerm?: string;
-                        };
-                    } | null;
-
-                    const listState = locationState?.listState || {
-                        page: 1,
-                        filters: {},
-                        sortInfo: undefined,
-                        searchTerm: '',
-                    };
-
-                    navigate("/projectMaster", {
-                        state: { listState }
-                    });
+                    navigate("/projectMaster");
 
 
                 } else {

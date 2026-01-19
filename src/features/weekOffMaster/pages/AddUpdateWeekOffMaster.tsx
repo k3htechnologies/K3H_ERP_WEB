@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
@@ -36,7 +36,6 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate();
-  const location = useLocation();
 
   // GET VALUE FROM URL WEEK OFF MASTER ID
   const { WeekOffMasterId } = useParams<{ WeekOffMasterId?: string }>();
@@ -234,26 +233,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
 
           addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-          const locationState = location.state as {
-            listState?: {
-              page?: number;
-              filters?: any;
-              sortInfo?: any;
-              searchTerm?: string;
-            };
-          } | null;
-
-          const listState = locationState?.listState || {
-            page: 1,
-            filters: {},
-            sortInfo: undefined,
-            searchTerm: '',
-          };
-
-          navigate("/WeekOffMaster",
-            {
-              state: { listState }
-            });
+          navigate("/weekOffMaster");
 
         } else {
           addToast({ type: "error", title: response.left?.message });

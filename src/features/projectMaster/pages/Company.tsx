@@ -4,7 +4,7 @@ import type { AddUpdateProjectMasterWithCompanyRequest } from '@/features/projec
 import { DataTable, type FilterInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import type { CompanyMasterData, FilterWithPaginationCompanyMasterRequest } from '@/features/companyMaster/models/CompanyMasterModel';
 import useToast from '@/core/hooks/useToast';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { runApiWithLoader } from '@/core/utils';
 import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 import * as E from 'fp-ts/Either';
@@ -18,6 +18,7 @@ import { Input } from '@/ui/components/forms';
 import { Search } from 'lucide-react';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
+import { useProjectMasterListState } from '@/features/projectMaster/context/ProjectMasterListStateContext';
 
 const Company: React.FC = () => {
   //#region STATE MANAGEMENT
@@ -31,23 +32,10 @@ const Company: React.FC = () => {
   //LOCATION
   const navigate = useNavigate();
 
-  const location = useLocation() as {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: any;
-        sortInfo?: any;
-        searchTerm?: string;
-        projectId?: number;
-        uniquekey?: string;
-        projectName?: string;
-      };
-    };
-  };
-  const preservedListState = location.state?.listState;
-  const projectId = preservedListState?.projectId || 0;
-  const uniquekey = preservedListState?.uniquekey || '';
-  const projectName = preservedListState?.projectName || '';
+  const { listState } = useProjectMasterListState();
+  const projectId = listState.projectId;
+  const projectName = listState.projectName;
+  const uniquekey= listState.uniquekey;
 
 
   //FILTER STATES
@@ -394,9 +382,7 @@ const Company: React.FC = () => {
 
   //#region  BACK TO PROJECT MASTER PAGE
   const handleBackToListProjectMaster = () => {
-    navigate('/projectMaster', {
-      state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTermForEmployee: '' } }
-    });
+     navigate("/projectMaster");
   };
   //#endregion
   return (

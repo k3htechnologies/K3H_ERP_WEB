@@ -21,10 +21,12 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useShiftMasterListState } from '@/features/shiftMaster/context/ShiftMasterListStateContext';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { Trash2 } from 'lucide-react';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 export const ShiftMaster: React.FC = () => {
 
@@ -35,25 +37,22 @@ export const ShiftMaster: React.FC = () => {
 
   // USE NAVIGATE
   const navigate = useNavigate();
+  const { listState, updateListState } = useShiftMasterListState();
+  const { searchTerm, filters, sortInfo } = listState;
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
-
-  //TABLE SORT INFO
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
   const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
-  const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchShifts(value)
   }, 350);
 
   //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   //DELETE SHIFT MASTER
@@ -67,37 +66,20 @@ export const ShiftMaster: React.FC = () => {
   const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
-  const location = useLocation() as any;
-
   //#endregion
 
   //#region INIT
   useEffect(() => {
-    const incoming = location.state?.listState;
-    const listState = incoming ?? {
-      page: 1,
-      filters: {} as FilterInfo,
-      sortInfo: undefined,
-      searchTerm: ''
-    };
+    // Sync pagination with context state
+    setPagination({ currentPage: listState.page });
 
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
+    // Load shifts with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadShifts(listState.page ?? 1, { ShiftName: String(listState.searchTerm).trim() });
-      return;
+      loadShifts(listState.page, { ShiftName: String(listState.searchTerm).trim() }, listState.sortInfo);
+    } else {
+      loadShifts(listState.page, listState.filters, listState.sortInfo);
     }
-
-    loadShifts(listState.page ?? 1, listState.filters ?? {});
-  }, [location.state]);
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
@@ -110,29 +92,21 @@ export const ShiftMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchShiftMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadShifts(page, filters,sort);
+    return await loadShifts(page, filters, sort);
   }
 
-  const loadShifts = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadShifts = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        let sortByParam = undefined;
 
-        if (sortInfo) {
-
-          const column = ShiftMasterColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
         const params: FilterWithPaginationShiftMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           ShiftManagementMasterId: filterParams.ShiftManagementMasterId ? Number(filterParams.ShiftManagementMasterId) : undefined,
-          ShiftName: filterParams.ShiftName?.trim() || undefined,
-          SortBy: sortByParam
+          ShiftName: searchtext ?? filterParams.ShiftName?.trim() ?? undefined,
+          SortBy: getSortByParam(sortInfo ?? null, ShiftMasterColumns)
         };
 
         const response = await shiftMasterService.apiCallPullShiftMaster(params);
@@ -161,42 +135,28 @@ export const ShiftMaster: React.FC = () => {
 
   //#region SEARCH  SHIFT MASTER
   const searchShifts = async (searchValue: string) => {
-
-    setSearchTerm(searchValue);
+    updateListState({ searchTerm: searchValue });
 
     if (searchValue.trim() === '') {
-
       fetchShiftMasterList();
-
       return
     }
 
-    const filterParams: FilterInfo = {
-      ShiftName: searchValue.trim(),
-    };
-
-    await loadShifts(1, filterParams);
+    updateListState({ searchTerm: searchValue, page: 1 });
+    await loadShifts(1, filters, sortInfo, searchValue);
   };
 
   //#endregion
 
   //#region CLEAR SHIFT MASTER 
   const clearSearchShifts = () => {
-    setSearchTerm('');
+    updateListState({ searchTerm: '', filters: {}, page: 1 });
 
     debouncedSearch.cancel?.();
 
-    setFilters({});
     setTempFilters({});
     setPagination({ currentPage: 1 });
-    loadShifts(1, {});
-    try {
-      navigate(location.pathname, {
-        replace: true,
-        state: {}
-      });
-    } catch {
-    }
+    loadShifts(1, { ShiftName: '' }, sortInfo, undefined);
   };
   //#endregion
 
@@ -206,23 +166,16 @@ export const ShiftMaster: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        // Find the column label for sorting
-        let sortByParam = undefined
-        if (sortInfo) {
-          const column = ShiftMasterColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
+
         const params: FilterWithPaginationShiftMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           ShiftName: filters.ShiftName?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, ShiftMasterColumns),
           ExportType: exportType
         };
 
-        const response = await getShifts(params);
+        const response = await shiftMasterService.apiCallPullShiftMaster(params);
 
         handleExportFile(response, exportType, 'Shift Master', addToast);
 
@@ -239,30 +192,17 @@ export const ShiftMaster: React.FC = () => {
   const handleExportShiftPdf = () => handleExportShifts('PDF')
   //#endregion
 
-
-  //#region API | SERVICES CALL TO GET SHIFT
-  const getShifts = async (filterParams: FilterWithPaginationShiftMasterRequest) => {
-
-    return await shiftMasterService.apiCallPullShiftMaster(filterParams);
-  }
-  //#endregion
-
-
   //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = useCallback((page: number) => {
-
+    updateListState({ page });
     fetchShiftMasterList(page);
-  }, []);
+  }, [updateListState]);
 
   //#region TABLE SORT COLUMN
-  
   const handleSortColumn = useCallback((sort: SortInfo) => {
-  
-      setSortInfo(sortInfo);
-  
-      loadShifts(1, filters, sort);
-  
-    }, [filters]);
+    updateListState({ sortInfo: sort, page: 1 });
+    loadShifts(1, filters, sort, searchTerm || undefined);
+  }, [filters, updateListState, searchTerm]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -282,29 +222,14 @@ export const ShiftMaster: React.FC = () => {
 
   //#region NAVIGATE TO  VIEW SHIFT
   const handleNavigateToView = (row: ShiftMasterData) => {
-    navigate('/shiftMaster/view', {
-      state: {
-        ShiftData: row,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          shiftName:row.ShiftName
-        }
-      }
-    });
+    updateListState({ shiftMasterId: row.ShiftManagementMasterId, shiftName: row.ShiftName });
+    navigate('/shiftMaster/view');
   };
 
   //#region NAVIGATE TO ADD SHIFT
   const handleAddShiftModal = useCallback(() => {
-    navigate('/shiftMaster/add', {
-      state: {
-        fromList: true,
-        listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
-      }
-    });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    navigate('/shiftMaster/add');
+  }, [navigate]);
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
@@ -448,7 +373,7 @@ export const ShiftMaster: React.FC = () => {
 
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters);
+    updateListState({ filters: tempFilters, page: 1 });
     loadShifts(1, tempFilters);
     setShowFilterPopup(false);
   };
@@ -457,19 +382,9 @@ export const ShiftMaster: React.FC = () => {
   //#region CLEAR FILTER
   const clearFilters = () => {
     setTempFilters({});
-    setFilters({});
-
-    // reset page
-    setPagination({ currentPage: 1 });
-
-    // load empty filters
+    updateListState({ filters: {}, page: 1 });
     loadShifts(1, {});
-
     setShowFilterPopup(false);
-    // clear router state (very important)
-
-    navigate(location.pathname, { replace: true, state: {} });
-
   };
   //#endregion
 
@@ -503,13 +418,27 @@ export const ShiftMaster: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          setShiftMasterList(prevData => prevData.filter(item => item.ShiftManagementMasterId !== deleteShiftMasterDetailsData.ShiftManagementMasterId));
+          const newTotalRecords = pagination.totalRecords - 1;
 
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (ShiftMasterList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
           setPagination({
             currentPage: pagination.currentPage,
             totalRecords: pagination.totalRecords - 1,
             totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
           });
+
+          await loadShifts(pageToShow, filters, sortInfo);
+
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
           setIsConfirmationDialogBoxOpen(false);
@@ -548,7 +477,7 @@ export const ShiftMaster: React.FC = () => {
         searchTerm={searchTerm}
         searchPlaceholder="Search By Shift Name"
         onSearchChange={v => {
-          setSearchTerm(v);
+          updateListState({ searchTerm: v });
           debouncedSearch(v);
         }}
         onClearSearch={clearSearchShifts}
@@ -568,7 +497,7 @@ export const ShiftMaster: React.FC = () => {
 
 
         // EXPORT
-        isShowExportButton={canExport && ShiftsForTable.length >0}
+        isShowExportButton={canExport && ShiftsForTable.length > 0}
         onExportExcel={handleExportShiftExcel}
         onExportPdf={handleExportShiftPdf}
         exportLoading={isLoading}
@@ -622,8 +551,8 @@ export const ShiftMaster: React.FC = () => {
           e.preventDefault();
           applyFilters();
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply"
+        cancelText="Clear"
         onCancel={() => clearFilters()}
         resetText=''
         size="small-half"
@@ -640,16 +569,12 @@ export const ShiftMaster: React.FC = () => {
       </Modal>
 
       {/* DELETE CONFIRMATION  SHIFT MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => setIsConfirmationDialogBoxOpen(false)}
         onConfirm={handleDeleteShiftMaster}
-        title="You are about to delete this Shift?"
-        message="Deleting this Shift will permanently remove its data."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='shift'
       />
 
     </div>

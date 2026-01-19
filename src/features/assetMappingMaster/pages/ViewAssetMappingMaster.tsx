@@ -1,4 +1,5 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAssetMappingMasterListState } from "@/features/assetMappingMaster/context/AssetMappingMasterListStateContext";
 
 import { useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
@@ -12,20 +13,17 @@ const ViewAssetMappingMaster: React.FC = () => {
     //#region  LOADING STATE MANAGEMENT
     const [isLoading] = useState(false);
 
-    //LOCATION
-    const location = useLocation();
-
     // NAVIGATION
     const navigate = useNavigate();
+    const { listState } = useAssetMappingMasterListState();
 
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/assetMappingMaster');
 
     //#endregion
 
-    const editAssetData = location.state?.assetData as AssetMappingMasterData;
-
-    const listState = location.state?.listState;
+    // Will be loaded from API if needed
+    const [editAssetData, setEditAssetData] = useState<AssetMappingMasterData | null>(null);
 
     // MESSAGE IF DATA NOT FOUND
     if (!editAssetData) return <div>No Asset Data Found</div>;
@@ -34,31 +32,13 @@ const ViewAssetMappingMaster: React.FC = () => {
     //#region EDIT ASSET MAPPING
     const handleEditAssetMappingMaster = (row: AssetMappingMasterData) => {
         if (!row?.AssetMasterMappingId) return;
-
-        navigate(`/assetMappingMaster/add/${row.AssetMasterMappingId}`, {
-            state: {
-                editAssetData: row,
-                fromList: true,
-                listState: listState ?? {
-                    page: 1, filters: {},
-                    sortInfo: undefined, searchTerm: ''
-                }
-            }
-        });
+        navigate(`/assetMappingMaster/add/${row.AssetMasterMappingId}`);
     };
     //#endregion
 
     //#region BACK PROJECT PAGE
     const handleBackToListAssetMappingMaster = () => {
-        navigate('/assetMappingMaster', {
-            state: {
-                listState: listState ?? {
-                    page: 1, filters: {},
-                    sortInfo: undefined,
-                    searchTerm: ''
-                }
-            }
-        });
+        navigate('/assetMappingMaster');
     };
     //#endregion
 

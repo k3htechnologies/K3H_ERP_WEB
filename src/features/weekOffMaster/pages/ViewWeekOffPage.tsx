@@ -1,4 +1,5 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useWeekOffMasterListState } from "@/features/weekOffMaster/context/WeekOffMasterListStateContext";
 import { useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import type { WeekOffMasterData } from "../models/WeekOffMasterModel";
@@ -11,19 +12,16 @@ const ViewWeekOffMaster: React.FC = () => {
     //#region  LOADING STATE MANAGEMENT
     const [isLoading] = useState(false);
 
-    //LOCATION
-    const location = useLocation();
-
     // NAVIGATION
     const navigate = useNavigate();
+    const { listState } = useWeekOffMasterListState();
 
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/WeekOffMaster');
     //#endregion
 
-    const editWeekOffPolicyData = location.state?.WeekOffData as WeekOffMasterData;
-
-    const listState = location.state?.listState;
+    // Will be loaded from API if needed
+    const [editWeekOffPolicyData, setEditWeekOffPolicyData] = useState<WeekOffMasterData | null>(null);
 
     // MESSAGE IF DATA NOT FOUND
     if (!editWeekOffPolicyData) return <div>No Week Off Data Found</div>;
@@ -31,25 +29,14 @@ const ViewWeekOffMaster: React.FC = () => {
 
     //#region EDIT WEEK OFF MASTER
     const handleEditWeekOffMaster = (row: WeekOffMasterData) => {
-
         if (!row?.WeekOffPolicyMasterId) return;
-
-        navigate(`/WeekOffMaster/add/${row.WeekOffPolicyMasterId}`, {
-            state: {
-                editWeekOffPolicyData: row,
-                fromList: true,
-                listState: listState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
-            }
-        });
+        navigate(`/WeekOffMaster/add/${row.WeekOffPolicyMasterId}`);
     };
     //#endregion
 
     //#region BACK PROJECT PAGE
     const handleBackToListWeekOffMaster = () => {
-        navigate('/WeekOffMaster',
-            {
-                state: { listState: listState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' } }
-            });
+        navigate('/weekOffMaster');
     };
     //#endregion
     return (

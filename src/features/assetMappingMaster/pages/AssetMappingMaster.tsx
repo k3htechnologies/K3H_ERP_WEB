@@ -19,10 +19,12 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAssetMappingMasterListState } from '@/features/assetMappingMaster/context/AssetMappingMasterListStateContext';
 import { assetMappingMasterService } from '../services/AssetMappingMasterService';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 
 export const AssetMappingMaster: React.FC = () => {
@@ -34,25 +36,22 @@ export const AssetMappingMaster: React.FC = () => {
 
   // USE NAVIGATE
   const navigate = useNavigate();
+  const { listState, updateListState } = useAssetMappingMasterListState();
+  const { searchTerm, filters, sortInfo } = listState;
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
-
-  //TABLE SORT INFO
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
   const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
-  const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchAssetMappings(value)
   }, 350);
 
   //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   //CUSTOMIZE COLUMN MODAL
@@ -62,38 +61,20 @@ export const AssetMappingMaster: React.FC = () => {
   const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
-  const location = useLocation() as any;
-
   //#endregion
 
   //#region INIT
   useEffect(() => {
-    const incoming = location.state?.listState;
-    const listState = incoming ?? {
-      page: 1, filters: {} as FilterInfo,
-      sortInfo: undefined,
-      searchTerm: ''
-    };
+    // Sync pagination with context state
+    setPagination({ currentPage: listState.page });
 
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
+    // Load asset mappings with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadAssetMappings(listState.page ?? 1, {
-        AssetName: String(listState.searchTerm).trim()
-      });
-      return;
+      loadAssetMappings(listState.page, { AssetName: String(listState.searchTerm).trim() }, listState.sortInfo);
+    } else {
+      loadAssetMappings(listState.page, listState.filters, listState.sortInfo);
     }
-
-    loadAssetMappings(listState.page ?? 1, listState.filters ?? {});
-  }, [location.state]);
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
@@ -109,27 +90,19 @@ export const AssetMappingMaster: React.FC = () => {
     return await loadAssetMappings(page, filters, sort);
   }
 
-  const loadAssetMappings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadAssetMappings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        let sortByParam = undefined;
 
-        if (sortInfo) {
-
-          const column = AssetMappingMasterColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
         const params: FilterWithPaginationAssetMappingMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           AssetMasterMappingId: filterParams.AssetMappingMasterId ? Number(filterParams.AssetMappingMasterId) : undefined,
-          AssetName: filterParams.AssetName?.trim() || undefined,
+          AssetName: searchtext ?? filterParams.AssetName?.trim() ?? undefined,
           EmployeeName: filterParams.EmployeeName?.trim() || undefined,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, AssetMappingMasterColumns)
         };
 
         const response = await assetMappingMasterService.apiCallPullAssetMappingMaster(params);
@@ -158,46 +131,29 @@ export const AssetMappingMaster: React.FC = () => {
 
   //#region SEARCH & CLEAR
   const searchAssetMappings = async (searchValue: string) => {
-
-    setSearchTerm(searchValue);
+    updateListState({ searchTerm: searchValue });
 
     if (searchValue.trim() === '') {
-
       fetchAssetMappingMasterList();
-
       return
     }
 
-    const filterParams: FilterInfo = {
-      AssetName: searchValue.trim(),
-    };
+    updateListState({ filters, page: 1, searchTerm: searchValue });
 
-    await loadAssetMappings(1, filterParams);
+    await loadAssetMappings(1, filters, sortInfo, searchValue)
   };
 
   //#endregion
 
   //#region CLEAR ASSET MAPPING MASTER 
   const clearSearchAssetMappings = () => {
-    setSearchTerm('');
+    updateListState({ searchTerm: '', filters: {}, page: 1 });
 
     debouncedSearch.cancel?.();
 
-    setFilters({});
-
     setTempFilters({});
-
     setPagination({ currentPage: 1 });
-
-    loadAssetMappings(1, {});
-    try {
-      navigate(location.pathname,
-        {
-          replace: true,
-          state: {}
-        });
-    } catch {
-    }
+    loadAssetMappings(1, { AssetName: '' }, sortInfo, undefined);
   };
   //#endregion
 
@@ -207,20 +163,13 @@ export const AssetMappingMaster: React.FC = () => {
       setIsLoading,
       setIsLoadingMessage,
       async () => {
-        // Find the column label for sorting
-        let sortByParam = undefined
-        if (sortInfo) {
-          const column = AssetMappingMasterColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
+
         const params: FilterWithPaginationAssetMappingMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           AssetName: filters.AssetName?.trim() || undefined,
-          Status:'',
-          SortBy: sortByParam,
+          Status: '',
+          SortBy: getSortByParam(sortInfo ?? null, AssetMappingMasterColumns),
           ExportType: exportType
         };
 
@@ -252,17 +201,15 @@ export const AssetMappingMaster: React.FC = () => {
 
   //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = useCallback((page: number) => {
+    updateListState({ page });
     fetchAssetMappingMasterList(page);
-  }, []);
+  }, [updateListState]);
 
   //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback((sort: SortInfo) => {
-
-    setSortInfo(sort);
-
+    updateListState({ sortInfo: sort, page: 1 });
     loadAssetMappings(1, filters, sort);
-
-  }, [filters]);
+  }, [filters, updateListState]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -282,29 +229,14 @@ export const AssetMappingMaster: React.FC = () => {
 
   //#region NAVIGATE TO  VIEW ASSET MAPPING
   const handleNavigateToView = (row: AssetMappingMasterData) => {
-    navigate('/assetMappingMaster/view', {
-      state: {
-        assetData: row,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          assetName: row.AssetName
-        }
-      }
-    });
+    updateListState({ assetMappingMasterId: row.AssetMasterMappingId || 0, assetMappingName: row.AssetName || '-' });
+    navigate('/assetMappingMaster/view');
   };
 
   //#region NAVIGATE TO ADD ASSET MAPPING
   const handleAddAssetMappingModal = useCallback(() => {
-    navigate('/assetMappingMaster/add', {
-      state: {
-        fromList: true,
-        listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
-      }
-    });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    navigate('/assetMappingMaster/add');
+  }, [navigate]);
 
   //#endregion
 
@@ -406,7 +338,7 @@ export const AssetMappingMaster: React.FC = () => {
 
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters);
+    updateListState({ filters: tempFilters, page: 1 });
     loadAssetMappings(1, tempFilters);
     setShowFilterPopup(false);
   };
@@ -415,7 +347,7 @@ export const AssetMappingMaster: React.FC = () => {
   //#region CLEAR FILTER
   const clearFilters = () => {
     setTempFilters({});
-    setFilters({});
+    updateListState({ filters: {}, page: 1 });
 
     // reset page
     setPagination({ currentPage: 1 });
@@ -451,7 +383,7 @@ export const AssetMappingMaster: React.FC = () => {
         searchTerm={searchTerm}
         searchPlaceholder="Search By Asset Name"
         onSearchChange={v => {
-          setSearchTerm(v);
+          updateListState({ searchTerm: v });
           debouncedSearch(v);
         }}
         onClearSearch={clearSearchAssetMappings}
@@ -526,8 +458,8 @@ export const AssetMappingMaster: React.FC = () => {
           e.preventDefault();
           applyFilters();
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply"
+        cancelText="Clear"
         onCancel={() => clearFilters()}
         resetText=''
         size="small-half"

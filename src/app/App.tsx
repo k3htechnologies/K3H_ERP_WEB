@@ -171,7 +171,7 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
 
-            //#region SETTING - COMPANY SETUP
+            {/* SETTING -> COMPANY SETUP */}
 
             <Route path="departmentMaster" element={<DepartmentMaster />} />
 
@@ -191,10 +191,26 @@ function App() {
 
             <Route path="bankListMaster" element={<BankListMaster />} />
 
+            {/* SETTING -> COMPANY SETUP -> PROCEDURE MASTER */}
+
             <Route path="materialMaster" element={<MaterialMaster />} />
             <Route path="subMaterialMaster" element={<SubMaterialMaster />} />
             <Route path="uomMaster" element={<UomMaster />} />
 
+            {/* SETTING -> COMPANY SETUP -> PROJECT */}
+            <Route path="projectMaster" element={<ProjectMasterListStateProvider><ProjectMaster /></ProjectMasterListStateProvider>} />
+            <Route path="projectMaster/view" element={<ProjectMasterListStateProvider><ViewProjectMaster /></ProjectMasterListStateProvider>} />
+            <Route path="projectMaster/add/:projectId?" element={<ProjectMasterListStateProvider><AddUpdateProjectMaster /></ProjectMasterListStateProvider>} />
+            <Route path="projectMaster/employee" element={<ProjectMasterListStateProvider><Employee /></ProjectMasterListStateProvider>} />
+            <Route path="projectMaster/bank" element={<ProjectMasterListStateProvider><Bank /></ProjectMasterListStateProvider>} />
+            <Route path="projectMaster/Company" element={<ProjectMasterListStateProvider><Company /></ProjectMasterListStateProvider>} />
+
+            {/* SETTING -> COMPANY SETUP -> VENDOR */}
+            <Route path="vendor" element={<VendorListStateProvider><Vendor /></VendorListStateProvider>} />
+            <Route path="vendor/view" element={<VendorListStateProvider><ViewVendor /></VendorListStateProvider>} />
+            <Route path="vendor/add/:vendorId?" element={<VendorListStateProvider><AddUpdateVendor /></VendorListStateProvider>} />
+
+            {/* SETTING -> COMPANY SETUP -> PAYROLL MASTER */}
             <Route path="branchMaster" element={<BranchMaster />} />
 
             <Route path="branchAssociationsMaster" element={<BranchAssociationsMaster />} />
@@ -233,12 +249,9 @@ function App() {
             <Route path="WeekOffMaster/add/:WeekOffMasterId?" element={<WeekOffMasterListStateProvider><AddUpdateWeekOffMaster /></WeekOffMasterListStateProvider>} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
 
-            //#endregion
+            {/* PAYROLL */}
 
             <Route path="compoff" element={<CompOff />} />
-            <Route path="vendor/add/:vendorId?" element={<VendorListStateProvider><AddUpdateVendor /></VendorListStateProvider>} />
-
-
             <Route path="outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
             <Route path="leaveCreditDebit" element={<LeaveCreditDebit />} />
             <Route path="leaveCreditDebit/add/:id?" element={<AddUpdateLeaveCreditDebit />} />
@@ -250,35 +263,22 @@ function App() {
             <Route path="resignation" element={<EmployeeResignation />} />
             <Route path="payrollReport" element={<PayrollReport />} />
 
-            <Route path="vendor" element={<VendorListStateProvider><Vendor /></VendorListStateProvider>} />
-            <Route path="vendor/view" element={<VendorListStateProvider><ViewVendor /></VendorListStateProvider>} />
-            <Route path="projectMaster" element={<ProjectMasterListStateProvider><ProjectMaster /></ProjectMasterListStateProvider>} />
-            <Route path="projectMaster/view" element={<ProjectMasterListStateProvider><ViewProjectMaster /></ProjectMasterListStateProvider>} />
-            <Route path="projectMaster/add/:projectId?" element={<ProjectMasterListStateProvider><AddUpdateProjectMaster /></ProjectMasterListStateProvider>} />
-            <Route path="projectMaster/employee" element={<ProjectMasterListStateProvider><Employee /></ProjectMasterListStateProvider>} />
-            <Route path="projectMaster/bank" element={<ProjectMasterListStateProvider><Bank /></ProjectMasterListStateProvider>} />
-            <Route path="projectMaster/Company" element={<ProjectMasterListStateProvider><Company /></ProjectMasterListStateProvider>} />
-            <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
-
+            {/* INVENTORY */}
             <Route path="inventory" element={<Inventory></Inventory>} />
             <Route path="inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
 
+            {/* DOCUMENT */}
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />
             <Route path="document" element={<ProjectDocument />} />
             <Route path="approvalCategory" element={<ApprovalDocumentCategoryMaster />} />
             <Route path="approvalDocument" element={<ApprovalDocument />} />
             <Route path="reraCategory" element={<ProjectRERADocumentCategoryMaster />} />
             <Route path="rera" element={<ProjectRERADocument />} />
-            <Route path="siteProgress" element={<SiteProgress />} />
-            <Route path="siteProgress/SiteProgressSubConstruction" element={<SiteProgressSubConstruction />} />
-            <Route path="siteProgress/SiteProgressWingConstruction" element={<SiteProgressWingConstruction />} />
-            <Route path="siteProgress/SiteProgressFloorConstruction" element={<SiteProgressFloorConstruction />} />
-            <Route path="siteProgress/SiteProgressFlatConstruction" element={<SiteProgressFlatConstruction />} />
-            <Route path="siteProgress/SiteProgressConstructionActivity" element={<SiteProgressConstructionActivity />} />
-            <Route path="siteProgress/SiteProgressConstructionSubActivity" element={<SiteProgressConstructionSubActivity />} />
+
+            {/* PROFILE */}
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
 
-
+            {/* COMMAN */}
             <Route path="event" element={<Event />} />
 
             {/* SALES */}
@@ -308,6 +308,16 @@ function App() {
             <Route path="proposedOffer" element={<ProposedOffer />} />
 
             <Route path="proposedPlan" element={<ProposedPlan />} />
+
+
+            {/* OPERATION */}
+            <Route path="siteProgress" element={<SiteProgress />} />
+            <Route path="siteProgress/SiteProgressSubConstruction" element={<SiteProgressSubConstruction />} />
+            <Route path="siteProgress/SiteProgressWingConstruction" element={<SiteProgressWingConstruction />} />
+            <Route path="siteProgress/SiteProgressFloorConstruction" element={<SiteProgressFloorConstruction />} />
+            <Route path="siteProgress/SiteProgressFlatConstruction" element={<SiteProgressFlatConstruction />} />
+            <Route path="siteProgress/SiteProgressConstructionActivity" element={<SiteProgressConstructionActivity />} />
+            <Route path="siteProgress/SiteProgressConstructionSubActivity" element={<SiteProgressConstructionSubActivity />} />
 
           </Route>
 

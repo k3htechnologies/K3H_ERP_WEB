@@ -22,6 +22,7 @@ const ViewDeductionMaster: React.FC = () => {
     const navigate = useNavigate();
 
     const { listState } = useDeductionMasterListState();
+    const deductionName = listState.deductionName;
 
     const { addToast } = useToast();
 
@@ -87,7 +88,7 @@ const ViewDeductionMaster: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
             <HeaderActionBar
                 titleText={'Deduction Master : '}
-                subTitleText={editDeductionMasterData!.Name}
+                subTitleText={deductionName}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListDeductionMaster()}
@@ -99,105 +100,106 @@ const ViewDeductionMaster: React.FC = () => {
                 }}
                 isLoading={isLoading}
             />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
+            {editDeductionMasterData && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
 
-                {/* ================= LEFT SIDE (2/3) ================= */}
-                <div className="lg:col-span-2 space-y-6">
+                    {/* ================= LEFT SIDE (2/3) ================= */}
+                    <div className="lg:col-span-2 space-y-6">
 
-                    {/* ================= BASIC INFORMATION ================= */}
-                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Basic Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                        {/* ================= BASIC INFORMATION ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Basic Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Name" value={editDeductionMasterData!.Name} />
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Name" value={editDeductionMasterData!.Name} />
 
-                                    <FieldItem label="Type" value={editDeductionMasterData!.Type} />
-                                    <FieldItem label="Gender" value={editDeductionMasterData!.Gender} />
+                                        <FieldItem label="Type" value={editDeductionMasterData!.Type} />
+                                        <FieldItem label="Gender" value={editDeductionMasterData!.Gender} />
 
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                                        <FieldItem label="Branch Name" value={editDeductionMasterData!.BranchName} />
+                                        <FieldItem label="State Name" value={editDeductionMasterData!.StateName} />
+
+                                    </div>
                                 </div>
                             </div>
-                            <div className="lg:col-span-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        </section>
 
-                                    <FieldItem label="Branch Name" value={editDeductionMasterData!.BranchName} />
-                                    <FieldItem label="State Name" value={editDeductionMasterData!.StateName} />
+                        {/* ================= DEDUCTION DETAILS ================= */}
 
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Deduction Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Applicable" value={editDeductionMasterData!.Applicable} />
+                                        <FieldItem label="Value" value={editDeductionMasterData!.Value} />
+
+                                        <FieldItem label="Min Salary (₹)" value={editDeductionMasterData!.MinSalary} />
+                                        <FieldItem label="Max Salary (₹)" value={editDeductionMasterData!.MaxSalary} />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </section>
+                        </section>
+                    </div>
 
-                    {/* ================= DEDUCTION DETAILS ================= */}
+                    {/* ================= RIGHT SIDE (1/3) ================= */}
+                    <div className="lg:col-span-1 space-y-6">
 
-                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Deduction Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                        {/* ================= AUDIT TRAIL ================= */}
+                        <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
 
-                            <div className="lg:col-span-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Applicable" value={editDeductionMasterData!.Applicable} />
-                                    <FieldItem label="Value" value={editDeductionMasterData!.Value} />
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Action Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Created By" value={editDeductionMasterData!.CreatedBy} />
+                                        <FieldItem
+                                            label="Created Date"
+                                            value={
+                                                editDeductionMasterData!.CreatedDate
+                                                    ? formatDate_dd_MonthName_yy(editDeductionMasterData!.CreatedDate)
+                                                    : "-"
+                                            }
 
-                                    <FieldItem label="Min Salary (₹)" value={editDeductionMasterData!.MinSalary} />
-                                    <FieldItem label="Max Salary (₹)" value={editDeductionMasterData!.MaxSalary} />
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Modified By" value={editDeductionMasterData!.ModifiedBy} />
+                                        <FieldItem
+                                            label="Modified Date"
+                                            value={
+                                                editDeductionMasterData!.ModifiedDate
+                                                    ? formatDate_dd_MonthName_yy(editDeductionMasterData!.ModifiedDate)
+                                                    : "-"
+                                            }
+
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </section>
+                        </section>
+
+                    </div>
+
                 </div>
-
-                {/* ================= RIGHT SIDE (1/3) ================= */}
-                <div className="lg:col-span-1 space-y-6">
-
-                    {/* ================= AUDIT TRAIL ================= */}
-                    <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
-
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Action Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Created By" value={editDeductionMasterData!.CreatedBy} />
-                                    <FieldItem
-                                        label="Created Date"
-                                        value={
-                                            editDeductionMasterData!.CreatedDate
-                                                ? formatDate_dd_MonthName_yy(editDeductionMasterData!.CreatedDate)
-                                                : "-"
-                                        }
-
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="lg:col-span-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Modified By" value={editDeductionMasterData!.ModifiedBy} />
-                                    <FieldItem
-                                        label="Modified Date"
-                                        value={
-                                            editDeductionMasterData!.ModifiedDate
-                                                ? formatDate_dd_MonthName_yy(editDeductionMasterData!.ModifiedDate)
-                                                : "-"
-                                        }
-
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                </div>
-
-            </div>
-
+            )}
         </div>
     );
 };

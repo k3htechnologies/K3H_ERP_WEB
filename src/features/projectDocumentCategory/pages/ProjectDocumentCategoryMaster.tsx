@@ -12,7 +12,6 @@ import {
   ProjectDocumentCategoryMasterFilterModal
 } from '../components';
 import { createFormResetHandler } from '@/features/projectDocumentCategory/utils/projectDocumentCategoryMasterUtils';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 export const ProjectDocumentCategoryMaster: React.FC = () => {

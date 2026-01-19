@@ -18,6 +18,7 @@ const ViewWeekOffMaster: React.FC = () => {
     const [loadingMessage, setIsLoadingMessage] = useState('');
     const navigate = useNavigate();
     const { listState } = useWeekOffMasterListState();
+    const weekOffName = listState.weekOffName;
     const { addToast } = useToast();
     const { canAction } = useMenuPermissions('/WeekOffMaster');
 
@@ -81,7 +82,7 @@ const ViewWeekOffMaster: React.FC = () => {
 
             <HeaderActionBar
                 titleText={'Week Off Master : '}
-                subTitleText={editWeekOffPolicyMasterData!.WeekOffPolicyName}
+                subTitleText={weekOffName}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListWeekOffMaster()}
@@ -91,107 +92,107 @@ const ViewWeekOffMaster: React.FC = () => {
                 }}
                 isLoading={isLoading}
             />
+            {editWeekOffPolicyMasterData && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
+                    {/* ================= LEFT SIDE (2/3) ================= */}
+                    <div className="lg:col-span-2 space-y-6">
 
-                {/* ================= LEFT SIDE (2/3) ================= */}
-                <div className="lg:col-span-2 space-y-6">
+                        {/* ================= BASIC DETAILS ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                WeekOff Policy Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                    {/* ================= BASIC DETAILS ================= */}
-                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            WeekOff Policy Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Week Off Policy Name" value={editWeekOffPolicyMasterData!.WeekOffPolicyName} />
+                                        <FieldItem label="Week Off Policy Code" value={editWeekOffPolicyMasterData!.WeekOffPolicyCode} />
+                                        <FieldItem label="Week Days" value={editWeekOffPolicyMasterData!.WeekDays} />
 
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Week Off Policy Name" value={editWeekOffPolicyMasterData!.WeekOffPolicyName} />
-                                    <FieldItem label="Week Off Policy Code" value={editWeekOffPolicyMasterData!.WeekOffPolicyCode} />
-                                    <FieldItem label="Week Days" value={editWeekOffPolicyMasterData!.WeekDays} />
-
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Week Days Starts On" value={editWeekOffPolicyMasterData!.WeekDaysStartsOn} />
+                                    </div>
                                 </div>
                             </div>
-                            <div className="lg:col-span-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Week Days Starts On" value={editWeekOffPolicyMasterData!.WeekDaysStartsOn} />
+                        </section>
+
+                        {/* ================= WEEK OFF DETAILS ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Week Off Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Weekly Off" value={editWeekOffPolicyMasterData!.WeeklyOff} />
+                                        <FieldItem label="Weekly Off2" value={editWeekOffPolicyMasterData!.WeeklyOff2} />
+                                        <FieldItem label="Weekly Off2 Type" value={editWeekOffPolicyMasterData!.WeeklyOff2Type} />
+
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Not Applicable For Months" value={editWeekOffPolicyMasterData!.NotApplicableForMonths} />
+
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </section>
+                        </section>
+                    </div>
 
-                    {/* ================= WEEK OFF DETAILS ================= */}
-                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Week Off Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                    {/* ================= RIGHT SIDE (1/3) ================= */}
+                    <div className="lg:col-span-1 space-y-6">
 
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Weekly Off" value={editWeekOffPolicyMasterData!.WeeklyOff} />
-                                    <FieldItem label="Weekly Off2" value={editWeekOffPolicyMasterData!.WeeklyOff2} />
-                                    <FieldItem label="Weekly Off2 Type" value={editWeekOffPolicyMasterData!.WeeklyOff2Type} />
+                        {/* ================= AUDIT TRAIL ================= */}
+                        <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
 
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Action Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Created By" value={editWeekOffPolicyMasterData!.CreatedBy} />
+                                        <FieldItem
+                                            label="Created Date"
+                                            value={
+                                                editWeekOffPolicyMasterData!.CreatedDate
+                                                    ? formatDate_dd_MonthName_yy(editWeekOffPolicyMasterData!.CreatedDate)
+                                                    : "-"
+                                            }
+
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Modified By" value={editWeekOffPolicyMasterData!.ModifiedBy} />
+                                        <FieldItem
+                                            label="Modified Date"
+                                            value={
+                                                editWeekOffPolicyMasterData!.ModifiedDate
+                                                    ? formatDate_dd_MonthName_yy(editWeekOffPolicyMasterData!.ModifiedDate)
+                                                    : "-"
+                                            }
+
+                                        />
+                                    </div>
                                 </div>
                             </div>
+                        </section>
 
-                            <div className="lg:col-span-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Not Applicable For Months" value={editWeekOffPolicyMasterData!.NotApplicableForMonths} />
+                    </div>
 
-                                </div>
-                            </div>
-                        </div>
-                    </section>
                 </div>
-
-                {/* ================= RIGHT SIDE (1/3) ================= */}
-                <div className="lg:col-span-1 space-y-6">
-
-                    {/* ================= AUDIT TRAIL ================= */}
-                    <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
-
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Action Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Created By" value={editWeekOffPolicyMasterData!.CreatedBy} />
-                                    <FieldItem
-                                        label="Created Date"
-                                        value={
-                                            editWeekOffPolicyMasterData!.CreatedDate
-                                                ? formatDate_dd_MonthName_yy(editWeekOffPolicyMasterData!.CreatedDate)
-                                                : "-"
-                                        }
-
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="lg:col-span-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Modified By" value={editWeekOffPolicyMasterData!.ModifiedBy} />
-                                    <FieldItem
-                                        label="Modified Date"
-                                        value={
-                                            editWeekOffPolicyMasterData!.ModifiedDate
-                                                ? formatDate_dd_MonthName_yy(editWeekOffPolicyMasterData!.ModifiedDate)
-                                                : "-"
-                                        }
-
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                </div>
-
-            </div>
-
+            )}
         </div>
     );
 };

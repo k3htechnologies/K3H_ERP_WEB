@@ -22,6 +22,7 @@ const ViewShiftMaster: React.FC = () => {
     // NAVIGATION
     const navigate = useNavigate();
     const { listState } = useShiftMasterListState();
+    const shiftName = listState.shiftName;
     const { addToast } = useToast();
 
     //#region MENU PERMISSIONS
@@ -92,7 +93,7 @@ const ViewShiftMaster: React.FC = () => {
 
             <HeaderActionBar
                 titleText={'Shift Master : '}
-                subTitleText={editShiftMasterData!.ShiftName}
+                subTitleText={shiftName}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListShiftMaster()}
@@ -102,181 +103,181 @@ const ViewShiftMaster: React.FC = () => {
                 }}
                 isLoading={isLoading}
             />
+            {editShiftMasterData && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
+                    {/* ================= LEFT SIDE (2/3) ================= */}
+                    <div className="lg:col-span-2 space-y-6">
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Basic Shift Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                {/* ================= LEFT SIDE (2/3) ================= */}
-                <div className="lg:col-span-2 space-y-6">
-                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Basic Shift Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                <div className="lg:col-span-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Shift Begin Time" value={editShiftMasterData!.ShiftName} />
+                                        <FieldItem label="Shift End Time" value={editShiftMasterData!.ShiftCode} />
 
-                            <div className="lg:col-span-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Shift Begin Time" value={editShiftMasterData!.ShiftName} />
-                                    <FieldItem label="Shift End Time" value={editShiftMasterData!.ShiftCode} />
-
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </section>
-                    {/* ================= SHIFT DURATION ================= */}
-                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Time Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                        </section>
+                        {/* ================= SHIFT DURATION ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Time Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Shift Begin Time" value={editShiftMasterData!.ShiftBeginTime} />
-                                    <FieldItem label="Shift End Time" value={editShiftMasterData!.ShiftEndTime} />
-                                    <FieldItem label="Shift Duration Time" value={editShiftMasterData!.ShiftDurationTime} />
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Shift Begin Time" value={editShiftMasterData!.ShiftBeginTime} />
+                                        <FieldItem label="Shift End Time" value={editShiftMasterData!.ShiftEndTime} />
+                                        <FieldItem label="Shift Duration Time" value={editShiftMasterData!.ShiftDurationTime} />
 
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Shift Work Duration Time" value={editShiftMasterData!.ShiftWorkDurationTime} />
+                                    </div>
                                 </div>
                             </div>
-                            <div className="lg:col-span-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Shift Work Duration Time" value={editShiftMasterData!.ShiftWorkDurationTime} />
+                        </section>
+                        {/* ================= BREAK DETAILS ================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Break Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Break Begin Time" value={editShiftMasterData!.BreakBeginTime} />
+                                        <FieldItem label="Break End Time" value={editShiftMasterData!.BreakEndTime} />
+                                        <FieldItem label="Break Duration Time" value={editShiftMasterData!.BreakDurationTime} />
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Grace Time" value={editShiftMasterData!.GraceTime} />
+
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </section>
-                    {/* ================= BREAK DETAILS ================= */}
-                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Break Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                        </section>
+                        {/* ================= HALF DAY AND ABSENCE RULES================= */}
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Advance Setting
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Break Begin Time" value={editShiftMasterData!.BreakBeginTime} />
-                                    <FieldItem label="Break End Time" value={editShiftMasterData!.BreakEndTime} />
-                                    <FieldItem label="Break Duration Time" value={editShiftMasterData!.BreakDurationTime} />
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                        <FieldItem label="First Half Up To" value={editShiftMasterData!.FirstHalfUpTo} />
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                        <FieldItem label="Calculate Absent if working hours less than" value={editShiftMasterData!.AbsentWorkingHours} />
+                                        <FieldItem label="Calculate Half day working hours less than" value={editShiftMasterData!.HalfDayWorkingHours} />
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                        <FieldItem label="Mark Half Day if Intime After" value={editShiftMasterData!.HalfDayInTimeAfter} />
+                                        <FieldItem label="Mark Half Day if Outtime After" value={editShiftMasterData!.HalfDayOutTimeBefore} />
+
+                                    </div>
                                 </div>
                             </div>
+                        </section>
 
-                            <div className="lg:col-span-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Grace Time" value={editShiftMasterData!.GraceTime} />
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Time Allowed for Late Entry Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
+                                <div className="lg:col-span-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Grace Time In Minutes" value={editShiftMasterData!.GraceTime} />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </section>
-                    {/* ================= HALF DAY AND ABSENCE RULES================= */}
-                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Advance Setting
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                        </section>
 
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Remarks
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                    <FieldItem label="First Half Up To" value={editShiftMasterData!.FirstHalfUpTo} />
+                                <div className="lg:col-span-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                        <FieldItem label="Remarks" value={editShiftMasterData!.Remarks} />
+
+                                    </div>
                                 </div>
                             </div>
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                        </section>
 
-                                    <FieldItem label="Calculate Absent if working hours less than" value={editShiftMasterData!.AbsentWorkingHours} />
-                                    <FieldItem label="Calculate Half day working hours less than" value={editShiftMasterData!.HalfDayWorkingHours} />
+
+                    </div>
+
+                    {/* ================= RIGHT SIDE (1/3) ================= */}
+                    <div className="lg:col-span-1 space-y-6">
+
+                        {/* ================= AUDIT TRAIL ================= */}
+                        <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Action Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Created By" value={editShiftMasterData!.CreatedBy} />
+                                        <FieldItem
+                                            label="Created Date"
+                                            value={
+                                                editShiftMasterData!.CreatedDate
+                                                    ? formatDate_dd_MonthName_yy(editShiftMasterData!.CreatedDate)
+                                                    : "-"
+                                            }
+
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Modified By" value={editShiftMasterData!.ModifiedBy} />
+                                        <FieldItem
+                                            label="Modified Date"
+                                            value={
+                                                editShiftMasterData!.ModifiedDate
+                                                    ? formatDate_dd_MonthName_yy(editShiftMasterData!.ModifiedDate)
+                                                    : "-"
+                                            }
+
+                                        />
+                                    </div>
                                 </div>
                             </div>
+                        </section>
 
-                            <div className="lg:col-span-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-
-                                    <FieldItem label="Mark Half Day if Intime After" value={editShiftMasterData!.HalfDayInTimeAfter} />
-                                    <FieldItem label="Mark Half Day if Outtime After" value={editShiftMasterData!.HalfDayOutTimeBefore} />
-
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Time Allowed for Late Entry Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-
-                            <div className="lg:col-span-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Grace Time In Minutes" value={editShiftMasterData!.GraceTime} />
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Remarks
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-
-                            <div className="lg:col-span-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                    <FieldItem label="Remarks" value={editShiftMasterData!.Remarks} />
-
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
+                    </div>
 
                 </div>
-
-                {/* ================= RIGHT SIDE (1/3) ================= */}
-                <div className="lg:col-span-1 space-y-6">
-
-                    {/* ================= AUDIT TRAIL ================= */}
-                    <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
-
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Action Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Created By" value={editShiftMasterData!.CreatedBy} />
-                                    <FieldItem
-                                        label="Created Date"
-                                        value={
-                                            editShiftMasterData!.CreatedDate
-                                                ? formatDate_dd_MonthName_yy(editShiftMasterData!.CreatedDate)
-                                                : "-"
-                                        }
-
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="lg:col-span-3 pt-3">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Modified By" value={editShiftMasterData!.ModifiedBy} />
-                                    <FieldItem
-                                        label="Modified Date"
-                                        value={
-                                            editShiftMasterData!.ModifiedDate
-                                                ? formatDate_dd_MonthName_yy(editShiftMasterData!.ModifiedDate)
-                                                : "-"
-                                        }
-
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                </div>
-
-            </div>
-
+            )}
         </div>
     );
 };

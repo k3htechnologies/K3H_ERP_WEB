@@ -48,7 +48,7 @@ export const EmployeeDocument: React.FC = () => {
   //#region STATE MANAGEMENT
   const [employeeDocumentList, setEmployeeDocumentList] = useState<EmployeeDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
@@ -166,7 +166,7 @@ export const EmployeeDocument: React.FC = () => {
   const loadEmployeeDocuments = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
 
@@ -240,7 +240,7 @@ export const EmployeeDocument: React.FC = () => {
   const handleExportEmployeeDocuments = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         // Find the column label for sorting
         let sortByParam = undefined
@@ -583,7 +583,7 @@ export const EmployeeDocument: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const payload = PushEmployeeDocumentFormData();
@@ -660,7 +660,7 @@ export const EmployeeDocument: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 

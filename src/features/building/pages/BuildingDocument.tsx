@@ -46,7 +46,7 @@ const BuildingDocument: React.FC = () => {
   //#region STATE
   const [buildingDocumentList, setBuildingDocumentList] = useState<BuildingDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [expandHeaderDocumentName, setExpandHeaderDocumentName] = useState<string>('');
   const [expandHeaderBuildingDocumentId, setExpandHeaderBuildingDocumentId] = useState<number>(0);
 
@@ -167,7 +167,7 @@ const BuildingDocument: React.FC = () => {
   const loadBuildingDocument = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
 
@@ -729,7 +729,7 @@ const BuildingDocument: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -838,7 +838,7 @@ const BuildingDocument: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: DeleteBuildingDocumentRequest = {

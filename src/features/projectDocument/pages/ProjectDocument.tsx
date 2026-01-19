@@ -55,7 +55,7 @@ const ProjectDocument: React.FC = () => {
   //#region STATE
   const [projectDocumentList, setProjectDocumentList] = useState<ProjectDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [expandHeaderProjectDocumentName, setExpandHeaderProjectDocumentName] = useState<string>('');
   const [expandHeaderProjectDocumentId, setExpandHeaderProjectDocumentId] = useState<number>(0);
 
@@ -212,7 +212,7 @@ const ProjectDocument: React.FC = () => {
   const loadProjectDocumentTabs = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const response = await fetchProjectDocumentCategoryDropdown(1, Number(projectId));
@@ -265,7 +265,7 @@ const ProjectDocument: React.FC = () => {
   const loadProjectDocument = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
 
@@ -883,7 +883,7 @@ const ProjectDocument: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -1008,7 +1008,7 @@ const ProjectDocument: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -1086,7 +1086,7 @@ const ProjectDocument: React.FC = () => {
   const downloadExcelSampleProjectDocument = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         // Find the column label for sorting
 
@@ -1114,14 +1114,14 @@ const ProjectDocument: React.FC = () => {
   const uploadExcel = async (file: File, mergeExisting: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const fd = new FormData();
 
         fd.append("ExcelFile", file);
         fd.append("IsAllDelete", mergeExisting);
-        fd.append("TableName", 'Tenant');
+        fd.append("TableName", 'PROJECT DOCUMENT');
         fd.append("ProjectId", String(projectId));
 
         const response = await technicalService.apiCallExcelImport(fd);

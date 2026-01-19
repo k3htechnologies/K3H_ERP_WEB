@@ -44,7 +44,7 @@ export const EmployeeResignation: React.FC = () => {
   //#region STATE MANAGEMENT
   const [employeeResignationList, setEmployeeResignationList] = useState<EmployeeResignationData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
@@ -116,7 +116,7 @@ export const EmployeeResignation: React.FC = () => {
   const loadResignations = async (page: number) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationEmployeeResignationRequest = {
@@ -272,7 +272,7 @@ export const EmployeeResignation: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
 
@@ -347,7 +347,7 @@ export const EmployeeResignation: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 

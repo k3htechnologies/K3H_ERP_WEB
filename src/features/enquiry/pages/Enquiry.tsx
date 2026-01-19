@@ -39,7 +39,7 @@ export const Enquiry: React.FC = () => {
     //#region STATE MANAGEMENT
     const [EnquiryList, setEnquiryMasterList] = useState<EnquiryData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     // USE NAVIGATE
     const navigate = useNavigate();
@@ -81,7 +81,7 @@ export const Enquiry: React.FC = () => {
 
             setIsLoading,
 
-            setIsLoadingMessage,
+            setLoadingMessage,
 
             async () => {
                 let sortByParam: string | undefined;
@@ -186,7 +186,7 @@ export const Enquiry: React.FC = () => {
         await runApiWithLoader(
 
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 let sortByParam;
@@ -229,7 +229,7 @@ export const Enquiry: React.FC = () => {
 
             setIsLoading,
 
-            setIsLoadingMessage,
+            setLoadingMessage,
 
             async () => {
 
@@ -247,7 +247,7 @@ export const Enquiry: React.FC = () => {
     const downloadExcelSampleEnquiry = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 // Find the column label for sorting
                 const params: FilterPullExcelSample = {
@@ -698,7 +698,7 @@ export const Enquiry: React.FC = () => {
 
             setIsLoading,
 
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: DeleteEnquiryRequest = {
 

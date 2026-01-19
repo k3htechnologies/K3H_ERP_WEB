@@ -37,7 +37,7 @@ export const CompanyMaster: React.FC = () => {
     //#region STATE
     const [companyList, setCompanyList] = useState<CompanyMasterData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const navigate = useNavigate();
 
     const { listState, updateListState } = useCompanyListState();
@@ -102,7 +102,7 @@ export const CompanyMaster: React.FC = () => {
     const loadCompanys = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
 
@@ -174,7 +174,7 @@ export const CompanyMaster: React.FC = () => {
     const handleExportCompanys = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationCompanyMasterRequest = {
@@ -501,7 +501,7 @@ export const CompanyMaster: React.FC = () => {
     const downloadExcelSampleCompanyMaster = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 // Find the column label for sorting
 
@@ -529,7 +529,7 @@ export const CompanyMaster: React.FC = () => {
     const uploadExcel = async (file: File, mergeExisting: string) => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const fd = new FormData();
@@ -568,7 +568,7 @@ export const CompanyMaster: React.FC = () => {
 
             setIsLoading,
 
-            setIsLoadingMessage,
+            setLoadingMessage,
 
             async () => {
 

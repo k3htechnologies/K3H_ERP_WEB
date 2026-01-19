@@ -31,7 +31,7 @@ export const Leave: React.FC = () => {
   //#region STATE
   const [leaveList, setLeaveList] = useState<LeaveData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
 
   // PAGINATION STATE
@@ -135,7 +135,7 @@ export const Leave: React.FC = () => {
   const loadLeaves = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         let sortByParam = undefined;
@@ -223,7 +223,7 @@ export const Leave: React.FC = () => {
   const handleExportLeaves = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam = undefined
         if (sortInfo) {
@@ -328,7 +328,7 @@ export const Leave: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         const response = await LeaveService.apiCallDeleteLeave(payload);
         if (E.isRight(response)) {

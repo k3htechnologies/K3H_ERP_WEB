@@ -16,7 +16,7 @@ const ViewDeductionMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     // NAVIGATION
     const navigate = useNavigate();
@@ -39,7 +39,7 @@ const ViewDeductionMaster: React.FC = () => {
     const loadDeductionMasterData = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationDeductionMasterRequest = {

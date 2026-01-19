@@ -26,7 +26,7 @@ import { useProjectMasterListState } from '@/features/projectMaster/context/Proj
 const Employee: React.FC = () => {
   //#region STATE MANAGEMENT
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [employeeMasterList, setEmployeeMasterList] = useState<EmployeeMasterData[]>([]);
 
   // TOAST
@@ -136,7 +136,7 @@ const Employee: React.FC = () => {
   const loadProjectMasterWithEmployee = async (ProjectId: number) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const response = await ProjectMasterService.apiCallPullProjectMasterWithEmployee(ProjectId);
@@ -408,7 +408,7 @@ const Employee: React.FC = () => {
   const loadEmployees = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationEmployeeMasterRequest = {
@@ -461,7 +461,7 @@ const Employee: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -533,7 +533,7 @@ const Employee: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const payload = PushProjectMasterWithEmployeeData();

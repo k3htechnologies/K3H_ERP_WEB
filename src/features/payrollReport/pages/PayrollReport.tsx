@@ -38,7 +38,7 @@ export const PayrollReport: React.FC = () => {
   const [attendanceList, setAttendanceList] = useState<any[]>([]);
   const [attendanceRegularizationList, setAttendanceRegularizationList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
@@ -118,7 +118,7 @@ export const PayrollReport: React.FC = () => {
     const activeFilters = filterParams || filters;
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         // Note: EmployeeName search not supported by API, only EmployeeId filter
@@ -165,7 +165,7 @@ export const PayrollReport: React.FC = () => {
     // Placeholder for Attendance - to be implemented when API is available
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         setAttendanceList([]);
         setPagination({
@@ -188,7 +188,7 @@ export const PayrollReport: React.FC = () => {
     // Placeholder for Attendance Regularization - to be implemented when API is available
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         setAttendanceRegularizationList([]);
         setPagination({
@@ -212,7 +212,7 @@ export const PayrollReport: React.FC = () => {
     const activeFilters = filterParams || filters;
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationCompOff = {
@@ -256,7 +256,7 @@ export const PayrollReport: React.FC = () => {
     const activeFilters = filterParams || filters;
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationLeaveRequest = {
@@ -300,7 +300,7 @@ export const PayrollReport: React.FC = () => {
     const activeFilters = filterParams || filters;
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationOutDoor = {
@@ -388,7 +388,7 @@ export const PayrollReport: React.FC = () => {
   const handleExportPdf = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam = undefined;
         if (sortInfo && getCurrentColumns().length > 0) {

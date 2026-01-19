@@ -27,7 +27,7 @@ export const Building: React.FC = () => {
   //#region STATE
   const [buildingList, setBuildingList] = useState<BuildingData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
 
   const { pagination, setPagination } = usePagination(20);
@@ -63,7 +63,7 @@ export const Building: React.FC = () => {
   const loadBuildings = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
 
@@ -191,7 +191,7 @@ export const Building: React.FC = () => {
   const handleExportBuildings = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
         if (sortInfo) {
@@ -536,7 +536,7 @@ export const Building: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: DeleteBuildingRequest = {

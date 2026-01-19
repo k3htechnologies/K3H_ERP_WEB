@@ -79,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({
     const [isFetchingMoreNotification, setIsFetchingMoreNotification] = useState(false);
 
     const [, setIsLoading] = useState(false);
-    const [, setIsLoadingMessage] = useState('');
+    const [, setLoadingMessage] = useState('');
 
     // TOAST
     const { addToast } = useToast()
@@ -138,7 +138,7 @@ export const Header: React.FC<HeaderProps> = ({
     const loadNotifications = async (page: number) => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationNotificationRequest = {
@@ -222,7 +222,7 @@ export const Header: React.FC<HeaderProps> = ({
     const loadProjectMaster = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationProjectMasterRequest = {
@@ -257,7 +257,7 @@ export const Header: React.FC<HeaderProps> = ({
     const loadProjectMasterWithEmployee = async (searchText = "") => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const response = await ProjectMasterService.apiCallPullProjectMasterWithEmployee(Number(projectId), searchText);
@@ -305,7 +305,7 @@ export const Header: React.FC<HeaderProps> = ({
     const handleSubmitMPIN = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 if (MPIN.length !== 4) {

@@ -34,7 +34,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   //#region STATE MANAGEMENT
   const [WeekOffOffMasterList, setWeekOffOffMasterList] = useState<WeekOffMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // USE NAVIGATE
   const navigate = useNavigate();
@@ -99,7 +99,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   const loadWeekOff = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationWeekOffMasterRequest = {
@@ -166,7 +166,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   const handleExportWeekOffs = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationWeekOffMasterRequest = {
@@ -434,7 +434,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         const params: DeleteWeekOffMasterRequest = {
 

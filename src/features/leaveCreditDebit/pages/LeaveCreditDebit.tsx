@@ -28,7 +28,7 @@ export const LeaveCreditDebit: React.FC = () => {
   //#region STATE
   const [leaveCreditDebitList, setLeaveCreditDebitList] = useState<LeaveCreditDebitData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
 
   // PAGINATION STATE
@@ -132,7 +132,7 @@ export const LeaveCreditDebit: React.FC = () => {
   const loadLeaveCreditDebits = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         let sortByParam = undefined;
@@ -224,7 +224,7 @@ export const LeaveCreditDebit: React.FC = () => {
   const handleExportLeaveCreditDebits = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam = undefined
         if (sortInfo) {
@@ -330,7 +330,7 @@ export const LeaveCreditDebit: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         const response = await leaveCreditDebitService.apiCallDeleteLeaveCreditDebit(payload);
         if (E.isRight(response)) {

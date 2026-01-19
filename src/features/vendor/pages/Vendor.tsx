@@ -36,7 +36,7 @@ export const Vendor: React.FC = () => {
   //#region STATE
   const [vendorList, setVendorList] = useState<VendorData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const { pagination, setPagination } = usePagination(20);
   const { addToast } = useToast()
   const navigate = useNavigate();
@@ -97,7 +97,7 @@ export const Vendor: React.FC = () => {
   const loadVendors = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationVendorRequest = {
@@ -173,7 +173,7 @@ export const Vendor: React.FC = () => {
   const handleExportVendors = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
 
@@ -421,7 +421,7 @@ export const Vendor: React.FC = () => {
   const downloadExcelSampleVendor = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         // Find the column label for sorting
 
@@ -450,7 +450,7 @@ export const Vendor: React.FC = () => {
   const uploadExcel = async (file: File, mergeExisting: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const fd = new FormData();
@@ -489,7 +489,7 @@ export const Vendor: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         const params = {
           VendorId: deleteVendorDetailsData.VendorId ?? 0,
@@ -553,7 +553,7 @@ export const Vendor: React.FC = () => {
   const handleMagicLinkWithValidate = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         // Find the column label for sorting
 

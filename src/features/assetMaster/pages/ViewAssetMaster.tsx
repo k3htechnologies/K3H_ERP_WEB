@@ -21,7 +21,7 @@ const ViewAssetPage: React.FC = () => {
 
     const [assetMappingMasterList, setAssetMappingMasterList] = useState<AssetMappingMasterData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const [editAssetMasterList, setEditAssetMasterList] = useState<AssetMasterData[]>([]);
     const { canAction } = useMenuPermissions('/assetMaster');
     const { addToast } = useToast();
@@ -55,7 +55,7 @@ const ViewAssetPage: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationAssetMasterRequest = {
                     PageNumber: 1,
@@ -87,7 +87,7 @@ const ViewAssetPage: React.FC = () => {
     const loadAssetMappings = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationAssetMappingMasterRequest = {

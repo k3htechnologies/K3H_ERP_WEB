@@ -22,7 +22,7 @@ export const ViewTenant: React.FC = () => {
     //#region STATE MANAGEMENT
     const [tenantDocumentList, setTenantDocumentList] = useState<TenantDocumentData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const [applicantList, setApplicantList] = useState<any[]>([]);
     const [parkingList, setParkingList] = useState<any[]>([]);
 
@@ -72,7 +72,7 @@ export const ViewTenant: React.FC = () => {
     const loadTenantData = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params = {
                     PageNumber: 1,
@@ -150,7 +150,7 @@ export const ViewTenant: React.FC = () => {
     const loadTenantDocumentFromServer = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationTenantDocumentRequest = {

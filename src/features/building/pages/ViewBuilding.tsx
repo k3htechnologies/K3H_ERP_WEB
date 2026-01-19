@@ -45,7 +45,7 @@ export const ViewBuilding: React.FC = () => {
     const [contactDetailsList, setContactDetailsList] = useState<Omit<BuildingKeyContactDetails, 'BuildingId' | 'ProjectId' | 'CreatedById' | 'CreatedBy' | 'CreatedDate' | 'ModifiedById' | 'ModifiedBy' | 'ModifiedDate' | 'LastModifiedBy' | 'LastModifiedDate'>[]>([]);
     const [buildingDetailsList, setBuildingDetailsList] = useState<BuildingDetailsData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const { canAction } = useMenuPermissions();
     // TOAST
     const { addToast } = useToast();
@@ -95,7 +95,7 @@ export const ViewBuilding: React.FC = () => {
         if (!buildingId) return;
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationBuildingRequest = {
@@ -133,7 +133,7 @@ export const ViewBuilding: React.FC = () => {
     const loadBuildingDocumentFromServer = async (searchText = "") => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationBuildingDocumentRequest = {
@@ -223,7 +223,7 @@ export const ViewBuilding: React.FC = () => {
     const loadBuildingDetailsFromServer = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationBuildingDetailsRequest = {

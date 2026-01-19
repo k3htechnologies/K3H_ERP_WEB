@@ -17,7 +17,7 @@ const ViewShiftMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     // NAVIGATION
     const navigate = useNavigate();
@@ -41,7 +41,7 @@ const ViewShiftMaster: React.FC = () => {
     const loadShiftMasterData = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationShiftMasterRequest = {

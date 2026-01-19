@@ -19,7 +19,7 @@ const SiteProgressFlatConstruction: React.FC = () => {
   //#region STATE
   const [flatConstructionList, setFlatConstructionList] = useState<SiteProgressFlatConstructionData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
   const { pagination, setPagination } = usePagination(20);
@@ -54,7 +54,7 @@ const SiteProgressFlatConstruction: React.FC = () => {
   const loadFlatConstruction = async (page: number, term: string = searchTerm) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         if (term) { }
         const params: FilterWithPaginationSiteProgressFlatConstructionRequest = {

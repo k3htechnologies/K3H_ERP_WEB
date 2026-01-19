@@ -19,7 +19,7 @@ const SiteProgressConstructionSubActivity: React.FC = () => {
   //#region STATE
   const [constructionSubActivityList, setConstructionSubActivityList] = useState<SiteProgressConstructionSubActivityData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
   const { pagination, setPagination } = usePagination(20);
@@ -48,7 +48,7 @@ const SiteProgressConstructionSubActivity: React.FC = () => {
   const loadConstructionSubActivity = async (page: number, term: string = searchTerm) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         if (term) { }
         const params: FilterWithPaginationSiteProgressConstructionSubActivityRequest = {

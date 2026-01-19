@@ -39,7 +39,7 @@ const Bank: React.FC = () => {
 
   //#region STATE MANAGEMENT
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [projectWithBankDetailsList, setProjectWithBankDetailsList] = useState<ProjectWithBankDetails[]>([]);
 
   // TOAST
@@ -117,7 +117,7 @@ const Bank: React.FC = () => {
   const loadProjectMasterWithBankDetails = async (ProjectId: number) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const response = await ProjectMasterService.apiCallPullProjectMasterWithBankDetails(ProjectId);
@@ -386,7 +386,7 @@ const Bank: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const payload = PushProjectMasterWithBankDetailsFormData();
@@ -455,7 +455,7 @@ const Bank: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 

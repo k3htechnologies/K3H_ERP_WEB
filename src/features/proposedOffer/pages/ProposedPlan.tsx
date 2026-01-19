@@ -40,7 +40,7 @@ export const ProposedPlan: React.FC = () => {
     //#region STATE
     const [, setProposedPlanData] = useState<ProposedOfferProposedPlanData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     const [planDocumentFiles, setPlanDocumentFiles] = useState<(File | string)[]>([]);
     const [removedPlanDocumentUrls, setRemovedPlanDocumentUrls] = useState<string[]>([]);
@@ -95,7 +95,7 @@ export const ProposedPlan: React.FC = () => {
     const fetchProposedPlanData = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationProposedOfferProposedPlanRequest = {
                     ProjectId: projectId ?? undefined,
@@ -179,7 +179,7 @@ export const ProposedPlan: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const formDataPayload = new FormData();
                 formDataPayload.append('ProposedOfferProposedPlanId', String(formDataProposedPlan.ProposedOfferProposedPlanId ?? 0));
@@ -311,7 +311,7 @@ export const ProposedPlan: React.FC = () => {
             </div>
 
             <BottomActionBar
-                saveText={(formDataProposedPlan.ProposedOfferProposedPlanId && formDataProposedPlan.ProposedOfferProposedPlanId > 0) ? 'Update' : 'Save'}
+                saveText={(formDataProposedPlan.ProposedOfferProposedPlanId && formDataProposedPlan.ProposedOfferProposedPlanId > 0) ? 'Update' : 'Add'}
                 canAction={canAction}
                 onSave={handleSaveProposedPlan}
                 isLoading={isLoading}

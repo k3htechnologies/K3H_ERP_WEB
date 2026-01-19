@@ -18,7 +18,7 @@ export function SignIn() {
     const [otp, setOtp] = useState('')
     const [step, setStep] = useState<'mobile' | 'otp' | 'mpin'>('mobile')
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const [isVerified, setIsVerified] = useState(false)
     const { toasts, removeToast, showSuccess, showError, addToast } = useToast()
     const navigate = useNavigate();
@@ -27,7 +27,7 @@ export function SignIn() {
     const handleSendOTP = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 if (mobileNumber.length !== 10) {
@@ -80,7 +80,7 @@ export function SignIn() {
     const handleVerifyOTP = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 if (otp.length !== 4) {
@@ -128,7 +128,7 @@ export function SignIn() {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
 

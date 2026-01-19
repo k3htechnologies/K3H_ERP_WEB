@@ -24,7 +24,7 @@ export const ViewProjectMaster: React.FC = () => {
 
     //#region STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const [employeeMasterList, setEmployeeMasterList] = useState<EmployeeMasterData[]>([]);
     // SINGLE SEARCH TEXT BOX
     const [searchTermForEmployee, setSearchTermForEmployeeName] = useState('')
@@ -91,7 +91,7 @@ export const ViewProjectMaster: React.FC = () => {
     const loadProjectData = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationProjectMasterRequest = {
                     PageNumber: 1,
@@ -121,7 +121,7 @@ export const ViewProjectMaster: React.FC = () => {
     const loadProjectMasterWithEmployee = async (ProjectId: number, searchText = "") => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const response = await ProjectMasterService.apiCallPullProjectMasterWithEmployee(ProjectId, searchText);
@@ -168,7 +168,7 @@ export const ViewProjectMaster: React.FC = () => {
     const loadProjectMasterWithCompany = async (ProjectId: number) => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const response = await ProjectMasterService.apiCallPullProjectMasterWithCompany(ProjectId);
@@ -195,7 +195,7 @@ export const ViewProjectMaster: React.FC = () => {
     const loadProjectMasterWithBankDetails = async (ProjectId: number) => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const response = await ProjectMasterService.apiCallPullProjectMasterWithBankDetails(ProjectId);

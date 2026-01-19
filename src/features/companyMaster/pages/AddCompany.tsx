@@ -1667,7 +1667,7 @@ const AddCompany: React.FC = () => {
         }}
         title={editingCompanyPartnerMasterData ? 'Update Company Partner' : 'Add Company Partner'}
         onSubmit={handleAddUpdateCompanyPartner}
-        saveText={editingCompanyPartnerMasterData ? 'Update' : 'Save'}
+        saveText={editingCompanyPartnerMasterData ? 'Update' : 'Add'}
         cancelText="Cancel"
         loading={isLoading}
         size='large-half'

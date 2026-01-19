@@ -34,7 +34,7 @@ export const EmployeeMaster: React.FC = () => {
   //#region STATE
   const [employeeList, setEmployeeList] = useState<EmployeeMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
 
   const { listState, updateListState } = useEmployeeListState();
@@ -93,7 +93,7 @@ export const EmployeeMaster: React.FC = () => {
   const loadEmployees = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationEmployeeMasterRequest = {
@@ -169,7 +169,7 @@ export const EmployeeMaster: React.FC = () => {
   const handleExportEmployees = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationEmployeeMasterRequest = {
@@ -597,7 +597,7 @@ export const EmployeeMaster: React.FC = () => {
   const downloadExcelSampleEmployeeMaster = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         // Find the column label for sorting
 
@@ -625,7 +625,7 @@ export const EmployeeMaster: React.FC = () => {
   const uploadExcel = async (file: File, mergeExisting: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const fd = new FormData();

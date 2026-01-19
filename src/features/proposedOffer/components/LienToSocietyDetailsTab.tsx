@@ -1,0 +1,625 @@
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { runApiWithLoader } from '@/core/utils';
+import * as E from 'fp-ts/Either';
+import { useToast } from '@/core/hooks/useToast';
+import type {
+  ProposedOfferLienToSocietyDetailsData,
+  FilterWithPaginationProposedOfferLienToSocietyDetailsRequest,
+  AddUpdateProposedOfferLienToSocietyDetailsRequest,
+  ProposedOfferLienToSocietyDetailsWithPaymentStageData,
+} from '@/features/proposedOffer/models/ProposedOfferModel';
+import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { Button, Input } from '@/ui/components/forms';
+import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
+import { filterNumbers, filterNumbersWithDecimal } from '@/core/utils/fileValidation';
+import BottomActionBar from '@/ui/components/forms/BottomActionBar';
+import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import { Modal } from '@/ui/components/Modal/Modal';
+import { Edit, Trash2 } from 'lucide-react';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { Checkbox } from '@/ui/components/forms/Checkbox';
+import { FLAT_UNIT_TYPE } from '@/core/constants';
+import {
+  initialFormStateLienToSocietyDetails,
+  initialFormStateLienToSocietyPaymentStage,
+} from '../utils/initialStates';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+
+interface LienToSocietyDetailsTabProps {
+  projectId: number | null;
+  buildingId: number;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
+  setLoadingMessage: (message: string) => void;
+}
+
+export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = ({
+  projectId,
+  buildingId,
+  isLoading,
+  setIsLoading,
+  setLoadingMessage,
+}) => {
+  const [, setLienToSocietyDetailsData] = useState<ProposedOfferLienToSocietyDetailsData | null>(null);
+  const { addToast } = useToast();
+  const { canAction } = useMenuPermissions();
+  const [errorsLienToSocietyDetails, setErrorsLienToSocietyDetails] = useState<{ [k: string]: string }>({});
+  const [errorsLienToSocietyPaymentStage, setErrorsLienToSocietyPaymentStage] = useState<{ [k: string]: string }>({});
+  const [formDataLienToSocietyDetails, setFormDataLienToSocietyDetails] = useState<AddUpdateProposedOfferLienToSocietyDetailsRequest>(() => initialFormStateLienToSocietyDetails());
+  const [lienToSocietyPaymentStageList, setLienToSocietyPaymentStageList] = useState<ProposedOfferLienToSocietyDetailsWithPaymentStageData[]>([]);
+  const [editingLienToSocietyPaymentStageData, setEditingLienToSocietyPaymentStageData] = useState<{ row: ProposedOfferLienToSocietyDetailsWithPaymentStageData; index: number } | null>(null);
+  const [isAddUpdateLienToSocietyPaymentStageModalOpen, setIsAddUpdateLienToSocietyPaymentStageModalOpen] = useState(false);
+  const [formDataLienToSocietyPaymentStage, setFormDataLienToSocietyPaymentStage] = useState<ProposedOfferLienToSocietyDetailsWithPaymentStageData>(() => initialFormStateLienToSocietyPaymentStage());
+  const [isConfirmationDialogBoxOpenLienToSocietyPaymentStage, setIsConfirmationDialogBoxOpenLienToSocietyPaymentStage] = useState(false);
+  const [deleteLienToSocietyPaymentStageData, setDeleteLienToSocietyPaymentStageData] = useState<{ row: ProposedOfferLienToSocietyDetailsWithPaymentStageData; index: number } | null>(null);
+
+  useEffect(() => {
+    if (!projectId || !buildingId) return;
+    fetchLienToSocietyDetailsData();
+  }, [projectId, buildingId]);
+
+  const handleFieldChangeLienToSocietyDetails = (field: keyof AddUpdateProposedOfferLienToSocietyDetailsRequest, value: any) => {
+    setFormDataLienToSocietyDetails((prev) => ({ ...prev, [field]: value }));
+    if (errorsLienToSocietyDetails[field]) {
+      setErrorsLienToSocietyDetails((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleFieldChangeLienToSocietyPaymentStage = (field: keyof ProposedOfferLienToSocietyDetailsWithPaymentStageData, value: any) => {
+    setFormDataLienToSocietyPaymentStage((prev) => ({ ...prev, [field]: value }));
+    if (errorsLienToSocietyPaymentStage[field]) {
+      setErrorsLienToSocietyPaymentStage((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const fetchLienToSocietyDetailsData = async () => {
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const params: FilterWithPaginationProposedOfferLienToSocietyDetailsRequest = {
+          ProjectId: projectId ?? undefined,
+          BuildingId: buildingId
+        };
+
+        const response = await ProposedOfferService.apiCallPullLienToSocietyDetails(params);
+
+        if (E.isRight(response)) {
+          const data = response.right.Data?.[0] || null;
+          setLienToSocietyDetailsData(data);
+
+          if (data) {
+            setFormDataLienToSocietyDetails({
+              ProposedOfferLienToSocietyDetailsId: data.ProposedOfferLienToSocietyDetailsId || 0,
+              Uniquekey: data.Uniquekey || initialFormStateLienToSocietyDetails().Uniquekey,
+              BuildingId: buildingId,
+              ProjectId: Number(projectId),
+              ResidentialAreaSqFt: data.ResidentialAreaSqFt ?? 0,
+              CommercialAreaSqFt: data.CommercialAreaSqFt ?? 0,
+              NumberOfResidentialLienUnits: data.NumberOfResidentialLienUnits ?? 0,
+              NumberOfCommercialLienUnits: data.NumberOfCommercialLienUnits ?? 0,
+              LienToSocietyWithPaymentStageJSON: ''
+            });
+
+            if (data.ProposedOfferSecurityDepositDetailsWithPaymentStageData && data.ProposedOfferSecurityDepositDetailsWithPaymentStageData.length > 0) {
+              setLienToSocietyPaymentStageList(data.ProposedOfferSecurityDepositDetailsWithPaymentStageData);
+            } else {
+              setLienToSocietyPaymentStageList([]);
+            }
+          } else {
+            setFormDataLienToSocietyDetails({
+              ...initialFormStateLienToSocietyDetails(),
+              ProjectId: Number(projectId)
+            });
+            setLienToSocietyPaymentStageList([]);
+          }
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message });
+      },
+      undefined,
+      'Loading Lien to Society Details'
+    );
+  };
+
+  const validateLienToSocietyDetailsForm = (): {
+    isValid: boolean
+    errors: { [key: string]: string }
+  } => {
+    const newErrors: { [key: string]: string } = {}
+
+    if (!formDataLienToSocietyDetails.ResidentialAreaSqFt) {
+      newErrors.ResidentialAreaSqFt = "Residential Area is required"
+    }
+
+    if (!formDataLienToSocietyDetails.CommercialAreaSqFt) {
+      newErrors.CommercialAreaSqFt = "Commercial Area is required"
+    }
+
+    if (!formDataLienToSocietyDetails.NumberOfResidentialLienUnits) {
+      newErrors.NumberOfResidentialLienUnits = "Number of Residential Lien Units is required"
+    }
+
+    if (!formDataLienToSocietyDetails.NumberOfCommercialLienUnits) {
+      newErrors.NumberOfCommercialLienUnits = "Number of Commercial Lien Units is required"
+    }
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors
+    }
+  }
+
+  const handleSaveLienToSocietyDetails = async () => {
+    if (buildingId === 0) {
+      addToast({ type: "error", title: "Please select proper building first" });
+      return
+    }
+
+    else if (lienToSocietyPaymentStageList.length === 0) {
+      addToast({ type: "error", title: "Please add atleast one Lien to Society details" });
+      return
+    }
+
+    setErrorsLienToSocietyDetails({})
+
+    const validation = validateLienToSocietyDetailsForm()
+
+    if (!validation.isValid) {
+      setErrorsLienToSocietyDetails(validation.errors)
+      return
+    }
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const paymentStageJSON = JSON.stringify(lienToSocietyPaymentStageList.map(item => ({
+          ProposedOfferLienToSocietyDetailsWithPaymentStageId: item.ProposedOfferLienToSocietyDetailsWithPaymentStageId ?? 0,
+          Type: item.Type || '',
+          Stage: item.Stage || '',
+          CarpetAreaSqFt: item.CarpetAreaSqFt ?? 0,
+          IsRelease: item.IsRelease ?? false
+        })));
+
+        const payload: AddUpdateProposedOfferLienToSocietyDetailsRequest = {
+          ProposedOfferLienToSocietyDetailsId: formDataLienToSocietyDetails.ProposedOfferLienToSocietyDetailsId,
+          Uniquekey: formDataLienToSocietyDetails.Uniquekey,
+          BuildingId: buildingId,
+          ProjectId: Number(projectId),
+          ResidentialAreaSqFt: formDataLienToSocietyDetails.ResidentialAreaSqFt,
+          CommercialAreaSqFt: formDataLienToSocietyDetails.CommercialAreaSqFt,
+          NumberOfResidentialLienUnits: formDataLienToSocietyDetails.NumberOfResidentialLienUnits,
+          NumberOfCommercialLienUnits: formDataLienToSocietyDetails.NumberOfCommercialLienUnits,
+          LienToSocietyWithPaymentStageJSON: paymentStageJSON
+        };
+
+        const response = await ProposedOfferService.apiCallAddUpdateLienToSocietyDetails(payload);
+
+        if (E.isRight(response)) {
+          const isAdd = formDataLienToSocietyDetails.ProposedOfferLienToSocietyDetailsId === 0;
+
+          if (isAdd) {
+            const newRecord = response.right.Data[0] as ProposedOfferLienToSocietyDetailsData;
+            setLienToSocietyDetailsData(newRecord);
+            setFormDataLienToSocietyDetails({
+              ...formDataLienToSocietyDetails,
+              ProposedOfferLienToSocietyDetailsId: newRecord.ProposedOfferLienToSocietyDetailsId || 0,
+              Uniquekey: newRecord.Uniquekey || formDataLienToSocietyDetails.Uniquekey
+            });
+            if (newRecord.ProposedOfferSecurityDepositDetailsWithPaymentStageData) {
+              setLienToSocietyPaymentStageList(newRecord.ProposedOfferSecurityDepositDetailsWithPaymentStageData);
+            }
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+          } else {
+            const updatedRecord = response.right.Data[0] as ProposedOfferLienToSocietyDetailsData;
+            setLienToSocietyDetailsData(updatedRecord);
+            if (updatedRecord.ProposedOfferSecurityDepositDetailsWithPaymentStageData) {
+              setLienToSocietyPaymentStageList(updatedRecord.ProposedOfferSecurityDepositDetailsWithPaymentStageData);
+            }
+            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+          }
+        } else {
+          addToast({ type: "error", title: response.left?.message });
+        }
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message })
+      },
+      undefined,
+      Number(formDataLienToSocietyDetails.ProposedOfferLienToSocietyDetailsId) === 0 ? 'Add Lien to Society Details' : 'Update Lien to Society Details'
+    )
+  };
+
+  const handleAddLienToSocietyPaymentStageModal = () => {
+    setEditingLienToSocietyPaymentStageData(null);
+    setFormDataLienToSocietyPaymentStage({
+      ...initialFormStateLienToSocietyPaymentStage(),
+      ProjectId: Number(projectId),
+      BuildingId: formDataLienToSocietyDetails.BuildingId || 0
+    });
+    setErrorsLienToSocietyPaymentStage({});
+    setIsAddUpdateLienToSocietyPaymentStageModalOpen(true);
+  };
+
+  const handleEditLienToSocietyPaymentStage = useCallback((row: ProposedOfferLienToSocietyDetailsWithPaymentStageData, index: number) => {
+    setEditingLienToSocietyPaymentStageData({ row, index });
+    setFormDataLienToSocietyPaymentStage({
+      ...row,
+      Type: row.Type || '',
+      Stage: row.Stage || '',
+      CarpetAreaSqFt: row.CarpetAreaSqFt || 0,
+      IsRelease: row.IsRelease ?? false
+    });
+    setErrorsLienToSocietyPaymentStage({});
+    setIsAddUpdateLienToSocietyPaymentStageModalOpen(true);
+  }, []);
+
+  const validateLienToSocietyPaymentStageForm = (): {
+    isValid: boolean
+    errors: { [key: string]: string }
+  } => {
+    const newErrors: { [key: string]: string } = {}
+
+    if (!formDataLienToSocietyPaymentStage.Type?.trim()) {
+      newErrors.Type = "Type is required"
+    }
+
+    if (!formDataLienToSocietyPaymentStage.Stage?.trim()) {
+      newErrors.Stage = "Stage is required"
+    }
+
+    if (!formDataLienToSocietyPaymentStage.CarpetAreaSqFt) {
+      newErrors.CarpetAreaSqFt = "Carpet Area is required"
+    }
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors
+    }
+  }
+
+  const handleAddUpdateLienToSocietyPaymentStage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorsLienToSocietyPaymentStage({});
+
+    const validation = validateLienToSocietyPaymentStageForm();
+
+    if (!validation.isValid) {
+      setErrorsLienToSocietyPaymentStage(validation.errors);
+      return;
+    }
+
+    const paymentStageToSave: ProposedOfferLienToSocietyDetailsWithPaymentStageData = {
+      ...formDataLienToSocietyPaymentStage,
+      ProposedOfferLienToSocietyDetailsWithPaymentStageId: editingLienToSocietyPaymentStageData?.row.ProposedOfferLienToSocietyDetailsWithPaymentStageId ?? 0,
+      ProjectId: Number(projectId),
+      BuildingId: Number(buildingId)
+    };
+
+    setLienToSocietyPaymentStageList(prevList => {
+      if (editingLienToSocietyPaymentStageData) {
+        const updated = [...prevList];
+        updated[editingLienToSocietyPaymentStageData.index] = paymentStageToSave;
+        return updated;
+      }
+
+      return [...prevList, paymentStageToSave];
+    });
+
+    setIsAddUpdateLienToSocietyPaymentStageModalOpen(false);
+    setEditingLienToSocietyPaymentStageData(null);
+    setFormDataLienToSocietyPaymentStage(initialFormStateLienToSocietyPaymentStage());
+    setErrorsLienToSocietyPaymentStage({});
+  };
+
+  const handleConfirmationDialogBoxOpenLienToSocietyPaymentStage = useCallback((row: ProposedOfferLienToSocietyDetailsWithPaymentStageData, index: number) => {
+    setDeleteLienToSocietyPaymentStageData({ row, index });
+    setIsConfirmationDialogBoxOpenLienToSocietyPaymentStage(true);
+  }, []);
+
+  const handleDeleteLienToSocietyPaymentStage = () => {
+    if (!deleteLienToSocietyPaymentStageData) return;
+
+    const removeIndex = deleteLienToSocietyPaymentStageData.index;
+
+    if (removeIndex < 0) {
+      setIsConfirmationDialogBoxOpenLienToSocietyPaymentStage(false);
+      setDeleteLienToSocietyPaymentStageData(null);
+      addToast({ type: 'error', title: 'Unable to find the selected record to delete' });
+      return;
+    }
+
+    setLienToSocietyPaymentStageList(prev => prev.filter((_, i) => i !== removeIndex));
+
+    setIsConfirmationDialogBoxOpenLienToSocietyPaymentStage(false);
+    setDeleteLienToSocietyPaymentStageData(null);
+    addToast({ type: 'success', title: 'Lien to Society Payment Stage Removed' });
+  };
+
+  const lienToSocietyPaymentStageColumns = useMemo<TableColumn[]>(
+    () => [
+      {
+        key: 'Type',
+        label: 'Type',
+        width: '20',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'Stage',
+        label: 'Stage',
+        width: '20',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'CarpetAreaSqFt',
+        label: 'Carpet Area (Sq Ft)',
+        width: '20',
+        sortable: false,
+        align: 'right',
+        render: (value) => value ? `${value}` : '-'
+      },
+      {
+        key: 'IsRelease',
+        label: 'Is Release',
+        width: '20',
+        sortable: false,
+        align: 'center',
+        render: (value) => value ? 'Yes' : 'No'
+      },
+      {
+        key: 'Action',
+        label: 'Action',
+        width: '20',
+        sortable: false,
+        align: 'center',
+        render: (_value, row, index) => (
+          <div className="flex items-center justify-center gap-2">
+            {canAction && (
+              <>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleEditLienToSocietyPaymentStage(row, index);
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  size="sm"
+                  title="Edit"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleConfirmationDialogBoxOpenLienToSocietyPaymentStage(row, index);
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  size="sm"
+                  style={{ color: 'red' }}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+          </div>
+        )
+      }
+    ],
+    [canAction, handleEditLienToSocietyPaymentStage, handleConfirmationDialogBoxOpenLienToSocietyPaymentStage]
+  );
+
+  return (
+    <>
+      <div className="space-y-6">
+        {/* Lien to Society Area Details Section */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+            Lien to Society Area Details*
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <Input
+                label="Residential Area (SqFt)"
+                required
+                type="text"
+                value={formDataLienToSocietyDetails.ResidentialAreaSqFt || ''}
+                onChange={(e) => handleFieldChangeLienToSocietyDetails('ResidentialAreaSqFt', filterNumbersWithDecimal(e.target.value))}
+                error={errorsLienToSocietyDetails.ResidentialAreaSqFt}
+                placeholder="Enter Residential Area"
+                rightIcon="SqFt"
+              />
+            </div>
+            <div>
+              <Input
+                label="Number of Residential Lien Units"
+                required
+                type="text"
+                value={formDataLienToSocietyDetails.NumberOfResidentialLienUnits || ''}
+                onChange={(e) => handleFieldChangeLienToSocietyDetails('NumberOfResidentialLienUnits', filterNumbers(e.target.value))}
+                error={errorsLienToSocietyDetails.NumberOfResidentialLienUnits}
+                placeholder="Enter Number of Residential Lien Units"
+              />
+            </div>
+            <div>
+              <Input
+                label="Commercial Area (SqFt)"
+                required
+                type="text"
+                value={formDataLienToSocietyDetails.CommercialAreaSqFt || ''}
+                onChange={(e) => handleFieldChangeLienToSocietyDetails('CommercialAreaSqFt', filterNumbersWithDecimal(e.target.value))}
+                error={errorsLienToSocietyDetails.CommercialAreaSqFt}
+                placeholder="Enter Commercial Area"
+                rightIcon="SqFt"
+              />
+            </div>
+            <div>
+              <Input
+                label="Number of Commercial Lien Units"
+                required
+                type="text"
+                value={formDataLienToSocietyDetails.NumberOfCommercialLienUnits || ''}
+                onChange={(e) => handleFieldChangeLienToSocietyDetails('NumberOfCommercialLienUnits', filterNumbers(e.target.value))}
+                error={errorsLienToSocietyDetails.NumberOfCommercialLienUnits}
+                placeholder="Enter Number of Commercial Lien Units"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Lien to Society List Section */}
+        <div className="space-y-4 pb-5">
+          <div className="flex items-center justify-between">
+            <div className="flex-1 border-b border-gray-300 pb-2">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Lien to Society List
+              </h3>
+            </div>
+            {canAction && (
+              <Button
+                onClick={handleAddLienToSocietyPaymentStageModal}
+                color="blue"
+                size="sm"
+                title="Add Lien Details"
+              >
+                Add Lien Details
+              </Button>
+            )}
+          </div>
+
+          <DataTable
+            data={lienToSocietyPaymentStageList}
+            columns={lienToSocietyPaymentStageColumns}
+            emptyMessage="No Lien to Society Details Found"
+            fixedHeight={false}
+            recordsPerPage={20}
+            className="min-w-full"
+          />
+        </div>
+      </div>
+      <BottomActionBar
+        cancelText="Cancel"
+        saveText={(formDataLienToSocietyDetails.ProposedOfferLienToSocietyDetailsId && formDataLienToSocietyDetails.ProposedOfferLienToSocietyDetailsId > 0) ? 'Update' : 'Add'}
+        onCancel={() => {
+          setFormDataLienToSocietyDetails({
+            ...initialFormStateLienToSocietyDetails(),
+            ProjectId: Number(projectId)
+          });
+          setLienToSocietyPaymentStageList([]);
+          setErrorsLienToSocietyDetails({});
+          fetchLienToSocietyDetailsData();
+        }}
+        canAction={canAction}
+        onSave={handleSaveLienToSocietyDetails}
+        isLoading={isLoading}
+      />
+
+      {/* ADD UPDATE LIEN TO SOCIETY PAYMENT STAGE MODAL */}
+      <Modal
+        isOpen={isAddUpdateLienToSocietyPaymentStageModalOpen}
+        onClose={() => {
+          setIsAddUpdateLienToSocietyPaymentStageModalOpen(false);
+          setEditingLienToSocietyPaymentStageData(null);
+          setFormDataLienToSocietyPaymentStage(initialFormStateLienToSocietyPaymentStage());
+          setErrorsLienToSocietyPaymentStage({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateLienToSocietyPaymentStageModalOpen(false);
+          setEditingLienToSocietyPaymentStageData(null);
+          setFormDataLienToSocietyPaymentStage(initialFormStateLienToSocietyPaymentStage());
+          setErrorsLienToSocietyPaymentStage({});
+        }}
+        title={editingLienToSocietyPaymentStageData ? 'Update Lien to Society Payment Stage' : 'Add Lien to Society Payment Stage'}
+        onSubmit={handleAddUpdateLienToSocietyPaymentStage}
+        saveText={editingLienToSocietyPaymentStageData ? 'Update' : 'Add'}
+        cancelText="Cancel"
+        loading={isLoading}
+        size='lg'
+      >
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+            <div>
+              <SinglePageSelection
+                label="Type"
+                placeholder='Select Type'
+                required
+                value={formDataLienToSocietyPaymentStage.Type || ''}
+                onChange={(e) => handleFieldChangeLienToSocietyPaymentStage('Type', String(e))}
+                options={FLAT_UNIT_TYPE
+                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .map(opt => ({
+                    label: opt.name,
+                    value: opt.id
+                  }))
+                }
+                error={errorsLienToSocietyPaymentStage.Type}
+              />
+            </div>
+            <div>
+              <Input
+                label="Stage"
+                required
+                type="text"
+                value={formDataLienToSocietyPaymentStage.Stage || ''}
+                onChange={(e) => handleFieldChangeLienToSocietyPaymentStage('Stage', e.target.value)}
+                error={errorsLienToSocietyPaymentStage.Stage}
+                placeholder="Enter Stage"
+              />
+            </div>
+            <div>
+              <Input
+                label="Carpet Area (SqFt)"
+                required
+                type="text"
+                value={formDataLienToSocietyPaymentStage.CarpetAreaSqFt || ''}
+                onChange={(e) => {
+                  const val = filterNumbersWithDecimal(e.target.value);
+                  handleFieldChangeLienToSocietyPaymentStage('CarpetAreaSqFt', val);
+                }}
+                error={errorsLienToSocietyPaymentStage.CarpetAreaSqFt}
+                placeholder="Enter Carpet Area"
+                rightIcon="SqFt"
+              />
+            </div>
+            <div className="flex items-center">
+              <Checkbox
+                label="Is Release"
+                checked={formDataLienToSocietyPaymentStage.IsRelease ?? false}
+                onChange={(e) => handleFieldChangeLienToSocietyPaymentStage('IsRelease', e.target.checked)}
+              />
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* DELETE CONFIRMATION LIEN TO SOCIETY PAYMENT STAGE MODAL */}
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpenLienToSocietyPaymentStage}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpenLienToSocietyPaymentStage(false);
+          setDeleteLienToSocietyPaymentStageData(null);
+        }}
+        onConfirm={handleDeleteLienToSocietyPaymentStage}
+        loading={isLoading}
+        pageName='lien to society payment stage'
+      />
+    </>
+  );
+};
+

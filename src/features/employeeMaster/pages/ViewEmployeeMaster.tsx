@@ -47,7 +47,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     }>({});
 
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const { canAction } = useMenuPermissions('/employeeMaster');
 
     // TOAST
@@ -98,7 +98,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadEmployee = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const filterParams: FilterWithPaginationEmployeeMasterRequest = {
@@ -144,7 +144,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadAssetMasterMapping = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationAssetMappingMasterRequest = {
@@ -182,7 +182,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadEmployeeDocuments = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
 
@@ -227,7 +227,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadShiftMappings = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationShiftMappingMasterRequest = {
@@ -264,7 +264,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadWeekOffMappings = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationWeekOffMappingMasterRequest = {
@@ -301,7 +301,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadProjects = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationProjectMasterRequest = {
@@ -337,7 +337,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadEmployeeEducationDetails = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationEmployeeEducationDetailsRequest = {
@@ -374,7 +374,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadEmployeeExperienceDetails = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationEmployeeExperienceDetailsRequest = {

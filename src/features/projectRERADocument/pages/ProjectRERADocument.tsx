@@ -51,7 +51,7 @@ const ProjectRERADocument: React.FC = () => {
   //#region STATE
   const [projectRERADocumentList, setProjectRERADocumentList] = useState<ProjectRERADocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [expandHeaderProjectRERADocumentName, setExpandHeaderProjectRERADocumentName] = useState<string>('');
   const [expandHeaderProjectRERADocumentId, setExpandHeaderProjectRERADocumentId] = useState<number>(0);
 
@@ -212,7 +212,7 @@ const ProjectRERADocument: React.FC = () => {
   const loadProjectRERADocumentTabs = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const response = await fetchProjectRERADocumentCategoryDropdown(1, Number(projectId));
@@ -267,7 +267,7 @@ const ProjectRERADocument: React.FC = () => {
   const loadProjectRERADocument = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
 
@@ -803,7 +803,7 @@ const ProjectRERADocument: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -882,7 +882,7 @@ const ProjectRERADocument: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 

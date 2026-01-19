@@ -23,7 +23,7 @@ import { useProjectMasterListState } from '@/features/projectMaster/context/Proj
 const Company: React.FC = () => {
   //#region STATE MANAGEMENT
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [compantMasterList, setCompanyMasterList] = useState<CompanyMasterData[]>([]);
 
   // TOAST
@@ -105,7 +105,7 @@ const Company: React.FC = () => {
   const loadProjectMasterWithCompany = async (ProjectId: number) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const response = await ProjectMasterService.apiCallPullProjectMasterWithCompany(ProjectId);
@@ -220,7 +220,7 @@ const Company: React.FC = () => {
   const loadCompanys = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationCompanyMasterRequest = {
@@ -317,7 +317,7 @@ const Company: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const payload = PushProjectMasterWithCompanyData();

@@ -1577,7 +1577,7 @@ const AddUpdateTenant: React.FC = () => {
         }}
         title={editingApplicantData ? 'Update Tenant Applicant' : 'Add Tenant Applicant'}
         onSubmit={handleAddUpdateTenantApplicant}
-        saveText={editingApplicantData ? 'Update' : 'Save'}
+        saveText={editingApplicantData ? 'Update' : 'Add'}
         cancelText="Cancel"
         loading={isLoading}
         size='large-half'

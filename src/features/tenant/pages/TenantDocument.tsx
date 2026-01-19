@@ -50,7 +50,7 @@ export const TenantDocument: React.FC = () => {
   //#region STATE MANAGEMENT
   const [tenantDocumentList, setTenantDocumentList] = useState<TenantDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
@@ -169,7 +169,7 @@ export const TenantDocument: React.FC = () => {
   const loadTenantDocuments = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         let sortByParam = undefined;
@@ -259,7 +259,7 @@ export const TenantDocument: React.FC = () => {
   const handleExportTenantDocuments = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
 
@@ -599,7 +599,7 @@ export const TenantDocument: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const payload = PushTenantDocumentFormData();
@@ -676,7 +676,7 @@ export const TenantDocument: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 

@@ -44,7 +44,7 @@ export const TncMaster: React.FC = () => {
   //#region STATE
   const [tncList, setTncList] = useState<TncMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
@@ -149,7 +149,7 @@ export const TncMaster: React.FC = () => {
   const loadTnc = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const moduleName =
@@ -228,7 +228,7 @@ export const TncMaster: React.FC = () => {
   const handleExportTnc = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationTncMasterRequest = {
@@ -606,7 +606,7 @@ export const TncMaster: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const payload = PushTncMasterFormData();
@@ -681,7 +681,7 @@ export const TncMaster: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 

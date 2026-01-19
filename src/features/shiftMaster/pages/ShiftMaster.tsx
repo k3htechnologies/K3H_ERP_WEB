@@ -33,7 +33,7 @@ export const ShiftMaster: React.FC = () => {
   //#region STATE MANAGEMENT
   const [ShiftMasterList, setShiftMasterList] = useState<ShiftMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // USE NAVIGATE
   const navigate = useNavigate();
@@ -98,7 +98,7 @@ export const ShiftMaster: React.FC = () => {
   const loadShifts = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationShiftMasterRequest = {
@@ -164,7 +164,7 @@ export const ShiftMaster: React.FC = () => {
   const handleExportShifts = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationShiftMasterRequest = {
@@ -405,7 +405,7 @@ export const ShiftMaster: React.FC = () => {
 
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         const params: DeleteShiftMasterRequest = {
 

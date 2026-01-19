@@ -17,7 +17,7 @@ const ViewAssetMappingMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     // NAVIGATION
     const navigate = useNavigate();
@@ -43,7 +43,7 @@ const ViewAssetMappingMaster: React.FC = () => {
     const loadAssetMappingData = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationAssetMappingMasterRequest = {

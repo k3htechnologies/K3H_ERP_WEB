@@ -46,7 +46,7 @@ export const OutDoor: React.FC = () => {
   //#region STATE
   const [outDoorList, setOutDoorList] = useState<OutDoorMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
 
   // PAGINATION STATE
@@ -151,7 +151,7 @@ export const OutDoor: React.FC = () => {
   const loadOutDoors = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         let sortByParam = undefined;
@@ -240,7 +240,7 @@ export const OutDoor: React.FC = () => {
   const handleExportOutDoors = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam = undefined
         if (sortInfo) {
@@ -362,7 +362,7 @@ export const OutDoor: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         try {
           // Capture time first to ensure accuracy
@@ -478,7 +478,7 @@ export const OutDoor: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         const response = await OutDoorService.apiCallAddUpdateConclusion({
           OutdoorId: selectedOutdoorItem.OutdoorId,
@@ -588,7 +588,7 @@ export const OutDoor: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         const response = await OutDoorService.apiCallDeleteOutDoor(payload);
         if (E.isRight(response)) {

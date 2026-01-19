@@ -15,7 +15,7 @@ import { runApiWithLoader } from "@/core/utils";
 const ViewWeekOffMaster: React.FC = () => {
 
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const navigate = useNavigate();
     const { listState } = useWeekOffMasterListState();
     const weekOffName = listState.weekOffName;
@@ -33,7 +33,7 @@ const ViewWeekOffMaster: React.FC = () => {
     const loadWeekOff = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationWeekOffMasterRequest = {

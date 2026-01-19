@@ -32,7 +32,7 @@ export const AssetMappingMaster: React.FC = () => {
   //#region STATE MANAGEMENT
   const [AssetMappingMasterList, setAssetMappingMasterList] = useState<AssetMappingMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // USE NAVIGATE
   const navigate = useNavigate();
@@ -93,7 +93,7 @@ export const AssetMappingMaster: React.FC = () => {
   const loadAssetMappings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationAssetMappingMasterRequest = {
@@ -161,7 +161,7 @@ export const AssetMappingMaster: React.FC = () => {
   const handleExportAssetMappings = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationAssetMappingMasterRequest = {

@@ -53,7 +53,7 @@ export const Profile: React.FC = () => {
     }>({});
     const [projectMasterList, setProjectMasterList] = useState<ProjectMasterData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     // Modal states
     const [isEducationModalOpen, setIsEducationModalOpen] = useState(false);
@@ -146,7 +146,7 @@ export const Profile: React.FC = () => {
     const loadEmployee = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const filterParams: FilterWithPaginationEmployeeMasterRequest = {
@@ -190,7 +190,7 @@ export const Profile: React.FC = () => {
     const loadAssetMasterMapping = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationAssetMappingMasterRequest = {
@@ -228,7 +228,7 @@ export const Profile: React.FC = () => {
     const loadEmployeeDocuments = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
 
@@ -273,7 +273,7 @@ export const Profile: React.FC = () => {
     const loadShiftMappings = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationShiftMappingMasterRequest = {
@@ -310,7 +310,7 @@ export const Profile: React.FC = () => {
     const loadWeekOffMappings = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationWeekOffMappingMasterRequest = {
@@ -347,7 +347,7 @@ export const Profile: React.FC = () => {
     const loadEmployeeEducationDetails = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationEmployeeEducationDetailsRequest = {
@@ -384,7 +384,7 @@ export const Profile: React.FC = () => {
     const loadEmployeeExperienceDetails = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationEmployeeExperienceDetailsRequest = {
@@ -421,7 +421,7 @@ export const Profile: React.FC = () => {
     const loadProjects = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationProjectMasterRequest = {
@@ -541,7 +541,7 @@ export const Profile: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: AddUpdateEmployeeEducationDetailsRequest = {
                     EmployeeEducationDetailsId: educationFormData.EmployeeEducationDetailsId,
@@ -589,7 +589,7 @@ export const Profile: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: DeleteEmployeeEducationDetailsRequest = {
                     EmployeeEducationDetailsId: selectedEducationItem.EmployeeEducationDetailsId,
@@ -695,7 +695,7 @@ export const Profile: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: AddUpdateEmployeeExperienceDetailsRequest = {
                     EmployeeExperienceDetailsId: experienceFormData.EmployeeExperienceDetailsId,
@@ -744,7 +744,7 @@ export const Profile: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: DeleteEmployeeExperienceDetailsRequest = {
                     EmployeeExperienceDetailsId: selectedExperienceItem.EmployeeExperienceDetailsId,

@@ -17,7 +17,7 @@ import { useToast } from "@/core/hooks/useToast";
 export const ViewCompantMaster: React.FC = () => {
     //#region STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const [editCompanyData, setEditCompanyData] = useState<CompanyMasterData | null>(null);
 
     const { canAction } = useMenuPermissions('/companyMaster');
@@ -42,7 +42,7 @@ export const ViewCompantMaster: React.FC = () => {
     const loadCompany = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const filterParams: FilterWithPaginationCompanyMasterRequest = {
                     PageNumber: 1,

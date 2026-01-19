@@ -33,7 +33,7 @@ export const DeductionMaster: React.FC = () => {
   //#region STATE MANAGEMENT
   const [DeductionMasterList, setDeductionMasterList] = useState<DeductionMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // USE NAVIGATE
   const navigate = useNavigate();
@@ -98,7 +98,7 @@ export const DeductionMaster: React.FC = () => {
   const loadDeductions = async (page: number, filterParam: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationDeductionMasterRequest = {
@@ -166,7 +166,7 @@ export const DeductionMaster: React.FC = () => {
 
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationDeductionMasterRequest = {
@@ -438,7 +438,7 @@ export const DeductionMaster: React.FC = () => {
 
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         const params: DeleteDeductionMasterRequest = {
 

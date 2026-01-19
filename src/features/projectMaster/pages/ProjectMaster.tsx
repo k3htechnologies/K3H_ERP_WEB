@@ -30,7 +30,7 @@ export const ProjectMaster: React.FC = () => {
   //#region STATE
   const [projectMasterList, setProjectMasterList] = useState<ProjectMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
   const { listState, updateListState } = useProjectMasterListState();
   const { searchTerm, filters, sortInfo } = listState;
@@ -89,7 +89,7 @@ export const ProjectMaster: React.FC = () => {
   const loadProjects = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationProjectMasterRequest = {
@@ -162,7 +162,7 @@ export const ProjectMaster: React.FC = () => {
   const handleExportProjects = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationProjectMasterRequest = {

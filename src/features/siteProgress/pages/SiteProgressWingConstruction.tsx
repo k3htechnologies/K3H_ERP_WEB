@@ -19,7 +19,7 @@ const SiteProgressWingConstruction: React.FC = () => {
   //#region STATE
   const [wingConstructionList, setWingConstructionList] = useState<SiteProgressWingConstructionData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
   const { pagination, setPagination } = usePagination(20);
@@ -52,7 +52,7 @@ const SiteProgressWingConstruction: React.FC = () => {
   const loadWingConstruction = async (page: number, term: string = searchTerm) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         if (term) { }

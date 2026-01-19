@@ -1,7 +1,3 @@
-// ============================================================================
-// LOADER
-// ============================================================================
-
 interface LoaderProps {
     loading: boolean
     children: React.ReactNode
@@ -22,18 +18,22 @@ export const Loader: React.FC<LoaderProps> = ({
                     <div className="h-8 w-8">
                         <img
                             src="favicon.png"
-                            alt="ERP"
+                            alt="HRR ERP"
                             className="h-8 w-8"
                             onError={(e) => {
                                 e.currentTarget.src = '/src/assets/images/appLogo.png'
                             }}
                         />
                     </div>
-                    <div className="text-lg font-semibold text-gray-800">K3H ERP</div>
+                    <div className="text-lg font-semibold text-gray-800">HRR ERP</div>
                 </div>
                 <div className="w-full h-px bg-gray-200"></div>
                 <div className="flex flex-col items-center space-y-3">
-                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+                    <img
+                        src="/src/assets/loader.gif"
+                        alt="Loading..."
+                        className="h-10 w-10"
+                    />
                     <p className="text-gray-600 text-sm">{title}</p>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import type { FilterInfo, SortInfo, TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -72,12 +72,8 @@ export const useApprovalDocumentCategoryMaster = () => {
   //#endregion
 
   //#region INITIALIZATION
-  const hasFetchedInitialApprovalDocumentCategories = useRef(false);
-
   useEffect(() => {
     if (!projectId) return;
-    if (hasFetchedInitialApprovalDocumentCategories.current) return;
-    hasFetchedInitialApprovalDocumentCategories.current = true;
     fetchApprovalDocumentCategoryList();
   }, [projectId]);
 

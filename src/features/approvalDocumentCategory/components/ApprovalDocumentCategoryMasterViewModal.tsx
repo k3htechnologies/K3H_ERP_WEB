@@ -92,7 +92,7 @@ export const ApprovalDocumentCategoryMasterViewModal: React.FC<ApprovalDocumentC
                 color="red"
                 variant="solid"
                 colorMode="light"
-                size="sm"
+                size="md"
                 onClick={handleDelete}
               >
                 Delete
@@ -100,7 +100,7 @@ export const ApprovalDocumentCategoryMasterViewModal: React.FC<ApprovalDocumentC
 
               <Button
                 color="blue"
-                size="sm"
+                size="md"
                 onClick={handleEdit}
               >
                 Edit

@@ -92,7 +92,7 @@ export const ProjectDocumentCategoryMasterViewModal: React.FC<ProjectDocumentCat
                 color="red"
                 variant="solid"
                 colorMode="light"
-                size="sm"
+                size="md"
                 onClick={handleDelete}
               >
                 Delete
@@ -100,7 +100,7 @@ export const ProjectDocumentCategoryMasterViewModal: React.FC<ProjectDocumentCat
 
               <Button
                 color="blue"
-                size="sm"
+                size="md"
                 onClick={handleEdit}
               >
                 Edit

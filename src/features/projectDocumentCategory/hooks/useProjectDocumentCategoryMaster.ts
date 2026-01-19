@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo,  useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import type { FilterInfo, SortInfo, TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -72,12 +72,9 @@ export const useProjectDocumentCategoryMaster = () => {
   //#endregion
 
   //#region INITIALIZATION
-  const hasFetchedInitialProjectDocumentCategories = useRef(false);
 
   useEffect(() => {
     if (!projectId) return;
-    if (hasFetchedInitialProjectDocumentCategories.current) return;
-    hasFetchedInitialProjectDocumentCategories.current = true;
     fetchProjectDocumentCategoryList();
   }, [projectId]);
 
@@ -128,7 +125,7 @@ export const useProjectDocumentCategoryMaster = () => {
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           ProjectDocumentCategoryId: filterParams.ProjectDocumentCategoryId ? Number(filterParams.ProjectDocumentCategoryId) : 0,
-          ProjectDocumentCategory: searchtext ??filterParams.ProjectDocumentCategory?.trim() ?? undefined,
+          ProjectDocumentCategory: searchtext ?? filterParams.ProjectDocumentCategory?.trim() ?? undefined,
           ProjectId: Number(projectId),
           SortBy: getSortByParam(sortInfo ?? null, projectDocumentCategoryMasterColumns)
         };
@@ -221,7 +218,7 @@ export const useProjectDocumentCategoryMaster = () => {
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     loadProjectDocumentCategories(1, filters, sort, searchTerm || undefined);
-   }, [filters, searchTerm]);
+  }, [filters, searchTerm]);
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS

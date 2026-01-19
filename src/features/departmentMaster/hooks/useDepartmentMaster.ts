@@ -73,7 +73,7 @@ export const useDepartmentMaster = () => {
     fetchDepartmentList()
   }, [])
 
-  //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
+ 
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
@@ -421,6 +421,7 @@ export const useDepartmentMaster = () => {
                   : item
               )
             )
+            
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 

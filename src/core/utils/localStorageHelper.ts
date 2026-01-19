@@ -1035,7 +1035,15 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
 
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
-            
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.VENDOR);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_MASTER);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.ASSET_MASTER);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.ASSET_MAPPING_MASTER);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.DEDUCTION_MASTER);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.SHIFT_MASTER);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.WEEK_OFF_MASTER);
+
 
         } catch (error) {
             console.error('ERROR : CLEARING LOCAL STORAGE:', error)

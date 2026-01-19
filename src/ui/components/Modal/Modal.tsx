@@ -166,8 +166,8 @@ export const Modal: React.FC<ModalProps> = ({
 
             <div className={`bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} ${className} max-h-[90vh] flex flex-col`}>
                 {/* Header */}
-                <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">
+                <div className="flex items-center justify-between h-16 border-b border-[#00000080 mx-5">
+                    <h3 className="text-lg font-semibold text-[#1D1D1D]-600">
                         {title}
                     </h3>
                     <Button

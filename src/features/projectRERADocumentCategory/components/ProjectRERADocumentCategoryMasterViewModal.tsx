@@ -92,7 +92,7 @@ export const ProjectRERADocumentCategoryMasterViewModal: React.FC<ProjectRERADoc
                 color="red"
                 variant="solid"
                 colorMode="light"
-                size="sm"
+                size="md"
                 onClick={handleDelete}
               >
                 Delete
@@ -100,7 +100,7 @@ export const ProjectRERADocumentCategoryMasterViewModal: React.FC<ProjectRERADoc
 
               <Button
                 color="blue"
-                size="sm"
+                size="md"
                 onClick={handleEdit}
               >
                 Edit

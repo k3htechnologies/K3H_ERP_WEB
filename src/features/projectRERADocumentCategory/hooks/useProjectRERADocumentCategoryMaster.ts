@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import type { FilterInfo, SortInfo, TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -69,12 +69,9 @@ export const useProjectRERADocumentCategoryMaster = () => {
   //#endregion
 
   //#region INITIALIZATION
-  const hasFetchedInitialProjectRERADocumentCategories = useRef(false);
-
+  
   useEffect(() => {
     if (!projectId) return;
-    if (hasFetchedInitialProjectRERADocumentCategories.current) return;
-    hasFetchedInitialProjectRERADocumentCategories.current = true;
     fetchProjectRERADocumentCategoryList();
   }, [projectId]);
 

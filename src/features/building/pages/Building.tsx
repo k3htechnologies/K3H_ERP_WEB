@@ -20,8 +20,8 @@ import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { FileText, Info, Trash2 } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { useBuildingListState } from '@/features/building/context/BuildingListStateContext';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 export const Building: React.FC = () => {
   //#region STATE
@@ -650,19 +650,15 @@ export const Building: React.FC = () => {
       />
 
       {/* DELETE CONFIRMATION MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteBuildingData(null)
         }}
         onConfirm={handleDeleteBuilding}
-        title="You are about to delete a building?"
-        message="Deleting this building will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='building'
       />
 
       <Modal

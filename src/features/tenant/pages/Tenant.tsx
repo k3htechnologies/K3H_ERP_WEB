@@ -31,7 +31,7 @@ import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { useTenantListState } from '@/features/tenant/context/TenantListStateContext';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 export const Tenant: React.FC = () => {
   //#region STATE
@@ -57,7 +57,7 @@ export const Tenant: React.FC = () => {
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
-    const [deleteTenantData, setDeleteTenantData] = useState<TenantData | null>(null)
+  const [deleteTenantData, setDeleteTenantData] = useState<TenantData | null>(null)
 
 
   //#endregion
@@ -277,13 +277,13 @@ export const Tenant: React.FC = () => {
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
-  
-    const handleConfirmationDialogBoxOpen = useCallback((row: TenantData) => {
-      setDeleteTenantData(row)
-      setIsConfirmationDialogBoxOpen(true)
-    }, [])
-  
-    //#endregion
+
+  const handleConfirmationDialogBoxOpen = useCallback((row: TenantData) => {
+    setDeleteTenantData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
+
+  //#endregion
   //#region TABLE COLUMN
   const tenantColumns = useMemo<TableColumn[]>(
     () => [
@@ -476,7 +476,7 @@ export const Tenant: React.FC = () => {
         )
       }
     ],
-    [handleViewTenantDetails, handleViewTenantDocument,handleConfirmationDialogBoxOpen, canAction]
+    [handleViewTenantDetails, handleViewTenantDocument, handleConfirmationDialogBoxOpen, canAction]
 
   );
   //#endregion
@@ -624,62 +624,62 @@ export const Tenant: React.FC = () => {
   //#endregion
 
   //#region  DELETE TENANT EVENT
-    const handleDeleteTenant = async () => {
-      setIsConfirmationDialogBoxOpen(false);
+  const handleDeleteTenant = async () => {
+    setIsConfirmationDialogBoxOpen(false);
 
-      if (!deleteTenantData) return;
+    if (!deleteTenantData) return;
 
-      await runApiWithLoader(
-        setIsLoading,
-        setLoadingMessage,
-        async () => {
-  
-          const params: DeleteTenantRequest = {
-            TenantId: deleteTenantData.TenantId,
-            UniqueKey: deleteTenantData.Uniquekey ?? "",
-            BuildingId: Number(buildingId),
-            ProjectId: Number(projectId)
-          }
-  
-          const response = await tenantService.apiCallDeleteTenant(params);
-  
-          if (E.isRight(response)) {
-  
-            setTenantList(prevData => prevData.filter(item => item.TenantId !== deleteTenantData.TenantId));
-  
-            setPagination({
-              currentPage: pagination.currentPage,
-              totalRecords: pagination.totalRecords - 1,
-              totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
-            });
-            addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
-  
-            setIsConfirmationDialogBoxOpen(false);
-  
-            setDeleteTenantData(null);
-  
-          } else {
-  
-            addToast({ type: 'error', title: response.left.message });
-  
-            setIsConfirmationDialogBoxOpen(false);
-  
-          }
-  
-          return response
-        },
-        undefined,
-        (error: unknown) => {
-          const err = error as { message?: string };
-          addToast({ type: 'error', title: err.message || 'An error occurred' })
-        },
-        undefined,
-        'Delete Tenant'
-      )
-    }
-  
-    //#endregion
-  
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const params: DeleteTenantRequest = {
+          TenantId: deleteTenantData.TenantId,
+          UniqueKey: deleteTenantData.Uniquekey ?? "",
+          BuildingId: Number(buildingId),
+          ProjectId: Number(projectId)
+        }
+
+        const response = await tenantService.apiCallDeleteTenant(params);
+
+        if (E.isRight(response)) {
+
+          setTenantList(prevData => prevData.filter(item => item.TenantId !== deleteTenantData.TenantId));
+
+          setPagination({
+            currentPage: pagination.currentPage,
+            totalRecords: pagination.totalRecords - 1,
+            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+          });
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteTenantData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+        }
+
+        return response
+      },
+      undefined,
+      (error: unknown) => {
+        const err = error as { message?: string };
+        addToast({ type: 'error', title: err.message || 'An error occurred' })
+      },
+      undefined,
+      'Delete Tenant'
+    )
+  }
+
+  //#endregion
+
   return (
 
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -836,21 +836,16 @@ export const Tenant: React.FC = () => {
         }}
       />
 
-      {/* DELETE CONFIRMATION MODAL */}
-            <ConfirmationDialogBox
-              isOpen={isConfirmationDialogBoxOpen}
-              onClose={() => {
-                setIsConfirmationDialogBoxOpen(false)
-                setDeleteTenantData(null)
-              }}
-              onConfirm={handleDeleteTenant}
-              title="You are about to delete a tenant?"
-              message="Deleting this tenant will permanently remove its contents."
-              confirmText="Delete"
-              cancelText="Cancel"
-              loading={isLoading}
-              variant="danger"
-            />
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteTenantData(null)
+        }}
+        onConfirm={handleDeleteTenant}
+        loading={isLoading}
+        pageName='tenant'
+      />
     </div>
   );
 };

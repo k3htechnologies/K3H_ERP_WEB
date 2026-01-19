@@ -21,9 +21,9 @@ import * as E from 'fp-ts/Either';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 const initialFormState = (): AddUpdateCompanyMasterRequest => ({
   CompanyId: 0,
@@ -612,12 +612,12 @@ const AddCompany: React.FC = () => {
           return (
             <div className="flex items-center justify-between w-full gap-1">
 
-                <TooltipText
-                  text={value || "-"}
-                  maxWidth="250px"
-                  tooltipThreshold={25}
-                />
-              
+              <TooltipText
+                text={value || "-"}
+                maxWidth="250px"
+                tooltipThreshold={25}
+              />
+
 
               {/* RIGHT: actions */}
               <div className="flex items-center gap-1 shrink-0">
@@ -1167,7 +1167,7 @@ const AddCompany: React.FC = () => {
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         {/* ============================================================= [BASIC COMPANY DETAILS] ============================================================================================= */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Company Details</h3>
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Basic Company Details</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
@@ -1579,7 +1579,7 @@ const AddCompany: React.FC = () => {
 
         {/* ============================================================= [COMPANY PARTNER ] ============================================================================================= */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between border-b border-gray-300 pb-2">
+          <div className="flex items-center justify-between border-b border-gray-500 pb-2 pt-5">
             <h3 className="text-lg font-semibold text-gray-900  pb-2">
               Company Partner
             </h3>
@@ -1926,19 +1926,15 @@ const AddCompany: React.FC = () => {
 
 
       {/* DELETE CONFIRMATION APPLICANT MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpenCompanyPartner}
         onClose={() => {
           setIsConfirmationDialogBoxOpenCompanyPartner(false)
           setDeleteCompanyPartnerData(null)
         }}
         onConfirm={handleDeleteCompanyPartner}
-        title="You are about to delete a company partner?"
-        message="Deleting this company partner will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='company partner'
       />
     </div >
   )

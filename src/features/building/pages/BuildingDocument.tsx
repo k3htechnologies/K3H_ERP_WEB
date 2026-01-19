@@ -18,7 +18,6 @@ import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { useNavigate } from 'react-router-dom';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
@@ -27,6 +26,7 @@ import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useBuildingListState } from '@/features/building/context/BuildingListStateContext';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 
 const initialFormState = (): AddUpdateBuildingDocumentRequest => ({
@@ -999,7 +999,7 @@ const BuildingDocument: React.FC = () => {
           renderRow: (fetchedData) => {
 
             const details: BuildingDocumentData[] = Array.isArray(fetchedData) ? fetchedData : (fetchedData ? [fetchedData] : []);
-            
+
             if (!details || details.length === 0) {
 
               return (
@@ -1146,20 +1146,17 @@ const BuildingDocument: React.FC = () => {
 
       </Modal>
 
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteBuildingDocumentDetailsData(null)
         }}
         onConfirm={handleDeleteDocument}
-        title="You are about to delete a document?"
-        message="Deleting this document will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='document'
       />
+
     </div>
   );
 };

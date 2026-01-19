@@ -23,10 +23,10 @@ import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
-import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useTenantListState } from "@/features/tenant/context/TenantListStateContext";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 
 const initialFormState = (): AddUpdateTenantRequest => ({
@@ -681,7 +681,7 @@ const AddUpdateTenant: React.FC = () => {
             />
           );
         }
-        
+
       },
       {
         key: 'IFSCCode',
@@ -1914,20 +1914,15 @@ const AddUpdateTenant: React.FC = () => {
         </div>
       </Modal>
 
-      {/* DELETE CONFIRMATION APPLICANT MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteTenantApplicantData(null)
         }}
         onConfirm={handleDeleteApplicant}
-        title="You are about to delete a applicant?"
-        message="Deleting this applicant will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='applicant'
       />
     </div >
   );

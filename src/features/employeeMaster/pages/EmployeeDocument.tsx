@@ -17,7 +17,6 @@ import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
@@ -32,6 +31,7 @@ import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useEmployeeListState } from '@/features/employeeMaster/context/EmployeeListStateContext';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 
 const initialFormState = (): AddUpdateEmployeeDocumentRequest => ({
@@ -776,7 +776,7 @@ export const EmployeeDocument: React.FC = () => {
         onExportPdf={handleExportEmployeeDocumentPdf}
         exportLoading={isLoading}
       />
-      <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
+      <div className="flex items-center gap-3 mb-6 border-b border-gray-500 pb-3">
         <HeaderActionBar
           titleText="Employee Name : "
           subTitleText={employeeName}
@@ -897,19 +897,15 @@ export const EmployeeDocument: React.FC = () => {
       </Modal>
 
       {/* DELETE CONFIRMATION EMPLOYEE DOCUMENT MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteEmployeeDocumentDetailsData(null)
         }}
         onConfirm={handleDeleteEmployeeDocument}
-        title="You are about to delete an employee document?"
-        message="Deleting this employee document will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='employee document'
       />
 
 

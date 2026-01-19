@@ -20,7 +20,6 @@ import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
@@ -34,6 +33,7 @@ import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWitho
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 import { getDocumentStatusColor } from './ProjectDocumentStatus';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 
 const initialFormState = (): AddUpdateProjectDocumentRequest => ({
@@ -1407,19 +1407,15 @@ const ProjectDocument: React.FC = () => {
 
       </Modal>
 
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteProjectDocumentDetailsData(null)
         }}
         onConfirm={handleDeleteDocument}
-        title="You are about to delete a document?"
-        message="Deleting this document will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='document'
       />
 
       <ExportImport

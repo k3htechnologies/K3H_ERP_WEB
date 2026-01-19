@@ -1,5 +1,4 @@
 import useToast from '@/core/hooks/useToast';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Loader } from '@/core/utils/loader';
 import type { EmployeeMasterData, FilterWithPaginationEmployeeMasterRequest } from '@/features/employeeMaster/models/EmployeeMasterModel';
 import { DataTable, type FilterInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
@@ -9,7 +8,7 @@ import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { Modal } from '@/ui/components/Modal/Modal';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import {useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { AddUpdateProjectMasterWithEmployeeRequest, DeleteProjectMasterWithEmployeeRequest } from '@/features/projectMaster/models/ProjectMasterModel';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
@@ -22,6 +21,7 @@ import { employeeMasterService } from '@/features/employeeMaster/services/Employ
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { useProjectMasterListState } from '@/features/projectMaster/context/ProjectMasterListStateContext';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 const Employee: React.FC = () => {
   //#region STATE MANAGEMENT
@@ -36,9 +36,9 @@ const Employee: React.FC = () => {
   const navigate = useNavigate();
 
   const { listState } = useProjectMasterListState();
-    const projectId = listState.projectId;
-    const projectName = listState.projectName;
-    const uniquekey= listState.uniquekey;
+  const projectId = listState.projectId;
+  const projectName = listState.projectName;
+  const uniquekey = listState.uniquekey;
 
   //FILTER STATES
   const [filters, setFilters] = useState<FilterInfo>({});
@@ -347,7 +347,7 @@ const Employee: React.FC = () => {
 
   //#region  BACK TO PROJECT MASTER PAGE
   const handleBackToListProjectMaster = () => {
-     navigate("/projectMaster");
+    navigate("/projectMaster");
   };
   //#endregion
 
@@ -717,19 +717,15 @@ const Employee: React.FC = () => {
       </Modal>
 
       {/* DELETE CONFIRMATION PROJECT MASTER WTTH EMPLOYEE MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpenForEmployee}
         onClose={() => {
           setIsConfirmationDialogBoxOpenForEmployee(false)
           setDeleteProjectMasterWithEmployeeData(null)
         }}
         onConfirm={handleDeleteProjectMasterWithEmployee}
-        title="You are about to delete a employee?"
-        message="Deleting this employee will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='employee'
       />
 
     </div>

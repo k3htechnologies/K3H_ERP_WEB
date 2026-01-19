@@ -404,7 +404,7 @@ const AddUpdateProjectMaster: React.FC = () => {
             <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
                 <form onSubmit={handleSubmit}>
                     <div className="space-y-4 pb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Details</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Basic Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {/* Redevelopment Checkbox */}
                             <div className="space-y-4 pb-4">

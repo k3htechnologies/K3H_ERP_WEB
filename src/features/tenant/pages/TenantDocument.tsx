@@ -17,7 +17,6 @@ import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
@@ -32,6 +31,7 @@ import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useTenantListState } from '@/features/tenant/context/TenantListStateContext';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 
 const initialFormState = (): AddUpdateTenantDocumentRequest => ({
@@ -106,7 +106,7 @@ export const TenantDocument: React.FC = () => {
 
   //#region TENANT LIST STATE CONTEXT
   const { listState } = useTenantListState();
-  const { tenantId, buildingId, tenantName,buildingName } = listState;
+  const { tenantId, buildingId, tenantName, buildingName } = listState;
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -901,20 +901,16 @@ export const TenantDocument: React.FC = () => {
         </div>
       </Modal>
 
-      {/* DELETE CONFIRMATION TENANT DOCUMENT MODAL */}
-      <ConfirmationDialogBox
+
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteTenantDocumentDetailsData(null)
         }}
         onConfirm={handleDeleteTenantDocument}
-        title="You are about to delete a tenant document?"
-        message="Deleting this tenant document will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='tenant document'
       />
 
 

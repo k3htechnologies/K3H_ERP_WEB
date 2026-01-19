@@ -26,9 +26,9 @@ import { PROJECT_DOCUMENT_STATUS } from '@/core/constants';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { getDocumentStatusColor } from '@/features/projectDocument/pages/ProjectDocumentStatus';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 
 const initialFormState = (): AddUpdateProjectRERADocumentRequest => ({
@@ -971,7 +971,7 @@ const ProjectRERADocument: React.FC = () => {
           onTabChange={(t) => {
 
             setSearchTerm('');
-            
+
             setActiveTab(t.id);
 
             setActiveTabName(t.label);
@@ -1153,22 +1153,16 @@ const ProjectRERADocument: React.FC = () => {
 
       </Modal>
       {/* DELETE CONFIRMATION DIALOG BOX */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteProjectRERADocumentDetailsData(null)
         }}
         onConfirm={handleDeleteProjectRERADocument}
-        title="You are about to delete a RERA document?"
-        message="Deleting this RERA document will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='RERA document'
       />
-
-
     </div>
   );
 };

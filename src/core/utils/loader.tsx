@@ -1,3 +1,4 @@
+import loaderGif from "@/assets/loader.gif";
 interface LoaderProps {
     loading: boolean
     children: React.ReactNode
@@ -30,7 +31,7 @@ export const Loader: React.FC<LoaderProps> = ({
                 <div className="w-full h-px bg-gray-200"></div>
                 <div className="flex flex-col items-center space-y-3">
                     <img
-                        src="/src/assets/loader.gif"
+                        src={loaderGif}
                         alt="Loading..."
                         className="h-10 w-10"
                     />

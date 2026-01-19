@@ -14,7 +14,6 @@ import { employeeResignationService } from '@/features/resignation/services/Empl
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Button, Input } from '@/ui/components/forms';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { TextArea } from '@/ui/components/forms/Textarea';
@@ -25,6 +24,7 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { Edit, Trash2 } from 'lucide-react';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 const initialFormState = (): AddUpdateEmployeeResignationRequest => ({
   EmployeeResignationId: 0,
@@ -229,7 +229,7 @@ export const EmployeeResignation: React.FC = () => {
 
     const formDataToSend = new FormData();
 
-    formDataToSend.append('EmployeeResignationId', formData.EmployeeResignationId.toString()??0);
+    formDataToSend.append('EmployeeResignationId', formData.EmployeeResignationId.toString() ?? 0);
 
     formDataToSend.append('UniqueKey', formData.UniqueKey ?? '');
 
@@ -241,7 +241,7 @@ export const EmployeeResignation: React.FC = () => {
 
     formDataToSend.append('ExpectedRelievingDate', formData.ExpectedRelievingDate ?? '');
 
-    formDataToSend.append('IsAnyOfferInHand', formData.IsAnyOfferInHand.toString()??'false');
+    formDataToSend.append('IsAnyOfferInHand', formData.IsAnyOfferInHand.toString() ?? 'false');
 
     formDataToSend.append('OfferAmount', String(formData.OfferAmount ?? 0));
 
@@ -463,7 +463,7 @@ export const EmployeeResignation: React.FC = () => {
                   <FieldItem label="Reason Of Leaving" value={data.ReasonOfLeaving} />
                   <FieldItem label="Is Any Offer In Hand" value={data.IsAnyOfferInHand ? 'Yes' : 'No'} />
                   <FieldItem label="Offer Amount" value={data.OfferAmount ?? 0} urls={data?.OfferLetterURL} isIcon />
-                  <FieldItem label="Approval Status" value={data.ApprovalStatus} className=''/>
+                  <FieldItem label="Approval Status" value={data.ApprovalStatus} className='' />
                 </div>
 
               </section>
@@ -584,20 +584,17 @@ export const EmployeeResignation: React.FC = () => {
 
 
       {/* DELETE CONFIRMATION EMPLOYEE RESIGNATION MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteEmployeeResignationDetailsData(null)
         }}
         onConfirm={handleDeleteEmployeeResignation}
-        title="You are about to delete an employee resignation?"
-        message="Deleting this resignation will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='employee resignation'
       />
+
 
     </div>
   )

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Button } from '@/ui/components/forms';
-import { Edit, Trash2 } from 'lucide-react';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import type { HolidayMasterData } from '@/features/holidayMaster/models/HolidayMasterModel';

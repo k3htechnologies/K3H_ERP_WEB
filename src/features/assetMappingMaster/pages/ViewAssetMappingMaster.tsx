@@ -1,32 +1,78 @@
 import { useNavigate } from "react-router-dom";
 import { useAssetMappingMasterListState } from "@/features/assetMappingMaster/context/AssetMappingMasterListStateContext";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import type { AssetMappingMasterData } from "../models/AssetMappingMasterModel";
+import type { AssetMappingMasterData, FilterWithPaginationAssetMappingMasterRequest } from "../models/AssetMappingMasterModel";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
+import { runApiWithLoader } from "@/core/utils";
+import { assetMappingMasterService } from "../services/AssetMappingMasterService";
+import * as E from 'fp-ts/Either';
+import useToast from "@/core/hooks/useToast";
+import { Loader } from "@/core/utils/loader";
 
 const ViewAssetMappingMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
-    const [isLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setIsLoadingMessage] = useState('');
 
     // NAVIGATION
     const navigate = useNavigate();
     const { listState } = useAssetMappingMasterListState();
+
+    // TOAST
+    const { addToast } = useToast();
 
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/assetMappingMaster');
 
     //#endregion
 
-    // Will be loaded from API if needed
-    const [editAssetData, setEditAssetData] = useState<AssetMappingMasterData | null>(null);
+    const [editAssetMappingData, setEditAssetMappingData] = useState<AssetMappingMasterData | null>(null);
 
-    // MESSAGE IF DATA NOT FOUND
-    if (!editAssetData) return <div>No Asset Data Found</div>;
+    useEffect(() => {
+        if (listState.assetMappingMasterId) {
+            loadAssetMappingData();
+        }
+    }, [listState.assetMappingMasterId]);
+
+    const loadAssetMappingData = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationAssetMappingMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    AssetMasterMappingId: listState.assetMappingMasterId
+                };
+
+                const response = await assetMappingMasterService.apiCallPullAssetMappingMaster(params);
+
+                 if (E.isRight(response)) {
+
+                    setEditAssetMappingData(response.right.Data[0]);
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+                }
+            },
+
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+
+            undefined,
+
+            'Loading Asset Data'
+        );
+    };
 
 
     //#region EDIT ASSET MAPPING
@@ -44,10 +90,12 @@ const ViewAssetMappingMaster: React.FC = () => {
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+            
+            <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
             <HeaderActionBar
                 titleText={'Asset Mapping Master : '}
-                subTitleText={editAssetData.AssetName ?? "-"}
+                subTitleText={editAssetMappingData!.AssetName ?? "-"}
 
                 cancelText="Cancel"
                 EditText="Edit"
@@ -55,7 +103,7 @@ const ViewAssetMappingMaster: React.FC = () => {
                 canAction={canAction}
                 onEdit={() => {
 
-                    if (editAssetData) handleEditAssetMappingMaster(editAssetData!);
+                    if (editAssetMappingData!) handleEditAssetMappingMaster(editAssetMappingData!!);
 
                 }}
                 isLoading={isLoading}
@@ -76,18 +124,18 @@ const ViewAssetMappingMaster: React.FC = () => {
 
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Asset Name" value={editAssetData.AssetName} />
-                                    <FieldItem label="Asset Code" value={editAssetData.AssetCode} />
-                                    <FieldItem label="Asset Type" value={editAssetData.AssetType} />
+                                    <FieldItem label="Asset Name" value={editAssetMappingData!.AssetName} />
+                                    <FieldItem label="Asset Code" value={editAssetMappingData!.AssetCode} />
+                                    <FieldItem label="Asset Type" value={editAssetMappingData!.AssetType} />
 
                                 </div>
                             </div>
 
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Asset Brand" value={editAssetData.AssetBrand} />
-                                    <FieldItem label="Asset Model" value={editAssetData.AssetModel} />
-                                    <FieldItem label="Serial Number" value={editAssetData.SerialNumber} />
+                                    <FieldItem label="Asset Brand" value={editAssetMappingData!.AssetBrand} />
+                                    <FieldItem label="Asset Model" value={editAssetMappingData!.AssetModel} />
+                                    <FieldItem label="Serial Number" value={editAssetMappingData!.SerialNumber} />
 
                                 </div>
                             </div>
@@ -104,32 +152,32 @@ const ViewAssetMappingMaster: React.FC = () => {
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                                    <FieldItem label="Employee Name" value={editAssetData.EmployeeName} />
+                                    <FieldItem label="Employee Name" value={editAssetMappingData!.EmployeeName} />
 
                                     <FieldItem
                                         label="Assigned Date"
                                         value={
-                                            editAssetData.AssignedDate
-                                                ? formatDate_dd_MonthName_yy(editAssetData.AssignedDate)
+                                            editAssetMappingData!.AssignedDate
+                                                ? formatDate_dd_MonthName_yy(editAssetMappingData!.AssignedDate)
                                                 : "-"
                                         }
 
                                     />
-                                    <FieldItem label="Condition On Issue" value={editAssetData.ConditionOnIssue} />
+                                    <FieldItem label="Condition On Issue" value={editAssetMappingData!.ConditionOnIssue} />
 
                                 </div>
                             </div>
 
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                    <FieldItem label="Remarks" value={editAssetData.Remarks} />
+                                    <FieldItem label="Remarks" value={editAssetMappingData!.Remarks} />
                                 </div>
                             </div>
                         </div>
 
                     </section>
 
-                    
+
 
                     {/* ================= RETURN DETAILS ================= */}
 
@@ -145,8 +193,8 @@ const ViewAssetMappingMaster: React.FC = () => {
                                     <FieldItem
                                         label="Return Date"
                                         value={
-                                            editAssetData.ReturnDate
-                                                ? formatDate_dd_MonthName_yy(editAssetData.ReturnDate)
+                                            editAssetMappingData!.ReturnDate
+                                                ? formatDate_dd_MonthName_yy(editAssetMappingData!.ReturnDate)
                                                 : "-"
                                         }
 
@@ -157,7 +205,7 @@ const ViewAssetMappingMaster: React.FC = () => {
                             </div>
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                    <FieldItem label="Condition On Return" value={editAssetData.ConditionOnReturn} />
+                                    <FieldItem label="Condition On Return" value={editAssetMappingData!.ConditionOnReturn} />
                                 </div>
 
                             </div>
@@ -181,12 +229,12 @@ const ViewAssetMappingMaster: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Created By" value={editAssetData.CreatedBy} />
+                                    <FieldItem label="Created By" value={editAssetMappingData!.CreatedBy} />
                                     <FieldItem
                                         label="Created Date"
                                         value={
-                                            editAssetData.CreatedDate
-                                                ? formatDate_dd_MonthName_yy(editAssetData.CreatedDate)
+                                            editAssetMappingData!.CreatedDate
+                                                ? formatDate_dd_MonthName_yy(editAssetMappingData!.CreatedDate)
                                                 : "-"
                                         }
 
@@ -196,12 +244,12 @@ const ViewAssetMappingMaster: React.FC = () => {
 
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Modified By" value={editAssetData.ModifiedBy} />
+                                    <FieldItem label="Modified By" value={editAssetMappingData!.ModifiedBy} />
                                     <FieldItem
                                         label="Modified Date"
                                         value={
-                                            editAssetData.ModifiedDate
-                                                ? formatDate_dd_MonthName_yy(editAssetData.ModifiedDate)
+                                            editAssetMappingData!.ModifiedDate
+                                                ? formatDate_dd_MonthName_yy(editAssetMappingData!.ModifiedDate)
                                                 : "-"
                                         }
 
@@ -222,8 +270,8 @@ const ViewAssetMappingMaster: React.FC = () => {
                                     <FieldItem
                                         label="Purchase Date"
                                         value={
-                                            editAssetData.PurchaseDate
-                                                ? formatDate_dd_MonthName_yy(editAssetData.PurchaseDate)
+                                            editAssetMappingData!.PurchaseDate
+                                                ? formatDate_dd_MonthName_yy(editAssetMappingData!.PurchaseDate)
                                                 : "-"
                                         }
 
@@ -231,21 +279,21 @@ const ViewAssetMappingMaster: React.FC = () => {
                                     <FieldItem
                                         label="Warranty Expiry Date"
                                         value={
-                                            editAssetData.WarrantyExpiryDate
-                                                ? formatDate_dd_MonthName_yy(editAssetData.WarrantyExpiryDate)
+                                            editAssetMappingData!.WarrantyExpiryDate
+                                                ? formatDate_dd_MonthName_yy(editAssetMappingData!.WarrantyExpiryDate)
                                                 : "-"
                                         }
 
                                     />
-                                    
+
 
                                 </div>
                             </div>
 
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Asset Cost (₹)" value={editAssetData.AssetCost} />
-                                    <FieldItem label="Supplier Name" value={editAssetData.SupplierName} />
+                                    <FieldItem label="Asset Cost (₹)" value={editAssetMappingData!.AssetCost} />
+                                    <FieldItem label="Supplier Name" value={editAssetMappingData!.SupplierName} />
                                 </div>
                             </div>
                         </div>

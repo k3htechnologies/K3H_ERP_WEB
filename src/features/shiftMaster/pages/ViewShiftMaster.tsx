@@ -1,31 +1,76 @@
 import { useNavigate } from "react-router-dom";
 import { useShiftMasterListState } from "@/features/shiftMaster/context/ShiftMasterListStateContext";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import type { ShiftMasterData } from "@/features/shiftMaster/models/ShiftMasterModel";
+import type { FilterWithPaginationShiftMasterRequest, ShiftMasterData } from "@/features/shiftMaster/models/ShiftMasterModel";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import useToast from "@/core/hooks/useToast";
+import { runApiWithLoader } from "@/core/utils";
+import * as E from 'fp-ts/Either';
+import { shiftMasterService } from "@/features/shiftMaster/services/ShiftMasterService";
+import { Loader } from "@/core/utils/loader";
 
 const ViewShiftMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
-    const [isLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setIsLoadingMessage] = useState('');
 
     // NAVIGATION
     const navigate = useNavigate();
     const { listState } = useShiftMasterListState();
+    const { addToast } = useToast();
 
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/shiftMaster');
     //#endregion
 
     // Will be loaded from API if needed
-    const [editShiftData, setEditShiftData] = useState<ShiftMasterData | null>(null);
+    const [editShiftMasterData, setEditShiftMasterData] = useState<ShiftMasterData | null>(null);
 
-    // MESSAGE IF DATA NOT FOUND
-    if (!editShiftData) return <div>No Shift Data Found</div>;
+    useEffect(() => {
+        if (listState.shiftMasterId) {
+            loadShiftMasterData();
+        }
+    }, [listState.shiftMasterId]);
+
+    const loadShiftMasterData = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationShiftMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    ShiftManagementMasterId: listState.shiftMasterId
+                };
+
+                const response = await shiftMasterService.apiCallPullShiftMaster(params);
+
+                if (E.isRight(response)) {
+
+                    setEditShiftMasterData(response.right.Data[0]);
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+                }
+            },
+
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+
+            undefined,
+
+            'Loading Shift Data'
+        );
+    };
 
     //#region ADD SHIFT MASTER
     const handleEditShiftMaster = (row: ShiftMasterData) => {
@@ -42,15 +87,18 @@ const ViewShiftMaster: React.FC = () => {
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+
+            <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+
             <HeaderActionBar
                 titleText={'Shift Master : '}
-                subTitleText={editShiftData.ShiftName}
+                subTitleText={editShiftMasterData!.ShiftName}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListShiftMaster()}
                 canAction={canAction}
                 onEdit={() => {
-                    if (editShiftData) handleEditShiftMaster(editShiftData!);
+                    if (editShiftMasterData!) handleEditShiftMaster(editShiftMasterData!!);
                 }}
                 isLoading={isLoading}
             />
@@ -67,8 +115,8 @@ const ViewShiftMaster: React.FC = () => {
 
                             <div className="lg:col-span-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Shift Begin Time" value={editShiftData.ShiftName} />
-                                    <FieldItem label="Shift End Time" value={editShiftData.ShiftCode} />
+                                    <FieldItem label="Shift Begin Time" value={editShiftMasterData!.ShiftName} />
+                                    <FieldItem label="Shift End Time" value={editShiftMasterData!.ShiftCode} />
 
                                 </div>
                             </div>
@@ -83,15 +131,15 @@ const ViewShiftMaster: React.FC = () => {
 
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Shift Begin Time" value={editShiftData.ShiftBeginTime} />
-                                    <FieldItem label="Shift End Time" value={editShiftData.ShiftEndTime} />
-                                    <FieldItem label="Shift Duration Time" value={editShiftData.ShiftDurationTime} />
+                                    <FieldItem label="Shift Begin Time" value={editShiftMasterData!.ShiftBeginTime} />
+                                    <FieldItem label="Shift End Time" value={editShiftMasterData!.ShiftEndTime} />
+                                    <FieldItem label="Shift Duration Time" value={editShiftMasterData!.ShiftDurationTime} />
 
                                 </div>
                             </div>
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Shift Work Duration Time" value={editShiftData.ShiftWorkDurationTime} />
+                                    <FieldItem label="Shift Work Duration Time" value={editShiftMasterData!.ShiftWorkDurationTime} />
                                 </div>
                             </div>
                         </div>
@@ -105,15 +153,15 @@ const ViewShiftMaster: React.FC = () => {
 
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Break Begin Time" value={editShiftData.BreakBeginTime} />
-                                    <FieldItem label="Break End Time" value={editShiftData.BreakEndTime} />
-                                    <FieldItem label="Break Duration Time" value={editShiftData.BreakDurationTime} />
+                                    <FieldItem label="Break Begin Time" value={editShiftMasterData!.BreakBeginTime} />
+                                    <FieldItem label="Break End Time" value={editShiftMasterData!.BreakEndTime} />
+                                    <FieldItem label="Break Duration Time" value={editShiftMasterData!.BreakDurationTime} />
                                 </div>
                             </div>
 
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Grace Time" value={editShiftData.GraceTime} />
+                                    <FieldItem label="Grace Time" value={editShiftMasterData!.GraceTime} />
 
                                 </div>
                             </div>
@@ -129,22 +177,22 @@ const ViewShiftMaster: React.FC = () => {
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
 
-                                    <FieldItem label="First Half Up To" value={editShiftData.FirstHalfUpTo} />
+                                    <FieldItem label="First Half Up To" value={editShiftMasterData!.FirstHalfUpTo} />
                                 </div>
                             </div>
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
 
-                                    <FieldItem label="Calculate Absent if working hours less than" value={editShiftData.AbsentWorkingHours} />
-                                    <FieldItem label="Calculate Half day working hours less than" value={editShiftData.HalfDayWorkingHours} />
+                                    <FieldItem label="Calculate Absent if working hours less than" value={editShiftMasterData!.AbsentWorkingHours} />
+                                    <FieldItem label="Calculate Half day working hours less than" value={editShiftMasterData!.HalfDayWorkingHours} />
                                 </div>
                             </div>
 
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
 
-                                    <FieldItem label="Mark Half Day if Intime After" value={editShiftData.HalfDayInTimeAfter} />
-                                    <FieldItem label="Mark Half Day if Outtime After" value={editShiftData.HalfDayOutTimeBefore} />
+                                    <FieldItem label="Mark Half Day if Intime After" value={editShiftMasterData!.HalfDayInTimeAfter} />
+                                    <FieldItem label="Mark Half Day if Outtime After" value={editShiftMasterData!.HalfDayOutTimeBefore} />
 
                                 </div>
                             </div>
@@ -159,7 +207,7 @@ const ViewShiftMaster: React.FC = () => {
 
                             <div className="lg:col-span-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Grace Time In Minutes" value={editShiftData.GraceTime} />
+                                    <FieldItem label="Grace Time In Minutes" value={editShiftMasterData!.GraceTime} />
                                 </div>
                             </div>
                         </div>
@@ -173,7 +221,7 @@ const ViewShiftMaster: React.FC = () => {
 
                             <div className="lg:col-span-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                    <FieldItem label="Remarks" value={editShiftData.Remarks} />
+                                    <FieldItem label="Remarks" value={editShiftMasterData!.Remarks} />
 
                                 </div>
                             </div>
@@ -195,12 +243,12 @@ const ViewShiftMaster: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Created By" value={editShiftData.CreatedBy} />
+                                    <FieldItem label="Created By" value={editShiftMasterData!.CreatedBy} />
                                     <FieldItem
                                         label="Created Date"
                                         value={
-                                            editShiftData.CreatedDate
-                                                ? formatDate_dd_MonthName_yy(editShiftData.CreatedDate)
+                                            editShiftMasterData!.CreatedDate
+                                                ? formatDate_dd_MonthName_yy(editShiftMasterData!.CreatedDate)
                                                 : "-"
                                         }
 
@@ -210,12 +258,12 @@ const ViewShiftMaster: React.FC = () => {
 
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Modified By" value={editShiftData.ModifiedBy} />
+                                    <FieldItem label="Modified By" value={editShiftMasterData!.ModifiedBy} />
                                     <FieldItem
                                         label="Modified Date"
                                         value={
-                                            editShiftData.ModifiedDate
-                                                ? formatDate_dd_MonthName_yy(editShiftData.ModifiedDate)
+                                            editShiftMasterData!.ModifiedDate
+                                                ? formatDate_dd_MonthName_yy(editShiftMasterData!.ModifiedDate)
                                                 : "-"
                                         }
 

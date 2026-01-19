@@ -182,7 +182,7 @@ export const useUomMaster = () => {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
-          UomName: filters.UomName?.trim() || undefined,
+          Uom: filters.UomName?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, uomMasterColumns),
           ExportType: exportType
         }

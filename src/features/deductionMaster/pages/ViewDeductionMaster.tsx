@@ -1,30 +1,74 @@
 import { useNavigate } from "react-router-dom";
 import { useDeductionMasterListState } from "@/features/deductionMaster/context/DeductionMasterListStateContext";
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import type { DeductionMasterData } from "../models/DeductionMasterModel";
+import type { DeductionMasterData, FilterWithPaginationDeductionMasterRequest } from "@/features/deductionMaster/models/DeductionMasterModel";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
+import * as E from 'fp-ts/Either';
+import useToast from "@/core/hooks/useToast";
+import { Loader } from "@/core/utils/loader";
+import { runApiWithLoader } from "@/core/utils";
+import { DeductionMasterService } from "@/features/deductionMaster/services/DeductionMasterService";
 
 const ViewDeductionMaster: React.FC = () => {
 
     //#region  LOADING STATE MANAGEMENT
-    const [isLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setIsLoadingMessage] = useState('');
 
     // NAVIGATION
     const navigate = useNavigate();
+
     const { listState } = useDeductionMasterListState();
+
+    const { addToast } = useToast();
 
     const { canAction } = useMenuPermissions('/deductionMaster');
 
-    // Will be loaded from API if needed
-    const [editDeductionData, setEditDeductionData] = useState<DeductionMasterData | null>(null);
+    const [editDeductionMasterData, setEditDeductionMasterData] = useState<DeductionMasterData | null>(null);
 
-    // MESSAGE IF DATA NOT FOUND
-    if (!editDeductionData) return <div>No Deduction Data Found</div>;
+    useEffect(() => {
+        if (listState.deductionMasterId) {
+            loadDeductionMasterData();
+        }
+    }, [listState.deductionMasterId]);
 
+    const loadDeductionMasterData = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setIsLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationDeductionMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    DeductionMasterId: listState.deductionMasterId
+                };
+
+                const response = await DeductionMasterService.apiCallPullDeductionMaster(params);
+
+                if (E.isRight(response)) {
+
+                    setEditDeductionMasterData(response.right.Data[0]);
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+                }
+            },
+
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+
+            undefined,
+
+            'Loading Deduction Data'
+        );
+    };
     //#region EDIT DEDUCTION 
     const handleEditDeductionMaster = (row: DeductionMasterData) => {
         if (!row?.DeductionMasterId) return;
@@ -40,16 +84,17 @@ const ViewDeductionMaster: React.FC = () => {
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+            <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
             <HeaderActionBar
                 titleText={'Deduction Master : '}
-                subTitleText={editDeductionData.Name}
+                subTitleText={editDeductionMasterData!.Name}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListDeductionMaster()}
                 canAction={canAction}
                 onEdit={() => {
 
-                    if (editDeductionData) handleEditDeductionMaster(editDeductionData!);
+                    if (editDeductionMasterData!) handleEditDeductionMaster(editDeductionMasterData!!);
 
                 }}
                 isLoading={isLoading}
@@ -68,18 +113,18 @@ const ViewDeductionMaster: React.FC = () => {
 
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Name" value={editDeductionData.Name} />
+                                    <FieldItem label="Name" value={editDeductionMasterData!.Name} />
 
-                                    <FieldItem label="Type" value={editDeductionData.Type} />
-                                    <FieldItem label="Gender" value={editDeductionData.Gender} />
+                                    <FieldItem label="Type" value={editDeductionMasterData!.Type} />
+                                    <FieldItem label="Gender" value={editDeductionMasterData!.Gender} />
 
                                 </div>
                             </div>
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                                    <FieldItem label="Branch Name" value={editDeductionData.BranchName} />
-                                    <FieldItem label="State Name" value={editDeductionData.StateName} />
+                                    <FieldItem label="Branch Name" value={editDeductionMasterData!.BranchName} />
+                                    <FieldItem label="State Name" value={editDeductionMasterData!.StateName} />
 
                                 </div>
                             </div>
@@ -96,11 +141,11 @@ const ViewDeductionMaster: React.FC = () => {
 
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Applicable" value={editDeductionData.Applicable} />
-                                    <FieldItem label="Value" value={editDeductionData.Value} />
+                                    <FieldItem label="Applicable" value={editDeductionMasterData!.Applicable} />
+                                    <FieldItem label="Value" value={editDeductionMasterData!.Value} />
 
-                                    <FieldItem label="Min Salary (₹)" value={editDeductionData.MinSalary} />
-                                    <FieldItem label="Max Salary (₹)" value={editDeductionData.MaxSalary} />
+                                    <FieldItem label="Min Salary (₹)" value={editDeductionMasterData!.MinSalary} />
+                                    <FieldItem label="Max Salary (₹)" value={editDeductionMasterData!.MaxSalary} />
                                 </div>
                             </div>
                         </div>
@@ -119,12 +164,12 @@ const ViewDeductionMaster: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
                             <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Created By" value={editDeductionData.CreatedBy} />
+                                    <FieldItem label="Created By" value={editDeductionMasterData!.CreatedBy} />
                                     <FieldItem
                                         label="Created Date"
                                         value={
-                                            editDeductionData.CreatedDate
-                                                ? formatDate_dd_MonthName_yy(editDeductionData.CreatedDate)
+                                            editDeductionMasterData!.CreatedDate
+                                                ? formatDate_dd_MonthName_yy(editDeductionMasterData!.CreatedDate)
                                                 : "-"
                                         }
 
@@ -134,12 +179,12 @@ const ViewDeductionMaster: React.FC = () => {
 
                             <div className="lg:col-span-3 pt-3">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Modified By" value={editDeductionData.ModifiedBy} />
+                                    <FieldItem label="Modified By" value={editDeductionMasterData!.ModifiedBy} />
                                     <FieldItem
                                         label="Modified Date"
                                         value={
-                                            editDeductionData.ModifiedDate
-                                                ? formatDate_dd_MonthName_yy(editDeductionData.ModifiedDate)
+                                            editDeductionMasterData!.ModifiedDate
+                                                ? formatDate_dd_MonthName_yy(editDeductionMasterData!.ModifiedDate)
                                                 : "-"
                                         }
 

@@ -7,7 +7,7 @@ export const fetchUOMMasterDropdown = async (pageNumber: number, params?: { valu
         const responseEither = await uomMasterService.apiCallPullUomMaster({
             PageSize: 10,
             PageNumber: pageNumber,
-            UomName: params?.value || '',
+            Uom: params?.value || '',
             IsCheckPermission: false
         });
 

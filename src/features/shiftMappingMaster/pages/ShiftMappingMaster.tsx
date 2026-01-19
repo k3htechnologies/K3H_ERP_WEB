@@ -50,7 +50,6 @@ export const ShiftMappingMaster: React.FC = () => {
     setViewShiftMappingMasterDetailsData,
     setShowFilterPopup,
     setTempFilters,
-    setFilters,
     setErrors,
     setEditingShiftMappingMasterData,
     setIsAddUpdateModalOpen,

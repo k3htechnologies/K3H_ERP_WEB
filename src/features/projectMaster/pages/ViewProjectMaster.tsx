@@ -5,7 +5,7 @@ import { useProjectMasterListState } from '@/features/projectMaster/context/Proj
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { Tabs } from '@/ui/components/Tab/Tab';
-import type { ProjectMasterData, ProjectWithBankDetails } from '@/features/projectMaster/models/ProjectMasterModel';
+import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData, ProjectWithBankDetails } from '@/features/projectMaster/models/ProjectMasterModel';
 import ImageCarousel from '@/ui/components/ImageViewer/ImageCarousel';
 import { runApiWithLoader } from '@/core/utils';
 import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
@@ -99,7 +99,7 @@ export const ViewProjectMaster: React.FC = () => {
                     ProjectId: listState.projectId
                 };
                 const response = await ProjectMasterService.apiCallPullProjectMaster(params);
-                if (E.isRight(response) && response.right.Data.length > 0) {
+                 if (E.isRight(response)) {
                     setEditProjectData(response.right.Data[0]);
                 } else {
                     addToast({ type: 'error', title: response.left?.message || 'Failed to load project data' });

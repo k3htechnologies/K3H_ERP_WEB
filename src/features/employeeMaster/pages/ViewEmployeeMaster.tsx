@@ -56,6 +56,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     //LOCATION
     const navigate = useNavigate();
     const { listState,updateListState } = useEmployeeListState();
+    
     const employeeName = listState.employeeName || '';
 
     //#endregion

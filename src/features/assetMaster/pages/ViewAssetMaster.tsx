@@ -15,42 +15,44 @@ import { Loader } from "@/core/utils/loader";
 import useToast from "@/core/hooks/useToast";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import type { FilterWithPaginationAssetMasterRequest } from "@/features/assetMaster/models/AssetMasterModel";
-import { assetMasterService } from "../services/AssetMasterService";
+import { assetMasterService } from "@/features/assetMaster/services/AssetMasterService";
 
 const ViewAssetPage: React.FC = () => {
 
-    //#region STATE MANAGEMENT
     const [assetMappingMasterList, setAssetMappingMasterList] = useState<AssetMappingMasterData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setIsLoadingMessage] = useState('');
-    // TOAST
+    const [editAssetMasterList, setEditAssetMasterList] = useState<AssetMasterData[]>([]);
+    const { canAction } = useMenuPermissions('/assetMaster');
     const { addToast } = useToast();
-
-    // NAVIGATION
     const navigate = useNavigate();
-    const { listState } = useAssetMasterListState();
 
-    //#region TAB ACTIVITY
+    const { listState } = useAssetMasterListState();
+    const assetName = listState.assetName || '';
+    const assetMasterId = listState.assetMasterId || 0;
+
     const assetTabList = [
         { id: "Overview", label: "Overview" },
         { id: "Return History", label: "Return History" },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(assetTabList[0].id);
-    const [editAssetData, setEditAssetData] = useState<AssetMasterData | null>(null);
 
-    //#endregion
-
-    const { canAction } = useMenuPermissions('/assetMaster');
-
-    // Load asset data from API
     useEffect(() => {
-        if (listState.assetMasterId) {
+        if (activeTab === "Overview") {
+
             loadAssetData();
+
         }
-    }, [listState.assetMasterId]);
+        else if (activeTab === "Return History") {
+
+            loadAssetMappings();
+
+        }
+    }, [activeTab]);
 
     const loadAssetData = async () => {
+
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
@@ -58,11 +60,16 @@ const ViewAssetPage: React.FC = () => {
                 const params: FilterWithPaginationAssetMasterRequest = {
                     PageNumber: 1,
                     PageSize: 1,
-                    AssetMasterId: listState.assetMasterId
+                    AssetMasterId: assetMasterId
                 };
                 const response = await assetMasterService.apiCallPullAssetMaster(params);
-                if (E.isRight(response) && response.right.Data.length > 0) {
-                    setEditAssetData(response.right.Data[0]);
+
+                if (E.isRight(response)) {
+
+                    const asset = Array.isArray(response.right.Data) ? response.right.Data : [];
+
+                    setEditAssetMasterList(asset);
+
                 } else {
                     addToast({ type: 'error', title: response.left?.message || 'Failed to load asset data' });
                 }
@@ -76,16 +83,7 @@ const ViewAssetPage: React.FC = () => {
         );
     };
 
-    //#region INIT
-    useEffect(() => {
-        if (activeTab === "Return History" && editAssetData) {
-            loadAssetMappings();
-        }
-    }, [activeTab, editAssetData]);
 
-    //#endregion
-
-    //#region LOAD ASSET MAING
     const loadAssetMappings = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -95,40 +93,45 @@ const ViewAssetPage: React.FC = () => {
                 const params: FilterWithPaginationAssetMappingMasterRequest = {
                     PageNumber: 1,
                     PageSize: 100,
-                    AssetMasterId: editAssetData.AssetMasterId || 0,
+                    AssetMasterId: assetMasterId,
                     Status: 'Inactive'
                 };
 
                 const response = await assetMappingMasterService.apiCallPullAssetMappingMaster(params);
+
                 if (E.isRight(response)) {
 
                     setAssetMappingMasterList(response.right.Data);
 
                 } else {
+
                     addToast({ type: 'error', title: response.left.message });
+
                     return response;
                 }
             },
+
             undefined,
+
             (error: any) => addToast({ type: 'error', title: error.message }),
+
             undefined,
+
             'Loading Asset Mapping'
         );
     };
-    //#endregion
 
-    //#region EDIT ASSET
     const handleEditAssetMaster = (row: AssetMasterData) => {
         if (!row?.AssetMasterId) return;
         navigate(`/assetMaster/add/${row.AssetMasterId}`);
     };
-    //#endregion
 
-    //#region BACK PROJECT PAGE
     const handleBackToListAssetMaster = () => {
         navigate('/assetMaster');
     };
-    //#endregion
+
+    const editAssetData = editAssetMasterList.length > 0 ? editAssetMasterList[0] : null
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
 
@@ -136,7 +139,7 @@ const ViewAssetPage: React.FC = () => {
 
             <HeaderActionBar
                 titleText={'Asset Master : '}
-                subTitleText={editAssetData.AssetName ?? ''}
+                subTitleText={assetName ?? ''}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListAssetMaster()}
@@ -158,12 +161,14 @@ const ViewAssetPage: React.FC = () => {
 
                         setActiveTab(t.id);
 
-                        if (t.id === "Return History") loadAssetMappings()
+                        if (t.id === "Overview") loadAssetData();
+
+                        else if (t.id === "Return History") loadAssetMappings()
 
                     }}
                 />
             </div>
-            {activeTab === 'Overview' && (
+            {activeTab === 'Overview' && editAssetData && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
 
                     {/* ================= LEFT SIDE (2/3) ================= */}
@@ -178,18 +183,18 @@ const ViewAssetPage: React.FC = () => {
 
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Asset Name" value={editAssetData.AssetName} />
-                                        <FieldItem label="Asset Code" value={editAssetData.AssetCode} />
-                                        <FieldItem label="Serial Type" value={editAssetData.AssetType} />
+                                        <FieldItem label="Asset Name" value={editAssetData!.AssetName} />
+                                        <FieldItem label="Asset Code" value={editAssetData!.AssetCode} />
+                                        <FieldItem label="Serial Type" value={editAssetData!.AssetType} />
 
                                     </div>
                                 </div>
 
                                 <div className="lg:col-span-3 pb-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Asset Brand" value={editAssetData.AssetBrand} />
-                                        <FieldItem label="Asset Model" value={editAssetData.AssetModel} />
-                                        <FieldItem label="Serial Number" value={editAssetData.SerialNumber} />
+                                        <FieldItem label="Asset Brand" value={editAssetData!.AssetBrand} />
+                                        <FieldItem label="Asset Model" value={editAssetData!.AssetModel} />
+                                        <FieldItem label="Serial Number" value={editAssetData!.SerialNumber} />
 
                                     </div>
                                 </div>
@@ -207,8 +212,8 @@ const ViewAssetPage: React.FC = () => {
                                         <FieldItem
                                             label="Purchase Date"
                                             value={
-                                                editAssetData.PurchaseDate
-                                                    ? formatDate_dd_MonthName_yy(editAssetData.PurchaseDate)
+                                                editAssetData!.PurchaseDate
+                                                    ? formatDate_dd_MonthName_yy(editAssetData!.PurchaseDate)
                                                     : "-"
                                             }
 
@@ -216,20 +221,20 @@ const ViewAssetPage: React.FC = () => {
                                         <FieldItem
                                             label="Warranty Expiry Date"
                                             value={
-                                                editAssetData.WarrantyExpiryDate
-                                                    ? formatDate_dd_MonthName_yy(editAssetData.WarrantyExpiryDate)
+                                                editAssetData!.WarrantyExpiryDate
+                                                    ? formatDate_dd_MonthName_yy(editAssetData!.WarrantyExpiryDate)
                                                     : "-"
                                             }
 
                                         />
-                                        <FieldItem label="Supplier Name" value={editAssetData.SupplierName} />
+                                        <FieldItem label="Supplier Name" value={editAssetData!.SupplierName} />
 
                                     </div>
                                 </div>
 
                                 <div className="lg:col-span-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Asset Cost (₹)" value={editAssetData.AssetCost} />
+                                        <FieldItem label="Asset Cost (₹)" value={editAssetData!.AssetCost} />
                                     </div>
                                 </div>
                             </div>
@@ -250,12 +255,12 @@ const ViewAssetPage: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Created By" value={editAssetData.CreatedBy} />
+                                        <FieldItem label="Created By" value={editAssetData!.CreatedBy} />
                                         <FieldItem
                                             label="Created Date"
                                             value={
-                                                editAssetData.CreatedDate
-                                                    ? formatDate_dd_MonthName_yy(editAssetData.CreatedDate)
+                                                editAssetData!.CreatedDate
+                                                    ? formatDate_dd_MonthName_yy(editAssetData!.CreatedDate)
                                                     : "-"
                                             }
 
@@ -265,12 +270,12 @@ const ViewAssetPage: React.FC = () => {
 
                                 <div className="lg:col-span-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Modified By" value={editAssetData.ModifiedBy} />
+                                        <FieldItem label="Modified By" value={editAssetData!.ModifiedBy} />
                                         <FieldItem
                                             label="Modified Date"
                                             value={
-                                                editAssetData.ModifiedDate
-                                                    ? formatDate_dd_MonthName_yy(editAssetData.ModifiedDate)
+                                                editAssetData!.ModifiedDate
+                                                    ? formatDate_dd_MonthName_yy(editAssetData!.ModifiedDate)
                                                     : "-"
                                             }
 
@@ -289,7 +294,7 @@ const ViewAssetPage: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
                                 <div className="lg:col-span-3 pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Employee Name" value={editAssetData.EmployeeName} />
+                                        <FieldItem label="Employee Name" value={editAssetData!.EmployeeName} />
 
                                     </div>
                                 </div>

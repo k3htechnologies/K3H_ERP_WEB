@@ -40,8 +40,6 @@ export const LeaveTypeMaster: React.FC = () => {
     selectedLeaveTypeMasterColumnKeys,
     requiredLeaveTypeMasterColumnKeys,
     isShowCustomizeLeaveTypeMasterColumnsModal,
-    prevMaxCarryForward,
-
     // Setters
     setSearchTerm,
     setIsViewModalOpen,

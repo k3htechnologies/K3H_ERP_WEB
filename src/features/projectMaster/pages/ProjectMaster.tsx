@@ -227,7 +227,7 @@ export const ProjectMaster: React.FC = () => {
 
   //#region VIEW PROJECT MASTER DETAILS
   const handleViewProjectDetails = useCallback((row: ProjectMasterData) => {
-    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName });
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
     navigate('/projectMaster/view');
   }, [navigate, updateListState]);
 
@@ -236,7 +236,7 @@ export const ProjectMaster: React.FC = () => {
   //#region VIEW BANK DETAILS
 
   const handleViewProjectBank = useCallback((row: ProjectMasterData) => {
-    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName });
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
     navigate('/projectMaster/bank');
   }, [navigate, updateListState]);
   //#endregion
@@ -244,7 +244,7 @@ export const ProjectMaster: React.FC = () => {
   //#region VIEW EMPLOYEE DETAILS
 
   const handleViewProjectEmployee = useCallback((row: ProjectMasterData) => {
-    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName });
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
     navigate('/projectMaster/employee');
   }, [navigate, updateListState]);
   //#endregion
@@ -252,7 +252,7 @@ export const ProjectMaster: React.FC = () => {
   //#region VIEW COMPANY DETAILS
 
   const handleViewProjectCompany = useCallback((row: ProjectMasterData) => {
-    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName });
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
     navigate('/projectMaster/company');
   }, [navigate, updateListState]);
   //#endregion

@@ -15,21 +15,13 @@ import { Loader } from "@/core/utils/loader";
 
 const ViewShiftMaster: React.FC = () => {
 
-    //#region  LOADING STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
-
-    // NAVIGATION
     const navigate = useNavigate();
     const { listState } = useShiftMasterListState();
     const shiftName = listState.shiftName;
     const { addToast } = useToast();
-
-    //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/shiftMaster');
-    //#endregion
-
-    // Will be loaded from API if needed
     const [editShiftMasterData, setEditShiftMasterData] = useState<ShiftMasterData | null>(null);
 
     useEffect(() => {
@@ -103,6 +95,7 @@ const ViewShiftMaster: React.FC = () => {
                 }}
                 isLoading={isLoading}
             />
+            
             {editShiftMasterData && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
 

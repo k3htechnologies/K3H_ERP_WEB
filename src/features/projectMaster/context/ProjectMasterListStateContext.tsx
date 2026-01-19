@@ -19,7 +19,7 @@ const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_MASTER;
 const getInitialState = (): ProjectMasterListState => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    
+
     if (stored) {
       const parsed = JSON.parse(stored) as ProjectMasterListState;
       return {
@@ -43,7 +43,7 @@ const getInitialState = (): ProjectMasterListState => {
     projectName: "",
     pageName: "",
     uniquekey: "",
-    
+
   };
 };
 
@@ -52,7 +52,7 @@ type ProjectMasterListStateContextType = {
   updateListState: (updates: Partial<ProjectMasterListState>) => void;
   resetFilters: () => void;
   resetToDefault: () => void;
-  setProjectContext: (projectId: number, projectName: string,uniquekey: string) => void;
+  setProjectContext: (projectId: number, projectName: string, uniquekey: string) => void;
   clearProjectContext: () => void;
 };
 
@@ -69,7 +69,7 @@ export const ProjectMasterListStateProvider = ({ children }: { children: ReactNo
     }
   }, [listState]);
 
-  
+
   const updateListState = useCallback((updates: Partial<ProjectMasterListState>) => {
     setListState((prev) => ({ ...prev, ...updates }));
   }, []);
@@ -101,7 +101,7 @@ export const ProjectMasterListStateProvider = ({ children }: { children: ReactNo
   }, []);
 
 
-  const setProjectContext = useCallback((projectId: number, projectName: string,uniquekey: string) => {
+  const setProjectContext = useCallback((projectId: number, projectName: string, uniquekey: string) => {
     setListState((prev) => ({
       ...prev,
       projectId,
@@ -110,7 +110,7 @@ export const ProjectMasterListStateProvider = ({ children }: { children: ReactNo
     }));
   }, []);
 
-  
+
   const clearProjectContext = useCallback(() => {
     setListState((prev) => ({
       ...prev,

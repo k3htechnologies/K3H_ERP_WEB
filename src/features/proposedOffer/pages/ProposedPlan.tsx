@@ -244,9 +244,11 @@ export const ProposedPlan: React.FC = () => {
                                 label="Total Number of Floors"
                                 required
                                 type="text"
+                                 disabled={!canAction}
                                 value={formDataProposedPlan.TotalNumberOfFloors || ''}
                                 onChange={(e) => handleFieldChangeProposedPlan('TotalNumberOfFloors', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                                 error={errorsProposedPlan.TotalNumberOfFloors}
+                                maxLength={9}
                                 placeholder="Enter Total Number of Floors"
                             />
                         </div>
@@ -255,9 +257,11 @@ export const ProposedPlan: React.FC = () => {
                                 label="Total Units"
                                 required
                                 type="text"
+                                 disabled={!canAction}
                                 value={formDataProposedPlan.TotalUnits || ''}
                                 onChange={(e) => handleFieldChangeProposedPlan('TotalUnits', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                                 error={errorsProposedPlan.TotalUnits}
+                                maxLength={9}
                                 placeholder="Enter Total Units"
                             />
                         </div>
@@ -266,9 +270,11 @@ export const ProposedPlan: React.FC = () => {
                                 label="Total Parking"
                                 required
                                 type="text"
+                                 disabled={!canAction}
                                 value={formDataProposedPlan.TotalParking || ''}
                                 onChange={(e) => handleFieldChangeProposedPlan('TotalParking', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                                 error={errorsProposedPlan.TotalParking}
+                                maxLength={9}
                                 placeholder="Enter Total Parking"
                             />
                         </div>
@@ -293,6 +299,7 @@ export const ProposedPlan: React.FC = () => {
                             label="Select Amenities"
                             placeholder="Search Amenities"
                             options={AMENITIES_BY_CATEGORY}
+                            disabled={!canAction}
                             value={
                                 Array.isArray(formDataProposedPlan.Amenities)
                                     ? formDataProposedPlan.Amenities

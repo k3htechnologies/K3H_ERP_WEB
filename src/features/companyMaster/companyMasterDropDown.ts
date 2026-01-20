@@ -4,7 +4,7 @@ import { companyMasterService } from '@/features/companyMaster/services/CompanyM
 export const fetchCompanyMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
         const responseEither = await companyMasterService.apiCallPullCompanyMaster({
-            PageSize: 10,
+            PageSize: 20,
             PageNumber: pageNumber,
             CompanyName: params?.value || "",
             IsCheckPermission: false,

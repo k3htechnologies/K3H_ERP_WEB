@@ -267,6 +267,7 @@ export const CompanyMaster: React.FC = () => {
                             maxWidth="250px"
                             tooltipThreshold={30}
                             onClick={() => handleViewCompanyDetails(row)}
+                            
                         />
 
                     </div>
@@ -325,6 +326,7 @@ export const CompanyMaster: React.FC = () => {
                             images={parseDocumentUrls(row.GSTCertificateURL)}
                             title="GST Document"
                             triggerLabel={value || '-'}
+                            isWrap={false}
                         />
                     );
                 }
@@ -342,6 +344,7 @@ export const CompanyMaster: React.FC = () => {
                             images={parseDocumentUrls(row.PanCardURL)}
                             title="Pan Card Document"
                             triggerLabel={value || '-'}
+                            isWrap={false}
                         />
                     );
                 }
@@ -358,6 +361,7 @@ export const CompanyMaster: React.FC = () => {
                             images={parseDocumentUrls(row.CINURL)}
                             title="CIN Document"
                             triggerLabel={value || '-'}
+                            isWrap={false}
                         />
                     );
                 }

@@ -7,6 +7,7 @@ import type {
   FilterWithPaginationProposedOfferCorpusDetailsRequest,
   AddUpdateProposedOfferCorpusDetailsRequest,
   ProposedOfferCorpusDetailsWithPaymentStageData,
+  AddUpdateGenerateProposedOfferRequest,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
 import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Button, Input } from '@/ui/components/forms';
@@ -51,6 +52,8 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
   const [formDataCorpusPaymentStage, setFormDataCorpusPaymentStage] = useState<ProposedOfferCorpusDetailsWithPaymentStageData>(() => initialFormStateCorpusPaymentStage());
   const [isConfirmationDialogBoxOpenCorpusPaymentStage, setIsConfirmationDialogBoxOpenCorpusPaymentStage] = useState(false);
   const [deleteCorpusPaymentStageData, setDeleteCorpusPaymentStageData] = useState<{ row: ProposedOfferCorpusDetailsWithPaymentStageData; index: number } | null>(null);
+  const [generateCorpusDetailsData, setGenerateCorpusDetailsData] = useState<ProposedOfferCorpusDetailsData | null>(null);
+  const [isConfirmationDialogBoxOpenGenerateCorpusDetails, setIsConfirmationDialogBoxOpenGenerateCorpusDetails] = useState(false);
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
@@ -425,6 +428,55 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
 
   };
 
+  const handleConfirmationDialogBoxOpenGenerateCorpusDetails = useCallback((row: ProposedOfferCorpusDetailsData) => {
+    setGenerateCorpusDetailsData(row);
+    setIsConfirmationDialogBoxOpenGenerateCorpusDetails(true);
+  }, []);
+
+  const handleGenerateCorpusDetails = async () => {
+    if (!generateCorpusDetailsData) return;
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const payload: AddUpdateGenerateProposedOfferRequest = {
+          BuildingId: buildingId,
+          ProjectId: Number(projectId),
+          ChargeType: 'Corpus'
+        };
+
+        const response = await proposedOfferService.apiCallAddUpdateGenerateProposedOffer(payload);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+          setIsConfirmationDialogBoxOpenGenerateCorpusDetails(false);
+
+          fetchCorpusDetailsData();
+
+        } else {
+
+          addToast({ type: "error", title: response.left?.message });
+
+        }
+        return response;
+      },
+      undefined,
+
+      (error: any) => {
+
+        addToast({ type: 'error', title: error.message });
+
+      },
+      undefined,
+
+      'Generate Corpus Details'
+    )
+  };
+
   const corpusPaymentStageColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -632,6 +684,11 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
         }}
         canAction={buildingId > 0 && canAction}
         onSave={handleSaveCorpusDetails}
+        onOtherActionText="Generate"
+        onOtherAction={() =>
+          handleConfirmationDialogBoxOpenGenerateCorpusDetails(formDataCorpusDetails as ProposedOfferCorpusDetailsData)
+        }
+
         isLoading={isLoading}
       />
 
@@ -758,6 +815,21 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
         onConfirm={handleDeleteCorpusPaymentStage}
         loading={isLoading}
         pageName='corpus payment stage'
+      />
+
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpenGenerateCorpusDetails}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpenGenerateCorpusDetails(false);
+          setGenerateCorpusDetailsData(null);
+        }}
+        onConfirm={handleGenerateCorpusDetails}
+        loading={isLoading}
+        pageName='rent'
+        title='Are sure you want generate corpus?'
+        message="Once the corpus is generated, it cannot be deleted"
+        confirmText='Generate'
+        variant='generate'
       />
 
     </>

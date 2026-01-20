@@ -4,7 +4,7 @@ import { holidayMasterService } from '../holidayMaster/services/HolidayMasterSer
 export const fetchHolidayMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
         const responseEither = await holidayMasterService.apiCallPullHolidayMaster({
-            PageSize: 10,
+            PageSize: 20,
             PageNumber: pageNumber,
             HolidayName: params?.value || "",
         });

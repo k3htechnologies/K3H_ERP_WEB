@@ -528,6 +528,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.PhotoURL)}
               title="Applicant Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
 
           );
@@ -570,6 +571,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.AadharCardURL)}
               title="Aadhar Card Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }
@@ -587,6 +589,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.PanCardURL)}
               title="Pan Card Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }
@@ -603,6 +606,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.PassportURL)}
               title="Passport Number Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }
@@ -620,6 +624,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.DrivingLicenseURL)}
               title="Driving License Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }
@@ -636,6 +641,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.VotingIdURL)}
               title="Voting Id Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }
@@ -652,6 +658,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.GSTNumberURL)}
               title="GST Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }
@@ -678,6 +685,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.ChequeURL)}
               title="Cheque Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }

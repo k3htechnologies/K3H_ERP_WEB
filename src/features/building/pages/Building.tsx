@@ -557,13 +557,28 @@ export const Building: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          setBuildingList(prevData => prevData.filter(item => item.BuildingId !== deleteBuildingData.BuildingId));
+          const newTotalRecords = pagination.totalRecords - 1;
+
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (buildingList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
 
           setPagination({
-            currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords - 1,
-            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+            currentPage: pageToShow,
+            totalRecords: newTotalRecords,
+            totalPages: newTotalPages
           });
+
+          await loadBuildings(pageToShow, filters,sortInfo);
+
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
           setIsConfirmationDialogBoxOpen(false);
@@ -686,7 +701,7 @@ export const Building: React.FC = () => {
           setShowFilterPopup(false);
         }}
 
-       
+
         size="small-half"
       >
         <div className="space-y-6">

@@ -98,7 +98,7 @@ export default function MultiSelectCheckBoxWithCategory({
                 <label
                   key={item.value}
                   className={`flex items-center gap-2 border border-blue-200 rounded-md px-3 py-2 cursor-pointer
-                  ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                  ${disabled ? "opacity-150 cursor-not-allowed" : ""}`}
                 >
                   <Checkbox
                     type="checkbox"

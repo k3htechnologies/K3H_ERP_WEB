@@ -4,7 +4,7 @@ import { designationMasterService } from '@/features/designationMaster/services/
 export const fetchDesignationMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
         const responseEither = await designationMasterService.apiCallPullDesignationMaster({
-            PageSize: 10,
+            PageSize: 20,
             PageNumber: pageNumber,
             DesignationName: params?.value || '',
             IsCheckPermission: true

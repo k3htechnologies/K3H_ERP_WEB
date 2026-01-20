@@ -446,21 +446,32 @@ export const TenantDocument: React.FC = () => {
 
       },
       {
-        key: 'CreatedBy',
+        key: 'ModifiedBy',
         label: 'Last Modified By',
         width: '33',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
+        sortable: false,
+        align: 'left',
+        render: (value, row) => (
+          <TooltipText
+            text={value || row.CreatedBy || '-'}
+            maxWidth="180px"
+            tooltipThreshold={18}
+          />
+        )
       },
       {
-        key: 'CreatedDate',
+        key: 'ModifiedDate',
         label: 'Last Modified Date',
         width: '33',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
-      }
+        sortable: false,
+        align: 'left',
+        render: (value, row) =>
+          value
+            ? formatDate_dd_MonthName_yy(value)
+            : row.CreatedDate
+              ? formatDate_dd_MonthName_yy(row.CreatedDate)
+              : '-'
+      },
     ],
     // dependencies: include everything used inside that might change
     [canAction, handleEditTenantDocument, handleConfirmationDialogBoxOpen]
@@ -692,13 +703,27 @@ export const TenantDocument: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          setTenantDocumentList(prevData => prevData.filter(item => item.TenantDocumentId !== deleteTenantDocumentDetailsData.TenantDocumentId));
+          const newTotalRecords = pagination.totalRecords - 1;
+
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (tenantDocumentList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
 
           setPagination({
-            currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords - 1,
-            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+            currentPage: pageToShow,
+            totalRecords: newTotalRecords,
+            totalPages: newTotalPages
           });
+
+          await loadTenantDocuments(pageToShow, filters);
 
           addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
@@ -830,7 +855,7 @@ export const TenantDocument: React.FC = () => {
         title={editingTenantDocumentData ? 'Update Tenant Document' : 'Add Tenant Document'}
         onSubmit={handleAddUpdateTenantDocument}
         saveText={'Add'}
-        
+
         loading={isLoading}
         size='xl'
       >

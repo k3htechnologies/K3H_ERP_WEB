@@ -611,7 +611,7 @@ const Employee: React.FC = () => {
         onClose={() => setIsOpenAddProjectMasterWithEmployee(false)}
         title="Add Employee"
         onSubmit={handleAddUpdateProjectMasterWithEmployee}
-        saveText="Save"
+        saveText="Add"
         resetText=""
         size="large75"
       >

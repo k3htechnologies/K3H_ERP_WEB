@@ -7,6 +7,7 @@ import type {
   FilterWithPaginationProposedOfferRentDetailsRequest,
   AddUpdateProposedOfferRentDetailsRequest,
   DeleteProposedOfferRentDetailsRequest,
+  AddUpdateGenerateProposedOfferRequest,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
 import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Button, Input } from '@/ui/components/forms';
@@ -47,6 +48,8 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
   const [formDataRentDetails, setFormDataRentDetails] = useState<AddUpdateProposedOfferRentDetailsRequest>(() => initialFormStateRentDetails());
   const [isConfirmationDialogBoxOpenRentDetails, setIsConfirmationDialogBoxOpenRentDetails] = useState(false);
   const [deleteRentDetailsData, setDeleteRentDetailsData] = useState<ProposedOfferRentDetailsData | null>(null);
+  const [generateRentDetailsData, setGenerateRentDetailsData] = useState<ProposedOfferRentDetailsData | null>(null);
+  const [isConfirmationDialogBoxOpenGenerateRentDetails, setIsConfirmationDialogBoxOpenGenerateRentDetails] = useState(false);
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
@@ -242,6 +245,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
       setIsLoading,
       setLoadingMessage,
       async () => {
+
         const payload: DeleteProposedOfferRentDetailsRequest = {
           ProposedOfferRentDetailsId: deleteRentDetailsData.ProposedOfferRentDetailsId || 0,
           Uniquekey: deleteRentDetailsData.Uniquekey,
@@ -272,6 +276,59 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
       },
       undefined,
       'Delete Rent Details'
+    )
+  };
+
+
+  const handleConfirmationDialogBoxOpenGenerateRentDetails = useCallback((row: ProposedOfferRentDetailsData) => {
+    setGenerateRentDetailsData(row);
+    setIsConfirmationDialogBoxOpenGenerateRentDetails(true);
+  }, []);
+
+  const handleGenerateRentDetails = async () => {
+    if (!generateRentDetailsData) return;
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const payload: AddUpdateGenerateProposedOfferRequest = {
+          BuildingId: buildingId,
+          ProjectId: Number(projectId),
+          ChargeType: 'Rent',
+          Tenure: generateRentDetailsData.Tenure,
+          IsPayBrokerage: generateRentDetailsData.IsPayBrokerage,
+          IsAdditionalRent: generateRentDetailsData.IsAdditionalRent
+        };
+
+        const response = await proposedOfferService.apiCallAddUpdateGenerateProposedOffer(payload);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+          setIsConfirmationDialogBoxOpenGenerateRentDetails(false);
+
+          fetchRentDetailsData();
+
+        } else {
+
+          addToast({ type: "error", title: response.left?.message });
+
+        }
+        return response;
+      },
+      undefined,
+
+      (error: any) => {
+
+        addToast({ type: 'error', title: error.message });
+
+      },
+      undefined,
+
+      'Generate Rent Details'
     )
   };
 
@@ -381,13 +438,14 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
         align: 'center',
         fixed: 'right',
         render: (_value, row) => (
-          <div className="flex items-center justify-center gap-2">
-            {canAction && row._tenureRowSpan !== 0 && (
+          <div className="flex items-center justify-center gap-1 min-w-[100px]">
+
+            {canAction && row._tenureRowSpan !== 0 ? (
               <Button
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  // handleGenerate(row);
+                  handleConfirmationDialogBoxOpenGenerateRentDetails(row);
                 }}
                 color="blue"
                 size="sm"
@@ -395,8 +453,11 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
               >
                 Generate
               </Button>
+            ) : (
+              <div className="w-[88px]" />
             )}
-            
+
+            {/* Edit */}
             {canAction && (
               <>
                 <Button
@@ -413,6 +474,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
                   <Edit className="h-4 w-4" />
                 </Button>
 
+                {/* Delete */}
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
@@ -429,14 +491,12 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
                 </Button>
               </>
             )}
-
           </div>
         )
       }
 
-
     ],
-    [canAction, handleEditRentDetails, handleConfirmationDialogBoxOpenRentDetails]
+    [canAction, handleEditRentDetails, handleConfirmationDialogBoxOpenRentDetails, handleConfirmationDialogBoxOpenGenerateRentDetails]
   );
 
   return (
@@ -632,6 +692,22 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
         loading={isLoading}
         pageName='rent'
       />
+
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpenGenerateRentDetails}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpenGenerateRentDetails(false);
+          setGenerateRentDetailsData(null);
+        }}
+        onConfirm={handleGenerateRentDetails}
+        loading={isLoading}
+        pageName='rent'
+        title='Are sure you want generate rent?'
+        message="Once the rent is generated, it cannot be deleted"
+        confirmText='Generate'
+        variant='generate'
+      />
+
 
     </>
   );

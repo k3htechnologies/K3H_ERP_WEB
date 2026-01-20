@@ -52,6 +52,8 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
   const [isConfirmationDialogBoxOpenShiftingPaymentStage, setIsConfirmationDialogBoxOpenShiftingPaymentStage] = useState(false);
   const [deleteShiftingPaymentStageData, setDeleteShiftingPaymentStageData] = useState<{ row: ProposedOfferShiftingDetailsWithPaymentStageData; index: number } | null>(null);
 
+  const [generateShiftingDetailsData, setGenerateShiftingDetailsData] = useState<ProposedOfferShiftingDetailsData | null>(null);
+  const [isConfirmationDialogBoxOpenGenerateShiftingDetails, setIsConfirmationDialogBoxOpenGenerateShiftingDetails] = useState(false);
   useEffect(() => {
     if (!projectId || !buildingId) return;
     setErrorsShiftingDetails({});
@@ -421,6 +423,55 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
     addToast({ type: 'success', title: 'Shifting Payment Stage Removed' });
   };
 
+  const handleConfirmationDialogBoxOpenGenerateShiftingDetails = useCallback((row: ProposedOfferShiftingDetailsData) => {
+    setGenerateShiftingDetailsData(row);
+    setIsConfirmationDialogBoxOpenGenerateShiftingDetails(true);
+  }, []);
+
+  const handleGenerateShiftingDetails = async () => {
+    if (!generateShiftingDetailsData) return;
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const payload: AddUpdateGenerateProposedOfferRequest = {
+          BuildingId: buildingId,
+          ProjectId: Number(projectId),
+          ChargeType: 'Shifting'
+        };
+
+        const response = await proposedOfferService.apiCallAddUpdateGenerateProposedOffer(payload);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+          setIsConfirmationDialogBoxOpenGenerateShiftingDetails(false);
+
+          fetchShiftingDetailsData();
+
+        } else {
+
+          addToast({ type: "error", title: response.left?.message });
+
+        }
+        return response;
+      },
+      undefined,
+
+      (error: any) => {
+
+        addToast({ type: 'error', title: error.message });
+
+      },
+      undefined,
+
+      'Generate Shifting Details'
+    )
+  };
+
   const shiftingPaymentStageColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -615,6 +666,11 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
         }}
         canAction={canAction && buildingId > 0}
         onSave={handleSaveShiftingDetails}
+
+        onOtherActionText="Generate"
+        onOtherAction={() =>
+          handleConfirmationDialogBoxOpenGenerateShiftingDetails(formDataShiftingDetails as ProposedOfferShiftingDetailsData)
+        }
         isLoading={isLoading}
       />
 
@@ -739,6 +795,21 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
         onConfirm={handleDeleteShiftingPaymentStage}
         loading={isLoading}
         pageName='shifting payment stage'
+      />
+
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpenGenerateShiftingDetails}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpenGenerateShiftingDetails(false);
+          setGenerateShiftingDetailsData(null);
+        }}
+        onConfirm={handleGenerateShiftingDetails}
+        loading={isLoading}
+        pageName='rent'
+        title='Are sure you want generate shifting?'
+        message="Once the shifting is generated, it cannot be deleted"
+        confirmText='Generate'
+        variant='generate'
       />
 
     </>

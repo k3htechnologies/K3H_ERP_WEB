@@ -65,6 +65,8 @@ import type {
     FilterWithPaginationProposedOfferProposedPlanRequest,
     ProposedOfferProposedPlanListResponse,
     ProposedOfferProposedPlanSaveResponse,
+    AddUpdateGenerateProposedOfferRequest,
+    GenerateProposedOfferResponse,
 
 } from '@/features/proposedOffer/models/ProposedOfferModel'
 
@@ -79,10 +81,7 @@ const proposedOfferDatasource = new ProposedOfferDatasourceImpl()
 export const proposedOfferService = {
 
     //==================== EXTRA CARPET ====================
-    apiCallPullExtraCarpetArea: async (
-        params: FilterWithPaginationProposedOfferExtraCarpetAreaRequest,
-        options?: { signal?: AbortSignal }
-    ): Promise<E.Either<Failure, ProposedOfferExtraCarpetAreaListResponse>> => {
+    apiCallPullExtraCarpetArea: async (params: FilterWithPaginationProposedOfferExtraCarpetAreaRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferExtraCarpetAreaListResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.pullExtraCarpetArea(params, options?.signal))
         } catch (error: any) {
@@ -90,9 +89,7 @@ export const proposedOfferService = {
         }
     },
 
-    apiCallAddUpdateExtraCarpetArea: async (
-        params: AddUpdateProposedOfferExtraCarpetAreaRequest
-    ): Promise<E.Either<Failure, ProposedOfferExtraCarpetAreaSaveResponse>> => {
+    apiCallAddUpdateExtraCarpetArea: async (params: AddUpdateProposedOfferExtraCarpetAreaRequest): Promise<E.Either<Failure, ProposedOfferExtraCarpetAreaSaveResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.addUpdateExtraCarpetArea(params))
         } catch (error: any) {
@@ -101,10 +98,7 @@ export const proposedOfferService = {
     },
 
     //==================== CORPUS ====================
-    apiCallPullCorpusDetails: async (
-        params: FilterWithPaginationProposedOfferCorpusDetailsRequest,
-        options?: { signal?: AbortSignal }
-    ): Promise<E.Either<Failure, ProposedOfferCorpusDetailsListResponse>> => {
+    apiCallPullCorpusDetails: async (params: FilterWithPaginationProposedOfferCorpusDetailsRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferCorpusDetailsListResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.pullCorpusDetails(params, options?.signal))
         } catch (error: any) {
@@ -112,9 +106,7 @@ export const proposedOfferService = {
         }
     },
 
-    apiCallAddUpdateCorpusDetails: async (
-        params: AddUpdateProposedOfferCorpusDetailsRequest
-    ): Promise<E.Either<Failure, ProposedOfferCorpusDetailsSaveResponse>> => {
+    apiCallAddUpdateCorpusDetails: async (params: AddUpdateProposedOfferCorpusDetailsRequest): Promise<E.Either<Failure, ProposedOfferCorpusDetailsSaveResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.addUpdateCorpusDetails(params))
         } catch (error: any) {
@@ -123,10 +115,7 @@ export const proposedOfferService = {
     },
 
     //==================== RENT ====================
-    apiCallPullRentDetails: async (
-        params: FilterWithPaginationProposedOfferRentDetailsRequest,
-        options?: { signal?: AbortSignal }
-    ): Promise<E.Either<Failure, ProposedOfferRentDetailsListResponse>> => {
+    apiCallPullRentDetails: async (params: FilterWithPaginationProposedOfferRentDetailsRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferRentDetailsListResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.pullRentDetails(params, options?.signal))
         } catch (error: any) {
@@ -134,9 +123,7 @@ export const proposedOfferService = {
         }
     },
 
-    apiCallAddUpdateRentDetails: async (
-        params: AddUpdateProposedOfferRentDetailsRequest
-    ): Promise<E.Either<Failure, ProposedOfferRentDetailsSaveResponse>> => {
+    apiCallAddUpdateRentDetails: async (params: AddUpdateProposedOfferRentDetailsRequest): Promise<E.Either<Failure, ProposedOfferRentDetailsSaveResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.addUpdateRentDetails(params))
         } catch (error: any) {
@@ -144,9 +131,7 @@ export const proposedOfferService = {
         }
     },
 
-    apiCallDeleteRentDetails: async (
-        params: DeleteProposedOfferRentDetailsRequest
-    ): Promise<E.Either<Failure, ProposedOfferRentDetailsDeleteResponse>> => {
+    apiCallDeleteRentDetails: async (params: DeleteProposedOfferRentDetailsRequest): Promise<E.Either<Failure, ProposedOfferRentDetailsDeleteResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.deleteRentDetails(params))
         } catch (error: any) {
@@ -155,10 +140,7 @@ export const proposedOfferService = {
     },
 
     //==================== SHIFTING ====================
-    apiCallPullShiftingDetails: async (
-        params: FilterWithPaginationProposedOfferShiftingDetailsRequest,
-        options?: { signal?: AbortSignal }
-    ): Promise<E.Either<Failure, ProposedOfferShiftingDetailsListResponse>> => {
+    apiCallPullShiftingDetails: async (params: FilterWithPaginationProposedOfferShiftingDetailsRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferShiftingDetailsListResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.pullShiftingDetails(params, options?.signal))
         } catch (error: any) {
@@ -166,9 +148,7 @@ export const proposedOfferService = {
         }
     },
 
-    apiCallAddUpdateShiftingDetails: async (
-        params: AddUpdateProposedOfferShiftingDetailsRequest
-    ): Promise<E.Either<Failure, ProposedOfferShiftingDetailsSaveResponse>> => {
+    apiCallAddUpdateShiftingDetails: async (params: AddUpdateProposedOfferShiftingDetailsRequest): Promise<E.Either<Failure, ProposedOfferShiftingDetailsSaveResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.addUpdateShiftingDetails(params))
         } catch (error: any) {
@@ -177,10 +157,7 @@ export const proposedOfferService = {
     },
 
     //==================== SECURITY DEPOSIT ====================
-    apiCallPullSecurityDepositDetails: async (
-        params: FilterWithPaginationProposedOfferSecurityDepositDetailsRequest,
-        options?: { signal?: AbortSignal }
-    ): Promise<E.Either<Failure, ProposedOfferSecurityDepositDetailsListResponse>> => {
+    apiCallPullSecurityDepositDetails: async (params: FilterWithPaginationProposedOfferSecurityDepositDetailsRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferSecurityDepositDetailsListResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.pullSecurityDepositDetails(params, options?.signal))
         } catch (error: any) {
@@ -188,9 +165,7 @@ export const proposedOfferService = {
         }
     },
 
-    apiCallAddUpdateSecurityDepositDetails: async (
-        params: AddUpdateProposedOfferSecurityDepositDetailsRequest
-    ): Promise<E.Either<Failure, ProposedOfferSecurityDepositDetailsSaveResponse>> => {
+    apiCallAddUpdateSecurityDepositDetails: async (params: AddUpdateProposedOfferSecurityDepositDetailsRequest): Promise<E.Either<Failure, ProposedOfferSecurityDepositDetailsSaveResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.addUpdateSecurityDepositDetails(params))
         } catch (error: any) {
@@ -199,10 +174,7 @@ export const proposedOfferService = {
     },
 
     //==================== LIEN ====================
-    apiCallPullLienToSocietyDetails: async (
-        params: FilterWithPaginationProposedOfferLienToSocietyDetailsRequest,
-        options?: { signal?: AbortSignal }
-    ): Promise<E.Either<Failure, ProposedOfferLienToSocietyDetailsListResponse>> => {
+    apiCallPullLienToSocietyDetails: async (params: FilterWithPaginationProposedOfferLienToSocietyDetailsRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferLienToSocietyDetailsListResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.pullLienToSocietyDetails(params, options?.signal))
         } catch (error: any) {
@@ -210,9 +182,7 @@ export const proposedOfferService = {
         }
     },
 
-    apiCallAddUpdateLienToSocietyDetails: async (
-        params: AddUpdateProposedOfferLienToSocietyDetailsRequest
-    ): Promise<E.Either<Failure, ProposedOfferLienToSocietyDetailsSaveResponse>> => {
+    apiCallAddUpdateLienToSocietyDetails: async (params: AddUpdateProposedOfferLienToSocietyDetailsRequest): Promise<E.Either<Failure, ProposedOfferLienToSocietyDetailsSaveResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.addUpdateLienToSocietyDetails(params))
         } catch (error: any) {
@@ -221,10 +191,7 @@ export const proposedOfferService = {
     },
 
     //==================== PARKING ====================
-    apiCallPullParkingAllotment: async (
-        params: FilterWithPaginationProposedOfferParkingAllotmentRequest,
-        options?: { signal?: AbortSignal }
-    ): Promise<E.Either<Failure, ProposedOfferParkingAllotmentListResponse>> => {
+    apiCallPullParkingAllotment: async (params: FilterWithPaginationProposedOfferParkingAllotmentRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferParkingAllotmentListResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.pullParkingAllotment(params, options?.signal))
         } catch (error: any) {
@@ -232,9 +199,7 @@ export const proposedOfferService = {
         }
     },
 
-    apiCallAddUpdateParkingAllotment: async (
-        params: AddUpdateProposedOfferParkingAllotmentRequest
-    ): Promise<E.Either<Failure, ProposedOfferParkingAllotmentSaveResponse>> => {
+    apiCallAddUpdateParkingAllotment: async (params: AddUpdateProposedOfferParkingAllotmentRequest): Promise<E.Either<Failure, ProposedOfferParkingAllotmentSaveResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.addUpdateParkingAllotment(params))
         } catch (error: any) {
@@ -243,10 +208,7 @@ export const proposedOfferService = {
     },
 
     //==================== GST ====================
-    apiCallPullGSTonExistingPlusFreeArea: async (
-        params: FilterWithPaginationProposedOfferGSTonExistingPlusFreeAreaRequest,
-        options?: { signal?: AbortSignal }
-    ): Promise<E.Either<Failure, ProposedOfferGSTonExistingPlusFreeAreaListResponse>> => {
+    apiCallPullGSTonExistingPlusFreeArea: async (params: FilterWithPaginationProposedOfferGSTonExistingPlusFreeAreaRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferGSTonExistingPlusFreeAreaListResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.pullGSTonExistingPlusFreeArea(params, options?.signal))
         } catch (error: any) {
@@ -254,9 +216,7 @@ export const proposedOfferService = {
         }
     },
 
-    apiCallAddUpdateGSTonExistingPlusFreeArea: async (
-        params: AddUpdateProposedOfferGSTonExistingPlusFreeAreaRequest
-    ): Promise<E.Either<Failure, ProposedOfferGSTonExistingPlusFreeAreaSaveResponse>> => {
+    apiCallAddUpdateGSTonExistingPlusFreeArea: async (params: AddUpdateProposedOfferGSTonExistingPlusFreeAreaRequest): Promise<E.Either<Failure, ProposedOfferGSTonExistingPlusFreeAreaSaveResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.addUpdateGSTonExistingPlusFreeArea(params))
         } catch (error: any) {
@@ -265,10 +225,7 @@ export const proposedOfferService = {
     },
 
     //==================== PROJECT COMPLETION ====================
-    apiCallPullProjectCompletion: async (
-        params: FilterWithPaginationProposedOfferProjectCompletionRequest,
-        options?: { signal?: AbortSignal }
-    ): Promise<E.Either<Failure, ProposedOfferProjectCompletionListResponse>> => {
+    apiCallPullProjectCompletion: async (params: FilterWithPaginationProposedOfferProjectCompletionRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferProjectCompletionListResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.pullProjectCompletion(params, options?.signal))
         } catch (error: any) {
@@ -276,9 +233,7 @@ export const proposedOfferService = {
         }
     },
 
-    apiCallAddUpdateProjectCompletion: async (
-        params: AddUpdateProposedOfferProjectCompletionRequest
-    ): Promise<E.Either<Failure, ProposedOfferProjectCompletionSaveResponse>> => {
+    apiCallAddUpdateProjectCompletion: async (params: AddUpdateProposedOfferProjectCompletionRequest): Promise<E.Either<Failure, ProposedOfferProjectCompletionSaveResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.addUpdateProjectCompletion(params))
         } catch (error: any) {
@@ -287,22 +242,40 @@ export const proposedOfferService = {
     },
 
     //==================== PROPOSED PLAN ====================
-    apiCallPullProposedPlan: async (
-        params: FilterWithPaginationProposedOfferProposedPlanRequest,
-        options?: { signal?: AbortSignal }
-    ): Promise<E.Either<Failure, ProposedOfferProposedPlanListResponse>> => {
+    apiCallPullProposedPlan: async (params: FilterWithPaginationProposedOfferProposedPlanRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferProposedPlanListResponse>> => {
         try {
+
             return E.right(await proposedOfferDatasource.pullProposedPlan(params, options?.signal))
+
         } catch (error: any) {
+
             return E.left({ message: error.message, code: error.code })
         }
     },
 
     apiCallAddUpdateProposedPlan: async (formData: FormData): Promise<E.Either<Failure, ProposedOfferProposedPlanSaveResponse>> => {
         try {
+
             return E.right(await proposedOfferDatasource.addUpdateProposedPlan(formData))
+
         } catch (error: any) {
+
             return E.left({ message: error.message, code: error.code })
         }
     },
+
+    //====================GENERATE PROPOSED PLAN ====================
+
+    apiCallAddUpdateGenerateProposedOffer: async (params: AddUpdateGenerateProposedOfferRequest): Promise<E.Either<Failure, GenerateProposedOfferResponse>> => {
+        try {
+
+            return E.right(await proposedOfferDatasource.addUpdateGenerateProposedOffer(params))
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code })
+
+        }
+    },
+
 }

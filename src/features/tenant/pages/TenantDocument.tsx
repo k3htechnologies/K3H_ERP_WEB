@@ -376,8 +376,8 @@ export const TenantDocument: React.FC = () => {
 
             <TooltipText
               text={value || 'N/A'}
-              maxWidth="250px"
-              tooltipThreshold={30}
+              maxWidth="500px"
+              tooltipThreshold={100}
             />
 
             <div className="flex justify-between items-center">

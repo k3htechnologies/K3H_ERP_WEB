@@ -498,36 +498,38 @@ export const ViewTenant: React.FC = () => {
                                 .filter(x => x?.trim()?.length);
 
                             return (
-                                <div key={d.Uniquekey} className="border border-gray-200 rounded-lg mb-1 shadow-sm ">
-
-                                    <div className="flex items-start justify-between p-2">
-                                        <span className="break-words whitespace-normal max-w-full font-medium text-gray-900 min-h-[30px]">
+                                <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
+                                    
+                                    <div className="flex items-start justify-between p-2 gap-2">
+                                        <span className="line-clamp-2 break-words font-medium text-gray-900">
                                             {d.DocumentName}
                                         </span>
 
                                         <MultiImageViewer
                                             images={urls}
                                             title={d.DocumentName ?? "Document"}
-                                            triggerLabel={d.DocumentName ?? "Document"}
+                                            triggerLabel="View"
                                             isIcon={false}
                                         />
                                     </div>
 
-                                    <div className="text-xs text-gray-600 mt-3 space-y-1 bg-gray-100 p-2">
+                                    
+                                    <div className="flex-grow" />
+
+                                    <div className="text-xs text-gray-600 bg-gray-100 p-2 mt-auto">
                                         <FieldItem
                                             label="Uploaded By / Date"
-                                            value={
-                                                `${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
+                                            value={`${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
                                                     ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
                                                     : d?.CreatedDate
                                                         ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
                                                         : '-'
-                                                }`
-                                            }
+                                                }`}
                                         />
                                     </div>
 
                                 </div>
+
                             );
                         })}
 

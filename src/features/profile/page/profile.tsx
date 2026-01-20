@@ -1513,9 +1513,9 @@ export const Profile: React.FC = () => {
             <Modal
                 isOpen={isEducationModalOpen}
                 onClose={handleCloseEducationModal}
-                title={isEditEducationMode ? "Edit Education Details" : "Add Education Details"}
+                title={isEditEducationMode ? "Update Education Details" : "Add Education Details"}
                 onSubmit={handleEducationFormSubmit}
-                saveText="Save"
+                saveText={isEditEducationMode ? "Update" : "Add"}
                 cancelText="Cancel"
                 onCancel={handleCloseEducationModal}
                 loading={isLoading}
@@ -1553,9 +1553,9 @@ export const Profile: React.FC = () => {
             <Modal
                 isOpen={isExperienceModalOpen}
                 onClose={handleCloseExperienceModal}
-                title={isEditExperienceMode ? "Edit Experience Details" : "Add Experience Details"}
+                title={isEditExperienceMode ? "Update Experience Details" : "Add Experience Details"}
                 onSubmit={handleExperienceFormSubmit}
-                saveText="Save"
+                saveText={isEditExperienceMode ? "Update" : "Add"}
                 cancelText="Cancel"
                 onCancel={handleCloseExperienceModal}
                 loading={isLoading}

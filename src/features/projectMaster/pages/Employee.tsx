@@ -599,7 +599,6 @@ const Employee: React.FC = () => {
           columns={projectMasterWithEmployeeColumns}
           emptyMessage="No Employee Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           loading={isLoading}

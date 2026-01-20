@@ -37,6 +37,7 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
+    setErrorsGSTonExistingPlusFreeArea({});
     fetchGSTonExistingPlusFreeAreaData();
   }, [projectId, buildingId]);
 
@@ -188,7 +189,7 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
         {/* GST on Existing Plus Free Area Details Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
-            GST on Existing Plus Free Area Details*
+            GST on Existing Plus Free Area Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
@@ -254,7 +255,7 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
           setErrorsGSTonExistingPlusFreeArea({});
           fetchGSTonExistingPlusFreeAreaData();
         }}
-        canAction={canAction}
+        canAction={canAction && buildingId > 0}
         onSave={handleSaveGSTonExistingPlusFreeArea}
         isLoading={isLoading}
       />

@@ -37,6 +37,7 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
+    setErrorsProjectCompletion({});
     fetchProjectCompletionData();
   }, [projectId, buildingId]);
 
@@ -180,7 +181,7 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
         {/* Project Completion Details Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
-            Project Completion Details*
+            Project Completion Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
@@ -219,7 +220,7 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
           setErrorsProjectCompletion({});
           fetchProjectCompletionData();
         }}
-        canAction={canAction}
+        canAction={canAction && buildingId > 0}
         onSave={handleSaveProjectCompletion}
         isLoading={isLoading}
       />

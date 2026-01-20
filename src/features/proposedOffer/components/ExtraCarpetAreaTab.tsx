@@ -39,7 +39,9 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
+    setErrors({});
     fetchExtraCarpetAreaData();
+
   }, [projectId, buildingId]);
 
   const handleFieldChangeExtraCarpetArea = (field: keyof AddUpdateProposedOfferExtraCarpetAreaRequest, value: any) => {
@@ -191,12 +193,13 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
         {/* Basic Details Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
-            Basic Details*
+            Basic Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <SinglePageSelection
                 label="Extra Carpet Area Type"
+                placeholder="Select Extra Carpet Area Type"
                 required
                 value={formDataExtraCarpetArea.ExtraCarpetAreaOfferedType}
                 onChange={(e) => handleFieldChangeExtraCarpetArea('ExtraCarpetAreaOfferedType', String(e))}
@@ -210,7 +213,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
         {/* Percentage Details Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-            Percentage Details*
+            Percentage Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
@@ -260,7 +263,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
           });
           setErrors({});
         }}
-        canAction={canAction}
+        canAction={buildingId > 0 && canAction}
         onSave={handleSaveExtraCarpetArea}
         isLoading={isLoading}
       />

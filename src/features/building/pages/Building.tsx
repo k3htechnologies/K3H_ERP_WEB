@@ -390,6 +390,14 @@ export const Building: React.FC = () => {
         render: value => value || 'N/A'
       },
       {
+        key: 'VillageName',
+        label: 'Village',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
         key: 'IsReligiousStructure',
         label: 'Religious',
         width: '12',

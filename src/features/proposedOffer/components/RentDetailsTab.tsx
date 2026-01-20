@@ -50,7 +50,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
-
+    setErrorsRentDetails({});
     fetchRentDetailsData();
 
   }, [projectId, buildingId]);
@@ -94,7 +94,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
       (error: any) => {
         addToast({ type: 'error', title: error.message });
       },
-      
+
       undefined,
       'Loading Rent Details'
     );
@@ -275,6 +275,29 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
     )
   };
 
+  const processedRentDetailsList = useMemo(() => {
+    const tenureCount = new Map<string, number>();
+
+    rentDetailsList.forEach(item => {
+      if (!item.Tenure) return;
+      tenureCount.set(item.Tenure, (tenureCount.get(item.Tenure) || 0) + 1);
+    });
+
+    const seen = new Set<string>();
+
+    return rentDetailsList.map(item => {
+      if (!item.Tenure) return { ...item, _tenureRowSpan: 1 };
+
+      if (!seen.has(item.Tenure)) {
+        seen.add(item.Tenure);
+        return { ...item, _tenureRowSpan: tenureCount.get(item.Tenure) };
+      }
+
+      return { ...item, _tenureRowSpan: 0 };
+    });
+  }, [rentDetailsList]);
+
+
   const rentDetailsColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -392,7 +415,40 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
             )}
           </div>
         )
+      },
+      {
+        key: 'Generate',
+        label: 'Generate',
+        width: '10',
+        sortable: false,
+        align: 'center',
+        fixed: 'right',
+        render: (_value, row) => {
+          if (row._tenureRowSpan === 0) return null;
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+              {canAction && (
+                <>
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleEditRentDetails(row);
+                    }}
+                    color="blue"
+                    size="sm"
+                    title="Edit"
+                  >
+                    Generate
+                  </Button>
+                </>
+              )}
+            </div>
+          );
+        }
       }
+
     ],
     [canAction, handleEditRentDetails, handleConfirmationDialogBoxOpenRentDetails]
   );
@@ -408,7 +464,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
                 Rent Details List
               </h3>
             </div>
-            {canAction && (
+            {canAction && buildingId > 0 && (
               <Button
                 onClick={handleAddRentDetailsModal}
                 color="blue"
@@ -421,7 +477,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
           </div>
 
           <DataTable
-            data={rentDetailsList}
+            data={processedRentDetailsList}
             columns={rentDetailsColumns}
             emptyMessage="No Rent Details Found"
             fixedHeight={false}

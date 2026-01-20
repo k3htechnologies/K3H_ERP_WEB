@@ -496,7 +496,7 @@ export const EmployeeResignation: React.FC = () => {
         title={editingEmployeeResignationData ? 'Update Employee Resignation' : 'Add Employee Resignation'}
         onSubmit={handleAddUpdateEmployeeResignation}
         saveText={'Save'}
-        resetText='Reset'
+        
         loading={isLoading}
         size='xl'
       >

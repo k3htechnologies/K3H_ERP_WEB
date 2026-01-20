@@ -6,7 +6,7 @@ import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { Loader } from "@/core/utils/loader";
-import { BUSINESS_CATEGORY, PROJECT_SCHEME, PROJECT_STATUS_OPTIONS, PROJECT_SUB_SCHEME } from "@/core/constants/staticData";
+import { BUSINESS_CATEGORY, PROJECT_SCHEME, PROJECT_STATUS_OPTIONS, PROJECT_SUB_SCHEME_BMC, PROJECT_SUB_SCHEME_MHADA, PROJECT_SUB_SCHEME_SRA } from "@/core/constants/staticData";
 import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
@@ -602,13 +602,25 @@ const AddUpdateProjectMaster: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <SinglePageSelection
-                                    label="Project Sub Scheme"
-                                    placeholder="Select Project Sub Scheme"
-                                    value={formData.ProjectSubScheme}
-                                    onChange={(val) => handleFieldChange('ProjectSubScheme', String(val))}
-                                    options={PROJECT_SUB_SCHEME.map(opt => ({ label: opt.name, value: opt.id }))}
-                                />
+                                <div>
+                                    <SinglePageSelection
+                                        label="Project Sub Scheme"
+                                        placeholder="Select Project Sub Scheme"
+                                        value={formData.ProjectSubScheme}
+                                        onChange={(val) => handleFieldChange('ProjectSubScheme', String(val))}
+                                        options={
+                                            formData.ProjectScheme === 'BMC'
+                                                ? PROJECT_SUB_SCHEME_BMC.map(opt => ({ label: opt.name, value: opt.id }))
+                                                : formData.ProjectScheme === 'MHADA'
+                                                    ? PROJECT_SUB_SCHEME_MHADA.map(opt => ({ label: opt.name, value: opt.id }))
+                                                    : formData.ProjectScheme === 'SRA'
+                                                        ? PROJECT_SUB_SCHEME_SRA.map(opt => ({ label: opt.name, value: opt.id }))
+                                                        : []
+                                        }
+                                        disabled={!formData.ProjectScheme}
+                                    />
+                                </div>
+
                             </div>
                         </div>
                     </div>

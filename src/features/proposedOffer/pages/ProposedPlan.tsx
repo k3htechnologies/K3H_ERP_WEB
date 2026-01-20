@@ -69,12 +69,11 @@ export const ProposedPlan: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
-
         setPlanDocumentFiles([]);
         setPlanDocumentURL("")
         setRemovedPlanDocumentUrls([]);
-
         fetchProposedPlanData();
+        setErrorsProposedPlan({});
     }, [projectId]);
 
 
@@ -275,9 +274,8 @@ export const ProposedPlan: React.FC = () => {
                         </div>
                         <div>
                             <MultiFilePicker
-                                label="Plan"
-                                placeholder="Select Plan"
-                                required
+                                label="Upload Plan"
+                                placeholder="Upload Plan"
                                 error={errorsProposedPlan.PlanDocumentURL}
                                 value={planDocumentFiles}
                                 onChange={setPlanDocumentFiles}
@@ -312,7 +310,7 @@ export const ProposedPlan: React.FC = () => {
 
             <BottomActionBar
                 saveText={(formDataProposedPlan.ProposedOfferProposedPlanId && formDataProposedPlan.ProposedOfferProposedPlanId > 0) ? 'Update' : 'Add'}
-                canAction={canAction}
+                canAction={canAction && Number(projectId) > 0}
                 onSave={handleSaveProposedPlan}
                 isLoading={isLoading}
             />

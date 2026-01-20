@@ -1259,7 +1259,6 @@ const ProjectDocument: React.FC = () => {
                 columns={projectDocumentDetailsColumns}
                 emptyMessage="No Project Document Data Found"
                 fixedHeight={true}
-                maxHeight="calc(100vh - 255px)"
                 recordsPerPage={20}
                 className="flex-1"
                 sortInfo={sortInfo}
@@ -1335,7 +1334,7 @@ const ProjectDocument: React.FC = () => {
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(0, e)}
         saveText={editingDocumentData ? 'Update' : 'Add'}
-        resetText='Reset'
+        
         loading={isLoading}
         size='xl'
       >

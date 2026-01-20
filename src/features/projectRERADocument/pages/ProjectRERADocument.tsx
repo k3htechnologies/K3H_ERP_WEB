@@ -1077,8 +1077,8 @@ const ProjectRERADocument: React.FC = () => {
         }}
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(e)}
-        saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
-        resetText='Reset'
+        saveText={editingDocumentData ? 'Update' : 'Add'}
+        
         loading={isLoading}
         size='xl'
       >

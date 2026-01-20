@@ -585,6 +585,7 @@ const AddUpdateBuilding: React.FC = () => {
                   />
 
                 </div>
+                
                 {formData.IsLitigation === true ?
                   <div className="md:col-span-2 lg:col-span-3">
                     <TextArea

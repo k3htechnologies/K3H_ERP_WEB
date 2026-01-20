@@ -103,7 +103,7 @@ export const ProjectMaster: React.FC = () => {
           SortBy: getSortByParam(sortInfo ?? null, projectMasterColumns)
         }
 
-        const response = await getProjects(params);
+        const response = await projectMasterService.apiCallPullProjectMaster(params);
 
         if (E.isRight(response)) {
 
@@ -175,7 +175,7 @@ export const ProjectMaster: React.FC = () => {
           SortBy: getSortByParam(sortInfo ?? null, projectMasterColumns),
           ExportType: exportType
         }
-        const response = await getProjects(params);
+        const response = await projectMasterService.apiCallPullProjectMaster(params);
         handleExportFile(response, exportType, 'Project Master', addToast)
         return response;
       },
@@ -190,12 +190,6 @@ export const ProjectMaster: React.FC = () => {
 
   const handleExportProjectExcel = () => handleExportProjects('Excel')
   const handleExportProjectPdf = () => handleExportProjects('PDF')
-  //#endregion
-
-  //#region GET PROJECT MASTER DATA FROM API
-  const getProjects = async (filterParams: FilterWithPaginationProjectMasterRequest) => {
-    return await projectMasterService.apiCallPullProjectMaster(filterParams);
-  }
   //#endregion
 
   //#region TABLE CONFIG

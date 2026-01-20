@@ -99,7 +99,7 @@ export const ViewProjectMaster: React.FC = () => {
                     ProjectId: listState.projectId
                 };
                 const response = await projectMasterService.apiCallPullProjectMaster(params);
-                 if (E.isRight(response)) {
+                if (E.isRight(response)) {
                     setEditProjectData(response.right.Data[0]);
                 } else {
                     addToast({ type: 'error', title: response.left?.message || 'Failed to load project data' });
@@ -572,9 +572,9 @@ export const ViewProjectMaster: React.FC = () => {
                                 );
                             })
                         ) : (
-                            <p className="text-center text-gray-500 py-6">
-                                <NoDataView />
-                            </p>
+                            <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                <NoDataView message="No Employee's Found" />
+                            </section>
                         )}
 
                     </div>
@@ -604,7 +604,9 @@ export const ViewProjectMaster: React.FC = () => {
                                 </section>
                             ))
                         ) : (
-                            <NoDataView />
+                            <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                <NoDataView message="No Bank's Found" />
+                            </section>
                         )}
 
 
@@ -639,7 +641,9 @@ export const ViewProjectMaster: React.FC = () => {
                                 </section>
                             ))
                         ) : (
-                            <NoDataView />
+                            <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                <NoDataView message="No Company's Found" />
+                            </section>
                         )}
 
                     </div>

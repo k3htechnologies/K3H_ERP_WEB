@@ -829,7 +829,7 @@ export const ViewEmployeeMaster: React.FC = () => {
             )}
 
             {activeTab === 'Document' && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-5">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                     {employeeDocumentList?.some(doc => doc?.DocumentURL) ? (
                         employeeDocumentList
                             .filter(doc => doc?.DocumentURL)
@@ -848,7 +848,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 </section>
                             ))
                     ) : (
-                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
                             <NoDataView message="No Documents Found" />
                         </section>
                     )}

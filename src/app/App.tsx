@@ -57,7 +57,6 @@ import ViewCompantMaster from '@/features/companyMaster/pages/ViewCompanyMaster'
 import Inventory from '@/features/inventory/pages/Inventory';
 import InventorySpecification from '@/features/inventory/pages/InventorySpecification';
 import { OutDoor } from '@/features/outdoor/pages/OutDoor';
-
 import { ViewVendor } from '@/features/vendor/pages/ViewVendor';
 import SiteProgress from '@/features/siteProgress/pages/SiteProgress';
 import SiteProgressSubConstruction from '@/features/siteProgress/pages/SiteProgressSubConstruction';
@@ -191,7 +190,7 @@ function App() {
 
             <Route path="bankListMaster" element={<BankListMaster />} />
 
-            {/* SETTING -> COMPANY SETUP -> PROCEDURE MASTER */}
+            {/* SETTING -> COMPANY SETUP -> PROCUREMENT MASTER */}
 
             <Route path="materialMaster" element={<MaterialMaster />} />
             <Route path="subMaterialMaster" element={<SubMaterialMaster />} />

@@ -54,6 +54,8 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
+    setErrorsSecurityDepositDetails({});
+    setErrorsSecurityDepositPaymentStage({});
     fetchSecurityDepositDetailsData();
   }, [projectId, buildingId]);
 
@@ -458,7 +460,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
                 Security Deposit List
               </h3>
             </div>
-            {canAction && (
+            {canAction && buildingId > 0 && (
               <Button
                 onClick={handleAddSecurityDepositPaymentStageModal}
                 color="blue"
@@ -491,7 +493,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
           setErrorsSecurityDepositDetails({});
           fetchSecurityDepositDetailsData();
         }}
-        canAction={canAction}
+        canAction={canAction && buildingId > 0}
         onSave={handleSaveSecurityDepositDetails}
         isLoading={isLoading}
       />

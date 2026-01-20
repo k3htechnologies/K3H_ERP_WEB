@@ -54,6 +54,7 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
+    setErrorsCorpusDetails({});
     fetchCorpusDetailsData();
   }, [projectId, buildingId]);
 
@@ -594,7 +595,8 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
                 Corpus List
               </h3>
             </div>
-            {canAction && (
+
+            {canAction && buildingId > 0 && (
               <Button
                 onClick={handleAddCorpusPaymentStageModal}
                 color="blue"
@@ -604,6 +606,7 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
                 Add Corpus
               </Button>
             )}
+
           </div>
           <DataTable
             data={corpusPaymentStageList}
@@ -627,7 +630,7 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
           setErrorsCorpusDetails({});
           fetchCorpusDetailsData();
         }}
-        canAction={canAction}
+        canAction={buildingId > 0 && canAction}
         onSave={handleSaveCorpusDetails}
         isLoading={isLoading}
       />
@@ -756,7 +759,7 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
         loading={isLoading}
         pageName='corpus payment stage'
       />
-      
+
     </>
   );
 };

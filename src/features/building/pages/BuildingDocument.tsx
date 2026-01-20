@@ -1046,8 +1046,8 @@ const BuildingDocument: React.FC = () => {
         }}
         title={editingDocumentData ? 'Update Document Name' : 'Add Document Name'}
         onSubmit={(e) => handleAddUpdateDocument(1, e)}
-        saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
-        resetText='Reset'
+        saveText={editingDocumentData ? 'Update' : 'Add'}
+        
         loading={isLoading}
         size='xl'
       >
@@ -1089,8 +1089,8 @@ const BuildingDocument: React.FC = () => {
         }}
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(0, e)}
-        saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
-        resetText='Reset'
+        saveText={editingDocumentData ? 'Update' : 'Add'}
+        
         loading={isLoading}
         size='xl'
       >

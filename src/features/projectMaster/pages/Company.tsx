@@ -395,7 +395,7 @@ const Company: React.FC = () => {
         titleText={'Company Details : '}
         subTitleText={projectName}
         cancelText="Cancel"
-        EditText="Add | Update"
+        EditText="Add"
         onCancel={() => handleBackToListProjectMaster()}
         canAction={canAction}
         onEdit={() => {
@@ -410,7 +410,6 @@ const Company: React.FC = () => {
           columns={projectMasterWithCompanyColumns}
           emptyMessage="No Company Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           loading={isLoading}
@@ -423,7 +422,7 @@ const Company: React.FC = () => {
         onClose={() => setIsOpenAddProjectMasterWithCompany(false)}
         title="Add Company"
         onSubmit={handleAddUpdateProjectMasterWithCompany}
-        saveText="Save"
+        saveText="Update"
         resetText=""
         size="large-half"
       >

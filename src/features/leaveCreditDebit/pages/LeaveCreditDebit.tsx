@@ -580,7 +580,6 @@ export const LeaveCreditDebit: React.FC = () => {
         pagination={leaveCreditDebitPaginationInfo}
         emptyMessage="No Leave Credit Debit Data Found"
         fixedHeight={true}
-        maxHeight="calc(100vh - 255px)"
         recordsPerPage={20}
         className="flex-1"
         sortInfo={sortInfo}

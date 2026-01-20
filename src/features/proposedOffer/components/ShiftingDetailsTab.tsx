@@ -54,6 +54,8 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
+    setErrorsShiftingDetails({});
+    setErrorsShiftingPaymentStage({});
     fetchShiftingDetailsData();
   }, [projectId, buildingId]);
 
@@ -540,7 +542,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
         {/* Shifting Amount Details Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
-            Shifting Amount Details*
+            Shifting Amount Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
@@ -578,7 +580,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 Shifting List
               </h3>
             </div>
-            {canAction && (
+            {canAction && buildingId > 0 && (
               <Button
                 onClick={handleAddShiftingPaymentStageModal}
                 color="blue"
@@ -611,7 +613,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
           setErrorsShiftingDetails({});
           fetchShiftingDetailsData();
         }}
-        canAction={canAction}
+        canAction={canAction && buildingId > 0}
         onSave={handleSaveShiftingDetails}
         isLoading={isLoading}
       />

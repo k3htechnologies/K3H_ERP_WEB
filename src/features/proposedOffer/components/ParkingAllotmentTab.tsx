@@ -37,6 +37,7 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
+    setErrorsParkingAllotment({});
     fetchParkingAllotmentData();
   }, [projectId, buildingId]);
 
@@ -182,7 +183,7 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
         {/* Parking Allotment Details Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
-            Parking Allotment Details*
+            Parking Allotment Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
@@ -227,7 +228,7 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
           setErrorsParkingAllotment({});
           fetchParkingAllotmentData();
         }}
-        canAction={canAction}
+        canAction={canAction && buildingId > 0}
         onSave={handleSaveParkingAllotment}
         isLoading={isLoading}
       />

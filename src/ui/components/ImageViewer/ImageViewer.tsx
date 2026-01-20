@@ -118,7 +118,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     >
       {/* Header */}
       <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200">
-        <h3 className="text-md font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-md font-semibold text-gray-900 whitespace">{title}</h3>
         <button
           type="button"
           onClick={close}

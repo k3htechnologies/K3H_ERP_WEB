@@ -829,7 +829,7 @@ export const TenantDocument: React.FC = () => {
         }}
         title={editingTenantDocumentData ? 'Update Tenant Document' : 'Add Tenant Document'}
         onSubmit={handleAddUpdateTenantDocument}
-        saveText={'Save'}
+        saveText={'Add'}
         
         loading={isLoading}
         size='xl'

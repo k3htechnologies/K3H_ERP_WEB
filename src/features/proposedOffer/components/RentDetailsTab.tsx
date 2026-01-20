@@ -376,12 +376,27 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
       {
         key: 'Action',
         label: 'Action',
-        width: '10',
+        width: '15',
         sortable: false,
         align: 'center',
         fixed: 'right',
         render: (_value, row) => (
           <div className="flex items-center justify-center gap-2">
+            {canAction && row._tenureRowSpan !== 0 && (
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // handleGenerate(row);
+                }}
+                color="blue"
+                size="sm"
+                title="Generate"
+              >
+                Generate
+              </Button>
+            )}
+            
             {canAction && (
               <>
                 <Button
@@ -397,6 +412,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
+
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
@@ -413,41 +429,11 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
                 </Button>
               </>
             )}
+
           </div>
         )
-      },
-      {
-        key: 'Generate',
-        label: 'Generate',
-        width: '10',
-        sortable: false,
-        align: 'center',
-        fixed: 'right',
-        render: (_value, row) => {
-          if (row._tenureRowSpan === 0) return null;
-
-          return (
-            <div className="flex items-center justify-center gap-2">
-              {canAction && (
-                <>
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleEditRentDetails(row);
-                    }}
-                    color="blue"
-                    size="sm"
-                    title="Edit"
-                  >
-                    Generate
-                  </Button>
-                </>
-              )}
-            </div>
-          );
-        }
       }
+
 
     ],
     [canAction, handleEditRentDetails, handleConfirmationDialogBoxOpenRentDetails]

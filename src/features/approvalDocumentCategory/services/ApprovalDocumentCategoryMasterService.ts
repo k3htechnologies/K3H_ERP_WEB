@@ -16,6 +16,7 @@ const approvalDocumentCategoryMasterDatasource = new ApprovalDocumentCategoryMas
 export const approvalDocumentCategoryMasterService = {
 
     apiCallPullApprovalDocumentCategoryMaster: async (params: FilterWithPaginationApprovalDocumentCategoryMaster, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ApprovalDocumentCategoryMasterListResponse>> => {
+        
         try {
             return E.right(await approvalDocumentCategoryMasterDatasource.pullApprovalDocumentCategoryMaster(params, options?.signal));
 
@@ -27,6 +28,7 @@ export const approvalDocumentCategoryMasterService = {
     },
 
     apiCallAddUpdateApprovalDocumentCategoryMaster: async (params: AddUpdateApprovalDocumentCategoryMasterRequest): Promise<E.Either<Failure, ApprovalDocumentCategoryMasterSaveReponse>> => {
+       
         try {
 
             return E.right(await approvalDocumentCategoryMasterDatasource.addUpdateApprovalDocumentCategoryMaster(params));
@@ -39,6 +41,7 @@ export const approvalDocumentCategoryMasterService = {
     },
 
     apiCallDeleteApprovalDocumentCategoryMaster: async (params: DeleteApprovalDocumentCategoryMasterRequest): Promise<E.Either<Failure, ApprovalDocumentCategoryMasterDeleteResponse>> => {
+        
         try {
 
             return E.right(await approvalDocumentCategoryMasterDatasource.deleteApprovalDocumentCategoryMaster(params));
@@ -50,5 +53,6 @@ export const approvalDocumentCategoryMasterService = {
         }
     },
 }
+
 
 

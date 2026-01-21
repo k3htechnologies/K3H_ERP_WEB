@@ -22,7 +22,7 @@ const SiteProgress: React.FC = () => {
   //#region STATE
   const [siteProgressConstructionList, setSiteProgressConstructionList] = useState<SiteProgressConstructionData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
   const { pagination, setPagination } = usePagination(20);
@@ -52,7 +52,7 @@ const SiteProgress: React.FC = () => {
   const loadSiteProgressConstruction = async (page: number, term: string = searchTerm) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         if (term) { }
@@ -127,7 +127,7 @@ const SiteProgress: React.FC = () => {
           inventoryFloorId: 0,
           inventoryFlatId: 0,
           breadcrumbs: [
-            { label: `Construction: ${row.Construction || 'N/A'}`, path: '/siteProgress' }
+            { label: `Construction: ${row.Construction || '-'}`, path: '/siteProgress' }
           ]
         }
       });
@@ -140,7 +140,7 @@ const SiteProgress: React.FC = () => {
           inventoryBuildingId: row.InventoryBuildingId,
           constructionId: row.ConstructionId,
           breadcrumbs: [
-            { label: `Construction: ${row.Construction || 'N/A'}`, path: '/siteProgress' }
+            { label: `Construction: ${row.Construction || '-'}`, path: '/siteProgress' }
           ]
         }
       });
@@ -159,7 +159,7 @@ const SiteProgress: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="240px"
           tooltipThreshold={24}
           onClick={() => handleViewConstruction(row)}

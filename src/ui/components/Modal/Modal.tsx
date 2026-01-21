@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Save } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '../forms';
 
 export interface ModalProps {
@@ -79,7 +79,7 @@ export const Modal: React.FC<ModalProps> = ({
                 {/* Half-screen modal on the right */}
                 <div className={`fixed right-4 top-16 bottom-2 bg-white shadow-2xl flex flex-col ${widthSize}`}>
                     {/* Header */}
-                    <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 bg-white">
+                    <div className="flex items-center justify-between h-16 border-b border-gray-500 bg-white mx-5">
                         <h3 className="text-lg font-semibold text-gray-900">
                             {title}
                         </h3>
@@ -166,8 +166,8 @@ export const Modal: React.FC<ModalProps> = ({
 
             <div className={`bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} ${className} max-h-[90vh] flex flex-col`}>
                 {/* Header */}
-                <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">
+                <div className="flex items-center justify-between h-16 border-b border-[#00000080 mx-5">
+                    <h3 className="text-lg font-semibold text-[#1D1D1D]-600">
                         {title}
                     </h3>
                     <Button

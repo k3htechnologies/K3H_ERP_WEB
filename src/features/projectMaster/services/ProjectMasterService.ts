@@ -23,7 +23,7 @@ import * as E from 'fp-ts/Either';
 
 const projectMasterDatasource = new ProjectMasterDatasourceImpl();
 
-export const ProjectMasterService = {
+export const projectMasterService = {
 
     apiCallPullProjectMaster: async (params: FilterWithPaginationProjectMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectMasterListResponse>> => {
         try {

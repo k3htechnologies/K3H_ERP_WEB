@@ -9,14 +9,14 @@ import type {
     AddUpdateProposedOfferProposedPlanRequest
 } from '@/features/proposedOffer/models/ProposedOfferModel';
 
-import { ProposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Loader } from '@/core/utils/loader';
 import { Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { filterNumbers } from '@/core/utils/fileValidation';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
-import { AMENITIES_BY_CATEGORY} from '@/core/constants';
+import { AMENITIES_BY_CATEGORY } from '@/core/constants';
 import MultiFilePicker from '@/ui/components/ImagePicker/MultiFilePicker';
 import MultiSelectCheckBoxWithCategory from '@/ui/components/forms/MultiSelectCheckBoxWithCategory';
 
@@ -40,7 +40,7 @@ export const ProposedPlan: React.FC = () => {
     //#region STATE
     const [, setProposedPlanData] = useState<ProposedOfferProposedPlanData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     const [planDocumentFiles, setPlanDocumentFiles] = useState<(File | string)[]>([]);
     const [removedPlanDocumentUrls, setRemovedPlanDocumentUrls] = useState<string[]>([]);
@@ -69,12 +69,11 @@ export const ProposedPlan: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
-
         setPlanDocumentFiles([]);
         setPlanDocumentURL("")
         setRemovedPlanDocumentUrls([]);
-
         fetchProposedPlanData();
+        setErrorsProposedPlan({});
     }, [projectId]);
 
 
@@ -95,13 +94,13 @@ export const ProposedPlan: React.FC = () => {
     const fetchProposedPlanData = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationProposedOfferProposedPlanRequest = {
                     ProjectId: projectId ?? undefined,
                 };
 
-                const response = await ProposedOfferService.apiCallPullProposedPlan(params);
+                const response = await proposedOfferService.apiCallPullProposedPlan(params);
 
                 if (E.isRight(response)) {
                     const data = response.right.Data?.[0] || null;
@@ -179,7 +178,7 @@ export const ProposedPlan: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const formDataPayload = new FormData();
                 formDataPayload.append('ProposedOfferProposedPlanId', String(formDataProposedPlan.ProposedOfferProposedPlanId ?? 0));
@@ -199,27 +198,21 @@ export const ProposedPlan: React.FC = () => {
                 });
                 formDataPayload.append('RemovePlanDocumentURL', removedPlanDocumentUrls.join(','));
 
-                const response = await ProposedOfferService.apiCallAddUpdateProposedPlan(formDataPayload);
+                const response = await proposedOfferService.apiCallAddUpdateProposedPlan(formDataPayload);
 
                 if (E.isRight(response)) {
-                    const isAdd = formDataProposedPlan.ProposedOfferProposedPlanId === 0;
 
-                    if (isAdd) {
-                        const newRecord = response.right.Data[0] as ProposedOfferProposedPlanData;
-                        setProposedPlanData(newRecord);
-                        setFormDataProposedPlan({
-                            ...formDataProposedPlan,
-                            ProposedOfferProposedPlanId: newRecord.ProposedOfferProposedPlanId || 0,
-                            Uniquekey: newRecord.Uniquekey || formDataProposedPlan.Uniquekey
-                        });
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    } else {
-                        const updatedRecord = response.right.Data[0] as ProposedOfferProposedPlanData;
-                        setProposedPlanData(updatedRecord);
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    }
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+                    await fetchProposedPlanData();
+                    
+                    setPlanDocumentFiles([]);
+                    setRemovedPlanDocumentUrls([]);
+
                 } else {
+
                     addToast({ type: "error", title: response.left?.message });
+
                 }
                 return response;
             },
@@ -242,8 +235,8 @@ export const ProposedPlan: React.FC = () => {
             <div className="space-y-6 pb-5">
                 {/* Proposed Plan Details Section */}
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-                        Proposed Plan Details*
+                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
+                        Proposed Plan Details
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div>
@@ -251,9 +244,11 @@ export const ProposedPlan: React.FC = () => {
                                 label="Total Number of Floors"
                                 required
                                 type="text"
+                                 disabled={!canAction}
                                 value={formDataProposedPlan.TotalNumberOfFloors || ''}
                                 onChange={(e) => handleFieldChangeProposedPlan('TotalNumberOfFloors', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                                 error={errorsProposedPlan.TotalNumberOfFloors}
+                                maxLength={9}
                                 placeholder="Enter Total Number of Floors"
                             />
                         </div>
@@ -262,9 +257,11 @@ export const ProposedPlan: React.FC = () => {
                                 label="Total Units"
                                 required
                                 type="text"
+                                 disabled={!canAction}
                                 value={formDataProposedPlan.TotalUnits || ''}
                                 onChange={(e) => handleFieldChangeProposedPlan('TotalUnits', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                                 error={errorsProposedPlan.TotalUnits}
+                                maxLength={9}
                                 placeholder="Enter Total Units"
                             />
                         </div>
@@ -273,24 +270,23 @@ export const ProposedPlan: React.FC = () => {
                                 label="Total Parking"
                                 required
                                 type="text"
+                                 disabled={!canAction}
                                 value={formDataProposedPlan.TotalParking || ''}
                                 onChange={(e) => handleFieldChangeProposedPlan('TotalParking', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                                 error={errorsProposedPlan.TotalParking}
+                                maxLength={9}
                                 placeholder="Enter Total Parking"
                             />
                         </div>
                         <div>
                             <MultiFilePicker
-                                label="Plan"
-                                placeholder="Select Plan"
-                                required
+                                label="Upload Plan"
+                                placeholder="Upload Plan"
                                 error={errorsProposedPlan.PlanDocumentURL}
                                 value={planDocumentFiles}
                                 onChange={setPlanDocumentFiles}
                                 availableFilesURL={planDocumentURL ?? ""}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                                maxFiles={5}
-                                maxSizeMB={10}
                                 onRemoveExisting={(url) => {
                                     setRemovedPlanDocumentUrls((prev) => [...prev, url])
                                 }}
@@ -303,6 +299,7 @@ export const ProposedPlan: React.FC = () => {
                             label="Select Amenities"
                             placeholder="Search Amenities"
                             options={AMENITIES_BY_CATEGORY}
+                            disabled={!canAction}
                             value={
                                 Array.isArray(formDataProposedPlan.Amenities)
                                     ? formDataProposedPlan.Amenities
@@ -319,8 +316,8 @@ export const ProposedPlan: React.FC = () => {
             </div>
 
             <BottomActionBar
-                saveText={(formDataProposedPlan.ProposedOfferProposedPlanId && formDataProposedPlan.ProposedOfferProposedPlanId > 0) ? 'Update' : 'Save'}
-                canAction={canAction}
+                saveText={(formDataProposedPlan.ProposedOfferProposedPlanId && formDataProposedPlan.ProposedOfferProposedPlanId > 0) ? 'Update' : 'Add'}
+                canAction={canAction && Number(projectId) > 0}
                 onSave={handleSaveProposedPlan}
                 isLoading={isLoading}
             />

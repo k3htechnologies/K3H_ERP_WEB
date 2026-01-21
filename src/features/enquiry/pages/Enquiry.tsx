@@ -39,7 +39,7 @@ export const Enquiry: React.FC = () => {
     //#region STATE MANAGEMENT
     const [EnquiryList, setEnquiryMasterList] = useState<EnquiryData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     // USE NAVIGATE
     const navigate = useNavigate();
@@ -81,7 +81,7 @@ export const Enquiry: React.FC = () => {
 
             setIsLoading,
 
-            setIsLoadingMessage,
+            setLoadingMessage,
 
             async () => {
                 let sortByParam: string | undefined;
@@ -186,7 +186,7 @@ export const Enquiry: React.FC = () => {
         await runApiWithLoader(
 
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 let sortByParam;
@@ -229,7 +229,7 @@ export const Enquiry: React.FC = () => {
 
             setIsLoading,
 
-            setIsLoadingMessage,
+            setLoadingMessage,
 
             async () => {
 
@@ -247,7 +247,7 @@ export const Enquiry: React.FC = () => {
     const downloadExcelSampleEnquiry = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 // Find the column label for sorting
                 const params: FilterPullExcelSample = {
@@ -333,7 +333,7 @@ export const Enquiry: React.FC = () => {
             align: 'left',
             render: value => (
                 <TooltipText
-                    text={value || 'N/A'}
+                    text={value || '-'}
                     maxWidth="140px"
                     tooltipThreshold={14}
                     tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
@@ -349,7 +349,7 @@ export const Enquiry: React.FC = () => {
             align: 'left',
             render: (value, row) => (
                 <TooltipText
-                    text={value || 'N/A'}
+                    text={value || '-'}
                     maxWidth="250px"
                     tooltipThreshold={25}
                     onClick={() => handleNavigateToView(row)}
@@ -564,7 +564,7 @@ export const Enquiry: React.FC = () => {
             sortable: false,
             align: 'center',
             render: (value?: string) =>
-                value ? formatDate_dd_MonthName_yy(value) : 'N/A'
+                value ? formatDate_dd_MonthName_yy(value) : '-'
         },
         {
             key: 'EnquiryDate',
@@ -573,7 +573,7 @@ export const Enquiry: React.FC = () => {
             sortable: false,
             align: 'center',
             render: (value?: string) =>
-                value ? formatDate_dd_MonthName_yy(value) : 'N/A'
+                value ? formatDate_dd_MonthName_yy(value) : '-'
         },
         {
             key: 'SalesAdvisor',
@@ -673,7 +673,7 @@ export const Enquiry: React.FC = () => {
     };
     //#endregion
 
-    //#region CLEAR FILTER
+    //#region Clear
     const clearFilters = () => {
         setTempFilters({});
         resetFilters();
@@ -698,7 +698,7 @@ export const Enquiry: React.FC = () => {
 
             setIsLoading,
 
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: DeleteEnquiryRequest = {
 
@@ -825,8 +825,8 @@ export const Enquiry: React.FC = () => {
                     e.preventDefault();
                     applyFilters();
                 }}
-                saveText="Apply Filter"
-                cancelText="Clear Filter"
+                saveText="Apply "
+                cancelText="Clear"
                 onCancel={() => clearFilters()}
                 resetText=""
                 size="small-half"

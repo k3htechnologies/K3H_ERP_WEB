@@ -1,10 +1,10 @@
 import * as E from 'fp-ts/Either';
-import { HolidayMasterService } from '../holidayMaster/services/HolidayMasterService';
+import { holidayMasterService } from '../holidayMaster/services/HolidayMasterService';
 
 export const fetchHolidayMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
-        const responseEither = await HolidayMasterService.apiCallPullHolidayMaster({
-            PageSize: 10,
+        const responseEither = await holidayMasterService.apiCallPullHolidayMaster({
+            PageSize: 20,
             PageNumber: pageNumber,
             HolidayName: params?.value || "",
         });

@@ -138,7 +138,7 @@ export const DepartmentMaster: React.FC = () => {
           debouncedSearch(v)
         }}
         onClearSearch={clearsearchDepartments}
-        isShowFilterButton={true}
+        isShowFilterButton={false}
         filters={filters}
         onOpenFilter={handleOpenFilter}
         isShowCustomizeButton

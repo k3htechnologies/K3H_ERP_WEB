@@ -13,7 +13,7 @@ import * as E from 'fp-ts/Either';
 
 const leaveTypeMasterDatasource = new LeaveTypeMasterDatasourceImpl();
 
-export const LeaveTypeMasterService = {
+export const leaveTypeMasterService = {
 
     apiCallPullLeaveTypeMaster: async (params: FilterWithPaginationLeaveTypeMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, LeaveTypeMasterListResponse>> => {
         try {

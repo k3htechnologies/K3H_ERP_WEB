@@ -6,3 +6,4 @@ export const EmployeeResignationApi = {
 
 export type EmployeeResignationApiKeys = keyof typeof EmployeeResignationApi
 
+

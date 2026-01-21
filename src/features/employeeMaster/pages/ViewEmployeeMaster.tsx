@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
 import type { EmployeeMasterData, EmployeeReportingCycle, FilterWithPaginationEmployeeMasterRequest } from '@/features/employeeMaster/models/EmployeeMasterModel';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useEmployeeListState } from '@/features/employeeMaster/context/EmployeeListStateContext';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import Accordion from '@/ui/components/Card/Accordion';
@@ -16,13 +17,13 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import type { EmployeeDocumentData, FilterWithPaginationEmployeeDocumentRequest } from '@/features/employeeMaster/models/EmployeeDocumentModel';
 import { employeeDocumentService } from '@/features/employeeMaster/services/EmployeeDocumentService';
-import { ShiftMappingMasterService } from '@/features/shiftMappingMaster/services/ShiftMappingMasterService'
+import { shiftMappingMasterService } from '@/features/shiftMappingMaster/services/ShiftMappingMasterService'
 import type { FilterWithPaginationShiftMappingMasterRequest, ShiftMappingMasterData } from '@/features/shiftMappingMaster/models/ShiftMappingMasterModel';
-import { WeekOffMappingMasterService } from '@/features/weekOffMappingMaster/services/WeekOffMappingMasterService'
+import { weekOffMappingMasterService } from '@/features/weekOffMappingMaster/services/WeekOffMappingMasterService'
 import type { FilterWithPaginationWeekOffMappingMasterRequest, WeekOffMappingMasterData } from '@/features/weekOffMappingMaster/models/WeekOffMappingMasterModel';
 import { employeeMasterService } from '../services/EmployeeMasterService';
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData } from '@/features/projectMaster/models/ProjectMasterModel';
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 import type { EmployeeExperienceDetailsData, FilterWithPaginationEmployeeExperienceDetailsRequest } from '@/features/employeeMaster/models/EmployeeExperienceDetailsModal';
 import type { EmployeeEducationDetailsData, FilterWithPaginationEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
 import { employeeExperienceDetailsService } from '@/features/employeeMaster/services/EmployeeExperienceDetailsService';
@@ -46,7 +47,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     }>({});
 
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const { canAction } = useMenuPermissions('/employeeMaster');
 
     // TOAST
@@ -54,22 +55,9 @@ export const ViewEmployeeMaster: React.FC = () => {
 
     //LOCATION
     const navigate = useNavigate();
-
-    const location = useLocation() as {
-        state?: {
-            fromList?: boolean;
-            listState?: {
-                page: number;
-                filters: any;
-                sortInfo?: any;
-                searchTerm?: string;
-                employeeId: number;
-                employeeName: string;
-            };
-        };
-    };
-    const preservedListState = location.state?.listState;
-    const employeeName = preservedListState?.employeeName || '';
+    const { listState,updateListState } = useEmployeeListState();
+    
+    const employeeName = listState.employeeName || '';
 
     //#endregion
 
@@ -110,14 +98,14 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadEmployee = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const filterParams: FilterWithPaginationEmployeeMasterRequest = {
                     PageNumber: 1,
                     PageSize: 1,
                     IsCheckPermission: false,
-                    EmployeeId: Number(preservedListState?.employeeId)
+                    EmployeeId: Number(listState.employeeId)
                 }
 
                 const response = await employeeMasterService.apiCallPullEmployeeMaster(filterParams);
@@ -156,13 +144,13 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadAssetMasterMapping = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationAssetMappingMasterRequest = {
                     PageNumber: 1,
                     PageSize: 20,
-                    EmployeeId: preservedListState!.employeeId,
+                    EmployeeId: listState.employeeId,
 
                 };
 
@@ -194,7 +182,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadEmployeeDocuments = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
 
@@ -202,7 +190,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 500,
                     IsCheckPermission: true,
-                    EmployeeId: preservedListState!.employeeId!,
+                    EmployeeId: listState.employeeId!,
                     DocumentName: undefined
                 }
 
@@ -239,17 +227,17 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadShiftMappings = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationShiftMappingMasterRequest = {
                     PageNumber: 1,
                     PageSize: 20,
                     DepartmentName: undefined,
-                    EmployeeId: preservedListState!.employeeId,
+                    EmployeeId: listState.employeeId,
                 }
 
-                const response = await ShiftMappingMasterService.apiCallPullShiftMappingMaster(params);
+                const response = await shiftMappingMasterService.apiCallPullShiftMappingMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -276,17 +264,17 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadWeekOffMappings = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationWeekOffMappingMasterRequest = {
                     PageNumber: 1,
                     PageSize: 100,
                     DepartmentName: undefined,
-                    EmployeeId: preservedListState!.employeeId,
+                    EmployeeId: listState.employeeId,
                 }
 
-                const response = await WeekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
+                const response = await weekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -313,17 +301,17 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadProjects = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationProjectMasterRequest = {
                     PageNumber: 1,
                     PageSize: 1000,
                     IsProjectAccess: false,
-                    EmployeeId: preservedListState!.employeeId,
+                    EmployeeId: listState.employeeId,
                 }
 
-                const response = await ProjectMasterService.apiCallPullProjectMaster(params);
+                const response = await projectMasterService.apiCallPullProjectMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -349,14 +337,14 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadEmployeeEducationDetails = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationEmployeeEducationDetailsRequest = {
                     PageNumber: 1,
                     PageSize: 100,
                     Qualification: undefined,
-                    EmployeeId: preservedListState!.employeeId,
+                    EmployeeId: listState.employeeId,
                 }
 
                 const response = await employeeEducationDetailsService.apiCallPullEmployeeEducationDetails(params);
@@ -386,14 +374,14 @@ export const ViewEmployeeMaster: React.FC = () => {
     const loadEmployeeExperienceDetails = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationEmployeeExperienceDetailsRequest = {
                     PageNumber: 1,
                     PageSize: 100,
                     CompanyName: undefined,
-                    EmployeeId: preservedListState!.employeeId,
+                    EmployeeId: listState.employeeId,
                 }
 
                 const response = await employeeExperienceDetailsService.apiCallPullEmployeeExperienceDetails(params);
@@ -423,13 +411,7 @@ export const ViewEmployeeMaster: React.FC = () => {
 
     const handleEditEmployee = (row: EmployeeMasterData) => {
         if (!row?.EmployeeId) return;
-        navigate(`/employeeMaster/add/${row.EmployeeId}`, {
-            state: {
-                editEmployeeMasterData: row,
-                fromList: true,
-                listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
-            }
-        });
+        navigate(`/employeeMaster/add/${row.EmployeeId}`);
     };
 
 
@@ -438,20 +420,11 @@ export const ViewEmployeeMaster: React.FC = () => {
     //#region EDIT EMPLOYEE DOCUMENT
 
     const handleEditEmployeeDocument = (row: EmployeeMasterData) => {
-        navigate('/employeeMaster/document', {
-            state: {
-                employeeId: row.EmployeeId!,
-                employeeName: row.FullName,
-                listState: {
-                    page: preservedListState?.page,
-                    filters: preservedListState?.filters,
-                    sortInfo: preservedListState?.sortInfo,
-                    searchTerm: preservedListState?.searchTerm,
-                    employeeId: row.EmployeeId!,
-                    employeeName: row.FullName
-                }
-            }
+        if (!row?.EmployeeId) return;
+        updateListState({
+            pageName: 'EMPLOYEE',
         });
+        navigate('/employeeMaster/document');
     };
 
 
@@ -459,9 +432,7 @@ export const ViewEmployeeMaster: React.FC = () => {
 
     //#region BACK EMPLOYE EMASTER PAGE
     const handleBackToListEmployeeMaster = () => {
-        navigate('/employeeMaster', {
-            state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' } }
-        });
+        navigate('/employeeMaster');
     };
     //#endregion
 
@@ -858,7 +829,7 @@ export const ViewEmployeeMaster: React.FC = () => {
             )}
 
             {activeTab === 'Document' && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-5">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                     {employeeDocumentList?.some(doc => doc?.DocumentURL) ? (
                         employeeDocumentList
                             .filter(doc => doc?.DocumentURL)
@@ -877,7 +848,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 </section>
                             ))
                     ) : (
-                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
                             <NoDataView message="No Documents Found" />
                         </section>
                     )}

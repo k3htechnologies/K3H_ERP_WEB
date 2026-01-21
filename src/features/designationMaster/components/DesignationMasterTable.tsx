@@ -79,7 +79,7 @@ export const DesignationMasterTable: React.FC<DesignationMasterTableProps> = ({
             return (
               <div className="flex items-center justify-end ml-2 gap-1">
                 <TooltipText
-                  text={value || 'N/A'}
+                  text={value || '-'}
                   maxWidth="350px"
                   tooltipThreshold={45}
                   onClick={() => onView(row)}

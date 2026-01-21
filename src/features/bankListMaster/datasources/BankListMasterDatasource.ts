@@ -28,7 +28,7 @@ export class BankListMasterDatasourceImpl implements BankListMasterDatasource {
             if (params.BankListMasterId) queryParams.append('BankListMasterId', params.BankListMasterId.toString());
             if (params.BankName?.trim()) queryParams.append('BankName', params.BankName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
-            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+            if (params.ExportType?.trim()) queryParams.append('ExportType', params.ExportType.trim());
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${BanKListMasterApi.PULL}?${queryParams.toString()}`, { signal }

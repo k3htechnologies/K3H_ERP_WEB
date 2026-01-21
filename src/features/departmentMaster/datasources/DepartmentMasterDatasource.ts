@@ -59,7 +59,8 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(DepartmentMasterApi.ADD_UPDATE, params);
 
-            return response
+            return response;
+            
         } catch (error) {
 
             console.error('ERROR: ADD UPDATE DEPARTMENT MASTER :', error)

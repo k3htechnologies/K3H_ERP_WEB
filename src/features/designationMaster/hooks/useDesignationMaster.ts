@@ -104,7 +104,7 @@ export const useDesignationMaster = () => {
   //#endregion
 
   //#region TABLE COLUMN DEFINITION
-  
+
   const designationMasterColumns = useMemo<TableColumn[]>(
     () => getDesignationMasterColumns(),
     []
@@ -117,7 +117,7 @@ export const useDesignationMaster = () => {
     return await loadDesignationMaster(page, filters, sort ?? sortInfo);
   }
 
-  const loadDesignationMaster = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadDesignationMaster = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -128,7 +128,7 @@ export const useDesignationMaster = () => {
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           DesignationMasterId: filterParams.DesignationMasterId ? Number(filterParams.DesignationMasterId) : 0,
-          DesignationName: filterParams.DesignationName?.trim() || undefined,
+          DesignationName: searchtext ?? filterParams.DesignationName ?? undefined,
           SortBy: getSortByParam(sortInfo ?? null, designationMasterColumns)
         }
 
@@ -165,20 +165,19 @@ export const useDesignationMaster = () => {
       fetchDesignationMasterList();
       return
     }
-
-    const filterParams: FilterInfo = {
-      DesignationName: searchValue.trim(),
-    };
-
-    await loadDesignationMaster(1, filterParams)
+    await loadDesignationMaster(1, filters, sortInfo, searchValue)
   }
   //#endregion
 
   //#region CLEAR SEARCH DESIGNATION 
   const clearsearchDesignationMaster = () => {
-    setSearchTerm('');
+
     debouncedSearch.cancel?.();
-    fetchDesignationMasterList();
+
+    setSearchTerm('');
+
+    loadDesignationMaster(1, { DesignationName: '' }, sortInfo, undefined);
+
   }
   //#endregion
 
@@ -223,9 +222,12 @@ export const useDesignationMaster = () => {
 
   //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback((sort: SortInfo) => {
+
     setSortInfo(sort);
-    loadDesignationMaster(1, filters, sort);
-  }, [filters]);
+
+    loadDesignationMaster(1, filters, sort, searchTerm || undefined);
+
+  }, [filters, searchTerm]);
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
@@ -289,7 +291,7 @@ export const useDesignationMaster = () => {
   }
   //#endregion
 
-  //#region CLEAR FILTER 
+  //#region Clear 
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})

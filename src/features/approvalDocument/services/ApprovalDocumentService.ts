@@ -11,7 +11,7 @@ import * as E from 'fp-ts/Either';
 
 const approvalDocumentDatasource = new ApprovalDocumentDatasourceImpl();
 
-export const ApprovalDocumentService = {
+export const approvalDocumentService = {
 
     apiCallPullApprovalDocument: async (params: FilterWithPaginationApprovalDocument, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ApprovalDocumentListResponse>> => {
         try {

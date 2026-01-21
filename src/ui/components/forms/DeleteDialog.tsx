@@ -6,7 +6,11 @@ interface DeleteDialogProps {
     onClose: () => void;
     onConfirm: () => void;
     loading: boolean;
-    pageName: string
+    pageName: string;
+    title?: string;
+    message?: string;
+    confirmText?: string;
+    variant?: 'danger' | 'warning' | 'info' | 'logout' | 'inactive' | 'generate',
 }
 
 export const DeleteDialog: React.FC<DeleteDialogProps> = ({
@@ -14,7 +18,11 @@ export const DeleteDialog: React.FC<DeleteDialogProps> = ({
     onClose,
     onConfirm,
     loading,
-    pageName
+    pageName,
+    title,
+    message,
+    confirmText,
+    variant = "danger"
 }) => {
     return (
 
@@ -22,12 +30,12 @@ export const DeleteDialog: React.FC<DeleteDialogProps> = ({
             isOpen={isOpen}
             onClose={onClose}
             onConfirm={onConfirm}
-            title={`You are about to delete a ${pageName}?`}
-            message={`Deleting this ${pageName} will permanently remove its contents`}
-            confirmText="Delete"
+            title={title || `You are about to delete a ${pageName} ?`}
+            message={message || `Deleting this ${pageName} will permanently remove its contents.`}
+            confirmText={confirmText || 'Delete'}
             cancelText="Cancel"
             loading={loading}
-            variant="danger"
+            variant={variant}
         />
 
     );

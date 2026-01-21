@@ -1,10 +1,10 @@
 import * as E from 'fp-ts/Either';
-import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
+import { companyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 
 export const fetchCompanyMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
-        const responseEither = await CompanyMasterService.apiCallPullCompanyMaster({
-            PageSize: 10,
+        const responseEither = await companyMasterService.apiCallPullCompanyMaster({
+            PageSize: 20,
             PageNumber: pageNumber,
             CompanyName: params?.value || "",
             IsCheckPermission: false,

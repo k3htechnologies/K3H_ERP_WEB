@@ -16,6 +16,7 @@ const projectDocumentCategoryMasterDatasource = new ProjectDocumentCategoryMaste
 export const projectDocumentCategoryMasterService = {
 
     apiCallPullProjectDocumentCategoryMaster: async (params: FilterWithPaginationProjectDocumentCategoryMaster, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectDocumentCategoryMasterListResponse>> => {
+       
         try {
             return E.right(await projectDocumentCategoryMasterDatasource.pullProjectDocumentCategoryMaster(params, options?.signal));
 
@@ -27,6 +28,7 @@ export const projectDocumentCategoryMasterService = {
     },
 
     apiCallAddUpdateProjectDocumentCategoryMaster: async (params: AddUpdateProjectDocumentCategoryMasterRequest): Promise<E.Either<Failure, ProjectDocumentCategoryMasterSaveReponse>> => {
+        
         try {
 
             return E.right(await projectDocumentCategoryMasterDatasource.addUpdateProjectDocumentCategoryMaster(params));
@@ -39,6 +41,7 @@ export const projectDocumentCategoryMasterService = {
     },
 
     apiCallDeleteProjectDocumentCategoryMaster: async (params: DeleteProjectDocumentCategoryMasterRequest): Promise<E.Either<Failure, ProjectDocumentCategoryMasterDeleteResponse>> => {
+        
         try {
 
             return E.right(await projectDocumentCategoryMasterDatasource.deleteProjectDocumentCategoryMaster(params));

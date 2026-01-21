@@ -17,7 +17,6 @@ import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
@@ -32,6 +31,7 @@ import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useTenantListState } from '@/features/tenant/context/TenantListStateContext';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 
 const initialFormState = (): AddUpdateTenantDocumentRequest => ({
@@ -50,7 +50,7 @@ export const TenantDocument: React.FC = () => {
   //#region STATE MANAGEMENT
   const [tenantDocumentList, setTenantDocumentList] = useState<TenantDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
@@ -106,7 +106,7 @@ export const TenantDocument: React.FC = () => {
 
   //#region TENANT LIST STATE CONTEXT
   const { listState } = useTenantListState();
-  const { tenantId, buildingId, tenantName,buildingName } = listState;
+  const { tenantId, buildingId, tenantName, buildingName } = listState;
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -169,7 +169,7 @@ export const TenantDocument: React.FC = () => {
   const loadTenantDocuments = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         let sortByParam = undefined;
@@ -259,7 +259,7 @@ export const TenantDocument: React.FC = () => {
   const handleExportTenantDocuments = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
 
@@ -375,9 +375,9 @@ export const TenantDocument: React.FC = () => {
           <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
 
             <TooltipText
-              text={value || 'N/A'}
-              maxWidth="250px"
-              tooltipThreshold={30}
+              text={value || '-'}
+              maxWidth="500px"
+              tooltipThreshold={100}
             />
 
             <div className="flex justify-between items-center">
@@ -446,21 +446,32 @@ export const TenantDocument: React.FC = () => {
 
       },
       {
-        key: 'CreatedBy',
+        key: 'ModifiedBy',
         label: 'Last Modified By',
         width: '33',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || 'N/A'
+        sortable: false,
+        align: 'left',
+        render: (value, row) => (
+          <TooltipText
+            text={value || row.CreatedBy || '-'}
+            maxWidth="180px"
+            tooltipThreshold={18}
+          />
+        )
       },
       {
-        key: 'CreatedDate',
+        key: 'ModifiedDate',
         label: 'Last Modified Date',
         width: '33',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
-      }
+        sortable: false,
+        align: 'left',
+        render: (value, row) =>
+          value
+            ? formatDate_dd_MonthName_yy(value)
+            : row.CreatedDate
+              ? formatDate_dd_MonthName_yy(row.CreatedDate)
+              : '-'
+      },
     ],
     // dependencies: include everything used inside that might change
     [canAction, handleEditTenantDocument, handleConfirmationDialogBoxOpen]
@@ -477,7 +488,7 @@ export const TenantDocument: React.FC = () => {
 
   //#endregion
 
-  //#region CLEAR FILTER 
+  //#region Clear 
 
   const clearFilters = () => {
     setTempFilters({})
@@ -599,7 +610,7 @@ export const TenantDocument: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const payload = PushTenantDocumentFormData();
@@ -676,7 +687,7 @@ export const TenantDocument: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -692,13 +703,27 @@ export const TenantDocument: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          setTenantDocumentList(prevData => prevData.filter(item => item.TenantDocumentId !== deleteTenantDocumentDetailsData.TenantDocumentId));
+          const newTotalRecords = pagination.totalRecords - 1;
+
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (tenantDocumentList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
 
           setPagination({
-            currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords - 1,
-            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+            currentPage: pageToShow,
+            totalRecords: newTotalRecords,
+            totalPages: newTotalPages
           });
+
+          await loadTenantDocuments(pageToShow, filters);
 
           addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
@@ -775,7 +800,7 @@ export const TenantDocument: React.FC = () => {
         exportLoading={isLoading}
       />
 
-      <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
+      <div className="flex items-center gap-3 mb-6 border-b border-gray-500 pb-3">
 
         <HeaderActionBar
           titleText={"Tenant Document : "}
@@ -798,7 +823,6 @@ export const TenantDocument: React.FC = () => {
         pagination={tenantDocumentPaginationInfo}
         emptyMessage="No Tenant Documents Data Found"
         fixedHeight={true}
-        maxHeight="calc(100vh - 255px)"
         recordsPerPage={20}
         className="flex-1"
         sortInfo={sortInfo}
@@ -830,8 +854,8 @@ export const TenantDocument: React.FC = () => {
         }}
         title={editingTenantDocumentData ? 'Update Tenant Document' : 'Add Tenant Document'}
         onSubmit={handleAddUpdateTenantDocument}
-        saveText={'Save'}
-        resetText='Reset'
+        saveText={'Add'}
+
         loading={isLoading}
         size='xl'
       >
@@ -882,7 +906,7 @@ export const TenantDocument: React.FC = () => {
           e.preventDefault()
           applyFilters()
         }}
-        saveText="Apply Filter"
+        saveText="Apply "
         onCancel={() => clearFilters()}
         size="small-half"
       >
@@ -901,20 +925,16 @@ export const TenantDocument: React.FC = () => {
         </div>
       </Modal>
 
-      {/* DELETE CONFIRMATION TENANT DOCUMENT MODAL */}
-      <ConfirmationDialogBox
+
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteTenantDocumentDetailsData(null)
         }}
         onConfirm={handleDeleteTenantDocument}
-        title="You are about to delete a tenant document?"
-        message="Deleting this tenant document will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='tenant document'
       />
 
 

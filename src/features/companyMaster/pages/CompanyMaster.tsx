@@ -10,7 +10,7 @@ import type {
     FilterWithPaginationCompanyMasterRequest
 } from '@/features/companyMaster/models/CompanyMasterModel';
 
-import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
+import { companyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -20,7 +20,8 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useLocation, type Location, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useCompanyListState } from '@/features/companyMaster/context/CompanyListStateContext';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { Button, Input } from '@/ui/components/forms';
@@ -28,29 +29,30 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { Trash2 } from 'lucide-react';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const CompanyMaster: React.FC = () => {
     //#region STATE
     const [companyList, setCompanyList] = useState<CompanyMasterData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const navigate = useNavigate();
 
-    const { pagination, setPagination } = usePagination(20);
-    const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
+    const { listState, updateListState } = useCompanyListState();
+    const { pagination, setPagination } = usePagination(listState.pageSize);
+    const sortInfo = listState.sortInfo;
+    const searchTerm = listState.searchTerm;
+    const filters = listState.filters;
 
     const { addToast } = useToast();
-
-    const [searchTerm, setSearchTerm] = useState('');
 
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchCompanys(value);
     }, 350);
 
     const [showFilterPopup, setShowFilterPopup] = useState(false);
-    const [filters, setFilters] = useState<FilterInfo>({});
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
     const [isShowCustomizeCompanyColumnsModal, setIsShowCustomizeCompanyColumnsModal] = useState(false);
@@ -59,17 +61,6 @@ export const CompanyMaster: React.FC = () => {
     const [showImportModal, setShowImportModal] = useState(false);
 
     const { canAction, canExport } = useMenuPermissions();
-
-    const location = useLocation() as Location & {
-        state?: {
-            listState?: {
-                page?: number;
-                filters?: FilterInfo;
-                sortInfo?: SortInfo;
-                searchTerm?: string;
-            };
-        };
-    };
 
 
     //DELETE COMPANY MASTER STATES
@@ -82,37 +73,17 @@ export const CompanyMaster: React.FC = () => {
 
     //#region INIT
     useEffect(() => {
+        // Sync pagination with context state
+        setPagination({ currentPage: listState.page });
 
-        const incoming = location.state?.listState as
-            | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string }
-            | undefined;
-
-        const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '' };
-
-
-        setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-        setSortInfo(listState.sortInfo);
-
-        setFilters(listState.filters ?? {});
-
-        setTempFilters(listState.filters ?? {});
-
-        setSearchTerm(listState.searchTerm ?? '');
-
+        // Load companies with current context state
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
-
-            setSearchTerm(String(listState.searchTerm));
-
-            loadCompanys(listState.page ?? 1, { CompanyName: String(listState.searchTerm).trim() }, listState.sortInfo);
-
-            return;
+            loadCompanys(listState.page, { CompanyName: String(listState.searchTerm).trim() }, listState.sortInfo);
+        } else {
+            loadCompanys(listState.page, listState.filters, listState.sortInfo);
         }
-
-
-        loadCompanys(listState.page ?? 1, listState.filters ?? {}, listState.sortInfo);
-
-    }, [location.state]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
 
 
@@ -128,31 +99,24 @@ export const CompanyMaster: React.FC = () => {
         return await loadCompanys(page, filters, sort ?? sortInfo);
     };
 
-    const loadCompanys = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+    const loadCompanys = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
-                let sortByParam: string | undefined;
 
-                if (sortInfo) {
-                    const column = companyColumns.find(col => col.key === sortInfo.column);
-                    if (column) {
-                        sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-                    }
-                }
 
                 const params: FilterWithPaginationCompanyMasterRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     IsCheckPermission: true,
                     CompanyId: filterParams.CompanyId ? Number(filterParams.CompanyId) : undefined,
-                    CompanyName: filterParams.CompanyName?.trim() || undefined,
+                    CompanyName: searchtext ?? filterParams.CompanyName?.trim() ?? undefined,
                     CompanyType: filterParams.CompanyType?.trim() || undefined,
-                    SortBy: sortByParam
+                    SortBy: getSortByParam(sortInfo ?? null, companyColumns)
                 };
 
-                const response = await getCompanys(params);
+                const response = await companyMasterService.apiCallPullCompanyMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -179,39 +143,29 @@ export const CompanyMaster: React.FC = () => {
 
     //#endregion
 
-    //#region SEARCH EMPLOYEE FILTER
+    //#region SEARCH COMPANY FILTER
     const searchCompanys = async (searchValue: string) => {
-        setSearchTerm(searchValue);
+        updateListState({ searchTerm: searchValue });
 
         if (searchValue.trim() === '') {
+            updateListState({ filters: {}, page: 1 });
             fetchCompanyList();
             return;
         }
 
-        const filterParams: FilterInfo = {
-            CompanyName: searchValue.trim()
-        };
-
-        await loadCompanys(1, filterParams);
+        updateListState({ filters, page: 1, searchTerm: searchValue });
+        await loadCompanys(1, filters, sortInfo, searchValue)
     };
 
 
     //#endregion
 
-    //#region CLAER SERACH EMPLOYEE
+    //#region CLEAR SEARCH COMPANY
     const clearSearchCompanys = () => {
-        setSearchTerm('');
-
         debouncedSearch.cancel?.();
-
-        setFilters({});
+        updateListState({ searchTerm: '', filters: {}, page: 1 });
         setTempFilters({});
-        setPagination({ currentPage: 1 });
-        loadCompanys(1, {});
-        try {
-            navigate(location.pathname, { replace: true, state: {} });
-        } catch {
-        }
+        loadCompanys(1, { CompanyName: '' }, sortInfo, undefined);
     };
 
     //#endregion
@@ -220,15 +174,8 @@ export const CompanyMaster: React.FC = () => {
     const handleExportCompanys = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
-                let sortByParam: string | undefined;
-                if (sortInfo) {
-                    const column = companyColumns.find(col => col.key === sortInfo.column);
-                    if (column) {
-                        sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-                    }
-                }
 
                 const params: FilterWithPaginationCompanyMasterRequest = {
                     PageNumber: 1,
@@ -236,11 +183,11 @@ export const CompanyMaster: React.FC = () => {
                     IsCheckPermission: true,
                     CompanyName: filters.CompanyName?.trim() || undefined,
                     CompanyType: filters.CompanyType?.trim() || undefined,
-                    SortBy: sortByParam,
+                    SortBy: getSortByParam(sortInfo ?? null, companyColumns),
                     ExportType: exportType
                 };
 
-                const response = await getCompanys(params);
+                const response = await companyMasterService.apiCallPullCompanyMaster(params);
 
                 handleExportFile(response, exportType, 'Company Master', addToast);
 
@@ -260,21 +207,16 @@ export const CompanyMaster: React.FC = () => {
 
     //#endregion
 
-    //#region PULL EMPLOYEE MASTER
-    const getCompanys = async (filterParams: FilterWithPaginationCompanyMasterRequest) => {
-        return await CompanyMasterService.apiCallPullCompanyMaster(filterParams);
-    };
-    //#endregion
-
     //#region TABLE CONFIG
     const handlePageChange = useCallback((page: number) => {
+        updateListState({ page });
         fetchCompanyList(page);
-    }, []);
+    }, [updateListState]);
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
-        setSortInfo(sort);
-        loadCompanys(1, filters, sort);
-    }, [filters]);
+        updateListState({ sortInfo: sort, page: 1 });
+        loadCompanys(1, filters, sort, searchTerm || undefined);
+    }, [filters, updateListState, searchTerm]);
 
     const companyPaginationInfo: PaginationInfo = useMemo(
         () => ({
@@ -290,23 +232,12 @@ export const CompanyMaster: React.FC = () => {
     const companysForTable = useMemo(() => companyList, [companyList]);
     //#endregion
 
-    //#region VIEW EMPLOYEE MASTER
+    //#region VIEW COMPANY MASTER
 
     const handleViewCompanyDetails = useCallback((row: CompanyMasterData) => {
-        navigate('/companyMaster/view', {
-            state: {
-                editCompanyMasterData: row,
-                fromList: true,
-                listState: {
-                    page: pagination.currentPage,
-                    filters,
-                    sortInfo,
-                    searchTerm,
-                    companyName:row.CompanyName
-                },
-            },
-        });
-    }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+        updateListState({ companyId: row.CompanyId, companyName: row.CompanyName });
+        navigate('/companyMaster/view');
+    }, [navigate, updateListState]);
     //#endregion
 
     //#region CONFIRMATION DIALOG BOX
@@ -332,14 +263,23 @@ export const CompanyMaster: React.FC = () => {
                     <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
 
                         <TooltipText
-                            text={value || 'N/A'}
+                            text={value || '-'}
                             maxWidth="250px"
                             tooltipThreshold={30}
                             onClick={() => handleViewCompanyDetails(row)}
+                            
                         />
 
                     </div>
                 )
+            },
+            {
+                key: 'CompanyType',
+                label: 'Company Type',
+                width: '15',
+                sortable: false,
+                align: 'center',
+                render: (value) => value || '-'
             },
             {
                 key: 'ContactPerson',
@@ -347,13 +287,7 @@ export const CompanyMaster: React.FC = () => {
                 width: '18',
                 sortable: false,
                 align: 'left',
-                render: (value) => (
-                    <TooltipText
-                        text={value || '-'}
-                        maxWidth="180px"
-                        tooltipThreshold={18}
-                    />
-                )
+                render: (value) => value || '-'
             },
             {
                 key: 'MobileNumber',
@@ -361,7 +295,7 @@ export const CompanyMaster: React.FC = () => {
                 width: '15',
                 sortable: false,
                 align: 'center',
-                render: (value) => value || '-'
+                render: value => value ? `+91 ${value}` : '-'
             },
             {
                 key: 'LandLineNumbereee',
@@ -377,13 +311,7 @@ export const CompanyMaster: React.FC = () => {
                 width: '20',
                 sortable: false,
                 align: 'left',
-                render: (value) => (
-                    <TooltipText
-                        text={value || '-'}
-                        maxWidth="200px"
-                        tooltipThreshold={20}
-                    />
-                )
+                render: (value) => value || '-'
             },
 
             {
@@ -398,6 +326,7 @@ export const CompanyMaster: React.FC = () => {
                             images={parseDocumentUrls(row.GSTCertificateURL)}
                             title="GST Document"
                             triggerLabel={value || '-'}
+                            isWrap={false}
                         />
                     );
                 }
@@ -415,6 +344,7 @@ export const CompanyMaster: React.FC = () => {
                             images={parseDocumentUrls(row.PanCardURL)}
                             title="Pan Card Document"
                             triggerLabel={value || '-'}
+                            isWrap={false}
                         />
                     );
                 }
@@ -431,6 +361,7 @@ export const CompanyMaster: React.FC = () => {
                             images={parseDocumentUrls(row.CINURL)}
                             title="CIN Document"
                             triggerLabel={value || '-'}
+                            isWrap={false}
                         />
                     );
                 }
@@ -507,7 +438,7 @@ export const CompanyMaster: React.FC = () => {
     //#endregion
 
     //#region CUSTOMIZE COLUMNS
-    const requiredCompanyColumnKeys: string[] = ['FullName'];
+    const requiredCompanyColumnKeys: string[] = ['CompanyName'];
 
     const allCompanyColumnKeys: string[] = companyColumns.map(c => c.key);
 
@@ -542,25 +473,16 @@ export const CompanyMaster: React.FC = () => {
 
     //#region FILTER HELPERS
     const applyFilters = () => {
-        setFilters(tempFilters);
+        updateListState({ filters: tempFilters, page: 1 });
         loadCompanys(1, tempFilters);
         setShowFilterPopup(false);
     };
 
     const clearFilters = () => {
         setTempFilters({});
-        setFilters({});
-
-        // reset page
-        setPagination({ currentPage: 1 });
-
-        // load empty filters
+        updateListState({ filters: {}, page: 1 });
         loadCompanys(1, {});
-
         setShowFilterPopup(false);
-
-        // clear router state (very important)
-        navigate(location.pathname, { replace: true, state: {} });
     };
     //#endregion
 
@@ -583,7 +505,7 @@ export const CompanyMaster: React.FC = () => {
     const downloadExcelSampleCompanyMaster = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 // Find the column label for sorting
 
@@ -611,7 +533,7 @@ export const CompanyMaster: React.FC = () => {
     const uploadExcel = async (file: File, mergeExisting: string) => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const fd = new FormData();
@@ -650,7 +572,7 @@ export const CompanyMaster: React.FC = () => {
 
             setIsLoading,
 
-            setIsLoadingMessage,
+            setLoadingMessage,
 
             async () => {
 
@@ -659,17 +581,31 @@ export const CompanyMaster: React.FC = () => {
                     Uniquekey: deleteCompanyMasterDetailsData.Uniquekey
                 }
 
-                const response = await CompanyMasterService.apiCallDeleteCompanyMaster(params);
+                const response = await companyMasterService.apiCallDeleteCompanyMaster(params);
 
                 if (E.isRight(response)) {
 
-                    setCompanyList(prevData => prevData.filter(item => item.CompanyId !== deleteCompanyMasterDetailsData.CompanyId));
+                    const newTotalRecords = pagination.totalRecords - 1;
+
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    }
+
+                    else if (companyList.length === 1 && pagination.currentPage > 1) {
+                        pageToShow = pagination.currentPage - 1;
+                    }
 
                     setPagination({
                         currentPage: pagination.currentPage,
                         totalRecords: pagination.totalRecords - 1,
                         totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
                     });
+
+                    await loadCompanys(pageToShow, filters, sortInfo, searchTerm);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
@@ -708,7 +644,7 @@ export const CompanyMaster: React.FC = () => {
                 searchTerm={searchTerm}
                 searchPlaceholder="Search By Company Name"
                 onSearchChange={v => {
-                    setSearchTerm(v);
+                    updateListState({ searchTerm: v });
                     debouncedSearch(v);
                 }}
                 onClearSearch={clearSearchCompanys}
@@ -775,10 +711,10 @@ export const CompanyMaster: React.FC = () => {
                     e.preventDefault();
                     applyFilters();
                 }}
-                saveText="Apply Filter"
-                cancelText="Clear Filter"
+                saveText="Apply"
+                cancelText="Clear"
                 onCancel={() => clearFilters()}
-                resetText=''
+               
                 size="small-half"
             >
                 <div className="space-y-6">
@@ -790,7 +726,7 @@ export const CompanyMaster: React.FC = () => {
                                 type="text"
                                 value={tempFilters.CompanyName || ''}
                                 onChange={(e) => handleFilterChange('CompanyName', e.target.value)}
-                                placeholder="Enter company Name"
+                                placeholder="Enter Company Name"
 
                             />
                         </div>
@@ -801,7 +737,7 @@ export const CompanyMaster: React.FC = () => {
                                 type="text"
                                 value={tempFilters.CompanyType || ''}
                                 onChange={(e) => handleFilterChange('CompanyType', e.target.value)}
-                                placeholder="Enter company Type"
+                                placeholder="Enter Company Type"
                             />
                         </div>
                     </div>
@@ -809,19 +745,16 @@ export const CompanyMaster: React.FC = () => {
             </Modal>
 
             {/* DELETE CONFIRMATION COMPANY MODAL */}
-            <ConfirmationDialogBox
+
+            <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
                 onClose={() => {
                     setIsConfirmationDialogBoxOpen(false)
                     setDeleteCompanyMasterDetailsData(null)
                 }}
                 onConfirm={handleDeleteCompanyMaster}
-                title="You are about to delete a company?"
-                message="Deleting this company will permanently remove its contents."
-                confirmText="Delete"
-                cancelText="Cancel"
                 loading={isLoading}
-                variant="danger"
+                pageName='company'
             />
 
             <ExportImport

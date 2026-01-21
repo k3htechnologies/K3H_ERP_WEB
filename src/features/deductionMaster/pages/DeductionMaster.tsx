@@ -9,7 +9,7 @@ import type {
   DeleteDeductionMasterRequest,
   FilterWithPaginationDeductionMasterRequest
 } from '@/features/deductionMaster/models/DeductionMasterModel';
-import { DeductionMasterService } from '@/features/deductionMaster/services/DeductionMasterService'
+import { deductionMasterService } from '@/features/deductionMaster/services/DeductionMasterService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -20,10 +20,12 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useDeductionMasterListState } from '@/features/deductionMaster/context/DeductionMasterListStateContext';
 import { updateFilter } from '@/core/utils/filterHelper';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Trash2 } from 'lucide-react';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 
 export const DeductionMaster: React.FC = () => {
@@ -31,31 +33,26 @@ export const DeductionMaster: React.FC = () => {
   //#region STATE MANAGEMENT
   const [DeductionMasterList, setDeductionMasterList] = useState<DeductionMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // USE NAVIGATE
   const navigate = useNavigate();
+  const { listState, updateListState } = useDeductionMasterListState();
+  const { searchTerm, filters, sortInfo } = listState;
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
-
-  //TABLE SORT INFO
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
   const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
-  const [searchTerm, setSearchTerm] = useState('');
-
   const debouncedSearch = useDebouncedCallback((value: string) => {
-
     searchDeductions(value)
   }, 350);
 
   //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   //DELETE DEDUCTION MASTER
@@ -69,34 +66,20 @@ export const DeductionMaster: React.FC = () => {
   const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
-  const location = useLocation() as any;
-
   //#endregion
 
   //#region INIT
   useEffect(() => {
-    const incoming = location.state?.listState;
-    const listState = incoming ?? {
-      page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: ''
-    };
+    // Sync pagination with context state
+    setPagination({ currentPage: listState.page });
 
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
+    // Load deductions with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadDeductions(listState.page ?? 1, { Name: String(listState.searchTerm).trim() });
-      return;
+      loadDeductions(listState.page, { Name: String(listState.searchTerm).trim() }, listState.sortInfo);
+    } else {
+      loadDeductions(listState.page, listState.filters, listState.sortInfo);
     }
-
-    loadDeductions(listState.page ?? 1, listState.filters ?? {});
-  }, [location.state]);
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
@@ -109,33 +92,24 @@ export const DeductionMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchDeductionMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadDeductions(page, filters,sort);
+    return await loadDeductions(page, filters, sort);
   }
 
-  const loadDeductions = async (page: number, filterParam: FilterInfo, sortInfo?: SortInfo) => {
+  const loadDeductions = async (page: number, filterParam: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
-        let sortByParam = undefined;
-
-        if (sortInfo) {
-
-          const column = DeductionMasterColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
 
         const params: FilterWithPaginationDeductionMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           DeductionMasterId: 0,
-          Name: filterParam.Name,
-          SortBy: sortByParam
+          Name: searchtext ?? filterParam.Name ?? undefined,
+          SortBy: getSortByParam(sortInfo ?? null, DeductionMasterColumns)
         };
 
-        const response = await DeductionMasterService.apiCallPullDeductionMaster(params);
+        const response = await deductionMasterService.apiCallPullDeductionMaster(params);
         if (E.isRight(response)) {
 
           setDeductionMasterList(response.right.Data);
@@ -161,38 +135,28 @@ export const DeductionMaster: React.FC = () => {
 
   //#region SEARCH & CLEAR
   const searchDeductions = async (searchValue: string) => {
-
-    setSearchTerm(searchValue);
+    updateListState({ searchTerm: searchValue });
 
     if (searchValue.trim() === '') {
-
       fetchDeductionMasterList();
-
       return
     }
-    const filterParams: FilterInfo = {
-      Name: searchValue.trim(),
-    };
 
-    await loadDeductions(1, filterParams);
+    updateListState({ filters, page: 1, searchTerm: searchValue });
+    await loadDeductions(1, filters, sortInfo, searchValue);
   };
 
   //#endregion
 
   //#region CLEAR DEDUCTION MASTER 
   const clearSearchDeductions = () => {
-    setSearchTerm('');
+    updateListState({ searchTerm: '', filters: {}, page: 1 });
 
     debouncedSearch.cancel?.();
 
-    setFilters({});
     setTempFilters({});
     setPagination({ currentPage: 1 });
-    loadDeductions(1, {});
-    try {
-      navigate(location.pathname, { replace: true, state: {} });
-    } catch {
-    }
+    loadDeductions(1, { Name: '' }, sortInfo, undefined);
   };
   //#endregion
 
@@ -202,25 +166,18 @@ export const DeductionMaster: React.FC = () => {
 
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
-        // Find the column label for sorting
-        let sortByParam = undefined
-        if (sortInfo) {
-          const column = DeductionMasterColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
+
         const params: FilterWithPaginationDeductionMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           Name: filters.Name?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, DeductionMasterColumns),
           ExportType: exportType
         };
 
-        const response = await getDeductions(params);
+        const response = await deductionMasterService.apiCallPullDeductionMaster(params);
 
         handleExportFile(response, exportType, 'Deduction Master', addToast);
 
@@ -237,29 +194,17 @@ export const DeductionMaster: React.FC = () => {
   const handleExportDeductionPdf = () => handleExportDeductions('PDF')
   //#endregion
 
-
-  //#region API | SERVICES CALL TO GET DEDUCTION
-  const getDeductions = async (filterParams: FilterWithPaginationDeductionMasterRequest) => {
-
-    return await DeductionMasterService.apiCallPullDeductionMaster(filterParams);
-  }
-  //#endregion
-
-
   //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = useCallback((page: number) => {
-
+    updateListState({ page });
     fetchDeductionMasterList(page);
-  }, []);
+  }, [updateListState]);
 
   //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback((sort: SortInfo) => {
-
-    setSortInfo(sortInfo);
-
-    loadDeductions(1,filters,sort);
-
-  }, [filters]);
+    updateListState({ sortInfo: sort, page: 1 });
+    loadDeductions(1, filters, sort, searchTerm || undefined);
+  }, [filters, updateListState, searchTerm]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -279,29 +224,14 @@ export const DeductionMaster: React.FC = () => {
 
   //#region NAVIGATE TO  VIEW DEDUCTION
   const handleNavigateToView = (row: DeductionMasterData) => {
-    navigate('/deductionMaster/view', {
-      state: {
-        deductionData: row,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          name:row.Name
-        }
-      }
-    });
+    updateListState({ deductionMasterId: row.DeductionMasterId, deductionName: row.Name });
+    navigate('/deductionMaster/view');
   };
 
   //#region NAVIGATE TO ADD DEDUCTION
   const handleAddDeductionModal = useCallback(() => {
-    navigate('/deductionMaster/add', {
-      state: {
-        fromList: true,
-        listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
-      }
-    });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    navigate('/deductionMaster/add');
+  }, [navigate]);
 
   //#endregion
 
@@ -323,7 +253,7 @@ export const DeductionMaster: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="250px"
           tooltipThreshold={25}
           onClick={() => handleNavigateToView(row)}
@@ -467,16 +397,15 @@ export const DeductionMaster: React.FC = () => {
 
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters);
+    setTempFilters(tempFilters);
     loadDeductions(1, tempFilters);
     setShowFilterPopup(false);
   };
   //#endregion
 
-  //#region CLEAR FILTER
+  //#region Clear
   const clearFilters = () => {
     setTempFilters({});
-    setFilters({});
 
     // reset page
     setPagination({ currentPage: 1 });
@@ -509,7 +438,7 @@ export const DeductionMaster: React.FC = () => {
 
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         const params: DeleteDeductionMasterRequest = {
 
@@ -518,17 +447,31 @@ export const DeductionMaster: React.FC = () => {
           UniqueKey: deleteDeductionMasterData.Uniquekey || ""
         };
 
-        const response = await DeductionMasterService.apiCallDeleteDeductionMaster(params);
+        const response = await deductionMasterService.apiCallDeleteDeductionMaster(params);
 
         if (E.isRight(response)) {
 
-          setDeductionMasterList(prevData => prevData.filter(item => item.DeductionMasterId !== deleteDeductionMasterData.DeductionMasterId));
+          const newTotalRecords = pagination.totalRecords - 1;
 
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (DeductionMasterList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
           setPagination({
             currentPage: pagination.currentPage,
             totalRecords: pagination.totalRecords - 1,
             totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
           });
+
+          await loadDeductions(pageToShow, filters, sortInfo);
+
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
           setIsConfirmationDialogBoxOpen(false);
@@ -567,7 +510,7 @@ export const DeductionMaster: React.FC = () => {
         searchTerm={searchTerm}
         searchPlaceholder="Search By Deduction Name"
         onSearchChange={v => {
-          setSearchTerm(v);
+          updateListState({ searchTerm: v });
           debouncedSearch(v);
         }}
         onClearSearch={clearSearchDeductions}
@@ -587,7 +530,7 @@ export const DeductionMaster: React.FC = () => {
 
 
         // EXPORT
-        isShowExportButton={canExport && DeductionsForTable.length >0}
+        isShowExportButton={canExport && DeductionsForTable.length > 0}
         onExportExcel={handleExportDeductionExcel}
         onExportPdf={handleExportDeductionPdf}
         exportLoading={isLoading}
@@ -641,10 +584,10 @@ export const DeductionMaster: React.FC = () => {
           e.preventDefault();
           applyFilters();
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply"
+        cancelText="Clear"
         onCancel={() => clearFilters()}
-        resetText=''
+       
         size="small-half"
       >
         <div className="space-y-6">
@@ -659,16 +602,13 @@ export const DeductionMaster: React.FC = () => {
       </Modal>
 
       {/* DELETE CONFIRMATION  DEDUCTION MODAL */}
-      <ConfirmationDialogBox
+
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => setIsConfirmationDialogBoxOpen(false)}
         onConfirm={handleDeleteDeductionMaster}
-        title="You are about to delete this Deduction?"
-        message="Deleting this Deduction will permanently remove its data."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='Deduction'
       />
 
     </div>

@@ -9,20 +9,21 @@ import { Loader } from '@/core/utils/loader';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { useNavigate } from 'react-router-dom';
+import { useEmployeeListState } from '@/features/employeeMaster/context/EmployeeListStateContext';
 import type { EmployeeDocumentData, FilterWithPaginationEmployeeDocumentRequest } from '@/features/employeeMaster/models/EmployeeDocumentModel';
 import type { FilterWithPaginationShiftMappingMasterRequest, ShiftMappingMasterData } from '@/features/shiftMappingMaster/models/ShiftMappingMasterModel';
 import type { AssetMappingMasterData, FilterWithPaginationAssetMappingMasterRequest } from '@/features/assetMappingMaster/models/AssetMappingMasterModel';
 import type { FilterWithPaginationWeekOffMappingMasterRequest, WeekOffMappingMasterData } from '@/features/weekOffMappingMaster/models/WeekOffMappingMasterModel';
 import { assetMappingMasterService } from '@/features/assetMappingMaster/services/AssetMappingMasterService';
 import { employeeDocumentService } from '@/features/employeeMaster/services/EmployeeDocumentService';
-import { ShiftMappingMasterService } from '@/features/shiftMappingMaster/services/ShiftMappingMasterService';
-import { WeekOffMappingMasterService } from '@/features/weekOffMappingMaster/services/WeekOffMappingMasterService';
+import { shiftMappingMasterService } from '@/features/shiftMappingMaster/services/ShiftMappingMasterService';
+import { weekOffMappingMasterService } from '@/features/weekOffMappingMaster/services/WeekOffMappingMasterService';
 import Tabs from '@/ui/components/Tab/Tab';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import Accordion from '@/ui/components/Card/Accordion';
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData } from '@/features/projectMaster/models/ProjectMasterModel';
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 import type { EmployeeEducationDetailsData, FilterWithPaginationEmployeeEducationDetailsRequest, AddUpdateEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
 import type { EmployeeExperienceDetailsData, FilterWithPaginationEmployeeExperienceDetailsRequest, AddUpdateEmployeeExperienceDetailsRequest } from '@/features/employeeMaster/models/EmployeeExperienceDetailsModal';
 import { employeeEducationDetailsService } from '@/features/employeeMaster/services/EmployeeEducationDetailsService';
@@ -52,7 +53,7 @@ export const Profile: React.FC = () => {
     }>({});
     const [projectMasterList, setProjectMasterList] = useState<ProjectMasterData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     // Modal states
     const [isEducationModalOpen, setIsEducationModalOpen] = useState(false);
@@ -103,6 +104,7 @@ export const Profile: React.FC = () => {
 
     //#region NAVIGATE PREVIOUS PAGE
     const navigate = useNavigate() // ✅ initialize router navigate
+    const { updateListState } = useEmployeeListState();
     //#endregion
 
     //#region TAB ACTIVITY
@@ -144,7 +146,7 @@ export const Profile: React.FC = () => {
     const loadEmployee = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const filterParams: FilterWithPaginationEmployeeMasterRequest = {
@@ -188,7 +190,7 @@ export const Profile: React.FC = () => {
     const loadAssetMasterMapping = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationAssetMappingMasterRequest = {
@@ -226,7 +228,7 @@ export const Profile: React.FC = () => {
     const loadEmployeeDocuments = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
 
@@ -271,7 +273,7 @@ export const Profile: React.FC = () => {
     const loadShiftMappings = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationShiftMappingMasterRequest = {
@@ -281,7 +283,7 @@ export const Profile: React.FC = () => {
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
                 }
 
-                const response = await ShiftMappingMasterService.apiCallPullShiftMappingMaster(params);
+                const response = await shiftMappingMasterService.apiCallPullShiftMappingMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -308,7 +310,7 @@ export const Profile: React.FC = () => {
     const loadWeekOffMappings = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationWeekOffMappingMasterRequest = {
@@ -318,7 +320,7 @@ export const Profile: React.FC = () => {
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
                 }
 
-                const response = await WeekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
+                const response = await weekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -345,7 +347,7 @@ export const Profile: React.FC = () => {
     const loadEmployeeEducationDetails = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationEmployeeEducationDetailsRequest = {
@@ -382,7 +384,7 @@ export const Profile: React.FC = () => {
     const loadEmployeeExperienceDetails = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationEmployeeExperienceDetailsRequest = {
@@ -419,7 +421,7 @@ export const Profile: React.FC = () => {
     const loadProjects = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationProjectMasterRequest = {
@@ -429,7 +431,7 @@ export const Profile: React.FC = () => {
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
                 }
 
-                const response = await ProjectMasterService.apiCallPullProjectMaster(params);
+                const response = await projectMasterService.apiCallPullProjectMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -454,18 +456,12 @@ export const Profile: React.FC = () => {
     //#region EDIT EMPLOYEE DOCUMENT
 
     const handleEditEmployeeDocument = (row: EmployeeMasterData) => {
-        navigate('/employeeMaster/document', {
-            state: {
-                employeeId: row.EmployeeId!,
-                employeeName: row.FullName,
-
-                listState: {
-                    employeeId: row.EmployeeId!,
-                    employeeName: row.FullName,
-                    pageName: 'profile',
-                }
-            }
+        updateListState({
+            employeeId: row.EmployeeId!,
+            employeeName: row.FullName,
+            pageName: 'PROFILE',
         });
+        navigate('/employeeMaster/document');
     };
 
 
@@ -545,7 +541,7 @@ export const Profile: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: AddUpdateEmployeeEducationDetailsRequest = {
                     EmployeeEducationDetailsId: educationFormData.EmployeeEducationDetailsId,
@@ -593,7 +589,7 @@ export const Profile: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: DeleteEmployeeEducationDetailsRequest = {
                     EmployeeEducationDetailsId: selectedEducationItem.EmployeeEducationDetailsId,
@@ -699,7 +695,7 @@ export const Profile: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: AddUpdateEmployeeExperienceDetailsRequest = {
                     EmployeeExperienceDetailsId: experienceFormData.EmployeeExperienceDetailsId,
@@ -748,7 +744,7 @@ export const Profile: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: DeleteEmployeeExperienceDetailsRequest = {
                     EmployeeExperienceDetailsId: selectedExperienceItem.EmployeeExperienceDetailsId,
@@ -1517,9 +1513,9 @@ export const Profile: React.FC = () => {
             <Modal
                 isOpen={isEducationModalOpen}
                 onClose={handleCloseEducationModal}
-                title={isEditEducationMode ? "Edit Education Details" : "Add Education Details"}
+                title={isEditEducationMode ? "Update Education Details" : "Add Education Details"}
                 onSubmit={handleEducationFormSubmit}
-                saveText="Save"
+                saveText={isEditEducationMode ? "Update" : "Add"}
                 cancelText="Cancel"
                 onCancel={handleCloseEducationModal}
                 loading={isLoading}
@@ -1557,9 +1553,9 @@ export const Profile: React.FC = () => {
             <Modal
                 isOpen={isExperienceModalOpen}
                 onClose={handleCloseExperienceModal}
-                title={isEditExperienceMode ? "Edit Experience Details" : "Add Experience Details"}
+                title={isEditExperienceMode ? "Update Experience Details" : "Add Experience Details"}
                 onSubmit={handleExperienceFormSubmit}
-                saveText="Save"
+                saveText={isEditExperienceMode ? "Update" : "Add"}
                 cancelText="Cancel"
                 onCancel={handleCloseExperienceModal}
                 loading={isLoading}

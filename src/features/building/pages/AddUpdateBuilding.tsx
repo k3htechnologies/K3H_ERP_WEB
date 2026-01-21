@@ -388,7 +388,7 @@ const AddUpdateBuilding: React.FC = () => {
         <form onSubmit={handleSubmit}>
           {/* ============================================================= [BASIC BUILDING DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Building Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Building Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
@@ -585,6 +585,7 @@ const AddUpdateBuilding: React.FC = () => {
                   />
 
                 </div>
+                
                 {formData.IsLitigation === true ?
                   <div className="md:col-span-2 lg:col-span-3">
                     <TextArea

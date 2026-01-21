@@ -12,7 +12,7 @@ import * as E from 'fp-ts/Either';
 
 const vendorDatasource = new VendorDatasourceImpl();
 
-export const VendorService = {
+export const vendorService = {
 
     apiCallPullVendor: async (params: FilterWithPaginationVendorRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, VendorListResponse>> => {
         try {

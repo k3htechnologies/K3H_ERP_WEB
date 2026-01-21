@@ -18,13 +18,13 @@ export class UomMasterDatasourceImpl implements UomMasterDatasource {
     async pullUomMaster(params: FilterWithPaginationUomMaster, signal?: AbortSignal): Promise<UomMasterListResponse> {
         try {
             const queryParams = new URLSearchParams({
-                PageSize: (params.PageSize ?? 10).toString(),
+                PageSize: (params.PageSize ?? 20).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
                 IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
             })
 
             if (params.UomMasterId) queryParams.append('UomMasterId', params.UomMasterId.toString());
-            if (params.UomName?.trim()) queryParams.append('UomName', params.UomName.trim());
+            if (params.Uom?.trim()) queryParams.append('Uom', params.Uom.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

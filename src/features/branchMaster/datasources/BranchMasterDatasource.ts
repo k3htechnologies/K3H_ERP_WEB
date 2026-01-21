@@ -56,18 +56,9 @@ export class BranchMasterDatasourceImpl implements BranchMasterDatasource {
 
         try {
 
-            const payLoad: AddUpdateBranchMasterRequest = {
-                BranchMasterId: params.BranchMasterId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-                BranchCode: params.BranchCode?.trim() ?? '',
-                BranchName: params.BranchName?.trim() ?? '',
-                IsHeadOffice: params.IsHeadOffice ?? false,
-                Location: params.Location?.trim() ?? '',
-            }
-
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 BranchMasterApi.ADD_UPDATE,
-                payLoad
+                params
             )
 
             return response

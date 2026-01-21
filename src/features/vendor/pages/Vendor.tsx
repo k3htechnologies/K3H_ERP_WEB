@@ -9,7 +9,7 @@ import type {
   FilterWithPaginationVendorRequest
 } from '@/features/vendor/models/VendorModel';
 
-import { VendorService } from '@/features/vendor/services/VendorService'
+import { vendorService } from '@/features/vendor/services/VendorService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -20,26 +20,28 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useLocation, type Location, useNavigate } from 'react-router-dom';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { useNavigate } from 'react-router-dom';
+import { useVendorListState } from '@/features/vendor/context/VendorListStateContext';
 import { Trash2 } from 'lucide-react';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import type { FilterMagicLinkWithValidate, FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 
 export const Vendor: React.FC = () => {
   //#region STATE
   const [vendorList, setVendorList] = useState<VendorData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const { pagination, setPagination } = usePagination(20);
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
   const { addToast } = useToast()
-  const [searchTerm, setSearchTerm] = useState('')
   const navigate = useNavigate();
+  const { listState, updateListState } = useVendorListState();
+  const { searchTerm, filters, sortInfo } = listState;
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchVendors(value)
@@ -50,8 +52,6 @@ export const Vendor: React.FC = () => {
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
   const [deleteVendorDetailsData, setDeleteVendorDetailsData] = useState<VendorData | null>(null)
-
-  const [filters, setFilters] = useState<FilterInfo>({});
 
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
@@ -65,50 +65,20 @@ export const Vendor: React.FC = () => {
   const [magicLink, setmagicLink] = useState<string>('');
 
   const { canAction, canExport } = useMenuPermissions();
-
-  const location = useLocation() as Location & {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: FilterInfo;
-        sortInfo?: SortInfo;
-        searchTerm?: string;
-      };
-    };
-  };
   //#endregion
 
   //#region INIT
   useEffect(() => {
+    // Sync pagination with context state
+    setPagination({ currentPage: listState.page });
 
-    const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string }
-      | undefined;
-
-    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '' };
-
-
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
+    // Load vendors with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-
-      setSearchTerm(String(listState.searchTerm));
-
-      loadVendors(listState.page ?? 1, { VendorName: String(listState.searchTerm).trim() });
-
-      return;
+      loadVendors(listState.page, { VendorName: String(listState.searchTerm).trim() }, listState.sortInfo);
+    } else {
+      loadVendors(listState.page, listState.filters, listState.sortInfo);
     }
-    loadVendors(listState.page ?? 1, listState.filters ?? {});
-
-  }, [location.state]);
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   useEffect(() => {
     return () => {
@@ -124,33 +94,25 @@ export const Vendor: React.FC = () => {
     return await loadVendors(page, filters, sort ?? sortInfo);
   };
 
-  const loadVendors = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadVendors = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const column = vendorColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
 
         const params: FilterWithPaginationVendorRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           VendorId: filterParams.VendorId ? Number(filterParams.VendorId) : undefined,
-          VendorName: filterParams.VendorName?.trim() || undefined,
+          VendorName: searchtext ?? filterParams.VendorName?.trim() ?? undefined,
           CompanyName: filterParams.CompanyName?.trim() || undefined,
           CompanyType: filterParams.CompanyType?.trim() || undefined,
           MobileNumber: filterParams.MobileNumber?.trim() || undefined,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, vendorColumns)
         }
 
-        const response = await getVendors(params);
+        const response = await vendorService.apiCallPullVendor(params);
 
         if (E.isRight(response)) {
 
@@ -172,7 +134,7 @@ export const Vendor: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Vendor Data'
+      'Loading Vendor'
     );
   };
 
@@ -180,18 +142,15 @@ export const Vendor: React.FC = () => {
 
   //#region SEARCH VENDOR FILTER
   const searchVendors = async (searchValue: string) => {
-    setSearchTerm(searchValue);
+    updateListState({ searchTerm: searchValue });
 
     if (searchValue.trim() === '') {
       fetchVendorList();
       return;
     }
 
-    const filterParams: FilterInfo = {
-      VendorName: searchValue.trim()
-    };
-
-    await loadVendors(1, filterParams);
+    updateListState({ searchTerm: searchValue, page: 1 });
+    await loadVendors(1, filters, sortInfo, searchValue);
   };
 
 
@@ -199,18 +158,13 @@ export const Vendor: React.FC = () => {
 
   //#region CLAER SERACH VENDOR
   const clearSearchVendors = () => {
-    setSearchTerm('');
+    updateListState({ searchTerm: '', filters: {}, page: 1 });
 
     debouncedSearch.cancel?.();
 
-    setFilters({});
     setTempFilters({});
     setPagination({ currentPage: 1 });
-    loadVendors(1, {});
-    try {
-      navigate(location.pathname, { replace: true, state: {} });
-    } catch {
-    }
+    loadVendors(1, { VendorName: '' }, sortInfo, undefined);
   };
 
   //#endregion
@@ -219,15 +173,9 @@ export const Vendor: React.FC = () => {
   const handleExportVendors = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-        if (sortInfo) {
-          const column = vendorColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
+
 
         const params: FilterWithPaginationVendorRequest = {
           PageNumber: 1,
@@ -237,11 +185,11 @@ export const Vendor: React.FC = () => {
           CompanyName: filters.CompanyName?.trim() || undefined,
           CompanyType: filters.CompanyType?.trim() || undefined,
           MobileNumber: filters.MobileNumber?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, vendorColumns),
           ExportType: exportType
         }
 
-        const response = await getVendors(params);
+        const response = await vendorService.apiCallPullVendor(params);
 
         handleExportFile(response, exportType, 'Vendor Master', addToast);
 
@@ -262,22 +210,17 @@ export const Vendor: React.FC = () => {
 
   //#endregion
 
-  //#region PULL VENDOR MASTER
-  const getVendors = async (filterParams: FilterWithPaginationVendorRequest) => {
-    return await VendorService.apiCallPullVendor(filterParams);
-  };
-  //#endregion
-
   //#region TABLE CONFIG
 
   const handlePageChange = useCallback((page: number) => {
+    updateListState({ page });
     fetchVendorList(page);
-  }, [fetchVendorList]);
+  }, [updateListState]);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
-    setSortInfo(sort);
-    loadVendors(1, filters, sort);
-  }, [filters]);
+    updateListState({ sortInfo: sort, page: 1 });
+    loadVendors(1, filters, sort, searchTerm || undefined);
+  }, [filters, updateListState, searchTerm]);
 
   const vendorPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -295,20 +238,9 @@ export const Vendor: React.FC = () => {
 
   //#region VIEW VENDOR MASTER
   const handleViewVendorDetails = useCallback((row: VendorData) => {
-    navigate('/vendor/view', {
-      state: {
-        editVendorData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          vendorName:row.VendorName
-        },
-      },
-    })
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    updateListState({ vendorId: row.VendorId, vendorName: row.VendorName });
+    navigate('/vendor/view');
+  }, [navigate, updateListState]);
 
   //#endregion
 
@@ -333,7 +265,7 @@ export const Vendor: React.FC = () => {
         align: 'left',
         render: (value, row) => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="250px"
             tooltipThreshold={25}
             onClick={() => handleViewVendorDetails(row)}
@@ -348,7 +280,7 @@ export const Vendor: React.FC = () => {
         align: 'left',
         render: (value) => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="200px"
             tooltipThreshold={20}
           />
@@ -362,7 +294,7 @@ export const Vendor: React.FC = () => {
         align: 'left',
         render: (value) => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="150px"
             tooltipThreshold={15}
           />
@@ -374,7 +306,7 @@ export const Vendor: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'center',
-        render: (value) => value || 'N/A'
+        render: (value) => value || '-'
       },
       {
         key: 'EmailId',
@@ -384,7 +316,7 @@ export const Vendor: React.FC = () => {
         align: 'left',
         render: (value) => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="200px"
             tooltipThreshold={20}
           />
@@ -457,25 +389,16 @@ export const Vendor: React.FC = () => {
 
   //#region FILTER HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters);
+    updateListState({ filters: tempFilters, page: 1 });
     loadVendors(1, tempFilters);
     setShowFilterPopup(false);
   };
 
   const clearFilters = () => {
     setTempFilters({});
-    setFilters({});
-
-    // reset page
-    setPagination({ currentPage: 1 });
-
-    // load empty filters
+    updateListState({ filters: {}, page: 1 });
     loadVendors(1, {});
-
     setShowFilterPopup(false);
-
-    // clear router state (very important)
-    navigate(location.pathname, { replace: true, state: {} });
   };
   //#endregion
 
@@ -498,7 +421,7 @@ export const Vendor: React.FC = () => {
   const downloadExcelSampleVendor = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         // Find the column label for sorting
 
@@ -527,7 +450,7 @@ export const Vendor: React.FC = () => {
   const uploadExcel = async (file: File, mergeExisting: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const fd = new FormData();
@@ -566,24 +489,38 @@ export const Vendor: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         const params = {
           VendorId: deleteVendorDetailsData.VendorId ?? 0,
           UniqueKey: deleteVendorDetailsData.Uniquekey ?? ""
         }
 
-        const response = await VendorService.apiCallDeleteVendor(params);
+        const response = await vendorService.apiCallDeleteVendor(params);
 
         if (E.isRight(response)) {
 
-          setVendorList(prevData => prevData.filter(item => item.VendorId !== deleteVendorDetailsData.VendorId));
+          const newTotalRecords = pagination.totalRecords - 1;
 
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (vendorList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
           setPagination({
             currentPage: pagination.currentPage,
             totalRecords: pagination.totalRecords - 1,
             totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
           });
+
+          await loadVendors(pageToShow, filters, sortInfo);
+
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
           setIsConfirmationDialogBoxOpen(false);
@@ -616,7 +553,7 @@ export const Vendor: React.FC = () => {
   const handleMagicLinkWithValidate = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         // Find the column label for sorting
 
@@ -688,7 +625,7 @@ export const Vendor: React.FC = () => {
         searchTerm={searchTerm}
         searchPlaceholder="Search By Vendor Name"
         onSearchChange={(v) => {
-          setSearchTerm(v)
+          updateListState({ searchTerm: v });
           debouncedSearch(v)
         }}
         onClearSearch={clearSearchVendors}
@@ -740,19 +677,15 @@ export const Vendor: React.FC = () => {
       />
 
       {/* DELETE CONFIRMATION MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteVendorDetailsData(null)
         }}
         onConfirm={handleDeleteVendor}
-        title="You are about to delete a vendor?"
-        message="Deleting this vendor will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='vendor'
       />
 
       <CustomizeColumnsModal
@@ -779,9 +712,9 @@ export const Vendor: React.FC = () => {
           e.preventDefault()
           applyFilters()
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
-        resetText=''
+        saveText="Apply"
+        cancelText="Clear"
+       
         onCancel={() => clearFilters()}
         size="small-half"
       >

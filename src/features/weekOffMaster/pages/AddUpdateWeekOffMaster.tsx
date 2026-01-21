@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
@@ -6,8 +6,8 @@ import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
-import type { AddUpdateWeekOffMasterRequest, FilterWithPaginationWeekOffMasterRequest } from "../models/WeekOffMasterModel";
-import { WeekOffMasterService } from "../services/WeekOffMasterService";
+import type { AddUpdateWeekOffMasterRequest, FilterWithPaginationWeekOffMasterRequest } from "@/features/weekOffMaster/models/WeekOffMasterModel";
+import { weekOffMasterService } from "@/features/weekOffMaster/services/WeekOffMasterService";
 import { MultiSelectDropdown } from "@/ui/components/DropDown/MultiSelectDropdown";
 import { DAYS_OPTIONS, MONTHS_OPTIONS, WEEK_OFF_TYPE, WEEKDAYS } from "@/core/constants";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
@@ -36,7 +36,6 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate();
-  const location = useLocation();
 
   // GET VALUE FROM URL WEEK OFF MASTER ID
   const { WeekOffMasterId } = useParams<{ WeekOffMasterId?: string }>();
@@ -92,7 +91,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
           WeekOffPolicyMasterId: WeekOffId
         };
 
-        const response = await WeekOffMasterService.apiCallPullWeekOffMaster(params);
+        const response = await weekOffMasterService.apiCallPullWeekOffMaster(params);
 
         if (E.isRight(response)) {
 
@@ -228,32 +227,13 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
       async () => {
         const payload = PushWeekOffMasterFormData();
 
-        const response = await WeekOffMasterService.apiCallAddUpdateWeekOffMaster(payload);
+        const response = await weekOffMasterService.apiCallAddUpdateWeekOffMaster(payload);
 
         if (E.isRight(response)) {
 
           addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-          const locationState = location.state as {
-            listState?: {
-              page?: number;
-              filters?: any;
-              sortInfo?: any;
-              searchTerm?: string;
-            };
-          } | null;
-
-          const listState = locationState?.listState || {
-            page: 1,
-            filters: {},
-            sortInfo: undefined,
-            searchTerm: '',
-          };
-
-          navigate("/WeekOffMaster",
-            {
-              state: { listState }
-            });
+          navigate("/weekOffMaster");
 
         } else {
           addToast({ type: "error", title: response.left?.message });

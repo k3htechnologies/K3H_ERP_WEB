@@ -17,18 +17,21 @@ import { Edit, Trash2, } from 'lucide-react';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import { updateFilter } from '@/core/utils/filterHelper';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
+import { useEmployeeListState } from '@/features/employeeMaster/context/EmployeeListStateContext';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 
 const initialFormState = (): AddUpdateEmployeeDocumentRequest => ({
@@ -45,7 +48,7 @@ export const EmployeeDocument: React.FC = () => {
   //#region STATE MANAGEMENT
   const [employeeDocumentList, setEmployeeDocumentList] = useState<EmployeeDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
@@ -94,24 +97,9 @@ export const EmployeeDocument: React.FC = () => {
   // NAVIGATION
   const navigate = useNavigate();
 
-  //LOCATION STATE
-  const location = useLocation() as {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: any;
-        sortInfo?: any;
-        searchTerm?: string;
-        employeeId?: number;
-        employeeName?: string;
-        pageName?: string;
-      };
-    };
-  };
-  const preservedListState = location.state?.listState;
-  const employeeId = preservedListState?.employeeId || 0;
-  const employeeName = preservedListState?.employeeName || '';
-  const pageName = preservedListState?.pageName || '';
+  const { listState } = useEmployeeListState();
+  const employeeName = listState.employeeName || '';
+  const employeeId = listState.employeeId || 0;
 
   //#endregion
 
@@ -175,22 +163,12 @@ export const EmployeeDocument: React.FC = () => {
     return await loadEmployeeDocuments(page, filters);
   }
 
-  const loadEmployeeDocuments = async (page: number, filterParams: FilterInfo) => {
+  const loadEmployeeDocuments = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
-        let sortByParam = undefined;
-
-        if (sortInfo) {
-
-          const column = employeeDocumentColumns.find(col => col.key === sortInfo.column)
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
-          }
-
-        }
 
         const params: FilterWithPaginationEmployeeDocumentRequest = {
           PageNumber: page,
@@ -198,8 +176,8 @@ export const EmployeeDocument: React.FC = () => {
           IsCheckPermission: true,
           EmployeeId: employeeId,
           EmployeeDocumentId: filterParams.EmployeeDocumentId ? Number(filterParams.EmployeeDocumentId) : undefined,
-          DocumentName: filterParams.DocumentName?.trim() || undefined,
-          SortBy: sortByParam
+          DocumentName: searchtext ?? filterParams.DocumentName?.trim() ?? undefined,
+          SortBy: getSortByParam(sortInfo ?? null, employeeDocumentColumns)
         }
 
         const response = await getEmployeeDocuments(params);
@@ -244,11 +222,7 @@ export const EmployeeDocument: React.FC = () => {
       return
     }
 
-    const filterParams: FilterInfo = {
-      DocumentName: searchValue.trim(),
-    };
-
-    await loadEmployeeDocuments(1, filterParams)
+    await loadEmployeeDocuments(1, filters, sortInfo, searchValue)
 
   }
   //#endregion
@@ -257,7 +231,7 @@ export const EmployeeDocument: React.FC = () => {
   const clearsearchEmployeeDocuments = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
-    fetchEmployeeDocumentList();
+    loadEmployeeDocuments(1, { DocumentName: '' }, sortInfo, undefined);
   }
 
   //#endregion
@@ -266,7 +240,7 @@ export const EmployeeDocument: React.FC = () => {
   const handleExportEmployeeDocuments = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         // Find the column label for sorting
         let sortByParam = undefined
@@ -324,13 +298,13 @@ export const EmployeeDocument: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
+  const handleSortColumn = useCallback((sort: SortInfo) => {
 
-    setSortInfo(sortInfo);
+    setSortInfo(sort);
 
-    fetchEmployeeDocumentList(1);
+    loadEmployeeDocuments(1, filters, sort, searchTerm || undefined);
 
-  }
+  }, [filters, searchTerm]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -387,7 +361,7 @@ export const EmployeeDocument: React.FC = () => {
           <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
 
             <TooltipText
-              text={value || 'N/A'}
+              text={value || '-'}
               maxWidth="300px"
               tooltipThreshold={40}
             />
@@ -396,11 +370,30 @@ export const EmployeeDocument: React.FC = () => {
 
               {canAction && (
                 <>
+
+                  <Button
+                    color='transparent'
+                    size='sm'
+
+                    style={{
+                      color: '#0B3251',
+                      padding: '0px 8px'
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsAddUpdateModalOpen(false)
+                      handleEditEmployeeDocument(row)
+                    }}
+                    leftIcon={<Edit className="h-4 w-4" />}
+                  >
+                  </Button>
+
                   <Button
                     color='transparent'
                     size='sm'
                     style={{
-                      color: '#0B3251',
+                      color: 'red',
                       padding: '0px 8px'
                     }}
                     onClick={(e) => {
@@ -414,22 +407,7 @@ export const EmployeeDocument: React.FC = () => {
                   </Button>
 
 
-                  <Button
-                    color='transparent'
-                    size='sm'
-                    style={{
-                      color: 'red',
-                      padding: '0px 8px'
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      setIsAddUpdateModalOpen(false)
-                      handleEditEmployeeDocument(row)
-                    }}
-                    leftIcon={<Edit className="h-4 w-4" />}
-                  >
-                  </Button>
+
                 </>
               )}
             </div>
@@ -462,7 +440,7 @@ export const EmployeeDocument: React.FC = () => {
         width: '33',
         sortable: true,
         align: 'center',
-        render: (value) => value || 'N/A'
+        render: (value) => value || '-'
       },
       {
         key: 'LastModifiedDate',
@@ -488,7 +466,7 @@ export const EmployeeDocument: React.FC = () => {
 
   //#endregion
 
-  //#region CLEAR FILTER 
+  //#region Clear 
 
   const clearFilters = () => {
     setTempFilters({})
@@ -550,9 +528,10 @@ export const EmployeeDocument: React.FC = () => {
       newErrors.DocumentName = "Document Name must be at least 3 characters long"
     }
 
-    if (!documentFiles.length && !documentURL) {
-      newErrors.DocumentURL = "Document file is required";
+    if (!hasAnyDocumentFile(documentFiles, documentURL, removedDocumentURLs)) {
+      newErrors.DocumentURL = "Document File is required.";
     }
+
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -604,7 +583,7 @@ export const EmployeeDocument: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const payload = PushEmployeeDocumentFormData();
@@ -681,7 +660,7 @@ export const EmployeeDocument: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -695,13 +674,28 @@ export const EmployeeDocument: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          setEmployeeDocumentList(prevData => prevData.filter(item => item.EmployeeDocumentId !== deleteEmployeeDocumentDetailsData.EmployeeDocumentId));
+          const newTotalRecords = pagination.totalRecords - 1;
+
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (employeeDocumentList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
 
           setPagination({
             currentPage: pagination.currentPage,
             totalRecords: pagination.totalRecords - 1,
             totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
           });
+
+          await loadEmployeeDocuments(pageToShow, filters);
+
 
           addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
@@ -731,18 +725,11 @@ export const EmployeeDocument: React.FC = () => {
   //#region BACK EMPLOYEE MASTER PAGE
 
   const handleBackToListEmployee = () => {
-    navigate(`${pageName.toUpperCase() === 'PROFILE' ? '/profile' : navigate(-1)}`, {
-      state: {
-        listState: preservedListState ?? {
-          page: 1,
-          filters: {},
-          sortInfo: undefined,
-          searchTerm: '',
-          employeeId,
-          employeeName
-        }
-      }
-    });
+    if (listState.pageName?.toUpperCase() === 'PROFILE') {
+      navigate('/profile');
+    } else {
+      navigate('/employeeMaster');
+    }
   };
   //#endregion
 
@@ -789,7 +776,7 @@ export const EmployeeDocument: React.FC = () => {
         onExportPdf={handleExportEmployeeDocumentPdf}
         exportLoading={isLoading}
       />
-      <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
+      <div className="flex items-center gap-3 mb-6 border-b border-gray-500 pb-3">
         <HeaderActionBar
           titleText="Employee Name : "
           subTitleText={employeeName}
@@ -839,8 +826,7 @@ export const EmployeeDocument: React.FC = () => {
         }}
         title={editingEmployeeDocumentData ? 'Update Employee Document' : 'Add Employee Document'}
         onSubmit={handleAddUpdateEmployeeDocument}
-        saveText={'Save'}
-        resetText='Reset'
+        saveText={editingEmployeeDocumentData ? 'Update' : 'Add'}
         loading={isLoading}
         size='xl'
       >
@@ -863,6 +849,7 @@ export const EmployeeDocument: React.FC = () => {
             <div>
               <MultiFilePicker
                 label="Document"
+                placeholder='Select Document File'
                 required
                 error={errors.DocumentURL}
                 value={documentFiles}
@@ -890,7 +877,7 @@ export const EmployeeDocument: React.FC = () => {
           e.preventDefault()
           applyFilters()
         }}
-        saveText="Apply Filter"
+        saveText="Apply "
         onCancel={() => clearFilters()}
         size="small-half"
       >
@@ -910,19 +897,15 @@ export const EmployeeDocument: React.FC = () => {
       </Modal>
 
       {/* DELETE CONFIRMATION EMPLOYEE DOCUMENT MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteEmployeeDocumentDetailsData(null)
         }}
         onConfirm={handleDeleteEmployeeDocument}
-        title="You are about to delete an employee document?"
-        message="Deleting this employee document will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='employee document'
       />
 
 

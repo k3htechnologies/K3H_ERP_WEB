@@ -70,9 +70,13 @@ export const MASTER_DATA = {
 
   business_category: ['Commercial', 'Gym', 'Residential', 'School'],
 
-  project_scheme: ['BMC', 'MHADA', 'SRA', 'SLUM', 'TDR', 'Other'],
+  project_scheme: ['BMC', 'MHADA', 'SRA'],
 
-  project_sub_scheme: ['33 (20) B', '33 (19)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
+  project_sub_scheme_BMC: ['33 (20) B', '33 (19)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
+
+  project_sub_scheme_MHADA: ['33 (5)'],
+
+  project_sub_scheme_SRA: ['33 (10)','33 (11)'],
 
   road_width: ['6.10 M', '9.15 M', '12.20 M', '13.40 M', '18.3 M', '27.45 M', '36.6 M'],
 
@@ -284,7 +288,9 @@ export const UNIT_SQFT_LUMPSUM = toOptions(MASTER_DATA.unit_sqft_lumsum)
 export const SPECIALITY_TYPE = toOptions(MASTER_DATA.speciality_type)
 export const BUSINESS_CATEGORY = toOptions(MASTER_DATA.business_category)
 export const PROJECT_SCHEME = toOptions(MASTER_DATA.project_scheme)
-export const PROJECT_SUB_SCHEME = toOptions(MASTER_DATA.project_sub_scheme)
+export const PROJECT_SUB_SCHEME_BMC = toOptions(MASTER_DATA.project_sub_scheme_BMC)
+export const PROJECT_SUB_SCHEME_MHADA = toOptions(MASTER_DATA.project_sub_scheme_MHADA)
+export const PROJECT_SUB_SCHEME_SRA = toOptions(MASTER_DATA.project_sub_scheme_SRA)
 export const ROAD_WIDTH = toOptions(MASTER_DATA.road_width)
 export const CALENDER_VIEW_TYPE = toOptions(MASTER_DATA.calender_view_type)
 export const EVENT_TYPE = toOptions(MASTER_DATA.event_type)
@@ -332,7 +338,6 @@ export const AMENITY_CATEGORIES: Record<string, readonly string[]> = {
     "Library",
     "Reading Room",
     "Society Office",
-    "Conference Room",
     "Temple / Prayer Hall"
   ],
 

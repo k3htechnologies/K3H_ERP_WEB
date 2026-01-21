@@ -4,7 +4,7 @@ export interface FilterWithPaginationUomMaster {
     PageSize: number
     PageNumber: number
     IsCheckPermission?:boolean
-    UomName?: string
+    Uom?: string
     UomMasterId?: number
     SortBy?: string
     ExportType?: "PDF" | "Excel"

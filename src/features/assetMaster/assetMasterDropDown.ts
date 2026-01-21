@@ -4,7 +4,7 @@ import { assetMasterService } from './services/AssetMasterService';
 export const fetchAssetMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
         const responseEither = await assetMasterService.apiCallPullAssetMaster({
-            PageSize: 10,
+            PageSize: 20,
             PageNumber: pageNumber,
             AssetName: params?.value || "",
             Status: "Available",

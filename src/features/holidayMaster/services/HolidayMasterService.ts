@@ -12,7 +12,7 @@ import * as E from 'fp-ts/Either';
 
 const holidayMasterDatasource = new HolidayMasterDatasourceImpl();
 
-export const HolidayMasterService = {
+export const holidayMasterService = {
 
     apiCallPullHolidayMaster: async (params: FilterWithPaginationHolidayMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, HolidayMasterListResponse>> => {
         try {

@@ -1,5 +1,5 @@
 import type { EmployeeData } from "@/features/authentication/models/AuthenticationModel"
-import { LOCAL_STORAGE_KEYS } from "../constants/localStorageKeys"
+import { LOCAL_STORAGE_FOR_STATE_KEYS, LOCAL_STORAGE_KEYS } from "../constants/localStorageKeys"
 import type { ModuleData } from "@/features/menu/models/MenuModel";
 import type { CountryStateCityDistrictVillageData } from "@/features/technical/models/TechnicalModel";
 
@@ -1033,6 +1033,17 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
+
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.VENDOR);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_MASTER);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.ASSET_MASTER);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.ASSET_MAPPING_MASTER);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.DEDUCTION_MASTER);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.SHIFT_MASTER);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.WEEK_OFF_MASTER);
+
 
         } catch (error) {
             console.error('ERROR : CLEARING LOCAL STORAGE:', error)

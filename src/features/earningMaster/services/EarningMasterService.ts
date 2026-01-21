@@ -13,7 +13,7 @@ import * as E from 'fp-ts/Either';
 
 const earningMasterDatasource = new EarningMasterDatasourceImpl();
 
-export const EarningMasterService = {
+export const earningMasterService = {
 
     apiCallPullEarningMaster: async (params: FilterWithPaginationEarningMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, EarningMasterListResponse>> => {
         try {

@@ -13,7 +13,7 @@ import * as E from 'fp-ts/Either';
 
 const branchMasterDatasource = new BranchMasterDatasourceImpl();
 
-export const BranchMasterService = {
+export const branchMasterService = {
 
     apiCallPullBranchMaster: async (params: FilterWithPaginationBranchMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, BranchMasterListResponse>> => {
         try {

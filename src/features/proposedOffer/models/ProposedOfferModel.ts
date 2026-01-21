@@ -525,3 +525,18 @@ export interface AddUpdateProposedOfferProposedPlanRequest {
 export type ProposedOfferProposedPlanListResponse = ApiResponse<ProposedOfferProposedPlanData[]>;
 export type ProposedOfferProposedPlanSaveResponse = ApiResponse<ProposedOfferProposedPlanData[]>;
 
+//=============================================================
+// [ GENERATE PROPOSED PLAN ]
+//=============================================================
+
+export interface AddUpdateGenerateProposedOfferRequest {
+    BuildingId?: number
+    ProjectId: number
+    Tenure?: string
+    ChargeType?: string
+    IsPayBrokerage?: boolean
+    IsAdditionalRent?: boolean
+}
+
+export type GenerateProposedOfferResponse = ApiResponse<number>;
+

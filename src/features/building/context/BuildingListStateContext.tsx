@@ -32,11 +32,9 @@ const getInitialState = (projectId: number | null): BuildingListState => {
     
     if (stored) {
       const parsed = JSON.parse(stored) as { projectId: number; state: BuildingListState };
-      // Only use stored state if it's for the same project
       if (parsed.projectId === projectId) {
         return {
           ...parsed.state,
-          // Ensure buildingId and buildingName are reset when on list page
           buildingId: parsed.state.buildingId || 0,
           buildingName: parsed.state.buildingName || "",
         };
@@ -73,10 +71,8 @@ export const BuildingListStateProvider = ({ children }: { children: ReactNode })
   const [listState, setListState] = useState<BuildingListState>(() => getInitialState(projectId));
   const [lastProjectId, setLastProjectId] = useState<number | null>(projectId);
 
-  // Reset state when project changes
   useEffect(() => {
     if (projectId !== lastProjectId && lastProjectId !== null) {
-      // Project changed - reset to default state
       const defaultState: BuildingListState = {
         page: 1,
         pageSize: 20,
@@ -87,7 +83,6 @@ export const BuildingListStateProvider = ({ children }: { children: ReactNode })
         buildingName: "",
       };
       setListState(defaultState);
-      // Clear stored state for old project
       try {
         localStorage.removeItem(STORAGE_KEY);
       } catch (error) {
@@ -97,7 +92,6 @@ export const BuildingListStateProvider = ({ children }: { children: ReactNode })
     setLastProjectId(projectId);
   }, [projectId, lastProjectId]);
 
-  // Persist state to localStorage when it changes (only if projectId exists)
   useEffect(() => {
     if (projectId) {
       try {
@@ -112,12 +106,10 @@ export const BuildingListStateProvider = ({ children }: { children: ReactNode })
     }
   }, [listState, projectId]);
 
-  // Update list state (partial updates)
   const updateListState = useCallback((updates: Partial<BuildingListState>) => {
     setListState((prev) => ({ ...prev, ...updates }));
   }, []);
 
-  // Reset filters only (keeps page, pageSize, etc.)
   const resetFilters = useCallback(() => {
     setListState((prev) => ({
       ...prev,
@@ -128,7 +120,6 @@ export const BuildingListStateProvider = ({ children }: { children: ReactNode })
     }));
   }, []);
 
-  // Reset to default state
   const resetToDefault = useCallback(() => {
     const defaultState: BuildingListState = {
       page: 1,
@@ -142,7 +133,6 @@ export const BuildingListStateProvider = ({ children }: { children: ReactNode })
     setListState(defaultState);
   }, []);
 
-  // Set building context (for view/document/description pages)
   const setBuildingContext = useCallback((buildingId: number, buildingName: string) => {
     setListState((prev) => ({
       ...prev,
@@ -151,7 +141,6 @@ export const BuildingListStateProvider = ({ children }: { children: ReactNode })
     }));
   }, []);
 
-  // Clear building context (when leaving view pages)
   const clearBuildingContext = useCallback(() => {
     setListState((prev) => ({
       ...prev,

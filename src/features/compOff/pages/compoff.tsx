@@ -47,7 +47,7 @@ export const CompOff: React.FC = () => {
     //#region STATE
     const [compOffList, setCompOffList] = useState<CompOffData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const navigate = useNavigate();
 
     // PAGINATION STATE
@@ -204,7 +204,7 @@ export const CompOff: React.FC = () => {
     const loadCompOff = async (page: number, filterParams: FilterInfo) => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 let sortByParam = undefined;
@@ -265,7 +265,7 @@ export const CompOff: React.FC = () => {
     const handleExportCompOff = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 let sortByParam = undefined
                 if (sortInfo) {
@@ -554,7 +554,7 @@ export const CompOff: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const payload: AddUpdateCompOff = {
                     CompOffId: updatedFormData.CompOffId || null,
@@ -622,7 +622,7 @@ export const CompOff: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const response = await CompOffService.apiCallDeleteCompOff(deleteRequest);
                 if (E.isRight(response)) {
@@ -836,10 +836,10 @@ export const CompOff: React.FC = () => {
                         e.preventDefault()
                         applyFilters()
                     }}
-                    saveText="Apply Filter"
-                    cancelText="Clear Filter"
+                    saveText="Apply "
+                    cancelText="Clear"
                     onCancel={() => clearFilters()}
-                    resetText=''
+                   
                     size="small-half"
                 >
                     <div className="space-y-6">
@@ -881,7 +881,6 @@ export const CompOff: React.FC = () => {
                     showTimePicker={false}
                     confirmText="Save"
                     cancelText=""
-                    resetText="Reset"
                     loading={isLoading}
                     showSummary={false}
                     renderChildren={({ startDate, endDate, onSelectField, onClearField, editingField }) => {

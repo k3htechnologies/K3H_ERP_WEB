@@ -88,6 +88,7 @@ export class EnquiryDatasourceImpl implements EnquiryDatasource {
                 EnquiryTimeIn: params.EnquiryTimeIn ?? '',
                 EnquiryTimeOut: params.EnquiryTimeOut ?? '',
                 IsHomeLoan: params.IsHomeLoan,
+                DateOfBirth: params.DateOfBirth,
                 Age: params.Age ?? '',
                 ChannelPartnerName: params.ChannelPartnerName ?? '',
                 ChannelPartnerMobileNumber: params.ChannelPartnerMobileNumber,

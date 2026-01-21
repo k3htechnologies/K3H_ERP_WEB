@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
@@ -79,7 +79,6 @@ const AddUpdateEmployeePage: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate();
-  const location = useLocation();
 
   //GET VALUE FROM URL :EMPLOYEEID
   const { employeeId } = useParams<{ employeeId?: string }>();
@@ -505,26 +504,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
           addToast({ type: "success", title: formData.EmployeeId ? "Employee updated successfully" : "Employee added successfully" });
 
-          // Get list state from navigation if available, otherwise use defaults
-          const locationState = location.state as {
-            listState?: {
-              page?: number;
-              filters?: any;
-              sortInfo?: any;
-              searchTerm?: string;
-            };
-          } | null;
-
-          const listState = locationState?.listState || {
-            page: 1,
-            filters: {},
-            sortInfo: undefined,
-            searchTerm: '',
-          };
-
-          navigate("/employeeMaster", {
-            state: { listState }
-          });
+          navigate("/employeeMaster");
 
         } else {
 
@@ -558,7 +538,7 @@ const AddUpdateEmployeePage: React.FC = () => {
         <form onSubmit={handleSubmit}>
           {/* ============================================================= [BASIC EMPLOYEE DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Employee Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Basic Employee Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>

@@ -101,13 +101,20 @@ export const EmployeeMaster: React.FC = () => {
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           EmployeeId: filterParams.EmployeeId ? Number(filterParams.EmployeeId) : undefined,
+
+          EmployeeCode: filterParams.EmployeeCode?.trim() || undefined,
           EmployeeName: searchtext ?? filterParams.EmployeeName?.trim() ?? undefined,
-          BranchName: filterParams.BranchName?.trim() || undefined,
+          MobileNumber: filterParams.MobileNumber?.trim() || undefined,
+          
+          Gender: filterParams.Gender?.trim() || undefined,
+
           DepartmentName: filterParams.DepartmentName?.trim() || undefined,
           DesignationName: filterParams.DesignationName?.trim() || undefined,
+          BranchName: filterParams.BranchName?.trim() || undefined,
+          CompanyName: filterParams.CompanyName?.trim() || undefined,
           EmailId: filterParams.EmailId?.trim() || undefined,
-          MobileNumber: filterParams.MobileNumber?.trim() || undefined,
           ReportPersonName: filterParams.ReportPersonName?.trim() || undefined,
+          BankName: filterParams.BankName?.trim() || undefined,
           BankBranchName: filterParams.BankBranchName?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, employeeColumns)
         };
@@ -176,12 +183,22 @@ export const EmployeeMaster: React.FC = () => {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
+
+          EmployeeCode: filters.EmployeeCode?.trim() || undefined,
           EmployeeName: filters.EmployeeName?.trim() || undefined,
-          BranchName: filters.BranchName?.trim() || undefined,
+          MobileNumber: filters.MobileNumber?.trim() || undefined,
+          
+          Gender: filters.Gender?.trim() || undefined,
+
           DepartmentName: filters.DepartmentName?.trim() || undefined,
           DesignationName: filters.DesignationName?.trim() || undefined,
+          BranchName: filters.BranchName?.trim() || undefined,
+          CompanyName: filters.CompanyName?.trim() || undefined,
           EmailId: filters.EmailId?.trim() || undefined,
-          MobileNumber: filters.MobileNumber?.trim() || undefined,
+          ReportPersonName: filters.ReportPersonName?.trim() || undefined,
+          BankName: filters.BankName?.trim() || undefined,
+          BankBranchName: filters.BankBranchName?.trim() || undefined,
+          
           SortBy: getSortByParam(sortInfo ?? null, employeeColumns),
           ExportType: exportType
         };
@@ -244,7 +261,7 @@ export const EmployeeMaster: React.FC = () => {
   //#region VIEW EMPLOYEE DOCUMENT
 
   const handleViewEmployeeDocument = useCallback((row: EmployeeMasterData) => {
-    updateListState({ employeeId: row.EmployeeId, employeeName: row.FullName ,pageName:'' });
+    updateListState({ employeeId: row.EmployeeId, employeeName: row.FullName, pageName: '' });
     navigate('/employeeMaster/document');
   }, [navigate, updateListState]);
   //#endregion
@@ -370,6 +387,16 @@ export const EmployeeMaster: React.FC = () => {
       {
         key: 'Branch',
         label: 'Branch',
+        width: '14',
+        sortable: false,
+        align: 'left',
+        render: value => (
+          <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
+        )
+      },
+      {
+        key: 'CompanyName',
+        label: 'Company',
         width: '14',
         sortable: false,
         align: 'left',
@@ -738,24 +765,73 @@ export const EmployeeMaster: React.FC = () => {
         saveText="Apply"
         cancelText="Clear"
         onCancel={() => clearFilters()}
-       
+
         size="small-half"
       >
         <div className="space-y-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Employee Name</label>
+
               <Input
                 type="text"
+                label='Employee Code'
+                value={tempFilters.EmployeeCode || ''}
+                onChange={e => handleFilterChange('EmployeeCode', e.target.value)}
+                placeholder="Enter Employee Code"
+              />
+            </div>
+            <div>
+
+              <Input
+                type="text"
+                label='Employee Name'
                 value={tempFilters.EmployeeName || ''}
                 onChange={e => handleFilterChange('EmployeeName', e.target.value)}
                 placeholder="Enter Employee Name"
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+
               <Input
+                type="text"
+                label='Personal Mobile Number'
+                value={tempFilters.MobileNumber || ''}
+                onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+                placeholder="Enter Personal Mobile Number"
+              />
+            </div>
+            <div>
+
+              <Input
+                type="text"
+                label='Gender'
+                value={tempFilters.Gender || ''}
+                onChange={e => handleFilterChange('Gender', e.target.value)}
+                placeholder="Enter Gender"
+              />
+            </div>
+            <div>
+              <Input
+                type="text"
+                label='Department'
+                value={tempFilters.DepartmentName || ''}
+                onChange={e => handleFilterChange('DepartmentName', e.target.value)}
+                placeholder="Enter Department"
+              />
+            </div>
+            <div>
+              <Input
+                type="text"
+                label='Designation'
+                value={tempFilters.DesignationName || ''}
+                onChange={e => handleFilterChange('DesignationName', e.target.value)}
+                placeholder="Enter Designation"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='Branch'
                 type="text"
                 value={tempFilters.BranchName || ''}
                 onChange={e => handleFilterChange('BranchName', e.target.value)}
@@ -763,33 +839,56 @@ export const EmployeeMaster: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+
+              <Input
+                label='Company Name'
+                type="text"
+                value={tempFilters.CompanyName || ''}
+                onChange={e => handleFilterChange('CompanyName', e.target.value)}
+                placeholder="Enter Company Name"
+              />
+            </div>
+            <div>
+
               <Input
                 type="text"
-                value={tempFilters.DepartmentName || ''}
-                onChange={e => handleFilterChange('DepartmentName', e.target.value)}
-                placeholder="Enter Department"
+                label='Report Person Name'
+                value={tempFilters.ReportPersonName || ''}
+                onChange={e => handleFilterChange('ReportPersonName', e.target.value)}
+                placeholder="Enter Report Person Name"
+              />
+            </div>
+            <div>
+
+              <Input
+                type="text"
+                label='E-mail Id'
+                value={tempFilters.EmailId || ''}
+                onChange={e => handleFilterChange('EmailId', e.target.value)}
+                placeholder="Enter E-mail Id"
+              />
+            </div>
+            <div>
+
+              <Input
+                type="text"
+                label='Bank Name'
+                value={tempFilters.BankName || ''}
+                onChange={e => handleFilterChange('BankName', e.target.value)}
+                placeholder="Enter Bank Name"
+              />
+            </div>
+            <div>
+
+              <Input
+                type="text"
+                label='Bank Branch Name'
+                value={tempFilters.BankBranchName || ''}
+                onChange={e => handleFilterChange('BankBranchName', e.target.value)}
+                placeholder="Enter Bank Branch Name"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
-              <Input
-                type="text"
-                value={tempFilters.DesignationName || ''}
-                onChange={e => handleFilterChange('DesignationName', e.target.value)}
-                placeholder="Enter Designation"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-              <Input
-                type="text"
-                value={tempFilters.MobileNumber || ''}
-                onChange={e => handleFilterChange('MobileNumber', e.target.value)}
-                placeholder="Enter Mobile Number"
-              />
-            </div>
           </div>
         </div>
       </Modal>

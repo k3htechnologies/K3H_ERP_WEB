@@ -346,7 +346,7 @@ export const Tenant: React.FC = () => {
         key: 'FlatConfiguration',
         label: 'Existing Configuration',
         width: '18',
-        sortable: true,
+        sortable: false,
         align: 'left',
         render: value => <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
       },

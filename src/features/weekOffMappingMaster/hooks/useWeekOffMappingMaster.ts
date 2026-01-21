@@ -235,7 +235,7 @@ export const useWeekOffMappingMaster = () => {
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     loadWeekOffMappings(1, filters, sort, searchTerm || undefined);
-  }, [filters,searchTerm]);
+  }, [filters, searchTerm]);
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
@@ -347,15 +347,15 @@ export const useWeekOffMappingMaster = () => {
     const newErrors: { [key: string]: string } = {}
 
     if (mappingWeekoff === "Department" && !formData.DepartmentMasterId) {
-      newErrors.DepartmentMasterId = "Department Name is required.";
+      newErrors.DepartmentMasterId = "Department Name is required";
     }
 
     if (mappingWeekoff === "Employee" && !formData.EmployeeId) {
-      newErrors.EmployeeId = "Employee Name is required.";
+      newErrors.EmployeeId = "Employee Name is required";
     }
 
     if (!formData.WeekOffPolicyMasterId) {
-      newErrors.WeekOffPolicyMasterId = "Week Off Policy Name is required.";
+      newErrors.WeekOffPolicyMasterId = "Week Off Policy Name is required";
     }
 
     return {
@@ -399,16 +399,23 @@ export const useWeekOffMappingMaster = () => {
           const isAdd = formData.WeekOffPolicyMasterMappingId === 0;
 
           if (isAdd) {
+
             const newRecord = response.right.Data[0] as WeekOffMappingMasterData
+
             setWeekOffMappingMasterList(prevData => [newRecord, ...prevData]);
+
             setPagination({
               currentPage: pagination.currentPage,
               totalRecords: pagination.totalRecords + 1,
               totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
             });
+
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
           } else {
+
             const updatedRecord = response.right.Data[0] as WeekOffMappingMasterData;
+
             setWeekOffMappingMasterList(prevData =>
               prevData.map(item =>
                 item.WeekOffPolicyMasterMappingId === formData.WeekOffPolicyMasterMappingId
@@ -416,8 +423,10 @@ export const useWeekOffMappingMaster = () => {
                   : item
               )
             )
+
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
+
 
           setEditingWeekOffMappingMasterData(null);
         } else {
@@ -445,6 +454,7 @@ export const useWeekOffMappingMaster = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
+
         const params: DeleteWeekOffMappingMasterRequest = {
           WeekOffPolicyMasterMappingId: deleteWeekOffMappingMasterDetailsData.WeekOffPolicyMasterMappingId,
           UniqueKey: deleteWeekOffMappingMasterDetailsData.Uniquekey || ""
@@ -453,13 +463,17 @@ export const useWeekOffMappingMaster = () => {
         const response = await weekOffMappingMasterService.apiCallDeleteWeekOffMappingMaster(params);
 
         if (E.isRight(response)) {
+
           const newTotalRecords = pagination.totalRecords - 1;
+
           const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
 
           let pageToShow = pagination.currentPage;
+
           if (pagination.currentPage > newTotalPages) {
             pageToShow = newTotalPages;
-          } else if (weekOffMappingMasterList.length === 1 && pagination.currentPage > 1) {
+          }
+          else if (weekOffMappingMasterList.length === 1 && pagination.currentPage > 1) {
             pageToShow = pagination.currentPage - 1;
           }
 

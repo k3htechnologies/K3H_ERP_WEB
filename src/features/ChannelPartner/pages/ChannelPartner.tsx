@@ -386,7 +386,7 @@ export const ChannelPartner: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="250px"
           tooltipThreshold={25}
           onClick={() => handleNavigateToView(row)}
@@ -401,7 +401,7 @@ export const ChannelPartner: React.FC = () => {
       align: 'center',
       render: (value) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="170px"
           tooltipThreshold={25}
         />
@@ -415,7 +415,7 @@ export const ChannelPartner: React.FC = () => {
       align: 'center',
       render: (value) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="170px"
           tooltipThreshold={15}
         />
@@ -577,7 +577,7 @@ export const ChannelPartner: React.FC = () => {
   };
   //#endregion
 
-  //#region CLEAR FILTER
+  //#region Clear
   const clearFilters = () => {
     setTempFilters({});
     setFilters({});
@@ -744,8 +744,8 @@ export const ChannelPartner: React.FC = () => {
           e.preventDefault();
           applyFilters();
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply "
+        cancelText="Clear"
         onCancel={() => clearFilters()}
        
         size="small-half"

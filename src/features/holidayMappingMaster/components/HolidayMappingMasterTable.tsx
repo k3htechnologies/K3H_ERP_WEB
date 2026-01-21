@@ -66,7 +66,7 @@ export const HolidayMappingMasterTable: React.FC<HolidayMappingMasterTableProps>
           render: (value, row: HolidayMappingMasterData) => (
             <div className="flex items-center justify-start">
               <TooltipText
-                text={value || 'N/A'}
+                text={value || '-'}
                 maxWidth="250px"
                 tooltipThreshold={25}
                 onClick={() => onView(row)}

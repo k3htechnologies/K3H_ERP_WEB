@@ -130,7 +130,7 @@ const SiteProgressConstructionActivity: React.FC = () => {
       breadcrumbs: currentBreadcrumbs
     };
     const newBreadcrumb = {
-      label: `Activity: ${row.ActivityName || 'N/A'}`,
+      label: `Activity: ${row.ActivityName || '-'}`,
       path: '/siteProgress/SiteProgressConstructionActivity',
       state: activityState
     };
@@ -156,7 +156,7 @@ const SiteProgressConstructionActivity: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="260px"
           tooltipThreshold={26}
           onClick={() => handleViewConstructionActivity(row)}

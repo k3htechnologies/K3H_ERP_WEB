@@ -95,8 +95,15 @@ export const Tenant: React.FC = () => {
           ProjectId: Number(projectId),
           BuildingId: buildingIdNum,
           FlatNumber: filterParams.FlatNumber?.trim() || undefined,
+          ApplicantName: filterParams.ApplicantName?.trim() || undefined,
           FlatConfiguration: filterParams.FlatConfiguration?.trim() || undefined,
           FlatType: filterParams.FlatType?.trim() || undefined,
+          FlatCarpetAreaSqFt: filterParams.FlatCarpetAreaSqFt?.trim() || undefined,
+          BuildingNumber: filterParams.BuildingNumber?.trim() || undefined,
+          Wing: filterParams.Wing?.trim() || undefined,
+          Flat: filterParams.Flat?.trim() || undefined,
+          ParkingNumber: filterParams.ParkingNumber?.trim() || undefined,
+
           SortBy: sortByParam
         };
 
@@ -207,8 +214,14 @@ export const Tenant: React.FC = () => {
           ProjectId: Number(projectId),
           BuildingId: buildingId,
           FlatNumber: filters.FlatNumber?.trim() || undefined,
+          ApplicantName: filters.ApplicantName?.trim() || undefined,
           FlatConfiguration: filters.FlatConfiguration?.trim() || undefined,
           FlatType: filters.FlatType?.trim() || undefined,
+          FlatCarpetAreaSqFt: filters.FlatCarpetAreaSqFt?.trim() || undefined,
+          BuildingNumber: filters.BuildingNumber?.trim() || undefined,
+          Wing: filters.Wing?.trim() || undefined,
+          Flat: filters.Flat?.trim() || undefined,
+          ParkingNumber: filters.ParkingNumber?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         };
@@ -284,13 +297,14 @@ export const Tenant: React.FC = () => {
   }, [])
 
   //#endregion
+
   //#region TABLE COLUMN
   const tenantColumns = useMemo<TableColumn[]>(
     () => [
 
       {
         key: 'FlatNumber',
-        label: 'Flat Number',
+        label: 'Unit / Annexure / Survey Number',
         width: '18',
         sortable: true,
         fixed: 'left',
@@ -315,7 +329,7 @@ export const Tenant: React.FC = () => {
       },
       {
         key: 'FlatType',
-        label: 'Flat Type',
+        label: 'Existing Unit Type',
         width: '16',
         sortable: true,
         align: 'left',
@@ -330,7 +344,7 @@ export const Tenant: React.FC = () => {
       },
       {
         key: 'FlatConfiguration',
-        label: 'Configuration',
+        label: 'Existing Configuration',
         width: '18',
         sortable: true,
         align: 'left',
@@ -338,19 +352,11 @@ export const Tenant: React.FC = () => {
       },
       {
         key: 'FlatCarpetAreaSqFt',
-        label: 'Carpet Area (sqft)',
+        label: 'Existing Carpet Area (SqFt)',
         width: '18',
         sortable: false,
         align: 'center',
         render: value => value ?? '-'
-      },
-      {
-        key: 'Facing',
-        label: 'Facing',
-        width: '14',
-        sortable: false,
-        align: 'left',
-        render: value => value || '-'
       },
       {
         key: 'FreeAreaOfferedPercent',
@@ -358,7 +364,16 @@ export const Tenant: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'left',
-        render: value => value || '-'
+        render: value => value ? `${value} %` : '-'
+      },
+
+      {
+        key: 'FreeAreaOfferedPercent',
+        label: 'Free Area Offered (SqFt)',
+        width: '18',
+        sortable: false,
+        align: 'center',
+        render: (value, row) => (Number(row?.FlatCarpetAreaSqFt) * (value || 0) / 100).toFixed(2) ?? '-'
       },
 
       {
@@ -371,12 +386,21 @@ export const Tenant: React.FC = () => {
       },
       {
         key: 'TotalAreaSqFt',
-        label: 'Total Area (sqft)',
+        label: 'Eligible Total Area (SqFt)',
         width: '18',
         sortable: true,
         align: 'center',
         render: value => value ?? '-'
       },
+      {
+        key: 'BuildingNumber',
+        label: 'Building Number',
+        width: '12',
+        sortable: false,
+        align: 'center',
+        render: value => value || '-'
+      },
+
       {
         key: 'Wing',
         label: 'Wing',
@@ -394,6 +418,14 @@ export const Tenant: React.FC = () => {
         render: value => value || '-'
       },
       {
+        key: 'Flat',
+        label: 'New Unit Number',
+        width: '12',
+        sortable: false,
+        align: 'center',
+        render: value => value || '-'
+      },
+      {
         key: 'RERACarpetAreaSqFt',
         label: 'RERA Carpet Area (SqFt)',
         width: '12',
@@ -403,7 +435,7 @@ export const Tenant: React.FC = () => {
       },
       {
         key: 'InventoryFlatType',
-        label: 'Inventory Flat Type',
+        label: 'New Unit Type',
         width: '12',
         sortable: false,
         align: 'center',
@@ -411,7 +443,7 @@ export const Tenant: React.FC = () => {
       },
       {
         key: 'InventoryFlatConfiguration',
-        label: 'Inventory Flat Configuration',
+        label: 'New Configuration',
         width: '12',
         sortable: false,
         align: 'center',
@@ -420,6 +452,14 @@ export const Tenant: React.FC = () => {
       {
         key: 'ParkingNumber',
         label: 'Parking Number',
+        width: '12',
+        sortable: false,
+        align: 'center',
+        render: value => value || '-'
+      },
+      {
+        key: 'FlatFacing',
+        label: 'Unit Facing',
         width: '12',
         sortable: false,
         align: 'center',
@@ -665,7 +705,7 @@ export const Tenant: React.FC = () => {
             totalPages: newTotalPages
           });
 
-          await loadTenants(pageToShow, filters,buildingId);
+          await loadTenants(pageToShow, filters, buildingId);
 
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
@@ -799,10 +839,10 @@ export const Tenant: React.FC = () => {
           e.preventDefault();
           applyFilters();
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply "
+        cancelText="Clear"
         onCancel={() => clearFilters()}
-       
+
         size="small-half"
       >
         <div className="space-y-6">
@@ -810,32 +850,85 @@ export const Tenant: React.FC = () => {
             <div>
 
               <Input
-                label='Flat Number'
+                label='Unit / Annexure / Survey Number'
                 type="text"
                 value={tempFilters.FlatNumber || ''}
                 onChange={e => handleFilterChange('FlatNumber', e.target.value)}
-                placeholder="Enter Flat Number"
+                placeholder="Enter Unit / Annexure / Survey Number"
               />
             </div>
-
             <div>
-
               <Input
-                label='Flat Type'
+                label='Applicant Name'
+                type="text"
+                value={tempFilters.ApplicantName || ''}
+                onChange={e => handleFilterChange('ApplicantName', e.target.value)}
+                placeholder="Enter Applicant Name"
+              />
+            </div>
+            <div>
+              <Input
+                label='Exisiting Unit Type'
                 type="text"
                 value={tempFilters.FlatType || ''}
                 onChange={e => handleFilterChange('FlatType', e.target.value)}
-                placeholder="Enter Flat Type"
+                placeholder="Enter Exisiting Unit Type"
               />
             </div>
             <div>
-
               <Input
-                label='Flat Configuration'
+                label='Existing Configuration'
                 type="text"
                 value={tempFilters.FlatConfiguration || ''}
                 onChange={e => handleFilterChange('FlatConfiguration', e.target.value)}
-                placeholder="Enter Flat Configuration"
+                placeholder="Enter Existing Configuration"
+              />
+            </div>
+            <div>
+              <Input
+                label='Existing Carpet Area (SqFt)'
+                type="text"
+                value={tempFilters.FlatCarpetAreaSqFt || ''}
+                onChange={e => handleFilterChange('FlatCarpetAreaSqFt', e.target.value)}
+                placeholder="Enter Existing Carpet Area (SqFt)"
+              />
+            </div>
+
+
+            <div>
+              <Input
+                label='Building Number'
+                type="text"
+                value={tempFilters.BuildingNumber || ''}
+                onChange={e => handleFilterChange('BuildingNumber', e.target.value)}
+                placeholder="Enter Building Number"
+              />
+            </div>
+            <div>
+              <Input
+                label='Wing'
+                type="text"
+                value={tempFilters.Wing || ''}
+                onChange={e => handleFilterChange('Wing', e.target.value)}
+                placeholder="Enter Wing"
+              />
+            </div>
+            <div>
+              <Input
+                label='New Unit Number'
+                type="text"
+                value={tempFilters.Flat || ''}
+                onChange={e => handleFilterChange('Flat', e.target.value)}
+                placeholder="Enter New Unit Number"
+              />
+            </div>
+            <div>
+              <Input
+                label='Parking Number'
+                type="text"
+                value={tempFilters.ParkingNumber || ''}
+                onChange={e => handleFilterChange('ParkingNumber', e.target.value)}
+                placeholder="Enter Parking Number"
               />
             </div>
           </div>

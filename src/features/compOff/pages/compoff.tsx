@@ -836,8 +836,8 @@ export const CompOff: React.FC = () => {
                         e.preventDefault()
                         applyFilters()
                     }}
-                    saveText="Apply Filter"
-                    cancelText="Clear Filter"
+                    saveText="Apply "
+                    cancelText="Clear"
                     onCancel={() => clearFilters()}
                    
                     size="small-half"

@@ -156,7 +156,7 @@ const SiteProgressFloorConstruction: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="220px"
           tooltipThreshold={22}
           onClick={() => handleViewFloorConstruction(row)}

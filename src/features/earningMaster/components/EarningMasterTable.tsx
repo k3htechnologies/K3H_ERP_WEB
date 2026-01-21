@@ -65,7 +65,7 @@ export const EarningMasterTable: React.FC<EarningMasterTableProps> = ({
           render: (value, row: EarningMasterData) => (
             <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
               <TooltipText
-                text={value || 'N/A'}
+                text={value || '-'}
                 maxWidth="250px"
                 tooltipThreshold={25}
                 onClick={() => onView(row)}

@@ -7,6 +7,7 @@ import type {
   FilterWithPaginationProposedOfferShiftingDetailsRequest,
   AddUpdateProposedOfferShiftingDetailsRequest,
   ProposedOfferShiftingDetailsWithPaymentStageData,
+  AddUpdateGenerateProposedOfferRequest,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
 import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Button, Input } from '@/ui/components/forms';
@@ -667,7 +668,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
         canAction={canAction && buildingId > 0}
         onSave={handleSaveShiftingDetails}
 
-        onOtherActionText="Generate"
+        onOtherActionText={buildingId > 0 && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0 ? "Generate" : ""}
         onOtherAction={() =>
           handleConfirmationDialogBoxOpenGenerateShiftingDetails(formDataShiftingDetails as ProposedOfferShiftingDetailsData)
         }

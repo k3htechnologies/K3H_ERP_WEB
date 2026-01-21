@@ -115,7 +115,7 @@ const SiteProgressConstructionSubActivity: React.FC = () => {
       align: 'left',
       render: (value) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="260px"
           tooltipThreshold={26}
         />

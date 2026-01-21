@@ -251,7 +251,7 @@ export const AssetMappingMaster: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="250px"
           tooltipThreshold={25}
           onClick={() => handleNavigateToView(row)}
@@ -266,7 +266,7 @@ export const AssetMappingMaster: React.FC = () => {
       align: 'center',
       render: (value) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="170px"
           tooltipThreshold={15}
         />
@@ -289,7 +289,7 @@ export const AssetMappingMaster: React.FC = () => {
       align: 'center',
       render: (value) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="120px"
           tooltipThreshold={12}
         />
@@ -344,7 +344,7 @@ export const AssetMappingMaster: React.FC = () => {
   };
   //#endregion
 
-  //#region CLEAR FILTER
+  //#region Clear
   const clearFilters = () => {
     setTempFilters({});
     updateListState({ filters: {}, page: 1 });

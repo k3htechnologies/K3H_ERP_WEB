@@ -65,7 +65,7 @@ export const WeekOffMappingMasterTable: React.FC<WeekOffMappingMasterTableProps>
           render: (value, row: WeekOffMappingMasterData) => (
             <div className="flex items-center justify-start">
               <TooltipText
-                text={value || 'N/A'}
+                text={value || '-'}
                 maxWidth="250px"
                 tooltipThreshold={25}
                 onClick={() => onView(row)}
@@ -79,7 +79,7 @@ export const WeekOffMappingMasterTable: React.FC<WeekOffMappingMasterTableProps>
           ...col,
           render: (value) => (
             <TooltipText
-              text={value || 'N/A'}
+              text={value || '-'}
               maxWidth="200px"
               tooltipThreshold={20}
             />

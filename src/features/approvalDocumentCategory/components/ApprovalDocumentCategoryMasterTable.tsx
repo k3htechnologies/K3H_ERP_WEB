@@ -65,7 +65,7 @@ export const ApprovalDocumentCategoryMasterTable: React.FC<ApprovalDocumentCateg
           render: (value, row) => (
             <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
               <TooltipText
-                text={value || 'N/A'}
+                text={value || '-'}
                 maxWidth="500px"
                 tooltipThreshold={30}
                 onClick={() => onView(row)}

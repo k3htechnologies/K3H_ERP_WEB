@@ -336,7 +336,7 @@ export const TncMaster: React.FC = () => {
         render: (value, row) => (
           <div className="flex items-center justify-start">
             <TooltipText
-              text={value || 'N/A'}
+              text={value || '-'}
               maxWidth="320px"
               tooltipThreshold={30}
               onClick={() => handleViewTncDetails(row)}
@@ -352,7 +352,7 @@ export const TncMaster: React.FC = () => {
         sortable: false,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="340px" tooltipThreshold={34} />
+          <TooltipText text={value || '-'} maxWidth="340px" tooltipThreshold={34} />
         )
       },
       {
@@ -518,7 +518,7 @@ export const TncMaster: React.FC = () => {
 
   //#endregion
 
-  //#region CLEAR FILTER 
+  //#region Clear 
 
   const clearFilters = () => {
     setTempFilters({});

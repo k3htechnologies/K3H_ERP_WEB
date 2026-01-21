@@ -194,7 +194,7 @@ const Employee: React.FC = () => {
         align: 'center',
         render: value => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="140px"
             tooltipThreshold={14}
             tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
@@ -229,13 +229,13 @@ const Employee: React.FC = () => {
                        flex items-center justify-center
                        text-gray-800 font-medium text-xs
                        border border-gray-300"
-                  title={fullName || 'N/A'}
+                  title={fullName || '-'}
                 >
                   {initials}
                 </div>
                 <div className="min-w-0">
                   <TooltipText
-                    text={value || row.FirstName || 'N/A'}
+                    text={value || row.FirstName || '-'}
                     maxWidth="260px"
                     tooltipThreshold={26}
 
@@ -289,7 +289,7 @@ const Employee: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'left',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'Department',
@@ -298,7 +298,7 @@ const Employee: React.FC = () => {
         sortable: true,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+          <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
         )
       },
       {
@@ -308,7 +308,7 @@ const Employee: React.FC = () => {
         sortable: true,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+          <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
         )
       },
 
@@ -319,7 +319,7 @@ const Employee: React.FC = () => {
         sortable: true,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+          <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
         )
       },
       {
@@ -328,7 +328,7 @@ const Employee: React.FC = () => {
         width: '14',
         sortable: true,
         align: 'center',
-        render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
+        render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       },
 
       {

@@ -65,7 +65,7 @@ export const LeaveEncashmentMasterTable: React.FC<LeaveEncashmentMasterTableProp
           render: (value, row: LeaveEncashmentMasterData) => (
             <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
               <TooltipText
-                text={value || 'N/A'}
+                text={value || '-'}
                 maxWidth="250px"
                 tooltipThreshold={25}
                 onClick={() => onView(row)}

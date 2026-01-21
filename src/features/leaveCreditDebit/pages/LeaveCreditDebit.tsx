@@ -616,7 +616,7 @@ export const LeaveCreditDebit: React.FC = () => {
           e.preventDefault()
           applyFilters()
         }}
-        saveText="Apply Filter"
+        saveText="Apply "
         onCancel={() => clearFilters()}
         size="small-half"
       >

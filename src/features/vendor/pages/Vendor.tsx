@@ -265,7 +265,7 @@ export const Vendor: React.FC = () => {
         align: 'left',
         render: (value, row) => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="250px"
             tooltipThreshold={25}
             onClick={() => handleViewVendorDetails(row)}
@@ -280,7 +280,7 @@ export const Vendor: React.FC = () => {
         align: 'left',
         render: (value) => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="200px"
             tooltipThreshold={20}
           />
@@ -294,7 +294,7 @@ export const Vendor: React.FC = () => {
         align: 'left',
         render: (value) => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="150px"
             tooltipThreshold={15}
           />
@@ -306,7 +306,7 @@ export const Vendor: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'center',
-        render: (value) => value || 'N/A'
+        render: (value) => value || '-'
       },
       {
         key: 'EmailId',
@@ -316,7 +316,7 @@ export const Vendor: React.FC = () => {
         align: 'left',
         render: (value) => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="200px"
             tooltipThreshold={20}
           />

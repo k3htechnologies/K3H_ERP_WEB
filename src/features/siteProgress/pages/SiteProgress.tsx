@@ -127,7 +127,7 @@ const SiteProgress: React.FC = () => {
           inventoryFloorId: 0,
           inventoryFlatId: 0,
           breadcrumbs: [
-            { label: `Construction: ${row.Construction || 'N/A'}`, path: '/siteProgress' }
+            { label: `Construction: ${row.Construction || '-'}`, path: '/siteProgress' }
           ]
         }
       });
@@ -140,7 +140,7 @@ const SiteProgress: React.FC = () => {
           inventoryBuildingId: row.InventoryBuildingId,
           constructionId: row.ConstructionId,
           breadcrumbs: [
-            { label: `Construction: ${row.Construction || 'N/A'}`, path: '/siteProgress' }
+            { label: `Construction: ${row.Construction || '-'}`, path: '/siteProgress' }
           ]
         }
       });
@@ -159,7 +159,7 @@ const SiteProgress: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="240px"
           tooltipThreshold={24}
           onClick={() => handleViewConstruction(row)}

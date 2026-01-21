@@ -295,14 +295,14 @@ export const EmployeeMaster: React.FC = () => {
                        flex items-center justify-center
                        text-gray-800 font-medium text-xs
                        border border-gray-300"
-                  title={fullName || 'N/A'}
+                  title={fullName || '-'}
                 >
                   {initials}
                 </div>
 
                 <div className="min-w-0">
                   <TooltipText
-                    text={value || row.FirstName || 'N/A'}
+                    text={value || row.FirstName || '-'}
                     maxWidth="260px"
                     tooltipThreshold={26}
                     onClick={() => handleViewEmployeeDetails(row)}

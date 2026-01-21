@@ -289,7 +289,7 @@ export const useApprovalDocumentCategoryMaster = () => {
   };
   //#endregion
 
-  //#region CLEAR FILTER
+  //#region Clear
   const clearFilters = () => {
     setTempFilters({});
     setFilters({});

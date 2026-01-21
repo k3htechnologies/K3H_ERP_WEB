@@ -250,7 +250,7 @@ export const ShiftMaster: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="250px"
           tooltipThreshold={25}
           onClick={() => handleNavigateToView(row)}
@@ -379,7 +379,7 @@ export const ShiftMaster: React.FC = () => {
   };
   //#endregion
 
-  //#region CLEAR FILTER
+  //#region Clear
   const clearFilters = () => {
     setTempFilters({});
     updateListState({ filters: {}, page: 1 });

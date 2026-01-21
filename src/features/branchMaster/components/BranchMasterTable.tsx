@@ -65,7 +65,7 @@ export const BranchMasterTable: React.FC<BranchMasterTableProps> = ({
           render: (value, row: BranchMasterData) => (
             <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
               <TooltipText
-                text={value || 'N/A'}
+                text={value || '-'}
                 maxWidth="250px"
                 tooltipThreshold={25}
                 onClick={() => onView(row)}
@@ -79,7 +79,7 @@ export const BranchMasterTable: React.FC<BranchMasterTableProps> = ({
           ...col,
           render: (value) => (
             <TooltipText
-              text={value || 'N/A'}
+              text={value || '-'}
               maxWidth="150px"
               tooltipThreshold={20}
             />

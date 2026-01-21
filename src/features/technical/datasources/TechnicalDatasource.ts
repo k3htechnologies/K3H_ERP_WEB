@@ -50,6 +50,7 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
             return response;
 
         } catch (error) {
+
             console.error('ERROR: PULL NOTIFICATION :', error);
 
             if (error === TokenExpiredException) {

@@ -71,7 +71,7 @@ export const BranchAssociationsMasterTable: React.FC<BranchAssociationsMasterTab
 
             <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
               <TooltipText
-                text={value || 'N/A'}
+                text={value || '-'}
                 maxWidth="250px"
                 tooltipThreshold={25}
                 onClick={() => onView(row)}
@@ -88,7 +88,7 @@ export const BranchAssociationsMasterTable: React.FC<BranchAssociationsMasterTab
 
           render: (value) => (
             <TooltipText
-              text={value || 'N/A'}
+              text={value || '-'}
               maxWidth="200px"
               tooltipThreshold={20}
             />

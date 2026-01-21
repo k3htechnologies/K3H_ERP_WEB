@@ -548,7 +548,7 @@ export const ViewProjectMaster: React.FC = () => {
                                             </div>
 
                                             <h4 className="text-lg font-semibold text-gray-900">
-                                                {emp.FullName || 'N/A'}
+                                                {emp.FullName || '-'}
                                             </h4>
                                         </div>
 

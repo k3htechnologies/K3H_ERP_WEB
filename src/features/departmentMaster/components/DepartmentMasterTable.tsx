@@ -73,7 +73,7 @@ export const DepartmentMasterTable: React.FC<DepartmentMasterTableProps> = ({
           render: (value, row) => (
             <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
               <TooltipText
-                text={value || 'N/A'}
+                text={value || '-'}
                 maxWidth="300px"
                 tooltipThreshold={40}
                 onClick={() => onView(row)}

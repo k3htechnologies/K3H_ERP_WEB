@@ -82,6 +82,9 @@ export const Building: React.FC = () => {
           ProjectId: projectId ?? undefined,
           BuildingName: filterParams.BuildingName?.trim() || undefined,
           CTSNumber: filterParams.CTSNumber?.trim() || undefined,
+          RoadWidth: filterParams.RoadWidth?.trim() || undefined,
+          CityName: filterParams.CityName?.trim() || undefined,
+          VillageName: filterParams.VillageName?.trim() || undefined,
           SortBy: sortByParam
         };
 
@@ -208,6 +211,9 @@ export const Building: React.FC = () => {
           ProjectId: projectId ?? undefined,
           BuildingName: filters.BuildingName?.trim() || undefined,
           CTSNumber: filters.CTSNumber?.trim() || undefined,
+          RoadWidth: filters.RoadWidth?.trim() || undefined,
+          CityName: filters.CityName?.trim() || undefined,
+          VillageName: filters.VillageName?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         };
@@ -309,7 +315,7 @@ export const Building: React.FC = () => {
             <div className="flex items-center gap-3">
               <div className="min-w-0">
                 <TooltipText
-                  text={value || 'N/A'}
+                  text={value || '-'}
                   maxWidth="260px"
                   tooltipThreshold={26}
                   onClick={() => handleViewBuildingDetails(row)}
@@ -327,7 +333,7 @@ export const Building: React.FC = () => {
         sortable: true,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="220px" tooltipThreshold={22} />
+          <TooltipText text={value || '-'} maxWidth="220px" tooltipThreshold={22} />
         )
       },
       {
@@ -336,7 +342,7 @@ export const Building: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'left',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
 
       {
@@ -370,7 +376,7 @@ export const Building: React.FC = () => {
         sortable: false,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="200px" tooltipThreshold={20} />
+          <TooltipText text={value || '-'} maxWidth="200px" tooltipThreshold={20} />
         )
       },
       {
@@ -379,7 +385,7 @@ export const Building: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'left',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'CityName',
@@ -387,7 +393,7 @@ export const Building: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'left',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'VillageName',
@@ -693,8 +699,8 @@ export const Building: React.FC = () => {
           updateListState({ filters: tempFilters, page: 1 });
           setShowFilterPopup(false);
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply "
+        cancelText="Clear"
         onCancel={() => {
           setTempFilters({});
           resetFilters();
@@ -713,7 +719,7 @@ export const Building: React.FC = () => {
                 type="text"
                 value={tempFilters.BuildingName || ''}
                 onChange={e => handleFilterChange('BuildingName', e.target.value)}
-                placeholder="Enter building name"
+                placeholder="Enter Building name"
               />
             </div>
 
@@ -725,6 +731,36 @@ export const Building: React.FC = () => {
                 value={tempFilters.CTSNumber || ''}
                 onChange={e => handleFilterChange('CTSNumber', e.target.value)}
                 placeholder="Enter CTS number"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='Road Width'
+                type="text"
+                value={tempFilters.RoadWidth || ''}
+                onChange={e => handleFilterChange('RoadWidth', e.target.value)}
+                placeholder="Enter Road Width"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='City'
+                type="text"
+                value={tempFilters.CityName || ''}
+                onChange={e => handleFilterChange('CityName', e.target.value)}
+                placeholder="Enter City"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='Village'
+                type="text"
+                value={tempFilters.VillageName || ''}
+                onChange={e => handleFilterChange('VillageName', e.target.value)}
+                placeholder="Enter Village"
               />
             </div>
           </div>

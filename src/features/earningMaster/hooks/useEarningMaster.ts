@@ -291,7 +291,7 @@ export const useEarningMaster = () => {
   }
   //#endregion
 
-  //#region CLEAR FILTER 
+  //#region Clear 
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})

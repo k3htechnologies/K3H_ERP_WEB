@@ -183,7 +183,7 @@ const Bank: React.FC = () => {
         render: (value, row) => (
           <div className={`flex items-center justify-start`}>
             <TooltipText
-              text={value || 'N/A'}
+              text={value || '-'}
               maxWidth="250px"
               tooltipThreshold={25}
             />

@@ -368,14 +368,23 @@ export const Rent: React.FC = () => {
 
   //#region COLUMNS
   const columns = useMemo<TableColumn[]>(() => {
+
     const baseColumns: TableColumn[] = [
-      { key: 'FlatNumber', label: 'Flat / Unit No.', fixed: 'left', width: '14' },
-      { key: 'ApplicantName', label: 'Applicant', width: '18' },
+      { key: 'FlatNumber', label: 'Unit Number', fixed: 'left', width: '14' },
+      { key: 'ApplicantName', label: 'Applicant Name', width: '18' },
       { key: 'ApplicantType', label: 'Applicant Type', width: '18' },
-      { key: 'FlatCarpetAreaSqFt', label: 'Area SqFt', width: '18' },
-      { key: 'FlatType', label: 'Flat Type', width: '18' },
-      { key: 'Unit', label: 'Unit', width: '12' },
-      { key: 'ProposedOfferAmount', label: 'Proposed Offer Amount', width: '20', align: 'right' }
+      { key: 'FlatType', label: 'Existing Unit Type', width: '18' },
+      { key: 'FlatCarpetAreaSqFt', label: 'Existing Carpet Area (SqFt)', width: '18' },
+      {
+        key: 'ProposedOfferAmount',
+        label: 'Proposed Offer Amount (₹)',
+        width: '20',
+        align: 'right',
+        render: (_, row) => {
+          return `${row.ProposedOfferAmount || 0} ${row.Unit || ''}`;
+        }
+      }
+
     ];
 
     const dynamicColumns: TableColumn[] = dynamicHeaders.map(h => ({
@@ -410,7 +419,7 @@ export const Rent: React.FC = () => {
   };
   //#endregion
 
-  //#region APPLY & CLEAR FILTERS
+  //#region APPLY & ClearS
 
   const applyFilters = () => {
     setFilters(tempFilters);
@@ -539,10 +548,10 @@ export const Rent: React.FC = () => {
           e.preventDefault();
           applyFilters();
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply "
+        cancelText="Clear"
         onCancel={() => clearFilters()}
-       
+
         size="small-half"
       >
         <div className="space-y-6">

@@ -31,7 +31,7 @@ export const UomMasterTable: React.FC<UomMasterTableProps> = ({
           render: (value, row: UomMasterData) => (
             <div className={`flex items-center justify-start'}`}>
               <TooltipText
-                text={value || 'N/A'}
+                text={value || '-'}
                 maxWidth="250px"
                 tooltipThreshold={30}
                 onClick={() => onView(row)}

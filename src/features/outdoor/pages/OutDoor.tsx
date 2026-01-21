@@ -691,7 +691,7 @@ export const OutDoor: React.FC = () => {
                         <div className="flex items-center gap-3">
                           <span className="text-xs text-gray-600 flex items-center gap-1">
                             <Clock className="w-3.5 h-3.5" />
-                            {formatTimeFromDateTime(item.OutDoorTime) || 'N/A'}
+                            {formatTimeFromDateTime(item.OutDoorTime) || '-'}
                           </span>
                         </div>
                       </div>
@@ -769,14 +769,14 @@ export const OutDoor: React.FC = () => {
                           <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
                             <div className="flex-1">
                               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Name</p>
-                              <p className="text-sm font-medium text-gray-900">{item.CompanyName || 'N/A'}</p>
+                              <p className="text-sm font-medium text-gray-900">{item.CompanyName || '-'}</p>
                             </div>
                           </div>
 
                           <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
                             <div className="flex-1">
                               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Address</p>
-                              <p className="text-sm font-medium text-gray-900">{item.CompanyAddress || 'N/A'}</p>
+                              <p className="text-sm font-medium text-gray-900">{item.CompanyAddress || '-'}</p>
                             </div>
                           </div>
 
@@ -785,7 +785,7 @@ export const OutDoor: React.FC = () => {
                               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Purpose</p>
                               <div className="text-sm font-medium text-gray-900">
                                 <TooltipText
-                                  text={item.Purpose || 'N/A'}
+                                  text={item.Purpose || '-'}
                                   maxWidth="300px"
                                   tooltipThreshold={30}
                                 />
@@ -817,14 +817,14 @@ export const OutDoor: React.FC = () => {
                           <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
                             <div className="flex-1">
                               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Accompanied By</p>
-                              <p className="text-sm font-medium text-gray-900">{item.AccompaniedByName || 'N/A'}</p>
+                              <p className="text-sm font-medium text-gray-900">{item.AccompaniedByName || '-'}</p>
                             </div>
                           </div>
 
                           <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
                             <div className="flex-1">
                               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Requested By</p>
-                              <p className="text-sm font-medium text-gray-900">{item.CreatedBy || 'N/A'}</p>
+                              <p className="text-sm font-medium text-gray-900">{item.CreatedBy || '-'}</p>
                             </div>
                           </div>
 
@@ -860,7 +860,7 @@ export const OutDoor: React.FC = () => {
                                     <p className="text-xs font-semibold text-green-700 uppercase">Punch In</p>
                                   </div>
                                   <p className="text-sm font-medium text-gray-900 mb-1">
-                                    {formatTimeFromDateTime(item.PunchIn) || 'N/A'}
+                                    {formatTimeFromDateTime(item.PunchIn) || '-'}
                                   </p>
                                   {item.PunchInAddress && (
                                     <p className="text-xs text-gray-600 flex items-start gap-1">
@@ -877,7 +877,7 @@ export const OutDoor: React.FC = () => {
                                     <p className="text-xs font-semibold text-blue-700 uppercase">Punch Out</p>
                                   </div>
                                   <p className="text-sm font-medium text-gray-900 mb-1">
-                                    {formatTimeFromDateTime(item.PunchOut) || 'N/A'}
+                                    {formatTimeFromDateTime(item.PunchOut) || '-'}
                                   </p>
                                   {item.PunchOutAddress && (
                                     <p className="text-xs text-gray-600 flex items-start gap-1">
@@ -940,8 +940,8 @@ export const OutDoor: React.FC = () => {
           e.preventDefault()
           applyFilters()
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply "
+        cancelText="Clear"
         onCancel={() => clearFilters()}
        
         size="small-half"

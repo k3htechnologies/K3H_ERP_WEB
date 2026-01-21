@@ -65,7 +65,7 @@ export const SubMaterialMasterTable: React.FC<SubMaterialMasterTableProps> = ({
           render: (value, row: SubMaterialMasterData) => (
             <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
               <TooltipText
-                text={value || 'N/A'}
+                text={value || '-'}
                 maxWidth="400px"
                 tooltipThreshold={30}
                 onClick={() => onView(row)}

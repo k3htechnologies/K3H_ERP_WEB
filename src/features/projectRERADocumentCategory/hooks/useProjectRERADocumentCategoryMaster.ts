@@ -287,7 +287,7 @@ export const useProjectRERADocumentCategoryMaster = () => {
   };
   //#endregion
 
-  //#region CLEAR FILTER
+  //#region Clear
   const clearFilters = () => {
     setTempFilters({});
     setFilters({});

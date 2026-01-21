@@ -126,7 +126,7 @@ const SiteProgressFlatConstruction: React.FC = () => {
       breadcrumbs: currentBreadcrumbs
     };
     const newBreadcrumb = { 
-      label: `Flat: ${row.FlatNumber || 'N/A'}`,
+      label: `Flat: ${row.FlatNumber || '-'}`,
       path: '/siteProgress/SiteProgressFlatConstruction',
       state: flatState
     };
@@ -157,7 +157,7 @@ const SiteProgressFlatConstruction: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="220px"
           tooltipThreshold={22}
           onClick={() => handleViewFlatConstruction(row)}

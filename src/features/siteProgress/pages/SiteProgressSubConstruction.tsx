@@ -168,7 +168,7 @@ const SiteProgressSubConstruction: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="240px"
           tooltipThreshold={24}
           onClick={() => handleViewSubConstruction(row)}

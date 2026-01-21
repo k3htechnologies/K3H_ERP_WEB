@@ -326,10 +326,10 @@ export const ViewTenant: React.FC = () => {
                                     <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <FieldItem label="Unit / Annexure / Survey Number" value={editTenantData?.FlatNumber} />
-                                            <FieldItem label="Unit Type" value={editTenantData?.FlatType} />
+                                            <FieldItem label="Type" value={editTenantData?.FlatType} />
                                             {editTenantData?.FlatType.toUpperCase() !== "GYM"
                                                 ?
-                                                <FieldItem label="Unit Configuration" value={editTenantData?.FlatConfiguration} />
+                                                <FieldItem label="Configuration" value={editTenantData?.FlatConfiguration} />
                                                 : <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.FlatCarpetAreaSqFt} />
                                             }
 
@@ -343,7 +343,7 @@ export const ViewTenant: React.FC = () => {
                                                 <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.FlatCarpetAreaSqFt} />
                                                 : ""
                                             }
-                                            <FieldItem label="Unit Facing" value={editTenantData?.Facing} />
+                                            <FieldItem label="Facing" value={editTenantData?.Facing} />
 
                                         </div>
                                     </div>
@@ -364,7 +364,7 @@ export const ViewTenant: React.FC = () => {
                                     <div className="lg:col-span-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <FieldItem label="Free Area Offered (%)" value={editTenantData?.FreeAreaOfferedPercent} />
-                                            <FieldItem label="Free Area Offered (SqFt)" value={Number(editTenantData?.FlatCarpetAreaSqFt) * (editTenantData?.FreeAreaOfferedPercent || 0) / 100} />
+                                            <FieldItem label="Free Area Offered (SqFt)" value={(Number(editTenantData?.FlatCarpetAreaSqFt) * (editTenantData?.FreeAreaOfferedPercent || 0) / 100).toFixed(2)} />
                                             <FieldItem label="Total Area (SqFt)" value={editTenantData?.TotalAreaSqFt} />
 
                                         </div>
@@ -395,9 +395,9 @@ export const ViewTenant: React.FC = () => {
 
                                         <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Unit Type" value={editTenantData?.InventoryFlatType} />
-                                                <FieldItem label="Unit Configuration" value={editTenantData?.InventoryFlatConfiguration} />
-                                                <FieldItem label="Unit Facing" value={'-'} />
+                                                <FieldItem label="Type" value={editTenantData?.InventoryFlatType} />
+                                                <FieldItem label="Configuration" value={editTenantData?.InventoryFlatConfiguration} />
+                                                <FieldItem label="Facing" value={'-'} />
 
                                             </div>
                                         </div>
@@ -485,7 +485,7 @@ export const ViewTenant: React.FC = () => {
                         exportLoading={isLoading}
                     />
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
                         {docsWithUrls.length === 0 && (
                             <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
@@ -499,11 +499,17 @@ export const ViewTenant: React.FC = () => {
 
                             return (
                                 <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
-                                    
+
                                     <div className="flex items-start justify-between p-2 gap-2">
-                                        <span className="line-clamp-2 break-words font-medium text-gray-900">
-                                            {d.DocumentName}
-                                        </span>
+                                        <div className="flex flex-col">
+                                            
+                                            <span className="line-clamp-2 break-words font-medium text-gray-900">
+                                                {d.DocumentName}
+                                            </span>
+                                            <span className="text-sm text-gray-500 mt-1">
+                                                Document Count : {urls.length}
+                                            </span>
+                                        </div>
 
                                         <MultiImageViewer
                                             images={urls}
@@ -511,19 +517,21 @@ export const ViewTenant: React.FC = () => {
                                             triggerLabel="View"
                                             isIcon={false}
                                         />
+
+
                                     </div>
 
-                                    
+
                                     <div className="flex-grow" />
 
-                                    <div className="text-xs text-gray-600 bg-gray-100 p-2 mt-auto">
+                                    <div className="bg-gray-50 p-2 mt-auto">
                                         <FieldItem
                                             label="Uploaded By / Date"
                                             value={`${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
-                                                    ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
-                                                    : d?.CreatedDate
-                                                        ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
-                                                        : '-'
+                                                ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
+                                                : d?.CreatedDate
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
+                                                    : '-'
                                                 }`}
                                         />
                                     </div>

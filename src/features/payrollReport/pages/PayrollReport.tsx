@@ -648,7 +648,7 @@ export const PayrollReport: React.FC = () => {
         width: '20',
         sortable: false,
         align: 'left',
-        render: (value) => value || 'N/A'
+        render: (value) => value || '-'
       },
       {
         key: 'ResignationDate',
@@ -672,7 +672,7 @@ export const PayrollReport: React.FC = () => {
         width: '42',
         sortable: true,
         align: 'left',
-        render: (value) => value || 'N/A'
+        render: (value) => value || '-'
       },
     ],
     []
@@ -828,8 +828,8 @@ export const PayrollReport: React.FC = () => {
           e.preventDefault();
           applyFilters();
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply "
+        cancelText="Clear"
         onCancel={() => clearFilters()}
        
         size="small-half"

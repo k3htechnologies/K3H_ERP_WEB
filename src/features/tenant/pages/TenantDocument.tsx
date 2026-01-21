@@ -375,7 +375,7 @@ export const TenantDocument: React.FC = () => {
           <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
 
             <TooltipText
-              text={value || 'N/A'}
+              text={value || '-'}
               maxWidth="500px"
               tooltipThreshold={100}
             />
@@ -488,7 +488,7 @@ export const TenantDocument: React.FC = () => {
 
   //#endregion
 
-  //#region CLEAR FILTER 
+  //#region Clear 
 
   const clearFilters = () => {
     setTempFilters({})
@@ -906,7 +906,7 @@ export const TenantDocument: React.FC = () => {
           e.preventDefault()
           applyFilters()
         }}
-        saveText="Apply Filter"
+        saveText="Apply "
         onCancel={() => clearFilters()}
         size="small-half"
       >

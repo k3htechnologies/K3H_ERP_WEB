@@ -466,7 +466,7 @@ export const EmployeeDocument: React.FC = () => {
 
   //#endregion
 
-  //#region CLEAR FILTER 
+  //#region Clear 
 
   const clearFilters = () => {
     setTempFilters({})
@@ -877,7 +877,7 @@ export const EmployeeDocument: React.FC = () => {
           e.preventDefault()
           applyFilters()
         }}
-        saveText="Apply Filter"
+        saveText="Apply "
         onCancel={() => clearFilters()}
         size="small-half"
       >

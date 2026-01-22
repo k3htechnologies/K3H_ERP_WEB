@@ -95,7 +95,7 @@ export const ApprovedBankFile: React.FC = () => {
 
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-    const fetchApprovedBankFileList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    const fetchApprovedBankFile = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadApprovedBankFile(page, filters, sort);
     }
 
@@ -115,7 +115,6 @@ export const ApprovedBankFile: React.FC = () => {
                     }
                 }
                 const params: FilterWithPaginationApprovedBankFileRequest = {
-
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
@@ -230,7 +229,7 @@ export const ApprovedBankFile: React.FC = () => {
 
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
-        fetchApprovedBankFileList(page);
+        fetchApprovedBankFile(page);
     }, []);
 
     //#region TABLE SORT COLUMN

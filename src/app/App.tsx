@@ -97,9 +97,9 @@ import Rent from '@/features/rent/pages/Rent';
 import Event from '@/features/event/pages/Event';
 import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
-import LeaveCreditDebit from '@/features/leaveCreditDebit/pages/LeaveCreditDebit';
-import AddUpdateLeaveCreditDebit from '@/features/leaveCreditDebit/pages/AddUpdateLeaveCreditDebit';
-import ViewLeaveCreditDebit from '@/features/leaveCreditDebit/pages/ViewLeaveCreditDebit';
+import LeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/LeaveCreditConfiguration';
+import AddUpdateLeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/AddUpdateLeaveCreditConfiguration';
+import ViewLeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/ViewLeaveCreditConfiguration';
 import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor';
 import Leave from '@/features/leave/pages/Leave';
 import AddUpdateLeave from '@/features/leave/pages/AddUpdateLeave';
@@ -253,9 +253,9 @@ function App() {
 
             <Route path="compoff" element={<CompOff />} />
             <Route path="outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
-            <Route path="leaveCreditDebit" element={<LeaveCreditDebit />} />
-            <Route path="leaveCreditDebit/add/:id?" element={<AddUpdateLeaveCreditDebit />} />
-            <Route path="leaveCreditDebit/view/:id?" element={<ViewLeaveCreditDebit />} />
+            <Route path="leaveCreditConfiguration" element={<LeaveCreditConfiguration />} />
+            <Route path="leaveCreditConfiguration/add/:id?" element={<AddUpdateLeaveCreditConfiguration />} />
+            <Route path="leaveCreditConfiguration/view/:id?" element={<ViewLeaveCreditConfiguration />} />
             <Route path="outdoor" element={<OutDoor />} />
             <Route path="leave" element={<Leave />} />
             <Route path="leave/add/:id?" element={<AddUpdateLeave />} />

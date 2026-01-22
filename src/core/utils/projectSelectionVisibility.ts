@@ -24,7 +24,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         , 'leaveEncashmentMaster'
         , 'leaveTypeMaster'
         , 'leave'
-        , 'leaveCreditDebit'
+        , 'leaveCreditConfiguration'
         , 'outdoor'
         , 'shiftMaster'
         , 'shiftMappingMaster'

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type {
-    LeaveCreditDebitData,
-} from '@/features/leaveCreditDebit/models/leaveCreditDebit';
+    LeaveCreditConfigurationData,
+} from '@/features/leaveCreditConfiguration/models/leaveCreditConfiguration';
 
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy_hh_mm, formatDate_dd_mm_yyyy } from '@/core/utils/dateFormat';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { Loader } from '@/core/utils/loader';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
@@ -17,7 +17,7 @@ const DEFAULT_LIST_STATE = {
     searchTerm: '',
 };
 
-const ViewLeaveCreditDebit: React.FC = () => {
+const ViewLeaveCreditConfiguration: React.FC = () => {
     //#region LOADING STATE
     const [isLoading] = useState(false);
     const [loadingMessage] = useState('');
@@ -27,8 +27,8 @@ const ViewLeaveCreditDebit: React.FC = () => {
     //#region LOCATION & NAVIGATION
     const location = useLocation() as {
         state?: {
-            editLeaveCreditDebitData?: LeaveCreditDebitData | null;
-            data?: LeaveCreditDebitData | null;
+            editLeaveCreditConfigurationData?: LeaveCreditConfigurationData | null;
+            data?: LeaveCreditConfigurationData | null;
             listState?: {
                 page: number;
                 filters: any;
@@ -42,12 +42,12 @@ const ViewLeaveCreditDebit: React.FC = () => {
     //#endregion
 
     //#region PERMISSIONS
-    const { canAction } = useMenuPermissions('/leaveCreditDebit');
+    const { canAction } = useMenuPermissions('/leaveCreditConfiguration');
     //#endregion
 
     //#region DATA
     const data =
-        location.state?.editLeaveCreditDebitData ??
+        location.state?.editLeaveCreditConfigurationData ??
         location.state?.data ??
         null;
 
@@ -55,16 +55,16 @@ const ViewLeaveCreditDebit: React.FC = () => {
     //#endregion
 
     //#region NO DATA HANDLE
-    if (!data) return <div>No Leave Credit Debit Data Found</div>;
+    if (!data) return <div>No Leave Credit Configuration Data Found</div>;
     //endregion
 
     //#region EDIT HANDLER
-    const handleEditLeaveCreditDebit = (row: LeaveCreditDebitData) => {
-        if (!row?.LeaveCreditDebitId) return;
+    const handleEditLeaveCreditConfiguration = (row: LeaveCreditConfigurationData) => {
+        if (!row?.LeaveCreditConfigurationId) return;
 
-        navigate(`/leaveCreditDebit/add/${row.LeaveCreditDebitId}`, {
+        navigate(`/leaveCreditConfiguration/add/${row.LeaveCreditConfigurationId}`, {
             state: {
-                editLeaveCreditDebitData: row,
+                editLeaveCreditConfigurationData: row,
                 fromList: true,
                 listState,
             },
@@ -73,8 +73,8 @@ const ViewLeaveCreditDebit: React.FC = () => {
     //#endregion
 
     //#region BACK HANDLER
-    const handleBackToListLeaveCreditDebit = () => {
-        navigate('/leaveCreditDebit', {
+    const handleBackToListLeaveCreditConfiguration = () => {
+        navigate('/leaveCreditConfiguration', {
             state: {
                 listState,
             },
@@ -92,13 +92,13 @@ const ViewLeaveCreditDebit: React.FC = () => {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 {/* ================= HEADER ================= */}
                 <HeaderActionBar
-                    titleText="Leave Credit / Debit"
+                    titleText="Leave Credit Configuration"
                     cancelText="Cancel"
                     EditText="Edit"
                     isLoading={isLoading}
                     canAction={canAction}
-                    onCancel={handleBackToListLeaveCreditDebit}
-                    onEdit={() => handleEditLeaveCreditDebit(data)}
+                    onCancel={handleBackToListLeaveCreditConfiguration}
+                    onEdit={() => handleEditLeaveCreditConfiguration(data)}
                 />
 
                 {/* ================= CONTENT ================= */}
@@ -120,19 +120,15 @@ const ViewLeaveCreditDebit: React.FC = () => {
                                             value={data.LeavePeriodMode || '-'}
                                         />
                                         <FieldItem
-                                            label="Month"
-                                            value={data.Month || '-'}
+                                            label="Financial Year Start Date"
+                                            value={data.FinancialYearStartDate ? formatDate_dd_mm_yyyy(data.FinancialYearStartDate) : '-'}
                                         />
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4 border-b pb-3">
                                         <FieldItem
-                                            label="Financial Year"
-                                            value={
-                                                data.FYyear && data.FYyear > 0
-                                                    ? data.FYyear.toString()
-                                                    : '-'
-                                            }
+                                            label="Financial Year End Date"
+                                            value={data.FinancialYearEndDate ? formatDate_dd_mm_yyyy(data.FinancialYearEndDate) : '-'}
                                         />
                                         <FieldItem
                                             label="Department"
@@ -233,4 +229,4 @@ const ViewLeaveCreditDebit: React.FC = () => {
     );
 };
 
-export default ViewLeaveCreditDebit;
+export default ViewLeaveCreditConfiguration;

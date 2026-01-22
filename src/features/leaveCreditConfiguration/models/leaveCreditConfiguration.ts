@@ -1,13 +1,15 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
-export interface FilterWithPaginationLeaveCreditDebitRequest {
+export interface FilterWithPaginationLeaveCreditConfigurationRequest {
     PageSize: number
     PageNumber: number
     IsCheckPermission?: boolean
-    LeaveCreditDebitId?: number
+    LeaveCreditConfigurationId?: number
     LeavePeriodMode?: string
     FYyear?: number
     Month?: string
+    FinancialYearStartDate?: string
+    FinancialYearEndDate?: string
     DepartmentName?: string
     DesignationName?: string
     SortBy?: string
@@ -19,15 +21,17 @@ export interface LeaveBalanceType {
     LeaveTypeId: number | 0
     LeaveCredit: number | 0
     LeaveTypeName: string | ''
-    LeaveCreditDebitId: number | 0
+    LeaveCreditConfigurationId: number | 0
 }
 
-export interface LeaveCreditDebitData {
-    LeaveCreditDebitId: number | 0
+export interface LeaveCreditConfigurationData {
+    LeaveCreditConfigurationId: number | 0
     Uniquekey: string | ''
     LeavePeriodMode: string | ''
     FYyear: number | 0
     Month: string | ''
+    FinancialYearStartDate: string | null
+    FinancialYearEndDate: string | null
     DepartmentMasterId: number | 0
     DepartmentName: string | ''
     DesignationName: string | ''
@@ -43,25 +47,27 @@ export interface LeaveCreditDebitData {
     LastModifiedDate: string | null
 }
 
-export interface AddUpdateLeaveCreditDebitRequest {
-    LeaveCreditDebitId?: number
+export interface AddUpdateLeaveCreditConfigurationRequest {
+    LeaveCreditConfigurationId?: number
     Uniquekey?: string
     LeavePeriodMode?: string
     FYyear?: number
     Month?: string
+    FinancialYearStartDate?: string | null
+    FinancialYearEndDate?: string | null
     DepartmentMasterId?: number
     DesignationId?: string
     LeaveTypebalanceJSONList?: string
 }
 
-export interface DeleteLeaveCreditDebitRequest {
-    LeaveCreditDebitId: number
+export interface DeleteLeaveCreditConfigurationRequest {
+    LeaveCreditConfigurationId: number
     Uniquekey: string
 }
 
-export type LeaveCreditDebitListResponse = ApiResponse<LeaveCreditDebitData[]>;
-export type LeaveCreditDebitSaveResponse = ApiResponse<LeaveCreditDebitData[]>;
-export type LeaveCreditDebitDeleteResponse = ApiResponse<number>;
+export type LeaveCreditConfigurationListResponse = ApiResponse<LeaveCreditConfigurationData[]>;
+export type LeaveCreditConfigurationSaveResponse = ApiResponse<LeaveCreditConfigurationData[]>;
+export type LeaveCreditConfigurationDeleteResponse = ApiResponse<number>;
 
 
 

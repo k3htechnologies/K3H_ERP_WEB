@@ -27,7 +27,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/leaveencashmentmaster': '/leaveEncashmentMaster',
         '/leavetypemaster': '/leaveTypeMaster',
         '/leave': '/leave',
-        '/leavecreditdebit': '/leaveCreditDebit',
+        '/leavecreditconfiguration': '/leaveCreditConfiguration',
         '/shiftmaster': '/shiftMaster',
         '/shiftmappingmaster': '/shiftMappingMaster',
         '/weekoffmaster': '/weekOffMaster',

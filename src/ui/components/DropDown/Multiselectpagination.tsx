@@ -193,10 +193,10 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
       {label && (
         <label
           style={{
-            fontSize: theme.fontSize.md,
+            fontSize: theme.fontSize.sm,
             fontWeight: theme.fontWeight.medium,
             color: theme.colors.text,
-            marginBottom: "6px",
+            marginBottom: "4px",
             display: "block",
           }}
         >

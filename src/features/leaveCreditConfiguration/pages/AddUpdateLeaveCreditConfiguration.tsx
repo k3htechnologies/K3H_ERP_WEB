@@ -9,12 +9,12 @@ import { fetchDesignationMasterDropdown } from '@/features/designationMaster/des
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
 import type {
-    AddUpdateLeaveCreditDebitRequest,
+    AddUpdateLeaveCreditConfigurationRequest,
     LeaveBalanceType,
-    FilterWithPaginationLeaveCreditDebitRequest
-} from '@/features/leaveCreditDebit/models/leaveCreditDebit';
-import { leaveCreditDebitService } from '@/features/leaveCreditDebit/services/LeaveCreditDebitService';
-import { MONTHS_OPTIONS } from '@/core/constants/staticData';
+    FilterWithPaginationLeaveCreditConfigurationRequest
+} from '@/features/leaveCreditConfiguration/models/leaveCreditConfiguration';
+import { leaveCreditConfigurationService } from '@/features/leaveCreditConfiguration/services/LeaveCreditConfigurationService';
+import { formatDate_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
@@ -24,26 +24,27 @@ import { fetchLeaveTypeMasterDropdown } from '@/features/leaveTypeMaster/leaveTy
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
+import DatePickerInput from '@/ui/components/forms/Datepicker';
 const LEAVE_PERIOD_MODES = [
     { label: 'Yearly', value: 'Yearly' },
     { label: 'Monthly', value: 'Monthly' },
 ];
 
-const initialFormState = (): AddUpdateLeaveCreditDebitRequest => ({
-    LeaveCreditDebitId: 0,
+const initialFormState = (): AddUpdateLeaveCreditConfigurationRequest => ({
+    LeaveCreditConfigurationId: 0,
     Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
     LeavePeriodMode: '',
-    FYyear: new Date().getFullYear(),
-    Month: '',
+    FinancialYearStartDate: null,
+    FinancialYearEndDate: null,
     DepartmentMasterId: 0,
     DesignationId: '',
     LeaveTypebalanceJSONList: '',
 });
 
-export const AddUpdateLeaveCreditDebit: React.FC = () => {
+export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
 
     //#region STATE MANAGEMENT
-    const [formData, setFormData] = useState<AddUpdateLeaveCreditDebitRequest>(() => initialFormState());
+    const [formData, setFormData] = useState<AddUpdateLeaveCreditConfigurationRequest>(() => initialFormState());
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
@@ -79,11 +80,11 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
     //#endregion
 
     //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions('/leaveCreditDebit');
+    const { canAction } = useMenuPermissions('/leaveCreditConfiguration');
     //#endregion
 
     //#region HANDLE CHNAGE EVENT WHEN INPUT BOX ANY OTHER
-    const handleFieldChange = (field: keyof AddUpdateLeaveCreditDebitRequest, value: any) => {
+    const handleFieldChange = (field: keyof AddUpdateLeaveCreditConfigurationRequest, value: any) => {
 
         setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -94,21 +95,21 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
 
     //#endregion
 
-    //#region LOAD LEAVE CREDIT DEBIT DATA
-    const fetchLeaveCreditDebitDetails = useCallback(async () => {
+    //#region LOAD LEAVE CREDIT CONFIGURATION DATA
+    const fetchLeaveCreditConfigurationDetails = useCallback(async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
 
-                const params: FilterWithPaginationLeaveCreditDebitRequest = {
+                const params: FilterWithPaginationLeaveCreditConfigurationRequest = {
                     PageNumber: 1,
                     PageSize: 1,
                     IsCheckPermission: false,
-                    LeaveCreditDebitId: Number(id)
+                    LeaveCreditConfigurationId: Number(id)
                 }
 
-                const response = await leaveCreditDebitService.apiCallPullLeaveCreditDebit(params);
+                const response = await leaveCreditConfigurationService.apiCallPullLeaveCreditConfiguration(params);
 
                 if (E.isRight(response)) {
 
@@ -117,11 +118,11 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                     if (row) {
                         setFormData(prev => ({
                             ...prev,
-                            LeaveCreditDebitId: row.LeaveCreditDebitId ?? prev.LeaveCreditDebitId,
+                            LeaveCreditConfigurationId: row.LeaveCreditConfigurationId ?? prev.LeaveCreditConfigurationId,
                             Uniquekey: row.Uniquekey ?? prev.Uniquekey,
                             LeavePeriodMode: row.LeavePeriodMode ?? prev.LeavePeriodMode ?? '',
-                            FYyear: row.FYyear ?? prev.FYyear ?? new Date().getFullYear(),
-                            Month: row.Month ?? prev.Month ?? '',
+                            FinancialYearStartDate: row.FinancialYearStartDate ? formatDate_dd_mm_yyyy(row.FinancialYearStartDate) : (prev.FinancialYearStartDate ?? null),
+                            FinancialYearEndDate: row.FinancialYearEndDate ? formatDate_dd_mm_yyyy(row.FinancialYearEndDate) : (prev.FinancialYearEndDate ?? null),
                             DesignationId: row.DesignationId ?? prev.DesignationId ?? '',
                             DepartmentMasterId: row.DepartmentMasterId ?? prev.DepartmentMasterId ?? 0,
                             LeaveTypebalanceJSONList: '',
@@ -165,7 +166,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                 addToast({ type: 'error', title: error.message })
             },
             undefined,
-            'Loading Leave Credit Debit Data'
+            'Loading Leave Credit Configuration Data'
         );
     }, [id, addToast]);
     //#endregion
@@ -175,7 +176,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
 
         if (id) {
 
-            fetchLeaveCreditDebitDetails();
+            fetchLeaveCreditConfigurationDetails();
             return;
         }
 
@@ -184,7 +185,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
         setLeaveTypeLabels({});
         setDropdownLabels({});
         setDesignationValue(null);
-    }, [id, fetchLeaveCreditDebitDetails]);
+    }, [id, fetchLeaveCreditConfigurationDetails]);
 
     //#endregion
 
@@ -201,7 +202,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
         const newIndex = leaveBalanceTypes.length;
         setLeaveBalanceTypes((prev) => [
             ...prev,
-            { LeaveTypeBalanceId: 0, LeaveTypeId: 0, LeaveCredit: 0, LeaveCreditDebitId: 0, LeaveTypeName: '' },
+            { LeaveTypeBalanceId: 0, LeaveTypeId: 0, LeaveCredit: 0, LeaveCreditConfigurationId: 0, LeaveTypeName: '' },
         ]);
 
         // Scroll to the newly added item after it's rendered
@@ -257,7 +258,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
 
     //#region [VALIDATION FUNCTION]
 
-    const validateAddLeaveCreditDebitForm = (): {
+    const validateAddLeaveCreditConfigurationForm = (): {
 
         isValid: boolean
 
@@ -271,12 +272,20 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
             newErrors.LeavePeriodMode = "Leave Period Mode is required.";
         }
 
-        if (!formData.FYyear || formData.FYyear === 0) {
-            newErrors.FYyear = "Financial Year is required.";
+        if (!formData.FinancialYearStartDate || formData.FinancialYearStartDate.trim() === '') {
+            newErrors.FinancialYearStartDate = "Financial Year Start Date is required.";
         }
 
-        if (formData.LeavePeriodMode === 'Monthly' && (!formData.Month || formData.Month.trim() === '')) {
-            newErrors.Month = "Month is required for Monthly mode.";
+        if (!formData.FinancialYearEndDate || formData.FinancialYearEndDate.trim() === '') {
+            newErrors.FinancialYearEndDate = "Financial Year End Date is required.";
+        }
+
+        if (formData.FinancialYearStartDate && formData.FinancialYearEndDate) {
+            const startDate = new Date(formData.FinancialYearStartDate.split('-').reverse().join('-'));
+            const endDate = new Date(formData.FinancialYearEndDate.split('-').reverse().join('-'));
+            if (endDate <= startDate) {
+                newErrors.FinancialYearEndDate = "End Date must be after Start Date.";
+            }
         }
 
         if (!formData.DepartmentMasterId || formData.DepartmentMasterId === 0) {
@@ -304,8 +313,8 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
     }
     //#endregion
 
-    //#region ADD UPDATE LEAVE CREDIT DEBIT
-    const PushLeaveCreditDebitFormData = (): AddUpdateLeaveCreditDebitRequest => {
+    //#region ADD UPDATE LEAVE CREDIT CONFIGURATION
+    const PushLeaveCreditConfigurationFormData = (): AddUpdateLeaveCreditConfigurationRequest => {
         // Get designation IDs from the hook
         const designationIdsString = designationDropdown.selectedValues.length > 0
             ? designationDropdown.selectedValues.join(',')
@@ -315,12 +324,14 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
             ...formData,
             DepartmentMasterId: formData.DepartmentMasterId || 0,
             DesignationId: designationIdsString,
+            FinancialYearStartDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.FinancialYearStartDate),
+            FinancialYearEndDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.FinancialYearEndDate),
             LeaveTypebalanceJSONList: JSON.stringify(
                 leaveBalanceTypes.map((item) => ({
                     LeaveTypeBalanceId: item.LeaveTypeBalanceId || 0,
                     LeaveTypeId: item.LeaveTypeId || 0,
                     LeaveCredit: item.LeaveCredit || 0,
-                    LeaveCreditDebitId: item.LeaveCreditDebitId || formData.LeaveCreditDebitId || 0,
+                    LeaveCreditConfigurationId: item.LeaveCreditConfigurationId || formData.LeaveCreditConfigurationId || 0,
                 })),
             ),
         };
@@ -331,7 +342,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
         setErrors({})
 
 
-        const validation = validateAddLeaveCreditDebitForm()
+        const validation = validateAddLeaveCreditConfigurationForm()
 
         if (!validation.isValid) {
 
@@ -346,13 +357,13 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
             setLoadingMessage,
             async () => {
 
-                const payload = PushLeaveCreditDebitFormData();
+                const payload = PushLeaveCreditConfigurationFormData();
 
-                const response = await leaveCreditDebitService.apiCallAddUpdateLeaveCreditDebit(payload);
+                const response = await leaveCreditConfigurationService.apiCallAddUpdateLeaveCreditConfiguration(payload);
 
                 if (E.isRight(response)) {
                     const apiResponse = response.right;
-                    
+
                     // Check backend ErrorMessage first
                     if (apiResponse.ErrorMessage && apiResponse.ErrorMessage.length > 0) {
                         addToast({ type: "error", title: apiResponse.ErrorMessage[0] });
@@ -375,7 +386,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                             searchTerm: '',
                         };
 
-                        navigate("/leaveCreditDebit", {
+                        navigate("/leaveCreditConfiguration", {
                             state: { listState }
                         });
                     } else {
@@ -399,7 +410,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                             searchTerm: '',
                         };
 
-                        navigate("/leaveCreditDebit", {
+                        navigate("/leaveCreditConfiguration", {
                             state: { listState }
                         });
                     }
@@ -429,7 +440,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
             </Loader>
             <div className="space-y-6">
                 <HeaderActionBar
-                    titleText={formData.LeaveCreditDebitId && formData.LeaveCreditDebitId > 0 ? 'Update' : 'Add'}
+                    titleText={formData.LeaveCreditConfigurationId && formData.LeaveCreditConfigurationId > 0 ? 'Update' : 'Add'}
                     cancelText="Cancel"
                     onCancel={() => navigate(-1)}
                     canAction={false}
@@ -440,7 +451,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                 <div className="rounded-lg shadow-sm border border-gray-200 p-6" style={{ backgroundColor: '#FFFFFF' }}>
                     <h3 className="text-md font-medium text-gray-500 mb-4">Details</h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <SinglePageSelection
                             label="Leave Period Mode"
                             required
@@ -448,41 +459,27 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                             value={formData.LeavePeriodMode || ''}
                             onChange={(value) => {
                                 handleFieldChange('LeavePeriodMode', String(value));
-                                if (value !== 'Monthly') handleFieldChange('Month', '');
                             }}
                             error={errors.LeavePeriodMode}
                             placeholder="Select Leave Period Mode"
                             searchable
                             size="md"
                         />
-
-                        <Input
-                            label="Financial Year"
+                        <DatePickerInput
+                            label="Financial Year Start Date"
                             required
-                            type="number"
-                            value={formData.FYyear?.toString() || ''}
-                            onChange={(e) => handleFieldChange('FYyear', Number(e.target.value))}
-                            error={errors.FYyear}
-                            min={1950}
-                            max={2100}
+                            value={formData.FinancialYearStartDate || null}
+                            onChange={(value) => handleFieldChange('FinancialYearStartDate', value || null)}
+                            error={errors.FinancialYearStartDate}
+                        />
+                        <DatePickerInput
+                            label="Financial Year End Date"
+                            required
+                            value={formData.FinancialYearEndDate || null}
+                            onChange={(value) => handleFieldChange('FinancialYearEndDate', value || null)}
+                            error={errors.FinancialYearEndDate}
                         />
                     </div>
-
-                    {formData.LeavePeriodMode === 'Monthly' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <SinglePageSelection
-                                label="Month"
-                                required
-                                options={MONTHS_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                value={formData.Month || ''}
-                                onChange={(value) => handleFieldChange('Month', String(value))}
-                                error={errors.Month}
-                                placeholder="Select month"
-                                searchable
-                                size="md"
-                            />
-                        </div>
-                    )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <SingleSelectDropdownWithPagination
@@ -567,7 +564,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                                             key={`leave-type-${index}-${item.LeaveTypeId}`}
                                             label="Leave Type"
                                             title="Select Leave Type"
-                                            size="lg"
+                                            size="md"
                                             required
                                             dataFetchCallBack={fetchLeaveTypeMasterDropdown}
                                             onSelected={(selectedItem) => {
@@ -590,6 +587,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                                         <Input
                                             label="Leave Credit"
                                             required
+                                            size="md"
                                             type="number"
                                             value={item.LeaveCredit}
                                             onChange={(e) =>
@@ -614,7 +612,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
 
                 <BottomActionBar
                     cancelText="Cancel"
-                    saveText={formData.LeaveCreditDebitId ? "Update" : "Add"}
+                    saveText={formData.LeaveCreditConfigurationId ? "Update" : "Add"}
                     onCancel={() => navigate(-1)}
                     onSave={() => {
                         handleSubmit();
@@ -629,4 +627,4 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
     );
 };
 
-export default AddUpdateLeaveCreditDebit;
+export default AddUpdateLeaveCreditConfiguration;

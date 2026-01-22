@@ -51,7 +51,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
       </div>
 
       {isExpandableOpen && showline && (
-        <div className="border-t border-[#135BEC30] mx-4"></div>
+        <div className="border-t border-[#00000026] mx-4"></div>
       )}
 
       {isExpandableOpen && (

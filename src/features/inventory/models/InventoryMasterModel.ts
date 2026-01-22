@@ -57,7 +57,7 @@ export interface InventoryFlatData {
     RERACarpetAreaSqFt: number;
     FlatType: string;
     FlatConfiguration: string;
-    FlatStatus: 'Sold' | "Available" | "Member" | "Blocked" | "Hold";
+    FlatStatus: 'Alloted' | "Available" | "Booked" | "Blocked" | "Hold";
     FlatFacing: string;
     InventoryFlatSpecificationData: InventoryFlatSpecificationData[];
     OwnerName: string;

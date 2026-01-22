@@ -1406,7 +1406,7 @@ const AddUpdateTenant: React.FC = () => {
                     handleFieldChange('FlatConfiguration', '');
                   }}
                   options={FLAT_UNIT_TYPE
-                    .filter(opt => opt.id !== 'Void')
+                    .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
                     .map(opt => ({
                       label: opt.name,
                       value: opt.id

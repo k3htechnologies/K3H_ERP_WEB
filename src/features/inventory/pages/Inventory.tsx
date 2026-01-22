@@ -61,6 +61,7 @@ const Inventory = () => {
     //#endregion
 
     //#region INIT
+
     useEffect(() => {
 
         if (!projectId) return;
@@ -70,7 +71,7 @@ const Inventory = () => {
     }, [projectId])
 
     useEffect(() => {
-
+        if (!projectId) return;
         if (inventory.length > 0 && selectedBuildingIndex === null) {
 
             setSelectedBuilding(inventory[0].InventoryFlatFloorBasementPodiumWingData)
@@ -80,7 +81,7 @@ const Inventory = () => {
             setSelectedWing(inventory[0].InventoryFlatFloorBasementPodiumWingData[0])
 
         }
-    }, [inventory])
+    }, [projectId, inventory])
 
 
     const wingTabs = useMemo(() => {
@@ -276,9 +277,6 @@ const Inventory = () => {
                 <FieldItem label="Type " value={flat.FlatType} isRow={true} isUsedForInventoryFlat={true} />
                 <FieldItem label="Area SqFt " value={flat.RERACarpetAreaSqFt} isRow={true} isUsedForInventoryFlat={true} />
                 <FieldItem label="Configuration " value={flat.FlatConfiguration} isRow={true} isUsedForInventoryFlat={true} />
-
-
-
                 <div className="flex items-center justify-evenly gap-2">
                     <div
                         className={`
@@ -291,7 +289,7 @@ const Inventory = () => {
                     >
                         {flat.FlatStatus}
                     </div>
-                    {(flat.FlatStatus == "Sold" || flat.FlatStatus == "Member") && <Eye size={16} />}
+                    {(flat.FlatStatus == "Booked" || flat.FlatStatus == "Alloted") && <Eye size={16} />}
                     {(flat.FlatStatus == "Blocked" || flat.FlatStatus == "Available") && <Edit className="cursor-pointer" onClick={() => {
                         navigate('/inventorySpecification', {
                             state:
@@ -316,7 +314,7 @@ const Inventory = () => {
                 </div>
 
                 <p className="text-center text-[#135BEC] font-semibold">
-                    {flat.FlatStatus == "Sold" ? "Owner : " : flat.FlatStatus == "Member" ? "Member : " : ""} {flat.OwnerName}
+                    {flat.FlatStatus == "Booked" ? "Owner : " : flat.FlatStatus == "Alloted" ? "Alloted : " : ""} {flat.OwnerName}
                 </p>
             </div>
         );
@@ -396,9 +394,8 @@ const Inventory = () => {
 
             <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-            <div className="flex flex-col justify-evenly w-full h-[210px] rounded-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
+            <div className="flex flex-col justify-evenly w-full h-[300px] rounded-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
                 <div className="flex justify-between">
-
                     <Tabs
                         tabs={inventoryTabList}
                         defaultActive={activeTab}
@@ -408,70 +405,71 @@ const Inventory = () => {
 
                         }}
                     />
-
-                    <TableActionToolbar
-                        isShowSearchBar={false}
-                        isShowAddButton
-                        onAdd={() => { }}
-                        showMoreAddOptions={
-                            <div className="flex flex-col w-[150px] bg-white rounded-md border-[1px] border-gray-200 shadow-lg">
-                                <Button
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                    }}
-                                    disabled={false}
-                                    color="transparent"
-                                    fullWidth
-                                    isborderRadius
-                                    size="sm"
-                                    title="Add Building"
-                                >
-                                    Add Building
-                                </Button>
-                                <Button
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                    }}
-                                    disabled={false}
-                                    color="transparent"
-                                    fullWidth
-                                    isborderRadius
-                                    size="sm"
-                                    title="Add Wing"
-                                >
-                                    Add Wing
-                                </Button>
-                                <Button
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                    }}
-                                    disabled={false}
-                                    color="transparent"
-                                    fullWidth
-                                    isborderRadius
-                                    size="sm"
-                                    title="Add Floor"
-                                >
-                                    Add Floor
-                                </Button>
-                            </div>
-                        }
-                        // EXPORT
-                        isShowExportButton={canExport}
-                        onExportExcel={handleExportInventoryExcel}
-                        onExportPdf={handleExportInventoryPdf}
-
-                        // IMPORT
-                        isShowImportButton={true}
-                        onUploadExcel={() => setShowImportModal(true)}
-                        onDownloadSampleExcel={handleDownloadExcelSampleInventory}
-                        exportLoading={isLoading}
-                    />
                 </div>
 
+                <TableActionToolbar
+                    isShowSearchBar={true}
+                    searchPlaceholder="Search By Unit Number"
+                    isShowAddButton
+                    onAdd={() => { }}
+                    showMoreAddOptions={
+                        <div className="flex flex-col w-[150px] bg-white rounded-md border-[1px] border-gray-200 shadow-lg">
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                }}
+                                disabled={false}
+                                color="transparent"
+                                fullWidth
+                                isborderRadius
+                                size="sm"
+                                title="Add Building"
+                            >
+                                Add Building
+                            </Button>
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                }}
+                                disabled={false}
+                                color="transparent"
+                                fullWidth
+                                isborderRadius
+                                size="sm"
+                                title="Add Wing"
+                            >
+                                Add Wing
+                            </Button>
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                }}
+                                disabled={false}
+                                color="transparent"
+                                fullWidth
+                                isborderRadius
+                                size="sm"
+                                title="Add Floor"
+                            >
+                                Add Floor
+                            </Button>
+                        </div>
+                    }
+                    // EXPORT
+                    isShowExportButton={canExport}
+                    onExportExcel={handleExportInventoryExcel}
+                    onExportPdf={handleExportInventoryPdf}
+
+                    // IMPORT
+                    isShowImportButton={true}
+                    onUploadExcel={() => setShowImportModal(true)}
+                    onDownloadSampleExcel={handleDownloadExcelSampleInventory}
+                    exportLoading={isLoading}
+                />
+                <div className="border-b border-gray-200" />
 
                 <div className="flex justify-between items-center">
                     <div className="flex gap-5">
@@ -483,16 +481,23 @@ const Inventory = () => {
                                     setSelectedBuildingIndex(index)
                                     setSelectedWing(inventory[0].InventoryFlatFloorBasementPodiumWingData[0])
                                 }}
-                                className={`cursor-pointer px-3 py-1 rounded ${selectedBuildingIndex === index
-                                    ? 'bg-[#135BEC] text-white font-semibold'
-                                    : 'text-gray-600 hover:bg-gray-100'
+                                className={`relative pb-2 text-sm font-medium transition-all duration-200 ${selectedBuildingIndex === index
+                                    ? 'text-blue-600 font-medium text-[16px] leading-[140%] tracking-[0.01em]'
+                                    : 'text-gray-400  font-normal text-[14px] leading-[140%] tracking-[0.01em] hover:text-blue-500'
                                     }`}
                             >
+
                                 {i.BuildingNumber}
+                                
+                                {selectedBuildingIndex === index && (
+                                    <span className="absolute left-0 bottom-0 w-full h-[2px] bg-blue-600 rounded-full"
+                                    />
+                                )}
                             </span>
                         ))}
                     </div>
-                    <div className="flex gap-5">
+
+                    <div className="flex gap-5 pt-5">
                         <ColorDotWithDataComponent data={availableFlatsCount} color={"#22C55E"}></ColorDotWithDataComponent>
                         <ColorDotWithDataComponent data={holdFlatsCount} color={"#C4C41D"}></ColorDotWithDataComponent>
                         <ColorDotWithDataComponent data={memberFlatsCount} color={"#8A38F5"}></ColorDotWithDataComponent>
@@ -500,6 +505,8 @@ const Inventory = () => {
                         <ColorDotWithDataComponent data={blockedFlatsCount} color={"#1D1D1D"}></ColorDotWithDataComponent>
                     </div>
                 </div>
+
+                <div className="border-b border-gray-200" />
 
                 <div className="flex justify-between">
 
@@ -515,6 +522,7 @@ const Inventory = () => {
                     />
 
                     <div className="flex gap-5">
+
                         <ColorDotWithDataComponent data={selectedWingAvailableCount} color={"#22C55E"}></ColorDotWithDataComponent>
                         <ColorDotWithDataComponent data={selectedWingHoldCount} color={"#C4C41D"}></ColorDotWithDataComponent>
                         <ColorDotWithDataComponent data={selectedWingMemberCount} color={"#8A38F5"}></ColorDotWithDataComponent>
@@ -523,6 +531,7 @@ const Inventory = () => {
                     </div>
                 </div>
             </div>
+
             <ExportImport
                 open={showImportModal}
                 onClose={() => setShowImportModal(false)}
@@ -539,12 +548,11 @@ const Inventory = () => {
                         <ExpandableCard key={floorIndex} title={floor.Floor} showline={true} customizedIcon={<Plus className="p-1.5" size={28} />}
 
                             child={
-                                <div className=" flex flex-1 gap-5  thin-scroll">
+                                <div className=" flex flex-1 gap-5 thin-scroll">
 
                                     {floor.InventoryFlatData?.map((flat, flatIndex) => (
 
                                         <FlatComponent
-
                                             key={flatIndex}
                                             InventoryFlatId={flat.InventoryFlatId}
                                             Uniquekey={flat.Uniquekey}
@@ -600,7 +608,7 @@ const ColorDotWithDataComponent = (colorDotProps: ColorDotProps) => {
 
 
 const colorsForFlatComponent = {
-    Sold: {
+    Booked: {
         Border: "border-[#FF0000]",
         Background: "#FF00001E",
         Button: "bg-[#FF0000]/15",
@@ -612,7 +620,7 @@ const colorsForFlatComponent = {
         Button: "bg-[#60D669]/15",
         buttonText: "text-[#60D669]",
     },
-    Member: {
+    Alloted: {
         Border: "border-[#8A38F5]",
         Background: "#8A38F5",
         Button: "bg-[#8A38F5]/15",

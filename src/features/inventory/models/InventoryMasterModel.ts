@@ -86,6 +86,16 @@ export interface InventoryFlatSpecificationData {
     Note: string;
 }
 
+export interface AddInventoryFlatSpecificationData {
+    InventoryFlatSpecificationId: number;
+    Uniquekey: string;
+    FlatLayout: string;
+    FlatLayoutAreaSqFt: number;
+    FlatLayoutLengthSqFt: number;
+    FlatLayoutWidthSqFt: number;
+    Note: string;
+}
+
 export interface AddInventoryRequest {
     ProjectId?: number
     InventoryJSON?: string
@@ -220,7 +230,7 @@ export type InventoryFlatDeleteResponse = ApiResponse<number>;
 export type AddInventoryBuildingResponse = ApiResponse<InventoryData[]>
 export type AddInventoryWingResponse = ApiResponse<InventoryData[]>
 export type AddInventoryFloorResponse = ApiResponse<InventoryData[]>
-export type AddInventoryFlatResponse = ApiResponse<InventoryData[]>
+export type AddInventoryFlatResponse = ApiResponse<InventoryFlatData[]>
 export type AddUpdateInventoryFloorParkingCountResponse = ApiResponse<string>;
 export type FilterPaginatedFlatsResponse = ApiResponse<InventoryFlatData[]>;
 

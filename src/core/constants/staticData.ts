@@ -219,7 +219,11 @@ export const MASTER_DATA = {
     'SL - Sick Leave',
   ],
   weekdays: ['1', '2', '3', '4', '5', '6'],
+
   weekoff_type: ['Every', 'Alt(2,4)', 'Alt(1,3)', '1st', '2nd', '3rd', '4th', '5th'],
+
+  inventoryFlatStatus : ['Available','Booked', 'Blocked','Hold', 'Alloted' ],
+
 } as const
 
 // ============================================================================
@@ -300,6 +304,7 @@ export const CTC_EARNINGS = toOptions(MASTER_DATA.ctc_earning)
 export const LEAVE_TYPE_MASTER = toOptions(MASTER_DATA.leaveTypeMaster)
 export const WEEKDAYS = toOptions(MASTER_DATA.weekdays)
 export const WEEK_OFF_TYPE = toOptions(MASTER_DATA.weekoff_type)
+export const INVENTORY_FLAT_STATUS = toOptions(MASTER_DATA.inventoryFlatStatus)
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

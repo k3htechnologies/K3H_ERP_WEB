@@ -55,7 +55,7 @@ export const FlatCard = ({ flat, projectId, onDelete }: FlatCardProps) => {
         >
             <FieldItem label="Unit No " value={flat.Flat} isRow={true} isUsedForInventoryFlat={true} />
             <FieldItem label="Type " value={flat.FlatType} isRow={true} isUsedForInventoryFlat={true} />
-            <FieldItem label="Area SqFt " value={flat.RERACarpetAreaSqFt} isRow={true} isUsedForInventoryFlat={true} />
+            <FieldItem label="Area (SqFt) " value={flat.RERACarpetAreaSqFt} isRow={true} isUsedForInventoryFlat={true} />
             <FieldItem label="Configuration " value={flat.FlatConfiguration} isRow={true} isUsedForInventoryFlat={true} />
             
             <div className="flex items-center justify-evenly gap-2">
@@ -71,9 +71,9 @@ export const FlatCard = ({ flat, projectId, onDelete }: FlatCardProps) => {
                     {flat.FlatStatus}
                 </div>
                 
-                {(flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted") && <Eye size={16} />}
+                {(flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted" ) && <Eye size={16}  onClick={handleEdit}/>}
                 
-                {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
+                {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available" || flat.FlatStatus === "Hold") && (
                     <Edit className="cursor-pointer" onClick={handleEdit} size={16} />
                 )}
                 

@@ -1,24 +1,26 @@
-
 import { useEffect, useState, useMemo } from "react"
-import { type FilterInventoryRequest, type InventoryData, type InventoryFlatData, type InventoryFlatFloorBasementPodiumWingData } from "../models/InventoryMasterModel"
-import { Edit, Eye, Plus, Trash } from "lucide-react"
+import { type FilterInventoryRequest, type InventoryData, type InventoryFlatFloorBasementPodiumWingData } from "../models/InventoryMasterModel"
 import { inventoryService } from "../services/InventoryServices"
 import * as E from 'fp-ts/Either'
 import useToast from "@/core/hooks/useToast"
-import { ExpandableCard } from "@/ui/components/Card/ExpandableCard"
-import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar"
 import { handleExportFile } from "@/core/utils/exportFile"
-import { Button } from "@/ui/components/forms"
-import { useNavigate } from 'react-router-dom';
 import { runApiWithLoader } from "@/core/utils"
 import { useProject } from "@/features/projectMaster/context/ProjectContext"
 import { Loader } from "@/core/utils/loader"
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions"
-import Tabs from "@/ui/components/Tab/Tab"
-import { FieldItem } from "@/ui/components/forms/FieldItem"
 import ExportImport from "@/ui/components/ExcelImport/ExcelImport"
 import { technicalService } from "@/features/technical/services/TechnicalService"
 import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel"
+
+// Components
+import { InventoryHeader } from "../components/InventoryHeader"
+import { BuildingTabs } from "../components/BuildingTabs"
+import { WingTabs } from "../components/WingTabs"
+import { StatusCounters } from "../components/StatusCounters"
+import { FloorCard } from "../components/FloorCard"
+
+// Utils
+import { countFlatsByStatus, countWingWiseFlatStatus } from "../utils/inventoryHelpers"
 
 
 const Inventory = () => {
@@ -38,14 +40,8 @@ const Inventory = () => {
     //EXCEL IMPORT 
     const [showImportModal, setShowImportModal] = useState(false);
 
-    //#regionTAB ACTIVITY
-    const inventoryTabList = [
-        { id: "Grid", label: "Grid" },
-        { id: "Table", label: "Table" },
-    ];
-
-    const [activeTab, setActiveTab] = useState<string>(inventoryTabList[0].id);
-
+    //#region TAB ACTIVITY
+    const [activeTab, setActiveTab] = useState<string>("Grid");
     //#endregion
 
     //#endregion
@@ -73,37 +69,18 @@ const Inventory = () => {
     useEffect(() => {
         if (!projectId) return;
         if (inventory.length > 0 && selectedBuildingIndex === null) {
-
-            setSelectedBuilding(inventory[0].InventoryFlatFloorBasementPodiumWingData)
-
-            setSelectedBuildingIndex(0)
-
-            setSelectedWing(inventory[0].InventoryFlatFloorBasementPodiumWingData[0])
-
+            setSelectedBuilding(inventory[0].InventoryFlatFloorBasementPodiumWingData);
+            setSelectedBuildingIndex(0);
+            setSelectedWing(inventory[0].InventoryFlatFloorBasementPodiumWingData[0]);
         }
-    }, [projectId, inventory])
-
-
-    const wingTabs = useMemo(() => {
-        if (!selectedBuilding) return [];
-
-        return selectedBuilding.map((wing, index) => ({
-
-            id: String(index),
-
-            label: wing.Wing,
-
-            data: wing
-        }));
-    }, [selectedBuilding]);
-
+    }, [projectId, inventory]);
 
     useEffect(() => {
-        if (wingTabs.length > 0) {
+        if (selectedBuilding && selectedBuilding.length > 0) {
             setActiveWingTab('0');
-            setSelectedWing(wingTabs[0].data);
+            setSelectedWing(selectedBuilding[0]);
         }
-    }, [wingTabs]);
+    }, [selectedBuilding]);
 
 
 
@@ -181,144 +158,20 @@ const Inventory = () => {
     //#endregion
 
     //#region COUNT INVENTORY FLAT STATUS
-    const countFlatsByStatus = (status: string) => {
-
-        if (inventory.length === 0) return 0;
-
-        return inventory.reduce((total, building) => {
-
-            const buildingFlats = building.InventoryFlatFloorBasementPodiumWingData.reduce((wingTotal, wing) => {
-
-                const wingFlats = wing.InventoryFloorData.reduce((floorTotal, floor) => {
-
-                    const count = floor.InventoryFlatData.filter(
-
-                        flat => flat.FlatStatus === status
-
-                    ).length;
-
-                    return floorTotal + count;
-
-                }, 0);
-                return wingTotal + wingFlats;
-
-            }, 0);
-            return total + buildingFlats;
-
-        }, 0);
-    };
-
-
-    const availableFlatsCount = useMemo(() => countFlatsByStatus("Available"), [inventory]);
-    const saleFlatsCount = useMemo(() => countFlatsByStatus("Sold"), [inventory]);
-    const memberFlatsCount = useMemo(() => countFlatsByStatus("Member"), [inventory]);
-    const blockedFlatsCount = useMemo(() => countFlatsByStatus("Blocked"), [inventory]);
-    const holdFlatsCount = useMemo(() => countFlatsByStatus("Hold"), [inventory]);
-
+    const availableFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Available"), [inventory]);
+    const saleFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Sold"), [inventory]);
+    const memberFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Member"), [inventory]);
+    const blockedFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Blocked"), [inventory]);
+    const holdFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Hold"), [inventory]);
     //#endregion
 
     //#region COUNT WING WISE FLAT STATUS
-    const countWingWiseFlatStatus = (status: string) => {
-        if (!selectedWing) return 0;
-
-        return selectedWing.InventoryFloorData.reduce((total, floor) => {
-            const count = floor.InventoryFlatData.filter(
-                flat => flat.FlatStatus === status
-            ).length;
-            return total + count;
-        }, 0);
-    };
-
-    const selectedWingAvailableCount = useMemo(() => countWingWiseFlatStatus("Available"), [selectedWing]);
-
-    const selectedWingSaleCount = useMemo(() => countWingWiseFlatStatus("Sold"), [selectedWing]);
-
-    const selectedWingMemberCount = useMemo(() => countWingWiseFlatStatus("Member"), [selectedWing]);
-
-    const selectedWingBlockedCount = useMemo(() => countWingWiseFlatStatus("Blocked"), [selectedWing]);
-
-    const selectedWingHoldCount = useMemo(() => {
-        if (!selectedWing) return 0;
-        return selectedWing.InventoryFloorData.reduce((total, floor) => {
-            const count = floor.InventoryFlatData.filter(
-                flat => flat.FlatStatus === "Hold"
-            ).length;
-            return total + count;
-        }, 0);
-    }, [selectedWing]);
-
+    const selectedWingAvailableCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Available"), [selectedWing]);
+    const selectedWingSaleCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Sold"), [selectedWing]);
+    const selectedWingMemberCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Member"), [selectedWing]);
+    const selectedWingBlockedCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Blocked"), [selectedWing]);
+    const selectedWingHoldCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Hold"), [selectedWing]);
     //#endregion
-
-    const FlatComponent = (flat: InventoryFlatData) => {
-
-        const navigate = useNavigate();
-
-        const hexToRgba = (hex: string, alpha: number = 0.12) => {
-            const cleanHex = hex.replace('#', '');
-            const r = parseInt(cleanHex.substring(0, 2), 16);
-            const g = parseInt(cleanHex.substring(2, 4), 16);
-            const b = parseInt(cleanHex.substring(4, 6), 16);
-            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        };
-
-        const bgColor = colorsForFlatComponent[flat.FlatStatus].Background.replace('#', '');
-        const fromColor = hexToRgba(`#${bgColor.substring(0, 6)}`, 0.12); // 12% opacity
-        const toColor = 'rgba(51, 51, 51, 0.067)'; // #33333311 = ~4% opacity
-
-        const gradientStyle = {
-            background: `linear-gradient(to bottom, ${fromColor}, ${toColor})`
-        };
-
-        return (
-
-            <div className={`flex flex-col justify-evenly h-[200px] w-[250px] rounded-[8px] border ${colorsForFlatComponent[flat.FlatStatus].Border} border-[0.3px] px-2`} style={gradientStyle}>
-
-                <FieldItem label="Unit No " value={flat.Flat} isRow={true} isUsedForInventoryFlat={true} />
-                <FieldItem label="Type " value={flat.FlatType} isRow={true} isUsedForInventoryFlat={true} />
-                <FieldItem label="Area SqFt " value={flat.RERACarpetAreaSqFt} isRow={true} isUsedForInventoryFlat={true} />
-                <FieldItem label="Configuration " value={flat.FlatConfiguration} isRow={true} isUsedForInventoryFlat={true} />
-                <div className="flex items-center justify-evenly gap-2">
-                    <div
-                        className={`
-                  flex h-[30px] w-[207px]
-                  ${colorsForFlatComponent[flat.FlatStatus].Button}
-                  ${colorsForFlatComponent[flat.FlatStatus].buttonText}
-                  rounded-[6px]
-                  items-center justify-center
-                `}
-                    >
-                        {flat.FlatStatus}
-                    </div>
-                    {(flat.FlatStatus == "Booked" || flat.FlatStatus == "Alloted") && <Eye size={16} />}
-                    {(flat.FlatStatus == "Blocked" || flat.FlatStatus == "Available") && <Edit className="cursor-pointer" onClick={() => {
-                        navigate('/inventorySpecification', {
-                            state:
-                            {
-                                "flat": flat,
-                                "projectId": inventory[0].ProjectId,
-                            },
-
-                        })
-                    }} size={16} />}
-                    {(flat.FlatStatus == "Blocked" || flat.FlatStatus == "Available") && <Trash onClick={async () => {
-                        // const result = await inventoryService.apiCallDeleteInventoryFlat(inventory[0].ProjectId, flat)
-                        // if (E.isRight(result)) {
-
-                        // } else {
-                        //     addToast({
-                        //         type: "error",
-                        //         title: "Error Deleting the Inventory Flat",
-                        //     })
-                        // }
-                    }} color="red" size={16} />}
-                </div>
-
-                <p className="text-center text-[#135BEC] font-semibold">
-                    {flat.FlatStatus == "Booked" ? "Owner : " : flat.FlatStatus == "Alloted" ? "Alloted : " : ""} {flat.OwnerName}
-                </p>
-            </div>
-        );
-    };
 
     //#region IMPORT EXCEL | DOWNLOAD
 
@@ -387,149 +240,67 @@ const Inventory = () => {
     //#endregion
     return (
         <>
+            <Loader loading={isLoading} title={loadingMessage}> <div></div></Loader>
 
-            {/* ============================================================================
-                      COMMAN LOADER FOR PAGE
-                       ============================================================================ */}
+            <InventoryHeader
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onExportExcel={handleExportInventoryExcel}
+                onExportPdf={handleExportInventoryPdf}
+                onUploadExcel={() => setShowImportModal(true)}
+                onDownloadSampleExcel={handleDownloadExcelSampleInventory}
+                canExport={canExport}
+                exportLoading={isLoading}
+            />
 
-            <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+             <div className="flex flex-col w-full h-[120px] rounded-br-[15px] rounded-bl-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
 
-            <div className="flex flex-col justify-evenly w-full h-[300px] rounded-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
-                <div className="flex justify-between">
-                    <Tabs
-                        tabs={inventoryTabList}
-                        defaultActive={activeTab}
-                        islarge={true}
-                        onTabChange={(t) => {
-                            setActiveTab(t.id);
+            <div className="flex justify-between items-center">
 
-                        }}
-                    />
-                </div>
-
-                <TableActionToolbar
-                    isShowSearchBar={true}
-                    searchPlaceholder="Search By Unit Number"
-                    isShowAddButton
-                    onAdd={() => { }}
-                    showMoreAddOptions={
-                        <div className="flex flex-col w-[150px] bg-white rounded-md border-[1px] border-gray-200 shadow-lg">
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                }}
-                                disabled={false}
-                                color="transparent"
-                                fullWidth
-                                isborderRadius
-                                size="sm"
-                                title="Add Building"
-                            >
-                                Add Building
-                            </Button>
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                }}
-                                disabled={false}
-                                color="transparent"
-                                fullWidth
-                                isborderRadius
-                                size="sm"
-                                title="Add Wing"
-                            >
-                                Add Wing
-                            </Button>
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                }}
-                                disabled={false}
-                                color="transparent"
-                                fullWidth
-                                isborderRadius
-                                size="sm"
-                                title="Add Floor"
-                            >
-                                Add Floor
-                            </Button>
-                        </div>
-                    }
-                    // EXPORT
-                    isShowExportButton={canExport}
-                    onExportExcel={handleExportInventoryExcel}
-                    onExportPdf={handleExportInventoryPdf}
-
-                    // IMPORT
-                    isShowImportButton={true}
-                    onUploadExcel={() => setShowImportModal(true)}
-                    onDownloadSampleExcel={handleDownloadExcelSampleInventory}
-                    exportLoading={isLoading}
+                <BuildingTabs
+                    inventory={inventory}
+                    selectedBuildingIndex={selectedBuildingIndex}
+                    onBuildingSelect={(index) => {
+                        setSelectedBuilding(inventory[index].InventoryFlatFloorBasementPodiumWingData);
+                        setSelectedBuildingIndex(index);
+                        setSelectedWing(inventory[index].InventoryFlatFloorBasementPodiumWingData[0]);
+                    }}
                 />
-                <div className="border-b border-gray-200" />
 
-                <div className="flex justify-between items-center">
-                    <div className="flex gap-5">
-                        {inventory.map((i, index) => (
-                            <span
-                                key={index}
-                                onClick={() => {
-                                    setSelectedBuilding(i.InventoryFlatFloorBasementPodiumWingData)
-                                    setSelectedBuildingIndex(index)
-                                    setSelectedWing(inventory[0].InventoryFlatFloorBasementPodiumWingData[0])
-                                }}
-                                className={`relative pb-2 text-sm font-medium transition-all duration-200 ${selectedBuildingIndex === index
-                                    ? 'text-blue-600 font-medium text-[16px] leading-[140%] tracking-[0.01em]'
-                                    : 'text-gray-400  font-normal text-[14px] leading-[140%] tracking-[0.01em] hover:text-blue-500'
-                                    }`}
-                            >
+                <div className="pt-5">
 
-                                {i.BuildingNumber}
-                                
-                                {selectedBuildingIndex === index && (
-                                    <span className="absolute left-0 bottom-0 w-full h-[2px] bg-blue-600 rounded-full"
-                                    />
-                                )}
-                            </span>
-                        ))}
-                    </div>
-
-                    <div className="flex gap-5 pt-5">
-                        <ColorDotWithDataComponent data={availableFlatsCount} color={"#22C55E"}></ColorDotWithDataComponent>
-                        <ColorDotWithDataComponent data={holdFlatsCount} color={"#C4C41D"}></ColorDotWithDataComponent>
-                        <ColorDotWithDataComponent data={memberFlatsCount} color={"#8A38F5"}></ColorDotWithDataComponent>
-                        <ColorDotWithDataComponent data={saleFlatsCount} color={"#FF0000"}></ColorDotWithDataComponent>
-                        <ColorDotWithDataComponent data={blockedFlatsCount} color={"#1D1D1D"}></ColorDotWithDataComponent>
-                    </div>
+                    <StatusCounters
+                        availableCount={availableFlatsCount}
+                        holdCount={holdFlatsCount}
+                        memberCount={memberFlatsCount}
+                        saleCount={saleFlatsCount}
+                        blockedCount={blockedFlatsCount}
+                    />
                 </div>
+            </div>
 
-                <div className="border-b border-gray-200" />
+            <div className="border-b border-gray-200" />
 
-                <div className="flex justify-between">
-
-                    <Tabs
-                        tabs={wingTabs}
-                        defaultActive={activeWingTab}
-                        islarge={true}
-                        onTabChange={(tab) => {
-                            const index = Number(tab.id);
-                            setActiveWingTab(tab.id);
-                            setSelectedWing(selectedBuilding![index]);
+            <div className="flex justify-between pt-2 pb-2">
+                {selectedBuilding && (
+                    <WingTabs
+                        wings={selectedBuilding}
+                        activeWingTab={activeWingTab}
+                        onWingChange={(index) => {
+                            setActiveWingTab(String(index));
+                            setSelectedWing(selectedBuilding[index]);
                         }}
                     />
+                )}
 
-                    <div className="flex gap-5">
-
-                        <ColorDotWithDataComponent data={selectedWingAvailableCount} color={"#22C55E"}></ColorDotWithDataComponent>
-                        <ColorDotWithDataComponent data={selectedWingHoldCount} color={"#C4C41D"}></ColorDotWithDataComponent>
-                        <ColorDotWithDataComponent data={selectedWingMemberCount} color={"#8A38F5"}></ColorDotWithDataComponent>
-                        <ColorDotWithDataComponent data={selectedWingSaleCount} color={"#FF0000"}></ColorDotWithDataComponent>
-                        <ColorDotWithDataComponent data={selectedWingBlockedCount} color={"#1D1D1D"}></ColorDotWithDataComponent>
-                    </div>
-                </div>
+                <StatusCounters
+                    availableCount={selectedWingAvailableCount}
+                    holdCount={selectedWingHoldCount}
+                    memberCount={selectedWingMemberCount}
+                    saleCount={selectedWingSaleCount}
+                    blockedCount={selectedWingBlockedCount}
+                />
+            </div>
             </div>
 
             <ExportImport
@@ -542,103 +313,19 @@ const Inventory = () => {
             />
 
 
-            {
-                selectedWing?.InventoryFloorData.map((floor, floorIndex) => (
-                    <div className="pt-2">
-                        <ExpandableCard key={floorIndex} title={floor.Floor} showline={true} customizedIcon={<Plus className="p-1.5" size={28} />}
-
-                            child={
-                                <div className=" flex flex-1 gap-5 thin-scroll">
-
-                                    {floor.InventoryFlatData?.map((flat, flatIndex) => (
-
-                                        <FlatComponent
-                                            key={flatIndex}
-                                            InventoryFlatId={flat.InventoryFlatId}
-                                            Uniquekey={flat.Uniquekey}
-                                            InventoryBuildingId={flat.InventoryBuildingId}
-                                            BuildingNumber={flat.BuildingNumber}
-                                            InventoryFlatFloorBasementPodiumWingId={flat.InventoryFlatFloorBasementPodiumWingId}
-                                            Wing={flat.Wing}
-                                            InventoryFloorId={flat.InventoryFloorId}
-                                            Floor={flat.Floor}
-                                            Flat={flat.Flat}
-                                            RERACarpetAreaSqFt={flat.RERACarpetAreaSqFt}
-                                            FlatType={flat.FlatType}
-                                            FlatConfiguration={flat.FlatConfiguration}
-                                            FlatStatus={flat.FlatStatus}
-                                            FlatFacing={flat.FlatFacing}
-                                            InventoryFlatSpecificationData={flat.InventoryFlatSpecificationData}
-                                            OwnerName={flat.OwnerName}
-                                            BookingId={flat.BookingId}
-                                            BookingCreatedById={flat.BookingCreatedById}
-                                            BookingCreatedBy={flat.BookingCreatedBy}
-                                            BookingCreatedDate={flat.BookingCreatedDate}
-
-                                        />
-                                    ))}
-                                </div>
-                            }></ExpandableCard>
-
-                    </div>
-                ))
-
-            }
+            {selectedWing?.InventoryFloorData.map((floor) => (
+                <FloorCard
+                    key={floor.InventoryFloorId}
+                    floor={floor}
+                    projectId={inventory[0]?.ProjectId || 0}
+                />
+            ))}
 
         </>
     )
 }
 
 export default Inventory
-
-type ColorDotProps = {
-    data: number;
-    color: string;
-}
-
-const ColorDotWithDataComponent = (colorDotProps: ColorDotProps) => {
-    return <div className="flex items-center gap-3"> <div style={
-        {
-            backgroundColor: colorDotProps.color,
-            height: 12,
-            width: 12,
-        }
-    } className="rounded-full"></div> <span>{colorDotProps.data}</span></div>
-}
-
-
-const colorsForFlatComponent = {
-    Booked: {
-        Border: "border-[#FF0000]",
-        Background: "#FF00001E",
-        Button: "bg-[#FF0000]/15",
-        buttonText: "text-[#FF0000]",
-    },
-    Available: {
-        Border: "border-[#60D669]",
-        Background: "#60D669",
-        Button: "bg-[#60D669]/15",
-        buttonText: "text-[#60D669]",
-    },
-    Alloted: {
-        Border: "border-[#8A38F5]",
-        Background: "#8A38F5",
-        Button: "bg-[#8A38F5]/15",
-        buttonText: "text-[#8A38F5]",
-    },
-    Blocked: {
-        Border: "border-[#1D1D1D]",
-        Background: "#1D1D1D",
-        Button: "bg-[#1D1D1D]/15",
-        buttonText: "text-[#1D1D1D]",
-    },
-    Hold: {
-        Border: "border-[#C4C41D]",
-        Background: "#C4C41D",
-        Button: "bg-[#C4C41D]/15",
-        buttonText: "text-[#C4C41D]",
-    },
-};
 
 
 

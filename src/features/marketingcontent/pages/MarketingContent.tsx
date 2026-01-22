@@ -601,7 +601,7 @@ export const MarketingContent: React.FC = () => {
                     debouncedSearch(v);
                 }}
                 onClearSearch={clearSearchMarketingContent}
-                
+
                 //ADD
                 isShowAddButton={canAction}
                 addTitle="Add"
@@ -617,7 +617,7 @@ export const MarketingContent: React.FC = () => {
                     canAction={false}
                     isLoading={isLoading}
                 />
-                
+
             </div>
 
             {/* DATA TABLE CONTENT  */}
@@ -628,7 +628,6 @@ export const MarketingContent: React.FC = () => {
                 pagination={MarketingContentPaginationInfo}
                 emptyMessage="No Content Data Found"
                 fixedHeight={true}
-                maxHeight="calc(100vh - 255px)"
                 recordsPerPage={20}
                 className="flex-1"
                 sortInfo={sortInfo}

@@ -79,7 +79,7 @@ export class MarketingContentDatasourceImpl implements MarketingContentDatasourc
                 UniqueKey: params.Uniquekey ?? "",
                 ProjectId: (params.ProjectId ?? 0).toString(),
             });
-            
+
             const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
                 `${MarketingContentApi.DELETE}?${queryParams.toString()}`
             )

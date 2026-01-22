@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo } from "react"
-import { type FilterInventoryRequest, type InventoryData, type InventoryFlatFloorBasementPodiumWingData } from "../models/InventoryMasterModel"
+import { useEffect, useState, useMemo, useCallback } from "react"
+import { type FilterInventoryRequest, type InventoryData, type InventoryFlatFloorBasementPodiumWingData, type InventoryFlatData, type DeleteInventoryFlatRequest } from "../models/InventoryMasterModel"
 import { inventoryService } from "../services/InventoryServices"
 import * as E from 'fp-ts/Either'
 import useToast from "@/core/hooks/useToast"
@@ -11,6 +11,7 @@ import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions"
 import ExportImport from "@/ui/components/ExcelImport/ExcelImport"
 import { technicalService } from "@/features/technical/services/TechnicalService"
 import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel"
+import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox"
 
 // Components
 import { InventoryHeader } from "../components/InventoryHeader"
@@ -39,6 +40,11 @@ const Inventory = () => {
 
     //EXCEL IMPORT 
     const [showImportModal, setShowImportModal] = useState(false);
+
+    // DELETE CONFIRMATION DIALOG
+    const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState(false);
+    const [selectedFlatToDelete, setSelectedFlatToDelete] = useState<InventoryFlatData | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     //#region TAB ACTIVITY
     const [activeTab, setActiveTab] = useState<string>("Grid");
@@ -73,14 +79,42 @@ const Inventory = () => {
             setSelectedBuildingIndex(0);
             setSelectedWing(inventory[0].InventoryFlatFloorBasementPodiumWingData[0]);
         }
-    }, [projectId, inventory]);
+    }, [projectId, inventory.length]);
 
+    // Update selected building data when inventory changes (for refresh after delete)
     useEffect(() => {
-        if (selectedBuilding && selectedBuilding.length > 0) {
-            setActiveWingTab('0');
-            setSelectedWing(selectedBuilding[0]);
+
+        if (inventory.length > 0 && selectedBuildingIndex !== null) {
+
+            const currentBuilding = inventory[selectedBuildingIndex];
+
+            if (currentBuilding) {
+
+                setSelectedBuilding(currentBuilding.InventoryFlatFloorBasementPodiumWingData);
+
+                if (selectedWing && currentBuilding.InventoryFlatFloorBasementPodiumWingData.length > 0) {
+                    const wingIndex = currentBuilding.InventoryFlatFloorBasementPodiumWingData.findIndex(
+                        w => w.Wing === selectedWing.Wing
+                    );
+
+                    if (wingIndex >= 0) {
+                        
+                        setSelectedWing(currentBuilding.InventoryFlatFloorBasementPodiumWingData[wingIndex]);
+                        setActiveWingTab(String(wingIndex));
+                    } 
+                    else {
+                        
+                        setSelectedWing(currentBuilding.InventoryFlatFloorBasementPodiumWingData[0]);
+                        setActiveWingTab('0');
+                    }
+
+                } else if (currentBuilding.InventoryFlatFloorBasementPodiumWingData.length > 0) {
+                    setSelectedWing(currentBuilding.InventoryFlatFloorBasementPodiumWingData[0]);
+                    setActiveWingTab('0');
+                }
+            }
         }
-    }, [selectedBuilding]);
+    }, [inventory, selectedBuildingIndex]);
 
 
 
@@ -88,14 +122,11 @@ const Inventory = () => {
 
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-    const fetchInventory = async () => {
-
+    const fetchInventory = useCallback(async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-
-
                 const params: FilterInventoryRequest = {
                     ProjectId: Number(projectId)
                 }
@@ -103,13 +134,9 @@ const Inventory = () => {
                 const response = await inventoryService.apiCallpullInventory(params);
 
                 if (E.isRight(response)) {
-
                     setInventory(response.right.Data);
-
                 } else {
-
                     addToast({ type: 'error', title: response.left.message });
-
                 }
 
                 return response
@@ -121,7 +148,7 @@ const Inventory = () => {
             undefined,
             'Loading Inventory'
         )
-    }
+    }, [projectId, addToast]);
 
     //#endregion
 
@@ -171,6 +198,70 @@ const Inventory = () => {
     const selectedWingMemberCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Member"), [selectedWing]);
     const selectedWingBlockedCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Blocked"), [selectedWing]);
     const selectedWingHoldCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Hold"), [selectedWing]);
+    //#endregion
+
+    //#region DELETE FLAT
+    const handleDeleteFlat = useCallback((flat: InventoryFlatData) => {
+        setSelectedFlatToDelete(flat);
+        setIsConfirmationDialogOpen(true);
+    }, []);
+
+    const handleConfirmDeleteFlat = useCallback(async () => {
+        if (!selectedFlatToDelete || !projectId) return;
+
+        setIsDeleting(true);
+
+        const params: DeleteInventoryFlatRequest = {
+            ProjectId: Number(projectId),
+            InventoryBuildingId: selectedFlatToDelete.InventoryBuildingId,
+            InventoryFlatFloorBasementPodiumWingId: selectedFlatToDelete.InventoryFlatFloorBasementPodiumWingId,
+            InventoryFloorId: selectedFlatToDelete.InventoryFloorId,
+            InventoryFlatId: selectedFlatToDelete.InventoryFlatId,
+        };
+
+        try {
+            const response = await runApiWithLoader(
+                setIsLoading,
+                setLoadingMessage,
+                async () => {
+                    return await inventoryService.apiCallDeleteInventoryFlat(params);
+                },
+                undefined,
+                (error: any) => {
+                    addToast({ type: 'error', title: error?.message || 'An error occurred while deleting the flat' });
+                },
+                undefined,
+                'Deleting Inventory Flat'
+            );
+
+            if (response && E.isRight(response)) {
+                // Check for backend error messages
+                if (response.right.ErrorMessage && response.right.ErrorMessage.length > 0) {
+                    addToast({ type: 'error', title: response.right.ErrorMessage[0] });
+                } else {
+                    // Success - close dialog first
+                    setIsConfirmationDialogOpen(false);
+                    setSelectedFlatToDelete(null);
+                    
+                    // Show success message
+                    addToast({ 
+                        type: 'success', 
+                        title: response.right.SuccessMessage?.[0] || 'Flat deleted successfully' 
+                    });
+                    
+                    // Refresh inventory after successful delete
+                    await fetchInventory();
+                }
+            } else if (response && E.isLeft(response)) {
+                addToast({ type: 'error', title: response.left.message });
+            }
+        } catch (error: any) {
+            addToast({ type: 'error', title: error?.message || 'An error occurred while deleting the flat' });
+        } finally {
+            setIsDeleting(false);
+        }
+    }, [selectedFlatToDelete, projectId, addToast, fetchInventory]);
+
     //#endregion
 
     //#region IMPORT EXCEL | DOWNLOAD
@@ -318,8 +409,24 @@ const Inventory = () => {
                     key={floor.InventoryFloorId}
                     floor={floor}
                     projectId={inventory[0]?.ProjectId || 0}
+                    onDelete={handleDeleteFlat}
                 />
             ))}
+
+            <ConfirmationDialogBox
+                isOpen={isConfirmationDialogOpen}
+                onClose={() => {
+                    setIsConfirmationDialogOpen(false);
+                    setSelectedFlatToDelete(null);
+                }}
+                onConfirm={handleConfirmDeleteFlat}
+                title="Delete Inventory Flat"
+                message={`Are you sure you want to delete flat "${selectedFlatToDelete?.Flat}"? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                loading={isDeleting}
+                variant="danger"
+            />
 
         </>
     )

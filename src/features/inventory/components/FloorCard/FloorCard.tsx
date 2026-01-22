@@ -6,9 +6,10 @@ import type { InventoryFloorData } from "../../models/InventoryMasterModel";
 interface FloorCardProps {
     floor: InventoryFloorData;
     projectId: number;
+    onDelete: (flat: import("../../models/InventoryMasterModel").InventoryFlatData) => void;
 }
 
-export const FloorCard = ({ floor, projectId }: FloorCardProps) => {
+export const FloorCard = ({ floor, projectId, onDelete }: FloorCardProps) => {
     return (
         <div className="pt-2">
             <ExpandableCard
@@ -23,6 +24,7 @@ export const FloorCard = ({ floor, projectId }: FloorCardProps) => {
                                 key={flatIndex}
                                 flat={flat}
                                 projectId={projectId}
+                                onDelete={onDelete}
                             />
                         ))}
                     </div>

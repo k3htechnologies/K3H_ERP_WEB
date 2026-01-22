@@ -7,10 +7,10 @@ import { colorsForFlatComponent } from "../../utils/flatColors";
 interface FlatCardProps {
     flat: InventoryFlatData;
     projectId: number;
+    onDelete: (flat: InventoryFlatData) => void;
 }
 
-export const FlatCard = ({ flat, projectId }: FlatCardProps) => {
-
+export const FlatCard = ({ flat, projectId, onDelete }: FlatCardProps) => {
     const navigate = useNavigate();
 
     const hexToRgba = (hex: string, alpha: number = 0.12) => {
@@ -38,18 +38,10 @@ export const FlatCard = ({ flat, projectId }: FlatCardProps) => {
         });
     };
 
-    const handleDelete = async () => {
-        // TODO: Implement delete functionality
-        // const result = await inventoryService.apiCallDeleteInventoryFlat(projectId, flat)
-        // if (E.isRight(result)) {
-        // } else {
-        //     addToast({
-        //         type: "error",
-        //         title: "Error Deleting the Inventory Flat",
-        //     })
-        // }
+    const handleDelete = () => {
+        onDelete(flat);
     };
-    
+
     const getOwnerLabel = () => {
         if (flat.FlatStatus === "Booked") return "Owner : ";
         if (flat.FlatStatus === "Alloted") return "Alloted : ";

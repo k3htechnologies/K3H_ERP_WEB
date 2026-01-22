@@ -202,6 +202,7 @@ export const ApprovedBankFolder: React.FC = () => {
             return updated;
         });
     };
+    //#endregion
 
     //#region SEARCH & CLEAR
     const searchApprovedBankFolder = async (searchValue: string) => {
@@ -248,7 +249,7 @@ export const ApprovedBankFolder: React.FC = () => {
     //#endregion
 
     //#region TABLE PAGINATION INFO
-    const ApprovedBankPaginationInfo: PaginationInfo = useMemo(
+    const ApprovedBankFolderPaginationInfo: PaginationInfo = useMemo(
         () => ({
             currentPage: pagination.currentPage,
             totalPages: pagination.totalPages,
@@ -258,7 +259,7 @@ export const ApprovedBankFolder: React.FC = () => {
         }),
         [pagination, handlePageChange]
     );
-    const ApprovedBankForTable = useMemo(() => approvedBankFolderList, [approvedBankFolderList]);
+    const ApprovedBankFolderForTable = useMemo(() => approvedBankFolderList, [approvedBankFolderList]);
     //#endregion
 
     //#region NAVIGATE TO VIEW APPROVED BANK FILE
@@ -625,9 +626,9 @@ export const ApprovedBankFolder: React.FC = () => {
             {/*  APPROVED BANK FOLDER DATA TABLE*/}
 
             <DataTable
-                data={ApprovedBankForTable}
+                data={ApprovedBankFolderForTable}
                 columns={visibleApprovedBankFolderColumns}
-                pagination={ApprovedBankPaginationInfo}
+                pagination={ApprovedBankFolderPaginationInfo}
                 emptyMessage="No Approved Bank Found"
                 fixedHeight
                 recordsPerPage={20}

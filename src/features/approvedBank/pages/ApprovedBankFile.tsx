@@ -92,7 +92,7 @@ export const ApprovedBankFile: React.FC = () => {
 
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-    const fetchApprovedBankFile = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    const fetchApprovedBankFileList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadApprovedBankFile(page, filters, sort);
     }
 
@@ -225,7 +225,7 @@ export const ApprovedBankFile: React.FC = () => {
 
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
-        fetchApprovedBankFile(page);
+        fetchApprovedBankFileList(page);
     }, []);
 
     //#region TABLE SORT COLUMN

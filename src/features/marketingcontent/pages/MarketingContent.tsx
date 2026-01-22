@@ -10,7 +10,6 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import usePagination from "@/core/hooks/usePagination";
-import { updateFilter } from "@/core/utils/filterHelper";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
@@ -70,9 +69,7 @@ export const MarketingContent: React.FC = () => {
     }, 350);
 
     //FILTER STATES
-    const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [filters, setFilters] = useState<FilterInfo>({});
-    const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
     // ADD EDIT MARKETING CONTENT 
     const [editingMarketingContentData, setEditingMarketingContentData] = useState<MarketingContentData | null>(null);
@@ -222,7 +219,6 @@ export const MarketingContent: React.FC = () => {
 
         debouncedSearch.cancel?.();
         setFilters({});
-        setTempFilters({});
         setPagination({ currentPage: 1 });
 
         loadMarketingContent(1, { MarketingContentFolderId: marketingContentFolderId });
@@ -250,34 +246,6 @@ export const MarketingContent: React.FC = () => {
         loadMarketingContent(1, filters, sort);
 
     }, [filters]);
-    //#endregion
-
-    //#region FILTER MODAL HELPERS
-    const applyFilters = () => {
-        setFilters(tempFilters);
-
-        loadMarketingContent(1, tempFilters);
-        setShowFilterPopup(false);
-    };
-    //#endregion
-
-    //#region CLEAR FILTER
-    const clearFilters = () => {
-        setTempFilters({});
-        setFilters({});
-        setPagination({ currentPage: 1 });
-        loadMarketingContent(1, {});
-
-        setShowFilterPopup(false);
-        navigate(location.pathname, { replace: true, state: {} });
-
-    };
-    //#endregion
-
-    //#region HANDLE FILTER CHNAGE
-    const handleFilterChange = (key: string, value: string) => {
-        setTempFilters(prev => updateFilter(prev, key, value));
-    }
     //#endregion
 
     //#region EDIT MARKETING CONTENT 
@@ -633,13 +601,7 @@ export const MarketingContent: React.FC = () => {
                     debouncedSearch(v);
                 }}
                 onClearSearch={clearSearchMarketingContent}
-                isShowFilterButton={false}
-                filters={filters}
-                onOpenFilter={() => {
-                    setTempFilters(filters)
-                    setShowFilterPopup(true);
-                }}
-
+                
                 //ADD
                 isShowAddButton={canAction}
                 addTitle="Add"
@@ -673,35 +635,6 @@ export const MarketingContent: React.FC = () => {
                 onSort={handleSortColumn}
                 loading={isLoading}
             />
-
-            {/* FILTER MODAL */}
-
-            <Modal
-                isOpen={showFilterPopup}
-                onClose={() => setShowFilterPopup(false)}
-                title="Filter - Content "
-                onSubmit={e => {
-                    e.preventDefault();
-                    applyFilters();
-                }}
-                saveText="Apply Filter"
-                cancelText="clear Filter"
-                onCancel={() => clearFilters()}
-                resetText=''
-                size="small-half"
-            >
-                <div className="space-y-6">
-                    <div className="space-y-4">
-
-                        <Input type="text"
-                            label='Title'
-                            value={tempFilters?.Title || ''}
-                            onChange={e => handleFilterChange('Title', e.target.value)}
-                            placeholder="Enter Title" />
-
-                    </div>
-                </div>
-            </Modal>
 
             {/* ADD CONTENT  MODAL */}
 

@@ -11,7 +11,6 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import usePagination from "@/core/hooks/usePagination";
-import { updateFilter } from "@/core/utils/filterHelper";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { approvedBankFileService } from "../services/ApprovedBankFileService";
@@ -67,9 +66,7 @@ export const ApprovedBankFile: React.FC = () => {
     }, 350);
 
     //FILTER STATES
-    const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [filters, setFilters] = useState<FilterInfo>({});
-    const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
     // EDIT APPROVED BANK FILE
     const [editingApprovedBankFileData, setEditingApprovedBankFileData] = useState<ApprovedBankFileData | null>(null);
@@ -216,7 +213,6 @@ export const ApprovedBankFile: React.FC = () => {
 
         debouncedSearch.cancel?.();
         setFilters({});
-        setTempFilters({});
         setPagination({ currentPage: 1 });
 
         loadApprovedBankFile(1, { ApprovedBankFolderId: approvedBankFolderId });
@@ -239,34 +235,6 @@ export const ApprovedBankFile: React.FC = () => {
         loadApprovedBankFile(1, filters, sort);
 
     }, [filters]);
-    //#endregion
-
-    //#region FILTER MODAL HELPERS
-    const applyFilters = () => {
-        setFilters(tempFilters);
-
-        loadApprovedBankFile(1, tempFilters);
-        setShowFilterPopup(false);
-    };
-    //#endregion
-
-    //#region CLEAR FILTER
-    const clearFilters = () => {
-        setTempFilters({});
-        setFilters({});
-        setPagination({ currentPage: 1 });
-        loadApprovedBankFile(1, {});
-
-        setShowFilterPopup(false);
-        navigate(location.pathname, { replace: true, state: {} });
-
-    };
-    //#endregion
-
-    //#region HANDLE FILTER CHNAGE
-    const handleFilterChange = (key: string, value: string) => {
-        setTempFilters(prev => updateFilter(prev, key, value));
-    }
     //#endregion
 
     // RESET FORM DATA
@@ -610,12 +578,6 @@ export const ApprovedBankFile: React.FC = () => {
                     debouncedSearch(v);
                 }}
                 onClearSearch={clearSearchApprovedBankFile}
-                isShowFilterButton={false}
-                filters={filters}
-                onOpenFilter={() => {
-                    setTempFilters(filters)
-                    setShowFilterPopup(true);
-                }}
 
                 //ADD
                 isShowAddButton={canAction}
@@ -650,35 +612,6 @@ export const ApprovedBankFile: React.FC = () => {
                 onSort={handleSortColumn}
                 loading={isLoading}
             />
-
-            {/* FILTER MODAL */}
-
-            <Modal
-                isOpen={showFilterPopup}
-                onClose={() => setShowFilterPopup(false)}
-                title="Filter - Approved Bank"
-                onSubmit={e => {
-                    e.preventDefault();
-                    applyFilters();
-                }}
-                saveText="Apply Filter"
-                cancelText="clear Filter"
-                onCancel={() => clearFilters()}
-                resetText=''
-                size="small-half"
-            >
-                <div className="space-y-6">
-                    <div className="space-y-4">
-
-                        <Input type="text"
-                            label='Document Name'
-                            value={tempFilters?.ApprovedBankFileName || ''}
-                            onChange={e => handleFilterChange('ApprovedBankFileName', e.target.value)}
-                            placeholder="Enter Document Name" />
-
-                    </div>
-                </div>
-            </Modal>
 
             {/* ADD APPROVED BANK FILE MODAL */}
 

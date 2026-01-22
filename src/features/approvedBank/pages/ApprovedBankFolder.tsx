@@ -693,7 +693,7 @@ export const ApprovedBankFolder: React.FC = () => {
                                     return (
                                         <label
                                             key={bank.value}
-                                            className="flex items-center justify-between px-6 py-3 border-b border-blue-200 cursor-pointer last:border-b-0"
+                                            className="flex items-center justify-between gap-2 px-6 py-3 border-b border-blue-200 cursor-pointer last:border-b-0"
                                         >
                                             <span className="text-sm text-gray-800">{bank.label}</span>
                                             <Checkbox

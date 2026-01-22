@@ -734,23 +734,46 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
-    //#region STORE APPROVED BANK COLUMNS
-    storeApprovedBankTableColumns: (columns: string): void => {
+    //#region STORE APPROVED BANK FOLDER COLUMNS
+    storeApprovedBankFolderTableColumns: (columns: string): void => {
         try {
-            localStorage.setItem(LOCAL_STORAGE_KEYS.APPROVED_BANK_SELECTED_COLUMNS, columns);
+            localStorage.setItem(LOCAL_STORAGE_KEYS.APPROVED_BANK_FOLDER_SELECTED_COLUMNS, columns);
         } catch (error) {
-            console.error('Error Approved Bank Columns Details:', error)
+            console.error('Error Approved Bank Folder Columns Details:', error)
         }
     },
     //#endregion
-    //#region GET APPROVED BANK COLUMNS
-    getApprovedBankTableColumns: (): string | null => {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.APPROVED_BANK_SELECTED_COLUMNS)
+    //#region GET APPROVED BANK FOLDER COLUMNS
+    getApprovedBankFolderTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.APPROVED_BANK_FOLDER_SELECTED_COLUMNS)
         if (stored) {
             try {
-                return localStorage.getItem(LOCAL_STORAGE_KEYS.APPROVED_BANK_SELECTED_COLUMNS);
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.APPROVED_BANK_FOLDER_SELECTED_COLUMNS);
             } catch (error) {
-                console.error('Error reading Approved Bank Columns Details:', error)
+                console.error('Error reading Approved Bank Folder Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE MARKETING CONTENT FOLDER COLUMNS
+    storeMarketingContentFolderTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.MARKETING_CONTENT_FOLDER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Marketing Content Folder Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET MARKETING CONTENT FOLDER COLUMNS
+    getMarketingContentFolderTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MARKETING_CONTENT_FOLDER_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.MARKETING_CONTENT_FOLDER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Marketing Content Folder Columns Details:', error)
                 return null
             }
         }

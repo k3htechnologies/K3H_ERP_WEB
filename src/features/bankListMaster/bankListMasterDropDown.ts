@@ -4,7 +4,7 @@ import { BankListMasterService } from '@/features/bankListMaster/services/BankLi
 export const fetchBankListMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
         const responseEither = await BankListMasterService.apiCallPullBankListMaster({
-            PageSize: 10,
+            PageSize: 200,
             PageNumber: pageNumber,
             BankName: params?.value || ""
         });

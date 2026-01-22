@@ -1,22 +1,22 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import { ApprovedBankApi } from "@/features/approvedBank/api/ApprovedBankApi";
 import type {
 
-    AddUpdateApprovedBankWithFolderRequest,
+    AddUpdateApprovedBankFolderRequest,
     ApprovedBankFolderListResponse,
     ApprovedBankWithFolderDeleteResponse,
     ApprovedBankWithFolderSaveResponse,
-    DeleteApprovedBankWithFolderRequest,
-    FilterWithPaginationApprovedBankWithFolderRequest
-    
-} from "@/features/approvedBank/models/ApprovedBankModel";
+    DeleteApprovedBankFolderRequest,
+    FilterWithPaginationApprovedBankFolderRequest
+
+} from "@/features/approvedBank/models/ApprovedBankFolderModel";
+import { ApprovedBankFolderApi } from "../api/ApprovedBankFolderApi";
 
 export abstract class ApprovedBankWithFolderDatasource {
 
-    abstract pullApprovedBankWithFolder(params: FilterWithPaginationApprovedBankWithFolderRequest, signal?: AbortSignal): Promise<ApprovedBankFolderListResponse>;
-    abstract addUpdateApprovedBankWithFolder(data: AddUpdateApprovedBankWithFolderRequest): Promise<ApprovedBankWithFolderSaveResponse>;
-    abstract deleteApprovedBankWithFolderRequest(params: DeleteApprovedBankWithFolderRequest): Promise<ApprovedBankWithFolderDeleteResponse>;
+    abstract pullApprovedBankFolder(params: FilterWithPaginationApprovedBankFolderRequest, signal?: AbortSignal): Promise<ApprovedBankFolderListResponse>;
+    abstract addUpdateApprovedBankFolder(data: AddUpdateApprovedBankFolderRequest): Promise<ApprovedBankWithFolderSaveResponse>;
+    abstract deleteApprovedBankFolder(params: DeleteApprovedBankFolderRequest): Promise<ApprovedBankWithFolderDeleteResponse>;
 }
 
 export class ApprovedBankWithFolderDatasourceImpl implements ApprovedBankWithFolderDatasource {
@@ -24,7 +24,7 @@ export class ApprovedBankWithFolderDatasourceImpl implements ApprovedBankWithFol
         return baseClient;
     }
 
-    async pullApprovedBankWithFolder(params: FilterWithPaginationApprovedBankWithFolderRequest, signal?: AbortSignal): Promise<ApprovedBankFolderListResponse> {
+    async pullApprovedBankFolder(params: FilterWithPaginationApprovedBankFolderRequest, signal?: AbortSignal): Promise<ApprovedBankFolderListResponse> {
         try {
             const queryParams = new URLSearchParams({
                 pageSize: String(params.PageSize ?? 10),
@@ -38,39 +38,48 @@ export class ApprovedBankWithFolderDatasourceImpl implements ApprovedBankWithFol
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${ApprovedBankApi.PULL}?${queryParams.toString()}`,{ signal }
+                `${ApprovedBankFolderApi.PULL}?${queryParams.toString()}`, { signal }
             )
             return response
 
         } catch (error: any) {
 
-            console.error("ERROR: PULL APPROVED BANK :", error);
+            console.error("ERROR: PULL APPROVED BANK FOLDER :", error);
 
             if (error === TokenExpiredException) {
-                await this.pullApprovedBankWithFolder(params);
+                await this.pullApprovedBankFolder(params);
             }
             throw error;
         }
     }
 
-    async addUpdateApprovedBankWithFolder(params: AddUpdateApprovedBankWithFolderRequest): Promise<ApprovedBankWithFolderSaveResponse> {
+    async addUpdateApprovedBankFolder(params: AddUpdateApprovedBankFolderRequest): Promise<ApprovedBankWithFolderSaveResponse> {
         try {
+
+            const payLoad: AddUpdateApprovedBankFolderRequest = {
+                
+                ApprovedBankFolderId: params.ApprovedBankFolderId ?? 0,
+                ProjectId: params.ProjectId ?? 0,
+                BankListMasterId: params.BankListMasterId ?? '',
+                Uniquekey: params.Uniquekey ?? '',
+            }
+            
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                ApprovedBankApi.ADD_UPDATE,
-                params
+                ApprovedBankFolderApi.ADD_UPDATE,
+                payLoad
             )
             return response
         } catch (error: any) {
-            console.error("ERROR: ADD UPDATE APPROVED BANK :", error);
+            console.error("ERROR: ADD UPDATE APPROVED BANK FOLDER:", error);
 
             if (error instanceof TokenExpiredException) {
-                await this.addUpdateApprovedBankWithFolder(params);
+                await this.addUpdateApprovedBankFolder(params);
             }
             throw error;
         }
     }
 
-    async deleteApprovedBankWithFolderRequest(params: DeleteApprovedBankWithFolderRequest): Promise<ApprovedBankWithFolderDeleteResponse> {
+    async deleteApprovedBankFolder(params: DeleteApprovedBankFolderRequest): Promise<ApprovedBankWithFolderDeleteResponse> {
         try {
 
             const queryParams = new URLSearchParams({
@@ -80,7 +89,7 @@ export class ApprovedBankWithFolderDatasourceImpl implements ApprovedBankWithFol
             });
 
             const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
-                `${ApprovedBankApi.DELETE}?${queryParams.toString()}`
+                `${ApprovedBankFolderApi.DELETE}?${queryParams.toString()}`
             )
             return response
 
@@ -88,9 +97,9 @@ export class ApprovedBankWithFolderDatasourceImpl implements ApprovedBankWithFol
 
             if (error === TokenExpiredException) {
 
-                console.error("ERROR: DELETE APPROVED BANK :", error);
+                console.error("ERROR: DELETE APPROVED BANK FOLDER :", error);
 
-                await this.deleteApprovedBankWithFolderRequest(params);
+                await this.deleteApprovedBankFolder(params);
             }
             throw error;
         }

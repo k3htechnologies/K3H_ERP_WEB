@@ -1,7 +1,9 @@
-export const ApprovedBankApi = {
+export const ApprovedBankFolderApi = {
+
     PULL: '/ApprovedBank/PullApprovedBankFolder',
     ADD_UPDATE: '/ApprovedBank/AddUpdateApprovedBankFolder',
     DELETE: '/ApprovedBank/DeleteApprovedBankFolder'
+
 } as const
 
-export type ApprovedBankApiKeys = keyof typeof ApprovedBankApi
+export type ApprovedBankApiKeys = keyof typeof ApprovedBankFolderApi

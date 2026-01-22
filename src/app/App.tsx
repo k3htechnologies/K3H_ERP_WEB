@@ -109,7 +109,10 @@ import EmployeeResignation from '@/features/resignation/pages/EmployeeResignatio
 import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
 import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
 import LitigationDocument from '@/features/litigation/pages/LitigationDocument';
-import ApprovedBank from '@/features/approvedBank/pages/ApprovedBank';
+import { ApprovedBankFolder } from '@/features/approvedBank/pages/ApprovedBankFolder';
+import ApprovedBankFile from '@/features/approvedBank/pages/ApprovedBankFile';
+import MarketingContentFolder from '@/features/marketingcontent/pages/MarketingContentFolder';
+import { MarketingContent } from '@/features/marketingcontent/pages/MarketingContent';
 
 
 // Loading component for Suspense fallback
@@ -260,7 +263,13 @@ function App() {
             <Route path='litigation/view' element={<ViewLitigation />} />
             <Route path='litigation/document' element={<LitigationDocument />} />
 
-            <Route path='approvedBank' element={<ApprovedBank />} />
+            {/* PROJECT */}
+            <Route path='approvedBank' element={<ApprovedBankFolder />} />
+            <Route path='approvedBank/approvedBankFile/:ApprovedBankFolderId?' element={<ApprovedBankFile />} />
+
+            {/* MARKETING */}
+            <Route path='content' element={<MarketingContentFolder />} />
+            <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContent />} />
 
             {/* SALES */}
             <Route path="channelPartner" element={<ChannelPartner />} />

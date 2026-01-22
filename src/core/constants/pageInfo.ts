@@ -73,6 +73,24 @@ export const getPageInfo = (path: string) => {
                 title: 'UOM Master',
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
+        // LEGAL
+        case 'litigation':
+            return {
+                title: "Litigation",
+                description: "Profile",
+            }
+        // MARKETING
+        case 'content':
+            return {
+                title: "Content",
+                description: "Profile",
+            }
+        // PROJECT
+        case 'approvedbank':
+            return {
+                title: "Approved Bank",
+                description: "Profile",
+            }
         // PAYROLL MASTER
         case 'branchMaster':
             return {

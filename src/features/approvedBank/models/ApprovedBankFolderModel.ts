@@ -1,6 +1,6 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
-export interface FilterWithPaginationApprovedBankWithFolderRequest {
+export interface FilterWithPaginationApprovedBankFolderRequest {
     PageSize: number
     PageNumber: number
     ProjectId?: number
@@ -10,11 +10,11 @@ export interface FilterWithPaginationApprovedBankWithFolderRequest {
     ExportType?: 'Excel' | 'PDF'
 }
 
-export interface ApprovedBankWithFolderData {
+export interface ApprovedBankFolderData {
     ProjectId: number | null
     Uniquekey: string | null
     ApprovedBankFolderId: number
-    BankListMasterId: number 
+    BankListMasterId: string | null 
     BankName: string | null
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -25,19 +25,19 @@ export interface ApprovedBankWithFolderData {
     LastModifiedBy: string | ''
     LastModifiedDate: string | null
 }
-export interface AddUpdateApprovedBankWithFolderRequest {
+export interface AddUpdateApprovedBankFolderRequest {
     ApprovedBankFolderId: number | 0,
     Uniquekey: string | null
     ProjectId: number | 0
-    BankListMasterId: number | 0
+    BankListMasterId: string | null
 }
 
-export interface DeleteApprovedBankWithFolderRequest {
+export interface DeleteApprovedBankFolderRequest {
     ApprovedBankFolderId: number
     Uniquekey: string
     ProjectId: number
 }
 
-export type ApprovedBankFolderListResponse = ApiResponse<ApprovedBankWithFolderData[]>;
-export type ApprovedBankWithFolderSaveResponse = ApiResponse<ApprovedBankWithFolderData[]>;
+export type ApprovedBankFolderListResponse = ApiResponse<ApprovedBankFolderData[]>;
+export type ApprovedBankWithFolderSaveResponse = ApiResponse<ApprovedBankFolderData[]>;
 export type ApprovedBankWithFolderDeleteResponse = ApiResponse<number>

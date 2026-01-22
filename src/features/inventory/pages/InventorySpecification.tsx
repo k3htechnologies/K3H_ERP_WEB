@@ -96,6 +96,10 @@ const InventorySpecification: React.FC = () => {
       setInventoryFlatData(flatData);
       setFormDataInventoryFlat(initialFormStateInventoryFlat(flatData));
       setSpecifications(flatData.InventoryFlatSpecificationData || []);
+    } else {
+      // If no flatData, initialize with empty form for new flat
+      setFormDataInventoryFlat(initialFormStateInventoryFlat());
+      setSpecifications([]);
     }
   }, [flatData, projectId]);
 
@@ -128,7 +132,7 @@ const InventorySpecification: React.FC = () => {
     }
 
     if (!formDataInventoryFlat.FlatFacing) {
-      newErrors.FlatFacing = 'Facing is required'
+      newErrors.Facing = 'Facing is required'
     }
 
     if (!formDataInventoryFlat.FlatStatus) {
@@ -241,14 +245,12 @@ const InventorySpecification: React.FC = () => {
   };
 
   const handleSave = async () => {
-
-    if (!projectId || !flatData) {
-
-      addToast({ type: 'error', title: 'Missing project or flat data' });
-
-      return;
-
-    }
+    
+    const flatContext = flatData || {
+      InventoryBuildingId: formDataInventoryFlat.InventoryBuildingId,
+      InventoryFlatFloorBasementPodiumWingId: formDataInventoryFlat.InventoryFlatFloorBasementPodiumWingId,
+      InventoryFloorId: formDataInventoryFlat.InventoryFloorId,
+    };
 
     setErrorsInventoryFlat({});
 
@@ -279,9 +281,9 @@ const InventorySpecification: React.FC = () => {
 
           const params: AddInventoryFlatRequest = {
             ProjectId: projectId,
-            InventoryBuildingId: flatData.InventoryBuildingId,
-            InventoryFlatFloorBasementPodiumWingId: flatData.InventoryFlatFloorBasementPodiumWingId,
-            InventoryFloorId: flatData.InventoryFloorId,
+            InventoryBuildingId: flatContext.InventoryBuildingId,
+            InventoryFlatFloorBasementPodiumWingId: flatContext.InventoryFlatFloorBasementPodiumWingId,
+            InventoryFloorId: flatContext.InventoryFloorId,
             Flat: formDataInventoryFlat.Flat.replace(/^[A-Za-z\s]+-\s*/, ''),
             FlatType: formDataInventoryFlat.FlatType,
             RERACarpetAreaSqFt: totalUnitArea ?? 0,
@@ -295,32 +297,29 @@ const InventorySpecification: React.FC = () => {
 
           if (E.isRight(response)) {
 
-            if (response.right.ErrorMessage && response.right.ErrorMessage.length > 0) {
 
-              addToast({ type: 'error', title: response.right.ErrorMessage[0] });
+            const newRecord = response.right.Data?.[0] as InventoryFlatData;
 
-            } else {
+            if (newRecord) {
+              setInventoryFlatData(newRecord);
+              setFormDataInventoryFlat({
+                ...formDataInventoryFlat,
+                InventoryFlatId: newRecord.InventoryFlatId || 0,
+                Uniquekey: newRecord.Uniquekey || formDataInventoryFlat.Uniquekey
+              });
 
-              const newRecord = response.right.Data?.[0] as InventoryFlatData;
-
-              if (newRecord) {
-
-                setInventoryFlatData(newRecord);
-
-                setFormDataInventoryFlat({
-                  ...formDataInventoryFlat,
-                  InventoryFlatId: newRecord.InventoryFlatId || 0,
-                  Uniquekey: newRecord.Uniquekey || formDataInventoryFlat.Uniquekey
-                });
-
-                if (newRecord.InventoryFlatSpecificationData) {
-                  setSpecifications(newRecord.InventoryFlatSpecificationData);
-                }
+              if (newRecord.InventoryFlatSpecificationData) {
+                setSpecifications(newRecord.InventoryFlatSpecificationData);
               }
-
-              addToast({ type: 'success', title: response.right.SuccessMessage?.[0] || 'Flat added successfully' });
             }
+
+            addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+
+
+            navigate('/inventory');
+
           } else {
+
             addToast({ type: 'error', title: response.left.message });
           }
 
@@ -330,8 +329,8 @@ const InventorySpecification: React.FC = () => {
           const params: UpdateInventoryFlatRequest = {
 
             ProjectId: projectId,
-            InventoryBuildingId: flatData.InventoryBuildingId,
-            InventoryFlatFloorBasementPodiumWingId: flatData.InventoryFlatFloorBasementPodiumWingId,
+            InventoryBuildingId: flatContext.InventoryBuildingId,
+            InventoryFlatFloorBasementPodiumWingId: flatContext.InventoryFlatFloorBasementPodiumWingId,
             InventoryFlatId: formDataInventoryFlat.InventoryFlatId,
             Flat: formDataInventoryFlat.Flat.replace(/^[A-Za-z\s]+-\s*/, ''),
             FlatType: formDataInventoryFlat.FlatType,
@@ -346,31 +345,23 @@ const InventorySpecification: React.FC = () => {
 
           if (E.isRight(response)) {
 
-            if (response.right.ErrorMessage && response.right.ErrorMessage.length > 0) {
+            const updatedRecord = response.right.Data?.[0] as InventoryFlatData;
 
-              addToast({ type: 'error', title: response.right.ErrorMessage[0] });
+            if (updatedRecord) {
 
-              navigate(-1);
+              setInventoryFlatData(updatedRecord);
 
-            } else {
+              if (updatedRecord.InventoryFlatSpecificationData) {
 
-              const updatedRecord = response.right.Data?.[0] as InventoryFlatData;
+                setSpecifications(updatedRecord.InventoryFlatSpecificationData);
 
-              if (updatedRecord) {
-
-                setInventoryFlatData(updatedRecord);
-
-                if (updatedRecord.InventoryFlatSpecificationData) {
-
-                  setSpecifications(updatedRecord.InventoryFlatSpecificationData);
-
-                }
               }
-
-              addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
-
-              navigate(-1);
             }
+
+            addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+
+            navigate(-1);
+
 
           } else {
 
@@ -705,7 +696,7 @@ const InventorySpecification: React.FC = () => {
       </Modal>
 
       {/* Delete Confirmation Dialog */}
-      
+
       <DeleteDialog
         isOpen={isDeleteConfirmationOpen}
         onClose={() => {

@@ -221,6 +221,7 @@ const Inventory = () => {
         };
 
         try {
+
             const response = await runApiWithLoader(
                 setIsLoading,
                 setLoadingMessage,
@@ -236,29 +237,30 @@ const Inventory = () => {
             );
 
             if (response && E.isRight(response)) {
-                // Check for backend error messages
-                if (response.right.ErrorMessage && response.right.ErrorMessage.length > 0) {
-                    addToast({ type: 'error', title: response.right.ErrorMessage[0] });
-                } else {
-                    // Success - close dialog first
-                    setIsConfirmationDialogOpen(false);
-                    setSelectedFlatToDelete(null);
 
-                    // Show success message
-                    addToast({
-                        type: 'success',
-                        title: response.right.SuccessMessage?.[0] || 'Flat deleted successfully'
-                    });
+                setIsConfirmationDialogOpen(false);
+                setSelectedFlatToDelete(null);
 
-                    // Refresh inventory after successful delete
-                    await fetchInventory();
-                }
+
+                addToast({
+                    type: 'success',
+                    title: response.right.SuccessMessage?.[0]
+                });
+
+
+                await fetchInventory();
+
             } else if (response && E.isLeft(response)) {
+
                 addToast({ type: 'error', title: response.left.message });
+
             }
         } catch (error: any) {
+
             addToast({ type: 'error', title: error?.message || 'An error occurred while deleting the flat' });
+
         } finally {
+            
             setIsDeleting(false);
         }
     }, [selectedFlatToDelete, projectId, addToast, fetchInventory]);
@@ -410,7 +412,10 @@ const Inventory = () => {
                     key={floor.InventoryFloorId}
                     floor={floor}
                     projectId={inventory[0]?.ProjectId || 0}
+                    building={inventory[selectedBuildingIndex || 0]}
+                    wing={selectedWing}
                     onDelete={handleDeleteFlat}
+                    onParkingUpdate={fetchInventory}
                 />
             ))}
 

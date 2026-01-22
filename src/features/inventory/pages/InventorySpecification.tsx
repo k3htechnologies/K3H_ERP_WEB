@@ -4,14 +4,13 @@ import * as E from 'fp-ts/Either';
 import { Input, Button } from '@/ui/components/forms';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { inventoryService } from '../services/InventoryServices';
+import { inventoryService } from '@/features/inventory/services/InventoryServices';
 import type {
   InventoryFlatData,
-  InventoryFlatSpecificationData,
   UpdateInventoryFlatRequest,
   AddInventoryFlatRequest,
   AddInventoryFlatSpecificationData
-} from '../models/InventoryMasterModel';
+} from '@/features/inventory/models/InventoryMasterModel';
 import useToast from '@/core/hooks/useToast';
 import { runApiWithLoader } from '@/core/utils';
 import { Loader } from '@/core/utils/loader';
@@ -20,6 +19,7 @@ import { Edit, Trash2 } from 'lucide-react';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { COMMERCIAL_FLAT_CONFIGURATION, FLAT_UNIT_FACING, FLAT_UNIT_TYPE, INVENTORY_FLAT_STATUS, RESIDENTIAL_FLAT_CONFIGURATION } from '@/core/constants';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 interface FormDataInventoryFlat {
   InventoryFlatId: number;
@@ -86,6 +86,10 @@ const InventorySpecification: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSpec, setEditingSpec] = useState<{ row: AddInventoryFlatSpecificationData; index: number } | null>(null);
   const [formDataInventoryFlatSpecification, setFormDataInventoryFlatSpecification] = useState<FormDataInventoryFlatSpecification>(() => initialFormStateInventoryFlatSpecification());
+
+  // Delete confirmation dialog state
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
+  const [specificationToDelete, setSpecificationToDelete] = useState<{ index: number; layout: string } | null>(null);
 
   useEffect(() => {
     if (flatData) {
@@ -160,7 +164,7 @@ const InventorySpecification: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleEditSpecification = useCallback((row: InventoryFlatSpecificationData, index: number) => {
+  const handleEditSpecification = useCallback((row: AddInventoryFlatSpecificationData, index: number) => {
     setEditingSpec({ row, index });
     setFormDataInventoryFlatSpecification({
       FlatLayout: row.FlatLayout || '',
@@ -173,15 +177,23 @@ const InventorySpecification: React.FC = () => {
     setIsModalOpen(true);
   }, []);
 
-  const handleDeleteSpecification = (index: number) => {
+  const handleDeleteSpecification = useCallback((index: number) => {
+    const spec = specifications[index];
+    if (spec) {
+      setSpecificationToDelete({ index, layout: spec.FlatLayout || 'this specification' });
+      setIsDeleteConfirmationOpen(true);
+    }
+  }, [specifications]);
 
-    const updated = specifications.filter((_, i) => i !== index);
-
-    setSpecifications(updated);
-
-    addToast({ type: 'success', title: 'Unit Specification Removed' });
-
-  };
+  const handleConfirmDeleteSpecification = useCallback(() => {
+    if (specificationToDelete !== null) {
+      const updated = specifications.filter((_, i) => i !== specificationToDelete.index);
+      setSpecifications(updated);
+      setIsDeleteConfirmationOpen(false);
+      setSpecificationToDelete(null);
+      addToast({ type: 'success', title: 'Unit Specification Removed' });
+    }
+  }, [specificationToDelete, specifications, addToast]);
 
   const handleSaveModal = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,7 +247,7 @@ const InventorySpecification: React.FC = () => {
       addToast({ type: 'error', title: 'Missing project or flat data' });
 
       return;
-      
+
     }
 
     setErrorsInventoryFlat({});
@@ -462,7 +474,7 @@ const InventorySpecification: React.FC = () => {
         ),
       },
     ],
-    [handleEditSpecification]
+    [handleEditSpecification, handleDeleteSpecification]
   );
 
   const totalUnitArea = useMemo(() => {
@@ -691,6 +703,20 @@ const InventorySpecification: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      
+      <DeleteDialog
+        isOpen={isDeleteConfirmationOpen}
+        onClose={() => {
+          setIsDeleteConfirmationOpen(false);
+          setSpecificationToDelete(null);
+        }}
+        onConfirm={handleConfirmDeleteSpecification}
+        loading={isLoading}
+        title="Delete Unit Specification"
+        message={`Are you sure you want to delete "${specificationToDelete?.layout || 'this specification'}"? This action cannot be undone.`}
+      />
     </>
   );
 };

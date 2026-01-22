@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from "react"
 import { type FilterInventoryRequest, type InventoryData, type InventoryFlatFloorBasementPodiumWingData, type InventoryFlatData, type DeleteInventoryFlatRequest } from "../models/InventoryMasterModel"
-import { inventoryService } from "../services/InventoryServices"
+
 import * as E from 'fp-ts/Either'
 import useToast from "@/core/hooks/useToast"
 import { handleExportFile } from "@/core/utils/exportFile"
@@ -11,17 +11,18 @@ import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions"
 import ExportImport from "@/ui/components/ExcelImport/ExcelImport"
 import { technicalService } from "@/features/technical/services/TechnicalService"
 import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel"
-import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox"
+import { inventoryService } from "@/features/inventory/services/InventoryServices"
 
 // Components
-import { InventoryHeader } from "../components/InventoryHeader"
-import { BuildingTabs } from "../components/BuildingTabs"
-import { WingTabs } from "../components/WingTabs"
-import { StatusCounters } from "../components/StatusCounters"
-import { FloorCard } from "../components/FloorCard"
+import { InventoryHeader } from "@/features/inventory/components/InventoryHeader"
+import { BuildingTabs } from "@/features/inventory/components/BuildingTabs"
+import { WingTabs } from "@/features/inventory/components/WingTabs"
+import { StatusCounters } from "@/features/inventory/components/StatusCounters"
+import { FloorCard } from "@/features/inventory/components/FloorCard"
 
 // Utils
-import { countFlatsByStatus, countWingWiseFlatStatus } from "../utils/inventoryHelpers"
+import { countFlatsByStatus, countWingWiseFlatStatus } from "@/features/inventory/utils/inventoryHelpers"
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog"
 
 
 const Inventory = () => {
@@ -44,7 +45,7 @@ const Inventory = () => {
     // DELETE CONFIRMATION DIALOG
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState(false);
     const [selectedFlatToDelete, setSelectedFlatToDelete] = useState<InventoryFlatData | null>(null);
-    const [isDeleting, setIsDeleting] = useState(false);
+    const [, setIsDeleting] = useState(false);
 
     //#region TAB ACTIVITY
     const [activeTab, setActiveTab] = useState<string>("Grid");
@@ -98,12 +99,12 @@ const Inventory = () => {
                     );
 
                     if (wingIndex >= 0) {
-                        
+
                         setSelectedWing(currentBuilding.InventoryFlatFloorBasementPodiumWingData[wingIndex]);
                         setActiveWingTab(String(wingIndex));
-                    } 
+                    }
                     else {
-                        
+
                         setSelectedWing(currentBuilding.InventoryFlatFloorBasementPodiumWingData[0]);
                         setActiveWingTab('0');
                     }
@@ -242,13 +243,13 @@ const Inventory = () => {
                     // Success - close dialog first
                     setIsConfirmationDialogOpen(false);
                     setSelectedFlatToDelete(null);
-                    
+
                     // Show success message
-                    addToast({ 
-                        type: 'success', 
-                        title: response.right.SuccessMessage?.[0] || 'Flat deleted successfully' 
+                    addToast({
+                        type: 'success',
+                        title: response.right.SuccessMessage?.[0] || 'Flat deleted successfully'
                     });
-                    
+
                     // Refresh inventory after successful delete
                     await fetchInventory();
                 }
@@ -344,54 +345,54 @@ const Inventory = () => {
                 exportLoading={isLoading}
             />
 
-             <div className="flex flex-col w-full h-[120px] rounded-br-[15px] rounded-bl-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
+            <div className="flex flex-col w-full h-[120px] rounded-br-[15px] rounded-bl-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
 
-            <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center">
 
-                <BuildingTabs
-                    inventory={inventory}
-                    selectedBuildingIndex={selectedBuildingIndex}
-                    onBuildingSelect={(index) => {
-                        setSelectedBuilding(inventory[index].InventoryFlatFloorBasementPodiumWingData);
-                        setSelectedBuildingIndex(index);
-                        setSelectedWing(inventory[index].InventoryFlatFloorBasementPodiumWingData[0]);
-                    }}
-                />
-
-                <div className="pt-5">
-
-                    <StatusCounters
-                        availableCount={availableFlatsCount}
-                        holdCount={holdFlatsCount}
-                        memberCount={memberFlatsCount}
-                        saleCount={saleFlatsCount}
-                        blockedCount={blockedFlatsCount}
-                    />
-                </div>
-            </div>
-
-            <div className="border-b border-gray-200" />
-
-            <div className="flex justify-between pt-2 pb-2">
-                {selectedBuilding && (
-                    <WingTabs
-                        wings={selectedBuilding}
-                        activeWingTab={activeWingTab}
-                        onWingChange={(index) => {
-                            setActiveWingTab(String(index));
-                            setSelectedWing(selectedBuilding[index]);
+                    <BuildingTabs
+                        inventory={inventory}
+                        selectedBuildingIndex={selectedBuildingIndex}
+                        onBuildingSelect={(index) => {
+                            setSelectedBuilding(inventory[index].InventoryFlatFloorBasementPodiumWingData);
+                            setSelectedBuildingIndex(index);
+                            setSelectedWing(inventory[index].InventoryFlatFloorBasementPodiumWingData[0]);
                         }}
                     />
-                )}
 
-                <StatusCounters
-                    availableCount={selectedWingAvailableCount}
-                    holdCount={selectedWingHoldCount}
-                    memberCount={selectedWingMemberCount}
-                    saleCount={selectedWingSaleCount}
-                    blockedCount={selectedWingBlockedCount}
-                />
-            </div>
+                    <div className="pt-5">
+
+                        <StatusCounters
+                            availableCount={availableFlatsCount}
+                            holdCount={holdFlatsCount}
+                            memberCount={memberFlatsCount}
+                            saleCount={saleFlatsCount}
+                            blockedCount={blockedFlatsCount}
+                        />
+                    </div>
+                </div>
+
+                <div className="border-b border-gray-200" />
+
+                <div className="flex justify-between pt-2 pb-2">
+                    {selectedBuilding && (
+                        <WingTabs
+                            wings={selectedBuilding}
+                            activeWingTab={activeWingTab}
+                            onWingChange={(index) => {
+                                setActiveWingTab(String(index));
+                                setSelectedWing(selectedBuilding[index]);
+                            }}
+                        />
+                    )}
+
+                    <StatusCounters
+                        availableCount={selectedWingAvailableCount}
+                        holdCount={selectedWingHoldCount}
+                        memberCount={selectedWingMemberCount}
+                        saleCount={selectedWingSaleCount}
+                        blockedCount={selectedWingBlockedCount}
+                    />
+                </div>
             </div>
 
             <ExportImport
@@ -413,19 +414,16 @@ const Inventory = () => {
                 />
             ))}
 
-            <ConfirmationDialogBox
+            <DeleteDialog
                 isOpen={isConfirmationDialogOpen}
                 onClose={() => {
                     setIsConfirmationDialogOpen(false);
                     setSelectedFlatToDelete(null);
                 }}
                 onConfirm={handleConfirmDeleteFlat}
-                title="Delete Inventory Flat"
+                loading={isLoading}
+                pageName="inventory flat"
                 message={`Are you sure you want to delete flat "${selectedFlatToDelete?.Flat}"? This action cannot be undone.`}
-                confirmText="Delete"
-                cancelText="Cancel"
-                loading={isDeleting}
-                variant="danger"
             />
 
         </>

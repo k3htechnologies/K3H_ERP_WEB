@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { Edit, Eye, Trash } from "lucide-react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import type { InventoryFlatData } from "../../models/InventoryMasterModel";
-import { colorsForFlatComponent } from "../../utils/flatColors";
+import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
+import { colorsForFlatComponent } from "@/features/inventory/utils/flatColors";
 
 interface FlatCardProps {
     flat: InventoryFlatData;

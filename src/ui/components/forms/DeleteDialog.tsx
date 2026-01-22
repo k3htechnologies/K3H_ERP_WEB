@@ -6,7 +6,7 @@ interface DeleteDialogProps {
     onClose: () => void;
     onConfirm: () => void;
     loading: boolean;
-    pageName: string;
+    pageName?: string;
     title?: string;
     message?: string;
     confirmText?: string;

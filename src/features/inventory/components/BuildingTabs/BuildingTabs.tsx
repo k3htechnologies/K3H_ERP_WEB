@@ -1,4 +1,4 @@
-import type { InventoryData } from "../../models/InventoryMasterModel";
+import type { InventoryData } from "@/features/inventory/models/InventoryMasterModel";
 
 interface BuildingTabsProps {
     inventory: InventoryData[];

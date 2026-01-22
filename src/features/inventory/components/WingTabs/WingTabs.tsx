@@ -1,5 +1,5 @@
 import Tabs from "@/ui/components/Tab/Tab";
-import type { InventoryFlatFloorBasementPodiumWingData } from "../../models/InventoryMasterModel";
+import type { InventoryFlatFloorBasementPodiumWingData } from "@/features/inventory/models/InventoryMasterModel";
 
 interface WingTabsProps {
     wings: InventoryFlatFloorBasementPodiumWingData[];

@@ -1,12 +1,12 @@
 import { Plus } from "lucide-react";
 import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
 import { FlatCard } from "../FlatCard";
-import type { InventoryFloorData } from "../../models/InventoryMasterModel";
+import type { InventoryFloorData } from "@/features/inventory/models/InventoryMasterModel";
 
 interface FloorCardProps {
     floor: InventoryFloorData;
     projectId: number;
-    onDelete: (flat: import("../../models/InventoryMasterModel").InventoryFlatData) => void;
+    onDelete: (flat: import("@/features/inventory/models/InventoryMasterModel").InventoryFlatData) => void;
 }
 
 export const FloorCard = ({ floor, projectId, onDelete }: FloorCardProps) => {

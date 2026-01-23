@@ -113,6 +113,7 @@ import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartn
 import EmployeeResignation from '@/features/resignation/pages/EmployeeResignation';
 import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
 import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
+import Parking from '@/features/parking/pages/Parking';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -265,6 +266,7 @@ function App() {
             {/* INVENTORY */}
             <Route path="inventory" element={<Inventory></Inventory>} />
             <Route path="inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
+            <Route path="parking" element={<Parking></Parking>} />
 
             {/* DOCUMENT */}
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />

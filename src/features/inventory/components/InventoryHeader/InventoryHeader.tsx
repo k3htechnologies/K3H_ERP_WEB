@@ -57,6 +57,7 @@ export const InventoryHeader = ({
                             isborderRadius
                             size="sm"
                             title="Add Building"
+                            style={{ justifyContent: "left" }}
                         >
                             Add Building
                         </Button>
@@ -71,6 +72,7 @@ export const InventoryHeader = ({
                             isborderRadius
                             size="sm"
                             title="Add Wing"
+                            style={{ justifyContent: "left" }}
                         >
                             Add Wing
                         </Button>
@@ -85,6 +87,7 @@ export const InventoryHeader = ({
                             isborderRadius
                             size="sm"
                             title="Add Floor"
+                            style={{ justifyContent: "left" }}
                         >
                             Add Floor
                         </Button>

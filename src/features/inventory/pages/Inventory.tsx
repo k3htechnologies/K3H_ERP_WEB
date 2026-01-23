@@ -135,8 +135,11 @@ const Inventory = () => {
                 const response = await inventoryService.apiCallpullInventory(params);
 
                 if (E.isRight(response)) {
+
                     setInventory(response.right.Data);
+
                 } else {
+                    
                     addToast({ type: 'error', title: response.left.message });
                 }
 

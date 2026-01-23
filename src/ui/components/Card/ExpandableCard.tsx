@@ -22,12 +22,8 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   const [isExpandableOpen, setExpandableOpen] = useState(true);
 
   return (
-    <div className="bg-[#F9FAFB] border border-[#135BEC30] rounded-md shadow-md">
-      <div
-        className="flex items-center justify-between p-4 cursor-pointer"
-        onClick={() => setExpandableOpen((prev) => !prev)}
-        style={{ height: height }}
-      >
+    <div className="bg-[#F9FAFB] border border-[#135BEC30] rounded-[15px] shadow-md">
+      <div className="flex items-center justify-between p-4 cursor-pointer" onClick={() => setExpandableOpen((prev) => !prev)} style={{ height: height }} >
         <span className="font-medium text-gray-800">{title}</span>
 
         <div className="flex items-center gap-2">

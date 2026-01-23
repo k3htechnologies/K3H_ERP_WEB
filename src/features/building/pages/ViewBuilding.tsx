@@ -364,7 +364,7 @@ export const ViewBuilding: React.FC = () => {
             </div>
 
             {activeTab === 'Overview' && (
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-6">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-3">
 
                     {/* ================= LEFT SIDE (2/3) ================= */}
                     <div className="lg:col-span-3 space-y-6">
@@ -505,12 +505,15 @@ export const ViewBuilding: React.FC = () => {
                                 Action Details
                             </h4>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
                                 <FieldItem label="Created By" value={buildingData?.CreatedBy ?? '-'} />
                                 <FieldItem
                                     label="Created Date"
                                     value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.CreatedDate ?? '-')}
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
                                 <FieldItem label="Modified By" value={buildingData?.ModifiedBy ?? '-'} />
                                 <FieldItem
                                     label="Modified Date"
@@ -526,7 +529,7 @@ export const ViewBuilding: React.FC = () => {
             )}
 
             {activeTab === "Document" && (
-                <>
+                <div className="mt-3">
                     <TableActionToolbar
                         isShowSearchBar
                         searchTerm={searchTerm}
@@ -572,7 +575,7 @@ export const ViewBuilding: React.FC = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pl-3 pt-3">
 
                                             {details.map(d => {
-                                                
+
                                                 const urls = parseDocumentUrls(d.DocumentURL ?? "");
 
                                                 return (
@@ -616,14 +619,14 @@ export const ViewBuilding: React.FC = () => {
                             );
                         }}
                     />
-                </>
+                </div>
             )}
 
 
 
             {activeTab === 'Details' && (
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
                     <div className="lg:col-span-3 space-y-6">
 
                         <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
@@ -652,7 +655,7 @@ export const ViewBuilding: React.FC = () => {
                                 </div>
 
 
-                                <div className="lg:col-span-3 pt-3">
+                                <div className="lg:col-span-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                                         <FieldItem
@@ -685,7 +688,7 @@ export const ViewBuilding: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="lg:col-span-3 pt-3">
+                                <div className="lg:col-span-3 ">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Total Commercial Units" value={buildingDetailsList?.[0]?.TotalCommercialUnits ?? 0} />
                                         <FieldItem label="Commercial Carpet Area (SqFt)" value={buildingDetailsList?.[0]?.TotalCommercialCarpetAreaSqFt ?? 0} />
@@ -705,7 +708,7 @@ export const ViewBuilding: React.FC = () => {
                                 {contactDetailsList.map((contact, index) => (
                                     <div
                                         key={index}
-                                        className="border-b border-[#135bec2e] p-4 space-y-3"
+                                        className="border-b border-[#135bec2e] pb-4 space-y-3"
                                     >
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 

@@ -1595,14 +1595,15 @@ const AddUpdateTenant: React.FC = () => {
         saveText={editingApplicantData ? 'Update' : 'Add'}
         cancelText="Cancel"
         loading={isLoading}
-        size='large-half'
+        size='small50'
       >
         <div className="space-y-6">
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
               <SinglePageSelection
                 label="Applicant Type"
+                placeholder="Select Applicant Type"
                 required
                 value={formDataForApplicant?.ApplicantType ?? ""}
                 onChange={(e) => handleFieldChangeTenantApplicant('ApplicantType', String(e))}
@@ -1610,6 +1611,8 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.ApplicantType}
               />
             </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Input
                 label='Applicant Name'
@@ -1638,9 +1641,6 @@ const AddUpdateTenant: React.FC = () => {
                 placeholder="Enter Mobile Number"
               />
             </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Input
                 label='Email Id'
@@ -1669,15 +1669,8 @@ const AddUpdateTenant: React.FC = () => {
               />
             </div>
             <div>
-
-            </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
               <Input
                 label="Aadhaar Number"
-
                 error={errorsTenantApplicant.AadharCardNumber}
                 type="text"
                 value={formDataForApplicant.AadharCardNumber ?? ''}
@@ -1689,7 +1682,6 @@ const AddUpdateTenant: React.FC = () => {
                 rightIcon={<IdCardIcon />}
               />
             </div>
-
             <div>
               <MultiFilePicker
                 label="Aadhaar Card"
@@ -1708,13 +1700,6 @@ const AddUpdateTenant: React.FC = () => {
                   setRemovedAadharCardURLs((prev) => [...prev, url])}
               />
             </div>
-
-            <div>
-
-            </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Input
                 label="PAN Number"
@@ -1748,14 +1733,8 @@ const AddUpdateTenant: React.FC = () => {
                 maxSizeMB={10}
                 onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])}
               />
-            </div>
-
-            <div>
 
             </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Input
                 label="Passport Number"
@@ -1770,7 +1749,6 @@ const AddUpdateTenant: React.FC = () => {
                 rightIcon={<IdCardIcon />}
               />
             </div>
-
             <div>
               <MultiFilePicker
                 label="Passport"
@@ -1784,9 +1762,6 @@ const AddUpdateTenant: React.FC = () => {
                 onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])}
               />
             </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Input
                 label="Driving License Number"
@@ -1801,7 +1776,6 @@ const AddUpdateTenant: React.FC = () => {
                 rightIcon={<IdCardIcon />}
               />
             </div>
-
             <div>
               <MultiFilePicker
                 label="Driving License"
@@ -1815,9 +1789,6 @@ const AddUpdateTenant: React.FC = () => {
                 onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])}
               />
             </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Input
                 label="Voting ID Number"
@@ -1832,7 +1803,6 @@ const AddUpdateTenant: React.FC = () => {
                 rightIcon={<IdCardIcon />}
               />
             </div>
-
             <div>
               <MultiFilePicker
                 label="Voting ID"
@@ -1846,9 +1816,6 @@ const AddUpdateTenant: React.FC = () => {
                 onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])}
               />
             </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Input
                 label="GST Number"
@@ -1863,7 +1830,6 @@ const AddUpdateTenant: React.FC = () => {
                 rightIcon={<IdCardIcon />}
               />
             </div>
-
             <div>
               <MultiFilePicker
                 label="GST Documents"
@@ -1877,9 +1843,6 @@ const AddUpdateTenant: React.FC = () => {
                 onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])}
               />
             </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <SingleSelectDropdownWithPagination
                 label="Bank"
@@ -1909,8 +1872,6 @@ const AddUpdateTenant: React.FC = () => {
                 placeholder="Enter IFSC Code"
               />
             </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <MultiFilePicker
                 label="Cheque / Cancelled Cheque"
@@ -1923,9 +1884,7 @@ const AddUpdateTenant: React.FC = () => {
                 onRemoveExisting={(url) => setRemovedChequeURLs((prev) => [...prev, url])}
               />
             </div>
-
           </div>
-
         </div>
       </Modal>
 

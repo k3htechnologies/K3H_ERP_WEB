@@ -1,4 +1,4 @@
-import { Plus, Car } from "lucide-react";
+import { Plus, Car, Trash } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
@@ -23,9 +23,11 @@ interface FloorCardProps {
     wing: InventoryFlatFloorBasementPodiumWingData;
     onDelete: (flat: import("@/features/inventory/models/InventoryMasterModel").InventoryFlatData) => void;
     onParkingUpdate?: () => void;
+    onDeleteFloor?: (floor: InventoryFloorData, wing: InventoryFlatFloorBasementPodiumWingData, building: InventoryData) => void;
+    isLastFloor?: boolean;
 }
 
-export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkingUpdate }: FloorCardProps) => {
+export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkingUpdate, onDeleteFloor, isLastFloor }: FloorCardProps) => {
     const navigate = useNavigate();
     const { addToast } = useToast();
 
@@ -115,7 +117,7 @@ export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkin
 
             (error: any) => {
 
-                addToast({ type: 'error', title: error?.message || 'An error occurred while updating parking count' });
+                addToast({ type: 'error', title: error?.message });
 
             },
 
@@ -149,6 +151,18 @@ export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkin
                                 handleAddFlat();
                             }}
                         />
+                        {onDeleteFloor && isLastFloor && wing.Wing.toUpperCase() !== 'BGP' && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDeleteFloor(floor, wing, building);
+                                }}
+                                className="p-1.5 cursor-pointer hover:bg-red-100 rounded transition-colors"
+                                title="Delete Floor"
+                            >
+                                <Trash color="red" className="text-red-600" size={20} />
+                            </button>
+                        )}
                     </div>
                 }
                 child={

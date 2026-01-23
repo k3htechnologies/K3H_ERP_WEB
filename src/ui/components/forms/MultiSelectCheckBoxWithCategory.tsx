@@ -68,7 +68,7 @@ export default function MultiSelectCheckBoxWithCategory({
     <div className="w-full space-y-3">
 
       {/* LABEL */}
-      <label className="font-semibold block">{label}</label>
+     <label className="text-[14px] font-[500] text-[#00000080] mb-[4px] block">{label}</label>
 
       {/* SEARCH */}
       <div className="relative min-w-0 w-[526px]">

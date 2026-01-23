@@ -418,6 +418,7 @@ const AddUpdateBuilding: React.FC = () => {
 
                 <SinglePageSelection
                   label="Road Width"
+                  placeholder="Select Road Width"
                   required
                   value={formData.RoadWidth}
                   onChange={(e) => handleFieldChange('RoadWidth', String(e))}
@@ -524,81 +525,69 @@ const AddUpdateBuilding: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-4 pb-3">
+            <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Additional Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="md:col-span-2 lg:col-span-3">
 
-                  <Checkbox
-                    label="Garden"
-                    checked={formData.IsGarden === true}
-                    onChange={(e) => handleFieldChange('IsGarden', e.target.checked ? true : false)}
+                <Checkbox
+                  label="Garden"
+                  checked={formData.IsGarden === true}
+                  onChange={(e) => handleFieldChange('IsGarden', e.target.checked ? true : false)}
+                />
+
+                <Checkbox
+                  label="Religious Structure"
+                  checked={formData.IsReligiousStructure === true}
+                  onChange={(e) => handleFieldChange('IsReligiousStructure', e.target.checked ? true : false)}
+                />
+
+                <Checkbox
+                  label="Litigation"
+                  checked={formData.IsLitigation === true}
+                  onChange={(e) => handleFieldChange('IsLitigation', e.target.checked ? true : false)}
+                />
+
+
+                <div>
+                  <Input
+                    value={formData.IsGarden === true ? (formData.TotalGardenAreaSqFt ?? '') : ''}
+                    label="Garden Area (SqFt)"
+                    required={formData.IsGarden === true ? true : false}
+                    placeholder="Garden Area"
+                    maxLength={9}
+                    onChange={e => handleFieldChange('TotalGardenAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                    error={errors.TotalGardenAreaSqFt}
+                    rightIcon="SqFt"
+                    disabled={formData.IsGarden === true ? false : true}
                   />
-
                 </div>
 
-                {formData.IsGarden === true ?
-                  <div>
-                    <Input
-                      value={formData.TotalGardenAreaSqFt ?? ''}
-                      label="Garden Area (SqFt)"
-                      required
-                      placeholder="Garden Area"
-                      maxLength={9}
-                      onChange={e => handleFieldChange('TotalGardenAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
-                      error={errors.TotalGardenAreaSqFt}
-                      rightIcon="SqFt"
-                    />
-                  </div>
-                  : ""}
-
-                <div className="md:col-span-2 lg:col-span-3">
-
-                  <Checkbox
-                    label="Religious Structure"
-                    checked={formData.IsReligiousStructure === true}
-                    onChange={(e) => handleFieldChange('IsReligiousStructure', e.target.checked ? true : false)}
+                <div>
+                  <Input
+                    value={formData.IsReligiousStructure === true ?  (formData.TotalReligiousStructureAreaSqFt ?? '') : ''}
+                    label="Religious Structure Area (SqFt)"
+                    required={formData.IsReligiousStructure === true ? true : false}
+                    placeholder="Religious Structure Area"
+                    maxLength={9}
+                    onChange={e => handleFieldChange('TotalReligiousStructureAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                    error={errors.TotalReligiousStructureAreaSqFt}
+                    rightIcon="SqFt"
+                    disabled={formData.IsReligiousStructure === true ? false : true}
                   />
-
                 </div>
-                {formData.IsReligiousStructure === true ?
-                  <div>
-                    <Input
-                      value={formData.TotalReligiousStructureAreaSqFt ?? ''}
-                      label="Religious Structure Area (SqFt)"
-                      required
-                      placeholder="Religious Structure Area"
-                      maxLength={9}
-                      onChange={e => handleFieldChange('TotalReligiousStructureAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
-                      error={errors.TotalReligiousStructureAreaSqFt}
-                      rightIcon="SqFt"
-                    />
-                  </div>
-                  : ""}
 
-                <div className="md:col-span-2 lg:col-span-3">
-
-                  <Checkbox
-                    label="Litigation"
-                    checked={formData.IsLitigation === true}
-                    onChange={(e) => handleFieldChange('IsLitigation', e.target.checked ? true : false)}
+                <div>
+                  <TextArea
+                    label="Litigation Remarks"
+                    required={formData.IsLitigation === true ? true : false}
+                    placeholder="Enter Litigation Remarks"
+                    className='thin-scroll'
+                    value={formData.IsLitigation === true ? (formData.LitigationRemarks ?? '') : ''}
+                    error={errors.LitigationRemarks}
+                    onChange={(e) => handleFieldChange("LitigationRemarks", e.target.value)}
+                    disabled={formData.IsLitigation === true ? false : true}
                   />
-
                 </div>
-                
-                {formData.IsLitigation === true ?
-                  <div className="md:col-span-2 lg:col-span-3">
-                    <TextArea
-                      label="Litigation Remarks"
-                      required
-                      placeholder="Enter Litigation Remarks"
-                      className='thin-scroll'
-                      value={formData.LitigationRemarks ?? ''}
-                      error={errors.LitigationRemarks}
-                      onChange={(e) => handleFieldChange("LitigationRemarks", e.target.value)}
-                    />
-                  </div>
-                  : ""}
               </div>
             </div>
           </div>
@@ -665,7 +654,7 @@ const AddUpdateBuilding: React.FC = () => {
                 <SinglePageSelection
                   label="City"
                   placeholder="Select City"
-                  value={selectedCityId ?? ''} 
+                  value={selectedCityId ?? ''}
                   required
                   onChange={val => {
                     const id = Number(val)
@@ -681,7 +670,7 @@ const AddUpdateBuilding: React.FC = () => {
                 <SinglePageSelection
                   label="Village"
                   placeholder="Select Village"
-                  value={selectedVillageId ?? ''} 
+                  value={selectedVillageId ?? ''}
                   required
                   onChange={val => {
                     const id = Number(val)

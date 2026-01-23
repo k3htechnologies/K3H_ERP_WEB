@@ -559,7 +559,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center">
               <Checkbox
-                label="Is Additional Rent"
+                label="Additional Rent"
                 checked={!!formDataRentDetails.IsAdditionalRent}
                 onChange={(e) => {
                   const checked = e.target.checked;
@@ -573,7 +573,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
             </div>
             <div className="flex items-center">
               <Checkbox
-                label="Is Pay Brokerage"
+                label="Pay Brokerage"
                 checked={!!formDataRentDetails.IsPayBrokerage}
                 onChange={(e) => {
                   const checked = e.target.checked;

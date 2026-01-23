@@ -16,7 +16,9 @@ const projectRERADocumentCategoryMasterDatasource = new ProjectRERADocumentCateg
 export const projectRERADocumentCategoryMasterService = {
 
     apiCallPullProjectRERADocumentCategoryMaster: async (params: FilterWithPaginationProjectRERADocumentCategoryMaster, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectRERADocumentCategoryMasterListResponse>> => {
+
         try {
+
             return E.right(await projectRERADocumentCategoryMasterDatasource.pullProjectRERADocumentCategoryMaster(params, options?.signal));
 
         } catch (error: any) {
@@ -27,6 +29,7 @@ export const projectRERADocumentCategoryMasterService = {
     },
 
     apiCallAddUpdateProjectRERADocumentCategoryMaster: async (params: AddUpdateProjectRERADocumentCategoryMasterRequest): Promise<E.Either<Failure, ProjectRERADocumentCategoryMasterSaveReponse>> => {
+
         try {
 
             return E.right(await projectRERADocumentCategoryMasterDatasource.addUpdateProjectRERADocumentCategoryMaster(params));
@@ -39,6 +42,7 @@ export const projectRERADocumentCategoryMasterService = {
     },
 
     apiCallDeleteProjectRERADocumentCategoryMaster: async (params: DeleteProjectRERADocumentCategoryMasterRequest): Promise<E.Either<Failure, ProjectRERADocumentCategoryMasterDeleteResponse>> => {
+
         try {
 
             return E.right(await projectRERADocumentCategoryMasterDatasource.deleteProjectRERADocumentCategoryMaster(params));

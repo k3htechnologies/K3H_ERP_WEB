@@ -20,34 +20,36 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useLocation, type Location, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { FileText } from 'lucide-react';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
+import { useEmployeeListState } from '@/features/employeeMaster/context/EmployeeListStateContext';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
   const [employeeList, setEmployeeList] = useState<EmployeeMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
 
-  const { pagination, setPagination } = usePagination(20);
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
+  const { listState, updateListState } = useEmployeeListState();
+  const { pagination, setPagination } = usePagination(listState.pageSize);
+  const sortInfo = listState.sortInfo;
+  const searchTerm = listState.searchTerm;
+  const filters = listState.filters;
 
   const { addToast } = useToast();
-
-  const [searchTerm, setSearchTerm] = useState('');
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchEmployees(value);
   }, 350);
 
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   const [isShowCustomizeEmployeeColumnsModal, setIsShowCustomizeEmployeeColumnsModal] = useState(false);
@@ -57,53 +59,21 @@ export const EmployeeMaster: React.FC = () => {
 
   const { canAction, canExport } = useMenuPermissions();
 
-  const location = useLocation() as Location & {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: FilterInfo;
-        sortInfo?: SortInfo;
-        searchTerm?: string;
-      };
-    };
-  };
-
-
   //#endregion
 
   //#region INIT
   useEffect(() => {
+    // Sync pagination with context state
+    setPagination({ currentPage: listState.page });
 
-    const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string }
-      | undefined;
-
-    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '' };
-
-
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
+    // Load employees with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-
-      setSearchTerm(String(listState.searchTerm));
-
-      loadEmployees(listState.page ?? 1, { EmployeeName: String(listState.searchTerm).trim() }, listState.sortInfo);
-
-      return;
+      loadEmployees(listState.page, { EmployeeName: String(listState.searchTerm).trim() }, listState.sortInfo);
+    } else {
+      loadEmployees(listState.page, listState.filters, listState.sortInfo);
     }
-
-
-    loadEmployees(listState.page ?? 1, listState.filters ?? {}, listState.sortInfo);
-
-  }, [location.state]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
 
 
@@ -120,37 +90,36 @@ export const EmployeeMaster: React.FC = () => {
   };
 
 
-  const loadEmployees = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadEmployees = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const column = employeeColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
 
         const params: FilterWithPaginationEmployeeMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           EmployeeId: filterParams.EmployeeId ? Number(filterParams.EmployeeId) : undefined,
-          EmployeeName: filterParams.EmployeeName?.trim() || undefined,
-          BranchName: filterParams.BranchName?.trim() || undefined,
+
+          EmployeeCode: filterParams.EmployeeCode?.trim() || undefined,
+          EmployeeName: searchtext ?? filterParams.EmployeeName?.trim() ?? undefined,
+          MobileNumber: filterParams.MobileNumber?.trim() || undefined,
+          
+          Gender: filterParams.Gender?.trim() || undefined,
+
           DepartmentName: filterParams.DepartmentName?.trim() || undefined,
           DesignationName: filterParams.DesignationName?.trim() || undefined,
+          BranchName: filterParams.BranchName?.trim() || undefined,
+          CompanyName: filterParams.CompanyName?.trim() || undefined,
           EmailId: filterParams.EmailId?.trim() || undefined,
-          MobileNumber: filterParams.MobileNumber?.trim() || undefined,
           ReportPersonName: filterParams.ReportPersonName?.trim() || undefined,
+          BankName: filterParams.BankName?.trim() || undefined,
           BankBranchName: filterParams.BankBranchName?.trim() || undefined,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, employeeColumns)
         };
 
-        const response = await getEmployees(params);
+        const response = await employeeMasterService.apiCallPullEmployeeMaster(params);
 
         if (E.isRight(response)) {
           setEmployeeList(response.right.Data);
@@ -178,18 +147,16 @@ export const EmployeeMaster: React.FC = () => {
 
   //#region SEARCH EMPLOYEE FILTER
   const searchEmployees = async (searchValue: string) => {
-    setSearchTerm(searchValue);
+    updateListState({ searchTerm: searchValue });
 
     if (searchValue.trim() === '') {
+      updateListState({ searchTerm: '', page: 1 });
       fetchEmployeeList();
       return;
     }
 
-    const filterParams: FilterInfo = {
-      EmployeeName: searchValue.trim()
-    };
-
-    await loadEmployees(1, filterParams);
+    updateListState({ searchTerm: searchValue, page: 1 });
+    await loadEmployees(1, filters, sortInfo, searchValue);
   };
 
 
@@ -197,18 +164,10 @@ export const EmployeeMaster: React.FC = () => {
 
   //#region CLAER SERACH EMPLOYEE
   const clearSearchEmployees = () => {
-    setSearchTerm('');
-
     debouncedSearch.cancel?.();
-
-    setFilters({});
+    updateListState({ searchTerm: '', filters: {}, page: 1 });
     setTempFilters({});
-    setPagination({ currentPage: 1 });
-    loadEmployees(1, {});
-    try {
-      navigate(location.pathname, { replace: true, state: {} });
-    } catch {
-    }
+    loadEmployees(1, { EmployeeName: '' }, sortInfo, undefined);
   };
 
   //#endregion
@@ -217,32 +176,34 @@ export const EmployeeMaster: React.FC = () => {
   const handleExportEmployees = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
-
-        let sortByParam: string | undefined;
-        if (sortInfo) {
-          const column = employeeColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
 
         const params: FilterWithPaginationEmployeeMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
+
+          EmployeeCode: filters.EmployeeCode?.trim() || undefined,
           EmployeeName: filters.EmployeeName?.trim() || undefined,
-          BranchName: filters.BranchName?.trim() || undefined,
+          MobileNumber: filters.MobileNumber?.trim() || undefined,
+          
+          Gender: filters.Gender?.trim() || undefined,
+
           DepartmentName: filters.DepartmentName?.trim() || undefined,
           DesignationName: filters.DesignationName?.trim() || undefined,
+          BranchName: filters.BranchName?.trim() || undefined,
+          CompanyName: filters.CompanyName?.trim() || undefined,
           EmailId: filters.EmailId?.trim() || undefined,
-          MobileNumber: filters.MobileNumber?.trim() || undefined,
-          SortBy: sortByParam,
+          ReportPersonName: filters.ReportPersonName?.trim() || undefined,
+          BankName: filters.BankName?.trim() || undefined,
+          BankBranchName: filters.BankBranchName?.trim() || undefined,
+          
+          SortBy: getSortByParam(sortInfo ?? null, employeeColumns),
           ExportType: exportType
         };
 
-        const response = await getEmployees(params);
+        const response = await employeeMasterService.apiCallPullEmployeeMaster(params);
 
         handleExportFile(response, exportType, 'Employee Master', addToast);
 
@@ -253,7 +214,7 @@ export const EmployeeMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' });
       },
       undefined,
-      'Preparing Export...'
+      'Preparing Export'
     );
   };
 
@@ -262,21 +223,17 @@ export const EmployeeMaster: React.FC = () => {
 
   //#endregion
 
-  //#region PULL EMPLOYEE MASTER
-  const getEmployees = async (filterParams: FilterWithPaginationEmployeeMasterRequest) => {
-    return await employeeMasterService.apiCallPullEmployeeMaster(filterParams);
-  };
-  //#endregion
 
   //#region TABLE CONFIG
   const handlePageChange = useCallback((page: number) => {
+    updateListState({ page });
     fetchEmployeeList(page, sortInfo);
-  }, [sortInfo]);
+  }, [sortInfo, updateListState]);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
-    setSortInfo(sort);
-    loadEmployees(1, filters, sort);
-  }, [filters]);
+    updateListState({ sortInfo: sort, page: 1 });
+    loadEmployees(1, filters, sort, searchTerm || undefined);
+  }, [filters, updateListState, searchTerm]);
 
 
   const employeePaginationInfo: PaginationInfo = useMemo(
@@ -296,43 +253,17 @@ export const EmployeeMaster: React.FC = () => {
   //#region VIEW EMPLOYEE MASTER
 
   const handleViewEmployeeDetails = useCallback((row: EmployeeMasterData) => {
-    navigate('/employeeMaster/view', {
-      state: {
-        editEmployeeMasterData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          employeeId: row.EmployeeId,
-          employeeName: row.FullName,
-        },
-      },
-    });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    updateListState({ employeeId: row.EmployeeId, employeeName: row.FullName });
+    navigate('/employeeMaster/view');
+  }, [navigate, updateListState]);
   //#endregion
 
   //#region VIEW EMPLOYEE DOCUMENT
 
   const handleViewEmployeeDocument = useCallback((row: EmployeeMasterData) => {
-
-    navigate('/employeeMaster/document', {
-      state: {
-        editBuildingData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          employeeId: row.EmployeeId,
-          employeeName: row.FullName,
-
-        },
-      },
-    });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    updateListState({ employeeId: row.EmployeeId, employeeName: row.FullName, pageName: '' });
+    navigate('/employeeMaster/document');
+  }, [navigate, updateListState]);
   //#endregion
 
   //#region TABLE COLUMN
@@ -346,7 +277,7 @@ export const EmployeeMaster: React.FC = () => {
         align: 'center',
         render: value => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="140px"
             tooltipThreshold={14}
             tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
@@ -381,14 +312,14 @@ export const EmployeeMaster: React.FC = () => {
                        flex items-center justify-center
                        text-gray-800 font-medium text-xs
                        border border-gray-300"
-                  title={fullName || 'N/A'}
+                  title={fullName || '-'}
                 >
                   {initials}
                 </div>
 
                 <div className="min-w-0">
                   <TooltipText
-                    text={value || row.FirstName || 'N/A'}
+                    text={value || row.FirstName || '-'}
                     maxWidth="260px"
                     tooltipThreshold={26}
                     onClick={() => handleViewEmployeeDetails(row)}
@@ -414,7 +345,7 @@ export const EmployeeMaster: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'center',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'PersonalMobileNumber',
@@ -431,7 +362,7 @@ export const EmployeeMaster: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'left',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'Department',
@@ -440,7 +371,7 @@ export const EmployeeMaster: React.FC = () => {
         sortable: true,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+          <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
         )
       },
       {
@@ -450,7 +381,7 @@ export const EmployeeMaster: React.FC = () => {
         sortable: true,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+          <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
         )
       },
       {
@@ -460,7 +391,17 @@ export const EmployeeMaster: React.FC = () => {
         sortable: false,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+          <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
+        )
+      },
+      {
+        key: 'CompanyName',
+        label: 'Company',
+        width: '14',
+        sortable: false,
+        align: 'left',
+        render: value => (
+          <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
         )
       },
       {
@@ -470,7 +411,7 @@ export const EmployeeMaster: React.FC = () => {
         sortable: true,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+          <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
         )
       },
 
@@ -480,7 +421,7 @@ export const EmployeeMaster: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'center',
-        render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
+        render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       },
       {
         key: 'JoiningDate',
@@ -488,7 +429,7 @@ export const EmployeeMaster: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'center',
-        render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
+        render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       },
       {
         key: 'ProbationDate',
@@ -496,7 +437,7 @@ export const EmployeeMaster: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'center',
-        render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
+        render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       },
       {
         key: 'MaritalStatus',
@@ -504,7 +445,7 @@ export const EmployeeMaster: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'center',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'BloodGroup',
@@ -512,7 +453,7 @@ export const EmployeeMaster: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'center',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'BankName',
@@ -521,7 +462,7 @@ export const EmployeeMaster: React.FC = () => {
         sortable: false,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="220px" tooltipThreshold={22} />
+          <TooltipText text={value || '-'} maxWidth="220px" tooltipThreshold={22} />
         )
       },
       {
@@ -531,7 +472,7 @@ export const EmployeeMaster: React.FC = () => {
         sortable: false,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="220px" tooltipThreshold={22} />
+          <TooltipText text={value || '-'} maxWidth="220px" tooltipThreshold={22} />
         )
       },
       {
@@ -540,7 +481,7 @@ export const EmployeeMaster: React.FC = () => {
         width: '18',
         sortable: false,
         align: 'left',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'AccountNo',
@@ -548,7 +489,7 @@ export const EmployeeMaster: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'center',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'OfficeEmailId',
@@ -557,7 +498,7 @@ export const EmployeeMaster: React.FC = () => {
         sortable: false,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="220px" tooltipThreshold={22} />
+          <TooltipText text={value || '-'} maxWidth="220px" tooltipThreshold={22} />
         )
       },
       {
@@ -566,7 +507,7 @@ export const EmployeeMaster: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'center',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'LastLogin',
@@ -651,25 +592,16 @@ export const EmployeeMaster: React.FC = () => {
 
   //#region FILTER HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters);
+    updateListState({ filters: tempFilters, page: 1 });
     loadEmployees(1, tempFilters);
     setShowFilterPopup(false);
   };
 
   const clearFilters = () => {
     setTempFilters({});
-    setFilters({});
-
-    // reset page
-    setPagination({ currentPage: 1 });
-
-    // load empty filters
+    updateListState({ filters: {}, page: 1 });
     loadEmployees(1, {});
-
     setShowFilterPopup(false);
-
-    // clear router state (very important)
-    navigate(location.pathname, { replace: true, state: {} });
   };
   //#endregion
 
@@ -692,7 +624,7 @@ export const EmployeeMaster: React.FC = () => {
   const downloadExcelSampleEmployeeMaster = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         // Find the column label for sorting
 
@@ -720,7 +652,7 @@ export const EmployeeMaster: React.FC = () => {
   const uploadExcel = async (file: File, mergeExisting: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const fd = new FormData();
@@ -763,7 +695,7 @@ export const EmployeeMaster: React.FC = () => {
         searchTerm={searchTerm}
         searchPlaceholder="Search By Employee Name"
         onSearchChange={v => {
-          setSearchTerm(v);
+          updateListState({ searchTerm: v });
           debouncedSearch(v);
         }}
         onClearSearch={clearSearchEmployees}
@@ -830,61 +762,133 @@ export const EmployeeMaster: React.FC = () => {
           e.preventDefault();
           applyFilters();
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply"
+        cancelText="Clear"
         onCancel={() => clearFilters()}
-        resetText=''
+
         size="small-half"
       >
         <div className="space-y-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Employee Name</label>
+
               <Input
                 type="text"
-                value={tempFilters.EmployeeName || ''}
-                onChange={e => handleFilterChange('EmployeeName', e.target.value)}
-                placeholder="Enter employee name"
+                label='Employee Code'
+                value={tempFilters.EmployeeCode || ''}
+                onChange={e => handleFilterChange('EmployeeCode', e.target.value)}
+                placeholder="Enter Employee Code"
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+
               <Input
+                type="text"
+                label='Employee Name'
+                value={tempFilters.EmployeeName || ''}
+                onChange={e => handleFilterChange('EmployeeName', e.target.value)}
+                placeholder="Enter Employee Name"
+              />
+            </div>
+            <div>
+
+              <Input
+                type="text"
+                label='Personal Mobile Number'
+                value={tempFilters.MobileNumber || ''}
+                onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+                placeholder="Enter Personal Mobile Number"
+              />
+            </div>
+            <div>
+
+              <Input
+                type="text"
+                label='Gender'
+                value={tempFilters.Gender || ''}
+                onChange={e => handleFilterChange('Gender', e.target.value)}
+                placeholder="Enter Gender"
+              />
+            </div>
+            <div>
+              <Input
+                type="text"
+                label='Department'
+                value={tempFilters.DepartmentName || ''}
+                onChange={e => handleFilterChange('DepartmentName', e.target.value)}
+                placeholder="Enter Department"
+              />
+            </div>
+            <div>
+              <Input
+                type="text"
+                label='Designation'
+                value={tempFilters.DesignationName || ''}
+                onChange={e => handleFilterChange('DesignationName', e.target.value)}
+                placeholder="Enter Designation"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='Branch'
                 type="text"
                 value={tempFilters.BranchName || ''}
                 onChange={e => handleFilterChange('BranchName', e.target.value)}
-                placeholder="Enter branch name"
+                placeholder="Enter Branch"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+
+              <Input
+                label='Company Name'
+                type="text"
+                value={tempFilters.CompanyName || ''}
+                onChange={e => handleFilterChange('CompanyName', e.target.value)}
+                placeholder="Enter Company Name"
+              />
+            </div>
+            <div>
+
               <Input
                 type="text"
-                value={tempFilters.DepartmentName || ''}
-                onChange={e => handleFilterChange('DepartmentName', e.target.value)}
-                placeholder="Enter department name"
+                label='Report Person Name'
+                value={tempFilters.ReportPersonName || ''}
+                onChange={e => handleFilterChange('ReportPersonName', e.target.value)}
+                placeholder="Enter Report Person Name"
+              />
+            </div>
+            <div>
+
+              <Input
+                type="text"
+                label='E-mail Id'
+                value={tempFilters.EmailId || ''}
+                onChange={e => handleFilterChange('EmailId', e.target.value)}
+                placeholder="Enter E-mail Id"
+              />
+            </div>
+            <div>
+
+              <Input
+                type="text"
+                label='Bank Name'
+                value={tempFilters.BankName || ''}
+                onChange={e => handleFilterChange('BankName', e.target.value)}
+                placeholder="Enter Bank Name"
+              />
+            </div>
+            <div>
+
+              <Input
+                type="text"
+                label='Bank Branch Name'
+                value={tempFilters.BankBranchName || ''}
+                onChange={e => handleFilterChange('BankBranchName', e.target.value)}
+                placeholder="Enter Bank Branch Name"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
-              <Input
-                type="text"
-                value={tempFilters.DesignationName || ''}
-                onChange={e => handleFilterChange('DesignationName', e.target.value)}
-                placeholder="Enter designation"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-              <Input
-                type="text"
-                value={tempFilters.MobileNumber || ''}
-                onChange={e => handleFilterChange('MobileNumber', e.target.value)}
-                placeholder="Enter mobile number"
-              />
-            </div>
           </div>
         </div>
       </Modal>

@@ -35,7 +35,7 @@ export const ChannelPartner: React.FC = () => {
   //#region STATE MANAGEMENT
   const [channelPartnerMasterList, setChannelPartnerList] = useState<ChannelPartnerData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // USE NAVIGATE
   const navigate = useNavigate();
@@ -124,7 +124,7 @@ export const ChannelPartner: React.FC = () => {
   const loadChannelPartner = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam = undefined;
 
@@ -214,7 +214,7 @@ export const ChannelPartner: React.FC = () => {
   const handleExportChannelPartner = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         let sortByParam = undefined
@@ -258,7 +258,7 @@ export const ChannelPartner: React.FC = () => {
 
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -278,7 +278,7 @@ export const ChannelPartner: React.FC = () => {
   const downloadExcelSampleChannelPartner = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         // Find the column label for sorting
@@ -386,7 +386,7 @@ export const ChannelPartner: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="250px"
           tooltipThreshold={25}
           onClick={() => handleNavigateToView(row)}
@@ -401,7 +401,7 @@ export const ChannelPartner: React.FC = () => {
       align: 'center',
       render: (value) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="170px"
           tooltipThreshold={25}
         />
@@ -415,7 +415,7 @@ export const ChannelPartner: React.FC = () => {
       align: 'center',
       render: (value) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="170px"
           tooltipThreshold={15}
         />
@@ -577,7 +577,7 @@ export const ChannelPartner: React.FC = () => {
   };
   //#endregion
 
-  //#region CLEAR FILTER
+  //#region Clear
   const clearFilters = () => {
     setTempFilters({});
     setFilters({});
@@ -613,7 +613,7 @@ export const ChannelPartner: React.FC = () => {
 
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         const params: DeleteChannelPartnerRequest = {
 
@@ -744,10 +744,10 @@ export const ChannelPartner: React.FC = () => {
           e.preventDefault();
           applyFilters();
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply "
+        cancelText="Clear"
         onCancel={() => clearFilters()}
-        resetText=''
+       
         size="small-half"
       >
         <div className="space-y-6">

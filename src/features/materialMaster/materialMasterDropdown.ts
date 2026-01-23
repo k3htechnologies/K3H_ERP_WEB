@@ -5,7 +5,7 @@ export const fetchMaterialMasterDropdown = async (pageNumber: number, params?: {
     try {
 
         const responseEither = await materialMasterService.apiCallPullMaterialMaster({
-            PageSize: 10,
+            PageSize: 20,
             PageNumber: pageNumber,
             MaterialName: params?.value || '',
             IsCheckPermission: false

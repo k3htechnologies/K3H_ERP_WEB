@@ -6,10 +6,10 @@ import type {
     DeleteMarketingContentRequest,
     FilterWithPaginationMarketingContentRequest
 
-} from "@/features/marketingcontent/models/MarketingContentModel";
+} from "@/features/marketingContent/models/MarketingContentModel";
 import * as E from 'fp-ts/Either';
 import type { Failure } from "@/core/api/FailureResponse";
-import { MarketingContentDatasourceImpl } from "../datasources/MarketingContentDatasource";
+import { MarketingContentDatasourceImpl } from "@/features/marketingContent/datasources/MarketingContentDatasource";
 
 
 const MarketingContentDatasource = new MarketingContentDatasourceImpl();

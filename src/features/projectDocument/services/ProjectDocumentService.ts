@@ -11,7 +11,7 @@ import * as E from 'fp-ts/Either';
 
 const projectDocumentDatasource = new ProjectDocumentDatasourceImpl();
 
-export const ProjectDocumentService = {
+export const projectDocumentService = {
 
     apiCallPullProjectDocument: async (params: FilterWithPaginationProjectDocument, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectDocumentListResponse>> => {
         try {

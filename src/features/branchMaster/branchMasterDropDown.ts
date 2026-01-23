@@ -1,10 +1,10 @@
 import * as E from 'fp-ts/Either';
-import { BranchMasterService } from '@/features/branchMaster/services/BranchMasteService';
+import { branchMasterService } from '@/features/branchMaster/services/BranchMasterService';
 
 export const fetchBranchMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
-        const responseEither = await BranchMasterService.apiCallPullBranchMaster({
-            PageSize: 10,
+        const responseEither = await branchMasterService.apiCallPullBranchMaster({
+            PageSize: 20,
             PageNumber: pageNumber,
             BranchName: params?.value || "",
             IsCheckPermission: false,

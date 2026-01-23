@@ -8,7 +8,6 @@ import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
-import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import usePagination from "@/core/hooks/usePagination";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
@@ -18,11 +17,13 @@ import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
-import type { AddUpdateMarketingContentRequest, DeleteMarketingContentRequest, FilterWithPaginationMarketingContentRequest, MarketingContentData } from "../models/MarketingContentModel";
-import { marketingContentService } from "../services/MarketingContentService";
+import type { AddUpdateMarketingContentRequest, DeleteMarketingContentRequest, FilterWithPaginationMarketingContentRequest, MarketingContentData } from "@/features/marketingContent/models/MarketingContentModel";
+import { marketingContentService } from "@/features/marketingContent/services/MarketingContentService";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 
 
 const initialFormState = (): AddUpdateMarketingContentRequest => ({
@@ -39,7 +40,7 @@ const initialFormState = (): AddUpdateMarketingContentRequest => ({
 export const MarketingContent: React.FC = () => {
 
     //#region STATE MANAGEMENT
-    const [MarketingContentList, setMarketingContentList] = useState<MarketingContentData[]>([]);
+    const [marketingContentList, setMarketingContentList] = useState<MarketingContentData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingMessage, setIsLoadingMessage] = useState('');
 
@@ -51,7 +52,6 @@ export const MarketingContent: React.FC = () => {
 
     //TABLE SORT INFO
     const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-
     const { projectId } = useProject();
 
     // TOAST
@@ -93,35 +93,22 @@ export const MarketingContent: React.FC = () => {
     const marketingContentFolderId = location?.state?.MarketingContentData?.MarketingContentFolderId ?? 0;
     //#endregion
 
-    //#region DATA LOADING | FETCH |  LOAD | SEARCH 
-    const fetchMarketingContentList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-        return await loadMarketingContent(page, filters, sort);
-    }
+    //#region DATA LOADING | LOAD | SEARCH 
 
-    const loadMarketingContent = useCallback(async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+    const loadMarketingContent = useCallback(async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
 
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
             async () => {
-                let sortByParam = undefined;
-
-                if (sortInfo) {
-
-                    const column = MarketingContentColumns.find(col => col.key === sortInfo.column);
-                    if (column) {
-                        sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-                    }
-                }
                 const params: FilterWithPaginationMarketingContentRequest = {
-
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     MarketingContentFolderId: filterParams.MarketingContentFolderId ? Number(filterParams.MarketingContentFolderId) : undefined,
                     MarketingContentId: filterParams.MarketingContentId ? Number(filterParams.MarketingContentId) : undefined,
-                    Title: filterParams.Title?.trim() || undefined,
-                    SortBy: sortByParam
+                    Title: searchtext ?? filterParams.Title ?? undefined,
+                    SortBy: getSortByParam(sortInfo ?? null, MarketingContentColumns)
                 };
 
                 const response = await marketingContentService.apiCallPullMarketingContent(params);
@@ -153,7 +140,6 @@ export const MarketingContent: React.FC = () => {
         loadMarketingContent(1, {
             MarketingContentFolderId: marketingContentFolderId
         });
-
     }, [projectId, marketingContentFolderId]);
 
     //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
@@ -181,11 +167,9 @@ export const MarketingContent: React.FC = () => {
                 setMarketingContentURL(editingMarketingContentData.MarketingContentURL || '');
                 setRemoveMarketingContentUrls([]);
             } else {
-
                 setFormData({
                     ...initialFormState(),
                     ProjectId: Number(projectId),
-
                 });
                 setMarketingContentFiles([]);
                 setMarketingContentURL('');
@@ -198,11 +182,12 @@ export const MarketingContent: React.FC = () => {
 
     //#region SEARCH & CLEAR
     const searchMarketingContent = async (searchValue: string) => {
-
         setSearchTerm(searchValue);
 
         if (searchValue.trim() === '') {
-            await loadMarketingContent(1, { MarketingContentFolderId: marketingContentFolderId });
+            await loadMarketingContent(1, {
+                MarketingContentFolderId: marketingContentFolderId
+            });
             return
         }
         const filterParams: FilterInfo = {
@@ -236,17 +221,24 @@ export const MarketingContent: React.FC = () => {
     };
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
-        fetchMarketingContentList(page);
-    }, []);
+        loadMarketingContent(
+            page,
+            { MarketingContentFolderId: marketingContentFolderId },
+            sortInfo
+        );
+    }, [marketingContentFolderId, sortInfo]);
 
     //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
-
         setSortInfo(sort);
         loadMarketingContent(1, filters, sort);
-
     }, [filters]);
     //#endregion
+
+    const handleDeleteDialogClose = useCallback(() => {
+        setIsConfirmationDialogBoxOpen(false);
+        setDeleteMarketingContentData(null);
+    }, [setIsConfirmationDialogBoxOpen, setDeleteMarketingContentData]);
 
     //#region EDIT MARKETING CONTENT 
     const handleEditMarketingContent = useCallback((row: MarketingContentData) => {
@@ -274,10 +266,9 @@ export const MarketingContent: React.FC = () => {
             pageSize: pagination.pageSize,
             onPageChange: handlePageChange
         }),
-
         [pagination, handlePageChange]
     );
-    const MarketingContentForTable = useMemo(() => MarketingContentList, [MarketingContentList]);
+    const MarketingContentForTable = useMemo(() => marketingContentList, [marketingContentList]);
 
     //#region TABLE COLUMNS
     const MarketingContentColumns = useMemo<TableColumn[]>(() => [
@@ -306,7 +297,7 @@ export const MarketingContent: React.FC = () => {
             width: '33',
             sortable: true,
             align: 'center',
-            render: (value) => value || 'N/A'
+            render: (value) => value || '-'
         },
         {
             key: 'CreatedBy',
@@ -314,7 +305,7 @@ export const MarketingContent: React.FC = () => {
             width: '33',
             sortable: true,
             align: 'center',
-            render: (value) => value || 'N/A'
+            render: (value) => value || '-'
         },
         {
             key: 'CreatedDate',
@@ -338,7 +329,7 @@ export const MarketingContent: React.FC = () => {
                                 color="transparent"
                                 size="sm"
                                 style={{
-                                    color: '#0B3251',
+                                    color: 'blue',
                                     padding: '0px 8px'
 
                                 }}
@@ -374,23 +365,20 @@ export const MarketingContent: React.FC = () => {
 
     ], [canAction, handleEditMarketingContent, handleConfirmationDialogBoxOpen])
 
-
     const handleFieldChange = (field: keyof AddUpdateMarketingContentRequest, value: any) => {
-
         setFormData((prev) => ({ ...prev, [field]: value }));
-
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
 
+    // #region HANDLE ADD CONTENT MODAL
     const handleAddMarketingContentModal = () => {
         setEditingMarketingContentData(null);
         setFormData({
             ...initialFormState(),
             ProjectId: Number(projectId),
             MarketingContentFolderId: marketingContentFolderId
-
         });
         setErrors({});
         setMarketingContentFiles([]);
@@ -403,7 +391,6 @@ export const MarketingContent: React.FC = () => {
 
     const validationAddUpdateMarketingContentForm = (): {
         isValid: boolean
-
         errors: { [key: string]: string }
 
     } => {
@@ -420,7 +407,6 @@ export const MarketingContent: React.FC = () => {
         if (!hasAnyDocumentFile(marketingContentFiles, marketingContentURL, removeMarketingContentUrls)) {
             newErrors.MarketingContentURL = "File is required.";
         }
-
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -431,7 +417,6 @@ export const MarketingContent: React.FC = () => {
     const PushMarketingContentFormData = (): FormData => {
 
         const fd = new FormData();
-
         fd.append('MarketingContentId', String(formData.MarketingContentId ?? 0));
         fd.append('MarketingContentFolderId', String(marketingContentFolderId));
         fd.append('Uniquekey', formData.Uniquekey ?? '');
@@ -452,7 +437,6 @@ export const MarketingContent: React.FC = () => {
     //#region ADD UPDATE MARKETING CONTENT 
     const handleAddUpdateMarketingContent = async (e: React.FormEvent) => {
         e.preventDefault();
-
         setErrors({})
 
         const validation = validationAddUpdateMarketingContentForm()
@@ -464,7 +448,6 @@ export const MarketingContent: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-
             setIsLoadingMessage,
             async () => {
 
@@ -476,7 +459,7 @@ export const MarketingContent: React.FC = () => {
 
                     setIsAddUpdateModalOpen(false);
 
-                    const isAdd = formData.MarketingContentId === null || formData.MarketingContentId === 0;
+                    const isAdd = formData.MarketingContentId === 0;
 
                     if (isAdd) {
 
@@ -508,14 +491,12 @@ export const MarketingContent: React.FC = () => {
                     setRemoveMarketingContentUrls([])
 
                 } else {
-
                     addToast({ type: "error", title: response.left?.message });
                 }
                 return response;
             },
             undefined,
             (error: any) => {
-
                 addToast({ type: 'error', title: error.message })
             },
             undefined,
@@ -534,9 +515,7 @@ export const MarketingContent: React.FC = () => {
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
-
             async () => {
-
                 const params: DeleteMarketingContentRequest = {
                     MarketingContentId: deleteMarketingContentData.MarketingContentId || 0,
                     Uniquekey: deleteMarketingContentData.Uniquekey || '',
@@ -548,21 +527,37 @@ export const MarketingContent: React.FC = () => {
 
                 if (E.isRight(response)) {
 
-                    setMarketingContentList(prevData => prevData.filter(item => item.MarketingContentId !== deleteMarketingContentData.MarketingContentId));
+                    const newTotalRecords = pagination.totalRecords - 1;
 
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    }
+                    else if (marketingContentList.length === 1 && pagination.currentPage > 1) {
+                        pageToShow = pagination.currentPage - 1;
+                    }
                     setPagination({
-                        currentPage: pagination.currentPage,
-                        totalRecords: pagination.totalRecords - 1,
-                        totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+                        currentPage: pageToShow,
+                        totalRecords: newTotalRecords,
+                        totalPages: newTotalPages
                     });
-
+                    await loadMarketingContent(
+                        pageToShow,
+                        {
+                            ...filters,
+                            MarketingContentFolderId: marketingContentFolderId
+                        },
+                        sortInfo
+                    );
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                     setIsConfirmationDialogBoxOpen(false);
                     setDeleteMarketingContentData(null);
 
                 } else {
                     addToast({ type: 'error', title: response.left.message });
-
                     setIsConfirmationDialogBoxOpen(false);
                 }
                 return response
@@ -617,7 +612,6 @@ export const MarketingContent: React.FC = () => {
                     canAction={false}
                     isLoading={isLoading}
                 />
-
             </div>
 
             {/* DATA TABLE CONTENT  */}
@@ -629,13 +623,13 @@ export const MarketingContent: React.FC = () => {
                 emptyMessage="No Content Data Found"
                 fixedHeight={true}
                 recordsPerPage={20}
+                maxHeight="calc(100vh - 255px)"
                 className="flex-1"
                 sortInfo={sortInfo}
                 onSort={handleSortColumn}
-                loading={isLoading}
             />
 
-            {/* ADD CONTENT  MODAL */}
+            {/* ADD CONTENT MODAL */}
 
             <Modal
                 isOpen={isAddUpdateModalOpen}
@@ -715,21 +709,13 @@ export const MarketingContent: React.FC = () => {
             </Modal >
 
             {/* DELETE CONFIRMATION MODAL */}
-            < ConfirmationDialogBox
+            <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
-                onClose={() => {
-                    setIsConfirmationDialogBoxOpen(false)
-                    setDeleteMarketingContentData(null)
-                }}
+                onClose={handleDeleteDialogClose}
                 onConfirm={handleDeleteMarketingContent}
-                title="You are about to delete a Content ?"
-                message="Deleting this Content  will permanently remove its contents."
-                confirmText="Delete"
-                cancelText="Cancel"
                 loading={isLoading}
-                variant="danger"
+                pageName='Content Document'
             />
-
         </div >
     )
 }

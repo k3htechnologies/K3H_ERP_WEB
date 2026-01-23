@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
@@ -8,8 +8,8 @@ import { useEffect, useState } from "react"
 import React from "react";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
-import type { AddUpdateDeductionMasterRequest, FilterWithPaginationDeductionMasterRequest } from "../models/DeductionMasterModel";
-import { DeductionMasterService } from "../services/DeductionMasterService";
+import type { AddUpdateDeductionMasterRequest, FilterWithPaginationDeductionMasterRequest } from "@/features/deductionMaster/models/DeductionMasterModel";
+import { deductionMasterService } from "@/features/deductionMaster/services/DeductionMasterService";
 import { fetchBranchMasterDropdown } from "@/features/branchMaster/branchMasterDropDown";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { CTC_EARNINGS, DEDUCTION_TYPE_OPTIONS, GENDER_OPTIONS } from "@/core/constants";
@@ -46,7 +46,6 @@ export const AddUpdateDeductionMaster: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate();
-  const location = useLocation();
 
   // GET VALUE FROM URL DEDUCTION MASTER ID
   const { DeductionMasterId } = useParams<{ DeductionMasterId?: string }>();
@@ -121,7 +120,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
           SortBy: ''
         };
 
-        const response = await DeductionMasterService.apiCallPullDeductionMaster(params);
+        const response = await deductionMasterService.apiCallPullDeductionMaster(params);
 
         if (E.isRight(response)) {
 
@@ -249,31 +248,12 @@ export const AddUpdateDeductionMaster: React.FC = () => {
       async () => {
         const payload = PushDeductionMasterFormData();
 
-        const response = await DeductionMasterService.apiCallAddUpdateDeductionMaster(payload);
+        const response = await deductionMasterService.apiCallAddUpdateDeductionMaster(payload);
 
         if (E.isRight(response)) {
           addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
 
-          const locationState = location.state as {
-            listState?: {
-              page?: number;
-              filters?: any;
-              sortInfo?: any;
-              searchTerm?: string;
-            };
-          } | null;
-
-          const listState = locationState?.listState || {
-            page: 1,
-            filters: {},
-            sortInfo: undefined,
-            searchTerm: '',
-          };
-
-          navigate("/deductionMaster",
-            {
-              state: { listState }
-            });
+          navigate("/deductionMaster");
 
         } else {
           addToast({ type: "error", title: response.left?.message });

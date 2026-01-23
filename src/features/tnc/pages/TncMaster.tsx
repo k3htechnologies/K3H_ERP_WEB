@@ -11,7 +11,7 @@ import type {
   DeleteTncMasterRequest
 } from '@/features/tnc/models/TncMasterModel';
 
-import { TncMasterService } from '@/features/tnc/services/TncMasterService';
+import { tncMasterService } from '@/features/tnc/services/TncMasterService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -25,10 +25,11 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { Tabs } from '@/ui/components/Tab/Tab';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { Edit, Trash2 } from 'lucide-react';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { Trash2 } from 'lucide-react';
 import RichTextEditor from '@/ui/components/forms/RichTextEditor';
 import { updateFilter } from '@/core/utils/filterHelper';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 const initialFormState = (): AddUpdateTncMasterRequest => ({
   TermsAndConditionsMasterId: 0,
@@ -43,7 +44,7 @@ export const TncMaster: React.FC = () => {
   //#region STATE
   const [tncList, setTncList] = useState<TncMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
@@ -141,23 +142,15 @@ export const TncMaster: React.FC = () => {
   //#endregion
 
   //#region DATA LOAD
-  const fetchTncList = async (page: number = pagination.currentPage,sort?: SortInfo) => {
-    return await loadTnc(page, filters ,sort ?? sortInfo);
+  const fetchTncList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadTnc(page, filters, sort ?? sortInfo);
   };
 
-  const loadTnc = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadTnc = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const column = tncColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
 
         const moduleName =
           filterParams.ModuleName?.toString().trim() ||
@@ -172,11 +165,11 @@ export const TncMaster: React.FC = () => {
             ? Number(filterParams.TermsAndConditionsMasterId)
             : undefined,
           ModuleName: moduleName,
-          Title: filterParams.Title?.trim() || undefined,
-          SortBy: sortByParam
+          Title: searchtext ?? filterParams.Title?.trim() ?? undefined,
+          SortBy: getSortByParam(sortInfo ?? null, tncColumns)
         };
 
-        const response = await getTnc(params);
+        const response = await tncMasterService.apiCallPullTncMaster(params);
 
         if (E.isRight(response)) {
           setTncList(response.right.Data);
@@ -216,12 +209,7 @@ export const TncMaster: React.FC = () => {
       return;
     }
 
-    const filterParams: FilterInfo = {
-      ...baseFilters,
-      Title: searchValue.trim()
-    };
-
-    await loadTnc(1, filterParams);
+    await loadTnc(1, filters, sortInfo, searchValue)
   };
 
   //#endregion
@@ -231,7 +219,7 @@ export const TncMaster: React.FC = () => {
   const clearSearchTnc = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
-    fetchTncList();
+    loadTnc(1, { DepartmentName: '' }, sortInfo, undefined);
   };
 
   //#endregion
@@ -240,15 +228,8 @@ export const TncMaster: React.FC = () => {
   const handleExportTnc = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-        if (sortInfo) {
-          const column = tncColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
 
         const params: FilterWithPaginationTncMasterRequest = {
           PageNumber: 1,
@@ -256,11 +237,11 @@ export const TncMaster: React.FC = () => {
           IsCheckPermission: true,
           ModuleName: activeTab?.trim() || undefined,
           Title: filters.Title?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, tncColumns),
           ExportType: exportType
         };
 
-        const response = await getTnc(params);
+        const response = await tncMasterService.apiCallPullTncMaster(params);
 
         handleExportFile(response, exportType, 'Terms & Conditions Master', addToast);
 
@@ -280,12 +261,6 @@ export const TncMaster: React.FC = () => {
 
   //#endregion
 
-  //#region API | SERVICES CALL TO GET T&C
-  const getTnc = async (filterParams: FilterWithPaginationTncMasterRequest) => {
-    return await TncMasterService.apiCallPullTncMaster(filterParams);
-  };
-  //#endregion
-
   //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = (page: number) => {
     fetchTncList(page);
@@ -293,10 +268,10 @@ export const TncMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = (sort: SortInfo) => {
+  const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
-    loadTnc(1, filters, sort);
-  };
+    loadTnc(1, filters, sort, searchTerm || undefined);
+  }, [filters, searchTerm]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -361,7 +336,7 @@ export const TncMaster: React.FC = () => {
         render: (value, row) => (
           <div className="flex items-center justify-start">
             <TooltipText
-              text={value || 'N/A'}
+              text={value || '-'}
               maxWidth="320px"
               tooltipThreshold={30}
               onClick={() => handleViewTncDetails(row)}
@@ -377,7 +352,7 @@ export const TncMaster: React.FC = () => {
         sortable: false,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="340px" tooltipThreshold={34} />
+          <TooltipText text={value || '-'} maxWidth="340px" tooltipThreshold={34} />
         )
       },
       {
@@ -499,7 +474,7 @@ export const TncMaster: React.FC = () => {
             {canAction && (
               <>
                 <Button
-                  color='gray'
+                  color='red'
                   variant='solid'
                   colorMode="light"
                   size='md'
@@ -510,7 +485,6 @@ export const TncMaster: React.FC = () => {
                     handleConfirmationDialogBoxOpen(data)
                   }}
                 >
-                  <Trash2 className="h-5 w-5" />
                   Delete
                 </Button>
 
@@ -524,7 +498,6 @@ export const TncMaster: React.FC = () => {
                     handleEditTncMaster(data)
                   }}
                 >
-                  <Edit className="h-5 w-5" />
                   Edit
                 </Button>
               </>
@@ -545,7 +518,7 @@ export const TncMaster: React.FC = () => {
 
   //#endregion
 
-  //#region CLEAR FILTER 
+  //#region Clear 
 
   const clearFilters = () => {
     setTempFilters({});
@@ -633,12 +606,12 @@ export const TncMaster: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const payload = PushTncMasterFormData();
 
-        const response = await TncMasterService.apiCallAddUpdateTncMaster(payload);
+        const response = await tncMasterService.apiCallAddUpdateTncMaster(payload);
 
         if (E.isRight(response)) {
 
@@ -708,7 +681,7 @@ export const TncMaster: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -717,17 +690,30 @@ export const TncMaster: React.FC = () => {
           UniqueKey: deleteTncMasterDetailsData.Uniquekey ?? ""
         }
 
-        const response = await TncMasterService.apiCallDeleteTncMaster(params);
+        const response = await tncMasterService.apiCallDeleteTncMaster(params);
 
         if (E.isRight(response)) {
 
-          setTncList(prevData => prevData.filter(item => item.TermsAndConditionsMasterId !== deleteTncMasterDetailsData.TermsAndConditionsMasterId));
+          const newTotalRecords = pagination.totalRecords - 1;
 
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (tncList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
           setPagination({
             currentPage: pagination.currentPage,
             totalRecords: pagination.totalRecords - 1,
             totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
           });
+
+          await loadTnc(pageToShow, filters, sortInfo);
 
           addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
@@ -755,201 +741,196 @@ export const TncMaster: React.FC = () => {
   //#endregion
 
   return (
-    
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <Loader loading={isLoading} title={loadingMessage}>
-          <div></div>
-        </Loader>
-        <TableActionToolbar
-          isShowSearchBar
-          searchTerm={searchTerm}
-          searchPlaceholder="Search By Title"
-          onSearchChange={v => {
-            setSearchTerm(v);
-            debouncedSearch(v);
-          }}
-          onClearSearch={clearSearchTnc}
-          isShowFilterButton={false}
-          filters={filters}
-          onOpenFilter={() => {
-            setTempFilters(filters);
-            setShowFilterPopup(true);
-          }}
-          isShowCustomizeButton={false}
-          onCustomize={() => setIsShowCustomizeTncColumnsModal(true)}
-          isShowAddButton={canAction}
-          addTitle="Add"
-          onAdd={handleAddTncModal}
-          isShowImportButton={false}
-          isShowExportButton={canExport && tncListForTable.length >0}
-          onExportExcel={handleExportTncExcel}
-          onExportPdf={handleExportTncPdf}
-          exportLoading={isLoading}
-        />
 
-        <Tabs
-          tabs={tncTabList}
-          defaultActive={activeTab}
-          islarge={true}
-          onTabChange={(t) => {
-            setActiveTab(t.id);
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <Loader loading={isLoading} title={loadingMessage}>
+        <div></div>
+      </Loader>
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Title"
+        onSearchChange={v => {
+          setSearchTerm(v);
+          debouncedSearch(v);
+        }}
+        onClearSearch={clearSearchTnc}
+        isShowFilterButton={false}
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters);
+          setShowFilterPopup(true);
+        }}
+        isShowCustomizeButton={false}
+        onCustomize={() => setIsShowCustomizeTncColumnsModal(true)}
+        isShowAddButton={canAction}
+        addTitle="Add"
+        onAdd={handleAddTncModal}
+        isShowImportButton={false}
+        isShowExportButton={canExport && tncListForTable.length > 0}
+        onExportExcel={handleExportTncExcel}
+        onExportPdf={handleExportTncPdf}
+        exportLoading={isLoading}
+      />
 
-            const newFilters: FilterInfo = {
-              ...filters,
-              ModuleName: t.id,
-            };
+      <Tabs
+        tabs={tncTabList}
+        defaultActive={activeTab}
+        islarge={true}
+        onTabChange={(t) => {
+          setActiveTab(t.id);
 
-            loadTnc(1, newFilters,sortInfo);
-            
-          }}
-        />
+          const newFilters: FilterInfo = {
+            ...filters,
+            ModuleName: t.id,
+          };
 
-        <DataTable
-          data={tncListForTable}
-          columns={visibleTncColumns}
-          pagination={tncPaginationInfo}
-          emptyMessage="No terms & conditions found"
-          fixedHeight
-          maxHeight="calc(100vh - 255px)"
-          recordsPerPage={20}
-          className="flex-1"
-          sortInfo={sortInfo}
-          onSort={handleSortColumn}
-        />
-        <ViewTncDetailsModal
-          isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false);
-            setViewTncData(null);
-          }}
-          data={viewTncData}
-        />
-        {/*  ADD EDIT UPDATE TNC MODAL */}
+          loadTnc(1, newFilters, sortInfo);
 
-        <Modal
-          isOpen={isAddUpdateModalOpen}
-          onClose={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingTncMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          onCancel={() => {
-            setIsAddUpdateModalOpen(false);
-            setEditingTncMasterData(null);
-            setFormData(initialFormState());
-            setErrors({});
-          }}
-          title={editingTncMasterData ? 'Update Terms & Condtion' : 'Add Terms & Condtion'}
-          onSubmit={handleAddUpdateTncMaster}
-          saveText={editingTncMasterData ? 'Update T&C' : 'Save T&C'}
-          loading={isLoading}
-          size='xl'
-        >
-          <div className="space-y-6 p-6  bg-blue-100">
-            <div className="space-y-4">
-              <div>
+        }}
+      />
 
-                <Input
-                  label='Title'
-                  type="text"
-                  required
-                  value={formData.Title}
-                  error={errors.Title}
-                  onChange={(e) => handleFieldChange('Title', e.target.value)}
-                  placeholder="Enter title"
-                />
-              </div>
+      <DataTable
+        data={tncListForTable}
+        columns={visibleTncColumns}
+        pagination={tncPaginationInfo}
+        emptyMessage="No terms & conditions found"
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
+      <ViewTncDetailsModal
+        isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false);
+          setViewTncData(null);
+        }}
+        data={viewTncData}
+      />
+      {/*  ADD EDIT UPDATE TNC MODAL */}
+
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingTncMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingTncMasterData(null);
+          setFormData(initialFormState());
+          setErrors({});
+        }}
+        title={editingTncMasterData ? 'Update Terms & Condtion' : 'Add Terms & Condtion'}
+        onSubmit={handleAddUpdateTncMaster}
+        saveText={editingTncMasterData ? 'Update' : 'Add'}
+        loading={isLoading}
+        size='xl'
+      >
+        <div className="space-y-6 p-6  bg-blue-100">
+          <div className="space-y-4">
+            <div>
+
+              <Input
+                label='Title'
+                type="text"
+                required
+                value={formData.Title}
+                error={errors.Title}
+                onChange={(e) => handleFieldChange('Title', e.target.value)}
+                placeholder="Enter Title"
+              />
+            </div>
 
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description <span className="text-red-500">*</span>
-                </label>
-                <RichTextEditor
-                  value={formData.Description}
-                  onChange={(html) => handleFieldChange('Description', html)}
-                  placeholder="Enter description"
-                />
-                {errors.Description && (
-                  <p className="text-red-500 text-sm mt-1">{errors.Description}</p>
-                )}
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description <span className="text-red-500">*</span>
+              </label>
+              <RichTextEditor
+                value={formData.Description}
+                onChange={(html) => handleFieldChange('Description', html)}
+                placeholder="Enter Description"
+              />
+              {errors.Description && (
+                <p className="text-red-500 text-sm mt-1">{errors.Description}</p>
+              )}
+            </div>
 
+          </div>
+        </div>
+      </Modal>
+
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeTncColumnsModal}
+        onClose={() => setIsShowCustomizeTncColumnsModal(false)}
+        onApply={keys => {
+          const withRequired = Array.from(new Set([...keys, ...requiredTncColumnKeys]));
+          setSelectedTncColumnKeys(withRequired);
+          try {
+            LocalStorageHelper.storeTncMasterTableColumns?.(JSON.stringify(withRequired));
+          } catch {
+            // ignore
+          }
+        }}
+        columns={tncColumns}
+        selectedKeys={selectedTncColumnKeys}
+        requiredKeys={requiredTncColumnKeys}
+        title="Customize Table Columns"
+      />
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Terms & Conditions Master"
+        onSubmit={e => {
+          e.preventDefault();
+          applyFilters();
+        }}
+        saveText="Apply"
+        cancelText="Clear"
+        onCancel={() => clearFilters()}
+        size="half-screen"
+      >
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+
+              <Input
+                label="Module Name"
+                type="text"
+                value={tempFilters.ModuleName || ''}
+                onChange={e => handleFilterChange('ModuleName', e.target.value)}
+                placeholder="Enter Module Name"
+              />
+            </div>
+            <div>
+              <Input
+                label="Title"
+                type="text"
+                value={tempFilters.Title || ''}
+                onChange={e => handleFilterChange('Title', e.target.value)}
+                placeholder="Enter Title"
+              />
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        <CustomizeColumnsModal
-          isOpen={isShowCustomizeTncColumnsModal}
-          onClose={() => setIsShowCustomizeTncColumnsModal(false)}
-          onApply={keys => {
-            const withRequired = Array.from(new Set([...keys, ...requiredTncColumnKeys]));
-            setSelectedTncColumnKeys(withRequired);
-            try {
-              LocalStorageHelper.storeTncMasterTableColumns?.(JSON.stringify(withRequired));
-            } catch {
-              // ignore
-            }
-          }}
-          columns={tncColumns}
-          selectedKeys={selectedTncColumnKeys}
-          requiredKeys={requiredTncColumnKeys}
-          title="Customize Terms & Conditions Master Table Columns"
-        />
-        <Modal
-          isOpen={showFilterPopup}
-          onClose={() => setShowFilterPopup(false)}
-          title="Filter - Terms & Conditions Master"
-          onSubmit={e => {
-            e.preventDefault();
-            applyFilters();
-          }}
-          saveText="Apply Filter"
-          cancelText="Clear Filter"
-          onCancel={() => clearFilters()}
-          size="half-screen"
-        >
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Module Name</label>
-                <Input
-                  type="text"
-                  value={tempFilters.ModuleName || ''}
-                  onChange={e => handleFilterChange('ModuleName', e.target.value)}
-                  placeholder="Enter module name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                <Input
-                  type="text"
-                  value={tempFilters.Title || ''}
-                  onChange={e => handleFilterChange('Title', e.target.value)}
-                  placeholder="Enter title"
-                />
-              </div>
-            </div>
-          </div>
-        </Modal>
-
-        {/* DELETE CONFIRMATION TNC MODAL */}
-        <ConfirmationDialogBox
-          isOpen={isConfirmationDialogBoxOpen}
-          onClose={() => {
-            setIsConfirmationDialogBoxOpen(false)
-            setDeleteTncMasterDetailsData(null)
-          }}
-          onConfirm={handleDeleteTncMaster}
-          title="You are about to delete a tnc?"
-          message="Deleting this terms & Conditions will permanently remove its contents."
-          confirmText="Delete"
-          cancelText="Cancel"
-          loading={isLoading}
-          variant="danger"
-        />
-      </div>
+      {/* DELETE CONFIRMATION TNC MODAL */}
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteTncMasterDetailsData(null)
+        }}
+        onConfirm={handleDeleteTncMaster}
+        loading={isLoading}
+        pageName='tnc'
+      />
+    </div>
   );
 };
 

@@ -15,18 +15,56 @@ export default function ExportImport({
 
   const [files, setFiles] = useState<(File | string)[]>([]);
   const [mergeExisting, setMergeExisting] = useState<string>("1");
+  const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
     if (!open) {
       setFiles([]);
-      setMergeExisting("1");   // optional reset Yes
+      setMergeExisting("1");
     }
   }, [open])
-  
+
+  const validateFileForm = () => {
+    const newErrors: { [key: string]: string } = {}
+
+    if (!files.length) {
+      newErrors.file = "Excel file is required";
+    } else {
+      const file = files[0] as File;
+
+      const allowedTypes = [
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "text/csv",
+        "application/octet-stream"
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        newErrors.file = "Only Excel or CSV files are allowed";
+      }
+    }
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors
+    }
+  }
+
+
   const handleSubmit = () => {
-    if (!files.length) return;
+
+    const { isValid, errors } = validateFileForm();
+
+    if (!isValid) {
+
+      setErrorMessage(errors.file);
+
+      return;
+    }
+
     onUpload(files[0] as File, mergeExisting);
   };
+
 
   return (
     <Modal
@@ -39,16 +77,19 @@ export default function ExportImport({
         handleSubmit();
       }}
       size="md"
-      resetText=""
     >
       <div className="space-y-6">
 
         <MultiFilePicker
           label="Upload Excel"
           value={files}
-          onChange={setFiles}
+          onChange={(val) => {
+            setFiles(val);
+            setErrorMessage("");
+          }}
           allowedTypes={[".xlsx", ".xls", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/octet-stream", "text/csv"]}
           maxFiles={1}
+          error={errorMessage}
         />
 
         <div>

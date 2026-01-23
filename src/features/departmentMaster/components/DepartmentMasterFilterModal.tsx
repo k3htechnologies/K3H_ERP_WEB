@@ -42,25 +42,23 @@ export const DepartmentMasterFilterModal: React.FC<DepartmentFilterModalProps> =
       }}
       saveText="Apply"
       onCancel={onClear}
-      resetText=''
+     
       cancelText="Clear"
       size="small-half"
     >
       <div className="space-y-6">
-        <div className="space-y-4">
-          <div>
-            {filterFields.map((field) => (
-              <Input
-                key={field.key}
-                label={field.label}
-                type={field.type}
-                value={tempFilters[field.key] ?? ''}
-                onChange={(e) => onFilterChange(field.key, e.target.value)}
-                placeholder={field.placeholder || ''}
-              />
-            ))}
+        {filterFields.map((field) => (
+          <div key={field.key} className="mb-5">
+            <Input
+              label={field.label}
+              type={field.type}
+              value={tempFilters[field.key] ?? ''}
+              onChange={(e) => onFilterChange(field.key, e.target.value)}
+              placeholder={field.placeholder || ''}
+            />
           </div>
-        </div>
+        ))}
+
       </div>
     </Modal>
   );

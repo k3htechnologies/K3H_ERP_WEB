@@ -1,9 +1,9 @@
 import * as E from 'fp-ts/Either';
-import { LeaveTypeMasterService } from '@/features/leaveTypeMaster/services/LeaveTypeMasterService';
+import { leaveTypeMasterService } from '@/features/leaveTypeMaster/services/LeaveTypeMasterService';
 
 export const fetchLeaveTypeMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
-        const responseEither = await LeaveTypeMasterService.apiCallPullLeaveTypeMaster({
+        const responseEither = await leaveTypeMasterService.apiCallPullLeaveTypeMaster({
             PageSize: 10,
             PageNumber: pageNumber,
             LeaveType: params?.value || ''

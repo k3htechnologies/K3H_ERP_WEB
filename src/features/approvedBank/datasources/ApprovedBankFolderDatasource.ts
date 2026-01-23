@@ -10,7 +10,7 @@ import type {
     FilterWithPaginationApprovedBankFolderRequest
 
 } from "@/features/approvedBank/models/ApprovedBankFolderModel";
-import { ApprovedBankFolderApi } from "../api/ApprovedBankFolderApi";
+import { ApprovedBankFolderApi } from "@/features/approvedBank/api/ApprovedBankFolderApi";
 
 export abstract class ApprovedBankWithFolderDatasource {
 
@@ -57,13 +57,13 @@ export class ApprovedBankWithFolderDatasourceImpl implements ApprovedBankWithFol
         try {
 
             const payLoad: AddUpdateApprovedBankFolderRequest = {
-                
+
                 ApprovedBankFolderId: params.ApprovedBankFolderId ?? 0,
                 ProjectId: params.ProjectId ?? 0,
                 BankListMasterId: params.BankListMasterId ?? '',
                 Uniquekey: params.Uniquekey ?? '',
             }
-            
+
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 ApprovedBankFolderApi.ADD_UPDATE,
                 payLoad

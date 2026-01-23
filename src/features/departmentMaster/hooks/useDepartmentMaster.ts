@@ -73,7 +73,7 @@ export const useDepartmentMaster = () => {
     fetchDepartmentList()
   }, [])
 
-  //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
+ 
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
@@ -112,7 +112,7 @@ export const useDepartmentMaster = () => {
     return await loadDepartments(page, filters, sort ?? sortInfo);
   }
 
-  const loadDepartments = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadDepartments = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -123,7 +123,7 @@ export const useDepartmentMaster = () => {
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           DepartmentMasterId: filterParams.DepartmentMasterId ? Number(filterParams.DepartmentMasterId) : 0,
-          DepartmentName: filterParams.DepartmentName?.trim() || undefined,
+          DepartmentName: searchtext ?? filterParams.DepartmentName ?? undefined,
           SortBy: getSortByParam(sortInfo ?? null, departmentMasterColumns)
         }
 
@@ -142,7 +142,7 @@ export const useDepartmentMaster = () => {
         } else {
 
           addToast({ type: 'error', title: response.left.message });
-          
+
         }
 
         return response
@@ -159,27 +159,30 @@ export const useDepartmentMaster = () => {
 
   //#region SEARCH DEPARTMENT 
   const searchDepartments = async (searchValue: string) => {
+
     setSearchTerm(searchValue);
 
     if (searchValue.trim() === '') {
+
       fetchDepartmentList();
+
       return
     }
 
-    const filterParams: FilterInfo = {
-      DepartmentName: searchValue.trim(),
-    };
-
-    await loadDepartments(1, filterParams)
+    await loadDepartments(1, filters, sortInfo, searchValue)
   }
   //#endregion
 
   //#region CLEAR SEARCH DEPARTMENT 
   const clearsearchDepartments = () => {
-    setSearchTerm('');
+
     debouncedSearch.cancel?.();
-    fetchDepartmentList();
-  }
+
+    setSearchTerm('');
+
+    loadDepartments(1, { DepartmentName: '' }, sortInfo, undefined);
+  };
+
   //#endregion
 
   //#region EXPORT EXCEL | PDF
@@ -194,7 +197,7 @@ export const useDepartmentMaster = () => {
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
           DepartmentName: filters.DepartmentName?.trim() || undefined,
-          SortBy:  getSortByParam(sortInfo ?? null, departmentMasterColumns),
+          SortBy: getSortByParam(sortInfo ?? null, departmentMasterColumns),
           ExportType: exportType
         }
 
@@ -223,9 +226,13 @@ export const useDepartmentMaster = () => {
 
   //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback((sort: SortInfo) => {
+
     setSortInfo(sort);
-    loadDepartments(1, filters, sort);
-  }, [filters]);
+
+    loadDepartments(1, filters, sort, searchTerm || undefined);
+
+  }, [filters, searchTerm]);
+
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
@@ -293,7 +300,7 @@ export const useDepartmentMaster = () => {
   }
   //#endregion
 
-  //#region CLEAR FILTER 
+  //#region Clear 
   const clearFilters = () => {
     setTempFilters({})
     setFilters({})
@@ -414,6 +421,7 @@ export const useDepartmentMaster = () => {
                   : item
               )
             )
+            
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 
@@ -439,7 +447,7 @@ export const useDepartmentMaster = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        
+
         const params: FilterPullExcelSample = {
           TableName: 'DEPARTMENT MASTER'
         }
@@ -507,6 +515,7 @@ export const useDepartmentMaster = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
+
         const params: DeleteDepartmentMasterRequest = {
           DepartmentMasterId: deleteDepartmentMasterDetailsData.DepartmentMasterId,
           UniqueKey: deleteDepartmentMasterDetailsData.Uniquekey
@@ -516,13 +525,27 @@ export const useDepartmentMaster = () => {
 
         if (E.isRight(response)) {
 
-          setDepartmentMasterList(prevData => prevData.filter(item => item.DepartmentMasterId !== deleteDepartmentMasterDetailsData.DepartmentMasterId));
+          const newTotalRecords = pagination.totalRecords - 1;
+
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (departmentMasterList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
 
           setPagination({
-            currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords - 1,
-            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+            currentPage: pageToShow,
+            totalRecords: newTotalRecords,
+            totalPages: newTotalPages
           });
+
+          await loadDepartments(pageToShow, filters, sortInfo);
 
           addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 

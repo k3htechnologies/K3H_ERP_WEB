@@ -16,7 +16,7 @@ import { SinglePageSelection } from '../components/DropDown/SinglePageSelection'
 import { useProject } from '@/features/projectMaster/context/ProjectContext'
 import { shouldShowProjectSelection } from '@/core/utils/projectSelectionVisibility'
 import { isSubSubRoute } from '@/core/utils/fileValidation'
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService'
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService'
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData } from '@/features/projectMaster/models/ProjectMasterModel'
 import NoDataView from '../components/NoDataView/NoDataView'
 import TableActionToolbar from '../components/TableAction/TableActionToolbar'
@@ -79,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({
     const [isFetchingMoreNotification, setIsFetchingMoreNotification] = useState(false);
 
     const [, setIsLoading] = useState(false);
-    const [, setIsLoadingMessage] = useState('');
+    const [, setLoadingMessage] = useState('');
 
     // TOAST
     const { addToast } = useToast()
@@ -138,7 +138,7 @@ export const Header: React.FC<HeaderProps> = ({
     const loadNotifications = async (page: number) => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationNotificationRequest = {
@@ -222,7 +222,7 @@ export const Header: React.FC<HeaderProps> = ({
     const loadProjectMaster = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationProjectMasterRequest = {
@@ -232,7 +232,7 @@ export const Header: React.FC<HeaderProps> = ({
                     ProjectId: Number(projectId)
                 }
 
-                const response = await ProjectMasterService.apiCallPullProjectMaster(params);
+                const response = await projectMasterService.apiCallPullProjectMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -257,10 +257,10 @@ export const Header: React.FC<HeaderProps> = ({
     const loadProjectMasterWithEmployee = async (searchText = "") => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
-                const response = await ProjectMasterService.apiCallPullProjectMasterWithEmployee(Number(projectId), searchText);
+                const response = await projectMasterService.apiCallPullProjectMasterWithEmployee(Number(projectId), searchText);
 
                 if (E.isRight(response)) {
 
@@ -305,7 +305,7 @@ export const Header: React.FC<HeaderProps> = ({
     const handleSubmitMPIN = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 if (MPIN.length !== 4) {
@@ -389,7 +389,7 @@ export const Header: React.FC<HeaderProps> = ({
                             disabled={readOnlyProject}
                             leftIcon={<Info size={18} color="#135BEC" />}
                             leftIconClick={() => {
-                                
+
                                 if (!projectId || projectId <= 0) return;
 
                                 loadProjectMaster();

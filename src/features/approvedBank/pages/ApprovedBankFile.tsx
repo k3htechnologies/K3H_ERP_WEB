@@ -9,7 +9,6 @@ import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
-import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import usePagination from "@/core/hooks/usePagination";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
@@ -22,6 +21,8 @@ import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 
 const initialFormState = (): AddUpdateApprovedBankFileRequest => ({
     ApprovedBankFileId: 0,
@@ -90,35 +91,21 @@ export const ApprovedBankFile: React.FC = () => {
     const approvedBankFolderId = location?.state?.ApprovedBankData?.ApprovedBankFolderId ?? 0;
     //#endregion
 
-    //#region DATA LOADING | FETCH |  LOAD | SEARCH 
-
-    const fetchApprovedBankFileList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-        return await loadApprovedBankFile(page, filters, sort);
-    }
-
-    const loadApprovedBankFile = useCallback(async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+    //#region DATA LOADING | LOAD | SEARCH 
+    const loadApprovedBankFile = useCallback(async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
 
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
             async () => {
-                let sortByParam = undefined;
-
-                if (sortInfo) {
-
-                    const column = ApprovedBankFileColumns.find(col => col.key === sortInfo.column);
-                    if (column) {
-                        sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-                    }
-                }
                 const params: FilterWithPaginationApprovedBankFileRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     ApprovedBankFileId: filterParams.ApprovedBankFileId ? Number(filterParams.ApprovedBankFileId) : undefined,
                     ApprovedBankFolderId: filterParams.ApprovedBankFolderId ? Number(filterParams.ApprovedBankFolderId) : undefined,
-                    ApprovedBankFileName: filterParams.ApprovedBankFileName?.trim() || undefined,
-                    SortBy: sortByParam
+                    ApprovedBankFileName: searchtext ?? filterParams.ApprovedBankFileName ?? undefined,
+                    SortBy: getSortByParam(sortInfo ?? null, ApprovedBankFileColumns)
                 };
 
                 const response = await approvedBankFileService.apiCallPullApprovedBankFile(params);
@@ -146,11 +133,9 @@ export const ApprovedBankFile: React.FC = () => {
     useEffect(() => {
 
         if (!projectId || !approvedBankFolderId) return;
-
         loadApprovedBankFile(1, {
             ApprovedBankFolderId: approvedBankFolderId
         });
-
     }, [projectId, approvedBankFolderId]);
 
     //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
@@ -195,7 +180,6 @@ export const ApprovedBankFile: React.FC = () => {
 
         setSearchTerm(searchValue);
         if (searchValue.trim() === '') {
-
             await loadApprovedBankFile(1, { ApprovedBankFolderId: approvedBankFolderId });
             return
         }
@@ -225,12 +209,15 @@ export const ApprovedBankFile: React.FC = () => {
 
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
-        fetchApprovedBankFileList(page);
-    }, []);
+        loadApprovedBankFile(
+            page,
+            { ApprovedBankFolderId: approvedBankFolderId },
+            sortInfo
+        );
+    }, [approvedBankFolderId, sortInfo]);
 
     //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
-
         setSortInfo(sort);
         loadApprovedBankFile(1, filters, sort);
 
@@ -257,6 +244,11 @@ export const ApprovedBankFile: React.FC = () => {
     }, [])
     //#endregion
 
+    const handleDeleteDialogClose = useCallback(() => {
+        setIsConfirmationDialogBoxOpen(false);
+        setDeleteApprovedBankFileData(null);
+    }, [setIsConfirmationDialogBoxOpen, setDeleteApprovedBankFileData]);
+
     //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: ApprovedBankFileData) => {
         setDeleteApprovedBankFileData(row)
@@ -272,10 +264,8 @@ export const ApprovedBankFile: React.FC = () => {
             totalRecords: pagination.totalRecords,
             pageSize: pagination.pageSize,
             onPageChange: handlePageChange
-        }),
+        }),[pagination, handlePageChange]);
 
-        [pagination, handlePageChange]
-    );
     const ApprovedBankFileForTable = useMemo(() => approvedBankFileList, [approvedBankFileList]);
 
     //#region TABLE COLUMNS
@@ -305,7 +295,7 @@ export const ApprovedBankFile: React.FC = () => {
             width: '33',
             sortable: true,
             align: 'center',
-            render: (value) => value || 'N/A'
+            render: (value) => value || '-'
         },
         {
             key: 'CreatedDate',
@@ -329,7 +319,7 @@ export const ApprovedBankFile: React.FC = () => {
                                 color="transparent"
                                 size="sm"
                                 style={{
-                                    color: '#0B3251',
+                                    color: 'blue',
                                     padding: '0px 8px'
                                 }}
                                 onClick={(e) => {
@@ -363,9 +353,7 @@ export const ApprovedBankFile: React.FC = () => {
     ], [canAction, handleEditApprovedBankFile, handleConfirmationDialogBoxOpen])
 
     const handleFieldChange = (field: keyof AddUpdateApprovedBankFileRequest, value: any) => {
-
         setFormData((prev) => ({ ...prev, [field]: value }));
-
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
@@ -377,7 +365,6 @@ export const ApprovedBankFile: React.FC = () => {
             ...initialFormState(),
             ProjectId: Number(projectId),
             ApprovedBankFolderId: approvedBankFolderId
-
         });
         setErrors({});
         setApprovedBankFiles([]);
@@ -390,7 +377,6 @@ export const ApprovedBankFile: React.FC = () => {
 
     const validationAddUpdateApprovedBankFileForm = (): {
         isValid: boolean
-
         errors: { [key: string]: string }
 
     } => {
@@ -403,7 +389,6 @@ export const ApprovedBankFile: React.FC = () => {
         if (!hasAnyDocumentFile(approvedBankFiles, approvedBankFileURL, removeApprovedBankFileUrls)) {
             newErrors.ApprovedBankFileURL = "File is required.";
         }
-
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -414,7 +399,6 @@ export const ApprovedBankFile: React.FC = () => {
     const PushApprovedBankFileFormData = (): FormData => {
 
         const fd = new FormData();
-
         fd.append('ApprovedBankFileId', String(formData.ApprovedBankFileId ?? 0));
         fd.append('ApprovedBankFolderId', String(approvedBankFolderId));
         fd.append('Uniquekey', formData.Uniquekey ?? '');
@@ -439,39 +423,32 @@ export const ApprovedBankFile: React.FC = () => {
         const validation = validationAddUpdateApprovedBankFileForm()
 
         if (!validation.isValid) {
-
             setErrors(validation.errors)
             return
         }
-
         await runApiWithLoader(
             setIsLoading,
-
             setIsLoadingMessage,
             async () => {
 
                 const payload = PushApprovedBankFileFormData();
                 const response = await approvedBankFileService.apiCallAddUpdateApprovedBankFile(payload);
-
                 if (E.isRight(response)) {
 
                     setIsAddUpdateModalOpen(false);
 
-                    const isAdd = formData.ApprovedBankFileId === null || formData.ApprovedBankFileId === 0;
+                    const isAdd = formData.ApprovedBankFileId === 0;
 
                     if (isAdd) {
                         const newRecord = response.right.Data[0] as ApprovedBankFileData
-
                         setApprovedBankFileList(prevData => [newRecord, ...prevData]);
                         setPagination({
                             currentPage: pagination.currentPage,
                             totalRecords: pagination.totalRecords + 1,
                             totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
                         });
-
                         addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                     } else {
-
                         const updatedRecord = response.right.Data[0] as ApprovedBankFileData;
                         setApprovedBankFileList(prevData =>
                             prevData.map(item =>
@@ -486,7 +463,6 @@ export const ApprovedBankFile: React.FC = () => {
                     setApprovedBankFiles([])
                     setApprovedBankFileURL('')
                     setRemoveApprovedBankFileUrls([])
-
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -499,20 +475,17 @@ export const ApprovedBankFile: React.FC = () => {
             undefined,
             'Add Approved Bank File'
         )
-
     };
     //#endregion
 
     //#region DELETE APPROVED BANK FILE
     const handleDeleteApprovedBankFile = async () => {
-
         setIsConfirmationDialogBoxOpen(false);
         if (!deleteApprovedBankFileData) return
 
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
-
             async () => {
 
                 const params: DeleteApprovedBankFileRequest = {
@@ -521,23 +494,39 @@ export const ApprovedBankFile: React.FC = () => {
                     ApprovedBankFolderId: deleteApprovedBankFileData.ApprovedBankFolderId,
                     ProjectId: deleteApprovedBankFileData.ProjectId
                 }
-
                 const response = await approvedBankFileService.apiCallDeleteApprovedBankFile(params);
 
                 if (E.isRight(response)) {
 
-                    setApprovedBankFileList(prevData => prevData.filter(item => item.ApprovedBankFileId !== deleteApprovedBankFileData.ApprovedBankFileId));
+                    const newTotalRecords = pagination.totalRecords - 1;
+
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    }
+
+                    else if (approvedBankFileList.length === 1 && pagination.currentPage > 1) {
+                        pageToShow = pagination.currentPage - 1;
+                    }
                     setPagination({
-                        currentPage: pagination.currentPage,
-                        totalRecords: pagination.totalRecords - 1,
-                        totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+                        currentPage: pageToShow,
+                        totalRecords: newTotalRecords,
+                        totalPages: newTotalPages
                     });
-
+                    await loadApprovedBankFile(
+                        pageToShow,
+                        {
+                            ...filters,
+                            ApprovedBankFolderId: approvedBankFolderId
+                        },
+                        sortInfo
+                    );
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-
                     setIsConfirmationDialogBoxOpen(false);
                     setDeleteApprovedBankFileData(null);
-
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                     setIsConfirmationDialogBoxOpen(false);
@@ -594,7 +583,6 @@ export const ApprovedBankFile: React.FC = () => {
                     canAction={false}
                     isLoading={isLoading}
                 />
-
             </div>
 
             {/* DATA TABLE APPROVED BANK FILE*/}
@@ -605,12 +593,11 @@ export const ApprovedBankFile: React.FC = () => {
                 pagination={ApprovedBankFilePaginationInfo}
                 emptyMessage="No Approved Bank File Found"
                 fixedHeight={true}
-                maxHeight="calc(100vh - 255px)"
                 recordsPerPage={20}
+                maxHeight="calc(100vh - 255px)"
                 className="flex-1"
                 sortInfo={sortInfo}
                 onSort={handleSortColumn}
-                loading={isLoading}
             />
 
             {/* ADD APPROVED BANK FILE MODAL */}
@@ -663,7 +650,6 @@ export const ApprovedBankFile: React.FC = () => {
                             <MultiFilePicker
                                 label="Files"
                                 placeholder='Select Files'
-                                required
                                 value={approvedBankFiles}
                                 onChange={setApprovedBankFiles}
                                 availableFilesURL={approvedBankFileURL ?? ""}
@@ -683,21 +669,13 @@ export const ApprovedBankFile: React.FC = () => {
             </Modal>
 
             {/* DELETE CONFIRMATION MODAL */}
-            <ConfirmationDialogBox
+            <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
-                onClose={() => {
-                    setIsConfirmationDialogBoxOpen(false)
-                    setDeleteApprovedBankFileData(null)
-                }}
+                onClose={handleDeleteDialogClose}
                 onConfirm={handleDeleteApprovedBankFile}
-                title="You are about to delete a Approved Bank File?"
-                message="Deleting this Approved Bank File will permanently remove its contents."
-                confirmText="Delete"
-                cancelText="Cancel"
                 loading={isLoading}
-                variant="danger"
+                pageName='Approved Bank File'
             />
-
         </div>
     )
 }

@@ -65,3 +65,4 @@ export interface EmployeeResignationDeleteResponse extends ApiResponse {
   Data: number[]
 }
 
+

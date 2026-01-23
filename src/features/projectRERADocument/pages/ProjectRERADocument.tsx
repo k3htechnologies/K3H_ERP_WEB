@@ -8,7 +8,7 @@ import type { AddUpdateProjectRERADocumentRequest, DeleteProjectRERADocumentRequ
 import usePagination from '@/core/hooks/usePagination';
 import { type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import * as E from 'fp-ts/Either';
-import { ProjectRERADocumentService } from '../services/ProjectRERADocumentService';
+import { projectRERADocumentService } from '@/features/projectRERADocument/services/ProjectRERADocumentService';
 import DataTableExpandable, { type DataTableExpandableRef } from '@/ui/components/DataTable/DataTableExpandable';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
@@ -26,9 +26,9 @@ import { PROJECT_DOCUMENT_STATUS } from '@/core/constants';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { getDocumentStatusColor } from '@/features/projectDocument/pages/ProjectDocumentStatus';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 
 const initialFormState = (): AddUpdateProjectRERADocumentRequest => ({
@@ -51,7 +51,7 @@ const ProjectRERADocument: React.FC = () => {
   //#region STATE
   const [projectRERADocumentList, setProjectRERADocumentList] = useState<ProjectRERADocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [expandHeaderProjectRERADocumentName, setExpandHeaderProjectRERADocumentName] = useState<string>('');
   const [expandHeaderProjectRERADocumentId, setExpandHeaderProjectRERADocumentId] = useState<number>(0);
 
@@ -212,7 +212,7 @@ const ProjectRERADocument: React.FC = () => {
   const loadProjectRERADocumentTabs = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const response = await fetchProjectRERADocumentCategoryDropdown(1, Number(projectId));
@@ -267,7 +267,7 @@ const ProjectRERADocument: React.FC = () => {
   const loadProjectRERADocument = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
 
@@ -289,7 +289,7 @@ const ProjectRERADocument: React.FC = () => {
           SortBy: sortByParam
         };
 
-        const response = await ProjectRERADocumentService.apiCallPullProjectRERADocument(params);
+        const response = await projectRERADocumentService.apiCallPullProjectRERADocument(params);
 
         if (E.isRight(response)) {
 
@@ -803,13 +803,13 @@ const ProjectRERADocument: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
         const payload = PushDocumentDetailsFormData();
 
-        const response = await ProjectRERADocumentService.apiCallAddUpdateProjectRERADocument(payload);
+        const response = await projectRERADocumentService.apiCallAddUpdateProjectRERADocument(payload);
 
         if (E.isRight(response)) {
 
@@ -882,7 +882,7 @@ const ProjectRERADocument: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -895,7 +895,7 @@ const ProjectRERADocument: React.FC = () => {
 
         }
 
-        const response = await ProjectRERADocumentService.apiCallDeleteProjectRERADocument(params);
+        const response = await projectRERADocumentService.apiCallDeleteProjectRERADocument(params);
 
         if (E.isRight(response)) {
 
@@ -971,7 +971,7 @@ const ProjectRERADocument: React.FC = () => {
           onTabChange={(t) => {
 
             setSearchTerm('');
-            
+
             setActiveTab(t.id);
 
             setActiveTabName(t.label);
@@ -1017,7 +1017,7 @@ const ProjectRERADocument: React.FC = () => {
             };
 
 
-            const response = await ProjectRERADocumentService.apiCallPullProjectRERADocument(params);
+            const response = await projectRERADocumentService.apiCallPullProjectRERADocument(params);
 
             if (E.isRight(response)) {
 
@@ -1077,8 +1077,8 @@ const ProjectRERADocument: React.FC = () => {
         }}
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(e)}
-        saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
-        resetText='Reset'
+        saveText={editingDocumentData ? 'Update' : 'Add'}
+        
         loading={isLoading}
         size='xl'
       >
@@ -1153,22 +1153,16 @@ const ProjectRERADocument: React.FC = () => {
 
       </Modal>
       {/* DELETE CONFIRMATION DIALOG BOX */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteProjectRERADocumentDetailsData(null)
         }}
         onConfirm={handleDeleteProjectRERADocument}
-        title="You are about to delete a RERA document?"
-        message="Deleting this RERA document will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='RERA document'
       />
-
-
     </div>
   );
 };

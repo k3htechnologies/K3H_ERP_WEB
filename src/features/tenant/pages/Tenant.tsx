@@ -31,13 +31,13 @@ import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { useTenantListState } from '@/features/tenant/context/TenantListStateContext';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 export const Tenant: React.FC = () => {
   //#region STATE
   const [tenantList, setTenantList] = useState<TenantData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
 
   const { pagination, setPagination } = usePagination(20);
@@ -57,7 +57,7 @@ export const Tenant: React.FC = () => {
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
-    const [deleteTenantData, setDeleteTenantData] = useState<TenantData | null>(null)
+  const [deleteTenantData, setDeleteTenantData] = useState<TenantData | null>(null)
 
 
   //#endregion
@@ -75,7 +75,7 @@ export const Tenant: React.FC = () => {
   const loadTenants = useCallback(async (pageNum: number, filterParams: FilterInfo, buildingIdNum: number) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         let sortByParam: string | undefined;
@@ -95,8 +95,15 @@ export const Tenant: React.FC = () => {
           ProjectId: Number(projectId),
           BuildingId: buildingIdNum,
           FlatNumber: filterParams.FlatNumber?.trim() || undefined,
+          ApplicantName: filterParams.ApplicantName?.trim() || undefined,
           FlatConfiguration: filterParams.FlatConfiguration?.trim() || undefined,
           FlatType: filterParams.FlatType?.trim() || undefined,
+          FlatCarpetAreaSqFt: filterParams.FlatCarpetAreaSqFt?.trim() || undefined,
+          BuildingNumber: filterParams.BuildingNumber?.trim() || undefined,
+          Wing: filterParams.Wing?.trim() || undefined,
+          Flat: filterParams.Flat?.trim() || undefined,
+          ParkingNumber: filterParams.ParkingNumber?.trim() || undefined,
+
           SortBy: sortByParam
         };
 
@@ -187,7 +194,7 @@ export const Tenant: React.FC = () => {
   const handleExportTenants = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         let sortByParam: string | undefined;
@@ -207,8 +214,14 @@ export const Tenant: React.FC = () => {
           ProjectId: Number(projectId),
           BuildingId: buildingId,
           FlatNumber: filters.FlatNumber?.trim() || undefined,
+          ApplicantName: filters.ApplicantName?.trim() || undefined,
           FlatConfiguration: filters.FlatConfiguration?.trim() || undefined,
           FlatType: filters.FlatType?.trim() || undefined,
+          FlatCarpetAreaSqFt: filters.FlatCarpetAreaSqFt?.trim() || undefined,
+          BuildingNumber: filters.BuildingNumber?.trim() || undefined,
+          Wing: filters.Wing?.trim() || undefined,
+          Flat: filters.Flat?.trim() || undefined,
+          ParkingNumber: filters.ParkingNumber?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         };
@@ -277,20 +290,21 @@ export const Tenant: React.FC = () => {
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
-  
-    const handleConfirmationDialogBoxOpen = useCallback((row: TenantData) => {
-      setDeleteTenantData(row)
-      setIsConfirmationDialogBoxOpen(true)
-    }, [])
-  
-    //#endregion
+
+  const handleConfirmationDialogBoxOpen = useCallback((row: TenantData) => {
+    setDeleteTenantData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
+
+  //#endregion
+
   //#region TABLE COLUMN
   const tenantColumns = useMemo<TableColumn[]>(
     () => [
 
       {
         key: 'FlatNumber',
-        label: 'Flat Number',
+        label: 'Unit / Annexure / Survey Number',
         width: '18',
         sortable: true,
         fixed: 'left',
@@ -315,7 +329,7 @@ export const Tenant: React.FC = () => {
       },
       {
         key: 'FlatType',
-        label: 'Flat Type',
+        label: 'Existing Unit Type',
         width: '16',
         sortable: true,
         align: 'left',
@@ -330,27 +344,19 @@ export const Tenant: React.FC = () => {
       },
       {
         key: 'FlatConfiguration',
-        label: 'Configuration',
+        label: 'Existing Configuration',
         width: '18',
-        sortable: true,
+        sortable: false,
         align: 'left',
         render: value => <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
       },
       {
         key: 'FlatCarpetAreaSqFt',
-        label: 'Carpet Area (sqft)',
+        label: 'Existing Carpet Area (SqFt)',
         width: '18',
         sortable: false,
         align: 'center',
         render: value => value ?? '-'
-      },
-      {
-        key: 'Facing',
-        label: 'Facing',
-        width: '14',
-        sortable: false,
-        align: 'left',
-        render: value => value || '-'
       },
       {
         key: 'FreeAreaOfferedPercent',
@@ -358,7 +364,16 @@ export const Tenant: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'left',
-        render: value => value || '-'
+        render: value => value ? `${value} %` : '-'
+      },
+
+      {
+        key: 'FreeAreaOfferedPercent',
+        label: 'Free Area Offered (SqFt)',
+        width: '18',
+        sortable: false,
+        align: 'center',
+        render: (value, row) => (Number(row?.FlatCarpetAreaSqFt) * (value || 0) / 100).toFixed(2) ?? '-'
       },
 
       {
@@ -371,12 +386,21 @@ export const Tenant: React.FC = () => {
       },
       {
         key: 'TotalAreaSqFt',
-        label: 'Total Area (sqft)',
+        label: 'Eligible Total Area (SqFt)',
         width: '18',
         sortable: true,
         align: 'center',
         render: value => value ?? '-'
       },
+      {
+        key: 'BuildingNumber',
+        label: 'Building Number',
+        width: '12',
+        sortable: false,
+        align: 'center',
+        render: value => value || '-'
+      },
+
       {
         key: 'Wing',
         label: 'Wing',
@@ -394,6 +418,14 @@ export const Tenant: React.FC = () => {
         render: value => value || '-'
       },
       {
+        key: 'Flat',
+        label: 'New Unit Number',
+        width: '12',
+        sortable: false,
+        align: 'center',
+        render: value => value || '-'
+      },
+      {
         key: 'RERACarpetAreaSqFt',
         label: 'RERA Carpet Area (SqFt)',
         width: '12',
@@ -403,7 +435,7 @@ export const Tenant: React.FC = () => {
       },
       {
         key: 'InventoryFlatType',
-        label: 'Inventory Flat Type',
+        label: 'New Unit Type',
         width: '12',
         sortable: false,
         align: 'center',
@@ -411,7 +443,7 @@ export const Tenant: React.FC = () => {
       },
       {
         key: 'InventoryFlatConfiguration',
-        label: 'Inventory Flat Configuration',
+        label: 'New Configuration',
         width: '12',
         sortable: false,
         align: 'center',
@@ -420,6 +452,14 @@ export const Tenant: React.FC = () => {
       {
         key: 'ParkingNumber',
         label: 'Parking Number',
+        width: '12',
+        sortable: false,
+        align: 'center',
+        render: value => value || '-'
+      },
+      {
+        key: 'FlatFacing',
+        label: 'Unit Facing',
         width: '12',
         sortable: false,
         align: 'center',
@@ -476,7 +516,7 @@ export const Tenant: React.FC = () => {
         )
       }
     ],
-    [handleViewTenantDetails, handleViewTenantDocument,handleConfirmationDialogBoxOpen, canAction]
+    [handleViewTenantDetails, handleViewTenantDocument, handleConfirmationDialogBoxOpen, canAction]
 
   );
   //#endregion
@@ -555,7 +595,7 @@ export const Tenant: React.FC = () => {
   const downloadExcelSampleTenant = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterPullExcelSample = {
@@ -582,7 +622,7 @@ export const Tenant: React.FC = () => {
   const uploadExcel = async (file: File, mergeExisting: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const fd = new FormData();
@@ -624,62 +664,77 @@ export const Tenant: React.FC = () => {
   //#endregion
 
   //#region  DELETE TENANT EVENT
-    const handleDeleteTenant = async () => {
-      setIsConfirmationDialogBoxOpen(false);
+  const handleDeleteTenant = async () => {
+    setIsConfirmationDialogBoxOpen(false);
 
-      if (!deleteTenantData) return;
+    if (!deleteTenantData) return;
 
-      await runApiWithLoader(
-        setIsLoading,
-        setIsLoadingMessage,
-        async () => {
-  
-          const params: DeleteTenantRequest = {
-            TenantId: deleteTenantData.TenantId,
-            UniqueKey: deleteTenantData.Uniquekey ?? "",
-            BuildingId: Number(buildingId),
-            ProjectId: Number(projectId)
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const params: DeleteTenantRequest = {
+          TenantId: deleteTenantData.TenantId,
+          UniqueKey: deleteTenantData.Uniquekey ?? "",
+          BuildingId: Number(buildingId),
+          ProjectId: Number(projectId)
+        }
+
+        const response = await tenantService.apiCallDeleteTenant(params);
+
+        if (E.isRight(response)) {
+
+          const newTotalRecords = pagination.totalRecords - 1;
+
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
           }
-  
-          const response = await tenantService.apiCallDeleteTenant(params);
-  
-          if (E.isRight(response)) {
-  
-            setTenantList(prevData => prevData.filter(item => item.TenantId !== deleteTenantData.TenantId));
-  
-            setPagination({
-              currentPage: pagination.currentPage,
-              totalRecords: pagination.totalRecords - 1,
-              totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
-            });
-            addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
-  
-            setIsConfirmationDialogBoxOpen(false);
-  
-            setDeleteTenantData(null);
-  
-          } else {
-  
-            addToast({ type: 'error', title: response.left.message });
-  
-            setIsConfirmationDialogBoxOpen(false);
-  
+
+          else if (tenantList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
           }
-  
-          return response
-        },
-        undefined,
-        (error: unknown) => {
-          const err = error as { message?: string };
-          addToast({ type: 'error', title: err.message || 'An error occurred' })
-        },
-        undefined,
-        'Delete Tenant'
-      )
-    }
-  
-    //#endregion
-  
+
+          setPagination({
+            currentPage: pageToShow,
+            totalRecords: newTotalRecords,
+            totalPages: newTotalPages
+          });
+
+          await loadTenants(pageToShow, filters, buildingId);
+
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteTenantData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+        }
+
+        return response
+      },
+      undefined,
+      (error: unknown) => {
+        const err = error as { message?: string };
+        addToast({ type: 'error', title: err.message || 'An error occurred' })
+      },
+      undefined,
+      'Delete Tenant'
+    )
+  }
+
+  //#endregion
+
   return (
 
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -784,10 +839,10 @@ export const Tenant: React.FC = () => {
           e.preventDefault();
           applyFilters();
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply "
+        cancelText="Clear"
         onCancel={() => clearFilters()}
-        resetText=''
+
         size="small-half"
       >
         <div className="space-y-6">
@@ -795,32 +850,85 @@ export const Tenant: React.FC = () => {
             <div>
 
               <Input
-                label='Flat Number'
+                label='Unit / Annexure / Survey Number'
                 type="text"
                 value={tempFilters.FlatNumber || ''}
                 onChange={e => handleFilterChange('FlatNumber', e.target.value)}
-                placeholder="Enter Flat Number"
+                placeholder="Enter Unit / Annexure / Survey Number"
               />
             </div>
-
             <div>
-
               <Input
-                label='Flat Type'
+                label='Applicant Name'
+                type="text"
+                value={tempFilters.ApplicantName || ''}
+                onChange={e => handleFilterChange('ApplicantName', e.target.value)}
+                placeholder="Enter Applicant Name"
+              />
+            </div>
+            <div>
+              <Input
+                label='Exisiting Unit Type'
                 type="text"
                 value={tempFilters.FlatType || ''}
                 onChange={e => handleFilterChange('FlatType', e.target.value)}
-                placeholder="Enter Flat Type"
+                placeholder="Enter Exisiting Unit Type"
               />
             </div>
             <div>
-
               <Input
-                label='Flat Configuration'
+                label='Existing Configuration'
                 type="text"
                 value={tempFilters.FlatConfiguration || ''}
                 onChange={e => handleFilterChange('FlatConfiguration', e.target.value)}
-                placeholder="Enter Flat Configuration"
+                placeholder="Enter Existing Configuration"
+              />
+            </div>
+            <div>
+              <Input
+                label='Existing Carpet Area (SqFt)'
+                type="text"
+                value={tempFilters.FlatCarpetAreaSqFt || ''}
+                onChange={e => handleFilterChange('FlatCarpetAreaSqFt', e.target.value)}
+                placeholder="Enter Existing Carpet Area (SqFt)"
+              />
+            </div>
+
+
+            <div>
+              <Input
+                label='Building Number'
+                type="text"
+                value={tempFilters.BuildingNumber || ''}
+                onChange={e => handleFilterChange('BuildingNumber', e.target.value)}
+                placeholder="Enter Building Number"
+              />
+            </div>
+            <div>
+              <Input
+                label='Wing'
+                type="text"
+                value={tempFilters.Wing || ''}
+                onChange={e => handleFilterChange('Wing', e.target.value)}
+                placeholder="Enter Wing"
+              />
+            </div>
+            <div>
+              <Input
+                label='New Unit Number'
+                type="text"
+                value={tempFilters.Flat || ''}
+                onChange={e => handleFilterChange('Flat', e.target.value)}
+                placeholder="Enter New Unit Number"
+              />
+            </div>
+            <div>
+              <Input
+                label='Parking Number'
+                type="text"
+                value={tempFilters.ParkingNumber || ''}
+                onChange={e => handleFilterChange('ParkingNumber', e.target.value)}
+                placeholder="Enter Parking Number"
               />
             </div>
           </div>
@@ -836,21 +944,16 @@ export const Tenant: React.FC = () => {
         }}
       />
 
-      {/* DELETE CONFIRMATION MODAL */}
-            <ConfirmationDialogBox
-              isOpen={isConfirmationDialogBoxOpen}
-              onClose={() => {
-                setIsConfirmationDialogBoxOpen(false)
-                setDeleteTenantData(null)
-              }}
-              onConfirm={handleDeleteTenant}
-              title="You are about to delete a tenant?"
-              message="Deleting this tenant will permanently remove its contents."
-              confirmText="Delete"
-              cancelText="Cancel"
-              loading={isLoading}
-              variant="danger"
-            />
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteTenantData(null)
+        }}
+        onConfirm={handleDeleteTenant}
+        loading={isLoading}
+        pageName='tenant'
+      />
     </div>
   );
 };

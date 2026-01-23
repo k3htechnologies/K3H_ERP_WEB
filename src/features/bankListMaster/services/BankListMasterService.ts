@@ -9,7 +9,7 @@ import * as E from 'fp-ts/Either';
 
 const bankListMasterDatasource = new BankListMasterDatasourceImpl();
 
-export const BankListMasterService = {
+export const bankListMasterService = {
 
     apiCallPullBankListMaster: async (params: FilterWithPaginationBankListMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, BankListMasterListResponse>> => {
         try {

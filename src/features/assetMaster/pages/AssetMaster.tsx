@@ -18,41 +18,40 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAssetMasterListState } from '@/features/assetMaster/context/AssetMasterListStateContext';
 import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { assetMasterService } from '../services/AssetMasterService';
 import { Trash2 } from 'lucide-react';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const AssetMaster: React.FC = () => {
 
   //#region STATE MANAGEMENT
   const [AssetMasterList, setAssetMasterList] = useState<AssetMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // USE NAVIGATE
   const navigate = useNavigate();
+  const { listState, updateListState } = useAssetMasterListState();
+  const { searchTerm, filters, sortInfo } = listState;
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
-
-  //TABLE SORT INFO
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
   const { addToast } = useToast();
 
   // SINGLE SEARCH TEXT BOX
-  const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchAssets(value)
   }, 350);
 
   //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   //DELETE ASSET MASTER
@@ -67,34 +66,20 @@ export const AssetMaster: React.FC = () => {
   const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
-  const location = useLocation() as any;
-
   //#endregion
 
   //#region INIT
   useEffect(() => {
-    const incoming = location.state?.listState;
-    const listState = incoming ?? {
-      page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: ''
-    };
+    // Sync pagination with context state
+    setPagination({ currentPage: listState.page });
 
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
+    // Load assets with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadAssets(listState.page ?? 1, { AssetName: String(listState.searchTerm).trim() });
-      return;
+      loadAssets(listState.page, { AssetName: String(listState.searchTerm).trim() }, listState.sortInfo);
+    } else {
+      loadAssets(listState.page, listState.filters, listState.sortInfo);
     }
-
-    loadAssets(listState.page ?? 1, listState.filters ?? {});
-  }, [location.state]);
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
@@ -110,27 +95,19 @@ export const AssetMaster: React.FC = () => {
     return await loadAssets(page, filters, sort);
   }
 
-  const loadAssets = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadAssets = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
-        let sortByParam = undefined;
 
-        if (sortInfo) {
-
-          const column = assetMasterColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
         const params: FilterWithPaginationAssetMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           AssetMasterId: filterParams.AssetMasterId ? Number(filterParams.AssetMasterId) : undefined,
-          AssetName: filterParams.AssetName?.trim() || undefined,
+          AssetName: searchtext ?? filterParams.AssetName?.trim() ?? undefined,
           Status: filterParams.AssetStatus?.trim() || undefined,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, assetMasterColumns)
         };
 
         const response = await assetMasterService.apiCallPullAssetMaster(params);
@@ -159,39 +136,29 @@ export const AssetMaster: React.FC = () => {
 
   //#region SEARCH & CLEAR
   const searchAssets = async (searchValue: string) => {
-
-    setSearchTerm(searchValue);
+    updateListState({ searchTerm: searchValue });
 
     if (searchValue.trim() === '') {
-
       fetchAssetMasterList();
-
       return
     }
 
-    const filterParams: FilterInfo = {
-      AssetName: searchValue.trim(),
-    };
+    updateListState({ filters, page: 1, searchTerm: searchValue });
 
-    await loadAssets(1, filterParams);
+    await loadAssets(1, filters, sortInfo, searchValue)
   };
 
   //#endregion
 
   //#region CLEAR ASSET MASTER 
   const clearSearchAssets = () => {
-    setSearchTerm('');
+    updateListState({ searchTerm: '', filters: {}, page: 1 });
 
     debouncedSearch.cancel?.();
 
-    setFilters({});
     setTempFilters({});
     setPagination({ currentPage: 1 });
-    loadAssets(1, {});
-    try {
-      navigate(location.pathname, { replace: true, state: {} });
-    } catch {
-    }
+    loadAssets(1, { AssetName: '' }, sortInfo, undefined);
   };
   //#endregion
 
@@ -199,25 +166,18 @@ export const AssetMaster: React.FC = () => {
   const handleExportAssets = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
-        // Find the column label for sorting
-        let sortByParam = undefined
-        if (sortInfo) {
-          const column = assetMasterColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
+
         const params: FilterWithPaginationAssetMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           AssetName: filters.AssetName?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, assetMasterColumns),
           ExportType: exportType
         };
 
-        const response = await getAssets(params);
+        const response = await assetMasterService.apiCallPullAssetMaster(params);
 
         handleExportFile(response, exportType, 'Asset Master', addToast);
 
@@ -235,27 +195,19 @@ export const AssetMaster: React.FC = () => {
   //#endregion
 
 
-  //#region API | SERVICES CALL TO GET ASSET
-  const getAssets = async (filterParams: FilterWithPaginationAssetMasterRequest) => {
-
-    return await assetMasterService.apiCallPullAssetMaster(filterParams);
-  }
-  //#endregion
-
-
   //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = useCallback((page: number) => {
+    updateListState({ page });
     fetchAssetMasterList(page);
-  }, []);
+  }, [updateListState]);
 
   //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback((sort: SortInfo) => {
 
-    setSortInfo(sort);
+    updateListState({ sortInfo: sort, page: 1 });
+    loadAssets(1, filters, sort, searchTerm || undefined);
 
-    loadAssets(1, filters, sort);
-
-  }, [filters]);
+  }, [filters, updateListState, searchTerm]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -275,29 +227,14 @@ export const AssetMaster: React.FC = () => {
 
   //#region NAVIGATE TO  VIEW ASSET
   const handleNavigateToView = (row: AssetMasterData) => {
-    navigate('/assetMaster/view', {
-      state: {
-        assetData: row,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          assetName: row.AssetName
-        }
-      }
-    });
+    updateListState({ assetMasterId: row.AssetMasterId || 0, assetName: row.AssetName || '' });
+    navigate('/assetMaster/view');
   };
 
   //#region NAVIGATE TO ADD ASSET
   const handleAddAssetModal = useCallback(() => {
-    navigate('/assetMaster/add', {
-      state: {
-        fromList: true,
-        listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
-      }
-    });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    navigate('/assetMaster/add');
+  }, [navigate]);
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
@@ -318,7 +255,7 @@ export const AssetMaster: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="250px"
           tooltipThreshold={25}
           onClick={() => handleNavigateToView(row)}
@@ -331,13 +268,7 @@ export const AssetMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || ''
     },
     {
       key: 'AssetType',
@@ -345,13 +276,7 @@ export const AssetMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="150px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || ''
     },
     {
       key: 'AssetBrand',
@@ -359,13 +284,7 @@ export const AssetMaster: React.FC = () => {
       width: '12',
       sortable: false,
       align: 'left',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="120px"
-          tooltipThreshold={12}
-        />
-      )
+      render: (value) => value || ''
     },
     {
       key: 'AssetModel',
@@ -373,13 +292,7 @@ export const AssetMaster: React.FC = () => {
       width: '12',
       sortable: false,
       align: 'left',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="120px"
-          tooltipThreshold={12}
-        />
-      )
+      render: (value) => value || ''
     },
     {
       key: 'SerialNumber',
@@ -387,13 +300,7 @@ export const AssetMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || 'N/A'}
-          maxWidth="150px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || ''
     },
     {
       key: 'Status',
@@ -484,30 +391,18 @@ export const AssetMaster: React.FC = () => {
 
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters);
-
+    updateListState({ filters: tempFilters, page: 1 });
     loadAssets(1, tempFilters);
-
     setShowFilterPopup(false);
   };
   //#endregion
 
-  //#region CLEAR FILTER
+  //#region Clear
   const clearFilters = () => {
     setTempFilters({});
-    setFilters({});
-
-    // reset page
-    setPagination({ currentPage: 1 });
-
-    // load empty filters
+    updateListState({ filters: {}, page: 1 });
     loadAssets(1, {});
-
     setShowFilterPopup(false);
-    // clear router state (very important)
-
-    navigate(location.pathname, { replace: true, state: {} });
-
   };
   //#endregion
 
@@ -529,7 +424,7 @@ export const AssetMaster: React.FC = () => {
 
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         const params: DeleteAssetMasterRequest = {
 
@@ -542,13 +437,27 @@ export const AssetMaster: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          setAssetMasterList(prevData => prevData.filter(item => item.AssetMasterId !== deleteAssetMasterData.AssetMasterId));
+          const newTotalRecords = pagination.totalRecords - 1;
 
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (AssetMasterList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
           setPagination({
             currentPage: pagination.currentPage,
             totalRecords: pagination.totalRecords - 1,
             totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
           });
+
+          await loadAssets(pageToShow, filters, sortInfo);
+
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
           setIsConfirmationDialogBoxOpen(false);
@@ -588,7 +497,7 @@ export const AssetMaster: React.FC = () => {
         searchTerm={searchTerm}
         searchPlaceholder="Search By Asset Name"
         onSearchChange={v => {
-          setSearchTerm(v);
+          updateListState({ searchTerm: v });
           debouncedSearch(v);
         }}
         onClearSearch={clearSearchAssets}
@@ -663,10 +572,10 @@ export const AssetMaster: React.FC = () => {
           e.preventDefault();
           applyFilters();
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply"
+        cancelText="Clear"
         onCancel={() => clearFilters()}
-        resetText=''
+       
         size="small-half"
       >
         <div className="space-y-6">
@@ -688,19 +597,16 @@ export const AssetMaster: React.FC = () => {
       </Modal>
 
       {/* DELETE CONFIRMATION MODAL */}
-      <ConfirmationDialogBox
+
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteAssetMasterData(null)
         }}
         onConfirm={handleDeleteAssetMaster}
-        title="You are about to delete a Asset?"
-        message="Deleting this Asset will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='asset'
       />
 
     </div>

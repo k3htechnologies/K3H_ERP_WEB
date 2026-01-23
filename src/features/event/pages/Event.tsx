@@ -726,7 +726,7 @@ const Event: React.FC = () => {
         title={editingEventData ? 'Update' : 'Add'}
         onSubmit={handleAddUpdateEvent}
         saveText={'Save'}
-        resetText='Reset'
+        
         loading={isLoading}
         size='md'
       >

@@ -58,17 +58,9 @@ export class BranchAssociationsMasterDatasourceImpl implements BranchAssociation
 
         try {
 
-            const payLoad: AddUpdateBranchAssociationsMasterRequest = {
-                BranchAssociationsId: params.BranchAssociationsId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-                BranchMasterId: params.BranchMasterId?.trim() ?? '',
-                EmployeeId: params.EmployeeId ?? 0
-            }
-
-
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 BranchAssociationsMasterApi.ADD_UPDATE,
-                payLoad
+                params
             )
 
             return response;

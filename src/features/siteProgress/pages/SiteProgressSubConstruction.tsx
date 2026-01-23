@@ -19,7 +19,7 @@ const SiteProgressSubConstruction: React.FC = () => {
   //#region STATE
   const [subConstructionList, setSubConstructionList] = useState<SiteProgressSubConstructionData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
   const { pagination, setPagination } = usePagination(50);
@@ -52,7 +52,7 @@ const SiteProgressSubConstruction: React.FC = () => {
   const loadSubConstruction = async (page: number, term: string = searchTerm) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         if (term) { }
@@ -168,7 +168,7 @@ const SiteProgressSubConstruction: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="240px"
           tooltipThreshold={24}
           onClick={() => handleViewSubConstruction(row)}

@@ -8,7 +8,7 @@ import type { AddUpdateProjectDocumentRequest, DeleteProjectDocumentRequest, Fil
 import usePagination from '@/core/hooks/usePagination';
 import { type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import * as E from 'fp-ts/Either';
-import { ProjectDocumentService } from '../services/ProjectDocumentService';
+import { projectDocumentService } from '@/features/projectDocument/services/ProjectDocumentService';
 import DataTableExpandable, { type DataTableExpandableRef } from '@/ui/components/DataTable/DataTableExpandable';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
@@ -20,7 +20,6 @@ import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
@@ -34,6 +33,7 @@ import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWitho
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 import { getDocumentStatusColor } from './ProjectDocumentStatus';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 
 const initialFormState = (): AddUpdateProjectDocumentRequest => ({
@@ -55,7 +55,7 @@ const ProjectDocument: React.FC = () => {
   //#region STATE
   const [projectDocumentList, setProjectDocumentList] = useState<ProjectDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [expandHeaderProjectDocumentName, setExpandHeaderProjectDocumentName] = useState<string>('');
   const [expandHeaderProjectDocumentId, setExpandHeaderProjectDocumentId] = useState<number>(0);
 
@@ -212,7 +212,7 @@ const ProjectDocument: React.FC = () => {
   const loadProjectDocumentTabs = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const response = await fetchProjectDocumentCategoryDropdown(1, Number(projectId));
@@ -265,7 +265,7 @@ const ProjectDocument: React.FC = () => {
   const loadProjectDocument = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
 
@@ -287,7 +287,7 @@ const ProjectDocument: React.FC = () => {
           SortBy: sortByParam
         };
 
-        const response = await ProjectDocumentService.apiCallPullProjectDocument(params);
+        const response = await projectDocumentService.apiCallPullProjectDocument(params);
 
         if (E.isRight(response)) {
 
@@ -883,13 +883,13 @@ const ProjectDocument: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
         const payload = ismaster === 1 ? PushDocumentFormData() : PushDocumentDetailsFormData();
 
-        const response = await ProjectDocumentService.apiCallAddUpdateProjectDocument(payload);
+        const response = await projectDocumentService.apiCallAddUpdateProjectDocument(payload);
 
         if (E.isRight(response)) {
 
@@ -1008,7 +1008,7 @@ const ProjectDocument: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -1019,19 +1019,33 @@ const ProjectDocument: React.FC = () => {
           ProjectDocumentCategoryId: deleteProjectDocumentDetailsData.ProjectDocumentCategoryId
         }
 
-        const response = await ProjectDocumentService.apiCallDeleteProjectDocument(params);
+        const response = await projectDocumentService.apiCallDeleteProjectDocument(params);
 
         if (E.isRight(response)) {
 
           if (deleteProjectDocumentDetailsData.IsMaster === 1) {
 
-            setProjectDocumentList(prevData => prevData.filter(item => item.ProjectDocumentId !== deleteProjectDocumentDetailsData.ProjectDocumentId));
+            const newTotalRecords = pagination.totalRecords - 1;
+
+            const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+            let pageToShow = pagination.currentPage;
+
+            if (pagination.currentPage > newTotalPages) {
+              pageToShow = newTotalPages;
+            }
+
+            else if (projectDocumentList.length === 1 && pagination.currentPage > 1) {
+              pageToShow = pagination.currentPage - 1;
+            }
 
             setPagination({
-              currentPage: pagination.currentPage,
-              totalRecords: pagination.totalRecords - 1,
-              totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+              currentPage: pageToShow,
+              totalRecords: newTotalRecords,
+              totalPages: newTotalPages
             });
+
+            await loadProjectDocument(pageToShow, filters);
 
           }
           else {
@@ -1086,7 +1100,7 @@ const ProjectDocument: React.FC = () => {
   const downloadExcelSampleProjectDocument = async () => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         // Find the column label for sorting
 
@@ -1114,14 +1128,14 @@ const ProjectDocument: React.FC = () => {
   const uploadExcel = async (file: File, mergeExisting: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const fd = new FormData();
 
         fd.append("ExcelFile", file);
         fd.append("IsAllDelete", mergeExisting);
-        fd.append("TableName", 'Tenant');
+        fd.append("TableName", 'PROJECT DOCUMENT');
         fd.append("ProjectId", String(projectId));
 
         const response = await technicalService.apiCallExcelImport(fd);
@@ -1230,7 +1244,7 @@ const ProjectDocument: React.FC = () => {
               ProjectDocumentCategory: row.ProjectDocumentCategory,
               ProjectDocumentCategoryId: row.ProjectDocumentCategoryId,
             };
-            const response = await ProjectDocumentService.apiCallPullProjectDocument(params);
+            const response = await projectDocumentService.apiCallPullProjectDocument(params);
 
             if (E.isRight(response)) {
 
@@ -1259,7 +1273,6 @@ const ProjectDocument: React.FC = () => {
                 columns={projectDocumentDetailsColumns}
                 emptyMessage="No Project Document Data Found"
                 fixedHeight={true}
-                maxHeight="calc(100vh - 255px)"
                 recordsPerPage={20}
                 className="flex-1"
                 sortInfo={sortInfo}
@@ -1292,7 +1305,7 @@ const ProjectDocument: React.FC = () => {
         title={editingDocumentData ? 'Update Document Name' : 'Add Document Name'}
         onSubmit={(e) => handleAddUpdateDocument(1, e)}
         saveText={editingDocumentData ? 'Update' : 'Add'}
-        resetText=''
+
         loading={isLoading}
         size='xl'
       >
@@ -1335,7 +1348,7 @@ const ProjectDocument: React.FC = () => {
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(0, e)}
         saveText={editingDocumentData ? 'Update' : 'Add'}
-        resetText='Reset'
+
         loading={isLoading}
         size='xl'
       >
@@ -1407,19 +1420,15 @@ const ProjectDocument: React.FC = () => {
 
       </Modal>
 
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteProjectDocumentDetailsData(null)
         }}
         onConfirm={handleDeleteDocument}
-        title="You are about to delete a document?"
-        message="Deleting this document will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='document'
       />
 
       <ExportImport

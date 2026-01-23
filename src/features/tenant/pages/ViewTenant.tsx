@@ -17,26 +17,25 @@ import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import Tabs from '@/ui/components/Tab/Tab';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { useTenantListState } from '@/features/tenant/context/TenantListStateContext';
+import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
+import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 export const ViewTenant: React.FC = () => {
 
     //#region STATE MANAGEMENT
     const [tenantDocumentList, setTenantDocumentList] = useState<TenantDocumentData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const [applicantList, setApplicantList] = useState<any[]>([]);
     const [parkingList, setParkingList] = useState<any[]>([]);
 
     const { canAction } = useMenuPermissions();
-    //LOCATION
     const navigate = useNavigate();
-    // TOAST
     const { addToast } = useToast();
-
-    //#endregion
-
-    //#region PROJECT SELECTION GET ID
     const { projectId } = useProject()
-    //#endregion
+    const [searchTermForTenantDocument, setSearchTermForTenantDocument] = useState('')
+    const debouncedSearchForTenantDocument = useDebouncedCallback((value: string) => {
+        searchTenantDocument(value)
+    }, 350)
 
     //#region TENANT LIST STATE CONTEXT
     const { listState } = useTenantListState();
@@ -64,7 +63,7 @@ export const ViewTenant: React.FC = () => {
         if (activeTab === 'Overview') {
             loadTenantData();
         } else if (activeTab === 'Document') {
-            loadTenantDocumentFromServer();
+            loadTenantDocumentFromServer('');
         }
     }, [projectId, tenantId, activeTab]);
 
@@ -72,7 +71,7 @@ export const ViewTenant: React.FC = () => {
     const loadTenantData = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params = {
                     PageNumber: 1,
@@ -147,10 +146,19 @@ export const ViewTenant: React.FC = () => {
 
 
     //#region DATA LOAD TENANT DOCUMENT
-    const loadTenantDocumentFromServer = async () => {
+
+    const searchTenantDocument = async (searchValue: string) => {
+
+        setSearchTermForTenantDocument(searchValue);
+
+        await loadTenantDocumentFromServer(searchValue);
+
+    }
+
+    const loadTenantDocumentFromServer = async (searchText = "") => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationTenantDocumentRequest = {
@@ -158,6 +166,7 @@ export const ViewTenant: React.FC = () => {
                     PageSize: 1000,
                     IsCheckPermission: true,
                     ProjectId: Number(projectId),
+                    DocumentName: searchText,
                     BuildingId: buildingId,
                     TenantId: tenantId
                 }
@@ -184,7 +193,11 @@ export const ViewTenant: React.FC = () => {
         );
     };
 
-
+    const clearsearchForTenantDocument = async () => {
+        setSearchTermForTenantDocument('');
+        debouncedSearchForTenantDocument.cancel?.();
+        await loadTenantDocumentFromServer('');
+    }
 
     //#endregion 
 
@@ -313,10 +326,10 @@ export const ViewTenant: React.FC = () => {
                                     <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <FieldItem label="Unit / Annexure / Survey Number" value={editTenantData?.FlatNumber} />
-                                            <FieldItem label="Unit Type" value={editTenantData?.FlatType} />
+                                            <FieldItem label="Type" value={editTenantData?.FlatType} />
                                             {editTenantData?.FlatType.toUpperCase() !== "GYM"
                                                 ?
-                                                <FieldItem label="Unit Configuration" value={editTenantData?.FlatConfiguration} />
+                                                <FieldItem label="Configuration" value={editTenantData?.FlatConfiguration} />
                                                 : <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.FlatCarpetAreaSqFt} />
                                             }
 
@@ -330,7 +343,7 @@ export const ViewTenant: React.FC = () => {
                                                 <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.FlatCarpetAreaSqFt} />
                                                 : ""
                                             }
-                                            <FieldItem label="Unit Facing" value={editTenantData?.Facing} />
+                                            <FieldItem label="Facing" value={editTenantData?.Facing} />
 
                                         </div>
                                     </div>
@@ -351,7 +364,7 @@ export const ViewTenant: React.FC = () => {
                                     <div className="lg:col-span-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <FieldItem label="Free Area Offered (%)" value={editTenantData?.FreeAreaOfferedPercent} />
-                                            <FieldItem label="Free Area Offered (SqFt)" value={Number(editTenantData?.FlatCarpetAreaSqFt) * (editTenantData?.FreeAreaOfferedPercent || 0) / 100} />
+                                            <FieldItem label="Free Area Offered (SqFt)" value={(Number(editTenantData?.FlatCarpetAreaSqFt) * (editTenantData?.FreeAreaOfferedPercent || 0) / 100).toFixed(2)} />
                                             <FieldItem label="Total Area (SqFt)" value={editTenantData?.TotalAreaSqFt} />
 
                                         </div>
@@ -362,48 +375,48 @@ export const ViewTenant: React.FC = () => {
 
 
                             </section>
-                            {editTenantData?.Flat==="" && (
-                            <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    New Unit Details
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                            {editTenantData?.Flat === "" && (
+                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        New Unit Details
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Building Number" value={editTenantData?.BuildingNumber} />
-                                            <FieldItem label="Floor" value={editTenantData?.Floor} />
-                                            <FieldItem label="Unit Number" value={editTenantData?.Flat} />
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Building Number" value={editTenantData?.BuildingNumber} />
+                                                <FieldItem label="Floor" value={editTenantData?.Floor} />
+                                                <FieldItem label="Unit Number" value={editTenantData?.Flat} />
 
 
+                                            </div>
                                         </div>
+
+
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Type" value={editTenantData?.InventoryFlatType} />
+                                                <FieldItem label="Configuration" value={editTenantData?.InventoryFlatConfiguration} />
+                                                <FieldItem label="Facing" value={'-'} />
+
+                                            </div>
+                                        </div>
+
+
+                                        <div className="lg:col-span-3 pt-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Extra Area Purchased (SqFt)" value={editTenantData?.ExtraAreaPurchasedSqFt} />
+                                                <FieldItem label="RERA Carpet Area (SqFt)" value={editTenantData?.RERACarpetAreaSqFt} />
+                                                <FieldItem label="Parking Number" value={editTenantData?.ParkingNumber} />
+
+                                            </div>
+                                        </div>
+
+
                                     </div>
 
 
-                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Unit Type" value={editTenantData?.InventoryFlatType} />
-                                            <FieldItem label="Unit Configuration" value={editTenantData?.InventoryFlatConfiguration} />
-                                            <FieldItem label="Unit Facing" value={'-'} />
-
-                                        </div>
-                                    </div>
-
-
-                                    <div className="lg:col-span-3 pt-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Extra Area Purchased (SqFt)" value={editTenantData?.ExtraAreaPurchasedSqFt} />
-                                            <FieldItem label="RERA Carpet Area (SqFt)" value={editTenantData?.RERACarpetAreaSqFt} />
-                                            <FieldItem label="Parking Number" value={editTenantData?.ParkingNumber} />
-
-                                        </div>
-                                    </div>
-
-
-                                </div>
-
-
-                            </section>
+                                </section>
                             )}
                         </div>
                         {/* ================= RIGHT SIDE (1/3) ================= */}
@@ -458,46 +471,77 @@ export const ViewTenant: React.FC = () => {
             )}
 
             {activeTab === 'Document' && (
+                <div className="space-y-4 pt-5">
+                    <TableActionToolbar
+                        isShowSearchBar
+                        searchTerm={searchTermForTenantDocument}
+                        searchPlaceholder="Search By Document Name"
+                        onSearchChange={(v) => {
+                            setSearchTermForTenantDocument(v)
+                            debouncedSearchForTenantDocument(v)
+                        }}
+                        onClearSearch={clearsearchForTenantDocument}
+                        isShowFilterButton={false}
+                        exportLoading={isLoading}
+                    />
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-                    {docsWithUrls.length === 0 && (
-                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                            <NoDataView message="No Documents Found" />
-                        </section>
-                    )}
+                        {docsWithUrls.length === 0 && (
+                            <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                                <NoDataView message="No Documents Found" />
+                            </section>
+                        )}
 
-                    {docsWithUrls.map(d => {
-                        const urls = parseDocumentUrls(d.DocumentURL ?? "")
-                            .filter(x => x?.trim()?.length);
+                        {docsWithUrls.map(d => {
+                            const urls = parseDocumentUrls(d.DocumentURL ?? "")
+                                .filter(x => x?.trim()?.length);
 
-                        return (
-                            <div key={d.Uniquekey} className="border border-gray-200 rounded-lg p-4 mb-3 shadow-sm ">
+                            return (
+                                <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
 
-                                <MultiImageViewer
-                                    images={urls}
-                                    title={d.DocumentName ?? "Document"}
-                                    triggerLabel={d.DocumentName ?? "Document"}
-                                />
+                                    <div className="flex items-start justify-between p-2 gap-2">
+                                        <div className="flex flex-col">
+                                            
+                                            <span className="line-clamp-2 break-words font-medium text-gray-900">
+                                                {d.DocumentName}
+                                            </span>
+                                            <span className="text-sm text-gray-500 mt-1">
+                                                Document Count : {urls.length}
+                                            </span>
+                                        </div>
 
-                                <div className="text-xs text-gray-600 mt-3 space-y-1">
-                                    <FieldItem
-                                        label="Uploaded By / Date"
-                                        value={
-                                            `${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
+                                        <MultiImageViewer
+                                            images={urls}
+                                            title={d.DocumentName ?? "Document"}
+                                            triggerLabel="View"
+                                            isIcon={false}
+                                        />
+
+
+                                    </div>
+
+
+                                    <div className="flex-grow" />
+
+                                    <div className="bg-gray-50 p-2 mt-auto">
+                                        <FieldItem
+                                            label="Uploaded By / Date"
+                                            value={`${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
                                                 ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
                                                 : d?.CreatedDate
                                                     ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
                                                     : '-'
-                                            }`
-                                        }
-                                    />
+                                                }`}
+                                        />
+                                    </div>
+
                                 </div>
 
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
 
+                    </div>
                 </div>
 
             )}

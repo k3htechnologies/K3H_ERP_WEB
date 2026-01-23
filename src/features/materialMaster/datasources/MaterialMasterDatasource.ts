@@ -1,6 +1,6 @@
 import baseClient from "@/core/config/baseClient";
-import type { AddUpdateMaterialMasterRequest, DeleteMaterialMasterRequest, FilterWithPaginationMaterialMaster, MaterialMasterDeleteResponse, MaterialMasterListResponse, MaterialMasterSaveReponse } from "../models/MaterialMasterModel";
-import { MaterialMasterApi } from "../api/MaterialMasterApi";
+import type { AddUpdateMaterialMasterRequest, DeleteMaterialMasterRequest, FilterWithPaginationMaterialMaster, MaterialMasterDeleteResponse, MaterialMasterListResponse, MaterialMasterSaveReponse } from "@/features/materialMaster/models/MaterialMasterModel";
+import { MaterialMasterApi } from "@/features/materialMaster/api/MaterialMasterApi";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 
 export abstract class MaterialMasterDatasource {

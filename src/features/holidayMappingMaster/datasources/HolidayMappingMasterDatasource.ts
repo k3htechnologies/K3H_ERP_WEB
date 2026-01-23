@@ -56,20 +56,9 @@ export class HolidayMappingMasterDatasourceImpl implements HolidayMappingMasterD
     async addUpdateHolidayMappingMaster(params: AddUpdateHolidayMappingMasterRequest): Promise<HolidayMappingMasterSaveResponse> {
 
         try {
-
-            const payLoad: AddUpdateHolidayMappingMasterRequest = {
-                HolidayMappingMasterId: params.HolidayMappingMasterId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-
-                HolidayMasterId: params.HolidayMasterId ?? 0,
-                BranchMasterId: params.BranchMasterId ?? '',
-
-                HolidayDate: params.HolidayDate ?? null,
-            }
-
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 HolidayMappingMasterApi.ADD_UPDATE,
-                payLoad
+                params
             )
 
             return response

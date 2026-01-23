@@ -18,7 +18,6 @@ import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { useNavigate } from 'react-router-dom';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
@@ -27,6 +26,7 @@ import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useBuildingListState } from '@/features/building/context/BuildingListStateContext';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 
 const initialFormState = (): AddUpdateBuildingDocumentRequest => ({
@@ -46,7 +46,7 @@ const BuildingDocument: React.FC = () => {
   //#region STATE
   const [buildingDocumentList, setBuildingDocumentList] = useState<BuildingDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [expandHeaderDocumentName, setExpandHeaderDocumentName] = useState<string>('');
   const [expandHeaderBuildingDocumentId, setExpandHeaderBuildingDocumentId] = useState<number>(0);
 
@@ -167,7 +167,7 @@ const BuildingDocument: React.FC = () => {
   const loadBuildingDocument = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
 
@@ -729,7 +729,7 @@ const BuildingDocument: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -838,7 +838,7 @@ const BuildingDocument: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: DeleteBuildingDocumentRequest = {
@@ -852,20 +852,29 @@ const BuildingDocument: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          // 👇 CASE-1: MASTER DOCUMENT DELETE
           if (deleteBuildingDocumentDetailsData.IsMaster === 1) {
 
-            setBuildingDocumentList(prev =>
-              prev.filter(x =>
-                x.BuildingDocumentId !== deleteBuildingDocumentDetailsData.BuildingDocumentId
-              )
-            );
+            const newTotalRecords = pagination.totalRecords - 1;
+
+            const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+            let pageToShow = pagination.currentPage;
+
+            if (pagination.currentPage > newTotalPages) {
+              pageToShow = newTotalPages;
+            }
+
+            else if (buildingDocumentList.length === 1 && pagination.currentPage > 1) {
+              pageToShow = pagination.currentPage - 1;
+            }
 
             setPagination({
-              currentPage: pagination.currentPage,
-              totalRecords: pagination.totalRecords - 1,
-              totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+              currentPage: pageToShow,
+              totalRecords: newTotalRecords,
+              totalPages: newTotalPages
             });
+
+            await loadBuildingDocument(pageToShow, filters);
           }
 
 
@@ -915,10 +924,10 @@ const BuildingDocument: React.FC = () => {
         <div></div>
       </Loader>
 
-      <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
+      <div className="flex items-center gap-3 mb-6 border-b border-gray-500 pb-3">
 
         <HeaderActionBar
-          titleText={"Building Name"}
+          titleText={"Building Name : "}
           subTitleText={buildingName}
           cancelText="Cancel"
           EditText=""
@@ -999,7 +1008,7 @@ const BuildingDocument: React.FC = () => {
           renderRow: (fetchedData) => {
 
             const details: BuildingDocumentData[] = Array.isArray(fetchedData) ? fetchedData : (fetchedData ? [fetchedData] : []);
-            
+
             if (!details || details.length === 0) {
 
               return (
@@ -1046,8 +1055,8 @@ const BuildingDocument: React.FC = () => {
         }}
         title={editingDocumentData ? 'Update Document Name' : 'Add Document Name'}
         onSubmit={(e) => handleAddUpdateDocument(1, e)}
-        saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
-        resetText='Reset'
+        saveText={editingDocumentData ? 'Update' : 'Add'}
+
         loading={isLoading}
         size='xl'
       >
@@ -1089,8 +1098,8 @@ const BuildingDocument: React.FC = () => {
         }}
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(0, e)}
-        saveText={editingDocumentData ? 'Update Document' : 'Save Document'}
-        resetText='Reset'
+        saveText={editingDocumentData ? 'Update' : 'Add'}
+
         loading={isLoading}
         size='xl'
       >
@@ -1146,20 +1155,17 @@ const BuildingDocument: React.FC = () => {
 
       </Modal>
 
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteBuildingDocumentDetailsData(null)
         }}
         onConfirm={handleDeleteDocument}
-        title="You are about to delete a document?"
-        message="Deleting this document will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='document'
       />
+
     </div>
   );
 };

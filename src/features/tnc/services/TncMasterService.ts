@@ -13,7 +13,7 @@ import * as E from 'fp-ts/Either';
 
 const tncMasterDatasource = new TncMasterDatasourceImpl();
 
-export const TncMasterService = {
+export const tncMasterService = {
 
     apiCallPullTncMaster: async (params: FilterWithPaginationTncMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, TncMasterListResponse>> => {
         try {

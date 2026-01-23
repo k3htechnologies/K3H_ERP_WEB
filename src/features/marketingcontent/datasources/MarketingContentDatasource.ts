@@ -8,8 +8,8 @@ import type {
     MarketingContentListResponse,
     MarketingContentSaveResponse
 
-} from "@/features/marketingcontent/models/MarketingContentModel";
-import { MarketingContentApi } from "../api/MarketingContentApi";
+} from "@/features/marketingContent/models/MarketingContentModel";
+import { MarketingContentApi } from "@/features/marketingContent/api/MarketingContentApi";
 
 export abstract class MarketingContentDatasource {
 

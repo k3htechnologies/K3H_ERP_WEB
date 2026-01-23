@@ -4,7 +4,7 @@ import { employeeMasterService } from '@/features/employeeMaster/services/Employ
 export const fetchEmployeeMasterDropdown = async (pageNumber: number, params?: { value?: string; departmentName?: string }) => {
     try {
         const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
-            PageSize: 10,
+            PageSize: 20,
             PageNumber: pageNumber,
             EmployeeName: params?.value || "",
             DepartmentName: params?.departmentName || "",

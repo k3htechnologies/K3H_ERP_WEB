@@ -1,74 +1,86 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { useLocation, useNavigate } from 'react-router-dom';
-import type { VendorData } from '../models/VendorModel';
+import { useNavigate } from 'react-router-dom';
+import type { FilterWithPaginationVendorRequest, VendorData } from '@/features/vendor/models/VendorModel';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
+import { useVendorListState } from '../context/VendorListStateContext';
+import useToast from '@/core/hooks/useToast';
+import { runApiWithLoader } from '@/core/utils';
+import * as E from 'fp-ts/Either';
+import { vendorService } from '@/features/vendor/services/VendorService';
 
 export const ViewVendor: React.FC = () => {
-  //#region STATE MANAGEMENT
-  const [isLoading] = useState(false);
-  const [loadingMessage] = useState('');
+  //#region  LOADING STATE MANAGEMENT
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   //LOCATION
   const navigate = useNavigate();
-
+  const { listState } = useVendorListState();
+  const vendorName = listState.vendorName || '';
+  const { addToast } = useToast();
   const { canAction } = useMenuPermissions('/vendor');
+  const [editVendorMasterData, setEditVendorMasterData] = useState<VendorData | null>(null);
 
-  const location = useLocation() as {
-    state?: {
-      editVendorData?: VendorData | null;
-      fromList?: boolean;
-      listState?: {
-        page: number;
-        filters: any;
-        sortInfo?: any;
-        searchTerm?: string;
-        vendorName?: string;
-      };
-    };
+  useEffect(() => {
+    if (listState.vendorId) {
+      loadVendorMasterData();
+    }
+  }, [listState.vendorId]);
+
+  const loadVendorMasterData = async () => {
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const params: FilterWithPaginationVendorRequest = {
+          PageNumber: 1,
+          PageSize: 1,
+          VendorId: listState.vendorId
+        };
+
+        const response = await vendorService.apiCallPullVendor(params);
+
+        if (E.isRight(response)) {
+
+          setEditVendorMasterData(response.right.Data[0]);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+        }
+      },
+
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message });
+      },
+
+      undefined,
+
+      'Loading Shift Data'
+    );
   };
-  const preservedListState = location.state?.listState;
-  const vendorName = preservedListState?.vendorName || '';
-
-  //#region Get VENDOR DATA FROM LOCATION STATE
-
-  const editVendorMasterData = (location.state?.editVendorData ?? null) as VendorData | null;
-
-  //#endregion
-
-  //#region EDIT VENDOR MASTER
 
   const handleEditVendor = (row: VendorData) => {
     if (!row?.VendorId) return;
-    navigate(`/vendor/add/${row.VendorId}`, {
-      state: {
-        editVendorData: row,
-        fromList: true,
-        listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' }
-      }
-    });
+    navigate(`/vendor/add/${row.VendorId}`);
   };
 
-  //#endregion
 
-  //#region BACK  VENDOR PAGE
   const navigateBackToList = () => {
-    navigate('/vendor', {
-      state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTerm: '' } }
-    });
+    navigate('/vendor');
   };
-  //#endregion
 
   return (
 
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
-      <Loader loading={isLoading} title={loadingMessage}>
-        <div></div>
-      </Loader>
+      <Loader loading={isLoading} title={loadingMessage}> <div></div> </Loader>
 
       <HeaderActionBar
         titleText={'Vendor Details : '}
@@ -84,119 +96,120 @@ export const ViewVendor: React.FC = () => {
         }}
         isLoading={isLoading}
       />
+      
+      {editVendorMasterData && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
+          {/* ================= LEFT (2/3 WIDTH) ================= */}
+          <div className="lg:col-span-2 space-y-6">
 
-        {/* ================= LEFT (2/3 WIDTH) ================= */}
-        <div className="lg:col-span-2 space-y-6">
+            {/* ================= BASIC DETAILS ================= */}
+            <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Basic Information
+              </h4>
 
-          {/* ================= BASIC DETAILS ================= */}
-          <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-              Basic Information
-            </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FieldItem label="Vendor Name" value={editVendorMasterData?.VendorName ?? '-'} />
+                <FieldItem label="Company Name" value={editVendorMasterData?.CompanyName ?? '-'} />
+                <FieldItem label="Company Type" value={editVendorMasterData?.CompanyType ?? '-'} />
+                <FieldItem label="Mobile Number" value={editVendorMasterData?.MobileNumber ?? '-'} />
+                <FieldItem label="Email ID" value={editVendorMasterData?.EmailId ?? '-'} />
+              </div>
+            </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <FieldItem label="Vendor Name" value={editVendorMasterData?.VendorName ?? '-'} />
-              <FieldItem label="Company Name" value={editVendorMasterData?.CompanyName ?? '-'} />
-              <FieldItem label="Company Type" value={editVendorMasterData?.CompanyType ?? '-'} />
-              <FieldItem label="Mobile Number" value={editVendorMasterData?.MobileNumber ?? '-'} />
-              <FieldItem label="Email ID" value={editVendorMasterData?.EmailId ?? '-'} />
-            </div>
-          </section>
+            {/* ================= GOVERNMENT IDENTIFIERS ================= */}
+            <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Government Identifiers
+              </h4>
 
-          {/* ================= GOVERNMENT IDENTIFIERS ================= */}
-          <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-              Government Identifiers
-            </h4>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <FieldItem
-                label="PAN Number"
-                value={editVendorMasterData?.PanCardNumber ?? '-'}
-                urls={editVendorMasterData?.PanCardURL} isIcon
-              />
-              <FieldItem
-                label="GST Number"
-                value={editVendorMasterData?.GSTNumber ?? '-'}
-                urls={editVendorMasterData?.GSTCertificateURL} isIcon
-              />
-              <FieldItem
-                label="Aadhar Card Number"
-                value={editVendorMasterData?.AadharCardNumber ?? '-'}
-                urls={editVendorMasterData?.AadharCardURL} isIcon
-              />
-            </div>
-          </section>
-
-          {/* ================= ADDRESS DETAILS ================= */}
-          <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-              Address Details
-            </h4>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <FieldItem
-                  label="Address"
-                  value={editVendorMasterData?.Address ?? '-'}
+                  label="PAN Number"
+                  value={editVendorMasterData?.PanCardNumber ?? '-'}
+                  urls={editVendorMasterData?.PanCardURL} isIcon
+                />
+                <FieldItem
+                  label="GST Number"
+                  value={editVendorMasterData?.GSTNumber ?? '-'}
+                  urls={editVendorMasterData?.GSTCertificateURL} isIcon
+                />
+                <FieldItem
+                  label="Aadhar Card Number"
+                  value={editVendorMasterData?.AadharCardNumber ?? '-'}
+                  urls={editVendorMasterData?.AadharCardURL} isIcon
                 />
               </div>
-              <FieldItem label="Country" value={editVendorMasterData?.CountryName ?? '-'} />
-              <FieldItem label="State" value={editVendorMasterData?.StateName ?? '-'} />
-              <FieldItem label="District" value={editVendorMasterData?.DistrictName ?? '-'} />
-              <FieldItem label="City" value={editVendorMasterData?.CityName ?? '-'} />
-            </div>
-          </section>
+            </section>
 
-          {/* ================= MATERIALS & CONTRACTS ================= */}
-          <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-              Materials & Contracts
-            </h4>
+            {/* ================= ADDRESS DETAILS ================= */}
+            <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Address Details
+              </h4>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FieldItem
-                label="Available Materials"
-                value={editVendorMasterData?.AvailableMaterialList ?? '-'}
-              />
-              <FieldItem
-                label="Available Contracts"
-                value={editVendorMasterData?.AvailableContractList ?? '-'}
-              />
-            </div>
-          </section>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-3">
+                  <FieldItem
+                    label="Address"
+                    value={editVendorMasterData?.Address ?? '-'}
+                  />
+                </div>
+                <FieldItem label="Country" value={editVendorMasterData?.CountryName ?? '-'} />
+                <FieldItem label="State" value={editVendorMasterData?.StateName ?? '-'} />
+                <FieldItem label="District" value={editVendorMasterData?.DistrictName ?? '-'} />
+                <FieldItem label="City" value={editVendorMasterData?.CityName ?? '-'} />
+              </div>
+            </section>
 
+            {/* ================= MATERIALS & CONTRACTS ================= */}
+            <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Materials & Contracts
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FieldItem
+                  label="Available Materials"
+                  value={editVendorMasterData?.AvailableMaterialList ?? '-'}
+                />
+                <FieldItem
+                  label="Available Contracts"
+                  value={editVendorMasterData?.AvailableContractList ?? '-'}
+                />
+              </div>
+            </section>
+
+
+          </div>
+
+          {/* ================= RIGHT (1/3 WIDTH) ================= */}
+          <div className="lg:col-span-1 space-y-6">
+
+            {/* ================= QUICK ACTIONS ================= */}
+            <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Action Details
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                <FieldItem label="Created By" value={editVendorMasterData?.CreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(editVendorMasterData?.CreatedDate ?? '-')}
+                />
+                <FieldItem label="Modified By" value={editVendorMasterData?.ModifiedBy ?? '-'} />
+                <FieldItem
+                  label="Modified Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(editVendorMasterData?.ModifiedDate ?? '-')}
+                />
+              </div>
+            </section>
+          </div>
 
         </div>
-
-        {/* ================= RIGHT (1/3 WIDTH) ================= */}
-        <div className="lg:col-span-1 space-y-6">
-
-          {/* ================= QUICK ACTIONS ================= */}
-          <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-              Action Details
-            </h4>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-              <FieldItem label="Created By" value={editVendorMasterData?.CreatedBy ?? '-'} />
-              <FieldItem
-                label="Created Date"
-                value={formatDate_dd_MonthName_yy_hh_mm(editVendorMasterData?.CreatedDate ?? '-')}
-              />
-              <FieldItem label="Modified By" value={editVendorMasterData?.ModifiedBy ?? '-'} />
-              <FieldItem
-                label="Modified Date"
-                value={formatDate_dd_MonthName_yy_hh_mm(editVendorMasterData?.ModifiedDate ?? '-')}
-              />
-            </div>
-          </section>
-        </div>
-
-      </div>
-
+      )}
     </div>
 
   );

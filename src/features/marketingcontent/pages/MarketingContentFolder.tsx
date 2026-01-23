@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -14,10 +14,11 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import { Download, Edit, Trash2 } from 'lucide-react';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
-import type { AddUpdateMarketingContentFolderRequest, DeleteMarketingContentFolderRequest, FilterWithPaginationMarketingContentFolderRequest, MarketingContentFolderData } from '@/features/marketingcontent/models/MarketingContentFolderModel';
-import { marketingContentFolderService } from '@/features/marketingcontent/services/MarketingContentFolderService';
+import type { AddUpdateMarketingContentFolderRequest, DeleteMarketingContentFolderRequest, FilterWithPaginationMarketingContentFolderRequest, MarketingContentFolderData } from '@/features/marketingContent/models/MarketingContentFolderModel';
+import { marketingContentFolderService } from '@/features/marketingContent/services/MarketingContentFolderService';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 
 const initialFormState = (): AddUpdateMarketingContentFolderRequest => ({
@@ -30,7 +31,7 @@ const initialFormState = (): AddUpdateMarketingContentFolderRequest => ({
 export const MarketingContentFolder: React.FC = () => {
 
     //#region STATE MANAGEMENT
-    const [MarketingContentFolderList, setMarketingContentFolderList] = useState<MarketingContentFolderData[]>([]);
+    const [marketingContentFolderList, setMarketingContentFolderList] = useState<MarketingContentFolderData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingMessage, setIsLoadingMessage] = useState('');
 
@@ -75,7 +76,7 @@ export const MarketingContentFolder: React.FC = () => {
     const { canAction } = useMenuPermissions();
     //#endregion
 
-    const location = useLocation() as any;
+    const location = useLocation();
     //#endregion
 
     //#region INIT
@@ -105,41 +106,29 @@ export const MarketingContentFolder: React.FC = () => {
     const fetchMarketingContentFolderList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadMarketingContentFolder(page, filters, sort);
     }
-
-    const loadMarketingContentFolder = useCallback(async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+    const loadMarketingContentFolder = useCallback(async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
         await runApiWithLoader(
             setIsLoading,
             setIsLoadingMessage,
             async () => {
-                let sortByParam = undefined;
-
-                if (sortInfo) {
-
-                    const column = MarketingContentFolderColumns.find(col => col.key === sortInfo.column);
-                    if (column) {
-                        sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-                    }
-                }
                 const params: FilterWithPaginationMarketingContentFolderRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     MarketingContentFolderId: filterParams.MarketingContentFolderId ? Number(filterParams.MarketingContentFolderId) : undefined,
-                    MarketingContentFolderName: filterParams.MarketingContentFolderName?.trim() || undefined,
-                    SortBy: sortByParam
+                    MarketingContentFolderName: searchtext ?? filterParams.MarketingContentFolderName ?? undefined,
+                    SortBy: getSortByParam(sortInfo ?? null, MarketingContentFolderColumns)
                 };
 
                 const response = await marketingContentFolderService.apiCallPullMarketingContentFolder(params);
                 if (E.isRight(response)) {
 
                     setMarketingContentFolderList(response.right.Data);
-
                     setPagination({
                         currentPage: page,
                         totalRecords: response.right.TotalNumberOfRecord,
                         totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
                     });
-
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                     return response;
@@ -160,6 +149,30 @@ export const MarketingContentFolder: React.FC = () => {
         fetchMarketingContentFolderList();
 
     }, [projectId])
+    //#endregion
+
+    //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
+    useEffect(() => {
+        return () => {
+            debouncedSearch.cancel?.()
+        }
+    }, [debouncedSearch])
+
+    useEffect(() => {
+        if (isAddUpdateModalOpen) {
+            if (editingMarketingContentFolderData) {
+                setFormData({
+                    MarketingContentFolderId: editingMarketingContentFolderData.MarketingContentFolderId || 0,
+                    Uniquekey: editingMarketingContentFolderData.Uniquekey || initialFormState().Uniquekey,
+                    MarketingContentFolderName: editingMarketingContentFolderData.MarketingContentFolderName || "",
+                    ProjectId: Number(projectId)
+                });
+            } else {
+                setFormData(initialFormState());
+            }
+            setErrors({});
+        }
+    }, [isAddUpdateModalOpen, editingMarketingContentFolderData]);
     //#endregion
 
     //#region SEARCH & CLEAR
@@ -202,11 +215,22 @@ export const MarketingContentFolder: React.FC = () => {
 
     //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
-
         setSortInfo(sort);
         loadMarketingContentFolder(1, filters, sort);
 
     }, [filters]);
+    //#endregion
+
+    const handleDeleteDialogClose = useCallback(() => {
+        setIsConfirmationDialogBoxOpen(false);
+        setDeleteMarketingContentFolderData(null);
+    }, [setIsConfirmationDialogBoxOpen, setDeleteMarketingContentFolderData]);
+
+    //#region CONFIRMATION DIALOG BOX
+    const handleConfirmationDialogBoxOpen = useCallback((row: MarketingContentFolderData) => {
+        setDeleteMarketingContentFolderData(row)
+        setIsConfirmationDialogBoxOpen(true)
+    }, [])
     //#endregion
 
     //#region TABLE PAGINATION INFO
@@ -220,7 +244,7 @@ export const MarketingContentFolder: React.FC = () => {
         }),
         [pagination, handlePageChange]
     );
-    const ApprovedBankForTable = useMemo(() => MarketingContentFolderList, [MarketingContentFolderList]);
+    const ApprovedBankForTable = useMemo(() => marketingContentFolderList, [marketingContentFolderList]);
     //#endregion
 
     //#region NAVIGATE TO VIEW MARKETING CONTENT DOCUMENT
@@ -228,18 +252,11 @@ export const MarketingContentFolder: React.FC = () => {
         navigate(
             `/content/contentDocument/${row.MarketingContentFolderId}`,
             {
-                state: {
-                    MarketingContentData: row,
-                    listState: {
-                        page: pagination.currentPage,
-                        filters,
-                        sortInfo,
-                        searchTerm,
-                    }
-                }
+                state: { MarketingContentData: row }
             }
         );
     };
+    //#endregion
 
     //#region DOWNLOAD AS ZIP FILE
     const handleDownloadMarketingContentFolder = (row: MarketingContentFolderData) => {
@@ -247,10 +264,9 @@ export const MarketingContentFolder: React.FC = () => {
 
             setIsLoading,
             setIsLoadingMessage,
-
             async () => {
                 const params = new URLSearchParams({
-                    PageSize: '100',
+                    PageSize: '10',
                     PageNumber: '1',
                     ProjectId: String(row.ProjectId),
                     ExportType: 'ZIP',
@@ -285,13 +301,6 @@ export const MarketingContentFolder: React.FC = () => {
         );
     };
 
-    //#region CONFIRMATION DIALOG BOX
-    const handleConfirmationDialogBoxOpen = useCallback((row: MarketingContentFolderData) => {
-        setDeleteMarketingContentFolderData(row)
-        setIsConfirmationDialogBoxOpen(true)
-    }, [])
-    //#endregion
-
     //#region TABLE COLUMNS
     const MarketingContentFolderColumns = useMemo<TableColumn[]>(() => [
         {
@@ -303,7 +312,7 @@ export const MarketingContentFolder: React.FC = () => {
             align: 'left',
             render: (value, row) => (
                 <TooltipText
-                    text={value || 'N/A'}
+                    text={value || '-'}
                     maxWidth="250px"
                     tooltipThreshold={25}
                     onClick={() => handleNavigateToView(row)}
@@ -367,7 +376,7 @@ export const MarketingContentFolder: React.FC = () => {
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                handleEditMarketingContent(row);
+                                handleEditMarketingContentFolder(row);
                             }}
                             color="transparent"
                             isborderRadius
@@ -380,7 +389,6 @@ export const MarketingContentFolder: React.FC = () => {
                     </div>
                 );
             }
-
         }
     ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
 
@@ -397,7 +405,6 @@ export const MarketingContentFolder: React.FC = () => {
             const saved = LocalStorageHelper.getMarketingContentFolderTableColumns?.();
 
             if (saved) {
-
                 const parsed = JSON.parse(saved) as string[]
                 const withRequired = Array.from(new Set([...parsed, ...requiredMarketingContentFolderColumnKeys]));
 
@@ -417,45 +424,8 @@ export const MarketingContentFolder: React.FC = () => {
     );
     //#endregion
 
-    //#region INITIALIZATION
-    const hasFetchedInitialMarketingContentFolder = useRef(false)
-
-    useEffect(() => {
-
-        if (hasFetchedInitialMarketingContentFolder.current) return
-
-        hasFetchedInitialMarketingContentFolder.current = true;
-        fetchMarketingContentFolderList()
-    }, [])
-
-    //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
-    useEffect(() => {
-        return () => {
-            debouncedSearch.cancel?.()
-        }
-    }, [debouncedSearch])
-
-    useEffect(() => {
-        if (isAddUpdateModalOpen) {
-            if (editingMarketingContentFolderData) {
-                setFormData({
-                    MarketingContentFolderId: editingMarketingContentFolderData.MarketingContentFolderId || 0,
-                    Uniquekey: editingMarketingContentFolderData.Uniquekey || initialFormState().Uniquekey,
-                    MarketingContentFolderName: editingMarketingContentFolderData.MarketingContentFolderName || "",
-                    ProjectId: Number(projectId)
-                });
-            } else {
-                setFormData(initialFormState());
-            }
-            setErrors({});
-        }
-    }, [isAddUpdateModalOpen, editingMarketingContentFolderData]);
-    //#endregion
-
     const handleFieldChange = (field: keyof AddUpdateMarketingContentFolderRequest, value: any) => {
-
         setFormData((prev) => ({ ...prev, [field]: value }));
-
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
@@ -475,14 +445,13 @@ export const MarketingContentFolder: React.FC = () => {
         setIsAddUpdateModalOpen(true);
     }
 
-    //#region EDIT MARKETING CONTENT 
-    const handleEditMarketingContent = useCallback((row: MarketingContentFolderData) => {
+    //#region EDIT MARKETING CONTENT FOLDER
+    const handleEditMarketingContentFolder = useCallback((row: MarketingContentFolderData) => {
         setEditingMarketingContentFolderData({
             ...row,
             MarketingContentFolderName: row.MarketingContentFolderName
         })
         setIsAddUpdateModalOpen(true);
-
     }, [])
 
     // ============================================================= [VALIDATION FUNCTION] =============================================================================================
@@ -512,11 +481,10 @@ export const MarketingContentFolder: React.FC = () => {
             Uniquekey: formData.Uniquekey,
             MarketingContentFolderName: formData.MarketingContentFolderName,
             ProjectId: Number(projectId),
-
         };
     };
 
-    // ADD UPDATE  MARKETING CONTENT FOLDER
+    // ADD UPDATE MARKETING CONTENT FOLDER
     const handleAddUpdateMarketingContentFolder = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -530,7 +498,6 @@ export const MarketingContentFolder: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-
             setIsLoadingMessage,
             async () => {
 
@@ -542,7 +509,7 @@ export const MarketingContentFolder: React.FC = () => {
 
                     setIsAddUpdateModalOpen(false);
 
-                    const isAdd = formData.MarketingContentFolderId === null || formData.MarketingContentFolderId === 0;
+                    const isAdd = formData.MarketingContentFolderId === 0;
 
                     if (isAdd) {
 
@@ -550,14 +517,12 @@ export const MarketingContentFolder: React.FC = () => {
 
                         fetchMarketingContentFolderList()
                         setMarketingContentFolderList(prevData => [newRecord, ...prevData]);
-
                         setPagination({
                             currentPage: pagination.currentPage,
                             totalRecords: pagination.totalRecords + 1,
                             totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
                         });
                         addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-
                     } else {
 
                         const updatedRecord = response.right.Data[0] as MarketingContentFolderData;
@@ -569,19 +534,16 @@ export const MarketingContentFolder: React.FC = () => {
                                     : item
                             )
                         )
-
                         addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                     }
                     setEditingMarketingContentFolderData(null);
                 } else {
-
                     addToast({ type: "error", title: response.left?.message });
                 }
                 return response;
             },
             undefined,
             (error: any) => {
-
                 addToast({ type: 'error', title: error.message })
             },
             undefined,
@@ -599,7 +561,6 @@ export const MarketingContentFolder: React.FC = () => {
         await runApiWithLoader(
 
             setIsLoading,
-
             setIsLoadingMessage,
             async () => {
                 const params: DeleteMarketingContentFolderRequest = {
@@ -615,22 +576,33 @@ export const MarketingContentFolder: React.FC = () => {
 
                 if (E.isRight(response)) {
 
-                    setMarketingContentFolderList(prevData => prevData.filter(item => item.MarketingContentFolderId !== deleteMarketingContentFolderData.MarketingContentFolderId));
+                    const newTotalRecords = pagination.totalRecords - 1;
 
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    }
+
+                    else if (marketingContentFolderList.length === 1 && pagination.currentPage > 1) {
+                        pageToShow = pagination.currentPage - 1;
+                    }
                     setPagination({
-                        currentPage: pagination.currentPage,
-                        totalRecords: pagination.totalRecords - 1,
-                        totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+                        currentPage: pageToShow,
+                        totalRecords: newTotalRecords,
+                        totalPages: newTotalPages
                     });
+                    await loadMarketingContentFolder(pageToShow, filters, sortInfo);
+
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
                     setIsConfirmationDialogBoxOpen(false);
                     setDeleteMarketingContentFolderData(null);
-
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                     setIsConfirmationDialogBoxOpen(false);
-
                 }
                 return response;
             },
@@ -668,7 +640,7 @@ export const MarketingContentFolder: React.FC = () => {
                 onAdd={handleAddMarketingContentFolder}
             />
 
-            {/* CONTENT FOLDER DATA TABLE*/}
+            {/* MARKETING CONTENT FOLDER DATA TABLE*/}
 
             <DataTable
                 data={ApprovedBankForTable}
@@ -727,21 +699,13 @@ export const MarketingContentFolder: React.FC = () => {
             </Modal>
 
             {/* DELETE CONFIRMATION MODAL */}
-            <ConfirmationDialogBox
+            <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
-                onClose={() => {
-                    setIsConfirmationDialogBoxOpen(false)
-                    setDeleteMarketingContentFolderData(null)
-                }}
+                onClose={handleDeleteDialogClose}
                 onConfirm={handleDeleteMarketingContentFolder}
-                title="You are about to delete a Content Folder ?"
-                message="Deleting this Content Folder will permanently remove its contents."
-                confirmText="Delete"
-                cancelText="Cancel"
                 loading={isLoading}
-                variant="danger"
+                pageName='Content'
             />
-
         </div>
     );
 };

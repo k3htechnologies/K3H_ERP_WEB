@@ -4,9 +4,9 @@ import type { AddUpdateProjectMasterWithCompanyRequest } from '@/features/projec
 import { DataTable, type FilterInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import type { CompanyMasterData, FilterWithPaginationCompanyMasterRequest } from '@/features/companyMaster/models/CompanyMasterModel';
 import useToast from '@/core/hooks/useToast';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { runApiWithLoader } from '@/core/utils';
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 import * as E from 'fp-ts/Either';
 import usePagination from '@/core/hooks/usePagination';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
@@ -17,12 +17,13 @@ import Checkbox from '@/ui/components/forms/Checkbox';
 import { Input } from '@/ui/components/forms';
 import { Search } from 'lucide-react';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
-import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
+import { companyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
+import { useProjectMasterListState } from '@/features/projectMaster/context/ProjectMasterListStateContext';
 
 const Company: React.FC = () => {
   //#region STATE MANAGEMENT
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [compantMasterList, setCompanyMasterList] = useState<CompanyMasterData[]>([]);
 
   // TOAST
@@ -31,23 +32,10 @@ const Company: React.FC = () => {
   //LOCATION
   const navigate = useNavigate();
 
-  const location = useLocation() as {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: any;
-        sortInfo?: any;
-        searchTerm?: string;
-        projectId?: number;
-        uniquekey?: string;
-        projectName?: string;
-      };
-    };
-  };
-  const preservedListState = location.state?.listState;
-  const projectId = preservedListState?.projectId || 0;
-  const uniquekey = preservedListState?.uniquekey || '';
-  const projectName = preservedListState?.projectName || '';
+  const { listState } = useProjectMasterListState();
+  const projectId = listState.projectId;
+  const projectName = listState.projectName;
+  const uniquekey= listState.uniquekey;
 
 
   //FILTER STATES
@@ -117,10 +105,10 @@ const Company: React.FC = () => {
   const loadProjectMasterWithCompany = async (ProjectId: number) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
-        const response = await ProjectMasterService.apiCallPullProjectMasterWithCompany(ProjectId);
+        const response = await projectMasterService.apiCallPullProjectMasterWithCompany(ProjectId);
 
         if (E.isRight(response)) {
 
@@ -232,7 +220,7 @@ const Company: React.FC = () => {
   const loadCompanys = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationCompanyMasterRequest = {
@@ -242,7 +230,7 @@ const Company: React.FC = () => {
           CompanyName: filterParams.CompanyName?.trim() || undefined,
         }
 
-        const response = await CompanyMasterService.apiCallPullCompanyMaster(params);
+        const response = await companyMasterService.apiCallPullCompanyMaster(params);
 
         if (E.isRight(response)) {
 
@@ -329,12 +317,12 @@ const Company: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const payload = PushProjectMasterWithCompanyData();
 
-        const response = await ProjectMasterService.apiCallAddUpdateProjectMasterWithCompany(payload);
+        const response = await projectMasterService.apiCallAddUpdateProjectMasterWithCompany(payload);
 
         if (E.isRight(response)) {
 
@@ -394,9 +382,7 @@ const Company: React.FC = () => {
 
   //#region  BACK TO PROJECT MASTER PAGE
   const handleBackToListProjectMaster = () => {
-    navigate('/projectMaster', {
-      state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTermForEmployee: '' } }
-    });
+     navigate("/projectMaster");
   };
   //#endregion
   return (
@@ -409,7 +395,7 @@ const Company: React.FC = () => {
         titleText={'Company Details : '}
         subTitleText={projectName}
         cancelText="Cancel"
-        EditText="Add | Update"
+        EditText="Add"
         onCancel={() => handleBackToListProjectMaster()}
         canAction={canAction}
         onEdit={() => {
@@ -424,7 +410,6 @@ const Company: React.FC = () => {
           columns={projectMasterWithCompanyColumns}
           emptyMessage="No Company Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           loading={isLoading}
@@ -437,7 +422,7 @@ const Company: React.FC = () => {
         onClose={() => setIsOpenAddProjectMasterWithCompany(false)}
         title="Add Company"
         onSubmit={handleAddUpdateProjectMasterWithCompany}
-        saveText="Save"
+        saveText="Update"
         resetText=""
         size="large-half"
       >

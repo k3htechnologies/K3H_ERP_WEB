@@ -9,8 +9,8 @@ import type {
     MarketingContentFolderSaveResponse,
     MarketingContentFolderDeleteResponse
 
-} from "@/features/marketingcontent/models/MarketingContentFolderModel";
-import { MarketingContentFolderApi } from "../api/MarketingContentFolderApi";
+} from "@/features/marketingContent/models/MarketingContentFolderModel";
+import { MarketingContentFolderApi } from "@/features/marketingContent/api/MarketingContentFolderApi";
 
 export abstract class MarketingContentFolderDatasource {
 

@@ -879,7 +879,7 @@ const EmployeeModuleAccess: React.FC = () => {
 
       <BottomActionBar
         cancelText="Cancel"
-        saveText={"Save"}
+        saveText={"Add"}
         onCancel={() => navigate(-1)}
         canAction={true}
         onSave={() => {

@@ -58,18 +58,9 @@ export class WeekOffMappingMasterDatasourceImpl implements WeekOffMappingMasterD
 
         try {
 
-            const payLoad: AddUpdateWeekOffMappingMasterRequest = {
-                WeekOffPolicyMasterMappingId: params.WeekOffPolicyMasterMappingId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-
-                WeekOffPolicyMasterId: params.WeekOffPolicyMasterId ?? 0,
-                DepartmentMasterId: params.DepartmentMasterId ?? '',
-                EmployeeId: params.EmployeeId ?? '',
-            }
-
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 WeekOffMappingMasterApi.ADD_UPDATE,
-                payLoad
+                params
             )
 
             return response

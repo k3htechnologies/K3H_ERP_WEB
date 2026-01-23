@@ -45,7 +45,7 @@ export const ViewBuilding: React.FC = () => {
     const [contactDetailsList, setContactDetailsList] = useState<Omit<BuildingKeyContactDetails, 'BuildingId' | 'ProjectId' | 'CreatedById' | 'CreatedBy' | 'CreatedDate' | 'ModifiedById' | 'ModifiedBy' | 'ModifiedDate' | 'LastModifiedBy' | 'LastModifiedDate'>[]>([]);
     const [buildingDetailsList, setBuildingDetailsList] = useState<BuildingDetailsData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
     const { canAction } = useMenuPermissions();
     // TOAST
     const { addToast } = useToast();
@@ -95,7 +95,7 @@ export const ViewBuilding: React.FC = () => {
         if (!buildingId) return;
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationBuildingRequest = {
@@ -133,7 +133,7 @@ export const ViewBuilding: React.FC = () => {
     const loadBuildingDocumentFromServer = async (searchText = "") => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationBuildingDocumentRequest = {
@@ -223,7 +223,7 @@ export const ViewBuilding: React.FC = () => {
     const loadBuildingDetailsFromServer = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: FilterWithPaginationBuildingDetailsRequest = {
@@ -426,10 +426,10 @@ export const ViewBuilding: React.FC = () => {
                                 <FieldItem label="Country" value={buildingData?.CountryName ?? '-'} />
                                 <FieldItem label="State" value={buildingData?.StateName ?? '-'} />
                                 <FieldItem label="District" value={buildingData?.DistrictName ?? '-'} />
-                                
+
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
-                             <FieldItem label="City" value={buildingData?.CityName ?? '-'} />
+                                <FieldItem label="City" value={buildingData?.CityName ?? '-'} />
                                 <FieldItem label="Village" value={buildingData?.VillageName ?? '-'} />
 
                             </div>
@@ -557,7 +557,7 @@ export const ViewBuilding: React.FC = () => {
 
                                     {/* HEADER */}
                                     <div
-                                        className="flex justify-between items-center px-4 py-3 cursor-pointer"
+                                        className="flex justify-between items-center px-4 py-3"
                                         onClick={async () => {
                                             toggle();
                                             if (!isOpen) await loadSingleDocumentDetails(doc);
@@ -569,21 +569,29 @@ export const ViewBuilding: React.FC = () => {
 
                                     {/* BODY */}
                                     {isOpen && (
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-5 pl-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pl-3 pt-3">
 
                                             {details.map(d => {
+                                                
                                                 const urls = parseDocumentUrls(d.DocumentURL ?? "");
 
                                                 return (
-                                                    <div key={d.Uniquekey} className="border border-gray-200 rounded-lg p-4 mb-3 shadow-sm ">
+                                                    <div key={d.Uniquekey} className="border border-gray-200 rounded-lg mb-3 shadow-sm  ">
 
-                                                        <MultiImageViewer
-                                                            images={urls}
-                                                            title={d.DocumentName ?? "Document"}
-                                                            triggerLabel={`${d.DocumentName}`}
-                                                        />
+                                                        <div className="flex items-start justify-between p-2 gap-2">
+                                                            <span className="line-clamp-2 break-words font-medium text-gray-900">
+                                                                {d.DocumentName}
+                                                            </span>
 
-                                                        <div className="text-xs text-gray-600 mt-3 space-y-1">
+                                                            <MultiImageViewer
+                                                                images={urls}
+                                                                title={d.DocumentName ?? "Document"}
+                                                                triggerLabel="View"
+                                                                isIcon={false}
+                                                            />
+                                                        </div>
+
+                                                        <div className="bg-gray-50 p-2 mt-auto">
                                                             <FieldItem label="Remark" value={d.DocumentRemark ?? '-'} />
                                                             <FieldItem
                                                                 label="Uploaded By / Date"

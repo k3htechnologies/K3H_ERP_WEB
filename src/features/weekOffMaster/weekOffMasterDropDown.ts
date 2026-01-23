@@ -1,10 +1,10 @@
+import { weekOffMasterService } from '@/features/weekOffMaster/services/WeekOffMasterService';
 import * as E from 'fp-ts/Either';
-import { WeekOffMasterService } from '../weekOffMaster/services/WeekOffMasterService';
 
 export const fetchWeekOffMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
-        const responseEither = await WeekOffMasterService.apiCallPullWeekOffMaster({
-            PageSize: 10,
+        const responseEither = await weekOffMasterService.apiCallPullWeekOffMaster({
+            PageSize: 20,
             PageNumber: pageNumber,
             WeekOffPolicyName: params?.value || "",
         });

@@ -12,7 +12,7 @@ import * as E from 'fp-ts/Either';
 
 const designationMasterDatasource = new DesignationMasterDatasourceImpl();
 
-export const DesignationMasterService = {
+export const designationMasterService = {
 
     apiCallPullDesignationMaster: async (params: FilterWithPaginationDesignationMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, DesignationMasterListResponse>> => {
         try {

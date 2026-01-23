@@ -46,3 +46,15 @@ export const LOCAL_STORAGE_KEYS = {
     REDEVELOPMENT_BUILDING_COLUMNS: 'redevelopmentBuilding.selectedColumns',
     
 } as const
+
+export const LOCAL_STORAGE_FOR_STATE_KEYS = {
+    EMPLOYEE: 'employeeMaster.listState',
+    COMPANY: 'companyMaster.listState',
+    VENDOR: 'vendor.listState',
+    PROJECT_MASTER: 'projectMaster.listState',
+    ASSET_MASTER: 'assetMaster.listState',
+    ASSET_MAPPING_MASTER: 'assetMappingMaster.listState',
+    DEDUCTION_MASTER: 'deductionMaster.listState',
+    SHIFT_MASTER: 'shiftMaster.listState',
+    WEEK_OFF_MASTER: 'weekOffMaster.listState',
+} as const

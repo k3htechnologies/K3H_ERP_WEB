@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { Button } from "@/ui/components/forms/Button";
@@ -7,11 +7,11 @@ import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { Loader } from "@/core/utils/loader";
 import { useToast } from "@/core/hooks/useToast";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
-import { VendorService } from "@/features/vendor/services/VendorService";
+import { vendorService } from "@/features/vendor/services/VendorService";
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { runApiWithLoader } from "@/core/utils";
-import { filterEmail, filterMobile, filterPAN, filterGST, filterAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidGST, isValidAadhaar } from "@/core/utils/fileValidation";
+import { filterEmail, filterMobile, filterPAN, filterGST, filterAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidGST, isValidAadhaar, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import { COMPANY_TYPE_OPTIONS } from "@/core/constants/staticData";
 import type { AddUpdateVendorRequest, FilterWithPaginationVendorRequest } from "../models/VendorModel";
 import type { FilterWithPaginationMaterialSubMaterialMasterUOM, MaterialSubMaterialUOM } from "@/features/technical/models/TechnicalModel";
@@ -80,7 +80,6 @@ export const AddUpdateVendor: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate();
-  const location = useLocation();
 
   // GET VALUE FROM URL :VENDORID
   const { vendorId } = useParams<{ vendorId?: string }>();
@@ -189,7 +188,7 @@ export const AddUpdateVendor: React.FC = () => {
           IsCheckPermission: true,
         };
 
-        const response = await VendorService.apiCallPullVendor(params);
+        const response = await vendorService.apiCallPullVendor(params);
 
         if (E.isRight(response)) {
 
@@ -362,7 +361,7 @@ export const AddUpdateVendor: React.FC = () => {
 
     if (!formData.AadharCardNumber?.trim()) {
       newErrors.AadharCardNumber = "Please enter a valid 12-digit Aadhaar number";
-    }else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
+    } else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
       newErrors.AadharCardNumber = "Enter a valid Aadhar Card Number.";
     }
 
@@ -379,15 +378,16 @@ export const AddUpdateVendor: React.FC = () => {
     } else if (!isValidPAN(formData.PanCardNumber?.trim())) {
       newErrors.PanCardNumber = "Enter a valid PAN Number.";
     }
-
-    if (!aadharCardURLFiles.length && !aadharCardURL) {
+    
+    if (!hasAnyDocumentFile(aadharCardURLFiles, aadharCardURL, removedAadharCardUrls)) {
       newErrors.AadharCardURL = "Aadhaar card file is required.";
     }
 
-    if (!panCardURLFiles.length && !panCardURL) {
+    if (!hasAnyDocumentFile(panCardURLFiles, panCardURL, removedPanCardUrls)) {
       newErrors.PanCardURL = "PAN card file is required.";
     }
-    if (!gstGSTCertificateFiles.length && !gSTCertificateURL) {
+
+    if (!hasAnyDocumentFile(gstGSTCertificateFiles, gSTCertificateURL, removedGSTCertificateUrls)) {
       newErrors.GSTCertificateURL = "GST certificate file is required.";
     }
 
@@ -515,31 +515,13 @@ export const AddUpdateVendor: React.FC = () => {
 
         const formDataToSubmit = PushVendorFormData();
 
-        const response = await VendorService.apiCallAddUpdateVendor(formDataToSubmit);
+        const response = await vendorService.apiCallAddUpdateVendor(formDataToSubmit);
 
         if (E.isRight(response)) {
 
           addToast({ type: "success", title: formData.VendorId ? "Vendor updated successfully" : "New Vendor added successfully" });
 
-          const locationState = location.state as {
-            listState?: {
-              page?: number;
-              filters?: any;
-              sortInfo?: any;
-              searchTerm?: string;
-            };
-          } | null;
-
-          const listState = locationState?.listState || {
-            page: 1,
-            filters: {},
-            sortInfo: undefined,
-            searchTerm: '',
-          };
-
-          navigate("/vendor", {
-            state: { listState }
-          });
+          navigate("/vendor");
 
         } else {
 
@@ -570,7 +552,7 @@ export const AddUpdateVendor: React.FC = () => {
 
         {/* ============================================================= [BASIC VENDOR DETAILS] ============================================================================================= */}
         <div className="space-y-4 pb-3">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
             Basic Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -644,7 +626,7 @@ export const AddUpdateVendor: React.FC = () => {
             />
 
             <MultiFilePicker
-              label='Aadhar Card'
+              label='Aadhaar Card'
               placeholder="Select Aadhaar Card"
               required
               error={errors.AadharCardURL}

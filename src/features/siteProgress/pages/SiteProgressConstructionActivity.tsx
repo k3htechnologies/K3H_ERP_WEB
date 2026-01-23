@@ -19,7 +19,7 @@ const SiteProgressConstructionActivity: React.FC = () => {
   //#region STATE
   const [constructionActivityList, setConstructionActivityList] = useState<SiteProgressConstructionActivityData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
   const { pagination, setPagination } = usePagination(100);
@@ -54,7 +54,7 @@ const SiteProgressConstructionActivity: React.FC = () => {
   const loadConstructionActivity = async (page: number, term: string = searchTerm) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         if (term) { }
@@ -130,7 +130,7 @@ const SiteProgressConstructionActivity: React.FC = () => {
       breadcrumbs: currentBreadcrumbs
     };
     const newBreadcrumb = {
-      label: `Activity: ${row.ActivityName || 'N/A'}`,
+      label: `Activity: ${row.ActivityName || '-'}`,
       path: '/siteProgress/SiteProgressConstructionActivity',
       state: activityState
     };
@@ -156,7 +156,7 @@ const SiteProgressConstructionActivity: React.FC = () => {
       align: 'left',
       render: (value, row) => (
         <TooltipText
-          text={value || 'N/A'}
+          text={value || '-'}
           maxWidth="260px"
           tooltipThreshold={26}
           onClick={() => handleViewConstructionActivity(row)}

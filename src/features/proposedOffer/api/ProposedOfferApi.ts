@@ -59,6 +59,11 @@ export const ProposedOfferApi = {
     //=============================================================
     PULL_PROPOSED_PLAN: '/ProposedOffer/PullProposedPlan',
     ADD_UPDATE_PROPOSED_PLAN: '/ProposedOffer/AddUpdateProposedPlan',
+
+    //=============================================================
+    // [ GENERATE PROPOSED PLAN ]
+    //=============================================================
+    ADD_UPDATE_GENERATE_PROPOSED_PLAN: '/ProposedOffer/AddUpdateGenerateProposedOffer',
 } as const
 
 

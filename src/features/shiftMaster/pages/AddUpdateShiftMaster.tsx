@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
@@ -7,7 +7,7 @@ import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateShiftMasterRequest, FilterWithPaginationShiftMasterRequest } from "../models/ShiftMasterModel";
-import { ShiftMasterService } from "../services/ShiftMasterService";
+import { shiftMasterService } from "@/features/shiftMaster/services/ShiftMasterService";
 import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -45,7 +45,6 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate();
-  const location = useLocation();
 
   // GET VALUE FROM URL SHIFT ID
   const { ShiftManagementMasterId } = useParams<{ ShiftManagementMasterId?: string }>();
@@ -136,7 +135,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
           ShiftManagementMasterId: ShiftId
         };
 
-        const response = await ShiftMasterService.apiCallPullShiftMaster(params);
+        const response = await shiftMasterService.apiCallPullShiftMaster(params);
 
         if (E.isRight(response)) {
 
@@ -294,31 +293,12 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
         const payload = PushShiftMasterFormData();
         console.log("payload", payload);
-        const response = await ShiftMasterService.apiCallAddUpdateShiftMaster(payload);
+        const response = await shiftMasterService.apiCallAddUpdateShiftMaster(payload);
 
         if (E.isRight(response)) {
           addToast({ type: "success", title: isAddMode ? "Shift added successfully" : "Shift updated successfully" });
 
-          const locationState = location.state as {
-            listState?: {
-              page?: number;
-              filters?: any;
-              sortInfo?: any;
-              searchTerm?: string;
-            };
-          } | null;
-
-          const listState = locationState?.listState || {
-            page: 1,
-            filters: {},
-            sortInfo: undefined,
-            searchTerm: '',
-          };
-
-          navigate("/ShiftMaster",
-            {
-              state: { listState }
-            });
+          navigate("/shiftMaster");
 
         } else {
           addToast({ type: "error", title: response.left?.message });

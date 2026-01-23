@@ -1,9 +1,9 @@
 import * as E from 'fp-ts/Either';
-import {ProjectMasterService  } from '@/features/projectMaster/services/ProjectMasterService';
+import {projectMasterService  } from '@/features/projectMaster/services/ProjectMasterService';
 
 export const fetchProjectDropdown = async (pageNumber: number, params?: { value?: string ,projectId?: number}) => {
     try {
-        const responseEither = await ProjectMasterService.apiCallPullProjectMaster({
+        const responseEither = await projectMasterService.apiCallPullProjectMaster({
             PageSize: 20,
             PageNumber: pageNumber,
             ProjectId: params?.projectId,

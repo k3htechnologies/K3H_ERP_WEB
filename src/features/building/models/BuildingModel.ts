@@ -8,6 +8,9 @@ export interface FilterWithPaginationBuildingRequest {
   BuildingId?: number
   BuildingName?: string | ''
   CTSNumber?: string | ''
+  RoadWidth?: string | ''
+  CityName?: string | ''
+  VillageName?: string | ''
   SortBy?: string
   ExportType?: 'Excel' | 'PDF'
 }

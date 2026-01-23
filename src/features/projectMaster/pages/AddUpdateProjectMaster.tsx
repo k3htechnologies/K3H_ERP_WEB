@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
 import * as E from "fp-ts/Either";
@@ -6,14 +6,14 @@ import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { Loader } from "@/core/utils/loader";
-import { BUSINESS_CATEGORY, PROJECT_SCHEME, PROJECT_STATUS_OPTIONS, PROJECT_SUB_SCHEME } from "@/core/constants/staticData";
+import { BUSINESS_CATEGORY, PROJECT_SCHEME, PROJECT_STATUS_OPTIONS, PROJECT_SUB_SCHEME_BMC, PROJECT_SUB_SCHEME_MHADA, PROJECT_SUB_SCHEME_SRA } from "@/core/constants/staticData";
 import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
-import { filterGoogleMapsUrl, filterMobile, filterNumbers, filterRERA, isValidGoogleMapsUrl, isValidMobile, isValidRERA } from "@/core/utils/fileValidation";
+import { filterGoogleMapsUrl, filterMobile, filterNumbers, filterRERA, hasAnyDocumentFile, isValidGoogleMapsUrl, isValidMobile, isValidRERA } from "@/core/utils/fileValidation";
 import type { AddUpdateProjectMasterRequest, FilterWithPaginationProjectMasterRequest } from "@/features/projectMaster/models/ProjectMasterModel";
-import { ProjectMasterService } from "../services/ProjectMasterService";
+import { projectMasterService } from "@/features/projectMaster/services/ProjectMasterService";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
@@ -66,7 +66,6 @@ const AddUpdateProjectMaster: React.FC = () => {
     const [projectPhotoURL, setProjectPhotoURL] = useState<string>();
     // NAVIGATE
     const navigate = useNavigate();
-    const location = useLocation();
 
     //GET VALUE FROM URL :PROJECTID
     const { projectId } = useParams<{ projectId?: string }>();
@@ -169,7 +168,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     ProjectId: Number(projectId)
                 }
 
-                const response = await ProjectMasterService.apiCallPullProjectMaster(params);
+                const response = await projectMasterService.apiCallPullProjectMaster(params);
 
                 if (E.isRight(response)) {
 
@@ -288,8 +287,8 @@ const AddUpdateProjectMaster: React.FC = () => {
             newErrors.RERANumber = "Enter a valid RERA Number.";
         }
 
-        if (!projectPhotoFiles.length && !projectPhotoURL) {
-            newErrors.ProjectPhotoURL = "Project photo is required.";
+        if (!hasAnyDocumentFile(projectPhotoFiles, projectPhotoURL, removedProjectPhotoUrls)) {
+            newErrors.ProjectPhotoURL = "Project Photo is required.";
         }
 
         return {
@@ -364,33 +363,13 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                 const payload = PushProjectMasterFormData();
 
-                const response = await ProjectMasterService.apiCallAddUpdateProjectMaster(payload);
+                const response = await projectMasterService.apiCallAddUpdateProjectMaster(payload);
 
                 if (E.isRight(response)) {
 
-                    addToast({ type: "success", title: formData.ProjectId ? "Project details updated successfully" : "New Project added successfully" });
+                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-
-                    // Get list state from navigation if available, otherwise use defaults
-                    const locationState = location.state as {
-                        listState?: {
-                            page?: number;
-                            filters?: any;
-                            sortInfo?: any;
-                            searchTerm?: string;
-                        };
-                    } | null;
-
-                    const listState = locationState?.listState || {
-                        page: 1,
-                        filters: {},
-                        sortInfo: undefined,
-                        searchTerm: '',
-                    };
-
-                    navigate("/projectMaster", {
-                        state: { listState }
-                    });
+                    navigate("/projectMaster");
 
 
                 } else {
@@ -425,7 +404,7 @@ const AddUpdateProjectMaster: React.FC = () => {
             <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
                 <form onSubmit={handleSubmit}>
                     <div className="space-y-4 pb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Details</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Basic Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {/* Redevelopment Checkbox */}
                             <div className="space-y-4 pb-4">
@@ -623,13 +602,25 @@ const AddUpdateProjectMaster: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <SinglePageSelection
-                                    label="Project Sub Scheme"
-                                    placeholder="Select Project Sub Scheme"
-                                    value={formData.ProjectSubScheme}
-                                    onChange={(val) => handleFieldChange('ProjectSubScheme', String(val))}
-                                    options={PROJECT_SUB_SCHEME.map(opt => ({ label: opt.name, value: opt.id }))}
-                                />
+                                <div>
+                                    <SinglePageSelection
+                                        label="Project Sub Scheme"
+                                        placeholder="Select Project Sub Scheme"
+                                        value={formData.ProjectSubScheme}
+                                        onChange={(val) => handleFieldChange('ProjectSubScheme', String(val))}
+                                        options={
+                                            formData.ProjectScheme === 'BMC'
+                                                ? PROJECT_SUB_SCHEME_BMC.map(opt => ({ label: opt.name, value: opt.id }))
+                                                : formData.ProjectScheme === 'MHADA'
+                                                    ? PROJECT_SUB_SCHEME_MHADA.map(opt => ({ label: opt.name, value: opt.id }))
+                                                    : formData.ProjectScheme === 'SRA'
+                                                        ? PROJECT_SUB_SCHEME_SRA.map(opt => ({ label: opt.name, value: opt.id }))
+                                                        : []
+                                        }
+                                        disabled={!formData.ProjectScheme}
+                                    />
+                                </div>
+
                             </div>
                         </div>
                     </div>

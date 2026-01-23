@@ -1,5 +1,5 @@
 import type { Failure } from "@/core/api/FailureResponse";
-import { MaterialMasterDatasourceImpl } from "../datasources/MaterialMasterDatasource";
+import { MaterialMasterDatasourceImpl } from "@/features/materialMaster/datasources/MaterialMasterDatasource";
 import type { AddUpdateMaterialMasterRequest, DeleteMaterialMasterRequest, FilterWithPaginationMaterialMaster, MaterialMasterDeleteResponse, MaterialMasterListResponse, MaterialMasterSaveReponse } from "../models/MaterialMasterModel";
 import * as E from 'fp-ts/Either';
 

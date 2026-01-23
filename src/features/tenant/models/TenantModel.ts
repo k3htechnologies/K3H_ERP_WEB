@@ -8,8 +8,14 @@ export interface FilterWithPaginationTenantRequest {
   BuildingId?: number
   TenantId?: number
   FlatNumber?: string | ''
+  ApplicantName?: string | ''
   FlatConfiguration?: string | ''
   FlatType?: string | ''
+  FlatCarpetAreaSqFt?: string | ''
+  BuildingNumber?: string | ''
+  Wing?: string | ''
+  Flat?: string | ''
+  ParkingNumber?: string | ''
   SortBy?: string
   ExportType?: 'Excel' | 'PDF'
 }
@@ -35,6 +41,7 @@ export interface TenantData {
   Wing: string | null;
   Floor: string | null;
   Flat: string | null;
+  FlatFacing: string | null;
   RERACarpetAreaSqFt: number | null;
   InventoryFlatType: string | null;
   InventoryFlatConfiguration: string | null;

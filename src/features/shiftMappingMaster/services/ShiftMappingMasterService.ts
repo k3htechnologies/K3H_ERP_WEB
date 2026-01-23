@@ -13,7 +13,7 @@ import * as E from 'fp-ts/Either';
 
 const shiftMappingMasterDatasource = new ShiftMappingMasterDatasourceImpl();
 
-export const ShiftMappingMasterService = {
+export const shiftMappingMasterService = {
 
     apiCallPullShiftMappingMaster: async (params: FilterWithPaginationShiftMappingMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ShiftMappingMasterListResponse>> => {
         try {

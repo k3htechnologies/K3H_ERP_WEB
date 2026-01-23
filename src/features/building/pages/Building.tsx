@@ -20,14 +20,14 @@ import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { FileText, Info, Trash2 } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { useBuildingListState } from '@/features/building/context/BuildingListStateContext';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 export const Building: React.FC = () => {
   //#region STATE
   const [buildingList, setBuildingList] = useState<BuildingData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
 
   const { pagination, setPagination } = usePagination(20);
@@ -63,7 +63,7 @@ export const Building: React.FC = () => {
   const loadBuildings = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
 
@@ -82,6 +82,9 @@ export const Building: React.FC = () => {
           ProjectId: projectId ?? undefined,
           BuildingName: filterParams.BuildingName?.trim() || undefined,
           CTSNumber: filterParams.CTSNumber?.trim() || undefined,
+          RoadWidth: filterParams.RoadWidth?.trim() || undefined,
+          CityName: filterParams.CityName?.trim() || undefined,
+          VillageName: filterParams.VillageName?.trim() || undefined,
           SortBy: sortByParam
         };
 
@@ -191,7 +194,7 @@ export const Building: React.FC = () => {
   const handleExportBuildings = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
         let sortByParam: string | undefined;
         if (sortInfo) {
@@ -208,6 +211,9 @@ export const Building: React.FC = () => {
           ProjectId: projectId ?? undefined,
           BuildingName: filters.BuildingName?.trim() || undefined,
           CTSNumber: filters.CTSNumber?.trim() || undefined,
+          RoadWidth: filters.RoadWidth?.trim() || undefined,
+          CityName: filters.CityName?.trim() || undefined,
+          VillageName: filters.VillageName?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         };
@@ -309,7 +315,7 @@ export const Building: React.FC = () => {
             <div className="flex items-center gap-3">
               <div className="min-w-0">
                 <TooltipText
-                  text={value || 'N/A'}
+                  text={value || '-'}
                   maxWidth="260px"
                   tooltipThreshold={26}
                   onClick={() => handleViewBuildingDetails(row)}
@@ -327,7 +333,7 @@ export const Building: React.FC = () => {
         sortable: true,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="220px" tooltipThreshold={22} />
+          <TooltipText text={value || '-'} maxWidth="220px" tooltipThreshold={22} />
         )
       },
       {
@@ -336,7 +342,7 @@ export const Building: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'left',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
 
       {
@@ -370,7 +376,7 @@ export const Building: React.FC = () => {
         sortable: false,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="200px" tooltipThreshold={20} />
+          <TooltipText text={value || '-'} maxWidth="200px" tooltipThreshold={20} />
         )
       },
       {
@@ -379,7 +385,7 @@ export const Building: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'left',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'CityName',
@@ -387,7 +393,15 @@ export const Building: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'left',
-        render: value => value || 'N/A'
+        render: value => value || '-'
+      },
+      {
+        key: 'VillageName',
+        label: 'Village',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
       },
       {
         key: 'IsReligiousStructure',
@@ -536,7 +550,7 @@ export const Building: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: DeleteBuildingRequest = {
@@ -549,13 +563,28 @@ export const Building: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          setBuildingList(prevData => prevData.filter(item => item.BuildingId !== deleteBuildingData.BuildingId));
+          const newTotalRecords = pagination.totalRecords - 1;
+
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (buildingList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
 
           setPagination({
-            currentPage: pagination.currentPage,
-            totalRecords: pagination.totalRecords - 1,
-            totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+            currentPage: pageToShow,
+            totalRecords: newTotalRecords,
+            totalPages: newTotalPages
           });
+
+          await loadBuildings(pageToShow, filters,sortInfo);
+
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
           setIsConfirmationDialogBoxOpen(false);
@@ -650,19 +679,15 @@ export const Building: React.FC = () => {
       />
 
       {/* DELETE CONFIRMATION MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteBuildingData(null)
         }}
         onConfirm={handleDeleteBuilding}
-        title="You are about to delete a building?"
-        message="Deleting this building will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='building'
       />
 
       <Modal
@@ -674,15 +699,15 @@ export const Building: React.FC = () => {
           updateListState({ filters: tempFilters, page: 1 });
           setShowFilterPopup(false);
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply "
+        cancelText="Clear"
         onCancel={() => {
           setTempFilters({});
           resetFilters();
           setShowFilterPopup(false);
         }}
 
-        resetText=''
+
         size="small-half"
       >
         <div className="space-y-6">
@@ -694,7 +719,7 @@ export const Building: React.FC = () => {
                 type="text"
                 value={tempFilters.BuildingName || ''}
                 onChange={e => handleFilterChange('BuildingName', e.target.value)}
-                placeholder="Enter building name"
+                placeholder="Enter Building name"
               />
             </div>
 
@@ -706,6 +731,36 @@ export const Building: React.FC = () => {
                 value={tempFilters.CTSNumber || ''}
                 onChange={e => handleFilterChange('CTSNumber', e.target.value)}
                 placeholder="Enter CTS number"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='Road Width'
+                type="text"
+                value={tempFilters.RoadWidth || ''}
+                onChange={e => handleFilterChange('RoadWidth', e.target.value)}
+                placeholder="Enter Road Width"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='City'
+                type="text"
+                value={tempFilters.CityName || ''}
+                onChange={e => handleFilterChange('CityName', e.target.value)}
+                placeholder="Enter City"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='Village'
+                type="text"
+                value={tempFilters.VillageName || ''}
+                onChange={e => handleFilterChange('VillageName', e.target.value)}
+                placeholder="Enter Village"
               />
             </div>
           </div>

@@ -1,0 +1,119 @@
+import React from 'react';
+import { Modal } from '@/ui/components/Modal/Modal';
+import { SingleSelectDropdownWithPagination } from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
+import RadioPill from '@/ui/components/forms/RadioPill';
+import { fetchShiftMasterDropdown } from '../../shiftMaster/ShiftMasterDropDown';
+import { fetchDepartmentMasterDropdown } from '@/features/departmentMaster/departmentMasterDropdown';
+import { fetchEmployeeMasterDropdown } from '@/features/employeeMaster/employeeMasterDropDown';
+import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
+import type { AddUpdateShiftMappingMasterRequest } from '@/features/shiftMappingMaster/models/ShiftMappingMasterModel';
+
+interface ShiftMappingMasterFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCancel: () => void;
+  onSubmit: (e: React.FormEvent) => void;
+  formData: AddUpdateShiftMappingMasterRequest;
+  onFieldChange: (field: keyof AddUpdateShiftMappingMasterRequest, value: any) => void;
+  errors: { [k: string]: string };
+  editingData: any;
+  loading: boolean;
+  dropdownLabels: { departmentName?: string; EmployeeName?: string; shiftName?: string };
+  dropdownResetKey: number;
+  mappingShift: string;
+  onApplicableTypeChange: (value: string) => void;
+}
+
+export const ShiftMappingMasterFormModal: React.FC<ShiftMappingMasterFormModalProps> = ({
+  isOpen,
+  onClose,
+  onCancel,
+  onSubmit,
+  formData,
+  onFieldChange,
+  errors,
+  editingData,
+  loading,
+  dropdownLabels,
+  dropdownResetKey,
+  mappingShift,
+  onApplicableTypeChange
+}) => {
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      onCancel={onCancel}
+      title={editingData ? 'Update Shift Mapping ' : 'Add Shift Mapping'}
+      onSubmit={onSubmit}
+      saveText={editingData ? 'Update' : 'Add'}
+      loading={loading}
+      size="xl"
+    >
+      <div className="space-y-6 p-6 bg-blue-100">
+        <div className='space-y-4'>
+          <div>
+            <SingleSelectDropdownWithPagination
+              label="Shift Name"
+              key={dropdownResetKey}
+              title="Select Shift Name "
+              size="lg"
+              required
+              dataFetchCallBack={fetchShiftMasterDropdown}
+              onSelected={(item) => onFieldChange("ShiftManagementMasterId", Number(item.value))}
+              initialValue={createDropdownInitialValue(formData.ShiftManagementMasterId, dropdownLabels.shiftName)}
+              error={errors.ShiftManagementMasterId}
+            />
+          </div>
+          <div>
+            <p className="text-sm text-gray-600 mb-2">Mapping</p>
+            <div className="flex gap-3">
+              <RadioPill
+                name="Mapping"
+                label="Department"
+                checked={mappingShift === "Department"}
+                onChange={() => onApplicableTypeChange("Department")}
+              />
+              <RadioPill
+                name="Mapping"
+                label="Employee"
+                checked={mappingShift === "Employee"}
+                onChange={() => onApplicableTypeChange("Employee")}
+              />
+            </div>
+          </div>
+          {mappingShift === 'Employee' && (
+            <div>
+              <SingleSelectDropdownWithPagination
+                label="Employee"
+                key={dropdownResetKey}
+                title="Select Employee"
+                size="lg"
+                required
+                dataFetchCallBack={fetchEmployeeMasterDropdown}
+                onSelected={(item) => onFieldChange("EmployeeId", item.value)}
+                initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.EmployeeName)}
+                error={errors.EmployeeId}
+              />
+            </div>
+          )}
+          {mappingShift === 'Department' && (
+            <div>
+              <SingleSelectDropdownWithPagination
+                label="Department"
+                key={dropdownResetKey}
+                title="Select Department"
+                size="lg"
+                required
+                dataFetchCallBack={fetchDepartmentMasterDropdown}
+                onSelected={(item) => onFieldChange("DepartmentMasterId", String(item.value))}
+                initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
+                error={errors.DepartmentMasterId}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
+};

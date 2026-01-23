@@ -13,7 +13,7 @@ import * as E from 'fp-ts/Either';
 
 const weekOffMappingMasterDatasource = new WeekOffMappingMasterDatasourceImpl();
 
-export const WeekOffMappingMasterService = {
+export const weekOffMappingMasterService = {
 
     apiCallPullWeekOffMappingMaster: async (params: FilterWithPaginationWeekOffMappingMasterRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, WeekOffMappingMasterListResponse>> => {
         try {

@@ -1,18 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import type { AddUpdateProjectMasterWithBankDetailsRequest, DeleteProjectMasterWithBankDetailsRequest, ProjectWithBankDetails } from '@/features/projectMaster/models/ProjectMasterModel';
 import useToast from '@/core/hooks/useToast';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Loader } from '@/core/utils/loader';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { Button, Input } from '@/ui/components/forms';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { Edit, Trash2 } from 'lucide-react';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { filterIFSC, filterNumbers, isValidIFSC } from '@/core/utils/fileValidation';
 import { BANK_ACCOUNT_TYPE } from '@/core/constants';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
@@ -20,6 +19,8 @@ import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialVa
 import { fetchBankListMasterDropdown } from '@/features/bankListMaster/bankListMasterDropDown';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { Modal } from '@/ui/components/Modal/Modal';
+import { useProjectMasterListState } from '@/features/projectMaster/context/ProjectMasterListStateContext';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 const initialFormState = (): AddUpdateProjectMasterWithBankDetailsRequest => ({
 
@@ -38,7 +39,7 @@ const Bank: React.FC = () => {
 
   //#region STATE MANAGEMENT
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [projectWithBankDetailsList, setProjectWithBankDetailsList] = useState<ProjectWithBankDetails[]>([]);
 
   // TOAST
@@ -47,22 +48,9 @@ const Bank: React.FC = () => {
   //LOCATION
   const navigate = useNavigate();
 
-  const location = useLocation() as {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: any;
-        sortInfo?: any;
-        searchTerm?: string;
-        projectId?: number;
-        uniquekey?: string;
-        projectName?: string;
-      };
-    };
-  };
-  const preservedListState = location.state?.listState;
-  const projectId = preservedListState?.projectId || 0;
-  const projectName = preservedListState?.projectName || '';
+  const { listState } = useProjectMasterListState();
+  const projectId = listState.projectId;
+  const projectName = listState.projectName;
   //#endregion
 
   //#region PROJECT MASTER WITH BANK DETAILS MODULE
@@ -129,10 +117,10 @@ const Bank: React.FC = () => {
   const loadProjectMasterWithBankDetails = async (ProjectId: number) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
-        const response = await ProjectMasterService.apiCallPullProjectMasterWithBankDetails(ProjectId);
+        const response = await projectMasterService.apiCallPullProjectMasterWithBankDetails(ProjectId);
 
         if (E.isRight(response)) {
 
@@ -155,9 +143,7 @@ const Bank: React.FC = () => {
   //#endregion
   //#region  BACK TO PROJECT MASTER PAGE
   const handleBackToListProjectMaster = () => {
-    navigate('/projectMaster', {
-      state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTermForEmployee: '' } }
-    });
+    navigate("/projectMaster");
   };
   //#endregion
 
@@ -197,7 +183,7 @@ const Bank: React.FC = () => {
         render: (value, row) => (
           <div className={`flex items-center justify-start`}>
             <TooltipText
-              text={value || 'N/A'}
+              text={value || '-'}
               maxWidth="250px"
               tooltipThreshold={25}
             />
@@ -400,12 +386,12 @@ const Bank: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const payload = PushProjectMasterWithBankDetailsFormData();
 
-        const response = await ProjectMasterService.apiCallAddUpdateProjectMasterWithBankDetails(payload);
+        const response = await projectMasterService.apiCallAddUpdateProjectMasterWithBankDetails(payload);
 
         if (E.isRight(response)) {
 
@@ -469,7 +455,7 @@ const Bank: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -479,7 +465,7 @@ const Bank: React.FC = () => {
           ProjectId: deleteProjectMasterWithBankDetailsData.ProjectId
         }
 
-        const response = await ProjectMasterService.apiCallDeleteProjectMasterWithBankDetails(params);
+        const response = await projectMasterService.apiCallDeleteProjectMasterWithBankDetails(params);
 
         if (E.isRight(response)) {
 
@@ -538,7 +524,6 @@ const Bank: React.FC = () => {
           columns={projectMasterBankDetailsColumns}
           emptyMessage="No Bank Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           loading={isLoading}
@@ -563,7 +548,7 @@ const Bank: React.FC = () => {
         title={editingProjectMasterWithBankDetailsData ? 'Update Bank Details' : 'Add Bank Details'}
         onSubmit={handleAddUpdateProjectMasterWithBankDetails}
         saveText={editingProjectMasterWithBankDetailsData ? 'Update Bank Details' : 'Save Bank Details'}
-        resetText='Reset'
+        
         loading={isLoading}
         size='half-screen'
       >
@@ -634,7 +619,7 @@ const Bank: React.FC = () => {
             </div>
             <div>
               <Input label="IFSC Code"
-              placeholder='Enter IFSC Code'
+                placeholder='Enter IFSC Code'
                 required
                 value={formDataForBankDetails.IFSCCode}
                 maxLength={11}
@@ -646,19 +631,16 @@ const Bank: React.FC = () => {
 
       </Modal>
       {/* DELETE CONFIRMATION  PROJECT MASTER WTTH BANK DETAILS MODAL */}
-      <ConfirmationDialogBox
+
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpenForBankDetails}
         onClose={() => {
           setIsConfirmationDialogBoxOpenForBankDetails(false)
           setDeleteProjectMasterWithBankDetailsData(null)
         }}
         onConfirm={handleDeleteProjectMasterWithBankDetails}
-        title="You are about to delete a bank details?"
-        message="Deleting this bank details will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='bank'
       />
 
     </div >

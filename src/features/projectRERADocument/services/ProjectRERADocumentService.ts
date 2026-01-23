@@ -11,7 +11,7 @@ import * as E from 'fp-ts/Either';
 
 const projectDocumentDatasource = new ProjectRERADocumentDatasourceImpl();
 
-export const ProjectRERADocumentService = {
+export const projectRERADocumentService = {
 
     apiCallPullProjectRERADocument: async (params: FilterWithPaginationProjectRERADocument, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectRERADocumentListResponse>> => {
         try {

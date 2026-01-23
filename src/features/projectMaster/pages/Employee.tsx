@@ -1,5 +1,4 @@
 import useToast from '@/core/hooks/useToast';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Loader } from '@/core/utils/loader';
 import type { EmployeeMasterData, FilterWithPaginationEmployeeMasterRequest } from '@/features/employeeMaster/models/EmployeeMasterModel';
 import { DataTable, type FilterInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
@@ -9,10 +8,10 @@ import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { Modal } from '@/ui/components/Modal/Modal';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { AddUpdateProjectMasterWithEmployeeRequest, DeleteProjectMasterWithEmployeeRequest } from '@/features/projectMaster/models/ProjectMasterModel';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 import * as E from 'fp-ts/Either';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import usePagination from '@/core/hooks/usePagination';
@@ -21,11 +20,13 @@ import { Search, Trash2 } from 'lucide-react';
 import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import { useProjectMasterListState } from '@/features/projectMaster/context/ProjectMasterListStateContext';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 const Employee: React.FC = () => {
   //#region STATE MANAGEMENT
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [employeeMasterList, setEmployeeMasterList] = useState<EmployeeMasterData[]>([]);
 
   // TOAST
@@ -34,23 +35,10 @@ const Employee: React.FC = () => {
   //LOCATION
   const navigate = useNavigate();
 
-  const location = useLocation() as {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: any;
-        sortInfo?: any;
-        searchTerm?: string;
-        projectId?: number;
-        uniquekey?: string;
-        projectName?: string;
-      };
-    };
-  };
-  const preservedListState = location.state?.listState;
-  const projectId = preservedListState?.projectId || 0;
-  const uniquekey = preservedListState?.uniquekey || '';
-  const projectName = preservedListState?.projectName || '';
+  const { listState } = useProjectMasterListState();
+  const projectId = listState.projectId;
+  const projectName = listState.projectName;
+  const uniquekey = listState.uniquekey;
 
   //FILTER STATES
   const [filters, setFilters] = useState<FilterInfo>({});
@@ -148,10 +136,10 @@ const Employee: React.FC = () => {
   const loadProjectMasterWithEmployee = async (ProjectId: number) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
-        const response = await ProjectMasterService.apiCallPullProjectMasterWithEmployee(ProjectId);
+        const response = await projectMasterService.apiCallPullProjectMasterWithEmployee(ProjectId);
 
         if (E.isRight(response)) {
 
@@ -206,7 +194,7 @@ const Employee: React.FC = () => {
         align: 'center',
         render: value => (
           <TooltipText
-            text={value || 'N/A'}
+            text={value || '-'}
             maxWidth="140px"
             tooltipThreshold={14}
             tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
@@ -241,13 +229,13 @@ const Employee: React.FC = () => {
                        flex items-center justify-center
                        text-gray-800 font-medium text-xs
                        border border-gray-300"
-                  title={fullName || 'N/A'}
+                  title={fullName || '-'}
                 >
                   {initials}
                 </div>
                 <div className="min-w-0">
                   <TooltipText
-                    text={value || row.FirstName || 'N/A'}
+                    text={value || row.FirstName || '-'}
                     maxWidth="260px"
                     tooltipThreshold={26}
 
@@ -301,7 +289,7 @@ const Employee: React.FC = () => {
         width: '14',
         sortable: false,
         align: 'left',
-        render: value => value || 'N/A'
+        render: value => value || '-'
       },
       {
         key: 'Department',
@@ -310,7 +298,7 @@ const Employee: React.FC = () => {
         sortable: true,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+          <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
         )
       },
       {
@@ -320,7 +308,7 @@ const Employee: React.FC = () => {
         sortable: true,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+          <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
         )
       },
 
@@ -331,7 +319,7 @@ const Employee: React.FC = () => {
         sortable: true,
         align: 'left',
         render: value => (
-          <TooltipText text={value || 'N/A'} maxWidth="160px" tooltipThreshold={16} />
+          <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
         )
       },
       {
@@ -340,7 +328,7 @@ const Employee: React.FC = () => {
         width: '14',
         sortable: true,
         align: 'center',
-        render: value => (value ? formatDate_dd_MonthName_yy(value) : 'N/A')
+        render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       },
 
       {
@@ -359,9 +347,7 @@ const Employee: React.FC = () => {
 
   //#region  BACK TO PROJECT MASTER PAGE
   const handleBackToListProjectMaster = () => {
-    navigate('/projectMaster', {
-      state: { listState: preservedListState ?? { page: 1, filters: {}, sortInfo: undefined, searchTermForEmployee: '' } }
-    });
+    navigate("/projectMaster");
   };
   //#endregion
 
@@ -422,7 +408,7 @@ const Employee: React.FC = () => {
   const loadEmployees = async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationEmployeeMasterRequest = {
@@ -475,7 +461,7 @@ const Employee: React.FC = () => {
 
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
 
       async () => {
 
@@ -485,7 +471,7 @@ const Employee: React.FC = () => {
           EmployeeId: String(deleteProjectMasterWithEmployeeData.EmployeeId)
         }
 
-        const response = await ProjectMasterService.apiCallDeleteProjectMasterWithEmployee(params);
+        const response = await projectMasterService.apiCallDeleteProjectMasterWithEmployee(params);
 
         if (E.isRight(response)) {
 
@@ -547,12 +533,12 @@ const Employee: React.FC = () => {
     await runApiWithLoader(
       setIsLoading,
 
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
         const payload = PushProjectMasterWithEmployeeData();
 
-        const response = await ProjectMasterService.apiCallAddUpdateProjectMasterWithEmployee(payload);
+        const response = await projectMasterService.apiCallAddUpdateProjectMasterWithEmployee(payload);
 
         if (E.isRight(response)) {
 
@@ -613,7 +599,6 @@ const Employee: React.FC = () => {
           columns={projectMasterWithEmployeeColumns}
           emptyMessage="No Employee Data Found"
           fixedHeight={true}
-          maxHeight="calc(100vh - 255px)"
           recordsPerPage={20}
           className="flex-1"
           loading={isLoading}
@@ -626,7 +611,7 @@ const Employee: React.FC = () => {
         onClose={() => setIsOpenAddProjectMasterWithEmployee(false)}
         title="Add Employee"
         onSubmit={handleAddUpdateProjectMasterWithEmployee}
-        saveText="Save"
+        saveText="Add"
         resetText=""
         size="large75"
       >
@@ -731,19 +716,15 @@ const Employee: React.FC = () => {
       </Modal>
 
       {/* DELETE CONFIRMATION PROJECT MASTER WTTH EMPLOYEE MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpenForEmployee}
         onClose={() => {
           setIsConfirmationDialogBoxOpenForEmployee(false)
           setDeleteProjectMasterWithEmployeeData(null)
         }}
         onConfirm={handleDeleteProjectMasterWithEmployee}
-        title="You are about to delete a employee?"
-        message="Deleting this employee will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='employee'
       />
 
     </div>

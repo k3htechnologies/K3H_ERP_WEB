@@ -10,8 +10,8 @@ import type {
     DeleteMarketingContentFolderRequest,
     FilterWithPaginationMarketingContentFolderRequest
 
-} from '@/features/marketingcontent/models/MarketingContentFolderModel';
-import { MarketingContentFolderDatasourceImpl } from '@/features/marketingcontent/datasources/MarketingContentFolderDatasource';
+} from '@/features/marketingContent/models/MarketingContentFolderModel';
+import { MarketingContentFolderDatasourceImpl } from '@/features/marketingContent/datasources/MarketingContentFolderDatasource';
 
 
 const MarketingContentFolderDatasource = new MarketingContentFolderDatasourceImpl();

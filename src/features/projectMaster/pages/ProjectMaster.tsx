@@ -9,7 +9,7 @@ import type {
   FilterWithPaginationProjectMasterRequest,
 } from '@/features/projectMaster/models/ProjectMasterModel';
 
-import { ProjectMasterService } from '@/features/projectMaster/services/ProjectMasterService'
+import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -19,30 +19,29 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useLocation, type Location, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useProjectMasterListState } from '@/features/projectMaster/context/ProjectMasterListStateContext';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { BanknoteXIcon, Building2Icon, User2 } from 'lucide-react';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const ProjectMaster: React.FC = () => {
 
   //#region STATE
   const [projectMasterList, setProjectMasterList] = useState<ProjectMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setIsLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
+  const { listState, updateListState } = useProjectMasterListState();
+  const { searchTerm, filters, sortInfo } = listState;
 
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
-
-  //TABLE SORT INFO
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
   // TOAST
   const { addToast } = useToast()
 
   // SINGLE SEARCH TEXT BOX
-  const [searchTerm, setSearchTerm] = useState('')
-
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchProjects(value)
   }, 350)
@@ -50,7 +49,6 @@ export const ProjectMaster: React.FC = () => {
 
   //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   //CUSTOMIZE COLUMN MODAL
@@ -62,55 +60,19 @@ export const ProjectMaster: React.FC = () => {
   const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
-  //#region STATE CREATED PAGE AFTER NAVIGATE VIEW OR ADD UPDATE PAGE THEN CHECK
-
-  const location = useLocation() as Location & {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: FilterInfo;
-        sortInfo?: SortInfo;
-        searchTerm?: string;
-        projectId?: number;
-      };
-    };
-  };
-  //#endregion
-
   //#region INIT
 
   useEffect(() => {
+    // Sync pagination with context state
+    setPagination({ currentPage: listState.page });
 
-    const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string; projectId?: Number }
-      | undefined;
-
-    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '', projectId: 0 };
-
-
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
+    // Load projects with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-
-      setSearchTerm(String(listState.searchTerm));
-
-      loadProjects(listState.page ?? 1, { ProjectName: String(listState.searchTerm).trim() });
-
-      return;
+      loadProjects(listState.page, { ProjectName: String(listState.searchTerm).trim() }, listState.sortInfo);
+    } else {
+      loadProjects(listState.page, listState.filters, listState.sortInfo);
     }
-
-
-    loadProjects(listState.page ?? 1, listState.filters ?? {});
-
-  }, [location.state]);
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   useEffect(() => {
     return () => {
@@ -124,31 +86,24 @@ export const ProjectMaster: React.FC = () => {
     return await loadProjects(page, filters, sort ?? sortInfo);
   }
 
-  const loadProjects = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+  const loadProjects = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
 
-        let sortByParam = undefined;
-        if (sortInfo) {
-          const column = projectMasterColumns.find(col => col.key === sortInfo.column)
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
-          }
-        }
         const params: FilterWithPaginationProjectMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsProjectAccess: false,
           ProjectId: filterParams.ProjectId ? Number(filterParams.ProjectId) : undefined,
-          ProjectName: filterParams.ProjectName?.trim() || undefined,
+          ProjectName: searchtext ?? filterParams.ProjectName?.trim() ?? undefined,
           ProjectLocation: filterParams.ProjectLocation?.trim() || undefined,
           CTCNumber: filterParams.CTCNumber?.trim() || undefined,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, projectMasterColumns)
         }
 
-        const response = await getProjects(params);
+        const response = await projectMasterService.apiCallPullProjectMaster(params);
 
         if (E.isRight(response)) {
 
@@ -178,36 +133,27 @@ export const ProjectMaster: React.FC = () => {
 
   //#region SERACH PROJECT
   const searchProjects = async (searchValue: string) => {
-
-    setSearchTerm(searchValue);
+    updateListState({ searchTerm: searchValue });
 
     if (searchValue.trim() === '') {
       fetchProjectList();
       return;
     }
 
-    const filterParams: FilterInfo = {
-      ProjectName: searchValue.trim()
-    };
-
-    await loadProjects(1, filterParams);
+    updateListState({ searchTerm: searchValue, page: 1 });
+    await loadProjects(1, filters, sortInfo, searchValue);
   }
   //#endregion
 
   //#region CLAER SERACH PROJECT
   const clearsearchProjects = () => {
-    setSearchTerm('');
+    updateListState({ searchTerm: '', filters: {}, page: 1 });
 
     debouncedSearch.cancel?.();
 
-    setFilters({});
     setTempFilters({});
     setPagination({ currentPage: 1 });
-    loadProjects(1, {});
-    try {
-      navigate(location.pathname, { replace: true, state: {} });
-    } catch {
-    }
+    loadProjects(1, { ProjectName: '' }, sortInfo, undefined);
   };
 
   //#endregion
@@ -216,15 +162,9 @@ export const ProjectMaster: React.FC = () => {
   const handleExportProjects = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
-      setIsLoadingMessage,
+      setLoadingMessage,
       async () => {
-        let sortByParam = undefined
-        if (sortInfo) {
-          const column = projectMasterColumns.find(col => col.key === sortInfo.column)
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
-          }
-        }
+
         const params: FilterWithPaginationProjectMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -232,10 +172,10 @@ export const ProjectMaster: React.FC = () => {
           ProjectName: filters.ProjectName?.trim() || undefined,
           ProjectLocation: filters.ProjectLocation?.trim() || undefined,
           CTCNumber: filters.CTCNumber?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, projectMasterColumns),
           ExportType: exportType
         }
-        const response = await getProjects(params);
+        const response = await projectMasterService.apiCallPullProjectMaster(params);
         handleExportFile(response, exportType, 'Project Master', addToast)
         return response;
       },
@@ -244,7 +184,7 @@ export const ProjectMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message || 'Export failed' })
       },
       undefined,
-      'Preparing Export...'
+      'Preparing Export'
     )
   }
 
@@ -252,22 +192,17 @@ export const ProjectMaster: React.FC = () => {
   const handleExportProjectPdf = () => handleExportProjects('PDF')
   //#endregion
 
-  //#region GET PROJECT MASTER DATA FROM API
-  const getProjects = async (filterParams: FilterWithPaginationProjectMasterRequest) => {
-    return await ProjectMasterService.apiCallPullProjectMaster(filterParams);
-  }
-  //#endregion
-
   //#region TABLE CONFIG
 
   const handlePageChange = useCallback((page: number) => {
+    updateListState({ page });
     fetchProjectList(page);
-  }, []);
+  }, [updateListState]);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
-    setSortInfo(sort);
-    loadProjects(1, filters, sort);
-  }, [filters]);
+    updateListState({ sortInfo: sort, page: 1 });
+    loadProjects(1, filters, sort, searchTerm || undefined);
+  }, [filters, updateListState, searchTerm]);
 
   const projectMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -286,85 +221,34 @@ export const ProjectMaster: React.FC = () => {
 
   //#region VIEW PROJECT MASTER DETAILS
   const handleViewProjectDetails = useCallback((row: ProjectMasterData) => {
-    navigate('/projectMaster/view', {
-      state: {
-        editProjectMasterData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          projectId: row.ProjectId,
-          projectName: row.ProjectName
-        },
-      },
-    });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
+    navigate('/projectMaster/view');
+  }, [navigate, updateListState]);
 
   //#endregion
 
   //#region VIEW BANK DETAILS
 
   const handleViewProjectBank = useCallback((row: ProjectMasterData) => {
-    navigate('/projectMaster/bank', {
-      state: {
-        editProjectMasterData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          projectId: row.ProjectId,
-          uniquekey: row.Uniquekey,
-          projectName: row.ProjectName
-        },
-      },
-    });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
+    navigate('/projectMaster/bank');
+  }, [navigate, updateListState]);
   //#endregion
 
   //#region VIEW EMPLOYEE DETAILS
 
   const handleViewProjectEmployee = useCallback((row: ProjectMasterData) => {
-    navigate('/projectMaster/employee', {
-      state: {
-        editProjectMasterData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          projectId: row.ProjectId,
-          uniquekey: row.Uniquekey,
-          projectName: row.ProjectName
-        },
-      },
-    });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
+    navigate('/projectMaster/employee');
+  }, [navigate, updateListState]);
   //#endregion
 
   //#region VIEW COMPANY DETAILS
 
   const handleViewProjectCompany = useCallback((row: ProjectMasterData) => {
-    navigate('/projectMaster/company', {
-      state: {
-        editProjectMasterData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          projectId: row.ProjectId,
-          projectName: row.ProjectName
-
-        },
-      },
-    });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
+    navigate('/projectMaster/company');
+  }, [navigate, updateListState]);
   //#endregion
 
 
@@ -589,25 +473,16 @@ export const ProjectMaster: React.FC = () => {
 
   //#region FILTER HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters)
-    loadProjects(1, tempFilters)
-    setShowFilterPopup(false)
+    updateListState({ filters: tempFilters, page: 1 });
+    loadProjects(1, tempFilters);
+    setShowFilterPopup(false);
   }
 
   const clearFilters = () => {
     setTempFilters({});
-    setFilters({});
-
-    // reset page
-    setPagination({ currentPage: 1 });
-
-    // load empty filters
+    updateListState({ filters: {}, page: 1 });
     loadProjects(1, {});
-
     setShowFilterPopup(false);
-
-    // clear router state (very important)
-    navigate(location.pathname, { replace: true, state: {} });
   };
 
 
@@ -636,8 +511,8 @@ export const ProjectMaster: React.FC = () => {
         searchTerm={searchTerm}
         searchPlaceholder="Search By Project Name..."
         onSearchChange={(v) => {
-          setSearchTerm(v)
-          debouncedSearch(v)
+          updateListState({ searchTerm: v });
+          debouncedSearch(v);
         }}
         onClearSearch={clearsearchProjects}
         isShowFilterButton
@@ -702,10 +577,10 @@ export const ProjectMaster: React.FC = () => {
           e.preventDefault()
           applyFilters()
         }}
-        saveText="Apply Filter"
-        cancelText="Clear Filter"
+        saveText="Apply"
+        cancelText="Clear"
         onCancel={() => clearFilters()}
-        resetText=''
+       
         size="small-half"
       >
         <div className="space-y-6">

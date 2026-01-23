@@ -2,7 +2,7 @@ import useToast from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader'
 import { Button } from '@/ui/components/forms/Button';
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import type { AddUpdateCompanyMasterRequest, AddUpdateCompanyPartnerRequest, CompanyPartnerData, FilterWithPaginationCompanyMasterRequest } from '@/features/companyMaster/models/CompanyMasterModel';
 import { Input } from '@/ui/components/forms';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
@@ -16,14 +16,14 @@ import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { Edit, IdCard, Mail, Phone, Trash2 } from 'lucide-react';
 import { calculateMergedFiles, createFileUrlString, filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterRERA, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidRERA, mergeFiles } from '@/core/utils/fileValidation';
 import { runApiWithLoader } from '@/core/utils';
-import { CompanyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
+import { companyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import * as E from 'fp-ts/Either';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 const initialFormState = (): AddUpdateCompanyMasterRequest => ({
   CompanyId: 0,
@@ -116,7 +116,6 @@ const AddCompany: React.FC = () => {
 
   // NAVIGATE
   const navigate = useNavigate();
-  const location = useLocation();
 
   //GET VALUE FROM URL :COMPANYID
   const { companyId } = useParams<{ companyId?: string }>();
@@ -242,7 +241,7 @@ const AddCompany: React.FC = () => {
           CompanyId: Number(companyId)
         }
 
-        const response = await CompanyMasterService.apiCallPullCompanyMaster(params);
+        const response = await companyMasterService.apiCallPullCompanyMaster(params);
 
         if (E.isRight(response)) {
 
@@ -347,33 +346,33 @@ const AddCompany: React.FC = () => {
 
     // Company Name
     if (!formData.CompanyName?.trim()) {
-      newErrors.CompanyName = "Company Name is required.";
+      newErrors.CompanyName = "Company Name is required";
     } else if (formData.CompanyName?.length > 50) {
-      newErrors.CompanyName = "Company Name must be at most 50 characters.";
+      newErrors.CompanyName = "Company Name must be at most 50 characters";
     }
 
     // Company Type
     if (!formData.CompanyType?.trim()) {
-      newErrors.CompanyType = "Company Type is required.";
+      newErrors.CompanyType = "Company Type is required";
     }
 
     // Contact Person
     if (!formData.ContactPerson?.trim()) {
-      newErrors.ContactPerson = "Contact Person is required.";
+      newErrors.ContactPerson = "Contact Person is required";
     }
 
     // Mobile
     if (!formData.MobileNumber?.trim()) {
-      newErrors.MobileNumber = "Mobile Number is required.";
+      newErrors.MobileNumber = "Mobile Number is required";
     } else if (!isValidMobile(formData.MobileNumber?.trim())) {
-      newErrors.MobileNumber = "Enter a Valid 10-digit Mobile Number.";
+      newErrors.MobileNumber = "Enter a Valid 10-digit Mobile Number";
     }
 
     // Email
     if (!formData.EmailId?.trim()) {
       newErrors.EmailId = "Email Id is required.";
     } else if (!isValidEmail(formData.EmailId?.trim())) {
-      newErrors.EmailId = "Enter a Valid E-mail Address.";
+      newErrors.EmailId = "Enter a Valid E-mail Address";
     }
 
 
@@ -414,7 +413,7 @@ const AddCompany: React.FC = () => {
     }
 
     if (hasPANNumber && !hasPANFile) {
-      newErrors.PanCardURL = "PAN card Document is required";
+      newErrors.PanCardURL = "PAN Card Document is required";
     }
 
     if (hasPANFile && !hasPANNumber) {
@@ -444,24 +443,24 @@ const AddCompany: React.FC = () => {
 
     // RERA
     if (!formData.RERANumber?.trim()) {
-      newErrors.RERANumber = "RERA Number is required.";
+      newErrors.RERANumber = "RERA Number is required";
     } else if (!isValidRERA(formData.RERANumber?.trim())) {
-      newErrors.RERANumber = "Enter a Valid RERA Number.";
+      newErrors.RERANumber = "Enter a Valid RERA Number";
     }
 
     // Location
     if (!formData.CountryMasterId) {
-      newErrors.CountryMasterId = "Country is required.";
+      newErrors.CountryMasterId = "Country is required";
     }
     if (!formData.StateMasterId) {
-      newErrors.StateMasterId = "State is required.";
+      newErrors.StateMasterId = "State is required";
     }
     if (!formData.DistrictMasterId) {
-      newErrors.DistrictMasterId = "District is required.";
+      newErrors.DistrictMasterId = "District is required";
     }
 
     if (!formData.CityMasterId) {
-      newErrors.CityMasterId = "City is required.";
+      newErrors.CityMasterId = "City is required";
     }
 
     // ===== Company Letter Head Header URL =====
@@ -512,32 +511,14 @@ const AddCompany: React.FC = () => {
 
         const pushCompanyFormData = buildCompanyMultipartFormData();
 
-        const response = await CompanyMasterService.apiCallAddUpdateCompanyMaster(pushCompanyFormData);
+        const response = await companyMasterService.apiCallAddUpdateCompanyMaster(pushCompanyFormData);
 
         if (E.isRight(response)) {
 
           addToast({ type: "success", title: formData.CompanyId ? "Company details updated successfully" : "New Company added successfully" });
 
           // Get list state from navigation if available, otherwise use defaults
-          const locationState = location.state as {
-            listState?: {
-              page?: number;
-              filters?: any;
-              sortInfo?: any;
-              searchTerm?: string;
-            };
-          } | null;
-
-          const listState = locationState?.listState || {
-            page: 1,
-            filters: {},
-            sortInfo: undefined,
-            searchTerm: '',
-          };
-
-          navigate("/companyMaster", {
-            state: { listState }
-          });
+          navigate("/companyMaster");
 
         } else {
 
@@ -631,12 +612,12 @@ const AddCompany: React.FC = () => {
           return (
             <div className="flex items-center justify-between w-full gap-1">
 
-                <TooltipText
-                  text={value || "-"}
-                  maxWidth="250px"
-                  tooltipThreshold={25}
-                />
-              
+              <TooltipText
+                text={value || "-"}
+                maxWidth="250px"
+                tooltipThreshold={25}
+              />
+
 
               {/* RIGHT: actions */}
               <div className="flex items-center gap-1 shrink-0">
@@ -781,53 +762,53 @@ const AddCompany: React.FC = () => {
 
     // First Name
     if (!formDataCompanyPartner.FirstName?.trim()) {
-      newErrorsCompanyPartner.FirstName = 'First Name is required.'
+      newErrorsCompanyPartner.FirstName = 'First Name is required'
     } else if (formDataCompanyPartner.FirstName.trim().length > 50) {
-      newErrorsCompanyPartner.FirstName = 'First Name must be at most 50 characters.'
+      newErrorsCompanyPartner.FirstName = 'First Name must be at most 50 characters'
     }
 
     // Middle Name
     if (!formDataCompanyPartner.MiddleName?.trim()) {
-      newErrorsCompanyPartner.MiddleName = 'Middle Name is required.'
+      newErrorsCompanyPartner.MiddleName = 'Middle Name is required'
     } else if (formDataCompanyPartner.MiddleName.trim().length > 50) {
-      newErrorsCompanyPartner.MiddleName = 'Middle Name must be at most 50 characters.'
+      newErrorsCompanyPartner.MiddleName = 'Middle Name must be at most 50 characters'
     }
 
     // Middle Name
     if (!formDataCompanyPartner.LastName?.trim()) {
-      newErrorsCompanyPartner.LastName = 'Last Name is required.'
+      newErrorsCompanyPartner.LastName = 'Last Name is required'
     } else if (formDataCompanyPartner.LastName.trim().length > 50) {
-      newErrorsCompanyPartner.LastName = 'Last Name must be at most 50 characters.'
+      newErrorsCompanyPartner.LastName = 'Last Name must be at most 50 characters'
     }
 
     // Mobile
     if (!formDataCompanyPartner.MobileNumber?.trim()) {
       newErrorsCompanyPartner.MobileNumber = 'Mobile Number is required.'
     } else if (!isValidMobile(formDataCompanyPartner.MobileNumber.trim())) {
-      newErrorsCompanyPartner.MobileNumber = 'Enter a Valid 10-Digit Mobile Number.'
+      newErrorsCompanyPartner.MobileNumber = 'Enter a Valid 10-Digit Mobile Number'
     }
 
     // Partner Percentage
     const percentage = Number(formDataCompanyPartner.PartnerPercentage ?? 0)
 
     if (isNaN(percentage)) {
-      newErrorsCompanyPartner.PartnerPercentage = 'Partner Percentage must be a number.'
+      newErrorsCompanyPartner.PartnerPercentage = 'Partner Percentage must be a number'
     } else if (percentage <= 0 || percentage > 100) {
-      newErrorsCompanyPartner.PartnerPercentage = 'Partner Percentage must be between 1 and 100.'
+      newErrorsCompanyPartner.PartnerPercentage = 'Partner Percentage must be between 1 and 100'
     }
 
     // PAN
     if (!formDataCompanyPartner.PanNumber?.trim()) {
-      newErrorsCompanyPartner.PanNumber = 'PAN Number is required.'
+      newErrorsCompanyPartner.PanNumber = 'PAN Number is required'
     } else if (!isValidPAN(formDataCompanyPartner.PanNumber.trim())) {
-      newErrorsCompanyPartner.PanNumber = 'Enter a valid PAN Number.'
+      newErrorsCompanyPartner.PanNumber = 'Enter a valid PAN Number'
     }
 
     // Aadhar
     if (!formDataCompanyPartner.AadharCardNumber?.trim()) {
-      newErrorsCompanyPartner.AadharCardNumber = 'Aadhar Number is required.'
+      newErrorsCompanyPartner.AadharCardNumber = 'Aadhar Number is required'
     } else if (!isValidAadhaar(formDataCompanyPartner.AadharCardNumber.trim())) {
-      newErrorsCompanyPartner.AadharCardNumber = 'Enter a Valid 12-Digit Aadhar Number.'
+      newErrorsCompanyPartner.AadharCardNumber = 'Enter a Valid 12-Digit Aadhar Number'
     }
 
     if (!formDataCompanyPartner.DateOfBirth) {
@@ -840,9 +821,9 @@ const AddCompany: React.FC = () => {
     }
 
     if (!formDataCompanyPartner.EmailId?.trim()) {
-      newErrorsCompanyPartner.EmailId = 'E-mail id is required'
+      newErrorsCompanyPartner.EmailId = 'E-mail Id is required'
     } else if (!isValidEmail(formDataCompanyPartner.EmailId.trim())) {
-      newErrorsCompanyPartner.EmailId = 'Enter a Valid Email Id'
+      newErrorsCompanyPartner.EmailId = 'Enter a Valid E-mail Id'
     }
 
 
@@ -878,7 +859,7 @@ const AddCompany: React.FC = () => {
 
     // Rule 2
     if (hasPanNumber && !hasPanFile) {
-      newErrorsCompanyPartner.PanCardURL = "PAN document is required";
+      newErrorsCompanyPartner.PanCardURL = "PAN Document is required";
     }
 
     // Rule 3
@@ -904,7 +885,7 @@ const AddCompany: React.FC = () => {
 
     // 🔹 Rule 2 — If number present, file is required
     if (hasAadharCardNumber && !hasAadharCardNumberFile) {
-      newErrorsCompanyPartner.AadharCardURL = "Aadhaar document is required";
+      newErrorsCompanyPartner.AadharCardURL = "Aadhaar Document is required";
     }
 
     // 🔹 Rule 3 — If file present, number is required
@@ -1186,7 +1167,7 @@ const AddCompany: React.FC = () => {
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         {/* ============================================================= [BASIC COMPANY DETAILS] ============================================================================================= */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Company Details</h3>
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Basic Company Details</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
@@ -1598,7 +1579,7 @@ const AddCompany: React.FC = () => {
 
         {/* ============================================================= [COMPANY PARTNER ] ============================================================================================= */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between border-b border-gray-300 pb-2">
+          <div className="flex items-center justify-between border-b border-gray-500 pb-2 pt-5">
             <h3 className="text-lg font-semibold text-gray-900  pb-2">
               Company Partner
             </h3>
@@ -1686,7 +1667,7 @@ const AddCompany: React.FC = () => {
         }}
         title={editingCompanyPartnerMasterData ? 'Update Company Partner' : 'Add Company Partner'}
         onSubmit={handleAddUpdateCompanyPartner}
-        saveText={editingCompanyPartnerMasterData ? 'Update' : 'Save'}
+        saveText={editingCompanyPartnerMasterData ? 'Update' : 'Add'}
         cancelText="Cancel"
         loading={isLoading}
         size='large-half'
@@ -1945,19 +1926,15 @@ const AddCompany: React.FC = () => {
 
 
       {/* DELETE CONFIRMATION APPLICANT MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpenCompanyPartner}
         onClose={() => {
           setIsConfirmationDialogBoxOpenCompanyPartner(false)
           setDeleteCompanyPartnerData(null)
         }}
         onConfirm={handleDeleteCompanyPartner}
-        title="You are about to delete a company partner?"
-        message="Deleting this company partner will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='company partner'
       />
     </div >
   )

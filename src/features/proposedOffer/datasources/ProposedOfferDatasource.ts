@@ -63,6 +63,11 @@ import type {
     FilterWithPaginationProposedOfferProposedPlanRequest,
     ProposedOfferProposedPlanListResponse,
     ProposedOfferProposedPlanSaveResponse,
+    GenerateProposedOfferResponse,
+
+    //GENERATE PROPOSED PLAN
+
+    AddUpdateGenerateProposedOfferRequest,
 
 } from '@/features/proposedOffer/models/ProposedOfferModel'
 
@@ -101,8 +106,9 @@ export abstract class ProposedOfferDatasource {
 
     abstract pullProposedPlan(params: FilterWithPaginationProposedOfferProposedPlanRequest, signal?: AbortSignal): Promise<ProposedOfferProposedPlanListResponse>
     abstract addUpdateProposedPlan(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse>
+    
+    abstract addUpdateGenerateProposedOffer(params: AddUpdateGenerateProposedOfferRequest): Promise<GenerateProposedOfferResponse>
 }
-
 //=============================================================
 // [ IMPLEMENTATION – YOUR STYLE ]
 //=============================================================
@@ -545,6 +551,31 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
                 await this.addUpdateProposedPlan(formData)
             }
 
+            throw error
+        }
+    }
+    
+
+    //====================GENERATE PROPOSED PLAN ====================
+
+    async addUpdateGenerateProposedOffer(params: AddUpdateGenerateProposedOfferRequest): Promise<GenerateProposedOfferResponse> {
+
+        try {
+
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                ProposedOfferApi.ADD_UPDATE_GENERATE_PROPOSED_PLAN,
+                params
+
+            )
+
+            return response
+        } catch (error) {
+            console.error('Error: GENERATE PROPOSED OFFER :', error)
+
+            if (error === TokenExpiredException) {
+
+                await this.addUpdateGenerateProposedOffer(params);
+            }
             throw error
         }
     }

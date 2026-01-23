@@ -42,8 +42,15 @@ export class TenantDatasourceImpl implements TenantDatasource {
             if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString());
             if (params.TenantId) queryParams.append('TenantId', params.TenantId.toString());
             if (params.FlatNumber?.trim()) queryParams.append('FlatNumber', params.FlatNumber.trim());
+            if (params.ApplicantName?.trim()) queryParams.append('ApplicantName', params.ApplicantName.trim());
             if (params.FlatType?.trim()) queryParams.append('FlatType', params.FlatType.trim());
             if (params.FlatConfiguration?.trim()) queryParams.append('FlatConfiguration', params.FlatConfiguration.trim());
+            if (params.FlatCarpetAreaSqFt?.trim()) queryParams.append('FlatCarpetAreaSqFt', params.FlatCarpetAreaSqFt.trim());
+            if (params.BuildingNumber?.trim()) queryParams.append('BuildingNumber', params.BuildingNumber.trim());
+            if (params.Wing?.trim()) queryParams.append('Wing', params.Wing.trim());
+            if (params.Flat?.trim()) queryParams.append('Flat', params.Flat.trim());
+            if (params.ParkingNumber?.trim()) queryParams.append('ParkingNumber', params.ParkingNumber.trim());
+
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
@@ -135,7 +142,7 @@ export class TenantDatasourceImpl implements TenantDatasource {
 
             console.error('Error: Pull TENANT DOCUMENT:', error);
 
-             if (error === TokenExpiredException) {
+            if (error === TokenExpiredException) {
                 await this.pullTenantDocument(params);
             }
 
@@ -183,7 +190,7 @@ export class TenantDatasourceImpl implements TenantDatasource {
         } catch (error) {
 
             console.error('ERRPR : DELETE TENANT DOCUMENT :', error)
-            
+
             if (error === TokenExpiredException) {
                 await this.deleteTenantDocument(params);
             }

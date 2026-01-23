@@ -40,14 +40,23 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
             })
 
             if (params.EmployeeId) queryParams.append('EmployeeId', params.EmployeeId.toString());
+            if (params.EmployeeCode?.trim()) queryParams.append('EmployeeCode', params.EmployeeCode.trim());
             if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
-            if (params.BranchName?.trim()) queryParams.append('BranchName', params.BranchName.trim());
+            if (params.MobileNumber?.trim()) queryParams.append('MobileNumber', params.MobileNumber.trim());
+            if (params.Gender?.trim()) queryParams.append('Gender', params.Gender.trim());
+
             if (params.DepartmentName?.trim()) queryParams.append('DepartmentName', params.DepartmentName.trim());
             if (params.DesignationName?.trim()) queryParams.append('DesignationName', params.DesignationName.trim());
-            if (params.EmailId?.trim()) queryParams.append('EmailId', params.EmailId.trim());
-            if (params.MobileNumber?.trim()) queryParams.append('MobileNumber', params.MobileNumber.trim());
+            if (params.BranchName?.trim()) queryParams.append('BranchName', params.BranchName.trim());
+            if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
             if (params.ReportPersonName?.trim()) queryParams.append('ReportPersonName', params.ReportPersonName.trim());
+
+            if (params.EmailId?.trim()) queryParams.append('EmailId', params.EmailId.trim());
+
+            if (params.BankName?.trim()) queryParams.append('BankName', params.BankName.trim());
+
             if (params.BankBranchName?.trim()) queryParams.append('BankBranchName', params.BankBranchName.trim());
+
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
@@ -138,7 +147,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             return response
         } catch (error) {
-            
+
             console.error('Error: SET MPIN:', error)
 
             if (error === TokenExpiredException) {

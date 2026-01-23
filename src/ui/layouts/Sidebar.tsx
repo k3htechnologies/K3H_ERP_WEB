@@ -103,20 +103,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, [])
 
 
-  const renderIcon = (iconPath: string | undefined, fallbackIcon: React.ReactNode, size: string = "h-5 w-5") => {
+  const renderIcon = (
+    iconPath: string | undefined,
+    fallbackIcon: React.ReactNode,
+    options?: {
+      isActive?: boolean
+      isCollapsed?: boolean
+    },
+    size: string = "h-5 w-5"
+  ) => {
+    const { isActive } = options || {}
+
     if (iconPath && iconPath.startsWith('assets/') && !imageErrors.has(iconPath)) {
+
+      const parts = iconPath.split('/')
+      const fileName = parts.pop()!
+      const activeFile = `Fill_${fileName}`
+      const activeIconPath = [...parts, activeFile].join('/')
+
+      const finalIcon = isActive ? activeIconPath : iconPath
+
       return (
         <img
-          src={`/${iconPath}`}
+          src={`/${finalIcon}`}
           alt="icon"
           className={`${size} object-contain`}
           onError={() => handleImageError(iconPath)}
         />
       )
     }
+
     return fallbackIcon
   }
-
+  
   const menuItems: MenuItem[] = [
 
     {
@@ -129,13 +148,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ...(modules || []).map(module => ({
       id: `module-${module.ModulesMasterId}`,
       label: module.ModuleName,
-      icon: renderIcon(module.Icon, <Home className="h-5 w-5" />),
+      icon: renderIcon(module.Icon, <Home className="h-5 w-5" />, { isCollapsed: !isOpen, isActive: expandedItems.has(`module-${module.ModulesMasterId}`) }),
       children: (module.SubModuleData || []).map(subModule => ({
+
         id: `submodule-${subModule.SubModulesMasterId}`,
         label: subModule.SubModuleName,
         icon: <Circle className={`h-3 w-3 fill-[#135bec] text-[#135bec]`} />,
 
         path: normalizePath(mapPathToRoute(subModule.Path)),
+
         children: (subModule.SubSubModuleData || [])
           .filter(subSubModule => subSubModule?.IsDisplay)
           .map(subSubModule => ({
@@ -315,6 +336,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     return (
       <div key={item.id} className={styles.container}>
+
         <button
           onClick={() => handleItemClick(item)}
           className={styles.button}

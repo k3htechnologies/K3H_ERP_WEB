@@ -1,5 +1,5 @@
 import React from 'react'
-import { LogOut, Trash2, Unlock, X } from 'lucide-react'
+import { LogOut, Trash2, Unlock, Wand2, X } from 'lucide-react'
 
 export interface ConfirmationDialogBoxProps {
     isOpen: boolean
@@ -10,7 +10,7 @@ export interface ConfirmationDialogBoxProps {
     confirmText?: string
     cancelText?: string
     loading?: boolean
-    variant?: 'danger' | 'warning' | 'info' | 'logout' | 'inactive',
+    variant?: 'danger' | 'warning' | 'info' | 'logout' | 'inactive' | 'generate',
 }
 
 export const ConfirmationDialogBox: React.FC<ConfirmationDialogBoxProps> = ({
@@ -58,6 +58,12 @@ export const ConfirmationDialogBox: React.FC<ConfirmationDialogBoxProps> = ({
                     title: 'text-red-600',
                     confirmButton: 'bg-red-500 hover:bg-red-600 text-white'
                 }
+            case 'generate':
+                return {
+                    icon: 'text-red-500',
+                    title: 'text-red-600',
+                    confirmButton: 'bg-red-500 hover:bg-red-600 text-white'
+                }
             default:
                 return {
                     icon: 'text-red-500',
@@ -80,10 +86,13 @@ export const ConfirmationDialogBox: React.FC<ConfirmationDialogBoxProps> = ({
                         {variant === 'logout' ?
                             <LogOut className={`h-6 w-6 ${styles.icon}`} />
                             :
-                            variant === 'inactive' ? 
-                            <Unlock className={`h-6 w-6 ${styles.icon}`} /> 
-                            :
-                            <Trash2 className={`h-6 w-6 ${styles.icon}`} />
+                            variant === 'inactive' ?
+                                <Unlock className={`h-6 w-6 ${styles.icon}`} />
+                                :
+                                variant === 'generate' ?
+                                    <Wand2 className={`h-6 w-6 ${styles.icon}`} />
+                                    :
+                                    <Trash2 className={`h-6 w-6 ${styles.icon}`} />
                         }
                         <h3 className={`text-lg font-semibold ${styles.title}`}>
                             {title}

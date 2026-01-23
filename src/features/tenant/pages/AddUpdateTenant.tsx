@@ -15,7 +15,7 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { APPLICANT_TYPE, COMMERCIAL_FLAT_CONFIGURATION, FLAT_UNIT_FACING, FLAT_UNIT_TYPE, RESIDENTIAL_FLAT_CONFIGURATION } from "@/core/constants";
-import { allowPercentage, calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidAccount, isValidDrivingLicenseNumber, isValidGST, isValidIFSC, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from "@/core/utils/fileValidation";
+import { allowPercentage, calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidAccount, isValidDrivingLicenseNumber, isValidEmail, isValidGST, isValidIFSC, isValidMobile, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from "@/core/utils/fileValidation";
 import { Button } from "@/ui/components/forms";
 import { Edit, IdCardIcon, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
@@ -23,10 +23,10 @@ import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
-import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useTenantListState } from "@/features/tenant/context/TenantListStateContext";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 
 const initialFormState = (): AddUpdateTenantRequest => ({
@@ -528,6 +528,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.PhotoURL)}
               title="Applicant Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
 
           );
@@ -570,6 +571,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.AadharCardURL)}
               title="Aadhar Card Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }
@@ -587,6 +589,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.PanCardURL)}
               title="Pan Card Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }
@@ -603,6 +606,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.PassportURL)}
               title="Passport Number Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }
@@ -620,6 +624,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.DrivingLicenseURL)}
               title="Driving License Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }
@@ -636,6 +641,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.VotingIdURL)}
               title="Voting Id Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }
@@ -652,6 +658,7 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.GSTNumberURL)}
               title="GST Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }
@@ -678,10 +685,11 @@ const AddUpdateTenant: React.FC = () => {
               images={parseDocumentUrls(row.ChequeURL)}
               title="Cheque Document"
               triggerLabel={value || '-'}
+              isWrap={false}
             />
           );
         }
-        
+
       },
       {
         key: 'IFSCCode',
@@ -787,6 +795,13 @@ const AddUpdateTenant: React.FC = () => {
 
     if (!formDataForApplicant.ApplicantMobileNumber?.trim()) {
       newErrorsTenantApplicant.ApplicantMobileNumber = 'Mobile Number is required'
+    } else if (!isValidMobile(formDataForApplicant.ApplicantMobileNumber.trim())) {
+      newErrorsTenantApplicant.ApplicantMobileNumber = 'Enter a valid 10-Digit Mobile Number'
+    }
+
+
+    if (formDataForApplicant.ApplicantEmailId?.trim() && !isValidEmail(formDataForApplicant.ApplicantEmailId.trim())) {
+      newErrorsTenantApplicant.ApplicantEmailId = 'Enter a valid Email Id';
     }
 
     // Validate Photo - check merged files (what will actually be saved)
@@ -1302,7 +1317,7 @@ const AddUpdateTenant: React.FC = () => {
           {/* ============================================================= [FLAT DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
             <div className="flex items-center justify-between">
-              <div className="flex-1 border-b border-gray-300 pb-2">
+              <div className="flex-1 border-b border-gray-500 pb-2">
                 <HeaderActionBar
                   titleText="Applicant Detail : "
                   subTitleText={`${buildingName}`}
@@ -1391,7 +1406,7 @@ const AddUpdateTenant: React.FC = () => {
                     handleFieldChange('FlatConfiguration', '');
                   }}
                   options={FLAT_UNIT_TYPE
-                    .filter(opt => opt.id !== 'Void')
+                    .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
                     .map(opt => ({
                       label: opt.name,
                       value: opt.id
@@ -1577,7 +1592,7 @@ const AddUpdateTenant: React.FC = () => {
         }}
         title={editingApplicantData ? 'Update Tenant Applicant' : 'Add Tenant Applicant'}
         onSubmit={handleAddUpdateTenantApplicant}
-        saveText={editingApplicantData ? 'Update' : 'Save'}
+        saveText={editingApplicantData ? 'Update' : 'Add'}
         cancelText="Cancel"
         loading={isLoading}
         size='large-half'
@@ -1914,20 +1929,15 @@ const AddUpdateTenant: React.FC = () => {
         </div>
       </Modal>
 
-      {/* DELETE CONFIRMATION APPLICANT MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
           setIsConfirmationDialogBoxOpen(false)
           setDeleteTenantApplicantData(null)
         }}
         onConfirm={handleDeleteApplicant}
-        title="You are about to delete a applicant?"
-        message="Deleting this applicant will permanently remove its contents."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='applicant'
       />
     </div >
   );

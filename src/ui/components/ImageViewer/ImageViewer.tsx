@@ -14,6 +14,7 @@ interface MultiImageViewerProps {
   closeOnOverlayClick?: boolean;
   overlayZIndex?: number; // optional override
   isIcon?: boolean;
+  isWrap?: boolean;
 }
 
 const sizeClasses: Record<PanelSize, string> = {
@@ -31,8 +32,8 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
   closeOnOverlayClick = true,
   overlayZIndex = 9999,
   isIcon = true,
+  isWrap= true,
 }) => {
-  // filter only truthy strings (defensive)
   const imageUrls = (images || []).filter((u) => typeof u === "string" && u.trim() !== "");
   const total = imageUrls.length;
 
@@ -46,7 +47,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
   };
   const close = () => setIsOpen(false);
 
-  // keyboard nav
+  
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -58,7 +59,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, total]);
 
-  // prevent body scroll while open
+ 
   useEffect(() => {
     if (!isOpen) return;
     const prevOverflow = document.body.style.overflow;
@@ -89,25 +90,25 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     }
   };
 
-  // simple wheel navigation
+
   const onWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     if (e.deltaY > 0) next();
     else prev();
   };
 
-  // Portal for overlay to ensure it's above header/sidebar
+  
   const Portal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (typeof document === "undefined") return <>{children}</>;
     return ReactDOM.createPortal(children, document.body);
   };
 
-  // If no images, just render trigger label or nothing
+  
   if (total === 0) {
     return triggerLabel ? <span>{triggerLabel}</span> : null;
   }
 
-  // Minimal image viewer content (header, body, footer)
+  
   const ViewerContent = () => (
     <div
       className={`bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col`}
@@ -118,7 +119,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     >
       {/* Header */}
       <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200">
-        <h3 className="text-md font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-md font-semibold text-gray-900 truncate">{title}</h3>
         <button
           type="button"
           onClick={close}
@@ -184,12 +185,12 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
   // Overlay render (centered)
   return (
     <div className="inline-block">
-      {/* Trigger */}
+
       {triggerLabel ? (
         <>
           <div className="flex items-center gap-2">
             
-            <span className="break-words whitespace-normal">
+           <span className={isWrap ? 'break-all whitespace-normal max-w-full' : ''}>
             {isIcon && triggerLabel}
             </span>
 

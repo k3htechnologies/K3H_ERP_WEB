@@ -1,8 +1,5 @@
 import type { InventoryData, InventoryFlatFloorBasementPodiumWingData } from "../models/InventoryMasterModel";
 
-/**
- * Count flats by status across all buildings
- */
 export const countFlatsByStatus = (inventory: InventoryData[], status: string): number => {
     if (inventory.length === 0) return 0;
 

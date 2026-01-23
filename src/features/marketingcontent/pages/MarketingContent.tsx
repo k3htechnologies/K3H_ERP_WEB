@@ -623,7 +623,6 @@ export const MarketingContent: React.FC = () => {
                 emptyMessage="No Content Data Found"
                 fixedHeight={true}
                 recordsPerPage={20}
-                maxHeight="calc(100vh - 255px)"
                 className="flex-1"
                 sortInfo={sortInfo}
                 onSort={handleSortColumn}

@@ -251,9 +251,7 @@ export const MarketingContentFolder: React.FC = () => {
     const handleNavigateToView = (row: MarketingContentFolderData) => {
         navigate(
             `/content/contentDocument/${row.MarketingContentFolderId}`,
-            {
-                state: { MarketingContentData: row }
-            }
+            {state: { MarketingContentData: row }}
         );
     };
     //#endregion

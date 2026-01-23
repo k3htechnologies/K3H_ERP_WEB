@@ -273,13 +273,13 @@ export const ApprovedBankFile: React.FC = () => {
         {
             key: 'ApprovedBankFileName',
             label: 'Title',
-            width: '40',
+            width: '20',
             sortable: true,
             fixed: 'left',
             align: 'left',
             render: (value: string, row: any) => {
                 return (
-                    <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-2 justify-between w-full">
                         <MultiImageViewer
                             images={parseDocumentUrls(row.ApprovedBankFileURL)}
                             title="Document"

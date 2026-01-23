@@ -281,7 +281,7 @@ export const MarketingContent: React.FC = () => {
             align: 'left',
             render: (value: string, row: any) => {
                 return (
-                    <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center justify-between gpa-2 w-full">
                         <MultiImageViewer
                             images={parseDocumentUrls(row.MarketingContentURL)}
                             title="Document"

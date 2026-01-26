@@ -20,6 +20,10 @@ import Checkbox from "@/ui/components/forms/Checkbox"
 import { ParkingCard } from "@/features/parking/component/ParkingCard"
 import { PARKING_CATEGORY, PARKING_SIZE, PARKING_STATUS, PARKING_SUBCATEGORY_CANTILEVER, PARKING_SUBCATEGORY_PIT_PUZZLE, PARKING_SUBCATEGORY_PIT_STACK, PARKING_SUBCATEGORY_PODIUM, PARKING_SUBCATEGORY_PUZZLE, PARKING_SUBCATEGORY_STACK, PARKING_SUBCATEGORY_SURFACE, PARKING_SUBCATEGORY_TANDEM, PARKING_SUBCATEGORY_TOWER } from "@/core/constants"
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection"
+import { DataTable } from "@/ui/components/DataTable/DataTable"
+import type { TableColumn } from "@/ui/components/DataTable/DataTable"
+import { Edit, Eye } from "lucide-react"
+import { colorsForParkingComponent } from "@/features/parking/utils/parkingColors"
 
 interface ParkingGroupedByBuilding {
   BuildingNumber: string;
@@ -68,8 +72,18 @@ const Parking = () => {
     InventoryFloorId: 0,
   });
 
-  const [activeTab, setActiveTab] = useState<string>("Grid");
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const savedTab = localStorage.getItem('parkingActiveTab');
+    return savedTab || "Grid";
+  });
 
+  // SEARCH STATE
+  const [searchTerm, setSearchTerm] = useState<string>('');
+
+  // Save tab state when it changes
+  useEffect(() => {
+    localStorage.setItem('parkingActiveTab', activeTab);
+  }, [activeTab]);
 
   const { projectId } = useProject()
 
@@ -88,6 +102,7 @@ const Parking = () => {
       setSelectedFloorIndex(null);
       setIsUpdateParkingModalOpen(false);
       setErrors({});
+      setSearchTerm('');
       return;
 
     }
@@ -99,6 +114,7 @@ const Parking = () => {
     setSelectedFloorIndex(null);
     setIsUpdateParkingModalOpen(false);
     setErrors({});
+    setSearchTerm('');
 
   }, [projectId])
 
@@ -250,6 +266,40 @@ const Parking = () => {
 
     return counts;
   }, [groupedParking, selectedBuildingIndex, selectedFloorIndex]);
+
+  //#endregion
+
+  //#region SEARCH HANDLERS
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
+  };
+
+  // Filter parking data based on search term for selected floor
+  const getFilteredParkingData = useMemo(() => {
+    if (selectedBuildingIndex === null || selectedFloorIndex === null || !groupedParking[selectedBuildingIndex]) {
+      return [];
+    }
+
+    const floor = groupedParking[selectedBuildingIndex].Floors[selectedFloorIndex];
+    if (!floor) {
+      return [];
+    }
+
+    if (!searchTerm.trim()) {
+      return floor.ParkingData || [];
+    }
+
+    const searchLower = searchTerm.toLowerCase().trim();
+    return floor.ParkingData.filter(parking => {
+      const parkingNumber = parking.ParkingNumber?.toLowerCase() || '';
+      return parkingNumber.includes(searchLower);
+    });
+  }, [groupedParking, selectedBuildingIndex, selectedFloorIndex, searchTerm]);
 
   //#endregion
 
@@ -459,6 +509,113 @@ const Parking = () => {
     );
   };
 
+  //#region TABLE DATA AND COLUMNS
+
+  // Table columns definition
+  const tableColumns: TableColumn[] = useMemo(() => [
+    {
+      key: 'ParkingNumber',
+      label: 'Parking Number',
+      width: '150px',
+      sortable: false,
+    },
+    {
+      key: 'ParkingCategory',
+      label: 'Category',
+      width: '150px',
+      sortable: false,
+    },
+    {
+      key: 'ParkingType',
+      label: 'Type',
+      width: '150px',
+      sortable: false,
+    },
+    {
+      key: 'ParkingSubType',
+      label: 'Size',
+      width: '120px',
+      sortable: false,
+    },
+    {
+      key: 'ParkingDimensions',
+      label: 'Dimensions',
+      width: '130px',
+      sortable: false,
+    },
+    {
+      key: 'ParkingStatus',
+      label: 'Status',
+      width: '120px',
+      sortable: false,
+      render: (value: string) => {
+        const statusColors = colorsForParkingComponent[value as keyof typeof colorsForParkingComponent] || colorsForParkingComponent.Available;
+        return (
+          <span
+            className={`px-3 py-1 rounded text-white text-sm font-medium ${statusColors.Button} ${statusColors.buttonText}`}
+          >
+            {value}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'IsEVChargingAvailable',
+      label: 'EV Charging',
+      width: '120px',
+      sortable: false,
+      render: (value: boolean) => value ? 'Yes' : 'No',
+    },
+    {
+      key: 'OwnerName',
+      label: 'Owner',
+      width: '200px',
+      sortable: false,
+      render: (value: string) => {
+        if (!value) return '-';
+        return (
+          <span className="text-[#135BEC] font-semibold">
+            {value}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: '150px',
+      fixed: 'right',
+      render: (_value: any, row: any) => {
+        const parking = row as ParkingData;
+
+        return (
+          <div className="flex items-center gap-2">
+            {(parking.ParkingStatus === "Booked" || parking.ParkingStatus === "Member") && (
+              <div title="View Details">
+                <Eye
+                  size={16}
+                  className="cursor-pointer text-blue-600 hover:text-blue-800"
+                  onClick={() => handleEditParking(parking)}
+                />
+              </div>
+            )}
+            {(parking.ParkingStatus === "Blocked" || parking.ParkingStatus === "Available" || parking.ParkingStatus === "Hold") && canAction && (
+              <div title="Edit">
+                <Edit
+                  className="cursor-pointer text-blue-600 hover:text-blue-800"
+                  onClick={() => handleEditParking(parking)}
+                  size={16}
+                />
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+  ], [canAction, handleEditParking]);
+
+  //#endregion
+
    const isChange = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? false : true;
   const disabled = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? true : false;
 
@@ -475,6 +632,9 @@ const Parking = () => {
         onDownloadSampleExcel={handleDownloadExcelSampleInventory}
         canExport={canExport}
         exportLoading={isLoading}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        onClearSearch={handleClearSearch}
       />
 
       <ExportImport
@@ -555,19 +715,30 @@ const Parking = () => {
         </div>
       </div>
 
-      {/* Parking Cards */}
+      {/* Parking Cards or Table */}
       {selectedBuildingIndex !== null && selectedFloorIndex !== null && groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex] && (
-
-        <div className="flex flex-wrap gap-4 p-4 mt-5 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] rounded-[15px]">
-          {groupedParking[selectedBuildingIndex].Floors[selectedFloorIndex].ParkingData.map((parking, index) => (
-            <ParkingCard
-              key={parking.ParkingId || index}
-              parking={parking}
-              onEdit={handleEditParking}
-              canAction={canAction}
+        activeTab === "Grid" ? (
+          <div className="flex flex-wrap gap-4 p-4 mt-5 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] rounded-[15px]">
+            {getFilteredParkingData.map((parking, index) => (
+              <ParkingCard
+                key={parking.ParkingId || index}
+                parking={parking}
+                onEdit={handleEditParking}
+                canAction={canAction}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-4">
+            <DataTable
+              data={getFilteredParkingData}
+              columns={tableColumns}
+              emptyMessage="No parking found"
+              loading={isLoading}
+              fixedHeight={false}
             />
-          ))}
-        </div>
+          </div>
+        )
       )}
 
       {/* Update Parking Modal */}

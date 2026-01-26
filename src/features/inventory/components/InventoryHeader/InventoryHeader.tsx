@@ -14,6 +14,9 @@ interface InventoryHeaderProps {
     onAddBuilding?: () => void;
     onAddWing?: () => void;
     onAddFloor?: () => void;
+    searchTerm?: string;
+    onSearchChange?: (value: string) => void;
+    onClearSearch?: () => void;
 }
 
 const inventoryTabList = [
@@ -33,7 +36,9 @@ export const InventoryHeader = ({
     onAddBuilding,
     onAddWing,
     onAddFloor,
-
+    searchTerm = '',
+    onSearchChange,
+    onClearSearch,
 }: InventoryHeaderProps) => {
     return (
         <div className="flex flex-col w-full h-[150px]  rounded-tr-[15px] rounded-tl-[15px]   border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
@@ -49,6 +54,9 @@ export const InventoryHeader = ({
             <TableActionToolbar
                 isShowSearchBar={true}
                 searchPlaceholder="Search By Unit Number"
+                searchTerm={searchTerm}
+                onSearchChange={onSearchChange}
+                onClearSearch={onClearSearch}
                 isShowAddButton
                 onAdd={() => {}}
                 showMoreAddOptions={

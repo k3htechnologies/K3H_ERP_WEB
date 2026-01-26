@@ -21,15 +21,21 @@ import { BuildingTabs } from "@/features/inventory/components/BuildingTabs"
 import { WingTabs } from "@/features/inventory/components/WingTabs"
 import { StatusCounters } from "@/features/inventory/components/StatusCounters"
 import { FloorCard } from "@/features/inventory/components/FloorCard"
+import { DataTable } from "@/ui/components/DataTable/DataTable"
+import type { TableColumn } from "@/ui/components/DataTable/DataTable"
 
 // Utils
 import { countFlatsByStatus, countWingWiseFlatStatus } from "@/features/inventory/utils/inventoryHelpers"
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog"
+import { Edit, Eye, Trash } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { colorsForFlatComponent } from "@/features/inventory/utils/flatColors"
 
 
 const Inventory = () => {
     //#region STATE MANAGEMENT
 
+    const navigate = useNavigate();
     const [inventory, setInventory] = useState<InventoryData[]>([]);
     const [selectedBuilding, setSelectedBuilding] = useState<InventoryFlatFloorBasementPodiumWingData[] | undefined>(undefined)
     const [selectedBuildingIndex, setSelectedBuildingIndex] = useState<number | null>(null)
@@ -74,9 +80,20 @@ const Inventory = () => {
     const [wingNoOfFloor, setWingNoOfFloor] = useState<string>('');
     const [wingMaxNoOfFlatsPerFloor, setWingMaxNoOfFlatsPerFloor] = useState<string>('');
 
+    // SEARCH STATE
+    const [searchTerm, setSearchTerm] = useState<string>('');
     
     //#region TAB ACTIVITY
-    const [activeTab, setActiveTab] = useState<string>("Grid");
+    // Preserve tab state in localStorage
+    const [activeTab, setActiveTab] = useState<string>(() => {
+        const savedTab = localStorage.getItem('inventoryActiveTab');
+        return savedTab || "Grid";
+    });
+
+    // Save tab state when it changes
+    useEffect(() => {
+        localStorage.setItem('inventoryActiveTab', activeTab);
+    }, [activeTab]);
     //#endregion
 
     //#endregion
@@ -125,6 +142,12 @@ const Inventory = () => {
             setWingToDelete(null);
             setBuildingToDelete(null);
             setFloorToDelete(null);
+            
+            // Clear search
+            setSearchTerm('');
+            // Reset tab to Grid when project is cleared
+            setActiveTab('Grid');
+            localStorage.removeItem('inventoryActiveTab');
             return;
         }
 
@@ -157,6 +180,10 @@ const Inventory = () => {
         setWingToDelete(null);
         setBuildingToDelete(null);
         setFloorToDelete(null);
+        
+        // Clear search
+        setSearchTerm('');
+        // Note: We keep the tab state when project changes (user preference)
 
     }, [projectId])
 
@@ -175,45 +202,87 @@ const Inventory = () => {
 
             setSelectedBuilding(inventory[0].InventoryFlatFloorBasementPodiumWingData);
             setSelectedBuildingIndex(0);
-            setSelectedWing(inventory[0].InventoryFlatFloorBasementPodiumWingData[0]);
+            
+            // Try to restore saved wing selection
+            const savedWingName = localStorage.getItem(`inventorySelectedWing_${projectId}`);
+            if (savedWingName && inventory[0].InventoryFlatFloorBasementPodiumWingData) {
+                const savedWing = inventory[0].InventoryFlatFloorBasementPodiumWingData.find(
+                    w => w.Wing === savedWingName
+                );
+                if (savedWing) {
+                    const wingIndex = inventory[0].InventoryFlatFloorBasementPodiumWingData.findIndex(
+                        w => w.Wing === savedWingName
+                    );
+                    setSelectedWing(savedWing);
+                    setActiveWingTab(String(wingIndex));
+                } else {
+                    setSelectedWing(inventory[0].InventoryFlatFloorBasementPodiumWingData[0]);
+                }
+            } else {
+                setSelectedWing(inventory[0].InventoryFlatFloorBasementPodiumWingData[0]);
+            }
 
         }
     }, [projectId, inventory.length]);
 
     // Update selected building data when inventory changes (for refresh after delete)
+    // Maintains the currently selected wing after any operations
     useEffect(() => {
 
-        if (inventory.length > 0 && selectedBuildingIndex !== null) {
+        if (inventory.length > 0 && selectedBuildingIndex !== null && projectId) {
 
             const currentBuilding = inventory[selectedBuildingIndex];
 
-            if (currentBuilding) {
+            if (currentBuilding && currentBuilding.InventoryFlatFloorBasementPodiumWingData.length > 0) {
 
                 setSelectedBuilding(currentBuilding.InventoryFlatFloorBasementPodiumWingData);
 
-                if (selectedWing && currentBuilding.InventoryFlatFloorBasementPodiumWingData.length > 0) {
+                // Always try to restore saved wing selection first (this preserves selection after navigation)
+                const savedWingName = localStorage.getItem(`inventorySelectedWing_${projectId}`);
+                if (savedWingName) {
+                    const savedWingIndex = currentBuilding.InventoryFlatFloorBasementPodiumWingData.findIndex(
+                        w => w.Wing === savedWingName
+                    );
+                    if (savedWingIndex >= 0) {
+                        // Saved wing exists, restore it
+                        setSelectedWing(currentBuilding.InventoryFlatFloorBasementPodiumWingData[savedWingIndex]);
+                        setActiveWingTab(String(savedWingIndex));
+                        return;
+                    }
+                }
+
+                // If no saved wing or saved wing doesn't exist, try to maintain current selection
+                if (selectedWing) {
                     const wingIndex = currentBuilding.InventoryFlatFloorBasementPodiumWingData.findIndex(
                         w => w.Wing === selectedWing.Wing
                     );
 
                     if (wingIndex >= 0) {
-
+                        // Current wing still exists, keep it selected and save to localStorage
                         setSelectedWing(currentBuilding.InventoryFlatFloorBasementPodiumWingData[wingIndex]);
                         setActiveWingTab(String(wingIndex));
-                    }
-                    else {
-
-                        setSelectedWing(currentBuilding.InventoryFlatFloorBasementPodiumWingData[0]);
+                        localStorage.setItem(`inventorySelectedWing_${projectId}`, selectedWing.Wing);
+                    } else {
+                        // Current wing no longer exists, fallback to first wing
+                        const firstWing = currentBuilding.InventoryFlatFloorBasementPodiumWingData[0];
+                        setSelectedWing(firstWing);
                         setActiveWingTab('0');
+                        if (firstWing?.Wing) {
+                            localStorage.setItem(`inventorySelectedWing_${projectId}`, firstWing.Wing);
+                        }
                     }
-
-                } else if (currentBuilding.InventoryFlatFloorBasementPodiumWingData.length > 0) {
-                    setSelectedWing(currentBuilding.InventoryFlatFloorBasementPodiumWingData[0]);
+                } else {
+                    // No wing selected, select first one
+                    const firstWing = currentBuilding.InventoryFlatFloorBasementPodiumWingData[0];
+                    setSelectedWing(firstWing);
                     setActiveWingTab('0');
+                    if (firstWing?.Wing) {
+                        localStorage.setItem(`inventorySelectedWing_${projectId}`, firstWing.Wing);
+                    }
                 }
             }
         }
-    }, [inventory, selectedBuildingIndex]);
+    }, [inventory, selectedBuildingIndex, projectId]);
 
 
 
@@ -918,6 +987,202 @@ const Inventory = () => {
 
     //#endregion
 
+    //#region SEARCH HANDLERS
+
+    const handleSearchChange = (value: string) => {
+        setSearchTerm(value);
+    };
+
+    const handleClearSearch = () => {
+        setSearchTerm('');
+    };
+
+    // Filter flats based on search term for selected wing
+    const getFilteredFloors = useMemo(() => {
+        if (!selectedWing) {
+            return [];
+        }
+
+        if (!searchTerm.trim()) {
+            return selectedWing.InventoryFloorData || [];
+        }
+
+        const searchLower = searchTerm.toLowerCase().trim();
+        
+        return selectedWing.InventoryFloorData.map(floor => ({
+            ...floor,
+            InventoryFlatData: floor.InventoryFlatData?.filter(flat => {
+                const flatNumber = flat.Flat?.toLowerCase() || '';
+                return flatNumber.includes(searchLower);
+            }) || []
+        }));
+    }, [selectedWing, searchTerm]);
+
+    // Flatten floors and flats for table view
+    const tableData = useMemo(() => {
+        if (!selectedWing) {
+            return [];
+        }
+
+        const data: Array<{
+            Floor: string;
+            Flat: string;
+            FlatType: string;
+            Area: number;
+            Configuration: string;
+            Status: string;
+            Facing: string;
+            OwnerName: string;
+            flatData: InventoryFlatData;
+            floorData: import("@/features/inventory/models/InventoryMasterModel").InventoryFloorData;
+        }> = [];
+
+        getFilteredFloors.forEach(floor => {
+            floor.InventoryFlatData?.forEach(flat => {
+                data.push({
+                    Floor: floor.Floor,
+                    Flat: flat.Flat,
+                    FlatType: flat.FlatType || '',
+                    Area: flat.RERACarpetAreaSqFt || 0,
+                    Configuration: flat.FlatConfiguration || '',
+                    Status: flat.FlatStatus,
+                    Facing: flat.FlatFacing || '',
+                    OwnerName: flat.OwnerName || '',
+                    flatData: flat,
+                    floorData: floor,
+                });
+            });
+        });
+
+        return data;
+    }, [getFilteredFloors, selectedWing]);
+
+    // Table columns definition
+    const tableColumns: TableColumn[] = useMemo(() => [
+        {
+            key: 'Floor',
+            label: 'Floor',
+            width: '120px',
+            sortable: false,
+        },
+        {
+            key: 'Flat',
+            label: 'Unit Number',
+            width: '150px',
+            sortable: false,
+        },
+        {
+            key: 'FlatType',
+            label: 'Type',
+            width: '120px',
+            sortable: false,
+        },
+        {
+            key: 'Area',
+            label: 'Area (SqFt)',
+            width: '130px',
+            sortable: false,
+            align: 'right',
+            render: (value: number) => value || 0,
+        },
+        {
+            key: 'Configuration',
+            label: 'Configuration',
+            width: '150px',
+            sortable: false,
+        },
+        {
+            key: 'Status',
+            label: 'Status',
+            width: '120px',
+            sortable: false,
+            render: (value: string) => {
+                const statusColors = colorsForFlatComponent[value as keyof typeof colorsForFlatComponent] || colorsForFlatComponent.Available;
+                return (
+                    <span
+                        className={`px-3 py-1 rounded text-white text-sm font-medium ${statusColors.Button} ${statusColors.buttonText}`}
+                    >
+                        {value}
+                    </span>
+                );
+            },
+        },
+        {
+            key: 'Facing',
+            label: 'Facing',
+            width: '120px',
+            sortable: false,
+        },
+        {
+            key: 'OwnerName',
+            label: 'Owner/Alloted',
+            width: '200px',
+            sortable: false,
+            render: (value: string) => {
+                if (!value) return '-';
+                return (
+                    <span className="text-[#135BEC] font-semibold">
+                        {value}
+                    </span>
+                );
+            },
+        },
+        {
+            key: 'actions',
+            label: 'Actions',
+            width: '150px',
+            fixed: 'right',
+            render: (_value: any, row: any) => {
+                const flat = row.flatData as InventoryFlatData;
+                const projectId = inventory[0]?.ProjectId || 0;
+
+                const handleEdit = () => {
+                    navigate('/inventorySpecification', {
+                        state: {
+                            flat: flat,
+                            projectId: projectId,
+                        },
+                    });
+                };
+
+                return (
+                    <div className="flex items-center gap-2">
+                        {(flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted") && (
+                            <div title="View Details">
+                                <Eye 
+                                    size={16} 
+                                    className="cursor-pointer text-blue-600 hover:text-blue-800" 
+                                    onClick={handleEdit}
+                                />
+                            </div>
+                        )}
+                        {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available" || flat.FlatStatus === "Hold") && (
+                            <div title="Edit">
+                                <Edit 
+                                    className="cursor-pointer text-blue-600 hover:text-blue-800" 
+                                    onClick={handleEdit} 
+                                    size={16}
+                                />
+                            </div>
+                        )}
+                        {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
+                            <div title="Delete">
+                                <Trash 
+                                    onClick={() => handleDeleteFlat(flat)} 
+                                    color="red" 
+                                    size={16}
+                                    className="cursor-pointer hover:text-red-800"
+                                />
+                            </div>
+                        )}
+                    </div>
+                );
+            },
+        },
+    ], [inventory, navigate, handleDeleteFlat]);
+
+    //#endregion
+
     //#endregion
     return (
         <>
@@ -935,6 +1200,9 @@ const Inventory = () => {
                 onAddBuilding={handleOpenAddBuildingModal}
                 onAddWing={handleOpenAddWingModal}
                 onAddFloor={handleAddFloor}
+                searchTerm={searchTerm}
+                onSearchChange={handleSearchChange}
+                onClearSearch={handleClearSearch}
             />
 
             <div className="flex flex-col w-full h-[120px] rounded-br-[15px] rounded-bl-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
@@ -975,7 +1243,12 @@ const Inventory = () => {
                                 activeWingTab={activeWingTab}
                                 onWingChange={(index) => {
                                     setActiveWingTab(String(index));
-                                    setSelectedWing(selectedBuilding[index]);
+                                    const newWing = selectedBuilding[index];
+                                    setSelectedWing(newWing);
+                                    // Save wing selection to localStorage
+                                    if (projectId && newWing?.Wing) {
+                                        localStorage.setItem(`inventorySelectedWing_${projectId}`, newWing.Wing);
+                                    }
                                 }}
                                 onDeleteWing={handleDeleteWing}
                             />
@@ -1006,22 +1279,36 @@ const Inventory = () => {
             />
 
 
-            {selectedWing?.InventoryFloorData.map((floor, floorIndex) => {
-                const isLastFloor = floorIndex === (selectedWing.InventoryFloorData?.length || 0) - 1;
-                return (
-                    <FloorCard
-                        key={floor.InventoryFloorId}
-                        floor={floor}
-                        projectId={inventory[0]?.ProjectId || 0}
-                        building={inventory[selectedBuildingIndex || 0]}
-                        wing={selectedWing}
-                        onDelete={handleDeleteFlat}
-                        onParkingUpdate={fetchInventory}
-                        onDeleteFloor={handleDeleteFloor}
-                        isLastFloor={isLastFloor}
+            {activeTab === "Grid" ? (
+                selectedWing && getFilteredFloors.map((floor) => {
+                    const originalFloorIndex = selectedWing.InventoryFloorData.findIndex(f => f.InventoryFloorId === floor.InventoryFloorId);
+                    const isLastFloor = originalFloorIndex === (selectedWing.InventoryFloorData?.length || 0) - 1;
+                    
+                    return (
+                        <FloorCard
+                            key={floor.InventoryFloorId}
+                            floor={floor}
+                            projectId={inventory[0]?.ProjectId || 0}
+                            building={inventory[selectedBuildingIndex || 0]}
+                            wing={selectedWing}
+                            onDelete={handleDeleteFlat}
+                            onParkingUpdate={fetchInventory}
+                            onDeleteFloor={handleDeleteFloor}
+                            isLastFloor={isLastFloor}
+                        />
+                    );
+                })
+            ) : (
+                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-4">
+                    <DataTable
+                        data={tableData}
+                        columns={tableColumns}
+                        emptyMessage="No flats found"
+                        loading={isLoading}
+                        fixedHeight={false}
                     />
-                );
-            })}
+                </div>
+            )}
 
             <DeleteDialog
                 isOpen={isConfirmationDialogOpen}

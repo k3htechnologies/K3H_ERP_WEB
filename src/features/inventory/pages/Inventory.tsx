@@ -74,6 +74,7 @@ const Inventory = () => {
     const [wingNoOfFloor, setWingNoOfFloor] = useState<string>('');
     const [wingMaxNoOfFlatsPerFloor, setWingMaxNoOfFlatsPerFloor] = useState<string>('');
 
+    
     //#region TAB ACTIVITY
     const [activeTab, setActiveTab] = useState<string>("Grid");
     //#endregion
@@ -101,7 +102,7 @@ const Inventory = () => {
             setSelectedBuildingIndex(null);
             setSelectedWing(undefined);
             setActiveWingTab('0');
-            
+
             // Close all modals and dialogs
             setIsAddBuildingModalOpen(false);
             setIsAddWingModalOpen(false);
@@ -109,7 +110,7 @@ const Inventory = () => {
             setIsDeleteWingDialogOpen(false);
             setIsDeleteBuildingDialogOpen(false);
             setIsDeleteFloorDialogOpen(false);
-            
+
             // Clear form data
             setBuildingNumber('');
             setNoOfBasement('');
@@ -118,7 +119,7 @@ const Inventory = () => {
             setWingData([]);
             setWingNoOfFloor('');
             setWingMaxNoOfFlatsPerFloor('');
-            
+
             // Clear delete selections
             setSelectedFlatToDelete(null);
             setWingToDelete(null);
@@ -133,7 +134,7 @@ const Inventory = () => {
         setSelectedBuildingIndex(null);
         setSelectedWing(undefined);
         setActiveWingTab('0');
-        
+
         // Close all modals and dialogs
         setIsAddBuildingModalOpen(false);
         setIsAddWingModalOpen(false);
@@ -141,7 +142,7 @@ const Inventory = () => {
         setIsDeleteWingDialogOpen(false);
         setIsDeleteBuildingDialogOpen(false);
         setIsDeleteFloorDialogOpen(false);
-        
+
         // Clear form data
         setBuildingNumber('');
         setNoOfBasement('');
@@ -150,7 +151,7 @@ const Inventory = () => {
         setWingData([]);
         setWingNoOfFloor('');
         setWingMaxNoOfFlatsPerFloor('');
-        
+
         // Clear delete selections
         setSelectedFlatToDelete(null);
         setWingToDelete(null);
@@ -175,7 +176,7 @@ const Inventory = () => {
             setSelectedBuilding(inventory[0].InventoryFlatFloorBasementPodiumWingData);
             setSelectedBuildingIndex(0);
             setSelectedWing(inventory[0].InventoryFlatFloorBasementPodiumWingData[0]);
-            
+
         }
     }, [projectId, inventory.length]);
 
@@ -236,7 +237,7 @@ const Inventory = () => {
                     setInventory(response.right.Data);
 
                 } else {
-                    
+
                     addToast({ type: 'error', title: response.left.message });
                 }
 
@@ -287,7 +288,7 @@ const Inventory = () => {
 
     //#region COUNT INVENTORY FLAT STATUS
     const availableFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Available"), [inventory]);
-    const saleFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Sold"), [inventory]);
+    const saleFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Booked"), [inventory]);
     const memberFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Member"), [inventory]);
     const blockedFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Blocked"), [inventory]);
     const holdFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Hold"), [inventory]);
@@ -295,7 +296,7 @@ const Inventory = () => {
 
     //#region COUNT WING WISE FLAT STATUS
     const selectedWingAvailableCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Available"), [selectedWing]);
-    const selectedWingSaleCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Sold"), [selectedWing]);
+    const selectedWingBookedCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Booked"), [selectedWing]);
     const selectedWingMemberCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Member"), [selectedWing]);
     const selectedWingBlockedCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Blocked"), [selectedWing]);
     const selectedWingHoldCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Hold"), [selectedWing]);
@@ -360,7 +361,7 @@ const Inventory = () => {
             addToast({ type: 'error', title: error?.message || 'An error occurred while deleting the flat' });
 
         } finally {
-            
+
             setIsDeleting(false);
         }
     }, [selectedFlatToDelete, projectId, addToast, fetchInventory]);
@@ -437,7 +438,7 @@ const Inventory = () => {
         if (inventory.length === 0) {
             return 'Building 1';
         }
-        
+
         // Extract building numbers and find the highest
         const buildingNumbers = inventory
             .map(b => b.BuildingNumber)
@@ -446,7 +447,7 @@ const Inventory = () => {
                 const match = bn.match(/\d+/);
                 return match ? parseInt(match[0], 10) : 0;
             });
-        
+
         const maxNumber = buildingNumbers.length > 0 ? Math.max(...buildingNumbers) : 0;
         return `Building ${maxNumber + 1}`;
     }, [inventory]);
@@ -464,7 +465,7 @@ const Inventory = () => {
     const getNextAvailableWingLetter = useCallback(() => {
         // Get all existing wing letters from all buildings
         const existingWingLetters = new Set<string>();
-        
+
         inventory.forEach(building => {
             building.InventoryFlatFloorBasementPodiumWingData?.forEach(wing => {
                 if (wing.Wing && wing.Wing.length === 1) {
@@ -472,31 +473,31 @@ const Inventory = () => {
                 }
             });
         });
-        
+
         // Find the highest wing letter (A=65, B=66, etc.)
         let maxCharCode = 64; // Start before 'A' (65)
-        
+
         existingWingLetters.forEach(letter => {
             const charCode = letter.charCodeAt(0);
             if (charCode > maxCharCode) {
                 maxCharCode = charCode;
             }
         });
-        
+
         // Return the next available letter
         return maxCharCode + 1;
     }, [inventory]);
 
     const handleNoOfWingsChange = (value: string) => {
- 
+
         setNoOfWings(value);
- 
+
         const numWings = parseInt(value, 10) || 0;
-        
+
         if (numWings > 0) {
             // Get the starting letter for this building
             const startCharCode = getNextAvailableWingLetter();
-            
+
             // Generate wing letters starting from the next available letter
             const wings = Array.from({ length: numWings }, (_, i) => {
                 const wingLetter = String.fromCharCode(startCharCode + i);
@@ -534,7 +535,7 @@ const Inventory = () => {
             addToast({ type: 'error', title: 'No Of Wings is required' });
             return false;
         }
-        
+
         // Validate all wing data
         for (let i = 0; i < wingData.length; i++) {
             const wing = wingData[i];
@@ -547,7 +548,7 @@ const Inventory = () => {
                 return false;
             }
         }
-        
+
         return true;
     };
 
@@ -591,9 +592,9 @@ const Inventory = () => {
 
                 if (E.isRight(response)) {
                     setIsAddBuildingModalOpen(false);
-                    
+
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
-                    
+
                     await fetchInventory();
 
                 } else {
@@ -605,7 +606,7 @@ const Inventory = () => {
             },
             undefined,
             (error: any) => {
-                addToast({ type: 'error', title: error?.message});
+                addToast({ type: 'error', title: error?.message });
             },
             undefined,
             'Adding Building'
@@ -649,7 +650,7 @@ const Inventory = () => {
             addToast({ type: 'error', title: 'Please select a building first' });
             return;
         }
-        
+
         setWingNoOfFloor('');
         setWingMaxNoOfFlatsPerFloor('');
         setIsAddWingModalOpen(true);
@@ -705,9 +706,9 @@ const Inventory = () => {
                     setIsAddWingModalOpen(false);
                     setWingNoOfFloor('');
                     setWingMaxNoOfFlatsPerFloor('');
-                    
+
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
-                    
+
                     await fetchInventory();
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -760,7 +761,7 @@ const Inventory = () => {
 
                 if (E.isRight(response)) {
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
-                    
+
                     await fetchInventory();
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -957,7 +958,7 @@ const Inventory = () => {
                             availableCount={availableFlatsCount}
                             holdCount={holdFlatsCount}
                             memberCount={memberFlatsCount}
-                            saleCount={saleFlatsCount}
+                            bookedCount={saleFlatsCount}
                             blockedCount={blockedFlatsCount}
                         />
                     </div>
@@ -965,28 +966,34 @@ const Inventory = () => {
 
                 <div className="border-b border-gray-200" />
 
-                <div className="flex justify-between pt-2 pb-2">
-                    {selectedBuilding && (
-                        <WingTabs
-                            wings={selectedBuilding}
-                            activeWingTab={activeWingTab}
-                            onWingChange={(index) => {
-                                setActiveWingTab(String(index));
-                                setSelectedWing(selectedBuilding[index]);
-                            }}
-                            onDeleteWing={handleDeleteWing}
-                        />
-                    )}
-                    
+                <div className="flex justify-between items-center pt-2 pb-2">
 
-                    <StatusCounters
-                        availableCount={selectedWingAvailableCount}
-                        holdCount={selectedWingHoldCount}
-                        memberCount={selectedWingMemberCount}
-                        saleCount={selectedWingSaleCount}
-                        blockedCount={selectedWingBlockedCount}
-                    />
+                    <div className="flex-1">
+                        {selectedBuilding && (
+                            <WingTabs
+                                wings={selectedBuilding}
+                                activeWingTab={activeWingTab}
+                                onWingChange={(index) => {
+                                    setActiveWingTab(String(index));
+                                    setSelectedWing(selectedBuilding[index]);
+                                }}
+                                onDeleteWing={handleDeleteWing}
+                            />
+                        )}
+                    </div>
+
+                    <div className="flex justify-end">
+                        <StatusCounters
+                            availableCount={selectedWingAvailableCount}
+                            holdCount={selectedWingHoldCount}
+                            memberCount={selectedWingMemberCount}
+                            bookedCount={selectedWingBookedCount}
+                            blockedCount={selectedWingBlockedCount}
+                        />
+                    </div>
+
                 </div>
+
             </div>
 
             <ExportImport
@@ -1055,16 +1062,16 @@ const Inventory = () => {
             >
                 <div className="space-y-4">
                     <div>
-                    <Input
-                        label="Building Number"
-                        value={buildingNumber}
-                        onChange={(e) => setBuildingNumber(e.target.value)}
-                        placeholder="Building Number"
-                        required
-                        disabled
-                    />
+                        <Input
+                            label="Building Number"
+                            value={buildingNumber}
+                            onChange={(e) => setBuildingNumber(e.target.value)}
+                            placeholder="Building Number"
+                            required
+                            disabled
+                        />
                     </div>
-                    
+
                     <div className="grid grid-cols-3 gap-4">
                         <Input
                             label="No Of Basement"
@@ -1148,15 +1155,15 @@ const Inventory = () => {
                     <div>
                         <Input
                             label="Selected Building"
-                            value={selectedBuildingIndex !== null && inventory[selectedBuildingIndex] 
-                                ? inventory[selectedBuildingIndex].BuildingNumber 
+                            value={selectedBuildingIndex !== null && inventory[selectedBuildingIndex]
+                                ? inventory[selectedBuildingIndex].BuildingNumber
                                 : 'No building selected'}
                             placeholder="Building Number"
                             required
                             disabled
                         />
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                         <Input
                             label="No Of Floor"

@@ -248,6 +248,8 @@ export const MASTER_DATA = {
 
   parkingStatus: ['Available', 'Block', 'Hold', 'Member'],
 
+  unitLayout: ['Living / Dining', 'Passage', 'Kitchen', 'Toilet','Master Bed Room','Main Door JAMB','KIT / Bed Door Jamb','Toilet Door Jamb'],
+
 } as const
 
 // ============================================================================
@@ -341,6 +343,8 @@ export const PARKING_SUBCATEGORY_PODIUM = toOptions( MASTER_DATA.parkingSubCateg
 export const PARKING_SUBCATEGORY_PIT_STACK = toOptions( MASTER_DATA.parkingSubCategory_Pit_StackParking)
 export const PARKING_SIZE = toOptions(MASTER_DATA.parkingSize);
 export const PARKING_STATUS = toOptions(MASTER_DATA.parkingStatus);
+export const UNIT_LAYOUT = toOptions(MASTER_DATA.unitLayout);
+
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

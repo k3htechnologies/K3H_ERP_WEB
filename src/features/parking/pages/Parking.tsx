@@ -204,7 +204,7 @@ const Parking = () => {
     const counts = {
       available: 0,
       hold: 0,
-      sale: 0,
+      booked: 0,
       blocked: 0,
       member: 0,
     };
@@ -213,7 +213,7 @@ const Parking = () => {
       const status = parking.ParkingStatus?.toLowerCase() || '';
       if (status === 'available') counts.available++;
       else if (status === 'hold') counts.hold++;
-      else if (status === 'sale') counts.sale++;
+      else if (status === 'booked') counts.booked++;
       else if (status === 'blocked') counts.blocked++;
       else if (status === 'member') counts.member++;
     });
@@ -223,18 +223,18 @@ const Parking = () => {
 
   const selectedFloorParkingCounts = useMemo(() => {
     if (selectedBuildingIndex === null || selectedFloorIndex === null || !groupedParking[selectedBuildingIndex]) {
-      return { available: 0, hold: 0, sale: 0, blocked: 0, member: 0 };
+      return { available: 0, hold: 0, booked: 0, blocked: 0, member: 0 };
     }
 
     const floor = groupedParking[selectedBuildingIndex].Floors[selectedFloorIndex];
     if (!floor) {
-      return { available: 0, hold: 0, sale: 0, blocked: 0, member: 0 };
+      return { available: 0, hold: 0, booked: 0, blocked: 0, member: 0 };
     }
 
     const counts = {
       available: 0,
       hold: 0,
-      sale: 0,
+      booked: 0,
       blocked: 0,
       member: 0,
     };
@@ -243,7 +243,7 @@ const Parking = () => {
       const status = parking.ParkingStatus?.toLowerCase() || '';
       if (status === 'available') counts.available++;
       else if (status === 'hold') counts.hold++;
-      else if (status === 'sale') counts.sale++;
+      else if (status === 'booked') counts.booked++;
       else if (status === 'blocked') counts.blocked++;
       else if (status === 'member') counts.member++;
     });
@@ -519,7 +519,7 @@ const Parking = () => {
               availableCount={parkingStatusCounts.available}
               holdCount={parkingStatusCounts.hold}
               memberCount={parkingStatusCounts.member}
-              saleCount={parkingStatusCounts.sale}
+              bookedCount={parkingStatusCounts.booked}
               blockedCount={parkingStatusCounts.blocked}
             />
           </div>
@@ -549,7 +549,7 @@ const Parking = () => {
             availableCount={selectedFloorParkingCounts.available}
             holdCount={selectedFloorParkingCounts.hold}
             memberCount={selectedFloorParkingCounts.member}
-            saleCount={selectedFloorParkingCounts.sale}
+            bookedCount={selectedFloorParkingCounts.booked}
             blockedCount={selectedFloorParkingCounts.blocked}
           />
         </div>

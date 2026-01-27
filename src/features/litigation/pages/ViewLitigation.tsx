@@ -393,9 +393,8 @@ const ViewLitigation: React.FC = () => {
             setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationLitigationHearingRequest = {
-
                     PageNumber: 1,
-                    PageSize: 100,
+                    PageSize: 20,
                     ProjectId: Number(projectId),
                     LitigationId: editLitigationData.LitigationId,
                 };

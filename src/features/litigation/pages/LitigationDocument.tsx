@@ -212,7 +212,6 @@ export const LitigationDocument: React.FC = () => {
                 const response = await litigationDocumentService.apiCallPullLitigationDocument(params);
 
                 handleExportFile(response, exportType, 'Litigation Document', addToast)
-
                 return response;
             },
             undefined,

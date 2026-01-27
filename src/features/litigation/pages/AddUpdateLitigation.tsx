@@ -53,7 +53,6 @@ export const AddUpdateLitigation: React.FC = () => {
 
     // ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
     const { projectId } = useProject();
 
     // TOAST
@@ -75,7 +74,6 @@ export const AddUpdateLitigation: React.FC = () => {
     //#endregion
 
     //#region INITIALIZATION
-
     useEffect(() => {
         if (!isAddMode) {
             fetchLitigationDetails();
@@ -95,7 +93,7 @@ export const AddUpdateLitigation: React.FC = () => {
 
                 const params: FilterWithPaginationLitigationRequest = {
                     PageNumber: 1,
-                    PageSize: 1,
+                    PageSize: 20,
                     LitigationId: Number(LitigationId),
                     ProjectId: Number(projectId),
                 };
@@ -130,7 +128,6 @@ export const AddUpdateLitigation: React.FC = () => {
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
-
                 return response;
             },
             undefined,

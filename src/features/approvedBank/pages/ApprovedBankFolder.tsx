@@ -191,7 +191,7 @@ export const ApprovedBankFolder: React.FC = () => {
     };
     //#endregion
 
-    //#region SEARCH & CLEAR
+    //#region SEARCH APPROVED BANK
     const searchApprovedBankFolder = async (searchValue: string) => {
         setSearchTerm(searchValue);
         await loadApprovedBankFolder(1, sortInfo, searchValue);

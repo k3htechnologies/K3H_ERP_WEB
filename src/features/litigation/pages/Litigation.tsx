@@ -74,7 +74,7 @@ export const Litigation: React.FC = () => {
     const { canAction, canExport } = useMenuPermissions();
     //#endregion
 
-    const location = useLocation() as any;
+    const location = useLocation();
     //#endregion
 
     //#region INIT
@@ -167,7 +167,6 @@ export const Litigation: React.FC = () => {
             fetchLitigationList();
             return
         }
-
         await loadLitigation(1, filters, sortInfo, searchValue);
     };
     //#endregion
@@ -179,7 +178,6 @@ export const Litigation: React.FC = () => {
         debouncedSearch.cancel?.();
         setFilters({});
         setTempFilters({});
-        setPagination({ currentPage: 1 });
         loadLitigation(1, { Title: '' }, sortInfo, undefined);
     };
     //#endregion
@@ -217,7 +215,6 @@ export const Litigation: React.FC = () => {
     //#endregion
 
     //#region IMPORT EXCEL | DOWNLOAD
-
     const excelImportLitigation = async () => {
 
         await runApiWithLoader(
@@ -831,6 +828,7 @@ export const Litigation: React.FC = () => {
             </Modal>
 
             {/* DELETE CONFIRMATION LITIGATION MODAL */}
+            
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
                 onClose={handleDeleteDialogClose}

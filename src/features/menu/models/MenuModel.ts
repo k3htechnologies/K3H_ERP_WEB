@@ -8,6 +8,7 @@ export interface ModuleData {
     ModulesMasterId: number | 0
     ModuleName: string | ''
     Icon: string | ''
+    Path: string | ''
     SubModuleData: SubModuleData[]
 }
 

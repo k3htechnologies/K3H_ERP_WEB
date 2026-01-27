@@ -81,7 +81,7 @@ const Inventory = () => {
 
     // SEARCH STATE
     const [searchTerm, setSearchTerm] = useState<string>('');
-    
+
     //#region TAB ACTIVITY
     // Preserve tab state in localStorage
     const [activeTab, setActiveTab] = useState<string>(() => {
@@ -141,7 +141,7 @@ const Inventory = () => {
             setWingToDelete(null);
             setBuildingToDelete(null);
             setFloorToDelete(null);
-            
+
             // Clear search
             setSearchTerm('');
             // Reset tab to Grid when project is cleared
@@ -179,7 +179,7 @@ const Inventory = () => {
         setWingToDelete(null);
         setBuildingToDelete(null);
         setFloorToDelete(null);
-        
+
         // Clear search
         setSearchTerm('');
         // Note: We keep the tab state when project changes (user preference)
@@ -201,7 +201,7 @@ const Inventory = () => {
 
             setSelectedBuilding(inventory[0].InventoryFlatFloorBasementPodiumWingData);
             setSelectedBuildingIndex(0);
-            
+
             // Try to restore saved wing selection
             const savedWingName = localStorage.getItem(`inventorySelectedWing_${projectId}`);
             if (savedWingName && inventory[0].InventoryFlatFloorBasementPodiumWingData) {
@@ -1005,7 +1005,7 @@ const Inventory = () => {
         }
 
         const searchLower = searchTerm.toLowerCase().trim();
-        
+
         return selectedWing.InventoryFloorData.map(floor => ({
             ...floor,
             InventoryFlatData: floor.InventoryFlatData?.filter(flat => {
@@ -1094,11 +1094,11 @@ const Inventory = () => {
             width: '120px',
             sortable: false,
             render: (value: string) => {
+                
                 const statusColors = colorsForFlatComponent[value as keyof typeof colorsForFlatComponent] || colorsForFlatComponent.Available;
+
                 return (
-                    <span
-                        className={`px-3 py-1 rounded text-white text-sm font-medium ${statusColors.Button} ${statusColors.buttonText}`}
-                    >
+                    <span className={`px-3 py-1 rounded text-sm font-medium ${statusColors.Button} ${statusColors.buttonText}`}>
                         {value}
                     </span>
                 );
@@ -1146,27 +1146,27 @@ const Inventory = () => {
                     <div className="flex items-center gap-2">
                         {(flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted") && (
                             <div title="View Details">
-                                <Eye 
-                                    size={16} 
-                                    className="cursor-pointer text-blue-600 hover:text-blue-800" 
+                                <Eye
+                                    size={16}
+                                    className="cursor-pointer text-blue-600 hover:text-blue-800"
                                     onClick={handleEdit}
                                 />
                             </div>
                         )}
                         {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available" || flat.FlatStatus === "Hold") && (
                             <div title="Edit">
-                                <Edit 
-                                    className="cursor-pointer text-blue-600 hover:text-blue-800" 
-                                    onClick={handleEdit} 
+                                <Edit
+                                    className="cursor-pointer text-blue-600 hover:text-blue-800"
+                                    onClick={handleEdit}
                                     size={16}
                                 />
                             </div>
                         )}
                         {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
                             <div title="Delete">
-                                <Trash 
-                                    onClick={() => handleDeleteFlat(flat)} 
-                                    color="red" 
+                                <Trash
+                                    onClick={() => handleDeleteFlat(flat)}
+                                    color="red"
                                     size={16}
                                     className="cursor-pointer hover:text-red-800"
                                 />
@@ -1279,7 +1279,7 @@ const Inventory = () => {
                 selectedWing && getFilteredFloors.map((floor) => {
                     const originalFloorIndex = selectedWing.InventoryFloorData.findIndex(f => f.InventoryFloorId === floor.InventoryFloorId);
                     const isLastFloor = originalFloorIndex === (selectedWing.InventoryFloorData?.length || 0) - 1;
-                    
+
                     return (
                         <FloorCard
                             key={floor.InventoryFloorId}
@@ -1295,7 +1295,7 @@ const Inventory = () => {
                     );
                 })
             ) : (
-                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-4">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-4">
                     <DataTable
                         data={tableData}
                         columns={tableColumns}

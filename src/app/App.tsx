@@ -114,6 +114,7 @@ import EmployeeResignation from '@/features/resignation/pages/EmployeeResignatio
 import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
 import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
 import Parking from '@/features/parking/pages/Parking';
+import RedevelopmentDashboard from '@/features/redevelopmentDashboard/pages/RedevelopmentDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -292,6 +293,8 @@ function App() {
             <Route path="enquiry/add/:EnquiryId?" element={<EnquiryListStateProvider><AddUpdateEnquiry /></EnquiryListStateProvider>} />
 
             {/* REDEVELOPMENT */}
+
+            <Route path="redevelopmentDashboard" element={<RedevelopmentDashboard />} />
 
             <Route path="building" element={<BuildingListStateProvider><Building /></BuildingListStateProvider>} />
             <Route path="building/view" element={<BuildingListStateProvider><ViewBuilding /></BuildingListStateProvider>} />

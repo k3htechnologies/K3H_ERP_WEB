@@ -135,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     return fallbackIcon
   }
-  
+
   const menuItems: MenuItem[] = [
 
     {
@@ -148,6 +148,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ...(modules || []).map(module => ({
       id: `module-${module.ModulesMasterId}`,
       label: module.ModuleName,
+      path:module.Path,
       icon: renderIcon(module.Icon, <Home className="h-5 w-5" />, { isCollapsed: !isOpen, isActive: expandedItems.has(`module-${module.ModulesMasterId}`) }),
       children: (module.SubModuleData || []).map(subModule => ({
 
@@ -181,7 +182,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleItemClick = (item: MenuItem) => {
     if (item.children && item.children.length > 0) {
+
+      console.log(item.label)
+
+      if (item.path === "redevelopmentDashboard") {
+
+        const route = mapPathToRoute(item.path)
+
+        const navigateTo = route || item.path;
+
+        navigate(navigateTo)
+
+        if (window.innerWidth < 1024) {
+          onClose()
+        }
+      }
+
       toggleExpanded(item.id)
+      
     } else {
       if (item.path) {
 

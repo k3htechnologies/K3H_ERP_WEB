@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import * as E from 'fp-ts/Either';
-import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Modal } from "@/ui/components/Modal/Modal";
@@ -12,7 +12,7 @@ import { Button, Input } from "@/ui/components/forms";
 import usePagination from "@/core/hooks/usePagination";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { approvedBankFileService } from "../services/ApprovedBankFileService";
+import { approvedBankFileService } from "@/features/approvedBank/services/ApprovedBankFileService";
 import useToast from "@/core/hooks/useToast";
 import { Edit, Trash2 } from "lucide-react";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
@@ -23,13 +23,14 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 const initialFormState = (): AddUpdateApprovedBankFileRequest => ({
     ApprovedBankFileId: 0,
+    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     ApprovedBankFileName: '',
     ApprovedBankFolderId: 0,
     ProjectId: 0,
-    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     ApprovedBankFileURL: null,
     RemoveApprovedBankFileURL: '',
 })
@@ -39,7 +40,7 @@ export const ApprovedBankFile: React.FC = () => {
     //#region STATE MANAGEMENT
     const [approvedBankFileList, setApprovedBankFileList] = useState<ApprovedBankFileData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [isLoadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     // USE NAVIGATE
     const navigate = useNavigate();
@@ -49,13 +50,12 @@ export const ApprovedBankFile: React.FC = () => {
 
     //TABLE SORT INFO
     const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-
     const { projectId } = useProject();
 
     // TOAST
     const { addToast } = useToast();
 
-    //SET ADD AND REMOVE URL FILE
+    //SET APPROVED BANK FILE
     const [approvedBankFiles, setApprovedBankFiles] = useState<(File | string)[]>([]);
     const [removeApprovedBankFileUrls, setRemoveApprovedBankFileUrls] = useState<string[]>([]);
     const [approvedBankFileURL, setApprovedBankFileURL] = useState<string>();
@@ -66,10 +66,7 @@ export const ApprovedBankFile: React.FC = () => {
         searchApprovedBankFile(value)
     }, 350);
 
-    //FILTER STATES
-    const [filters, setFilters] = useState<FilterInfo>({});
-
-    // EDIT APPROVED BANK FILE
+    // ADD EDIT APPROVED BANK FILE
     const [editingApprovedBankFileData, setEditingApprovedBankFileData] = useState<ApprovedBankFileData | null>(null);
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
@@ -92,19 +89,18 @@ export const ApprovedBankFile: React.FC = () => {
     //#endregion
 
     //#region DATA LOADING | LOAD | SEARCH 
-    const loadApprovedBankFile = useCallback(async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
+    const loadApprovedBankFile = useCallback(async (page: number, sortInfo?: SortInfo, searchtext?: string) => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationApprovedBankFileRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
-                    ApprovedBankFileId: filterParams.ApprovedBankFileId ? Number(filterParams.ApprovedBankFileId) : undefined,
-                    ApprovedBankFolderId: filterParams.ApprovedBankFolderId ? Number(filterParams.ApprovedBankFolderId) : undefined,
-                    ApprovedBankFileName: searchtext ?? filterParams.ApprovedBankFileName ?? undefined,
+                    ApprovedBankFolderId: approvedBankFolderId,
+                    ApprovedBankFileName: searchtext?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, ApprovedBankFileColumns)
                 };
 
@@ -126,17 +122,17 @@ export const ApprovedBankFile: React.FC = () => {
             undefined,
             'Loading Approved Bank File'
         )
-    }, [pagination.pageSize, approvedBankFolderId, addToast])
+    }, [pagination.pageSize, approvedBankFolderId, projectId, addToast])
     //#endregion
 
     //#region INIT
     useEffect(() => {
 
         if (!projectId || !approvedBankFolderId) return;
-        loadApprovedBankFile(1, {
-            ApprovedBankFolderId: approvedBankFolderId
-        });
-    }, [projectId, approvedBankFolderId]);
+
+        loadApprovedBankFile(1, sortInfo, searchTerm);
+
+    }, [projectId, approvedBankFolderId, sortInfo]);
 
     //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
     useEffect(() => {
@@ -177,61 +173,32 @@ export const ApprovedBankFile: React.FC = () => {
 
     //#region SEARCH & CLEAR
     const searchApprovedBankFile = async (searchValue: string) => {
-
         setSearchTerm(searchValue);
-        if (searchValue.trim() === '') {
-            await loadApprovedBankFile(1, { ApprovedBankFolderId: approvedBankFolderId });
-            return
-        }
-        const filterParams: FilterInfo = {
-            ApprovedBankFileName: searchValue.trim(),
-            ApprovedBankFolderId: approvedBankFolderId,
-        };
-        await loadApprovedBankFile(1, filterParams);
+        await loadApprovedBankFile(1, sortInfo, searchValue);
     };
     //#endregion
 
     //#region CLEAR 
     const clearSearchApprovedBankFile = () => {
         setSearchTerm('');
-
         debouncedSearch.cancel?.();
-        setFilters({});
         setPagination({ currentPage: 1 });
 
-        loadApprovedBankFile(1, { ApprovedBankFolderId: approvedBankFolderId });
-        try {
-            navigate(location.pathname, { replace: true, state: {} });
-        } catch {
-        }
+        loadApprovedBankFile(1, sortInfo, '');
     };
     //#endregion
 
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
-        loadApprovedBankFile(
-            page,
-            { ApprovedBankFolderId: approvedBankFolderId },
-            sortInfo
-        );
-    }, [approvedBankFolderId, sortInfo]);
+        loadApprovedBankFile(page, sortInfo, searchTerm);
+    }, [sortInfo, searchTerm]);
 
     //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
-        loadApprovedBankFile(1, filters, sort);
-
-    }, [filters]);
+        loadApprovedBankFile(1, sort, searchTerm);
+    }, [searchTerm]);
     //#endregion
-
-    // RESET FORM DATA
-    const handleResetForm = () => {
-        setFormData(initialFormState());
-        setErrors({});
-        setApprovedBankFiles([]);
-        setApprovedBankFileURL('');
-        setRemoveApprovedBankFileUrls([]);
-    };
 
     //#region EDIT APPROVED BANK FILE
     const handleEditApprovedBankFile = useCallback((row: ApprovedBankFileData) => {
@@ -240,7 +207,6 @@ export const ApprovedBankFile: React.FC = () => {
             ApprovedBankFileName: row.ApprovedBankFileName || ''
         })
         setIsAddUpdateModalOpen(true);
-
     }, [])
     //#endregion
 
@@ -264,7 +230,7 @@ export const ApprovedBankFile: React.FC = () => {
             totalRecords: pagination.totalRecords,
             pageSize: pagination.pageSize,
             onPageChange: handlePageChange
-        }),[pagination, handlePageChange]);
+        }), [pagination, handlePageChange]);
 
     const ApprovedBankFileForTable = useMemo(() => approvedBankFileList, [approvedBankFileList]);
 
@@ -283,7 +249,13 @@ export const ApprovedBankFile: React.FC = () => {
                         <MultiImageViewer
                             images={parseDocumentUrls(row.ApprovedBankFileURL)}
                             title="Document"
-                            triggerLabel={value || '-'}
+                            triggerLabel={
+                                <TooltipText
+                                    text={value || '-'}
+                                    maxWidth="250px"
+                                    tooltipThreshold={25}
+                                />
+                            }
                         />
                     </div>
                 );
@@ -383,9 +355,11 @@ export const ApprovedBankFile: React.FC = () => {
         const newErrors: { [key: string]: string } = {}
 
         if (!formData.ApprovedBankFileName || formData.ApprovedBankFileName.trim() === '') {
-            newErrors.ApprovedBankFileName = "Title is required"
-        }
+            newErrors.ApprovedBankFileName = "Title is required."
 
+        } else if (formData.ApprovedBankFileName.trim().length < 3) {
+            newErrors.ApprovedBankFileName = "Title must be at least 3 characters long."
+        }
         if (!hasAnyDocumentFile(approvedBankFiles, approvedBankFileURL, removeApprovedBankFileUrls)) {
             newErrors.ApprovedBankFileURL = "File is required.";
         }
@@ -428,10 +402,11 @@ export const ApprovedBankFile: React.FC = () => {
         }
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const payload = PushApprovedBankFileFormData();
+
                 const response = await approvedBankFileService.apiCallAddUpdateApprovedBankFile(payload);
                 if (E.isRight(response)) {
 
@@ -485,9 +460,8 @@ export const ApprovedBankFile: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
-
                 const params: DeleteApprovedBankFileRequest = {
                     ApprovedBankFileId: deleteApprovedBankFileData.ApprovedBankFileId,
                     Uniquekey: deleteApprovedBankFileData.Uniquekey || '',
@@ -516,14 +490,8 @@ export const ApprovedBankFile: React.FC = () => {
                         totalRecords: newTotalRecords,
                         totalPages: newTotalPages
                     });
-                    await loadApprovedBankFile(
-                        pageToShow,
-                        {
-                            ...filters,
-                            ApprovedBankFolderId: approvedBankFolderId
-                        },
-                        sortInfo
-                    );
+                    await loadApprovedBankFile(pageToShow, sortInfo);
+
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                     setIsConfirmationDialogBoxOpen(false);
                     setDeleteApprovedBankFileData(null);
@@ -554,7 +522,7 @@ export const ApprovedBankFile: React.FC = () => {
 
             {/* LOADER */}
 
-            <Loader loading={isLoading} title={isLoadingMessage} > <div></div> </Loader>
+            <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
             {/* ACTION TOOLBAR */}
 
@@ -624,8 +592,6 @@ export const ApprovedBankFile: React.FC = () => {
                 title={editingApprovedBankFileData ? 'Update' : 'Add'}
                 onSubmit={handleAddUpdateApprovedBankFile}
                 saveText={'Save'}
-                resetText='Reset'
-                onreset={handleResetForm}
                 loading={isLoading}
                 size='xl'
             >

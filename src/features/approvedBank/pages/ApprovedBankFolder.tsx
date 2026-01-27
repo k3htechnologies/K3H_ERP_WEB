@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
-import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -34,7 +33,7 @@ export const ApprovedBankFolder: React.FC = () => {
     //#region STATE MANAGEMENT
     const [approvedBankFolderList, setApprovedBankFolderList] = useState<ApprovedBankFolderData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [isLoadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     // USE NAVIGATE
     const navigate = useNavigate();
@@ -57,9 +56,6 @@ export const ApprovedBankFolder: React.FC = () => {
 
     // SINGLE SEARCH 
     const [searchBankNameTerm, setSearchBankNameTerm] = useState('');
-
-    //FILTER STATES
-    const [filters, setFilters] = useState<FilterInfo>({});
 
     //DELETE APPROVED BANK FOLDER 
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
@@ -94,20 +90,20 @@ export const ApprovedBankFolder: React.FC = () => {
     useEffect(() => {
         const incoming = location.state?.listState;
         const listState = incoming ?? {
-            page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: ''
+            page: 1, sortInfo: undefined, searchTerm: ''
         };
 
         setPagination({ currentPage: listState.page ?? pagination.currentPage });
 
         setSortInfo(listState.sortInfo);
 
-        setFilters(listState.filters ?? {});
-
         setSearchTerm(listState.searchTerm ?? '');
 
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
 
-            loadApprovedBankFolder(listState.page ?? 1, { BankName: String(listState.searchTerm).trim() });
+            loadApprovedBankFolder(listState.page ?? 1, listState.sortInfo,
+                String(listState.searchTerm).trim()
+            );
             return;
         }
         loadApprovedBankFolder(listState.page ?? 1, listState.filters ?? {});
@@ -115,20 +111,19 @@ export const ApprovedBankFolder: React.FC = () => {
 
     //#region DATA LOADING |  LOAD | SEARCH 
     const fetchApprovedBankFolderList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-        return await loadApprovedBankFolder(page, filters, sort);
+        return await loadApprovedBankFolder(page, sort, searchTerm);
     }
 
-    const loadApprovedBankFolder = useCallback(async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
+    const loadApprovedBankFolder = useCallback(async (page: number, sortInfo?: SortInfo, searchtext?: string) => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationApprovedBankFolderRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
-                    ApprovedBankFolderId: filterParams.ApprovedBankFolderId ? Number(filterParams.ApprovedBankFolderId) : undefined,
-                    BankName: searchtext ?? filterParams.BankName ?? undefined,
+                    BankName: searchtext?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, ApprovedBankFolderColumns)
                 };
 
@@ -162,7 +157,7 @@ export const ApprovedBankFolder: React.FC = () => {
     useEffect(() => {
 
         if (!projectId) return;
-        fetchApprovedBankFolderList();
+        fetchApprovedBankFolderList(1);
     }, [projectId])
     //#endregion
 
@@ -208,14 +203,7 @@ export const ApprovedBankFolder: React.FC = () => {
     //#region SEARCH & CLEAR
     const searchApprovedBankFolder = async (searchValue: string) => {
         setSearchTerm(searchValue);
-        if (searchValue.trim() === '') {
-            fetchApprovedBankFolderList();
-            return
-        }
-        const filterParams: FilterInfo = {
-            BankName: searchValue.trim(),
-        };
-        await loadApprovedBankFolder(1, filterParams);
+        await loadApprovedBankFolder(1, sortInfo, searchValue);
     };
     //#endregion
 
@@ -223,28 +211,22 @@ export const ApprovedBankFolder: React.FC = () => {
     const clearSearchApprovedBankFolder = () => {
         setSearchTerm('');
         debouncedSearch.cancel?.();
-        setFilters({});
-
         setPagination({ currentPage: 1 });
-        loadApprovedBankFolder(1, {});
-        try {
-            navigate(location.pathname, { replace: true, state: {} });
-        } catch {
-        }
+        loadApprovedBankFolder(1, sortInfo, '');
     };
     //#endregion
 
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
-        fetchApprovedBankFolderList(page);
-    }, []);
+        loadApprovedBankFolder(page, sortInfo, searchTerm);
+    }, [searchTerm, sortInfo]);
+
 
     //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
-        loadApprovedBankFolder(1, filters, sort);
-
-    }, [filters]);
+        loadApprovedBankFolder(1, sort, searchTerm);
+    }, [searchTerm]);
     //#endregion
 
     //#region CONFIRMATION DIALOG BOX
@@ -272,7 +254,7 @@ export const ApprovedBankFolder: React.FC = () => {
     const handleNavigateToView = (row: ApprovedBankFolderData) => {
         navigate(
             `/approvedBank/approvedBankFile/${row.ApprovedBankFolderId}`,
-            {state: { ApprovedBankData: row }}
+            { state: { ApprovedBankData: row } }
         );
     };
 
@@ -280,7 +262,7 @@ export const ApprovedBankFolder: React.FC = () => {
     const handleDownloadApprovedBankFolder = (row: ApprovedBankFolderData) => {
         runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
 
             async () => {
                 const params = new URLSearchParams({
@@ -396,36 +378,6 @@ export const ApprovedBankFolder: React.FC = () => {
             }
         }
     ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
-
-    //#endregion
-
-    //#region COLUMN CUSTOMIZATION
-    const requiredApprovedBankFolderColumnKeys: string[] = ['BankName'];
-
-    const allApprovedBankFolderColumnKeys: string[] = ApprovedBankFolderColumns.map(c => c.key);
-    const [selectedApprovedBankFolderColumnKeys, setSelectedApprovedBankFolderColumnKeys] = useState<string[]>(() => {
-        try {
-
-            const saved = LocalStorageHelper.getApprovedBankFolderTableColumns?.();
-
-            if (saved) {
-                const parsed = JSON.parse(saved) as string[]
-                const withRequired = Array.from(new Set([...parsed, ...requiredApprovedBankFolderColumnKeys]));
-
-                return withRequired.filter(k => allApprovedBankFolderColumnKeys.includes(k));
-            }
-        } catch { }
-        return allApprovedBankFolderColumnKeys;
-    });
-
-    useEffect(() => {
-        setSelectedApprovedBankFolderColumnKeys(prev => Array.from(new Set([...prev, ...requiredApprovedBankFolderColumnKeys])).filter(k => allApprovedBankFolderColumnKeys.includes(k)));
-    }, [ApprovedBankFolderColumns.length])
-
-    const visibleApprovedBankFolderColumns = useMemo(
-        () => ApprovedBankFolderColumns.filter(col => selectedApprovedBankFolderColumnKeys.includes(col.key)),
-        [ApprovedBankFolderColumns, selectedApprovedBankFolderColumnKeys]
-    );
     //#endregion
 
     // RESET FORM DATA
@@ -464,7 +416,7 @@ export const ApprovedBankFolder: React.FC = () => {
         setErrors({})
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const payload = PushApprovedBankFolderFormData();
@@ -523,7 +475,7 @@ export const ApprovedBankFolder: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 const params: DeleteApprovedBankFolderRequest = {
 
@@ -556,7 +508,7 @@ export const ApprovedBankFolder: React.FC = () => {
                         totalRecords: newTotalRecords,
                         totalPages: newTotalPages
                     });
-                    await loadApprovedBankFolder(pageToShow, filters, sortInfo);
+                    await loadApprovedBankFolder(pageToShow, sortInfo);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
                     setIsConfirmationDialogBoxOpen(false);
@@ -581,7 +533,7 @@ export const ApprovedBankFolder: React.FC = () => {
 
             {/* LOADER */}
 
-            <Loader loading={isLoading} title={isLoadingMessage} > <div></div> </Loader>
+            <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
             {/* ACTION TOOLBAR */}
 
@@ -605,7 +557,7 @@ export const ApprovedBankFolder: React.FC = () => {
 
             <DataTable
                 data={ApprovedBankFolderForTable}
-                columns={visibleApprovedBankFolderColumns}
+                columns={ApprovedBankFolderColumns}
                 pagination={ApprovedBankFolderPaginationInfo}
                 emptyMessage="No Approved Bank Found"
                 fixedHeight

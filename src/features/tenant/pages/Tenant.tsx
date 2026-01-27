@@ -478,24 +478,6 @@ export const Tenant: React.FC = () => {
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  handleConfirmationDialogBoxOpen(row)
-                }}
-                color='transparent'
-                isborderRadius
-                size='sm'
-                style={{
-                  color: 'red',
-                  padding: '4px 8px'
-                }}
-                title="Delete Tenant"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-
-              <Button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
                   handleViewTenantDocument(row)
                 }}
                 color='transparent'
@@ -508,6 +490,24 @@ export const Tenant: React.FC = () => {
                 title="Tenant Document"
               >
                 <FileText className="h-4 w-4" />
+              </Button>
+
+               <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Tenant"
+              >
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           ) : null

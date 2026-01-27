@@ -27,8 +27,10 @@ interface MultiFilePickerProps {
   onChange: (files: FileValue[]) => void;
   placeholder?: string;
   error?: string;
+  size?: 'sm' | 'md' | 'lg';
   onRemoveExisting?: (url: string) => void;
 }
+
 
 /* ================= Helpers ================= */
 
@@ -75,9 +77,33 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
   onChange,
   placeholder = "Select file(s)...",
   error,
-  onRemoveExisting   
+  size = 'md',
+  onRemoveExisting
 }) => {
   const theme = THEME;
+
+  const sizeConfig = {
+    sm: {
+      height: '36px',
+      padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+      fontSize: theme.fontSize.sm,
+      iconSize: '16px',
+    },
+    md: {
+      height: '44px',
+      padding: `${theme.spacing.md} ${theme.spacing.lg}`,
+      fontSize: theme.fontSize.md,
+      iconSize: '20px',
+    },
+    lg: {
+      height: '52px',
+      padding: `${theme.spacing.lg} ${theme.spacing.xl}`,
+      fontSize: theme.fontSize.lg,
+      iconSize: '24px',
+    },
+  }
+
+  const currentSize = sizeConfig[size]
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -239,13 +265,19 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
       {/* input area */}
       <div
         style={{
-          border: "1px solid #ccc",
-          borderRadius: 6,
-          padding: "8px 12px",
+          height: currentSize.height,
+          border: `0.5px solid ${error ? theme.colors.error : theme.colors.border}`,
+          borderRadius: theme.borderRadius.lg,
+          padding: currentSize.padding,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           backgroundColor: theme.colors.backgroundSecondary,
+          fontSize: currentSize.fontSize,
+          fontWeight: theme.fontWeight.normal,
+          outline: 'none',
+          transition: theme.transitions.normal,
+          boxSizing: 'border-box' as const,
         }}
       >
         <span
@@ -329,7 +361,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
                   <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
                     {getFileLabel(item)}
                   </span>
-                  <MultiImageViewer title={label}  images={[getUrl(item)]} isIcon={false} triggerLabel={<Eye size={18} />} />
+                  <MultiImageViewer title={label} images={[getUrl(item)]} isIcon={false} triggerLabel={<Eye size={18} />} />
                   <Trash2 size={18} color="red" onClick={() => onChange(value.filter((_, x) => x !== i))} />
                 </div>
               ))}

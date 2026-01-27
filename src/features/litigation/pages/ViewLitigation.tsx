@@ -4,7 +4,7 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button } from "@/ui/components/forms";
@@ -25,6 +25,7 @@ import { litigationService } from "../services/LitigationServices";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { TextArea } from "@/ui/components/forms/Textarea";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 
 const ViewLitigation: React.FC = () => {
@@ -378,6 +379,11 @@ const ViewLitigation: React.FC = () => {
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
     };
+
+    const handleDeleteDialogClose = useCallback(() => {
+        setIsDeleteHearingDialogOpen(false);
+        setSelectedHearingItem(null);
+    }, []);
 
     //#region FETCH HEARING DETAILS
     const fetchHearingDetails = async () => {
@@ -780,7 +786,7 @@ const ViewLitigation: React.FC = () => {
                                                             />
                                                         )}
                                                     </div>
-                                                    
+
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                         <FieldItem
                                                             label="Closure Date"
@@ -1043,20 +1049,14 @@ const ViewLitigation: React.FC = () => {
 
                 {/*Delete Hearing Confirmation Dialog Box*/}
 
-                <ConfirmationDialogBox
+                <DeleteDialog
                     isOpen={isDeleteHearingDialogOpen}
-                    onClose={() => {
-                        setIsDeleteHearingDialogOpen(false);
-                        setSelectedHearingItem(null);
-                    }}
+                    onClose={handleDeleteDialogClose}
                     onConfirm={handleConfirmDeleteHearing}
-                    title="Delete Hearing Details"
-                    message={`Are you sure you want to delete this Hearing This action cannot be undone.`}
-                    confirmText="Delete"
-                    cancelText="Cancel"
                     loading={isLoading}
-                    variant="danger"
+                    pageName="Litigation Hearing"
                 />
+
             </div>
         </div>
     );

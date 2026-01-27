@@ -436,23 +436,7 @@ export const Building: React.FC = () => {
         render: (_value, row) => (
           canAction ? (
             <div className="flex items-center justify-center gap-2">
-              <Button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleConfirmationDialogBoxOpen(row)
-                }}
-                color='transparent'
-                isborderRadius
-                size='sm'
-                style={{
-                  color: 'red',
-                  padding: '4px 8px'
-                }}
-                title="Delete Vendor"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+
 
               <Button
                 onClick={(e) => {
@@ -488,6 +472,24 @@ export const Building: React.FC = () => {
                 title="Building Document"
               >
                 <FileText className="h-4 w-4" />
+              </Button>
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Building"
+              >
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           ) : null
@@ -583,7 +585,7 @@ export const Building: React.FC = () => {
             totalPages: newTotalPages
           });
 
-          await loadBuildings(pageToShow, filters,sortInfo);
+          await loadBuildings(pageToShow, filters, sortInfo);
 
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 

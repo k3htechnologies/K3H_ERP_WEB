@@ -80,7 +80,7 @@ export const AddUpdateLitigation: React.FC = () => {
         if (!isAddMode) {
             fetchLitigationDetails();
         }
-        
+
     }, [litigationId]);
     //#endregion
 
@@ -227,7 +227,7 @@ export const AddUpdateLitigation: React.FC = () => {
     //#endregion
 
     //#region HANDLE  ADD UPDATE
-    
+
     const handleAddUpdateLitigation = async () => {
         setErrors({});
 
@@ -288,7 +288,7 @@ export const AddUpdateLitigation: React.FC = () => {
     };
     //#endregion
 
-    //endregion
+    //#region
     return (
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -306,7 +306,7 @@ export const AddUpdateLitigation: React.FC = () => {
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Case Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-                            
+
                             <div>
                                 <Input
                                     type="text"

@@ -122,6 +122,7 @@ import ApprovedBankFile from '@/features/approvedBank/pages/ApprovedBankFile';
 import MarketingContentFolder from '@/features/marketingcontent/pages/MarketingContentFolder';
 import { MarketingContent } from '@/features/marketingcontent/pages/MarketingContent';
 
+import Parking from '@/features/parking/pages/Parking';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -274,6 +275,7 @@ function App() {
             {/* INVENTORY */}
             <Route path="inventory" element={<Inventory></Inventory>} />
             <Route path="inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
+            <Route path="parking" element={<Parking></Parking>} />
 
             {/* DOCUMENT */}
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />

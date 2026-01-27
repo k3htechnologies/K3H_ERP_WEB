@@ -18,8 +18,9 @@ import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable
 import { Edit, Trash2 } from 'lucide-react';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { TextArea } from "@/ui/components/forms/Textarea";
-import { COMMERCIAL_FLAT_CONFIGURATION, FLAT_UNIT_FACING, FLAT_UNIT_TYPE, INVENTORY_FLAT_STATUS, RESIDENTIAL_FLAT_CONFIGURATION } from '@/core/constants';
+import { COMMERCIAL_FLAT_CONFIGURATION, FLAT_UNIT_FACING, FLAT_UNIT_TYPE, INVENTORY_FLAT_STATUS, RESIDENTIAL_FLAT_CONFIGURATION, UNIT_LAYOUT } from '@/core/constants';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { filterNumbersWithDecimal } from '@/core/utils/fileValidation';
 
 interface FormDataInventoryFlat {
   InventoryFlatId: number;
@@ -96,6 +97,10 @@ const InventorySpecification: React.FC = () => {
       setInventoryFlatData(flatData);
       setFormDataInventoryFlat(initialFormStateInventoryFlat(flatData));
       setSpecifications(flatData.InventoryFlatSpecificationData || []);
+    } else {
+      // If no flatData, initialize with empty form for new flat
+      setFormDataInventoryFlat(initialFormStateInventoryFlat());
+      setSpecifications([]);
     }
   }, [flatData, projectId]);
 
@@ -127,8 +132,12 @@ const InventorySpecification: React.FC = () => {
       newErrors.FlatType = 'Unit Type is required'
     }
 
+    if ((formDataInventoryFlat.FlatType?.trim().toUpperCase() === "RESIDENTIAL" || formDataInventoryFlat.FlatType?.trim().toUpperCase() === "COMMERCIAL") && !formDataInventoryFlat.FlatConfiguration?.trim()) {
+      newErrors.FlatConfiguration = 'Unit Configuration is required'
+    }
+
     if (!formDataInventoryFlat.FlatFacing) {
-      newErrors.FlatFacing = 'Facing is required'
+      newErrors.Facing = 'Facing is required'
     }
 
     if (!formDataInventoryFlat.FlatStatus) {
@@ -149,6 +158,10 @@ const InventorySpecification: React.FC = () => {
 
     if (!formDataInventoryFlatSpecification.FlatLayout?.trim()) {
       newErrors.FlatLayout = 'Unit Layout is required'
+    }
+
+    if (!formDataInventoryFlatSpecification.FlatLayoutAreaSqFt) {
+      newErrors.FlatLayoutAreaSqFt = 'Area (Sq.Ft) is required'
     }
 
     return {
@@ -242,13 +255,11 @@ const InventorySpecification: React.FC = () => {
 
   const handleSave = async () => {
 
-    if (!projectId || !flatData) {
-
-      addToast({ type: 'error', title: 'Missing project or flat data' });
-
-      return;
-
-    }
+    const flatContext = flatData || {
+      InventoryBuildingId: formDataInventoryFlat.InventoryBuildingId,
+      InventoryFlatFloorBasementPodiumWingId: formDataInventoryFlat.InventoryFlatFloorBasementPodiumWingId,
+      InventoryFloorId: formDataInventoryFlat.InventoryFloorId,
+    };
 
     setErrorsInventoryFlat({});
 
@@ -279,9 +290,9 @@ const InventorySpecification: React.FC = () => {
 
           const params: AddInventoryFlatRequest = {
             ProjectId: projectId,
-            InventoryBuildingId: flatData.InventoryBuildingId,
-            InventoryFlatFloorBasementPodiumWingId: flatData.InventoryFlatFloorBasementPodiumWingId,
-            InventoryFloorId: flatData.InventoryFloorId,
+            InventoryBuildingId: flatContext.InventoryBuildingId,
+            InventoryFlatFloorBasementPodiumWingId: flatContext.InventoryFlatFloorBasementPodiumWingId,
+            InventoryFloorId: flatContext.InventoryFloorId,
             Flat: formDataInventoryFlat.Flat.replace(/^[A-Za-z\s]+-\s*/, ''),
             FlatType: formDataInventoryFlat.FlatType,
             RERACarpetAreaSqFt: totalUnitArea ?? 0,
@@ -295,32 +306,29 @@ const InventorySpecification: React.FC = () => {
 
           if (E.isRight(response)) {
 
-            if (response.right.ErrorMessage && response.right.ErrorMessage.length > 0) {
 
-              addToast({ type: 'error', title: response.right.ErrorMessage[0] });
+            const newRecord = response.right.Data?.[0] as InventoryFlatData;
 
-            } else {
+            if (newRecord) {
+              setInventoryFlatData(newRecord);
+              setFormDataInventoryFlat({
+                ...formDataInventoryFlat,
+                InventoryFlatId: newRecord.InventoryFlatId || 0,
+                Uniquekey: newRecord.Uniquekey || formDataInventoryFlat.Uniquekey
+              });
 
-              const newRecord = response.right.Data?.[0] as InventoryFlatData;
-
-              if (newRecord) {
-
-                setInventoryFlatData(newRecord);
-
-                setFormDataInventoryFlat({
-                  ...formDataInventoryFlat,
-                  InventoryFlatId: newRecord.InventoryFlatId || 0,
-                  Uniquekey: newRecord.Uniquekey || formDataInventoryFlat.Uniquekey
-                });
-
-                if (newRecord.InventoryFlatSpecificationData) {
-                  setSpecifications(newRecord.InventoryFlatSpecificationData);
-                }
+              if (newRecord.InventoryFlatSpecificationData) {
+                setSpecifications(newRecord.InventoryFlatSpecificationData);
               }
-
-              addToast({ type: 'success', title: response.right.SuccessMessage?.[0] || 'Flat added successfully' });
             }
+
+            addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+
+
+            navigate('/inventory');
+
           } else {
+
             addToast({ type: 'error', title: response.left.message });
           }
 
@@ -330,8 +338,8 @@ const InventorySpecification: React.FC = () => {
           const params: UpdateInventoryFlatRequest = {
 
             ProjectId: projectId,
-            InventoryBuildingId: flatData.InventoryBuildingId,
-            InventoryFlatFloorBasementPodiumWingId: flatData.InventoryFlatFloorBasementPodiumWingId,
+            InventoryBuildingId: flatContext.InventoryBuildingId,
+            InventoryFlatFloorBasementPodiumWingId: flatContext.InventoryFlatFloorBasementPodiumWingId,
             InventoryFlatId: formDataInventoryFlat.InventoryFlatId,
             Flat: formDataInventoryFlat.Flat.replace(/^[A-Za-z\s]+-\s*/, ''),
             FlatType: formDataInventoryFlat.FlatType,
@@ -346,31 +354,23 @@ const InventorySpecification: React.FC = () => {
 
           if (E.isRight(response)) {
 
-            if (response.right.ErrorMessage && response.right.ErrorMessage.length > 0) {
+            const updatedRecord = response.right.Data?.[0] as InventoryFlatData;
 
-              addToast({ type: 'error', title: response.right.ErrorMessage[0] });
+            if (updatedRecord) {
 
-              navigate(-1);
+              setInventoryFlatData(updatedRecord);
 
-            } else {
+              if (updatedRecord.InventoryFlatSpecificationData) {
 
-              const updatedRecord = response.right.Data?.[0] as InventoryFlatData;
+                setSpecifications(updatedRecord.InventoryFlatSpecificationData);
 
-              if (updatedRecord) {
-
-                setInventoryFlatData(updatedRecord);
-
-                if (updatedRecord.InventoryFlatSpecificationData) {
-
-                  setSpecifications(updatedRecord.InventoryFlatSpecificationData);
-
-                }
               }
-
-              addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
-
-              navigate(-1);
             }
+
+            addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+
+            navigate(-1);
+
 
           } else {
 
@@ -402,24 +402,24 @@ const InventorySpecification: React.FC = () => {
       },
       {
         key: 'FlatLayoutAreaSqFt',
-        label: 'Area [sq. ft]',
+        label: 'Area (Sq.Ft)',
         sortable: false,
         align: 'right',
-        render: (value: number) => value?.toFixed(2) || '0.00',
+        render: (value) => value || '0',
       },
       {
         key: 'FlatLayoutLengthSqFt',
-        label: 'Length [sq. ft]',
+        label: 'Length (Sq.Ft)',
         sortable: false,
         align: 'right',
-        render: (value: number) => value?.toFixed(2) || '0.00',
+        render: (value) => value || '0',
       },
       {
         key: 'FlatLayoutWidthSqFt',
-        label: 'Width [sq. ft]',
+        label: 'Width (Sq.Ft)',
         sortable: false,
         align: 'right',
-        render: (value: number) => value?.toFixed(2) || '0.00',
+        render: (value) => value || '0',
       },
       {
         key: 'Note',
@@ -539,6 +539,7 @@ const InventorySpecification: React.FC = () => {
                     onChange={(e) => handleFieldChangeInventoryFlat('FlatConfiguration', String(e))}
                     options={RESIDENTIAL_FLAT_CONFIGURATION.map((opt) => ({ label: opt.name, value: opt.id }))}
                     disabled={disabled}
+                    error={errorsInventoryFlat.FlatConfiguration}
                   />
                 </div>
                 : ""}
@@ -552,6 +553,7 @@ const InventorySpecification: React.FC = () => {
                     onChange={(e) => handleFieldChangeInventoryFlat('FlatConfiguration', String(e))}
                     options={COMMERCIAL_FLAT_CONFIGURATION.map((opt) => ({ label: opt.name, value: opt.id }))}
                     disabled={disabled}
+                    error={errorsInventoryFlat.FlatConfiguration}
                   />
                 </div>
                 : ""}
@@ -564,6 +566,7 @@ const InventorySpecification: React.FC = () => {
                 placeholder="Select Facing"
                 error={errorsInventoryFlat.Facing}
                 disabled={disabled}
+                required
               />
 
               <SinglePageSelection
@@ -653,15 +656,15 @@ const InventorySpecification: React.FC = () => {
 
             <div>
 
-              <Input
-                label="Unit Layout"
-                value={formDataInventoryFlatSpecification.FlatLayout}
-                onChange={(e) => handleFieldChangeInventoryFlatSpecification('FlatLayout', e.target.value)}
+              <SinglePageSelection
+                label="Layout"
                 required
-                placeholder="Enter Unit Layout"
+                value={formDataInventoryFlatSpecification.FlatLayout ?? ""}
+                onChange={(e) => handleFieldChangeInventoryFlatSpecification('FlatLayout', String(e))}
+                options={UNIT_LAYOUT.map((opt) => ({ label: opt.name, value: opt.id }))}
+                disabled={disabled}
                 error={errorsInventoryFlatSpecification.FlatLayout}
               />
-
             </div>
 
             <div>
@@ -669,8 +672,9 @@ const InventorySpecification: React.FC = () => {
                 label="Area (Sq.Ft)"
                 required
                 value={formDataInventoryFlatSpecification.FlatLayoutAreaSqFt?.toString() || ''}
-                onChange={(e) => handleFieldChangeInventoryFlatSpecification('FlatLayoutAreaSqFt', e.target.value === '' ? null : Number(e.target.value))}
+                onChange={e => handleFieldChangeInventoryFlatSpecification('FlatLayoutAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                 placeholder="Enter Area (Sq.Ft)"
+                error={errorsInventoryFlatSpecification.FlatLayoutAreaSqFt}
               />
             </div>
 
@@ -678,7 +682,7 @@ const InventorySpecification: React.FC = () => {
               <Input
                 label="Length (Sq.Ft)"
                 value={formDataInventoryFlatSpecification.FlatLayoutLengthSqFt?.toString() || ''}
-                onChange={(e) => handleFieldChangeInventoryFlatSpecification('FlatLayoutLengthSqFt', e.target.value === '' ? null : Number(e.target.value))}
+                onChange={e => handleFieldChangeInventoryFlatSpecification('FlatLayoutLengthSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                 placeholder="Enter Length (Sq.Ft)"
               />
             </div>
@@ -687,7 +691,7 @@ const InventorySpecification: React.FC = () => {
               <Input
                 label="Width (Sq.Ft)"
                 value={formDataInventoryFlatSpecification.FlatLayoutWidthSqFt?.toString() || ''}
-                onChange={(e) => handleFieldChangeInventoryFlatSpecification('FlatLayoutWidthSqFt', e.target.value === '' ? null : Number(e.target.value))}
+                onChange={e => handleFieldChangeInventoryFlatSpecification('FlatLayoutWidthSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                 placeholder="Enter Width (Sq.Ft)"
               />
             </div>
@@ -705,7 +709,7 @@ const InventorySpecification: React.FC = () => {
       </Modal>
 
       {/* Delete Confirmation Dialog */}
-      
+
       <DeleteDialog
         isOpen={isDeleteConfirmationOpen}
         onClose={() => {

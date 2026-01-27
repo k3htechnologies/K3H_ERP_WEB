@@ -11,6 +11,12 @@ interface InventoryHeaderProps {
     onDownloadSampleExcel: () => void;
     canExport: boolean;
     exportLoading: boolean;
+    onAddBuilding?: () => void;
+    onAddWing?: () => void;
+    onAddFloor?: () => void;
+    searchTerm?: string;
+    onSearchChange?: (value: string) => void;
+    onClearSearch?: () => void;
 }
 
 const inventoryTabList = [
@@ -27,6 +33,12 @@ export const InventoryHeader = ({
     onDownloadSampleExcel,
     canExport,
     exportLoading,
+    onAddBuilding,
+    onAddWing,
+    onAddFloor,
+    searchTerm = '',
+    onSearchChange,
+    onClearSearch,
 }: InventoryHeaderProps) => {
     return (
         <div className="flex flex-col w-full h-[150px]  rounded-tr-[15px] rounded-tl-[15px]   border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
@@ -42,6 +54,9 @@ export const InventoryHeader = ({
             <TableActionToolbar
                 isShowSearchBar={true}
                 searchPlaceholder="Search By Unit Number"
+                searchTerm={searchTerm}
+                onSearchChange={onSearchChange}
+                onClearSearch={onClearSearch}
                 isShowAddButton
                 onAdd={() => {}}
                 showMoreAddOptions={
@@ -50,6 +65,7 @@ export const InventoryHeader = ({
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                onAddBuilding?.();
                             }}
                             disabled={false}
                             color="transparent"
@@ -57,6 +73,7 @@ export const InventoryHeader = ({
                             isborderRadius
                             size="sm"
                             title="Add Building"
+                            style={{ justifyContent: "left" }}
                         >
                             Add Building
                         </Button>
@@ -64,6 +81,7 @@ export const InventoryHeader = ({
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                onAddWing?.();
                             }}
                             disabled={false}
                             color="transparent"
@@ -71,6 +89,7 @@ export const InventoryHeader = ({
                             isborderRadius
                             size="sm"
                             title="Add Wing"
+                            style={{ justifyContent: "left" }}
                         >
                             Add Wing
                         </Button>
@@ -78,6 +97,7 @@ export const InventoryHeader = ({
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                onAddFloor?.();
                             }}
                             disabled={false}
                             color="transparent"
@@ -85,6 +105,7 @@ export const InventoryHeader = ({
                             isborderRadius
                             size="sm"
                             title="Add Floor"
+                            style={{ justifyContent: "left" }}
                         >
                             Add Floor
                         </Button>

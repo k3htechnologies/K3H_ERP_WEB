@@ -9,7 +9,6 @@ import type {
     FilterWithPaginationLitigationRequest,
     LitigationData,
 } from '@/features/litigation/models/LitigationModel';
-
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -24,19 +23,20 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { updateFilter } from '@/core/utils/filterHelper';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { FileText, Trash2 } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
-import { litigationService } from '../services/LitigationServices';
+import { litigationService } from '@/features/litigation/services/LitigationServices';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { getLitigationStatuscolor } from './Status';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const Litigation: React.FC = () => {
 
     //#region STATE MANAGEMENT
     const [litigationList, setLitigationList] = useState<LitigationData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setIsLoadingMessage] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
 
     // USE NAVIGATE
     const navigate = useNavigate();
@@ -55,7 +55,6 @@ export const Litigation: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const debouncedSearch = useDebouncedCallback((value: string) => {
-
         searchLitigation(value)
     }, 350);
 
@@ -117,31 +116,21 @@ export const Litigation: React.FC = () => {
     //#endregion
 
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
-    const fetchLitigationList = async (page: number = pagination.currentPage) => {
-        return await loadLitigation(page, filters);
+    const fetchLitigationList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+        return await loadLitigation(page, filters, sort ?? sortInfo);
     }
 
-    const loadLitigation = async (page: number, filterParams: FilterInfo) => {
+    const loadLitigation = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
         await runApiWithLoader(
-
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
-                let sortByParam = undefined;
-
-                if (sortInfo) {
-
-                    const column = LitigationColumns.find(col => col.key === sortInfo.column);
-                    if (column) {
-                        sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-                    }
-                }
                 const params: FilterWithPaginationLitigationRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     LitigationId: filterParams.LitigationId ? Number(filterParams.LitigationId) : undefined,
-                    Title: filterParams.Title?.trim() || undefined,
-                    SortBy: sortByParam,
+                    Title: searchtext ?? filterParams.Title ?? undefined,
+                    SortBy: getSortByParam(sortInfo ?? null, LitigationColumns),
                     ProjectId: Number(projectId),
                 };
 
@@ -168,7 +157,7 @@ export const Litigation: React.FC = () => {
     };
     //#endregion
 
-    //#region SEARCH & CLEAR
+    //#region SEARCH LITIGATION
     const searchLitigation = async (searchValue: string) => {
 
         setSearchTerm(searchValue);
@@ -179,12 +168,8 @@ export const Litigation: React.FC = () => {
             return
         }
 
-        const filterParams: FilterInfo = {
-            Title: searchValue.trim(),
-        };
-        await loadLitigation(1, filterParams);
+        await loadLitigation(1, filters, sortInfo, searchValue);
     };
-
     //#endregion
 
     //#region CLEAR LITIGATION  
@@ -195,15 +180,7 @@ export const Litigation: React.FC = () => {
         setFilters({});
         setTempFilters({});
         setPagination({ currentPage: 1 });
-        loadLitigation(1, {});
-        try {
-
-            navigate(location.pathname, {
-                replace: true,
-                state: {}
-            });
-        } catch {
-        }
+        loadLitigation(1, { Title: '' }, sortInfo, undefined);
     };
     //#endregion
 
@@ -211,23 +188,14 @@ export const Litigation: React.FC = () => {
     const handleExportLitigation = useCallback(async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
-
-                let sortByParam: string | undefined;
-
-                if (sortInfo) {
-                    const column = LitigationColumns.find(col => col.key === sortInfo.column);
-                    if (column) {
-                        sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-                    }
-                }
                 const params: FilterWithPaginationLitigationRequest = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     Title: filters.Title?.trim() || undefined,
                     ProjectId: Number(projectId),
-                    SortBy: sortByParam,
+                    SortBy: getSortByParam(sortInfo ?? null, LitigationColumns),
                     ExportType: exportType
                 };
 
@@ -254,7 +222,7 @@ export const Litigation: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
 
             async () => {
                 return null;
@@ -271,7 +239,7 @@ export const Litigation: React.FC = () => {
     const downloadExcelSampleLitigation = async () => {
         await runApiWithLoader(
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
                 // Find the column label for sorting
                 const params: FilterPullExcelSample = {
@@ -340,16 +308,8 @@ export const Litigation: React.FC = () => {
 
     //#region NAVIGATE TO ADD LITIGATION
     const handleAddLitigationModal = useCallback(() => {
-        navigate('/litigation/add', {
-            state: {
-                fromList: true,
-                listState: {
-                    page: pagination.currentPage,
-                    filters, sortInfo,
-                    searchTerm
-                }
-            }
-        });
+        navigate('/litigation/add');
+
     }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
     //#endregion
 
@@ -366,6 +326,12 @@ export const Litigation: React.FC = () => {
     }, [])
     //#endregion
 
+    const handleDeleteDialogClose = useCallback(() => {
+        setIsConfirmationDialogBoxOpen(false);
+        setDeleteLitigationDetailsData(null);
+    }, [setIsConfirmationDialogBoxOpen, setDeleteLitigationDetailsData]);
+    //#endregion
+
     //#region TABLE COLUMNS
     const LitigationColumns = useMemo<TableColumn[]>(() => [
 
@@ -378,7 +344,7 @@ export const Litigation: React.FC = () => {
             align: 'left',
             render: (value, row) => (
                 <TooltipText
-                    text={value || 'N/A'}
+                    text={value || '-'}
                     maxWidth="250px"
                     tooltipThreshold={25}
                     onClick={() => handleNavigateToView(row)}
@@ -458,7 +424,7 @@ export const Litigation: React.FC = () => {
             align: 'center',
             render: (value) => (
                 <TooltipText
-                    text={value || 'N/A'}
+                    text={value || '-'}
                     maxWidth="170px"
                     tooltipThreshold={15}
                 />
@@ -472,7 +438,7 @@ export const Litigation: React.FC = () => {
             align: 'center',
             render: (value) => (
                 <TooltipText
-                    text={value || 'N/A'}
+                    text={value || '-'}
                     maxWidth="170px"
                     tooltipThreshold={15}
                 />
@@ -494,7 +460,7 @@ export const Litigation: React.FC = () => {
             align: 'center',
             render: (value) => (
                 <TooltipText
-                    text={value || 'N/A'}
+                    text={value || '-'}
                     maxWidth="170px"
                     tooltipThreshold={15}
                 />
@@ -508,7 +474,7 @@ export const Litigation: React.FC = () => {
             align: 'center',
             render: (value) => (
                 <TooltipText
-                    text={value || 'N/A'}
+                    text={value || '-'}
                     maxWidth="170px"
                     tooltipThreshold={15}
                 />
@@ -522,7 +488,7 @@ export const Litigation: React.FC = () => {
             align: 'center',
             render: (value) => (
                 <TooltipText
-                    text={value || 'N/A'}
+                    text={value || '-'}
                     maxWidth="170px"
                     tooltipThreshold={15}
                 />
@@ -536,7 +502,7 @@ export const Litigation: React.FC = () => {
             align: 'center',
             render: (value) => (
                 <TooltipText
-                    text={value || 'N/A'}
+                    text={value || '-'}
                     maxWidth="170px"
                     tooltipThreshold={15}
                 />
@@ -550,7 +516,7 @@ export const Litigation: React.FC = () => {
             align: 'center',
             render: (value) => (
                 <TooltipText
-                    text={value || 'N/A'}
+                    text={value || '-'}
                     maxWidth="170px"
                     tooltipThreshold={15}
                 />
@@ -564,7 +530,7 @@ export const Litigation: React.FC = () => {
             align: 'center',
             render: (value) => (
                 <TooltipText
-                    text={value || 'N/A'}
+                    text={value || '-'}
                     maxWidth="170px"
                     tooltipThreshold={15}
                 />
@@ -667,7 +633,6 @@ export const Litigation: React.FC = () => {
     //#region FILTER MODAL HELPERS
     const applyFilters = () => {
         setFilters(tempFilters);
-
         loadLitigation(1, tempFilters);
         setShowFilterPopup(false);
     };
@@ -676,12 +641,9 @@ export const Litigation: React.FC = () => {
     //#region CLEAR FILTER
     const clearFilters = () => {
         setTempFilters({});
-
         setFilters({});
-        setPagination({ currentPage: 1 });
         loadLitigation(1, {});
         setShowFilterPopup(false);
-        navigate(location.pathname, { replace: true, state: {} });
     };
     //#endregion
 
@@ -701,7 +663,7 @@ export const Litigation: React.FC = () => {
         await runApiWithLoader(
 
             setIsLoading,
-            setIsLoadingMessage,
+            setLoadingMessage,
             async () => {
 
                 const params: DeleteLitigationRequest = {
@@ -717,28 +679,44 @@ export const Litigation: React.FC = () => {
 
                 if (E.isRight(response)) {
 
-                    setLitigationList(prevData => prevData.filter(item => item.LitigationId !== deleteLitigationDetailsData.LitigationId));
+                    const newTotalRecords = pagination.totalRecords - 1;
+
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    }
+
+                    else if (litigationList.length === 1 && pagination.currentPage > 1) {
+                        pageToShow = pagination.currentPage - 1;
+                    }
                     setPagination({
-
-                        currentPage: pagination.currentPage,
-                        totalRecords: pagination.totalRecords - 1,
-                        totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
-
+                        currentPage: pageToShow,
+                        totalRecords: newTotalRecords,
+                        totalPages: newTotalPages
                     });
+                    await loadLitigation(pageToShow, filters, sortInfo);
+
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
                     setIsConfirmationDialogBoxOpen(false);
+
                     setDeleteLitigationDetailsData(null);
 
                 } else {
 
                     addToast({ type: 'error', title: response.left.message });
+
                     setIsConfirmationDialogBoxOpen(false);
                 }
                 return response;
             },
             undefined,
-            (error: any) => addToast({ type: "error", title: error.message }),
+            (error: any) => {
+                addToast({ type: "error", title: error.message })
+            },
             undefined,
             "Deleting Litigation"
         );
@@ -852,17 +830,13 @@ export const Litigation: React.FC = () => {
                 </div>
             </Modal>
 
-            {/* DELETE CONFIRMATION  LITIGATION MODAL */}
-            <ConfirmationDialogBox
+            {/* DELETE CONFIRMATION LITIGATION MODAL */}
+            <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
-                onClose={() => setIsConfirmationDialogBoxOpen(false)}
+                onClose={handleDeleteDialogClose}
                 onConfirm={handleDeleteLitigation}
-                title="You are about to delete this Litigation?"
-                message="Deleting this Litigation will permanently remove its data."
-                confirmText="Delete"
-                cancelText="Cancel"
                 loading={isLoading}
-                variant="danger"
+                pageName='Litigation'
             />
         </div>
     );

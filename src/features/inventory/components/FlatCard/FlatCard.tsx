@@ -30,7 +30,7 @@ export const FlatCard = ({ flat, projectId, onDelete }: FlatCardProps) => {
     };
 
     const handleEdit = () => {
-        navigate('/inventorySpecification', {
+        navigate('/inventory/inventorySpecification', {
             state: {
                 "flat": flat,
                 "projectId": projectId,

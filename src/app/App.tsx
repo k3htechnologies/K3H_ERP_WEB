@@ -274,7 +274,7 @@ function App() {
 
             {/* INVENTORY */}
             <Route path="inventory" element={<Inventory></Inventory>} />
-            <Route path="inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
+            <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="parking" element={<Parking></Parking>} />
 
             {/* DOCUMENT */}

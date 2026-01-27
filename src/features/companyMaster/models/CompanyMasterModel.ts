@@ -7,6 +7,13 @@ export interface FilterWithPaginationCompanyMasterRequest {
     CompanyId?: number
     CompanyName?: string
     CompanyType?: string
+    ContactPerson?: string
+    MobileNumber?: string
+    CityName?: string
+    GSTNumber?: string
+    CINNumber?: string
+    PANNumber?: string
+    RERANumber?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

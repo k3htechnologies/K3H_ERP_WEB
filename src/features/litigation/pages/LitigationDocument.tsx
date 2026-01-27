@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
-import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
@@ -13,7 +13,6 @@ import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
-import { updateFilter } from '@/core/utils/filterHelper';
 import { useNavigate } from 'react-router-dom';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
@@ -22,8 +21,8 @@ import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
-import type { AddUpdateLitigationDocumentRequest, DeleteLitigationDocumentRequest, FilterWithPaginationLitigationDocumentRequest, LitigationDocumentData } from '../models/LitigationDocumentModel';
-import { litigationDocumentService } from '../services/LitigationDocumentServices';
+import type { AddUpdateLitigationDocumentRequest, DeleteLitigationDocumentRequest, FilterWithPaginationLitigationDocumentRequest, LitigationDocumentData } from '@/features/litigation/models/LitigationDocumentModel';
+import { litigationDocumentService } from '@/features/litigation/services/LitigationDocumentServices';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
@@ -58,11 +57,6 @@ export const LitigationDocument: React.FC = () => {
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchLitigationDocuments(value)
     }, 350)
-
-    //FILTER STATES
-    const [showFilterPopup, setShowFilterPopup] = useState(false);
-    const [filters, setFilters] = useState<FilterInfo>({});
-    const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
     //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -127,7 +121,6 @@ export const LitigationDocument: React.FC = () => {
                 setDocumentURL(editingLitigationDocumentData.DocumentURL || '');
                 setRemovedDocumentURLs([]);
             } else {
-
                 setFormData({
                     ...initialFormState(),
                     ProjectId: Number(projectId)
@@ -142,11 +135,11 @@ export const LitigationDocument: React.FC = () => {
     //#endregion
 
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
-    const fetchLitigationDocumentList = async (page: number = pagination.currentPage) => {
-        return await loadLitigationDocument(page, filters);
+    const fetchLitigationDocumentList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+        return await loadLitigationDocument(page, sort, searchTerm);
     }
 
-    const loadLitigationDocument = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
+    const loadLitigationDocument = async (page: number, sortInfo?: SortInfo, searchtext?: string) => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -155,12 +148,9 @@ export const LitigationDocument: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
-                    LitigationId: filterParams.LitigationId ? Number(filterParams.LitigationId) : undefined,
-                    LitigationDocumentId: filterParams.LitigationDocumentId ? Number(filterParams.LitigationDocumentId) : undefined,
-                    DocumentName: searchtext ?? filterParams.DocumentName ?? undefined,
+                    DocumentName: searchtext?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, LitigationDocumentColumns),
-                }
-
+                };
                 const response = await litigationDocumentService.apiCallPullLitigationDocument(params);
 
                 if (E.isRight(response)) {
@@ -172,7 +162,6 @@ export const LitigationDocument: React.FC = () => {
                         totalRecords: response.right.TotalNumberOfRecord,
                         totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
                     });
-
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -190,43 +179,32 @@ export const LitigationDocument: React.FC = () => {
 
     //#region SERACH LITIGATION DOCUMENT 
     const searchLitigationDocuments = async (searchValue: string) => {
-
         setSearchTerm(searchValue);
-
-        if (searchValue.trim() === '') {
-
-            fetchLitigationDocumentList();
-
-            return
-        }
-        await loadLitigationDocument(1, filters, sortInfo, searchValue)
-
+        await loadLitigationDocument(1, sortInfo, searchValue)
     }
     //#endregion
 
     //#region CLEAR SERACH LITIGATION DOCUMENT 
     const clearsearchLitigationDocuments = () => {
-
         setSearchTerm('');
         debouncedSearch.cancel?.();
-        loadLitigationDocument(1, { DocumentName: '' }, sortInfo, undefined);
+        loadLitigationDocument(1, sortInfo, '');
     }
     //#endregion
 
     //#region EXPORT EXCEL | PDF
-    const handleExportLitigationDocuments = async (exportType: 'Excel' | 'PDF') => {
+    const handleExportLitigationDocument = async (exportType: 'Excel' | 'PDF') => {
 
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const params: FilterWithPaginationLitigationDocumentRequest = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     ProjectId: projectId || undefined,
                     LitigationDocumentId: 1,
-                    DocumentName: filters.DocumentName?.trim() || undefined,
+                    DocumentName: searchTerm?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, LitigationDocumentColumns),
                     ExportType: exportType
                 }
@@ -246,19 +224,18 @@ export const LitigationDocument: React.FC = () => {
         )
     }
 
-    const handleExportLitigationDocumentExcel = () => handleExportLitigationDocuments('Excel')
-    const handleExportLitigationDocumentPdf = () => handleExportLitigationDocuments('PDF')
+    const handleExportLitigationDocumentExcel = () => handleExportLitigationDocument('Excel')
+    const handleExportLitigationDocumentPdf = () => handleExportLitigationDocument('PDF')
     //#endregion
 
     //#region HANDLE PAGE CHNAGE EVENT
-    const handlePageChange = (page: number) => {
-        fetchLitigationDocumentList(page);
-    };
+    const handlePageChange = useCallback((page: number) => {
+        loadLitigationDocument(page, sortInfo, searchTerm);
+    }, [searchTerm, sortInfo]);
     //#endregion
 
     //#region TABLE SORT COLUMN
     const handleSortColumn = (sortInfo: SortInfo) => {
-
         setSortInfo(sortInfo);
         fetchLitigationDocumentList(1);
 
@@ -291,6 +268,11 @@ export const LitigationDocument: React.FC = () => {
 
     }, [])
     //#endregion
+
+    const handleDeleteDialogClose = useCallback(() => {
+        setIsConfirmationDialogBoxOpen(false);
+        setDeleteLitigationDocumentDetailsData(null);
+    }, [setIsConfirmationDialogBoxOpen, setDeleteLitigationDocumentDetailsData]);
 
     //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: LitigationDocumentData) => {
@@ -404,29 +386,6 @@ export const LitigationDocument: React.FC = () => {
     )
     //#endregion
 
-    //#region FILTER MODAL HELPERS
-    const applyFilters = () => {
-        setFilters(tempFilters)
-        loadLitigationDocument(1, tempFilters)
-        setShowFilterPopup(false)
-    }
-    //#endregion
-
-    //#region CLEAR FILTER 
-    const clearFilters = () => {
-        setTempFilters({})
-        setFilters({})
-        loadLitigationDocument(1, {})
-        setShowFilterPopup(false)
-    }
-    //#endregion
-
-    //#region HANDLE FILTER CHNAGE
-    const handleFilterChange = (key: string, value: string) => {
-        setTempFilters(prev => updateFilter(prev, key, value));
-    };
-    //#endregion
-
     //#region ADD UPDATE LITIGATION DOCUMENT
     const handleFieldChange = (field: keyof AddUpdateLitigationDocumentRequest, value: any) => {
 
@@ -513,13 +472,11 @@ export const LitigationDocument: React.FC = () => {
     //#region ADD UPDATE LITIGATION DOCUMENT
     const handleAddUpdateLitigationDocument = async (e: React.FormEvent) => {
         e.preventDefault();
-
         setErrors({})
 
         const validation = validateAddLitigationDocumentForm()
 
         if (!validation.isValid) {
-
             setErrors(validation.errors)
 
             return
@@ -527,7 +484,6 @@ export const LitigationDocument: React.FC = () => {
 
         await runApiWithLoader(
             setIsLoading,
-
             setLoadingMessage,
             async () => {
 
@@ -546,15 +502,12 @@ export const LitigationDocument: React.FC = () => {
                         const newRecord = response.right.Data[0] as LitigationDocumentData
 
                         setLitigationDocumentList(prevData => [newRecord, ...prevData]);
-
                         setPagination({
                             currentPage: pagination.currentPage,
                             totalRecords: pagination.totalRecords + 1,
                             totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
                         });
-
                         addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-
                     } else {
 
                         const updatedRecord = response.right.Data[0] as LitigationDocumentData;
@@ -567,15 +520,12 @@ export const LitigationDocument: React.FC = () => {
                         )
                         addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                     }
-
                     setEditingLitigationDocumentData(null);
                     setDocumentFiles([]);
                     setDocumentURL('');
                     setRemovedDocumentURLs([]);
                 } else {
-
                     addToast({ type: "error", title: response.left?.message });
-
                 }
                 return response;
             },
@@ -587,7 +537,6 @@ export const LitigationDocument: React.FC = () => {
             undefined,
             formData.LitigationDocumentId === null || formData.LitigationDocumentId === 0 ? 'Add Litigation Document' : 'Update Litigation Document'
         )
-
     };
     //#endregion
 
@@ -601,7 +550,6 @@ export const LitigationDocument: React.FC = () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
-
             async () => {
 
                 const params: DeleteLitigationDocumentRequest = {
@@ -610,7 +558,6 @@ export const LitigationDocument: React.FC = () => {
                     LitigationId: deleteLitigationDocumentDetailsData.LitigationId,
                     ProjectId: deleteLitigationDocumentDetailsData.ProjectId
                 }
-
                 const response = await litigationDocumentService.apiCallDeleteLitigationDocument(params);
 
                 if (E.isRight(response)) {
@@ -633,7 +580,7 @@ export const LitigationDocument: React.FC = () => {
                         totalRecords: newTotalRecords,
                         totalPages: newTotalPages
                     });
-                    await loadLitigationDocument(pageToShow, filters, sortInfo);
+                    await loadLitigationDocument(pageToShow, sortInfo);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
@@ -646,7 +593,6 @@ export const LitigationDocument: React.FC = () => {
 
                     setIsConfirmationDialogBoxOpen(false);
                 }
-
                 return response
             },
             undefined,
@@ -686,12 +632,6 @@ export const LitigationDocument: React.FC = () => {
                     debouncedSearch(v)
                 }}
                 onClearSearch={clearsearchLitigationDocuments}
-                isShowFilterButton={false}
-                filters={filters}
-                onOpenFilter={() => {
-                    setTempFilters(filters)
-                    setShowFilterPopup(true)
-                }}
                 isShowCustomizeButton={false}
 
                 // ADD
@@ -728,7 +668,6 @@ export const LitigationDocument: React.FC = () => {
                 pagination={LitigationDocumentPaginationInfo}
                 emptyMessage="No Litigation Documents Data Found"
                 fixedHeight={true}
-                maxHeight="calc(100vh - 255px)"
                 recordsPerPage={20}
                 className="flex-1"
                 sortInfo={sortInfo}
@@ -758,7 +697,6 @@ export const LitigationDocument: React.FC = () => {
                     setDocumentURL('');
                     setRemovedDocumentURLs([]);
                 }}
-
                 title={editingLitigationDocumentData ? 'Update Litigation Document' : 'Add Litigation Document'}
                 onSubmit={handleAddUpdateLitigationDocument}
                 saveText={'Save'}
@@ -768,6 +706,7 @@ export const LitigationDocument: React.FC = () => {
             >
                 <div className="space-y-10 p-6 bg-blue-100">
                     <div className="space-y-4" >
+
                         <div>
                             <Input
                                 label='Document Name'
@@ -803,50 +742,16 @@ export const LitigationDocument: React.FC = () => {
                 </div>
             </Modal>
 
-            {/* FILTER LITIGATION DOCUMENT MODAL */}
-
-            <Modal
-                isOpen={showFilterPopup}
-                onClose={() => setShowFilterPopup(false)}
-                title="Filter - Litigation Document"
-                onSubmit={(e) => {
-                    e.preventDefault()
-                    applyFilters()
-                }}
-
-                saveText="Apply Filter"
-                onCancel={() => clearFilters()}
-                size="small-half"
-            >
-                <div className="space-y-6">
-                    <div className="space-y-4">
-                        <div>
-                            <Input
-                                label='Document Name'
-                                type="text"
-                                value={tempFilters.DocumentName || ''}
-                                onChange={(e) => handleFilterChange('DocumentName', e.target.value)}
-                                placeholder="Enter document name"
-                            />
-                        </div>
-                    </div>
-                </div>
-            </Modal>
-
             {/* DELETE CONFIRMATION LITIGATION DOCUMENT MODAL */}
 
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
-                onClose={() => {
-                    setIsConfirmationDialogBoxOpen(false)
-                    setDeleteLitigationDocumentDetailsData(null)
-                }}
+                onClose={handleDeleteDialogClose}
                 onConfirm={handleDeleteLitigationDocument}
                 loading={isLoading}
-                pageName='document'
+                pageName='Litigation Document'
             />
         </div>
-
     )
 }
 

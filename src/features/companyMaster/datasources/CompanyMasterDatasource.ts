@@ -33,6 +33,14 @@ export class CompanyMasterDatasourceImpl implements CompanyMasterDatasource {
             if (params.CompanyId) queryParams.append('CompanyId', params.CompanyId.toString());
             if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
             if (params.CompanyType?.trim()) queryParams.append('CompanyType', params.CompanyType.trim());
+            if (params.ContactPerson?.trim()) queryParams.append('ContactPerson', params.ContactPerson.trim());
+            if (params.MobileNumber?.trim()) queryParams.append('MobileNumber', params.MobileNumber.trim());
+            if (params.CityName?.trim()) queryParams.append('CityName', params.CityName.trim());
+            if (params.GSTNumber?.trim()) queryParams.append('GSTNumber', params.GSTNumber.trim());
+            if (params.CINNumber?.trim()) queryParams.append('CINNumber', params.CINNumber.trim());
+            if (params.PANNumber?.trim()) queryParams.append('PANNumber', params.PANNumber.trim());
+            if (params.RERANumber?.trim()) queryParams.append('RERANumber', params.RERANumber.trim());
+
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

@@ -35,6 +35,11 @@ export class VendorDatasourceImpl implements VendorDatasource {
             if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
             if (params.CompanyType?.trim()) queryParams.append('CompanyType', params.CompanyType.trim());
             if (params.MobileNumber?.trim()) queryParams.append('MobileNumber', params.MobileNumber.trim());
+            if (params.CityName?.trim()) queryParams.append('CityName', params.CityName.trim());
+            if (params.GSTNumber?.trim()) queryParams.append('GSTNumber', params.GSTNumber.trim());
+            if (params.AadharCardNumber?.trim()) queryParams.append('AadharCardNumber', params.AadharCardNumber.trim());
+            if (params.PanCardNumber?.trim()) queryParams.append('PanCardNumber', params.PanCardNumber.trim());
+
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

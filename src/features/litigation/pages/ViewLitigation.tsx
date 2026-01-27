@@ -21,7 +21,7 @@ import type { AddUpdateLitigationHearingRequest, DeleteLitigationHearingRequest,
 import type { LitigationData, LitigationReopenData, UpdateLitigationReopenRequest } from "@/features/litigation/models/LitigationModel";
 import { litigationClosureService } from "@/features/litigation/services/LitigationClosureServices";
 import { litigationHearingService } from "@/features/litigation/services/LitigationHearingServices";
-import { litigationService } from "../services/LitigationServices";
+import { litigationService } from "@/features/litigation/services/LitigationServices";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { TextArea } from "@/ui/components/forms/Textarea";
@@ -524,7 +524,6 @@ const ViewLitigation: React.FC = () => {
             async () => {
 
                 const params: DeleteLitigationHearingRequest = {
-
                     LitigationHearingId: selectedHearingItem.LitigationHearingId || 0,
                     Uniquekey: selectedHearingItem.Uniquekey || '',
                     LitigationId: editLitigationData.LitigationId,
@@ -541,7 +540,6 @@ const ViewLitigation: React.FC = () => {
                     setSelectedHearingItem(null);
 
                 } else {
-
                     addToast({ type: 'error', title: response.left.message });
                 }
                 return response;
@@ -576,7 +574,6 @@ const ViewLitigation: React.FC = () => {
             setLoadingMessage,
             async () => {
                 const payload: UpdateLitigationReopenRequest = {
-
                     LitigationId: editLitigationData.LitigationId,
                     Uniquekey: editLitigationData.Uniquekey,
                     ProjectId: Number(projectId),

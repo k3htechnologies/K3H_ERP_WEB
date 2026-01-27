@@ -641,7 +641,7 @@ export const MarketingContentFolder: React.FC = () => {
                 onClose={handleDeleteDialogClose}
                 onConfirm={handleDeleteMarketingContentFolder}
                 loading={isLoading}
-                pageName='Content'
+                pageName='Marketing Content Folder'
             />
         </div>
     );

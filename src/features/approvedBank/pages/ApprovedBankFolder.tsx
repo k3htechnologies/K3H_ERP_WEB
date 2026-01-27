@@ -69,10 +69,6 @@ export const ApprovedBankFolder: React.FC = () => {
 
     const [formData, setFormData] = useState<AddUpdateApprovedBankFolderRequest>(() => initialFormState());
 
-    // RESET KEY
-    const [resetKey, setResetKey] = useState(0);
-    //#endregion
-
     const [bankListOptions, setBankListOptions] = useState<
         { label: string; value: string }[]
     >([]);
@@ -147,11 +143,6 @@ export const ApprovedBankFolder: React.FC = () => {
         );
     }, [projectId, pagination.pageSize, addToast])
     //#endregion
-
-    const handleDeleteDialogClose = useCallback(() => {
-        setIsConfirmationDialogBoxOpen(false);
-        setDeleteApprovedBankFolderData(null);
-    }, [setIsConfirmationDialogBoxOpen, setDeleteApprovedBankFolderData]);
 
     //#region INIT
     useEffect(() => {
@@ -380,15 +371,6 @@ export const ApprovedBankFolder: React.FC = () => {
     ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
     //#endregion
 
-    // RESET FORM DATA
-    const handleResetForm = () => {
-        setFormData(initialFormState());
-        setSelectedApprovedBankId([]);
-        setErrors({});
-        setResetKey(prev => prev + 1);
-    };
-    //#endregion
-
     const handleAddApprovedBankFolder = () => {
         setDeleteApprovedBankFolderData(null);
         setSelectedApprovedBankId([]);
@@ -481,7 +463,7 @@ export const ApprovedBankFolder: React.FC = () => {
 
                     ApprovedBankFolderId: deleteApprovedBankFolderData.ApprovedBankFolderId || 0,
 
-                    Uniquekey: deleteApprovedBankFolderData.Uniquekey || "",
+                    Uniquekey: deleteApprovedBankFolderData.Uniquekey || '',
 
                     ProjectId: deleteApprovedBankFolderData.ProjectId || 0
                 };
@@ -587,8 +569,6 @@ export const ApprovedBankFolder: React.FC = () => {
                 title={'Add Bank'}
                 onSubmit={handleAddUpdateApprovedBankFolder}
                 saveText={'Add'}
-                resetText="Reset"
-                onreset={handleResetForm}
                 loading={isLoading}
                 size="small-half"
             >
@@ -628,7 +608,6 @@ export const ApprovedBankFolder: React.FC = () => {
                                         >
                                             <span className="text-sm text-gray-800">{bank.label}</span>
                                             <Checkbox
-                                                key={resetKey}
                                                 type="checkbox"
                                                 checked={checked}
                                                 onChange={() => handleAddBankModal(bank.value)}
@@ -644,12 +623,16 @@ export const ApprovedBankFolder: React.FC = () => {
             </Modal>
 
             {/* DELETE CONFIRMATION MODAL */}
+
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
-                onClose={handleDeleteDialogClose}
+                onClose={() => {
+                    setIsConfirmationDialogBoxOpen(false)
+                    setDeleteApprovedBankFolderData(null)
+                }}
                 onConfirm={handleDeleteApprovedBankFolder}
                 loading={isLoading}
-                pageName='Approved Bank'
+                pageName='Approved Bank Folder'
             />
         </div>
     );

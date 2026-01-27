@@ -60,7 +60,7 @@ export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkin
             BookingCreatedDate: null,
         };
 
-        navigate('/inventorySpecification', {
+        navigate('/inventory/inventorySpecification', {
             state: {
                 flat: newFlatData,
                 projectId: projectId,

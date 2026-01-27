@@ -21,6 +21,7 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 import { COMMERCIAL_FLAT_CONFIGURATION, FLAT_UNIT_FACING, FLAT_UNIT_TYPE, INVENTORY_FLAT_STATUS, RESIDENTIAL_FLAT_CONFIGURATION, UNIT_LAYOUT } from '@/core/constants';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { filterNumbersWithDecimal } from '@/core/utils/fileValidation';
+import Checkbox from '@/ui/components/forms/Checkbox';
 
 interface FormDataInventoryFlat {
   InventoryFlatId: number;
@@ -35,6 +36,7 @@ interface FormDataInventoryFlat {
   FlatStatus: InventoryFlatData['FlatStatus'] | '';
   FlatFacing: string;
   InventoryFlatSpecificationJSON: string;
+  IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt: boolean
 }
 
 interface FormDataInventoryFlatSpecification {
@@ -59,6 +61,7 @@ const initialFormStateInventoryFlat = (flatData?: InventoryFlatData): FormDataIn
   FlatStatus: flatData?.FlatStatus || '',
   FlatFacing: flatData?.FlatFacing || '',
   InventoryFlatSpecificationJSON: '',
+  IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt: false
 });
 
 const initialFormStateInventoryFlatSpecification = (): FormDataInventoryFlatSpecification => ({
@@ -300,6 +303,7 @@ const InventorySpecification: React.FC = () => {
             FlatStatus: formDataInventoryFlat.FlatStatus,
             FlatFacing: formDataInventoryFlat.FlatFacing,
             InventoryFlatSpecificationJSON: specificationsJSON,
+            IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt: formDataInventoryFlat.IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt,
           };
 
           const response = await inventoryService.apiCallAddInventoryFlat(params);
@@ -348,6 +352,7 @@ const InventorySpecification: React.FC = () => {
             FlatStatus: formDataInventoryFlat.FlatStatus,
             FlatFacing: formDataInventoryFlat.FlatFacing,
             InventoryFlatSpecificationJSON: specificationsJSON,
+             IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt: formDataInventoryFlat.IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt,
           };
 
           const response = await inventoryService.apiCallUpdateInventoryFlat(params);
@@ -612,6 +617,17 @@ const InventorySpecification: React.FC = () => {
               fixedHeight={false}
               recordsPerPage={20}
             />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+              {/* Redevelopment Checkbox */}
+              <div className="space-y-4 pb-4">
+                <Checkbox
+                  label="Apply the same flat specifications for all units in the inventory with the same RERA carpet area?"
+                  checked={formDataInventoryFlat.IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt === true}
+                  onChange={(e) => handleFieldChangeInventoryFlat('IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt', e.target.checked ? true : false)}
+                />
+              </div>
+            </div>
           </div>
 
         </div>

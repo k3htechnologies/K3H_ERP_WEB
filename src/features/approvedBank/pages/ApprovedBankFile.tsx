@@ -634,6 +634,7 @@ export const ApprovedBankFile: React.FC = () => {
             </Modal>
 
             {/* DELETE CONFIRMATION MODAL */}
+
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
                 onClose={handleDeleteDialogClose}

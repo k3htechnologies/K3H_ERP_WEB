@@ -7,7 +7,7 @@ import type {
     LeaveCreditConfigurationListResponse,
     LeaveCreditConfigurationSaveResponse,
     LeaveCreditConfigurationDeleteResponse
-} from '@/features/leaveCreditConfiguration/models/leaveCreditConfiguration';
+} from '@/features/leaveCreditConfiguration/models/LeaveCreditConfigurationModel';
 
 import * as E from 'fp-ts/Either';
 
@@ -51,6 +51,7 @@ export const leaveCreditConfigurationService = {
         }
     },
 }
+
 
 
 

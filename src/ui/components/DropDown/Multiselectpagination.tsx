@@ -15,6 +15,8 @@ interface MultiSelectPaginationProps {
   disabled?: boolean;
   hasSubmitted?: boolean;
   style?: React.CSSProperties;
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
   dataFetchCallBack?: (
     pageNumber: number,
     params?: { value?: string }
@@ -30,6 +32,8 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   onChange,
   disabled = false,
   style,
+  size = "md",
+  className = "",
   dataFetchCallBack,
 }) => {
   const theme = THEME;
@@ -39,39 +43,85 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   const [filteredOptions, setFilteredOptions] = useState<DropdownOptions[]>(propOptions || []);
   const [error, setError] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(0);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const isFetchingRef = useRef(false);
+  const pageRef = useRef(1);
+  const SIZE_MAP = {
+    sm: { fontSize: 12, padding: 6, dropdownHeight: 150 },
+    md: { fontSize: 14, padding: 6, dropdownHeight: 200 },
+    lg: { fontSize: 16, padding: 6, dropdownHeight: 250 },
+  };
+
+
+  const currentSize = SIZE_MAP[size as keyof typeof SIZE_MAP] || SIZE_MAP.md;
 
   const hasSelections = selectedValues.length > 0;
 
   const fetchOptions = useCallback(
-    async (term: string) => {
-      if (!dataFetchCallBack) return;
+    async (reset?: boolean, search?: string) => {
+      if (!dataFetchCallBack || isFetchingRef.current) return;
+      isFetchingRef.current = true;
+      setLoading(true);
+
       try {
-        setLoading(true);
-        const result = await dataFetchCallBack(1, { value: term });
+        const currentPage = reset ? 1 : pageRef.current;
+        const searchValue = search ?? searchTerm;
+
+        const result = await dataFetchCallBack(currentPage, { value: searchValue });
         const list = Array.isArray(result?.itemList) ? result.itemList : [];
+        const total = result?.totalNumberOfRecord ?? 0;
 
-        // Merge with propOptions (initialOptions) to ensure selected options are included
-        const mergedOptions: DropdownOptions[] = [...(propOptions || [])];
-        list.forEach((newOpt) => {
-          if (!mergedOptions.some((opt) => String(opt.value) === String(newOpt.value))) {
-            mergedOptions.push(newOpt);
-          }
-        });
+        setTotalRecords(total);
 
-        setOptions(mergedOptions);
-        setFilteredOptions(mergedOptions);
+        if (reset) {
+          // Reset mode: replace options and merge with propOptions
+          const mergedOptions: DropdownOptions[] = [...(propOptions || [])];
+          list.forEach((newOpt) => {
+            if (!mergedOptions.some((opt) => String(opt.value) === String(newOpt.value))) {
+              mergedOptions.push(newOpt);
+            }
+          });
+          setOptions(mergedOptions);
+          setFilteredOptions(mergedOptions);
+          pageRef.current = 2;
+        } else {
+          // Append mode: add new options to existing ones
+          setOptions((prev) => {
+            const merged = [...prev];
+            list.forEach((newOpt) => {
+              if (!merged.some((opt) => String(opt.value) === String(newOpt.value))) {
+                merged.push(newOpt);
+              }
+            });
+            return merged;
+          });
+          setFilteredOptions((prev) => {
+            const merged = [...prev];
+            list.forEach((newOpt) => {
+              if (!merged.some((opt) => String(opt.value) === String(newOpt.value))) {
+                merged.push(newOpt);
+              }
+            });
+            return merged;
+          });
+          pageRef.current = currentPage + 1;
+        }
       } catch (err) {
         console.error("MultiSelectPagination fetch error:", err);
-        // On error, at least keep the initialOptions
-        setOptions(propOptions || []);
-        setFilteredOptions(propOptions || []);
+        // On error, at least keep the existing options
+        if (reset) {
+          setOptions(propOptions || []);
+          setFilteredOptions(propOptions || []);
+        }
       } finally {
         setLoading(false);
+        isFetchingRef.current = false;
       }
     },
-    [dataFetchCallBack, propOptions]
+    [dataFetchCallBack, propOptions, searchTerm]
   );
 
   // Filter options based on search input (local mode)
@@ -92,13 +142,42 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
     setFilteredOptions([]);
   }, [dataFetchCallBack]);
 
-  // Fetch remote options when open or search changes
+  // Initial load when dropdown opens and reset when it closes
   useEffect(() => {
     if (!dataFetchCallBack) return;
     if (isOpen) {
-      fetchOptions(searchTerm);
+      // Reset pagination when opening
+      pageRef.current = 1;
+      fetchOptions(true, searchTerm);
+    } else {
+      // Reset pagination when closing
+      pageRef.current = 1;
     }
-  }, [dataFetchCallBack, fetchOptions, isOpen, searchTerm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataFetchCallBack, isOpen]);
+
+  // Infinite scroll handler
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el || loading || !dataFetchCallBack) return;
+
+    const nearBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 10;
+    if (nearBottom && options.length < totalRecords) {
+      fetchOptions(false);
+    }
+  }, [loading, options.length, totalRecords, fetchOptions, dataFetchCallBack]);
+
+  // Add scroll event listener
+  useEffect(() => {
+    if (!isOpen || !dataFetchCallBack) return;
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener("scroll", handleScroll);
+      return () => {
+        el.removeEventListener("scroll", handleScroll);
+      };
+    }
+  }, [isOpen, handleScroll, dataFetchCallBack]);
 
   // Sync when prop options change (local mode or merge with fetched options)
   useEffect(() => {
@@ -161,6 +240,18 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
+    // Reset pagination and fetch new results when search changes
+    if (dataFetchCallBack && isOpen) {
+      fetchOptions(true, value).then(() => {
+        if (scrollRef.current) {
+          try {
+            scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+          } catch {
+            scrollRef.current.scrollTop = 0;
+          }
+        }
+      });
+    }
   };
 
   // Close the dropdown when clicked outside
@@ -185,6 +276,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   return (
     <div
       ref={dropdownRef}
+      className={className}
       style={{
         width: "100%",
         position: "relative",
@@ -193,11 +285,11 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
       {label && (
         <label
           style={{
+            display: "block",
+            marginBottom: "4px",
             fontSize: theme.fontSize.sm,
             fontWeight: theme.fontWeight.medium,
             color: theme.colors.text,
-            marginBottom: "4px",
-            display: "block",
           }}
         >
           {label}
@@ -216,8 +308,8 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
           flexWrap: "wrap",
           justifyContent: "space-between",
           fontWeight: theme.fontWeight.medium,
-          padding: "8px 12px",
-          fontSize: theme.fontSize.md,
+          padding: `${currentSize.padding + 2}px ${currentSize.padding * 2}px`,
+          fontSize: currentSize.fontSize,
           borderRadius: theme.borderRadius.md,
           backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
           border: error ? `1px solid ${theme.colors.error}` : `1px solid ${theme.colors.border}`,
@@ -244,7 +336,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
               style={{
                 display: "flex",
                 alignItems: "center",
-                fontSize: theme.fontSize.sm,
+                fontSize: currentSize.fontSize - 2,
                 color: theme.colors.text,
               }}
             >
@@ -254,17 +346,6 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
               )}
             </div>
           ))}
-          {remainingCount > 0 && (
-            <span
-              style={{
-                fontSize: theme.fontSize.sm,
-                color: theme.colors.text,
-                fontWeight: theme.fontWeight.medium,
-              }}
-            >
-              + {remainingCount} more
-            </span>
-          )}
 
           <input
             type="text"
@@ -278,7 +359,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
               border: "none",
               outline: "none",
               minWidth: "100px",
-              fontSize: theme.fontSize.md,
+              fontSize: currentSize.fontSize,
               padding: "0",
               background: "transparent",
               cursor: disabled ? "not-allowed" : "text",
@@ -292,8 +373,8 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
         </div>
 
         <svg
-          width={18}
-          height={18}
+          width={currentSize.fontSize + 4}
+          height={currentSize.fontSize + 4}
           style={{
             transform: isOpen ? "rotate(180deg)" : "rotate(0)",
             transition: theme.transitions.normal,
@@ -319,7 +400,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             right: 0,
             width: "100%",
             minWidth: "100%",
-            maxHeight: "300px",
+            maxHeight: `${currentSize.dropdownHeight}px`,
             overflow: "hidden",
             border: `1px solid ${theme.colors.border}`,
             borderRadius: theme.borderRadius.sm,
@@ -329,13 +410,60 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             background: theme.colors.background,
           }}
         >
+          {/* Selected items display with count (only first 4) */}
+          {selectedLabels.length > 0 && (
+            <div
+              style={{
+                padding: `${currentSize.padding + 2}px ${currentSize.padding * 2}px`,
+                borderBottom: `1px solid ${theme.colors.border}`,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "6px",
+                  alignItems: "center",
+                }}
+              >
+                {visibleTags.map((tagLabel, index) => (
+                  <div
+                    key={`${tagLabel}-${index}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      fontSize: currentSize.fontSize - 1,
+                      color: theme.colors.text,
+                      backgroundColor: theme.colors.hover || "#f3f4f6",
+                      padding: "4px 8px",
+                      borderRadius: theme.borderRadius.sm,
+                    }}
+                  >
+                    {tagLabel}
+                  </div>
+                ))}
+                {remainingCount > 0 && (
+                  <span
+                    style={{
+                      fontSize: currentSize.fontSize - 1,
+                      color: theme.colors.text,
+                      fontWeight: theme.fontWeight.medium,
+                    }}
+                  >
+                    + {remainingCount} more
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Action links: Select All (left) and Clear All (right) */}
           <div
             style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
               alignItems: "center",
-              padding: "8px 10px",
+              padding: `${currentSize.padding + 2}px ${currentSize.padding * 2}px`,
               borderBottom: `1px solid ${theme.colors.border}`,
               columnGap: "12px",
             }}
@@ -349,7 +477,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
               style={{
                 justifySelf: "start",
                 cursor: "pointer",
-                fontSize: "13px",
+                fontSize: currentSize.fontSize - 1,
                 color: "#6b7280",
                 transition: theme.transitions.fast,
               }}
@@ -375,7 +503,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
               style={{
                 justifySelf: "end",
                 cursor: "pointer",
-                fontSize: "13px",
+                fontSize: currentSize.fontSize - 1,
                 color: "#6b7280",
                 transition: theme.transitions.fast,
               }}
@@ -391,69 +519,99 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
           </div>
 
           {/* Options list */}
-          <div className='thin-scroll' style={{ maxHeight: "200px", overflowY: "auto", padding: "8px 10px" }}>
+          <div
+            ref={scrollRef}
+            className='thin-scroll'
+            style={{
+              maxHeight: currentSize.dropdownHeight - 48, // Leave room for header
+              overflowY: "auto",
+              padding: 0,
+              scrollBehavior: "smooth",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
             {loading && options.length === 0 && (
               <div
                 style={{
                   padding: theme.spacing.sm,
                   textAlign: "center",
                   color: theme.colors.textLight,
+                  fontSize: currentSize.fontSize,
                 }}
               >
                 Loading...
               </div>
             )}
             {!loading && filteredOptions.length > 0 ? (
-              filteredOptions.map((opt) => {
-                // Ensure type matching for comparison (convert both to string)
-                const isSelected = selectedValues.some(sv => String(sv) === String(opt.value));
-                return (
+              <>
+                {filteredOptions.map((opt) => {
+                  // Ensure type matching for comparison (convert both to string)
+                  const isSelected = selectedValues.some(sv => String(sv) === String(opt.value));
+                  return (
+                    <div
+                      key={`${String(opt.value)}-${opt.label}`}
+                      style={{
+                        marginBottom: "6px",
+                        display: "flex",
+                        alignItems: "center",
+                        padding: `${currentSize.padding}px ${currentSize.padding * 2 + 16}px`,
+                        borderRadius: theme.borderRadius.sm,
+                        backgroundColor: isSelected ? "#e6f0ff" : theme.colors.background,
+                        cursor: disabled ? "not-allowed" : "pointer",
+                        color: theme.colors.textSecondary,
+                        fontSize: currentSize.fontSize,
+                        transition: theme.transitions.normal,
+                      }}
+                      onClick={() => !disabled && toggleSelect(opt.value)}
+                      onMouseEnter={(e) => {
+                        if (!disabled && !isSelected) {
+                          e.currentTarget.style.backgroundColor = "#e6f0ff";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!disabled && !isSelected) {
+                          e.currentTarget.style.backgroundColor = theme.colors.background;
+                        }
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        readOnly
+                        style={{
+                          marginRight: 8,
+                          accentColor: theme.colors.primary,
+                          cursor: "pointer",
+                          width: `${currentSize.fontSize}px`,
+                          height: `${currentSize.fontSize}px`,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span style={{ fontSize: currentSize.fontSize }}>{opt.label}</span>
+                    </div>
+                  );
+                })}
+                {loading && options.length > 0 && (
                   <div
-                    key={opt.value}
                     style={{
-                      marginBottom: "6px",
-                      display: "flex",
-                      alignItems: "center",
-                      padding: "8px 10px",
-                      borderRadius: theme.borderRadius.sm,
-                      backgroundColor: isSelected ? "#e6f0ff" : theme.colors.background,
-                      cursor: disabled ? "not-allowed" : "pointer",
-                      color: theme.colors.textSecondary,
-                      fontSize: theme.fontSize.sm,
-                      transition: theme.transitions.normal,
-                    }}
-                    onClick={() => !disabled && toggleSelect(opt.value)}
-                    onMouseEnter={(e) => {
-                      if (!disabled && !isSelected) {
-                        e.currentTarget.style.backgroundColor = "#e6f0ff";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!disabled && !isSelected) {
-                        e.currentTarget.style.backgroundColor = theme.colors.background;
-                      }
+                      textAlign: "center",
+                      color: theme.colors.primary,
+                      fontSize: currentSize.fontSize - 2,
+                      padding: theme.spacing.xs,
                     }}
                   >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      readOnly
-                      style={{
-                        marginRight: 8,
-                        accentColor: theme.colors.primary,
-                        cursor: "pointer",
-                      }}
-                    />
-                    <span>{opt.label}</span>
+                    Loading more...
                   </div>
-                );
-              })
+                )}
+                <div style={{ height: 12, pointerEvents: "none" }} />
+              </>
             ) : !loading ? (
               <div
                 style={{
                   padding: theme.spacing.sm,
                   textAlign: "center",
                   color: theme.colors.textLight,
+                  fontSize: currentSize.fontSize,
                 }}
               >
                 {dataFetchCallBack ? "No options available" : "No records found"}
@@ -464,7 +622,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
       )}
 
       {error && (
-        <p style={{ color: theme.colors.error, fontSize: theme.fontSize.sm, marginTop: "8px" }}>
+        <p style={{ color: theme.colors.error, fontSize: currentSize.fontSize - 2, marginTop: "8px" }}>
           {error}
         </p>
       )}

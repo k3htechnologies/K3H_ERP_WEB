@@ -1,7 +1,7 @@
 import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { LeaveCreditConfigurationApi } from '@/features/leaveCreditConfiguration/api/LeaveCreditConfigurationApi'
-import type { AddUpdateLeaveCreditConfigurationRequest, DeleteLeaveCreditConfigurationRequest, FilterWithPaginationLeaveCreditConfigurationRequest, LeaveCreditConfigurationDeleteResponse, LeaveCreditConfigurationListResponse, LeaveCreditConfigurationSaveResponse } from '../models/leaveCreditConfiguration'
+import type { AddUpdateLeaveCreditConfigurationRequest, DeleteLeaveCreditConfigurationRequest, FilterWithPaginationLeaveCreditConfigurationRequest, LeaveCreditConfigurationDeleteResponse, LeaveCreditConfigurationListResponse, LeaveCreditConfigurationSaveResponse } from '../models/LeaveCreditConfigurationModel'
 
 
 export abstract class LeaveCreditConfigurationDatasource {
@@ -26,8 +26,6 @@ export class LeaveCreditConfigurationDatasourceImpl implements LeaveCreditConfig
 
             if (params.LeaveCreditConfigurationId) queryParams.append('LeaveCreditConfigurationId', params.LeaveCreditConfigurationId.toString());
             if (params.LeavePeriodMode?.trim()) queryParams.append('LeavePeriodMode', params.LeavePeriodMode.trim());
-            if (params.FYyear) queryParams.append('FYyear', params.FYyear.toString());
-            if (params.Month?.trim()) queryParams.append('Month', params.Month.trim());
             if (params.FinancialYearStartDate?.trim()) queryParams.append('FinancialYearStartDate', params.FinancialYearStartDate.trim());
             if (params.FinancialYearEndDate?.trim()) queryParams.append('FinancialYearEndDate', params.FinancialYearEndDate.trim());
             if (params.DepartmentName?.trim()) queryParams.append('DepartmentName', params.DepartmentName.trim());

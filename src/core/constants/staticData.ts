@@ -76,7 +76,7 @@ export const MASTER_DATA = {
 
   project_sub_scheme_MHADA: ['33 (5)'],
 
-  project_sub_scheme_SRA: ['33 (10)','33 (11)'],
+  project_sub_scheme_SRA: ['33 (10)', '33 (11)'],
 
   road_width: ['6.10 M', '9.15 M', '12.20 M', '13.40 M', '18.3 M', '27.45 M', '36.6 M'],
 
@@ -220,6 +220,8 @@ export const MASTER_DATA = {
   ],
   weekdays: ['1', '2', '3', '4', '5', '6'],
   weekoff_type: ['Every', 'Alt(2,4)', 'Alt(1,3)', '1st', '2nd', '3rd', '4th', '5th'],
+  leavePeriodMode: ['Yearly', 'Monthly'],
+
 } as const
 
 // ============================================================================
@@ -300,6 +302,7 @@ export const CTC_EARNINGS = toOptions(MASTER_DATA.ctc_earning)
 export const LEAVE_TYPE_MASTER = toOptions(MASTER_DATA.leaveTypeMaster)
 export const WEEKDAYS = toOptions(MASTER_DATA.weekdays)
 export const WEEK_OFF_TYPE = toOptions(MASTER_DATA.weekoff_type)
+export const LEAVE_PERIOD_MODES = toOptions(MASTER_DATA.leavePeriodMode)
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

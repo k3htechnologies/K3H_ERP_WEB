@@ -12,7 +12,7 @@ import type {
     AddUpdateLeaveCreditConfigurationRequest,
     LeaveBalanceType,
     FilterWithPaginationLeaveCreditConfigurationRequest
-} from '@/features/leaveCreditConfiguration/models/leaveCreditConfiguration';
+} from '@/features/leaveCreditConfiguration/models/LeaveCreditConfigurationModel';
 import { leaveCreditConfigurationService } from '@/features/leaveCreditConfiguration/services/LeaveCreditConfigurationService';
 import { formatDate_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
 import * as E from 'fp-ts/Either';
@@ -25,10 +25,7 @@ import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
-const LEAVE_PERIOD_MODES = [
-    { label: 'Yearly', value: 'Yearly' },
-    { label: 'Monthly', value: 'Monthly' },
-];
+import { LEAVE_PERIOD_MODES } from '@/core/constants/staticData';
 
 const initialFormState = (): AddUpdateLeaveCreditConfigurationRequest => ({
     LeaveCreditConfigurationId: 0,
@@ -455,7 +452,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                         <SinglePageSelection
                             label="Leave Period Mode"
                             required
-                            options={LEAVE_PERIOD_MODES}
+                            options={LEAVE_PERIOD_MODES.map((opt) => ({ label: opt.name, value: opt.id }))}
                             value={formData.LeavePeriodMode || ''}
                             onChange={(value) => {
                                 handleFieldChange('LeavePeriodMode', String(value));
@@ -517,10 +514,10 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
 
                 {/* Leave Balance Type Card */}
                 <div
-                    className="rounded-lg shadow-sm border border-gray-200 p-6"
-                    style={{ backgroundColor: '#FFFFFF' }}
+                    className="rounded-lg shadow-sm border border-gray-200"
+                    style={{ backgroundColor: '#FFFFFF', padding: '24px' }}
                 >
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between">
                         <h3 className="text-md font-medium text-gray-500">Leave Balance Type</h3>
                         <Button
                             type="button"
@@ -529,7 +526,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                             onClick={handleAddLeaveBalanceType}
                             leftIcon={<Plus className="h-4 w-4" />}
                         >
-                            Add Leave Type
+                            Add Leave Credit
                         </Button>
                     </div>
                     {errors.LeaveBalanceTypes && (
@@ -545,64 +542,65 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                                     ref={(el) => {
                                         leaveBalanceTypeRefs.current[index] = el;
                                     }}
-                                    className="relative"
                                 >
-                                    <Button
-                                        type="button"
-                                        color='red'
-                                        size='xs'
-                                        onClick={() => handleRemoveLeaveBalanceType(index)}
-                                        title="Remove"
-                                        className="absolute -top-2 right-2 bg-transparent border border-transparent text-red-500 hover:bg-red-100 transition-colors duration-200 rounded p-1"
-
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                        <SingleSelectDropdownWithPagination
-                                            key={`leave-type-${index}-${item.LeaveTypeId}`}
-                                            label="Leave Type"
-                                            title="Select Leave Type"
-                                            size="md"
-                                            required
-                                            dataFetchCallBack={fetchLeaveTypeMasterDropdown}
-                                            onSelected={(selectedItem) => {
-                                                const leaveTypeId = Number(selectedItem.value);
-                                                if (leaveTypeId && leaveTypeId > 0) {
-                                                    handleUpdateLeaveBalanceType(index, 'LeaveTypeId', leaveTypeId);
-                                                    setLeaveTypeLabels((prev) => ({ ...prev, [index]: selectedItem.label || '' }));
-                                                    if (errors[`LeaveBalanceType_${index}_LeaveTypeId`]) {
-                                                        setErrors((prev) => ({ ...prev, [`LeaveBalanceType_${index}_LeaveTypeId`]: '' }));
+                                    <div className="flex flex-col md:flex-row gap-4 items-end">
+                                        <div className="flex-1">
+                                            <SingleSelectDropdownWithPagination
+                                                key={`leave-type-${index}-${item.LeaveTypeId}`}
+                                                label="Leave Type"
+                                                title="Select Leave Type"
+                                                size="md"
+                                                required
+                                                dataFetchCallBack={fetchLeaveTypeMasterDropdown}
+                                                onSelected={(selectedItem) => {
+                                                    const leaveTypeId = Number(selectedItem.value);
+                                                    if (leaveTypeId && leaveTypeId > 0) {
+                                                        handleUpdateLeaveBalanceType(index, 'LeaveTypeId', leaveTypeId);
+                                                        setLeaveTypeLabels((prev) => ({ ...prev, [index]: selectedItem.label || '' }));
+                                                        if (errors[`LeaveBalanceType_${index}_LeaveTypeId`]) {
+                                                            setErrors((prev) => ({ ...prev, [`LeaveBalanceType_${index}_LeaveTypeId`]: '' }));
+                                                        }
                                                     }
+                                                }}
+                                                initialValue={
+                                                    item.LeaveTypeId && item.LeaveTypeId > 0
+                                                        ? createDropdownInitialValue(String(item.LeaveTypeId), leaveTypeLabels[index] || '')
+                                                        : null
                                                 }
-                                            }}
-                                            initialValue={
-                                                item.LeaveTypeId && item.LeaveTypeId > 0
-                                                    ? createDropdownInitialValue(String(item.LeaveTypeId), leaveTypeLabels[index] || '')
-                                                    : null
-                                            }
-                                            error={errors[`LeaveBalanceType_${index}_LeaveTypeId`]}
-                                        />
-                                        <Input
-                                            label="Leave Credit"
-                                            required
-                                            size="md"
-                                            type="number"
-                                            value={item.LeaveCredit}
-                                            onChange={(e) =>
-                                                handleUpdateLeaveBalanceType(
-                                                    index,
-                                                    'LeaveCredit',
-                                                    e.target.value === '' ? 0 : Number(e.target.value)
-                                                )
-                                            }
-                                            placeholder="Enter Leave Credit"
-                                            error={errors[`LeaveBalanceType_${index}_LeaveCredit`]}
-                                            min={0}
-                                            step={1}
-                                        />
-
+                                                error={errors[`LeaveBalanceType_${index}_LeaveTypeId`]}
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <Input
+                                                label="Leave Credit"
+                                                required
+                                                size="sm"
+                                                type="number"
+                                                value={item.LeaveCredit}
+                                                onChange={(e) =>
+                                                    handleUpdateLeaveBalanceType(
+                                                        index,
+                                                        'LeaveCredit',
+                                                        e.target.value === '' ? 0 : Number(e.target.value)
+                                                    )
+                                                }
+                                                placeholder="Enter Leave Credit"
+                                                error={errors[`LeaveBalanceType_${index}_LeaveCredit`]}
+                                                min={0}
+                                                step={1}
+                                            />
+                                        </div>
+                                        <div className="flex-shrink-0 pb-2">
+                                            <Button
+                                                type="button"
+                                                color='red'
+                                                size='xs'
+                                                onClick={() => handleRemoveLeaveBalanceType(index)}
+                                                title="Remove"
+                                            >
+                                                <Trash2 className="h-4 w-4 " />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

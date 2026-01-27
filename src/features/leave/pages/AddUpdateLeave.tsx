@@ -77,7 +77,7 @@ export const AddUpdateLeave: React.FC = () => {
     }, [id, location.state]);
     //#endregion
 
-  
+
     //#region VALIDATION
     const validateLeaveForm = (): {
         isValid: boolean;
@@ -171,7 +171,7 @@ export const AddUpdateLeave: React.FC = () => {
                         }}
                     />
                     <h2 className="text-2xl font-semibold text-gray-900">
-                        {formData.LeaveId ? 'Update Leave' : 'Add Leave'}
+                        {formData.LeaveId ? 'Update Leave' : 'Apply Leave'}
                     </h2>
                 </div>
 

@@ -4,7 +4,7 @@ import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type Ta
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import type { LeaveCreditConfigurationData, FilterWithPaginationLeaveCreditConfigurationRequest, } from '@/features/leaveCreditConfiguration/models/leaveCreditConfiguration';
+import type { LeaveCreditConfigurationData, FilterWithPaginationLeaveCreditConfigurationRequest, } from '@/features/leaveCreditConfiguration/models/LeaveCreditConfigurationModel';
 
 import { leaveCreditConfigurationService } from '@/features/leaveCreditConfiguration/services/LeaveCreditConfigurationService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
@@ -17,7 +17,7 @@ import { formatDate_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { Trash2 } from 'lucide-react';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import type { DeleteLeaveCreditConfigurationRequest } from '@/features/leaveCreditConfiguration/models/leaveCreditConfiguration';
+import type { DeleteLeaveCreditConfigurationRequest } from '@/features/leaveCreditConfiguration/models/LeaveCreditConfigurationModel';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
@@ -618,34 +618,12 @@ export const LeaveCreditConfiguration: React.FC = () => {
           applyFilters()
         }}
         saveText="Apply "
+        cancelText="Clear"
         onCancel={() => clearFilters()}
         size="small-half"
       >
         <div className="space-y-6">
           <div className="space-y-4">
-            <div>
-              <Input
-                label='Leave Period Mode'
-                type="text"
-                value={tempFilters.LeavePeriodMode || ''}
-                onChange={(e) => handleFilterChange('LeavePeriodMode', e.target.value)}
-                placeholder="Enter period mode"
-              />
-            </div>
-            <div>
-              <DateInput
-                label='Financial Year Start Date'
-                value={tempFilters.FinancialYearStartDate || null}
-                onChange={(value) => handleFilterChange('FinancialYearStartDate', value || '')}
-              />
-            </div>
-            <div>
-              <DateInput
-                label='Financial Year End Date'
-                value={tempFilters.FinancialYearEndDate || null}
-                onChange={(value) => handleFilterChange('FinancialYearEndDate', value || '')}
-              />
-            </div>
             <div>
               <Input
                 label='Department'
@@ -662,6 +640,20 @@ export const LeaveCreditConfiguration: React.FC = () => {
                 value={tempFilters.DesignationName || ''}
                 onChange={(e) => handleFilterChange('DesignationName', e.target.value)}
                 placeholder="Enter designation name"
+              />
+            </div>
+            <div>
+              <DateInput
+                label='Financial Year Start Date'
+                value={tempFilters.FinancialYearStartDate || null}
+                onChange={(value) => handleFilterChange('FinancialYearStartDate', value || '')}
+              />
+            </div>
+            <div>
+              <DateInput
+                label='Financial Year End Date'
+                value={tempFilters.FinancialYearEndDate || null}
+                onChange={(value) => handleFilterChange('FinancialYearEndDate', value || '')}
               />
             </div>
           </div>

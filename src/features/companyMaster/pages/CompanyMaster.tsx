@@ -113,6 +113,13 @@ export const CompanyMaster: React.FC = () => {
                     CompanyId: filterParams.CompanyId ? Number(filterParams.CompanyId) : undefined,
                     CompanyName: searchtext ?? filterParams.CompanyName?.trim() ?? undefined,
                     CompanyType: filterParams.CompanyType?.trim() || undefined,
+                    ContactPerson:filterParams.ContactPerson?.trim() || undefined,
+                    MobileNumber:filterParams.MobileNumber?.trim() || undefined,
+                    CityName:filterParams.CityName?.trim() || undefined,
+                    GSTNumber:filterParams.GSTNumber?.trim() || undefined,
+                    CINNumber:filterParams.CINNumber?.trim() || undefined,
+                    PANNumber:filterParams.PANNumber?.trim() || undefined,
+                    RERANumber:filterParams.RERANumber?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, companyColumns)
                 };
 
@@ -183,6 +190,13 @@ export const CompanyMaster: React.FC = () => {
                     IsCheckPermission: true,
                     CompanyName: filters.CompanyName?.trim() || undefined,
                     CompanyType: filters.CompanyType?.trim() || undefined,
+                    ContactPerson:filters.ContactPerson?.trim() || undefined,
+                    MobileNumber:filters.MobileNumber?.trim() || undefined,
+                    CityName:filters.CityName?.trim() || undefined,
+                    GSTNumber:filters.GSTNumber?.trim() || undefined,
+                    CINNumber:filters.CINNumber?.trim() || undefined,
+                    PANNumber:filters.PANNumber?.trim() || undefined,
+                    RERANumber:filters.RERANumber?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, companyColumns),
                     ExportType: exportType
                 };
@@ -267,7 +281,7 @@ export const CompanyMaster: React.FC = () => {
                             maxWidth="250px"
                             tooltipThreshold={30}
                             onClick={() => handleViewCompanyDetails(row)}
-                            
+
                         />
 
                     </div>
@@ -714,7 +728,7 @@ export const CompanyMaster: React.FC = () => {
                 saveText="Apply"
                 cancelText="Clear"
                 onCancel={() => clearFilters()}
-               
+
                 size="small-half"
             >
                 <div className="space-y-6">
@@ -738,6 +752,78 @@ export const CompanyMaster: React.FC = () => {
                                 value={tempFilters.CompanyType || ''}
                                 onChange={(e) => handleFilterChange('CompanyType', e.target.value)}
                                 placeholder="Enter Company Type"
+                            />
+                        </div>
+
+                        <div>
+
+                            <Input
+                                label='Contact Person'
+                                type="text"
+                                value={tempFilters.ContactPerson || ''}
+                                onChange={(e) => handleFilterChange('ContactPerson', e.target.value)}
+                                placeholder="Enter Contact Person"
+                            />
+                        </div>
+
+                        <div>
+
+                            <Input
+                                label='Mobile Number'
+                                type="text"
+                                value={tempFilters.MobileNumber || ''}
+                                onChange={(e) => handleFilterChange('MobileNumber', e.target.value)}
+                                placeholder="Enter Mobile Number"
+                            />
+                        </div>
+                        <div>
+
+                            <Input
+                                label='City'
+                                type="text"
+                                value={tempFilters.CityName || ''}
+                                onChange={e => handleFilterChange('CityName', e.target.value)}
+                                placeholder="Enter City"
+                            />
+                        </div>
+                        <div>
+
+                            <Input
+                                label='GST Number'
+                                type="text"
+                                value={tempFilters.GSTNumber || ''}
+                                onChange={e => handleFilterChange('GSTNumber', e.target.value)}
+                                placeholder="Enter GST Number"
+                            />
+                        </div>
+                        <div>
+
+                            <Input
+                                label='CIN Number'
+                                type="text"
+                                value={tempFilters.CINNumber || ''}
+                                onChange={e => handleFilterChange('CINNumber', e.target.value)}
+                                placeholder="Enter CIN Number"
+                            />
+                        </div>
+                        <div>
+
+                            <Input
+                                label='Pan Number'
+                                type="text"
+                                value={tempFilters.PANNumber || ''}
+                                onChange={e => handleFilterChange('PANNumber', e.target.value)}
+                                placeholder="Enter Pan Number"
+                            />
+                        </div>
+                        <div>
+
+                            <Input
+                                label='RERA Number'
+                                type="text"
+                                value={tempFilters.RERANumber || ''}
+                                onChange={e => handleFilterChange('RERANumber', e.target.value)}
+                                placeholder="Enter RERA Number"
                             />
                         </div>
                     </div>

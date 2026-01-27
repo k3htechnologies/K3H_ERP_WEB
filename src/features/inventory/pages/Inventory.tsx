@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from "react"
-import { type FilterInventoryRequest, type InventoryData, type InventoryFlatFloorBasementPodiumWingData, type InventoryFlatData, type DeleteInventoryFlatRequest, type AddInventoryRequest, type AddInventoryWingRequest, type AddInventoryFloorRequest, type DeleteInventoryWingRequest, type DeleteInventoryBuildingRequest, type DeleteInventoryFloorRequest } from "../models/InventoryMasterModel"
+import { type FilterInventoryRequest, type InventoryData, type InventoryFlatFloorBasementPodiumWingData, type InventoryFlatData, type DeleteInventoryFlatRequest, type AddInventoryRequest, type AddInventoryWingRequest, type AddInventoryFloorRequest, type DeleteInventoryWingRequest, type DeleteInventoryBuildingRequest, type DeleteInventoryFloorRequest, type InventoryFloorData } from "../models/InventoryMasterModel"
 
 import * as E from 'fp-ts/Either'
 import useToast from "@/core/hooks/useToast"
@@ -10,7 +10,6 @@ import { Loader } from "@/core/utils/loader"
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions"
 import ExportImport from "@/ui/components/ExcelImport/ExcelImport"
 import { technicalService } from "@/features/technical/services/TechnicalService"
-import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel"
 import { inventoryService } from "@/features/inventory/services/InventoryServices"
 import { Modal } from "@/ui/components/Modal/Modal"
 import { Input } from "@/ui/components/forms"
@@ -400,7 +399,7 @@ const Inventory = () => {
                 },
                 undefined,
                 (error: any) => {
-                    addToast({ type: 'error', title: error?.message || 'An error occurred while deleting the flat' });
+                    addToast({ type: 'error', title: error?.message });
                 },
                 undefined,
                 'Deleting Inventory Flat'
@@ -444,14 +443,12 @@ const Inventory = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-                // Find the column label for sorting
-
-                const params: FilterPullExcelSample = {
-                    TableName: 'INVENTORY'
+                const params: FilterInventoryRequest = {
+                    ProjectId: Number(projectId),
+                    ExportType: "Excel"
                 }
 
-                const response = await technicalService.apiCallPullExcelSample(params);
-
+                const response = await inventoryService.apiCallpullInventory(params);
                 handleExportFile(response, 'Excel', 'Inventory', addToast, 'Sample file download successfully')
 
                 return response;
@@ -477,7 +474,7 @@ const Inventory = () => {
 
                 fd.append("ExcelFile", file);
                 fd.append("IsAllDelete", mergeExisting);
-                fd.append("TableName", 'Tenant');
+                fd.append("TableName", 'INVENTORY');
                 fd.append("ProjectId", String(projectId));
 
                 const response = await technicalService.apiCallExcelImport(fd);
@@ -940,7 +937,7 @@ const Inventory = () => {
         );
     };
 
-    const handleDeleteFloor = (floor: import("@/features/inventory/models/InventoryMasterModel").InventoryFloorData, wing: InventoryFlatFloorBasementPodiumWingData, building: InventoryData) => {
+    const handleDeleteFloor = (floor: InventoryFloorData, wing: InventoryFlatFloorBasementPodiumWingData, building: InventoryData) => {
         setFloorToDelete({ floor, wing, building });
         setIsDeleteFloorDialogOpen(true);
     };
@@ -1034,7 +1031,7 @@ const Inventory = () => {
             Facing: string;
             OwnerName: string;
             flatData: InventoryFlatData;
-            floorData: import("@/features/inventory/models/InventoryMasterModel").InventoryFloorData;
+            floorData: InventoryFloorData;
         }> = [];
 
         getFilteredFloors.forEach(floor => {
@@ -1137,7 +1134,7 @@ const Inventory = () => {
                 const projectId = inventory[0]?.ProjectId || 0;
 
                 const handleEdit = () => {
-                    navigate('/inventorySpecification', {
+                    navigate('/inventory/inventorySpecification', {
                         state: {
                             flat: flat,
                             projectId: projectId,
@@ -1245,7 +1242,6 @@ const Inventory = () => {
                                     setActiveWingTab(String(index));
                                     const newWing = selectedBuilding[index];
                                     setSelectedWing(newWing);
-                                    // Save wing selection to localStorage
                                     if (projectId && newWing?.Wing) {
                                         localStorage.setItem(`inventorySelectedWing_${projectId}`, newWing.Wing);
                                     }

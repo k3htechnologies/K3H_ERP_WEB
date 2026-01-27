@@ -9,6 +9,10 @@ export interface FilterWithPaginationVendorRequest {
     CompanyName?: string
     CompanyType?: string
     MobileNumber?: string
+    CityName?: string 
+    GSTNumber?: string 
+    AadharCardNumber?: string
+    PanCardNumber?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

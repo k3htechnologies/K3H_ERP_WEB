@@ -15,7 +15,6 @@ import { handleExportFile } from "@/core/utils/exportFile"
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions"
 import ExportImport from "@/ui/components/ExcelImport/ExcelImport"
 import { technicalService } from "@/features/technical/services/TechnicalService"
-import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel"
 import Checkbox from "@/ui/components/forms/Checkbox"
 import { ParkingCard } from "@/features/parking/component/ParkingCard"
 import { PARKING_CATEGORY, PARKING_SIZE, PARKING_STATUS, PARKING_SUBCATEGORY_CANTILEVER, PARKING_SUBCATEGORY_PIT_PUZZLE, PARKING_SUBCATEGORY_PIT_STACK, PARKING_SUBCATEGORY_PODIUM, PARKING_SUBCATEGORY_PUZZLE, PARKING_SUBCATEGORY_STACK, PARKING_SUBCATEGORY_SURFACE, PARKING_SUBCATEGORY_TANDEM, PARKING_SUBCATEGORY_TOWER } from "@/core/constants"
@@ -399,7 +398,7 @@ const Parking = () => {
         if (E.isRight(response)) {
           setIsUpdateParkingModalOpen(false);
 
-          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] || 'Parking updated successfully' });
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
 
           await fetchParking();
         } else {
@@ -452,15 +451,15 @@ const Parking = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        // Find the column label for sorting
 
-        const params: FilterPullExcelSample = {
-          TableName: 'PARKING'
+        const params: FilterParkingRequest = {
+          ProjectId: Number(projectId),
+          ExportType: 'Excel'
         }
 
-        const response = await technicalService.apiCallPullExcelSample(params);
+        const response = await parkingService.apiCallPullParking(params);
 
-        handleExportFile(response, 'Excel', 'Inventory', addToast, 'Sample file download successfully')
+        handleExportFile(response, 'Excel', 'Parking', addToast, 'Sample file download successfully')
 
         return response;
       },
@@ -485,7 +484,7 @@ const Parking = () => {
 
         fd.append("ExcelFile", file);
         fd.append("IsAllDelete", mergeExisting);
-        fd.append("TableName", 'Tenant');
+        fd.append("TableName", 'PARKING');
         fd.append("ProjectId", String(projectId));
 
         const response = await technicalService.apiCallExcelImport(fd);
@@ -616,7 +615,7 @@ const Parking = () => {
 
   //#endregion
 
-   const isChange = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? false : true;
+  const isChange = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? false : true;
   const disabled = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? true : false;
 
   return (
@@ -687,32 +686,42 @@ const Parking = () => {
 
         <div className="border-b border-gray-200" />
 
-        <div className="flex justify-between pt-2 pb-2">
-          {selectedBuildingIndex !== null && groupedParking[selectedBuildingIndex] && (
-            <div className="flex gap-2">
-              {groupedParking[selectedBuildingIndex].Floors.map((floor, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedFloorIndex(index)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedFloorIndex === index
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
-                    }`}
-                >
-                  {floor.Floor}
-                </button>
-              ))}
-            </div>
-          )}
+        <div className="flex justify-between items-center pt-2 pb-2">
 
-          <StatusCounters
-            availableCount={selectedFloorParkingCounts.available}
-            holdCount={selectedFloorParkingCounts.hold}
-            memberCount={selectedFloorParkingCounts.member}
-            bookedCount={selectedFloorParkingCounts.booked}
-            blockedCount={selectedFloorParkingCounts.blocked}
-          />
+          {selectedBuildingIndex !== null &&
+            groupedParking[selectedBuildingIndex] &&
+            groupedParking[selectedBuildingIndex].Floors.length > 0 && (
+              <>
+                <div className="flex-1 flex gap-2">
+                  {groupedParking[selectedBuildingIndex].Floors.map((floor, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedFloorIndex(index)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedFloorIndex === index
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
+                        }`}
+                    >
+                      {floor.Floor}
+                    </button>
+                  ))}
+                </div>
+
+                {/* FLOOR STATUS */}
+                <div className="ml-auto">
+                  <StatusCounters
+                    availableCount={selectedFloorParkingCounts.available}
+                    holdCount={selectedFloorParkingCounts.hold}
+                    memberCount={selectedFloorParkingCounts.member}
+                    bookedCount={selectedFloorParkingCounts.booked}
+                    blockedCount={selectedFloorParkingCounts.blocked}
+                  />
+                </div>
+              </>
+            )}
+
         </div>
+
       </div>
 
       {/* Parking Cards or Table */}
@@ -763,7 +772,7 @@ const Parking = () => {
               placeholder="Enter Parking Number"
               required
               error={errors.ParkingNumber}
-               disabled={disabled}
+              disabled={disabled}
             />
 
             <SinglePageSelection
@@ -778,7 +787,7 @@ const Parking = () => {
               options={PARKING_CATEGORY.map(opt => ({ label: opt.name, value: opt.id }))}
               error={errors.ParkingCategory}
               required
-               disabled={disabled}
+              disabled={disabled}
             />
 
             <SinglePageSelection
@@ -809,7 +818,7 @@ const Parking = () => {
               }
               error={errors.ParkingType}
               required
-               disabled={disabled}
+              disabled={disabled}
             />
 
             <SinglePageSelection
@@ -820,7 +829,7 @@ const Parking = () => {
               options={PARKING_SIZE.map(opt => ({ label: opt.name, value: opt.id }))}
               error={errors.ParkingSubType}
               required
-               disabled={disabled}
+              disabled={disabled}
             />
             <Input
               label="Dimensions"
@@ -829,7 +838,7 @@ const Parking = () => {
               placeholder="Enter Dimensions"
               required
               error={errors.ParkingDimensions}
-               disabled={disabled}
+              disabled={disabled}
             />
             <SinglePageSelection
               label="Parking Status"
@@ -839,13 +848,13 @@ const Parking = () => {
               onChange={(val) => handleFieldChange('ParkingStatus', String(val))}
               options={PARKING_STATUS.map(opt => ({ label: opt.name, value: opt.id }))}
               error={errors.ParkingStatus}
-               disabled={disabled}
+              disabled={disabled}
             />
 
             <Checkbox
               label="Ev Charging Available?"
               checked={formData.IsEVChargingAvailable === true}
-               disabled={disabled}
+              disabled={disabled}
               onChange={(e) => handleFieldChange('IsEVChargingAvailable', e.target.checked ? true : false)}
             />
           </div>

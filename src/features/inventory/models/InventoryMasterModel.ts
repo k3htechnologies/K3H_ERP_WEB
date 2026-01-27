@@ -123,8 +123,8 @@ export interface UpdateInventoryFlatRequest {
     FlatConfiguration?: string
     FlatStatus?: string
     FlatFacing?: string
-
     InventoryFlatSpecificationJSON?: string
+    IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt:boolean;
 }
 
 export interface UpdateInventoryWingRequest {
@@ -192,6 +192,7 @@ export interface AddInventoryFlatRequest {
     FlatStatus?: string
     FlatFacing?: string
     InventoryFlatSpecificationJSON?: string
+    IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt:boolean;
 }
 
 export interface AddUpdateInventoryFloorParkingCountRequest {

@@ -220,6 +220,11 @@ export const ApprovedBankFolder: React.FC = () => {
     }, [searchTerm]);
     //#endregion
 
+    const handleDeleteDialogClose = useCallback(() => {
+        setIsConfirmationDialogBoxOpen(false);
+        setDeleteApprovedBankFolderData(null);
+    }, [setIsConfirmationDialogBoxOpen, setDeleteApprovedBankFolderData]);
+
     //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: ApprovedBankFolderData) => {
         setDeleteApprovedBankFolderData(row)
@@ -626,10 +631,7 @@ export const ApprovedBankFolder: React.FC = () => {
 
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
-                onClose={() => {
-                    setIsConfirmationDialogBoxOpen(false)
-                    setDeleteApprovedBankFolderData(null)
-                }}
+                onClose={handleDeleteDialogClose}
                 onConfirm={handleDeleteApprovedBankFolder}
                 loading={isLoading}
                 pageName='Approved Bank Folder'

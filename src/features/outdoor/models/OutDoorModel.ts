@@ -1,58 +1,56 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
-export interface FilterWithPaginationOutDoor{
-    PageSize : number
-    PageNumber : number
-    StartDate?:string
-    EndDate?:string
-    CompanyName?: string
-    SortBy?: string
-    ExportType?: 'Excel' | 'PDF'
+export interface FilterWithPaginationOutDoor {
+  PageSize: number
+  PageNumber: number
+  StartDate?: string
+  EndDate?: string
+  CompanyName?: string
+  SortBy?: string
+  ExportType?: 'Excel' | 'PDF'
 }
 
-export interface OutDoorMasterData{
-
-    OutdoorId:number
-    Uniquekey:string
-    OutDoorDate:string
-    OutDoorTime:string
-    AccompaniedById:string
-    AccompaniedByName:string
-    DepartmentId:number
-    DepartmentName:string
-    CompanyName:string
-    CompanyAddress:string
-    VisitingCardURL:string
-    Purpose:string
-    Conclusion:string
-    PunchIn:string
-    PunchOut:string
-    PunchInAddress:string
-    PunchOutAddress:string
-    CreatedById : number | 0,
-    CreatedBy : string | '',
-    CreatedDate : string | null,
-    ModifiedById : number | 0,
-    ModifiedBy : string | '',
-    ModifiedDate : string | null,
+export interface OutDoorMasterData {
+  OutdoorId: number;
+  Uniquekey: string;
+  OutDoorDate: string;
+  OutDoorTime: string;
+  AccompaniedById: string;
+  AccompaniedByName: string;
+  DepartmentId: number;
+  DepartmentName: string;
+  CompanyName: string;
+  CompanyAddress: string;
+  VisitingCardURL: string;
+  Purpose: string;
+  Conclusion: string;
+  PunchIn: string;
+  PunchOut: string;
+  PunchInAddress: string;
+  PunchOutAddress: string;
+  CreatedById: number | 0;
+  CreatedBy: string | '';
+  CreatedDate: string | null;
+  ModifiedById: number | 0;
+  ModifiedBy: string | '';
+  ModifiedDate: string | null;
 }
-export interface AddUpdateOutDoor{
-    OutdoorId:number
-    Uniquekey:string
-    OutDoorDate:string
-    OutDoorTime:string
-    AccompaniedById:string
-    DepartmentId:number
-    CompanyName:string
-    CompanyAddress:string
-    VisitingCardURL:string
-    Purpose:string
-    Conclusion:string
-    PunchIn:string
-    PunchOut:string
-    PunchInAddress:string
-    PunchOutAddress:string
-
+export interface AddUpdateOutDoor {
+  OutdoorId: number;
+  Uniquekey: string;
+  OutDoorDate: string;
+  OutDoorTime: string;
+  AccompaniedById: string;
+  DepartmentId: number;
+  CompanyName: string;
+  CompanyAddress: string;
+  VisitingCardURL: string;
+  Purpose: string;
+  Conclusion: string;
+  PunchIn: string;
+  PunchOut: string;
+  PunchInAddress: string;
+  PunchOutAddress: string;
 }
 export interface DeleteOutDoorRequest {
   OutdoorId: number;

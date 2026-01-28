@@ -10,10 +10,11 @@ import type {
 import { OutDoorService } from '@/features/outdoor/services/OutDoorDataService';
 import { formatDate_dd_MonthName_yy, formatTimeFromDateTime } from '@/core/utils/dateFormat';
 import { Loader } from '@/core/utils/loader';
-import { useLocation, type Location, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { FilterInfo } from '@/ui/components/DataTable/DataTable';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
+import { useOutDoorListState } from '@/features/outdoor/context/OutDoorListStateContext';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Input, Button } from '@/ui/components/forms';
 import { TextArea } from '@/ui/components/forms/Textarea';
@@ -24,7 +25,8 @@ import {
   ClipboardCheck,
   AlertTriangle,
   Download,
-  Plus
+  Plus,
+  Edit
 } from "lucide-react";
 import { getCurrentLocation, formatLocationString, type LocationData } from "@/core/utils/locationUtils";
 import { parseOutdoorDate, parseOutdoorTime, isToday, isPreviousDate } from "../utils/outdoorDateUtils";
@@ -50,57 +52,43 @@ export const OutDoor: React.FC = () => {
   const { addToast } = useToast();
 
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   const [punchingItemId, setPunchingItemId] = useState<number | null>(null);
   const [conclusionModalOpen, setConclusionModalOpen] = useState(false);
   const [selectedOutdoorItem, setSelectedOutdoorItem] = useState<OutDoorMasterData | null>(null);
   const [conclusionText, setConclusionText] = useState("");
+  const [isConclusionEditMode, setIsConclusionEditMode] = useState(false);
 
   const [isExportOpen, setIsExportOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement | null>(null);
-  //#endregion
 
-  //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
-  //#region STATE CREATED PAGE AFTER NAVIGATE VIEW OR ADD UPDATE PAGE THEN CHECK
-  const location = useLocation() as Location & {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: FilterInfo;
-        sortInfo?: any;
-        outdoorId?: number;
-      };
-    };
-  };
+  //#region OUTDOOR LIST STATE CONTEXT
+  const { listState, updateListState, resetFilters, clearOutDoorContext } = useOutDoorListState();
+
+  const { page, filters: contextFilters, sortInfo: contextSortInfo } = listState;
   //#endregion
 
   //#region INIT
+  useEffect(() => {
+    clearOutDoorContext();
+
+    setPagination({ currentPage: page });
+
+    setSortInfo(contextSortInfo);
+
+    setTempFilters(contextFilters);
+
+    loadOutDoors(page, contextFilters);
+
+  }, [page, contextFilters, contextSortInfo, clearOutDoorContext]);
 
   useEffect(() => {
-
-    const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: any; outdoorId?: number }
-      | undefined;
-
-    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, outdoorId: 0 };
-
-
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    loadOutDoors(listState.page ?? 1, listState.filters ?? {});
-
-  }, [location.state]);
+    setTempFilters(contextFilters);
+  }, [contextFilters]);
   //#endregion
 
   //#region EXPORT DROPDOWN HANDLER
@@ -199,13 +187,13 @@ export const OutDoor: React.FC = () => {
         const params: FilterWithPaginationOutDoor = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
-          StartDate: filters.StartDate
-            ? new Date(filters.StartDate).toISOString()
+          StartDate: contextFilters.StartDate
+            ? new Date(contextFilters.StartDate).toISOString()
             : undefined,
-          EndDate: filters.EndDate
-            ? new Date(filters.EndDate).toISOString()
+          EndDate: contextFilters.EndDate
+            ? new Date(contextFilters.EndDate).toISOString()
             : undefined,
-          CompanyName: filters.CompanyName?.trim() || undefined,
+          CompanyName: contextFilters.CompanyName?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
         };
@@ -229,13 +217,7 @@ export const OutDoor: React.FC = () => {
   const handleExportOutDoorPdf = () => handleExportOutDoors('PDF');
   //#endregion
 
-  //#region PAGINATION CONFIG
-  const handlePageChange = useCallback((page: number) => {
-    loadOutDoors(page, filters);
-  }, [filters]);
-
-  //#endregion
-
+  //#region HELPER FUNCTIONS
   const canPunchInOut = useCallback((outdoorDate: string, outdoorTime: string): boolean => {
     if (!outdoorDate || !outdoorTime) return false;
 
@@ -300,6 +282,7 @@ export const OutDoor: React.FC = () => {
       return false;
     }
   }, []);
+  //#endregion
 
   //#region PUNCH IN/OUT HANDLERS
   const handlePunchInOut = useCallback(async (item: OutDoorMasterData) => {
@@ -370,10 +353,10 @@ export const OutDoor: React.FC = () => {
                 type: "warning",
                 title: apiResponse.WarningMessage[0]
               });
-              await loadOutDoors(pagination.currentPage, filters);
+              await loadOutDoors(pagination.currentPage, contextFilters);
             } else {
               // Success - use backend SuccessMessage
-              await loadOutDoors(pagination.currentPage, filters);
+              await loadOutDoors(pagination.currentPage, contextFilters);
               addToast({
                 type: "success",
                 title: apiResponse.SuccessMessage?.[0]
@@ -406,13 +389,14 @@ export const OutDoor: React.FC = () => {
       undefined,
       !item.PunchIn ? "Punching In..." : "Punching Out..."
     );
-  }, [punchingItemId, pagination.currentPage, filters, addToast]);
+  }, [punchingItemId, pagination.currentPage, contextFilters, addToast]);
   //#endregion
 
   //#region CONCLUSION HANDLERS
   const handleOpenConclusionModal = useCallback((item: OutDoorMasterData) => {
     setSelectedOutdoorItem(item);
     setConclusionText(item.Conclusion || "");
+    setIsConclusionEditMode(false);
     setConclusionModalOpen(true);
   }, []);
 
@@ -420,6 +404,11 @@ export const OutDoor: React.FC = () => {
     setConclusionModalOpen(false);
     setSelectedOutdoorItem(null);
     setConclusionText("");
+    setIsConclusionEditMode(false);
+  }, []);
+
+  const handleEnableConclusionEdit = useCallback(() => {
+    setIsConclusionEditMode(true);
   }, []);
 
   const handleSaveConclusion = useCallback(async () => {
@@ -448,11 +437,11 @@ export const OutDoor: React.FC = () => {
               type: "warning",
               title: apiResponse.WarningMessage[0]
             });
-            await loadOutDoors(pagination.currentPage, filters);
+            await loadOutDoors(pagination.currentPage, contextFilters);
             handleCloseConclusionModal();
           } else {
             // Success - use backend SuccessMessage
-            await loadOutDoors(pagination.currentPage, filters);
+            await loadOutDoors(pagination.currentPage, contextFilters);
             addToast({
               type: "success",
               title: apiResponse.SuccessMessage?.[0]
@@ -477,23 +466,19 @@ export const OutDoor: React.FC = () => {
       undefined,
       'Saving conclusion...'
     );
-  }, [selectedOutdoorItem, conclusionText, pagination.currentPage, filters, addToast, handleCloseConclusionModal]);
+  }, [selectedOutdoorItem, conclusionText, pagination.currentPage, contextFilters, addToast, handleCloseConclusionModal]);
   //#endregion
 
   //#region FILTER HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters);
-    loadOutDoors(1, tempFilters);
+    updateListState({ filters: tempFilters, page: 1 });
     setShowFilterPopup(false);
   };
 
   const clearFilters = () => {
+    resetFilters();
     setTempFilters({});
-    setFilters({});
-    setPagination({ currentPage: 1 });
-    loadOutDoors(1, {});
     setShowFilterPopup(false);
-    navigate(location.pathname, { replace: true, state: {} });
   };
   //#endregion
 
@@ -509,7 +494,11 @@ export const OutDoor: React.FC = () => {
   }, [navigate]);
   //#endregion
 
-  //#region PAGINATION INFO
+  //#region PAGINATION CONFIG
+  const handlePageChange = useCallback((page: number) => {
+    updateListState({ page });
+  }, [updateListState]);
+
   const outDoorPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
@@ -523,46 +512,40 @@ export const OutDoor: React.FC = () => {
   //#endregion
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       <Loader loading={isLoading} title={loadingMessage}>
 
         <div className="pb-4">
           <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="pl-5 relative min-w-0 w-[526px]">
+            <div className="relative min-w-0 w-[526px]">
               <DateRangeSelector
-                fromDate={filters.StartDate || null}
-                toDate={filters.EndDate || null}
+                fromDate={contextFilters.StartDate || null}
+                toDate={contextFilters.EndDate || null}
                 onFromDateChange={(date) => {
-                  setFilters(prevFilters => {
-                    const newFilters = { ...prevFilters };
-                    if (date) {
-                      newFilters.StartDate = date;
-                    } else {
-                      delete newFilters.StartDate;
-                    }
-                    setTempFilters(newFilters);
-                    loadOutDoors(1, newFilters);
-                    return newFilters;
-                  });
+                  const newFilters = { ...contextFilters };
+                  if (date) {
+                    newFilters.StartDate = date;
+                  } else {
+                    delete newFilters.StartDate;
+                  }
+                  setTempFilters(newFilters);
+                  updateListState({ filters: newFilters, page: 1 });
                 }}
                 onToDateChange={(date) => {
-                  setFilters(prevFilters => {
-                    const newFilters = { ...prevFilters };
-                    if (date) {
-                      newFilters.EndDate = date;
-                    } else {
-                      delete newFilters.EndDate;
-                    }
-                    setTempFilters(newFilters);
-                    loadOutDoors(1, newFilters);
-                    return newFilters;
-                  });
+                  const newFilters = { ...contextFilters };
+                  if (date) {
+                    newFilters.EndDate = date;
+                  } else {
+                    delete newFilters.EndDate;
+                  }
+                  setTempFilters(newFilters);
+                  updateListState({ filters: newFilters, page: 1 });
                 }}
               />
             </div>
 
             {/* RIGHT SIDE: Export and Add Buttons */}
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-3">
               {/* EXPORT BUTTON */}
               {canExport && (
                 <div className="relative" ref={exportRef}>
@@ -662,14 +645,14 @@ export const OutDoor: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-4">
+        <>
 
           {outDoorList.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-500">No outdoor records found</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-8">
+            <div className="grid grid-cols-1 gap-5">
               {outDoorList.map((item) => {
                 const isMeetingStarted = canPunchInOut(item.OutDoorDate, item.OutDoorTime);
                 const hasMissed = hasMissedPunch(item);
@@ -681,8 +664,8 @@ export const OutDoor: React.FC = () => {
                   <ExpandableCard
                     key={item.OutdoorId}
                     title={
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex-1">
+                      <div className="flex items-center justify-between w-full gap-4">
+                        <div className="flex-1 min-w-0">
                           <h3 className="text-sm font-medium text-gray-900 mb-1 flex items-center gap-2">
                             {hasMissed && (
                               <div title={!item.PunchIn ? "Punch In missed" : "Punch Out missed"}>
@@ -703,7 +686,7 @@ export const OutDoor: React.FC = () => {
                     }
                     showline={true}
                     customizedIcon={
-                      <div className="flex items-center gap-2 ml-auto">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         {/* Conclusion Button */}
                         {isPunchedInAndOut && (
                           <button
@@ -803,7 +786,7 @@ export const OutDoor: React.FC = () => {
                           </div>
 
                           {/* Row 4: Conclusion | Empty */}
-                          {item.Conclusion && (
+                          {/* {item.Conclusion && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-gray-200">
                               <div className="flex items-start gap-2.5 p-3">
                                 <div className="flex-1">
@@ -815,10 +798,10 @@ export const OutDoor: React.FC = () => {
                                 <div className="flex-1"></div>
                               </div>
                             </div>
-                          )}
+                          )} */}
 
                           {/* Row 5: Visiting Card | Edit */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-gray-200">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="flex items-start gap-2.5 p-3">
                               <div className="flex-1">
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Visiting Card</p>
@@ -843,19 +826,21 @@ export const OutDoor: React.FC = () => {
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-start gap-2.5 p-3">
-                              <div className="flex-1 flex justify-end">
-                                {canAction && (
-                                  <Button
-                                    onClick={() => navigate(`/outdoor/add/${item.OutdoorId}`)}
-                                    color="blue"
-                                    size="sm"
-                                    variant="solid"
-                                  >
-                                    Edit
-                                  </Button>
-                                )}
-                              </div>
+
+                          </div>
+
+                          <div className="flex items-start gap-2.5 p-3">
+                            <div className="flex-1 flex justify-end">
+                              {canAction && (
+                                <Button
+                                  onClick={() => navigate(`/outdoor/add/${item.OutdoorId}`)}
+                                  color="blue"
+                                  size="sm"
+                                  variant="solid"
+                                >
+                                  Edit
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -920,7 +905,7 @@ export const OutDoor: React.FC = () => {
           )}
 
           <Pagination pagination={outDoorPaginationInfo} className="mt-4" />
-        </div>
+        </>
 
         <Modal
           isOpen={showFilterPopup}
@@ -973,25 +958,53 @@ export const OutDoor: React.FC = () => {
         <Modal
           isOpen={conclusionModalOpen}
           onClose={handleCloseConclusionModal}
-          title="Add Conclusion"
+          title={selectedOutdoorItem?.Conclusion && !isConclusionEditMode ? "View Conclusion" : selectedOutdoorItem?.Conclusion ? "Edit Conclusion" : "Add Conclusion"}
           onSubmit={(e) => {
             e.preventDefault();
-            handleSaveConclusion();
+            if (isConclusionEditMode || !selectedOutdoorItem?.Conclusion) {
+              handleSaveConclusion();
+            }
           }}
-          saveText="Save"
+          saveText={selectedOutdoorItem?.Conclusion && !isConclusionEditMode ? "Save" : "Save"}
           cancelText="Cancel"
           onCancel={handleCloseConclusionModal}
           loading={isLoading}
           size="md"
         >
-          <TextArea
-            label="Conclusion"
-            value={conclusionText}
-            onChange={(e) => setConclusionText(e.target.value)}
-            placeholder="Enter conclusion about the outdoor visit..."
-            rows={6}
-            autoResize={true}
-          />
+          <div className="space-y-4">
+            <div>
+              {selectedOutdoorItem?.Conclusion && !isConclusionEditMode ? (
+                <div className="flex items-center gap-2 mb-2">
+                  <label className="text-sm font-medium text-gray-700">Conclusion</label>
+                  <button
+                    onClick={handleEnableConclusionEdit}
+                    className="p-1 rounded hover:bg-gray-100 transition-colors"
+                    title="Edit Conclusion"
+                  >
+                    <Edit className="h-4 w-4 text-gray-600" />
+                  </button>
+                </div>
+              ) : (
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Conclusion</label>
+              )}
+              <TextArea
+                label=""
+                value={conclusionText}
+                onChange={(e) => setConclusionText(e.target.value)}
+                placeholder="Enter conclusion about the outdoor visit..."
+                rows={6}
+                autoResize={true}
+                disabled={selectedOutdoorItem?.Conclusion ? !isConclusionEditMode : false}
+              />
+            </div>
+          </div>
+          {selectedOutdoorItem?.Conclusion && !isConclusionEditMode && (
+            <style>{`
+              form > div:last-child > div:last-child {
+                display: none;
+              }
+            `}</style>
+          )}
         </Modal>
 
       </Loader>

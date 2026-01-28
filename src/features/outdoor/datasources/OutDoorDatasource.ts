@@ -55,7 +55,7 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             return response;
         } catch (error: any) {
 
-            console.error('ERROR: PULL OUTDOOR:', error);
+            console.error('Error: Pull OUTDOOR:', error);
 
             if (error === TokenExpiredException) {
                 await this.pullOutDoor(params, signal);
@@ -77,7 +77,7 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             return response
         } catch (error) {
 
-            console.error('ERROR: ADD UPDATE OUTDOOR:', error)
+            console.error('Error: Add Update OUTDOOR:', error)
 
             if (error === TokenExpiredException) {
                 await this.addUpdateOutDoor(payload);
@@ -98,7 +98,7 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
 
         } catch (error) {
 
-            console.error('ERROR: DELETE OUTDOOR:', error)
+            console.error('ERRPR : DELETE OUTDOOR:', error)
 
             if (error === TokenExpiredException) {
                 await this.deleteOutDoor(payload);
@@ -120,31 +120,10 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             return response
         } catch (error) {
 
-            console.error('ERROR: PUNCH IN OUTDOOR:', error)
+            console.error('Error: PUNCH IN OUTDOOR:', error)
 
             if (error === TokenExpiredException) {
                 await this.punchIn(payload);
-            }
-            throw error
-        }
-    }
-
-    async punchOut(payload: PunchInOutRequest): Promise<OutDoorPunchInOutResponse> {
-
-        try {
-
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                OutDoorApi.PUNCH_IN,
-                payload
-            )
-
-            return response
-        } catch (error) {
-
-            console.error('ERROR: PUNCH OUT OUTDOOR:', error)
-
-            if (error === TokenExpiredException) {
-                await this.punchOut(payload);
             }
             throw error
         }
@@ -162,7 +141,7 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             return response
         } catch (error) {
 
-            console.error('ERROR: ADD UPDATE CONCLUSION:', error)
+            console.error('Error: Add Update CONCLUSION:', error)
 
             if (error === TokenExpiredException) {
                 await this.addUpdateConclusion(payload);

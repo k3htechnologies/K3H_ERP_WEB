@@ -20,6 +20,7 @@ import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { useOutDoorListState } from "@/features/outdoor/context/OutDoorListStateContext";
 
 const initialFormState = (): AddUpdateOutDoor => ({
   OutdoorId: 0,
@@ -43,15 +44,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   //#region STATE MANAGEMENT
   const [outdoorFormData, setOutdoorFormData] = useState<AddUpdateOutDoor>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("");
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [selectedTime, setSelectedTime] = useState<string>("00:00");
-  const [visitingCardFiles, setVisitingCardFiles] = useState<FileValue[]>([]);
-  const [removedVisitingCardUrls, setRemovedVisitingCardUrls] = useState<string[]>([]);
-  const initialVisitingCardUrlsRef = useRef<string[]>([]);
-  const [dropdownLabels, setDropdownLabels] = useState<{ departmentName?: string; }>({});
-  const [selectedDepartmentName, setSelectedDepartmentName] = useState<string>("");
-  const hasFetchedOutDoor = useRef(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // NAVIGATE
   const navigate = useNavigate();
@@ -62,32 +55,59 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   // TOAST
   const { addToast } = useToast();
 
+  //#region OUTDOOR LIST STATE CONTEXT
+  const { resetFilters } = useOutDoorListState();
+  //#endregion
+
+  //ERROR SET UP
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+
+  const [selectedTime, setSelectedTime] = useState<string>("00:00");
+  const [visitingCardFiles, setVisitingCardFiles] = useState<FileValue[]>([]);
+  const [removedVisitingCardUrls, setRemovedVisitingCardUrls] = useState<string[]>([]);
+  const initialVisitingCardUrlsRef = useRef<string[]>([]);
+  const [dropdownLabels, setDropdownLabels] = useState<{ departmentName?: string; }>({});
+  const [selectedDepartmentName, setSelectedDepartmentName] = useState<string>("");
+  const hasFetchedOutDoor = useRef(false);
+  //#endregion
+
   //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions('/outdoor');
   //#endregion
 
-  //#region HANDLE CHNAGE EVENT WHEN INPUT BOX ANY OTHER
-  const handleFieldChange = useCallback((field: keyof AddUpdateOutDoor, value: string | number) => {
-    setOutdoorFormData(prev => ({ ...prev, [field]: value }));
-    setErrors(prev => {
-      if (prev[field]) {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      }
-      return prev;
-    });
-  }, []);
+  //#region HANDLE FILED CHNAGE EVENT
+  const handleFieldChange = (field: keyof AddUpdateOutDoor, value: string | number) => {
+
+    setOutdoorFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
   //#endregion 
 
   //#region INITIALIZATION
+
   useEffect(() => {
-    hasFetchedOutDoor.current = false;
+    if (outdoorId) {
+      fetchOutDoorData();
+      return;
+    }
+
+    setOutdoorFormData(initialFormState());
+    setSelectedTime("00:00");
+    setSelectedDepartmentName("");
+    setDropdownLabels({});
+    initialVisitingCardUrlsRef.current = [];
+    setRemovedVisitingCardUrls([]);
+    setErrors({});
+
   }, [outdoorId]);
+
   //#endregion
 
-  //#region INIT
-  const fetchOutDoorData = useCallback(async () => {
+  //#region FETCH OUTDOOR DETAILS
+  const fetchOutDoorData = async () => {
     if (!outdoorId || hasFetchedOutDoor.current) return;
 
     hasFetchedOutDoor.current = true;
@@ -173,8 +193,12 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       undefined,
       'Loading Outdoor Data'
     );
-  }, [outdoorId, addToast]);
+  };
   //#endregion
+
+  useEffect(() => {
+    hasFetchedOutDoor.current = false;
+  }, [outdoorId]);
 
   useEffect(() => {
     if (outdoorId && initialVisitingCardUrlsRef.current.length > 0) {
@@ -185,23 +209,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       setRemovedVisitingCardUrls(removed);
     }
   }, [outdoorFormData.VisitingCardURL, outdoorId]);
-
-  useEffect(() => {
-    if (outdoorId) {
-      fetchOutDoorData();
-    } else {
-      // Reset form when in add mode
-      setOutdoorFormData(initialFormState());
-      setSelectedTime("00:00");
-      setSelectedDepartmentName("");
-      setDropdownLabels({});
-      initialVisitingCardUrlsRef.current = [];
-      setRemovedVisitingCardUrls([]);
-      setErrors({});
-    }
-  }, [outdoorId, fetchOutDoorData]);
-
-  //#endregion
 
   //#region FETCH EMPLOYEE DROPDOWN WITH DEPARTMENT
   const fetchEmployeeMasterDropdownWithDepartment = useCallback(
@@ -264,8 +271,12 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   }, [handleFieldChange]);
   //#endregion
 
-  //#region VALIDATION
-  const validateForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
+  //#region OUTDOOR VALIDATION | ADD | UPDATE ACTION
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateForm = (): {
+    isValid: boolean
+    errors: { [key: string]: string }
+  } => {
     const newErrors: { [key: string]: string } = {};
 
     if (!outdoorFormData.OutDoorDate?.trim()) {
@@ -295,11 +306,12 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       newErrors.AccompaniedById = "Accompanied by field is required.";
     }
 
-    return { isValid: Object.keys(newErrors).length === 0, errors: newErrors };
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors
+    };
   };
-  //#endregion
 
-  //#region PUSH OUTDOOR FORM DATA
   const PushOutDoorFormData = (): FormData => {
     const fd = new FormData();
 
@@ -339,16 +351,18 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
     return fd;
   };
-  //#endregion
 
-  //#region ADD UPDATE OUTDOOR
   const handleSubmit = async () => {
-    setErrors({});
-    const validation = validateForm();
+
+    setErrors({})
+
+    const validation = validateForm()
 
     if (!validation.isValid) {
-      setErrors(validation.errors);
-      return;
+
+      setErrors(validation.errors)
+
+      return
     }
 
     await runApiWithLoader(
@@ -373,32 +387,16 @@ export const AddUpdateOutDoorPage: React.FC = () => {
               type: "warning",
               title: response.WarningMessage[0]
             });
-            navigate("/outdoor", {
-              state: {
-                listState: {
-                  page: 1,
-                  filters: {},
-                  sortInfo: undefined,
-                  searchTerm: ''
-                }
-              }
-            });
+            resetFilters();
+            navigate("/outdoor");
           } else {
             // Success - use backend SuccessMessage
             addToast({
               type: 'success',
               title: response.SuccessMessage?.[0]
             });
-            navigate("/outdoor", {
-              state: {
-                listState: {
-                  page: 1,
-                  filters: {},
-                  sortInfo: undefined,
-                  searchTerm: ''
-                }
-              }
-            });
+            resetFilters();
+            navigate("/outdoor");
           }
         } else {
           addToast({
@@ -411,15 +409,16 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       },
       undefined,
       (error: any) => {
-        addToast({
-          type: "error",
-          title: error.message
-        });
+
+        addToast({ type: 'error', title: error.message })
       },
       undefined,
-      outdoorFormData.OutdoorId === 0 ? 'Adding Outdoor Data...' : 'Updating Outdoor Data...'
-    );
+
+      Number(outdoorId ?? 0) === 0 ? 'Add Outdoor' : 'Update Outdoor'
+    )
+
   };
+
   //#endregion
 
 

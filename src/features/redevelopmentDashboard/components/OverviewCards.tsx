@@ -1,3 +1,4 @@
+import { formatToKLCr } from "@/core/utils/comman";
 import { AlertTriangle, Building2, TrendingUp } from "lucide-react";
 
 interface Props {
@@ -19,24 +20,36 @@ export default function OverviewCards({
     0
   );
 
+  const financialTotalPaid = tenantApplicantChargesData.reduce(
+    (sum, item) => sum + Number(item.Paid || 0),
+    0
+  );
+
+  const totalPlotArea = buildingData.reduce(
+    (sum, x) => sum + Number(x.TotalPlotAreaSqFt || 0),
+    0
+  );
+
   const alertCount = alertsData.length;
 
   const cards = [
     {
       title: "Building Count",
       value: buildingCount,
-      subtitle: "Total Buildings",
+      subtitle: `Total Plot Area : ${totalPlotArea} SqFt`,
       icon: Building2,
       backgroundColor: "#E0E7FF",
       color: "#4F46E5",
     },
     {
-      title: "Financial",
-      value: `₹ ${financialTotal.toFixed(2)} Cr`,
-      subtitle: "Total Exposure",
+      title: "Financial (Rent)",
+      value: `₹ ${formatToKLCr(financialTotal)}`,
+      subtitle: ` Pending : ₹ ${formatToKLCr(financialTotal - financialTotalPaid)}`,
       icon: TrendingUp,
       backgroundColor: "#F7DDFE",
       color: "#561F64",
+      titletooltip: `₹ ${financialTotal.toFixed(2)}`,
+      subtitletooltip: `₹ ${(financialTotal - financialTotalPaid).toFixed(2)}`,
     },
     {
       title: "Alerts",
@@ -49,7 +62,7 @@ export default function OverviewCards({
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 pt-5">
 
       <h2 className="text-lg font-semibold text-gray-800">
         Overview
@@ -58,10 +71,7 @@ export default function OverviewCards({
       <div className="grid grid-cols-4 gap-4">
 
         {cards.map((c, i) => (
-          <div
-            key={i}
-            className="bg-white rounded-2xl p-4 border border-gray-100 hover:shadow transition"
-          >
+          <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
             <div className="flex items-start gap-3">
 
               <div
@@ -73,16 +83,31 @@ export default function OverviewCards({
 
               <div>
                 <p className="text-sm text-gray-500">{c.title}</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {c.value}
-                </p>
+                <div className="relative group inline-block">
+                  <p className="text-2xl font-semibold text-gray-900 cursor-pointer">
+                    {c.value}
+                  </p>
+
+                  {c.titletooltip && (
+                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                      {c.titletooltip}
+                    </span>
+                  )}
+                </div>
+
               </div>
 
             </div>
-
-            <p className="text-xs text-gray-400 mt-3">
-              {c.subtitle}
-            </p>
+            <div className="relative group inline-block">
+              <p className="text-xs text-gray-400 mt-3 cursor-pointer">
+                {c.subtitle}
+              </p>
+              {c.subtitletooltip && (
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                  {c.subtitletooltip}
+                </span>
+              )}
+            </div>
           </div>
         ))}
 

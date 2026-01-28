@@ -431,7 +431,14 @@ export const AddUpdateDeductionMaster: React.FC = () => {
                   title="Select Branch"
                   size="lg"
                   dataFetchCallBack={fetchBranchMasterDropdown}
-                  onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("BranchMasterId", null);
+                      return;
+                    }
+
+                    handleFieldChange("BranchMasterId", Number(item.value));
+                  }}
                   initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
                   error={errors.BranchMasterId}
                 />

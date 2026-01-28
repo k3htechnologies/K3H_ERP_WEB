@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { Input } from '@/ui/components/forms'
 import { THEME } from '@/core/constants/theme'
 import type { DatePickerProps } from '@/core/types/form.types'
@@ -168,11 +168,17 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
   }
 
   const monthNames = [
-    'January','February','March','April','May','June',
-    'July','August','September','October','November','December',
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
   ]
 
   const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) => minYear + i)
+
+  const clearDate = () => {
+    setSelectedDate(null);
+    onChange("");
+  };
+
 
   /* ================= Render ================= */
 
@@ -188,8 +194,21 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
         error={error}
         helperText={helperText}
         onClick={() => !disabled && setIsOpen(p => !p)}
-        rightIcon={<CalendarIcon size={18} />}
         placeholder="DD-MM-YYYY"
+        rightIcon={
+          selectedDate ? (
+            <X
+              size={16}
+              style={{ cursor: "pointer" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                clearDate();
+              }}
+            />
+          ) : (
+            <CalendarIcon size={18} />
+          )
+        }
       />
 
       {isOpen &&

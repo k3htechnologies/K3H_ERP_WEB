@@ -22,6 +22,7 @@ export interface SingleSelectWithPaginationProps {
   error?: string
   className?: string
   style?: React.CSSProperties
+  isShowClearSelection?:boolean
 }
 export interface MultiSelectDropdownProps {
   label?: string;
@@ -53,4 +54,5 @@ export interface SinglePageSelectionProps {
     spacing: Record<string, string>;
     fontSize: Record<string, string>;
   };
+  isShowClearSelection?:boolean
 }

@@ -1849,7 +1849,14 @@ const AddUpdateTenant: React.FC = () => {
                 title="Select Bank"
                 size="lg"
                 dataFetchCallBack={fetchBankListMasterDropdown}
-                onSelected={(item) => { handleFieldChangeTenantApplicant("BankListMasterId", Number(item?.value || 0)); }}
+                onSelected={(item) => {
+                  if (!item) {
+                    handleFieldChangeTenantApplicant("BankListMasterId", null);
+                    return;
+                  }
+
+                  handleFieldChangeTenantApplicant("BankListMasterId", Number(item.value));
+                }}
                 initialValue={createDropdownInitialValue(formDataForApplicant.BankListMasterId, dropdownLabels.bankName)}
                 error={errorsTenantApplicant.BankListMasterId}
               />

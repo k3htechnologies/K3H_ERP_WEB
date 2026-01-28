@@ -1,56 +1,65 @@
 import { fetchBuildingDropdown } from "@/features/building/buildingDropdown";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { FileText } from "lucide-react";
 
-export default function RedevelopmentHeader() {
+interface Props {
+  onBuildingChange: (buildingId: number) => void;
+  proposedOfferProposedPlanData: any[];
 
-      const { projectId } = useProject();
+}
 
-    return (
-        <div className="bg-white rounded-xl p-3 flex items-center justify-between">
+export default function RedevelopmentHeader({ onBuildingChange, proposedOfferProposedPlanData }: Props) {
 
-            {/* LEFT SIDE */}
-            <div className="flex items-center gap-3">
+  const { projectId } = useProject();
 
+  const plan = proposedOfferProposedPlanData?.[0] || {};
 
-                {/* Buildings */}
-                <div className="flex items-center gap-2  rounded-lg w-[526px] text-sm text-gray-600">
-                    <SingleSelectDropdownWithPagination
-                        key={projectId}
-                        title="Select Building"
-                        size="lg"
-                        
-                        dataFetchCallBack={(pageNumber) => fetchBuildingDropdown(pageNumber, { projectId: Number(projectId) })}
-                        onSelected={(item) => {
-                            const selectedBuildingId = Number(item?.value ?? 0);
-                            const selectedBuildingName = item?.label ?? '';
-                        }}
-                    />
-                </div>
+  return (
+    <div className="bg-white rounded-xl p-3 flex items-center justify-between" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
-               
-                {/* Report */}
-                <button className="flex items-center gap-2 border border-blue-600 text-blue-600 text-sm px-4 py-2 rounded-lg hover:bg-blue-50">
-                    <FileText size={14} />
-                    Generate Report
-                </button>
+      <div className="flex items-center gap-3">
 
-            </div>
+        <div className="flex items-center gap-2 rounded-lg w-[526px] text-sm text-gray-600">
 
-            {/* RIGHT SIDE */}
-            <div className="flex items-center gap-4">
+          <SingleSelectDropdownWithPagination
+            key={projectId}
+            title="Select Building"
+            size="lg"
+            dataFetchCallBack={(pageNumber) =>
+              fetchBuildingDropdown(pageNumber, { projectId: Number(projectId) })
+            }
+            onSelected={(item) => {
+              const selectedBuildingId = Number(item?.value ?? 0);
 
-                <span className="text-xs text-gray-400">
-                    Updated on : 16 January 2026
-                </span>
-
-                <span className="bg-green-100 text-green-600 text-sm px-4 py-1 rounded-full">
-                    Offer Finalized
-                </span>
-
-            </div>
+              onBuildingChange(selectedBuildingId);
+            }}
+          />
 
         </div>
-    );
+
+        <button className="flex items-center gap-2 border border-blue-600 text-blue-600 text-sm px-4 py-2 rounded-lg hover:bg-blue-50">
+          <FileText size={14} />
+          Generate Report
+        </button>
+      </div>
+      
+      {/* RIGHT SIDE */}
+      <div className="flex items-center gap-4">
+        <span className="bg-green-100 text-green-600 text-sm px-4 py-1 rounded-full">
+          <FieldItem
+            label=""
+            value={"Project Plan"}
+            urls={plan.PlanDocumentURL}
+            isIcon
+          />
+        </span>
+
+      </div>
+
+
+
+    </div>
+  );
 }

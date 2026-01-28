@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, forwardRef, useCallback, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, ChevronUp, Info, InfoIcon, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, Info, InfoIcon, Search, X } from "lucide-react";
 import type { SinglePageSelectionProps } from "@/core/types/dropDownSelectionType";
 import { THEME } from "@/core/constants/theme";
 import { COLORS } from "@/core/constants";
@@ -36,7 +36,8 @@ export const SinglePageSelection = forwardRef<
       className,
       selectedTextColor,
       leftIcon,
-      leftIconClick
+      leftIconClick,
+      isShowClearSelection=true
     },
     ref
   ) => {
@@ -103,14 +104,17 @@ export const SinglePageSelection = forwardRef<
 
     /* ================= SELECTED LABEL (UNCHANGED) ================= */
 
-    const selectedLabel =
-      options.find((opt: any) => opt[valueKey] === value)?.[labelKey] ||
-      placeholder;
+    const selectedLabel = options.find((opt: any) => opt[valueKey] === value)?.[labelKey] || placeholder;
 
-    const chosenSelectedColor =
-      selectedTextColor ?? theme.colors.primary ?? "#0b5fff";
+    const chosenSelectedColor = selectedTextColor ?? theme.colors.primary ?? "#0b5fff";
 
     const isPlaceholder = !value;
+
+    /* ================= CLEAR SELECTED LABEL (UNCHANGED) ================= */
+    const clearSelection = () => {
+      onChange("");   // notify parent
+      setSearchTerm("");
+    };
 
     /* ================= PORTAL POSITION (ONLY NEW LOGIC) ================= */
 
@@ -259,11 +263,28 @@ export const SinglePageSelection = forwardRef<
             {selectedLabel}
           </span>
 
-          {isOpen ? (
-            <ChevronUp size={20} color="#888" />
-          ) : (
-            <ChevronDown size={20} color="#888" />
-          )}
+
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+
+            {isShowClearSelection && !isPlaceholder && !disabled && (
+              <X
+                size={14}
+                style={{ cursor: "pointer", color: "#888" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  clearSelection();
+                }}
+              />
+            )}
+
+            {isOpen ? (
+              <ChevronUp size={20} color="#888" />
+            ) : (
+              <ChevronDown size={20} color="#888" />
+            )}
+
+          </div>
+
         </div>
 
 

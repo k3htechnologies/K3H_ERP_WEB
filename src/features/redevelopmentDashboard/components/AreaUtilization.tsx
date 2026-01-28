@@ -21,10 +21,16 @@ const AreaUtilization: React.FC<Props> = ({ tenantData }) => {
     0
   );
 
-  const freeAreaOffered = tenantData.reduce(
-    (sum, x) => sum + Number(x.FreeAreaOfferedSqFt || 0),
-    0
-  );
+  const freeAreaOffered = tenantData.reduce((sum, x) => {
+    const percent = Number(x?.FreeAreaOfferedPercent || 0);
+
+    if (percent === 0) return sum;
+
+    const carpetArea = Number(x?.FlatCarpetAreaSqFt || 0);
+
+    return sum + (carpetArea * percent) / 100;
+  }, 0).toFixed(2);
+
 
   const extraAreaPurchased = tenantData.reduce(
     (sum, x) => sum + Number(x.ExtraAreaPurchasedSqFt || 0),
@@ -40,7 +46,7 @@ const AreaUtilization: React.FC<Props> = ({ tenantData }) => {
   ];
 
   return (
-    <div className="bg-white rounded-xl p-4">
+    <div className="bg-white rounded-xl p-4" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
       <h3 className="text-sm text-gray-500 font-medium mb-3">
         Area Utilization Summary
@@ -59,7 +65,7 @@ const AreaUtilization: React.FC<Props> = ({ tenantData }) => {
               width={200}
             />
 
-            <Tooltip formatter={(v:any)=>`${Number(v).toLocaleString()} Sq.Ft`} />
+            <Tooltip formatter={(v: any) => `${Number(v).toLocaleString()} Sq.Ft`} />
 
             <Bar
               dataKey="value"

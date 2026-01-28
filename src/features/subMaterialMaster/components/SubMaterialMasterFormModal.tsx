@@ -67,7 +67,14 @@ export const SubMaterialMasterFormModal: React.FC<SubMaterialMasterFormModalProp
               title="Select Material"
               size="lg"
               dataFetchCallBack={fetchMaterialMasterDropdown}
-              onSelected={(item) => onFieldChange("MaterialMasterId", Number(item.value))}
+              onSelected={(item) => {
+                if (!item) {
+                  onFieldChange("MaterialMasterId", null);
+                  return;
+                }
+
+                onFieldChange("MaterialMasterId", Number(item.value));
+              }}
               initialValue={createDropdownInitialValue(formData.MaterialMasterId, dropdownLabels.materialName)}
               error={errors.MaterialMasterId}
             />
@@ -80,7 +87,14 @@ export const SubMaterialMasterFormModal: React.FC<SubMaterialMasterFormModalProp
               title="Select UOM"
               size="lg"
               dataFetchCallBack={fetchUOMMasterDropdown}
-              onSelected={(item) => onFieldChange("UomMasterId", Number(item.value))}
+              onSelected={(item) => {
+                if (!item) {
+                  onFieldChange("UomMasterId", null);
+                  return;
+                }
+
+                onFieldChange("UomMasterId", Number(item.value));
+              }}
               initialValue={createDropdownInitialValue(formData.UomMasterId, dropdownLabels.uom)}
               error={errors.UomMasterId}
             />

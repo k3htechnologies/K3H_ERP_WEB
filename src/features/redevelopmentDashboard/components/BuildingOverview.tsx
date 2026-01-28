@@ -13,27 +13,38 @@ const BuildingOverview: React.FC<Props> = ({ buildingData }) => {
         key: "BuildingName",
         label: "Building Name",
         align: "left",
-        render: (value: string) => value || "-"
+        render: (value: string) => (
+          <span className="font-medium text-black">
+            {(value || '')}
+          </span>
+        )
       },
       {
         key: "CTSNumber",
         label: "CTS Number",
         align: "left",
-        render: (value: string) => value || "-"
+        render: (value: string) => (
+          <span className="font-medium text-black">
+            {(value || '')}
+          </span>
+        )
       },
       {
         key: "TotalPlotAreaSqFt",
         label: "Plot Area (Sq.Ft)",
         align: "right",
-        render: (value: any) =>
-          Number(value || 0).toLocaleString()
+        render: (value: any) => (
+          <span className="font-medium text-black">
+            {(Number(value || 0))}
+          </span>
+        )
       }
     ],
     []
   );
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow">
+    <div className="bg-white rounded-xl p-4" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
       <h3 className="text-sm text-gray-500 font-medium mb-3">
         Building Overview

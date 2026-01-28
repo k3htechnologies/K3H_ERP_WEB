@@ -96,7 +96,8 @@ export const ViewProjectMaster: React.FC = () => {
                 const params: FilterWithPaginationProjectMasterRequest = {
                     PageNumber: 1,
                     PageSize: 1,
-                    ProjectId: listState.projectId
+                    ProjectId: listState.projectId,
+                    IsProjectAccess:false
                 };
                 const response = await projectMasterService.apiCallPullProjectMaster(params);
                 if (E.isRight(response)) {
@@ -350,7 +351,7 @@ export const ViewProjectMaster: React.FC = () => {
                                             Google Location
                                         </div>
                                         {editProjectData?.GoogleLocation !== "" ?
-                                            <span className="text-blue-600 underline cursor-pointer flex items-center"
+                                            <span className="text-blue-600 underline cursor-pointer break-all whitespace-normal"
                                                 onClick={() => window.open(editProjectData?.GoogleLocation, "_blank")}>
                                                 {editProjectData?.GoogleLocation}
                                             </span> : "-"}

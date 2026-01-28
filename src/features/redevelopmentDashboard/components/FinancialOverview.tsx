@@ -1,3 +1,4 @@
+import { formatToKLCr } from "@/core/utils/comman";
 import React from "react";
 import {
   BarChart,
@@ -23,37 +24,29 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
     0
   );
 
-  // Convert to Crores
-  const totalCr = financialTotal / 10000000;
-
-  if (!tenantApplicantChargesData?.length) {
-    return (
-      <div className="bg-white rounded-xl p-4 mt-5">
-        No Financial Data
-      </div>
-    );
-  }
+  const financialTotalPaid = tenantApplicantChargesData.reduce(
+    (sum, item) => sum + Number(item.Paid || 0),
+    0
+  );
 
   // ================= METRICS =================
   const metrics = tenantApplicantChargesData.map((x: any) => ({
-    label: x.ChargeType || x.ChargeName || "UNKNOWN",
-    value: Number(x.Amount || 0) / 10000000,
+    label: x.ChargeType || x.ChargeName,
+    value: Number(x.Amount || 0),
   }));
 
   // ================= CHART DATA =================
   const chartData = metrics.map(m => ({
     name: m.label.toUpperCase(),
-    value: Number(m.value.toFixed(2)),
+    value: Number(m.value),
   }));
 
-  // Dummy paid percent (replace later from backend)
-  const paidPercent = 70;
 
   return (
-    <div className="bg-white rounded-xl p-4 mt-5">
+    <div className="bg-white rounded-xl p-4 mt-5" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
       <h3 className="text-sm text-gray-500 font-medium mb-3">
-        Financial Overview
+        Financial Overview (Rent)
       </h3>
 
       <div className="grid grid-cols-12 gap-6">
@@ -68,22 +61,35 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
               Total Financial Exposure
             </p>
 
-            <p className="text-2xl font-semibold mt-1">
-              ₹ {totalCr.toFixed(2)} Cr
-            </p>
+
+            <div className="relative group inline-block">
+              <p className="text-2xl font-semibold mt-1 cursor-pointer">
+                ₹ {formatToKLCr(financialTotal)}
+              </p>
+              {financialTotal && (
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                  {financialTotal}
+                </span>
+              )}
+            </div>
 
             {/* Progress */}
             <div className="mt-3">
               <div className="h-2 bg-gray-200 rounded">
                 <div
                   className="h-2 bg-blue-600 rounded"
-                  style={{ width: `${paidPercent}%` }}
+                  style={{
+                    width: financialTotal > 0
+                      ? `${Math.min(100, (financialTotalPaid / financialTotal) * 100)}%`
+                      : "0%"
+                  }}
+
                 />
               </div>
 
               <div className="flex justify-between text-xs text-gray-400 mt-1">
-                <span>Paid : {paidPercent}%</span>
-                <span>₹ {(totalCr * paidPercent / 100).toFixed(2)} Cr</span>
+                <span>Paid : ₹ {financialTotalPaid}</span>
+                <span>Pending ₹ {(financialTotal - financialTotalPaid).toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -103,9 +109,18 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
 
                 <div>
                   <p className="text-sm">{m.label}</p>
-                  <p className="font-semibold">₹ {m.value.toFixed(2)} Cr</p>
+
+                  <div className="relative group inline-block">
+                    <p className="font-semibold">₹ {formatToKLCr(m.value)}</p>
+                    {m.value && (
+                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                        {m.value}
+                      </span>
+                    )}
+                  </div>
+
                   <p className="text-xs text-gray-400">
-                    {(m.value / totalCr * 100).toFixed(0)} % of total
+                    {(m.value / financialTotal * 100).toFixed(0)} % of total
                   </p>
                 </div>
               </div>
@@ -119,21 +134,22 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
 
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
+
               <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-              <YAxis tickFormatter={(v) => `${v} CR`} />
-              <Tooltip formatter={(v:any)=>`₹ ${v} Cr`} />
+
+              <YAxis tickFormatter={(v) => formatToKLCr(Number(v))} />
+
+              <Tooltip formatter={(v: any) => `₹ ${formatToKLCr(Number(v))}`} />
 
               <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                 {chartData.map((_, index) => (
-                  <Cell
-                    key={index}
-                    fill={COLORS[index % COLORS.length]}
-                  />
+                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Bar>
 
             </BarChart>
           </ResponsiveContainer>
+
 
         </div>
 

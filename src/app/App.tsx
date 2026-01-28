@@ -77,6 +77,7 @@ import { AddUpdateChannelPartner } from '@/features/ChannelPartner/pages/AddUpda
 import BuildingDescription from '@/features/building/pages/BuildingDescription';
 import BuildingDocument from '@/features/building/pages/BuildingDocument';
 import { BuildingListStateProvider } from '@/features/building/context/BuildingListStateContext';
+import { OutDoorListStateProvider } from '@/features/outdoor/context/OutDoorListStateContext';
 import { TenantListStateProvider } from '@/features/tenant/context/TenantListStateContext';
 import { EmployeeListStateProvider } from '@/features/employeeMaster/context/EmployeeListStateContext';
 import { CompanyListStateProvider } from '@/features/companyMaster/context/CompanyListStateContext';
@@ -254,11 +255,11 @@ function App() {
             {/* PAYROLL */}
 
             <Route path="compoff" element={<CompOff />} />
-            <Route path="outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
+            <Route path="outdoor/add/:outdoorId?" element={<OutDoorListStateProvider><AddUpdateOutDoorPage /></OutDoorListStateProvider>} />
             <Route path="leaveCreditConfiguration" element={<LeaveCreditConfiguration />} />
             <Route path="leaveCreditConfiguration/add/:id?" element={<AddUpdateLeaveCreditConfiguration />} />
             <Route path="leaveCreditConfiguration/view/:id?" element={<ViewLeaveCreditConfiguration />} />
-            <Route path="outdoor" element={<OutDoor />} />
+            <Route path="outdoor" element={<OutDoorListStateProvider><OutDoor /></OutDoorListStateProvider>} />
             <Route path="leave" element={<Leave />} />
             <Route path="leave/add/:id?" element={<AddUpdateLeave />} />
             <Route path="leave/view/:id?" element={<ViewLeave />} />

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
-import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
 import { useToast } from "@/core/hooks/useToast";
 import { OutDoorService } from "@/features/outdoor/services/OutDoorDataService";
@@ -18,8 +17,9 @@ import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeM
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { runApiWithLoader } from '@/core/utils';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
-import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
+import BottomActionBar from "@/ui/components/forms/BottomActionBar";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const initialFormState = (): AddUpdateOutDoor => ({
   OutdoorId: 0,
@@ -61,6 +61,9 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
   // TOAST
   const { addToast } = useToast();
+
+  //#region MENU PERMISSIONS
+  const { canAction } = useMenuPermissions('/outdoor');
   //#endregion
 
   //#region HANDLE CHNAGE EVENT WHEN INPUT BOX ANY OTHER
@@ -339,7 +342,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   //#endregion
 
   //#region ADD UPDATE OUTDOOR
-  const handleAddUpdateOutDoor = async () => {
+  const handleSubmit = async () => {
     setErrors({});
     const validation = validateForm();
 
@@ -421,141 +424,135 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
 
   return (
-    <div className="p-6" style={{ backgroundColor: '#F9FAFB' }}>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <Loader loading={isLoading} title={loadingMessage}>
         <div />
       </Loader>
 
-      <div className="space-y-6">
-        <HeaderActionBar
-          titleText={outdoorFormData.OutdoorId && outdoorFormData.OutdoorId > 0 ? 'Update' : 'Add'}
-          cancelText="Cancel"
-          onCancel={() => navigate(-1)}
-          canAction={false}
-          isLoading={isLoading}
-        />
+      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
+        <form onSubmit={handleSubmit}>
+          {/* ============================================================= [OUTDOOR DETAILS] ============================================================================================= */}
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Outdoor Details</h3>
 
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll">
-            <form onSubmit={(e) => { e.preventDefault(); handleAddUpdateOutDoor(); }} className="space-y-4">
-              <div className="space-y-4 pb-3">
-                <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Outdoor Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <DatePickerInput
-                    label="OutDoor Date"
-                    value={formatDate_dd_mm_yyyy(outdoorFormData.OutDoorDate)}
-                    onChange={(val) => handleFieldChange('OutDoorDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
-                    required
-                    disabled={!!outdoorFormData.PunchIn}
-                    error={errors.OutDoorDate}
-                  />
-
-                  <TimePicker
-                    label="Meeting Time"
-                    required
-                    size="sm"
-                    format={24}
-                    value={selectedTime}
-                    onChange={(val) => {
-                      setSelectedTime(val);
-                      handleFieldChange("OutDoorTime", val);
-                    }}
-                    disabled={!!outdoorFormData.PunchIn}
-                    error={errors.OutDoorTime}
-                  />
-
-                  <SingleSelectDropdownWithPagination
-                    label="Department"
-                    title="Select Department"
-                    size="md"
-                    dataFetchCallBack={fetchDepartmentMasterDropdown}
-                    onSelected={handleDepartmentSelected}
-                    initialValue={createDropdownInitialValue(outdoorFormData.DepartmentId, dropdownLabels.departmentName)}
-                    error={errors.DepartmentId}
-                    required
-                    disabled={!!outdoorFormData.PunchIn}
-                  />
-
-                  <div className="space-y-1">
-                    <MultiSelectPagination
-                      // key={`accompanied-by-${outdoorFormData.DepartmentId}-${selectedDepartmentName}`}
-                      label="Accompanied By"
-                      required
-                      dataFetchCallBack={fetchEmployeeMasterDropdownWithDepartment}
-                      selectedValues={accompaniedDropdown.selectedValues}
-                      options={accompaniedDropdown.initialOptions}
-                      onChange={handleAccompaniedChange}
-                      disabled={!!outdoorFormData.PunchIn || !outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
-                    />
-                    {errors.AccompaniedById && (
-                      <p className="text-xs text-red-600">{errors.AccompaniedById}</p>
-                    )}
-                  </div>
-
-                  <Input
-                    label="Purpose"
-                    required
-                    size="md"
-                    value={outdoorFormData.Purpose}
-                    onChange={(e) => handleFieldChange('Purpose', e.target.value)}
-                    error={errors.Purpose}
-                  />
-
-                  <Input
-                    label="Company Name"
-                    required
-                    size="md"
-                    value={outdoorFormData.CompanyName}
-                    onChange={(e) => handleFieldChange('CompanyName', e.target.value)}
-                    error={errors.CompanyName}
-                    disabled={!!outdoorFormData.PunchIn}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="md:col-span-2">
-                    <Input
-                      label="Company Address"
-                      required
-                      size="md"
-                      value={outdoorFormData.CompanyAddress}
-                      disabled={!!outdoorFormData.PunchIn}
-                      onChange={(e) => handleFieldChange("CompanyAddress", e.target.value)}
-                      error={errors.CompanyAddress}
-                    />
-                  </div>
-
-                  <div>
-                    <MultiFilePicker
-                      label="Upload visiting card"
-                      value={visitingCardFiles}
-                      onChange={setVisitingCardFiles}
-                      availableFilesURL={outdoorFormData?.VisitingCardURL ?? ""}
-                      allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
-                      maxFiles={5}
-                      maxSizeMB={10}
-                    />
-                  </div>
-                </div>
-
-
-                <div className="flex justify-end gap-4 mt-6 pt-6 border-t border-gray-200">
-                  <Button
-                    type="submit"
-                    color="blue"
-                    size="sm"
-                    loading={isLoading}
-                    className="px-6"
-                  >
-                    Save
-                  </Button>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <DatePickerInput
+                  label="OutDoor Date"
+                  value={formatDate_dd_mm_yyyy(outdoorFormData.OutDoorDate)}
+                  onChange={(val) => handleFieldChange('OutDoorDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
+                  required
+                  disabled={!!outdoorFormData.PunchIn}
+                  error={errors.OutDoorDate}
+                />
               </div>
-            </form>
+
+              <div>
+                <TimePicker
+                  label="Meeting Time"
+                  required
+                  size="sm"
+                  format={24}
+                  value={selectedTime}
+                  onChange={(val) => {
+                    setSelectedTime(val);
+                    handleFieldChange("OutDoorTime", val);
+                  }}
+                  disabled={!!outdoorFormData.PunchIn}
+                  error={errors.OutDoorTime}
+                />
+              </div>
+
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Department"
+                  title="Select Department"
+                  size="md"
+                  dataFetchCallBack={fetchDepartmentMasterDropdown}
+                  onSelected={handleDepartmentSelected}
+                  initialValue={createDropdownInitialValue(outdoorFormData.DepartmentId, dropdownLabels.departmentName)}
+                  error={errors.DepartmentId}
+                  required
+                  disabled={!!outdoorFormData.PunchIn}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <MultiSelectPagination
+                  label="Accompanied By"
+                  required
+                  dataFetchCallBack={fetchEmployeeMasterDropdownWithDepartment}
+                  selectedValues={accompaniedDropdown.selectedValues}
+                  options={accompaniedDropdown.initialOptions}
+                  onChange={handleAccompaniedChange}
+                  disabled={!!outdoorFormData.PunchIn || !outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
+                />
+                {errors.AccompaniedById && (
+                  <p className="text-xs text-red-600">{errors.AccompaniedById}</p>
+                )}
+              </div>
+
+              <div>
+                <Input
+                  label="Purpose"
+                  required
+                  size="md"
+                  value={outdoorFormData.Purpose}
+                  onChange={(e) => handleFieldChange('Purpose', e.target.value)}
+                  error={errors.Purpose}
+                />
+              </div>
+
+              <div>
+                <Input
+                  label="Company Name"
+                  required
+                  size="md"
+                  value={outdoorFormData.CompanyName}
+                  onChange={(e) => handleFieldChange('CompanyName', e.target.value)}
+                  error={errors.CompanyName}
+                  disabled={!!outdoorFormData.PunchIn}
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <Input
+                  label="Company Address"
+                  required
+                  size="md"
+                  value={outdoorFormData.CompanyAddress}
+                  disabled={!!outdoorFormData.PunchIn}
+                  onChange={(e) => handleFieldChange("CompanyAddress", e.target.value)}
+                  error={errors.CompanyAddress}
+                />
+              </div>
+
+              <div>
+                <MultiFilePicker
+                  label="Upload visiting card"
+                  value={visitingCardFiles}
+                  onChange={setVisitingCardFiles}
+                  availableFilesURL={outdoorFormData?.VisitingCardURL ?? ""}
+                  allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                  maxFiles={5}
+                  maxSizeMB={10}
+                />
+              </div>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
+
+      <BottomActionBar
+        cancelText="Cancel"
+        saveText={outdoorFormData.OutdoorId && outdoorFormData.OutdoorId > 0 ? "Update" : "Add"}
+        onCancel={() => navigate(-1)}
+        canAction={canAction}
+        onSave={() => {
+          handleSubmit();
+        }}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

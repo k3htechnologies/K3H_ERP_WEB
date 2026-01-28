@@ -123,6 +123,7 @@ import MarketingContentFolder from '@/features/marketingcontent/pages/MarketingC
 import { MarketingContent } from '@/features/marketingcontent/pages/MarketingContent';
 
 import Parking from '@/features/parking/pages/Parking';
+import RedevelopmentDashboard from '@/features/redevelopmentDashboard/pages/RedevelopmentDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -315,6 +316,8 @@ function App() {
             <Route path="enquiry/add/:EnquiryId?" element={<EnquiryListStateProvider><AddUpdateEnquiry /></EnquiryListStateProvider>} />
 
             {/* REDEVELOPMENT */}
+
+            <Route path="redevelopmentDashboard" element={<RedevelopmentDashboard />} />
 
             <Route path="building" element={<BuildingListStateProvider><Building /></BuildingListStateProvider>} />
             <Route path="building/view" element={<BuildingListStateProvider><ViewBuilding /></BuildingListStateProvider>} />

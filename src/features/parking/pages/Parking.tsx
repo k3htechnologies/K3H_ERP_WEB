@@ -551,7 +551,7 @@ const Parking = () => {
         const statusColors = colorsForParkingComponent[value as keyof typeof colorsForParkingComponent] || colorsForParkingComponent.Available;
         return (
           <span
-            className={`px-3 py-1 rounded text-white text-sm font-medium ${statusColors.Button} ${statusColors.buttonText}`}
+            className={`px-3 py-1 rounded text-sm font-medium ${statusColors.Button} ${statusColors.buttonText}`}
           >
             {value}
           </span>

@@ -8,6 +8,7 @@ export interface DateRangeSelectorProps {
   toDate?: string | null;
   onFromDateChange: (date: string | null) => void;
   onToDateChange: (date: string | null) => void;
+  onBothDatesChange?: (fromDate: string | null, toDate: string | null) => void;
   disabled?: boolean;
 }
 
@@ -16,6 +17,7 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   toDate,
   onFromDateChange,
   onToDateChange,
+  onBothDatesChange,
   disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,7 +25,6 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   const [selectingStart, setSelectingStart] = useState(true);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Initialize current month based on selected dates
   useEffect(() => {
     const from = parseDate(fromDate || null);
     const to = parseDate(toDate || null);
@@ -86,32 +87,103 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     const dateStr = formatLocalDate(date);
     if (!dateStr) return;
 
-    const from = parseDate(fromDate || null);
-    const to = parseDate(toDate || null);
+    const from = parseDate(fromDate ?? null);
+    const to = parseDate(toDate ?? null);
 
-    if (selectingStart || (!from && !to)) {
-      // Selecting start date
-      onFromDateChange(dateStr);
-      // If there's an end date and it's before the new start, clear it
-      if (to && date > to) {
+    // Two-click behavior: first click sets "From", second click sets "To"
+    // If clicking on the start date when it's already selected (and no end date), clear it
+    if (from && isSameDay(date, from) && !to) {
+      if (onBothDatesChange) {
+        onBothDatesChange(null, null);
+      } else {
+        onFromDateChange(null);
+      }
+      setSelectingStart(true);
+      return;
+    }
+
+    // If clicking on the end date when it's already selected, clear it
+    if (to && isSameDay(date, to) && from) {
+      if (onBothDatesChange) {
+        onBothDatesChange(fromDate ?? null, null);
+      } else {
         onToDateChange(null);
       }
       setSelectingStart(false);
-    } else {
-      // Selecting end date
-      if (from) {
-        if (date < from) {
-          // If selected date is before start, swap them
+      return;
+    }
+
+    // If both dates are the same and clicking on that date, clear both
+    if (from && to && isSameDay(date, from) && isSameDay(date, to)) {
+      if (onBothDatesChange) {
+        onBothDatesChange(null, null);
+      } else {
+        onToDateChange(null);
+        onFromDateChange(null);
+      }
+      setSelectingStart(true);
+      return;
+    }
+
+    // Two-click selection: first click sets "From", second click sets "To"
+    if (!from && !to) {
+      // No dates selected - set as start date
+      if (onBothDatesChange) {
+        onBothDatesChange(dateStr, null);
+      } else {
+        onFromDateChange(dateStr);
+      }
+      setSelectingStart(false);
+    } else if (from && !to) {
+      // Start date exists, selecting end date
+      if (date < from) {
+        // If selected date is before start, swap them
+        if (onBothDatesChange) {
+          onBothDatesChange(dateStr, fromDate ?? null);
+        } else {
           onFromDateChange(dateStr);
-          onToDateChange(fromDate || null);
+          onToDateChange(fromDate ?? null);
+        }
+      } else {
+        // Normal case - set as end date
+        if (onBothDatesChange) {
+          onBothDatesChange(fromDate ?? null, dateStr);
         } else {
           onToDateChange(dateStr);
         }
-        // Close calendar when both dates are selected
-        setIsOpen(false);
+      }
+      setSelectingStart(true);
+    } else if (from && to) {
+      // Both dates exist - start a new selection
+      if (date < from) {
+        // Clicking before start - set as new start
+        if (onBothDatesChange) {
+          onBothDatesChange(dateStr, null);
+        } else {
+          onFromDateChange(dateStr);
+          onToDateChange(null);
+        }
+        setSelectingStart(false);
+      } else if (date > to) {
+        // Clicking after end - set as new end
+        if (onBothDatesChange) {
+          onBothDatesChange(fromDate ?? null, dateStr);
+        } else {
+          onToDateChange(dateStr);
+        }
         setSelectingStart(true);
+      } else {
+        // Clicking between or same - reset to start
+        if (onBothDatesChange) {
+          onBothDatesChange(dateStr, null);
+        } else {
+          onFromDateChange(dateStr);
+          onToDateChange(null);
+        }
+        setSelectingStart(false);
       }
     }
+    // Keep calendar open - don't close it
   };
 
   const isSameDay = (d1: Date | null, d2: Date | null): boolean => {
@@ -232,7 +304,7 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
           </div>
         </div>
 
-        <div 
+        <div
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -304,8 +376,8 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
               const isInRange = fromDateObj && toDateObj && isDateInRange(date, fromDateObj, toDateObj);
               const isToday = isSameDay(date, new Date());
 
-              // Disable dates before start date when selecting end date
-              const isDisabled = !!(!selectingStart && fromDateObj && date < fromDateObj);
+              // Flight booking style: don't disable dates - allow clicking any date (will swap if needed)
+              const isDisabled = false;
 
               return (
                 <button
@@ -349,9 +421,13 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
-                  // Clear both dates explicitly
-                  onFromDateChange(null);
-                  onToDateChange(null);
+                  // Clear both dates explicitly - use batch update if available
+                  if (onBothDatesChange) {
+                    onBothDatesChange(null, null);
+                  } else {
+                    onToDateChange(null);
+                    onFromDateChange(null);
+                  }
                   setSelectingStart(true);
                   setIsOpen(false);
                 }}

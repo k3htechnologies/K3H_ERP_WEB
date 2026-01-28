@@ -82,7 +82,16 @@ export const OutDoor: React.FC = () => {
 
     setTempFilters(contextFilters);
 
-    loadOutDoors(page, contextFilters);
+    // Flight booking behavior: Only load when both dates are selected
+    // Skip loading if only StartDate is set (user is still selecting end date)
+    const hasStartDate = !!contextFilters.StartDate;
+    const hasEndDate = !!contextFilters.EndDate;
+    
+    // Don't load if only StartDate is set (user is selecting end date)
+    // Load in all other cases: both dates set, no dates set, or other filters
+    if (!(hasStartDate && !hasEndDate)) {
+      loadOutDoors(page, contextFilters);
+    }
 
   }, [page, contextFilters, contextSortInfo, clearOutDoorContext]);
 
@@ -519,8 +528,30 @@ export const OutDoor: React.FC = () => {
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="relative min-w-0 w-[526px]">
               <DateRangeSelector
-                fromDate={contextFilters.StartDate || null}
-                toDate={contextFilters.EndDate || null}
+                fromDate={contextFilters.StartDate ?? null}
+                toDate={contextFilters.EndDate ?? null}
+                onBothDatesChange={(fromDate, toDate) => {
+                  // Batch update both dates together to avoid race conditions
+                  const newFilters = { ...contextFilters };
+                  if (fromDate) {
+                    newFilters.StartDate = fromDate;
+                  } else {
+                    delete newFilters.StartDate;
+                  }
+                  if (toDate) {
+                    newFilters.EndDate = toDate;
+                  } else {
+                    delete newFilters.EndDate;
+                  }
+                  setTempFilters(newFilters);
+                  // Only trigger load if both dates are selected (flight booking behavior)
+                  if (fromDate && toDate) {
+                    updateListState({ filters: newFilters, page: 1 });
+                  } else {
+                    // Just update state without loading when only one date is selected
+                    updateListState({ filters: newFilters });
+                  }
+                }}
                 onFromDateChange={(date) => {
                   const newFilters = { ...contextFilters };
                   if (date) {

@@ -489,6 +489,7 @@ export const Rent: React.FC = () => {
             size="lg"
             initialValue={selectedBuilding}
             dataFetchCallBack={fetchBuildingCallback}
+            isShowClearSelection={false}
             onSelected={handleBuildingChange}
             className='Bold'
           />

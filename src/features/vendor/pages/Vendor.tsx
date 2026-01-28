@@ -30,6 +30,8 @@ import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import { TextArea } from '@/ui/components/forms/Textarea';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
 
 
 export const Vendor: React.FC = () => {
@@ -109,6 +111,11 @@ export const Vendor: React.FC = () => {
           CompanyName: filterParams.CompanyName?.trim() || undefined,
           CompanyType: filterParams.CompanyType?.trim() || undefined,
           MobileNumber: filterParams.MobileNumber?.trim() || undefined,
+          CityName: filterParams.CityName?.trim() || undefined,
+          GSTNumber: filterParams.GSTNumber?.trim() || undefined,
+          AadharCardNumber: filterParams.AadharCardNumber?.trim() || undefined,
+          PanCardNumber: filterParams.PanCardNumber?.trim() || undefined,
+
           SortBy: getSortByParam(sortInfo ?? null, vendorColumns)
         }
 
@@ -185,6 +192,10 @@ export const Vendor: React.FC = () => {
           CompanyName: filters.CompanyName?.trim() || undefined,
           CompanyType: filters.CompanyType?.trim() || undefined,
           MobileNumber: filters.MobileNumber?.trim() || undefined,
+          CityName: filters.CityName?.trim() || undefined,
+          GSTNumber: filters.GSTNumber?.trim() || undefined,
+          AadharCardNumber: filters.AadharCardNumber?.trim() || undefined,
+          PanCardNumber: filters.PanCardNumber?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, vendorColumns),
           ExportType: exportType
         }
@@ -278,13 +289,7 @@ export const Vendor: React.FC = () => {
         width: '20',
         sortable: true,
         align: 'left',
-        render: (value) => (
-          <TooltipText
-            text={value || '-'}
-            maxWidth="200px"
-            tooltipThreshold={20}
-          />
-        )
+        render: (value) => value || '-'
       },
       {
         key: 'CompanyType',
@@ -292,13 +297,7 @@ export const Vendor: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-        render: (value) => (
-          <TooltipText
-            text={value || '-'}
-            maxWidth="150px"
-            tooltipThreshold={15}
-          />
-        )
+        render: (value) => value || '-'
       },
       {
         key: 'MobileNumber',
@@ -306,7 +305,8 @@ export const Vendor: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'center',
-        render: (value) => value || '-'
+        render: value => value ? `+91 ${value}` : '-'
+
       },
       {
         key: 'EmailId',
@@ -314,13 +314,83 @@ export const Vendor: React.FC = () => {
         width: '18',
         sortable: false,
         align: 'left',
-        render: (value) => (
-          <TooltipText
-            text={value || '-'}
-            maxWidth="200px"
-            tooltipThreshold={20}
-          />
-        )
+        render: (value) => value || '-'
+      },
+      {
+        key: 'GSTNumber',
+        label: 'GST Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.GSTCertificateURL)}
+              title="GST Document"
+              triggerLabel={value || '-'}
+              isWrap={false}
+            />
+          );
+        }
+      },
+      {
+        key: 'PanCardNumber',
+        label: 'Pan Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value: string, row: any) => {
+
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.PanCardURL)}
+              title="Pan Card Document"
+              triggerLabel={value || '-'}
+              isWrap={false}
+            />
+          );
+        }
+      },
+      {
+        key: 'AadharCardNumber',
+        label: 'Aadhaar Card',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.AadharCardURL)}
+              title="Aadhaar Document"
+              triggerLabel={value || '-'}
+              isWrap={false}
+            />
+          );
+        }
+      },
+      {
+        key: 'StateName',
+        label: 'State',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'DistrictName',
+        label: 'District',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'CityName',
+        label: 'City',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
       },
       {
         key: 'actions',
@@ -714,7 +784,7 @@ export const Vendor: React.FC = () => {
         }}
         saveText="Apply"
         cancelText="Clear"
-       
+
         onCancel={() => clearFilters()}
         size="small-half"
       >
@@ -758,6 +828,46 @@ export const Vendor: React.FC = () => {
                 value={tempFilters.MobileNumber || ''}
                 onChange={(e) => handleFilterChange('MobileNumber', e.target.value)}
                 placeholder="Enter Mobile Number"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='City'
+                type="text"
+                value={tempFilters.CityName || ''}
+                onChange={e => handleFilterChange('CityName', e.target.value)}
+                placeholder="Enter City"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='GST Number'
+                type="text"
+                value={tempFilters.GSTNumber || ''}
+                onChange={e => handleFilterChange('GSTNumber', e.target.value)}
+                placeholder="Enter GST Number"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='Aadhaar Card Number'
+                type="text"
+                value={tempFilters.AadharCardNumber || ''}
+                onChange={e => handleFilterChange('AadharCardNumber', e.target.value)}
+                placeholder="Enter Aadhaar Card Number"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='Pan Card Number'
+                type="text"
+                value={tempFilters.PanCardNumber || ''}
+                onChange={e => handleFilterChange('PanCardNumber', e.target.value)}
+                placeholder="Enter Pan Card Number"
               />
             </div>
           </div>

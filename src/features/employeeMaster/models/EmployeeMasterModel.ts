@@ -5,13 +5,17 @@ export interface FilterWithPaginationEmployeeMasterRequest {
   PageNumber: number
   IsCheckPermission?: boolean
   EmployeeId?: number
+  EmployeeCode?: string | ''
   EmployeeName?: string | ''
-  BranchName?: string | ''
+  MobileNumber?: string | ''
+  Gender?: string | ''
   DepartmentName?: string | ''
   DesignationName?: string | ''
-  EmailId?: string | ''
-  MobileNumber?: string | ''
+  BranchName?: string | ''
+  CompanyName?: string | ''
   ReportPersonName?: string | ''
+  EmailId?: string | ''
+  BankName?: string | ''
   BankBranchName?: string | ''
   SortBy?: string
   ExportType?: 'Excel' | 'PDF'

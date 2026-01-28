@@ -15,7 +15,7 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { APPLICANT_TYPE, COMMERCIAL_FLAT_CONFIGURATION, FLAT_UNIT_FACING, FLAT_UNIT_TYPE, RESIDENTIAL_FLAT_CONFIGURATION } from "@/core/constants";
-import { allowPercentage, calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidAccount, isValidDrivingLicenseNumber, isValidEmail, isValidGST, isValidIFSC, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from "@/core/utils/fileValidation";
+import { allowPercentage, calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterIFSC, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidAccount, isValidDrivingLicenseNumber, isValidEmail, isValidGST, isValidIFSC, isValidMobile, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from "@/core/utils/fileValidation";
 import { Button } from "@/ui/components/forms";
 import { Edit, IdCardIcon, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
@@ -795,7 +795,10 @@ const AddUpdateTenant: React.FC = () => {
 
     if (!formDataForApplicant.ApplicantMobileNumber?.trim()) {
       newErrorsTenantApplicant.ApplicantMobileNumber = 'Mobile Number is required'
+    } else if (!isValidMobile(formDataForApplicant.ApplicantMobileNumber.trim())) {
+      newErrorsTenantApplicant.ApplicantMobileNumber = 'Enter a valid 10-Digit Mobile Number'
     }
+
 
     if (formDataForApplicant.ApplicantEmailId?.trim() && !isValidEmail(formDataForApplicant.ApplicantEmailId.trim())) {
       newErrorsTenantApplicant.ApplicantEmailId = 'Enter a valid Email Id';
@@ -1403,7 +1406,7 @@ const AddUpdateTenant: React.FC = () => {
                     handleFieldChange('FlatConfiguration', '');
                   }}
                   options={FLAT_UNIT_TYPE
-                    .filter(opt => opt.id !== 'Void')
+                    .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
                     .map(opt => ({
                       label: opt.name,
                       value: opt.id
@@ -1592,14 +1595,15 @@ const AddUpdateTenant: React.FC = () => {
         saveText={editingApplicantData ? 'Update' : 'Add'}
         cancelText="Cancel"
         loading={isLoading}
-        size='large-half'
+        size='small50'
       >
         <div className="space-y-6">
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
               <SinglePageSelection
                 label="Applicant Type"
+                placeholder="Select Applicant Type"
                 required
                 value={formDataForApplicant?.ApplicantType ?? ""}
                 onChange={(e) => handleFieldChangeTenantApplicant('ApplicantType', String(e))}
@@ -1607,6 +1611,8 @@ const AddUpdateTenant: React.FC = () => {
                 error={errorsTenantApplicant.ApplicantType}
               />
             </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Input
                 label='Applicant Name'
@@ -1635,9 +1641,6 @@ const AddUpdateTenant: React.FC = () => {
                 placeholder="Enter Mobile Number"
               />
             </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Input
                 label='Email Id'
@@ -1666,15 +1669,8 @@ const AddUpdateTenant: React.FC = () => {
               />
             </div>
             <div>
-
-            </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
               <Input
                 label="Aadhaar Number"
-
                 error={errorsTenantApplicant.AadharCardNumber}
                 type="text"
                 value={formDataForApplicant.AadharCardNumber ?? ''}
@@ -1686,7 +1682,6 @@ const AddUpdateTenant: React.FC = () => {
                 rightIcon={<IdCardIcon />}
               />
             </div>
-
             <div>
               <MultiFilePicker
                 label="Aadhaar Card"
@@ -1705,13 +1700,6 @@ const AddUpdateTenant: React.FC = () => {
                   setRemovedAadharCardURLs((prev) => [...prev, url])}
               />
             </div>
-
-            <div>
-
-            </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Input
                 label="PAN Number"
@@ -1745,14 +1733,8 @@ const AddUpdateTenant: React.FC = () => {
                 maxSizeMB={10}
                 onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])}
               />
-            </div>
-
-            <div>
 
             </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Input
                 label="Passport Number"
@@ -1767,7 +1749,6 @@ const AddUpdateTenant: React.FC = () => {
                 rightIcon={<IdCardIcon />}
               />
             </div>
-
             <div>
               <MultiFilePicker
                 label="Passport"
@@ -1781,9 +1762,6 @@ const AddUpdateTenant: React.FC = () => {
                 onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])}
               />
             </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Input
                 label="Driving License Number"
@@ -1798,7 +1776,6 @@ const AddUpdateTenant: React.FC = () => {
                 rightIcon={<IdCardIcon />}
               />
             </div>
-
             <div>
               <MultiFilePicker
                 label="Driving License"
@@ -1812,9 +1789,6 @@ const AddUpdateTenant: React.FC = () => {
                 onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])}
               />
             </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Input
                 label="Voting ID Number"
@@ -1829,7 +1803,6 @@ const AddUpdateTenant: React.FC = () => {
                 rightIcon={<IdCardIcon />}
               />
             </div>
-
             <div>
               <MultiFilePicker
                 label="Voting ID"
@@ -1843,9 +1816,6 @@ const AddUpdateTenant: React.FC = () => {
                 onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])}
               />
             </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Input
                 label="GST Number"
@@ -1860,7 +1830,6 @@ const AddUpdateTenant: React.FC = () => {
                 rightIcon={<IdCardIcon />}
               />
             </div>
-
             <div>
               <MultiFilePicker
                 label="GST Documents"
@@ -1874,16 +1843,20 @@ const AddUpdateTenant: React.FC = () => {
                 onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])}
               />
             </div>
-
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <SingleSelectDropdownWithPagination
                 label="Bank"
                 title="Select Bank"
                 size="lg"
                 dataFetchCallBack={fetchBankListMasterDropdown}
-                onSelected={(item) => { handleFieldChangeTenantApplicant("BankListMasterId", Number(item?.value || 0)); }}
+                onSelected={(item) => {
+                  if (!item) {
+                    handleFieldChangeTenantApplicant("BankListMasterId", null);
+                    return;
+                  }
+
+                  handleFieldChangeTenantApplicant("BankListMasterId", Number(item.value));
+                }}
                 initialValue={createDropdownInitialValue(formDataForApplicant.BankListMasterId, dropdownLabels.bankName)}
                 error={errorsTenantApplicant.BankListMasterId}
               />
@@ -1906,8 +1879,6 @@ const AddUpdateTenant: React.FC = () => {
                 placeholder="Enter IFSC Code"
               />
             </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <MultiFilePicker
                 label="Cheque / Cancelled Cheque"
@@ -1920,9 +1891,7 @@ const AddUpdateTenant: React.FC = () => {
                 onRemoveExisting={(url) => setRemovedChequeURLs((prev) => [...prev, url])}
               />
             </div>
-
           </div>
-
         </div>
       </Modal>
 

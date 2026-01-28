@@ -67,9 +67,11 @@ export const ProposedOffer: React.FC = () => {
           <SingleSelectDropdownWithPagination
             label="Building"
             title="Select Building"
+            isShowClearSelection={false}
             size="lg"
             initialValue={selectedBuilding}
             dataFetchCallBack={fetchBuildingCallback}
+            
             onSelected={(item) => {
               if (!item) return;
               setBuildingId(Number(item.value));

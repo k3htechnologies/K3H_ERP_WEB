@@ -205,7 +205,7 @@ export const ProposedPlan: React.FC = () => {
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
                     await fetchProposedPlanData();
-                    
+
                     setPlanDocumentFiles([]);
                     setRemovedPlanDocumentUrls([]);
 
@@ -226,6 +226,15 @@ export const ProposedPlan: React.FC = () => {
     };
     //#endregion
 
+    //#region AMENITIES COUNT
+
+    const amenitiesCount = Array.isArray(formDataProposedPlan.Amenities)
+        ? formDataProposedPlan.Amenities.length
+        : typeof formDataProposedPlan.Amenities === "string" && formDataProposedPlan.Amenities.length > 0
+            ? formDataProposedPlan.Amenities.split(",").length
+            : 0;
+    //#endregion
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}>
@@ -244,7 +253,7 @@ export const ProposedPlan: React.FC = () => {
                                 label="Total Number of Floors"
                                 required
                                 type="text"
-                                 disabled={!canAction}
+                                disabled={!canAction}
                                 value={formDataProposedPlan.TotalNumberOfFloors || ''}
                                 onChange={(e) => handleFieldChangeProposedPlan('TotalNumberOfFloors', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                                 error={errorsProposedPlan.TotalNumberOfFloors}
@@ -257,7 +266,7 @@ export const ProposedPlan: React.FC = () => {
                                 label="Total Units"
                                 required
                                 type="text"
-                                 disabled={!canAction}
+                                disabled={!canAction}
                                 value={formDataProposedPlan.TotalUnits || ''}
                                 onChange={(e) => handleFieldChangeProposedPlan('TotalUnits', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                                 error={errorsProposedPlan.TotalUnits}
@@ -270,7 +279,7 @@ export const ProposedPlan: React.FC = () => {
                                 label="Total Parking"
                                 required
                                 type="text"
-                                 disabled={!canAction}
+                                disabled={!canAction}
                                 value={formDataProposedPlan.TotalParking || ''}
                                 onChange={(e) => handleFieldChangeProposedPlan('TotalParking', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                                 error={errorsProposedPlan.TotalParking}
@@ -296,7 +305,7 @@ export const ProposedPlan: React.FC = () => {
                     <div>
 
                         <MultiSelectCheckBoxWithCategory
-                            label="Select Amenities"
+                            label={`Select Amenities (${amenitiesCount})`}
                             placeholder="Search Amenities"
                             options={AMENITIES_BY_CATEGORY}
                             disabled={!canAction}

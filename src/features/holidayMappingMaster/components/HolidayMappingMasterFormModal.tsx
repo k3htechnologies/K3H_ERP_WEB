@@ -43,7 +43,7 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
       title={editingData ? 'Update Holiday Mapping ' : 'Add Holiday Mapping'}
       onSubmit={onSubmit}
       saveText={editingData ? 'Update' : 'Add'}
-     
+
       loading={loading}
       size="xl"
     >
@@ -57,7 +57,14 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
               size="lg"
               required
               dataFetchCallBack={fetchHolidayMasterDropdown}
-              onSelected={(item) => onFieldChange("HolidayMasterId", Number(item.value))}
+              onSelected={(item) => {
+                if (!item) {
+                  onFieldChange("HolidayMasterId", null);
+                  return;
+                }
+
+                onFieldChange("HolidayMasterId", Number(item.value));
+              }}
               initialValue={createDropdownInitialValue(formData.HolidayMasterId, dropdownLabels.holidayName)}
               error={errors.HolidayMasterId}
             />
@@ -78,7 +85,14 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
               title="Select Branch "
               size="lg"
               dataFetchCallBack={fetchBranchMasterDropdown}
-              onSelected={(item) => onFieldChange("BranchMasterId", String(item.value))}
+              onSelected={(item) => {
+                if (!item) {
+                  onFieldChange("BranchMasterId", null);
+                  return;
+                }
+
+                onFieldChange("BranchMasterId", Number(item.value));
+              }}
               initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
               error={errors.BranchMasterId}
             />

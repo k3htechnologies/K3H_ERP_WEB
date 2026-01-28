@@ -219,8 +219,37 @@ export const MASTER_DATA = {
     'SL - Sick Leave',
   ],
   weekdays: ['1', '2', '3', '4', '5', '6'],
+
   weekoff_type: ['Every', 'Alt(2,4)', 'Alt(1,3)', '1st', '2nd', '3rd', '4th', '5th'],
   leavePeriodMode: ['Yearly', 'Monthly'],
+
+  inventoryFlatStatus: ['Available', 'Booked', 'Blocked', 'Hold', 'Alloted'],
+
+  parkingCategory: ['Surface Parking', 'Stack Parking', 'Puzzle Parking', 'Tower Parking', 'Pit Puzzle Parking', 'Cantilever Parking', 'Tandem Parking', 'Podium Parking', 'Pit + Stack'],
+
+  parkingSubCategory_StackParking: ['PIT 1', 'PIT 2', 'PIT 3', 'PIT 4', 'PIT 5', 'ST 1', 'ST 2', 'ST 3', 'ST 4', 'ST 5', 'GROUND'],
+
+  parkingSubCategory_SurfaceParking: ['SU 1', 'GROUND'],
+
+  parkingSubCategory_PuzzleParking: ['PU 1', 'GROUND'],
+
+  parkingSubCategory_TowerParking: ['TO 1', 'GROUND'],
+
+  parkingSubCategory_PitPuzzleParking: ['PIT 1', 'GROUND'],
+
+  parkingSubCategory_CantileverParking: ['CAN 1', 'GROUND'],
+
+  parkingSubCategory_TandemParking: ['TAN 1', 'GROUND'],
+
+  parkingSubCategory_PodiumParking: ['PO 1', 'GROUND'],
+
+  parkingSubCategory_Pit_StackParking: ['Pit + Stack 1', 'Pit + Stack 2', 'Pit + Stack 3', 'Pit + Stack 4', 'Pit + Stack 5', 'GROUND'],
+
+  parkingSize: ['Big', 'Small'],
+
+  parkingStatus: ['Available', 'Block', 'Hold', 'Member'],
+
+  unitLayout: ['Living / Dining', 'Passage', 'Kitchen', 'Toilet', 'Master Bed Room', 'Main Door JAMB', 'KIT / Bed Door Jamb', 'Toilet Door Jamb'],
 
 } as const
 
@@ -303,6 +332,21 @@ export const LEAVE_TYPE_MASTER = toOptions(MASTER_DATA.leaveTypeMaster)
 export const WEEKDAYS = toOptions(MASTER_DATA.weekdays)
 export const WEEK_OFF_TYPE = toOptions(MASTER_DATA.weekoff_type)
 export const LEAVE_PERIOD_MODES = toOptions(MASTER_DATA.leavePeriodMode)
+export const INVENTORY_FLAT_STATUS = toOptions(MASTER_DATA.inventoryFlatStatus)
+export const PARKING_CATEGORY = toOptions(MASTER_DATA.parkingCategory)
+export const PARKING_SUBCATEGORY_STACK = toOptions(MASTER_DATA.parkingSubCategory_StackParking)
+export const PARKING_SUBCATEGORY_SURFACE = toOptions(MASTER_DATA.parkingSubCategory_SurfaceParking)
+export const PARKING_SUBCATEGORY_PUZZLE = toOptions(MASTER_DATA.parkingSubCategory_PuzzleParking)
+export const PARKING_SUBCATEGORY_TOWER = toOptions(MASTER_DATA.parkingSubCategory_TowerParking)
+export const PARKING_SUBCATEGORY_PIT_PUZZLE = toOptions(MASTER_DATA.parkingSubCategory_PitPuzzleParking)
+export const PARKING_SUBCATEGORY_CANTILEVER = toOptions(MASTER_DATA.parkingSubCategory_CantileverParking)
+export const PARKING_SUBCATEGORY_TANDEM = toOptions(MASTER_DATA.parkingSubCategory_TandemParking)
+export const PARKING_SUBCATEGORY_PODIUM = toOptions(MASTER_DATA.parkingSubCategory_PodiumParking)
+export const PARKING_SUBCATEGORY_PIT_STACK = toOptions(MASTER_DATA.parkingSubCategory_Pit_StackParking)
+export const PARKING_SIZE = toOptions(MASTER_DATA.parkingSize);
+export const PARKING_STATUS = toOptions(MASTER_DATA.parkingStatus);
+export const UNIT_LAYOUT = toOptions(MASTER_DATA.unitLayout);
+
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

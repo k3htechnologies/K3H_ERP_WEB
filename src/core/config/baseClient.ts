@@ -18,8 +18,7 @@ export class BaseClient {
     private userUniqueKey: string | null
 
     constructor({
-        apiKey,
-        token = null,
+        apiKey
     }: {
         baseUrl?: string
         apiKey?: string
@@ -29,7 +28,7 @@ export class BaseClient {
 
         this.apiKey = apiKey || config.apiKey
 
-        this.token = token || LocalStorageHelper.getStoredTokenData();
+        this.token = LocalStorageHelper.getStoredTokenData();
 
         this.userUniqueKey = LocalStorageHelper.getStoredEmployeeData()?.UniqueKey ?? "";
     }

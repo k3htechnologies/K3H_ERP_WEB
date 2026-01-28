@@ -57,7 +57,14 @@ export const BranchAssociationsMasterFormModal: React.FC<BranchAssociationsMaste
               size="lg"
               required
               dataFetchCallBack={fetchBranchMasterDropdown}
-              onSelected={(item) => onFieldChange("BranchMasterId", Number(item.value))}
+              onSelected={(item) => {
+                if (!item) {
+                  onFieldChange("BranchMasterId", null);
+                  return;
+                }
+
+                onFieldChange("BranchMasterId", Number(item.value));
+              }}
               initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
               error={errors.BranchMasterId}
             />
@@ -69,7 +76,14 @@ export const BranchAssociationsMasterFormModal: React.FC<BranchAssociationsMaste
             size="lg"
             required
             dataFetchCallBack={fetchEmployeeMasterDropdown}
-            onSelected={(item) => onFieldChange("EmployeeId", Number(item.value))}
+            onSelected={(item) => {
+              if (!item) {
+                onFieldChange("EmployeeId", null);
+                return;
+              }
+
+              onFieldChange("EmployeeId", Number(item.value));
+            }}
             initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
             error={errors.EmployeeId}
           />

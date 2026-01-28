@@ -262,28 +262,22 @@ export const ViewTenant: React.FC = () => {
 
             {activeTab === 'Overview' && (
                 <>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
                         <div className="lg:col-span-3 space-y-6">
 
                             <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                     Applicant Details
                                 </h4>
-                                {applicantList.length > 0 ? (
-                                    applicantList.map((tenantData, i) => {
+                                <div className="space-y-5">
+                                    {applicantList.length > 0 ? (
+                                        applicantList.map((tenantData, i) => {
 
-                                        const isLast = i === applicantList.length - 1;
-                                        const showBorder = !isLast;
-
-                                        return (
-                                            <div
-                                                key={tenantData.TenantApplicantId ?? i}
-                                                className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 ${showBorder ? 'border-b border-[#135bec2e]' : ''} `}
-                                            >
-                                                {/* SECTION 1 */}
-                                                <div className={`lg:col-span-3 pt-3 ${isLast ? '' : 'pb-3'}`}>
+                                            return (
+                                                <div key={tenantData.TenantApplicantId ?? i} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                                    {/* SECTION 1 */}
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                        <FieldItem label="Type" value={tenantData.ApplicantType} className='text-blue-900' />
+                                                        <FieldItem label="Type" value={tenantData.ApplicantType} className='text-blue-900 bold' />
                                                         <FieldItem label="Applicant Name" value={tenantData.ApplicantName} urls={tenantData?.PhotoURL} isIcon />
                                                         <FieldItem label="Contact Number" value={tenantData?.ApplicantMobileNumber} />
                                                         <FieldItem label="E-Mail ID" value={tenantData?.ApplicantEmailId} />
@@ -299,16 +293,16 @@ export const ViewTenant: React.FC = () => {
                                                         <FieldItem label="Account No." value={tenantData?.AccountNumber} urls={tenantData?.ChequeURL} isIcon />
                                                         <FieldItem label="IFSC" value={tenantData?.IFSCCode} />
                                                     </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className="py-6 text-center text-gray-500 text-sm">
-                                        <NoDataView message="No Applicant Data Found" />
-                                    </div>
-                                )}
 
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="py-6 text-center text-gray-500 text-sm">
+                                            <NoDataView message="No Applicant Data Found" />
+                                        </div>
+                                    )}
+                                </div>
 
                             </section>
 
@@ -428,12 +422,15 @@ export const ViewTenant: React.FC = () => {
                                     Action Details
                                 </h4>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
                                     <FieldItem label="Created By" value={editTenantData?.CreatedBy ?? '-'} />
                                     <FieldItem
                                         label="Created Date"
                                         value={formatDate_dd_MonthName_yy_hh_mm(editTenantData?.CreatedDate ?? '-')}
                                     />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
                                     <FieldItem label="Modified By" value={editTenantData?.ModifiedBy ?? '-'} />
                                     <FieldItem
                                         label="Modified Date"
@@ -471,7 +468,7 @@ export const ViewTenant: React.FC = () => {
             )}
 
             {activeTab === 'Document' && (
-                <div className="space-y-4 pt-5">
+                <div className="mt-3">
                     <TableActionToolbar
                         isShowSearchBar
                         searchTerm={searchTermForTenantDocument}
@@ -502,7 +499,7 @@ export const ViewTenant: React.FC = () => {
 
                                     <div className="flex items-start justify-between p-2 gap-2">
                                         <div className="flex flex-col">
-                                            
+
                                             <span className="line-clamp-2 break-words font-medium text-gray-900">
                                                 {d.DocumentName}
                                             </span>

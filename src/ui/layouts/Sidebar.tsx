@@ -103,17 +103,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, [])
 
 
-  const renderIcon = (iconPath: string | undefined, fallbackIcon: React.ReactNode, size: string = "h-5 w-5") => {
+  const renderIcon = (
+    iconPath: string | undefined,
+    fallbackIcon: React.ReactNode,
+    options?: {
+      isActive?: boolean
+      isCollapsed?: boolean
+    },
+    size: string = "h-5 w-5"
+  ) => {
+    const { isActive } = options || {}
+
     if (iconPath && iconPath.startsWith('assets/') && !imageErrors.has(iconPath)) {
+
+      const parts = iconPath.split('/')
+      const fileName = parts.pop()!
+      const activeFile = `Fill_${fileName}`
+      const activeIconPath = [...parts, activeFile].join('/')
+
+      const finalIcon = isActive ? activeIconPath : iconPath
+
       return (
         <img
-          src={`/${iconPath}`}
+          src={`/${finalIcon}`}
           alt="icon"
           className={`${size} object-contain`}
           onError={() => handleImageError(iconPath)}
         />
       )
     }
+
     return fallbackIcon
   }
 
@@ -129,13 +148,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ...(modules || []).map(module => ({
       id: `module-${module.ModulesMasterId}`,
       label: module.ModuleName,
-      icon: renderIcon(module.Icon, <Home className="h-5 w-5" />),
+      path:module.Path,
+      icon: renderIcon(module.Icon, <Home className="h-5 w-5" />, { isCollapsed: !isOpen, isActive: expandedItems.has(`module-${module.ModulesMasterId}`) }),
       children: (module.SubModuleData || []).map(subModule => ({
+
         id: `submodule-${subModule.SubModulesMasterId}`,
         label: subModule.SubModuleName,
         icon: <Circle className={`h-3 w-3 fill-[#135bec] text-[#135bec]`} />,
 
         path: normalizePath(mapPathToRoute(subModule.Path)),
+
         children: (subModule.SubSubModuleData || [])
           .filter(subSubModule => subSubModule?.IsDisplay)
           .map(subSubModule => ({
@@ -160,7 +182,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleItemClick = (item: MenuItem) => {
     if (item.children && item.children.length > 0) {
+
+      console.log(item.label)
+
+      if (item.path === "redevelopmentDashboard") {
+
+        const route = mapPathToRoute(item.path)
+
+        const navigateTo = route || item.path;
+
+        navigate(navigateTo)
+
+        if (window.innerWidth < 1024) {
+          onClose()
+        }
+      }
+
       toggleExpanded(item.id)
+      
     } else {
       if (item.path) {
 
@@ -315,6 +354,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     return (
       <div key={item.id} className={styles.container}>
+
         <button
           onClick={() => handleItemClick(item)}
           className={styles.button}

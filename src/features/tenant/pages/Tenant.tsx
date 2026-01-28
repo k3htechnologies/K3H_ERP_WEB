@@ -346,7 +346,7 @@ export const Tenant: React.FC = () => {
         key: 'FlatConfiguration',
         label: 'Existing Configuration',
         width: '18',
-        sortable: true,
+        sortable: false,
         align: 'left',
         render: value => <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
       },
@@ -478,24 +478,6 @@ export const Tenant: React.FC = () => {
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  handleConfirmationDialogBoxOpen(row)
-                }}
-                color='transparent'
-                isborderRadius
-                size='sm'
-                style={{
-                  color: 'red',
-                  padding: '4px 8px'
-                }}
-                title="Delete Tenant"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-
-              <Button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
                   handleViewTenantDocument(row)
                 }}
                 color='transparent'
@@ -508,6 +490,24 @@ export const Tenant: React.FC = () => {
                 title="Tenant Document"
               >
                 <FileText className="h-4 w-4" />
+              </Button>
+
+               <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'red',
+                  padding: '4px 8px'
+                }}
+                title="Delete Tenant"
+              >
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           ) : null
@@ -782,6 +782,7 @@ export const Tenant: React.FC = () => {
             key={projectId}
             label="Building"
             title="Select Building"
+            isShowClearSelection={false}
             size="lg"
             initialValue={
               buildingName

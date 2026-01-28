@@ -140,26 +140,27 @@ export const isValidIFSC = (ifsc: string): boolean => {
 // ----------------------------------
 
 export const filterNumbersWithDecimal = (value: string): string => {
-  // remove invalid characters
+  // Allow only digits and dot
   value = value.replace(/[^0-9.]/g, "");
 
-  // allow only ONE dot
+  // Allow only one dot
   const parts = value.split(".");
   if (parts.length > 2) {
     value = parts[0] + "." + parts.slice(1).join("");
   }
 
-  // limit to 2 decimal places
-  if (value.includes(".")) {
-    const [intPart, decimalPart = ""] = value.split(".");
-    value = intPart + "." + decimalPart.slice(0, 2);
-  }
+  // Split integer & decimal
+  let [intPart = "", decimalPart = ""] = value.split(".");
 
-  return value;
+  // Max 16 digits before decimal
+  intPart = intPart.slice(0, 16);
+
+  // Max 2 digits after decimal
+  decimalPart = decimalPart.slice(0, 2);
+
+  // Build final value
+  return value.includes(".") ? `${intPart}.${decimalPart}` : intPart;
 };
-
-
-
 // ----------------------------------
 // PERCENTAGE
 // ----------------------------------

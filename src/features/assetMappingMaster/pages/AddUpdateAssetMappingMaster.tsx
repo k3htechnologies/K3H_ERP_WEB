@@ -267,7 +267,15 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                 size="lg"
                 required
                 dataFetchCallBack={fetchAssetMasterDropdown}
-                onSelected={(item) => handleFieldChange("AssetMasterId", Number(item.value))}
+                onSelected={(item) => {
+                  if (!item) {
+                    handleFieldChange("AssetMasterId", null);
+                    return;
+                  }
+
+                  handleFieldChange("AssetMasterId", Number(item.value));
+                }}
+
                 initialValue={createDropdownInitialValue(formData.AssetMasterId, dropdownLabels.assetName)}
                 error={errors.AssetMasterId}
               />
@@ -280,7 +288,14 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                 size="lg"
                 required
                 dataFetchCallBack={fetchEmployeeMasterDropdown}
-                onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
+                onSelected={(item) => {
+                  if (!item) {
+                    handleFieldChange("EmployeeId", null);
+                    return;
+                  }
+
+                  handleFieldChange("EmployeeId", Number(item.value));
+                }}
                 initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
                 error={errors.EmployeeId}
               />

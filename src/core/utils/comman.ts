@@ -47,3 +47,20 @@ export const calculateAge = (dob: string) => {
   return age.toString()
 }
 
+
+export function formatToKLCr(value: number): string {
+  if (value >= 10000000) {
+    return (value / 10000000).toFixed( value % 10000000 === 0 ? 0 : 1 ) + " CR";
+  }
+
+  if (value >= 100000) {
+    return (value / 100000).toFixed( value % 100000 === 0 ? 0 : 1 ) + " L";
+  }
+
+  if (value >= 1000) {
+    return (value / 1000).toFixed( value % 1000 === 0 ? 0 : 1 ) + " K";
+  }
+
+  return value.toString();
+}
+

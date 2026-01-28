@@ -1,0 +1,2 @@
+export { InventoryHeader } from './InventoryHeader';
+

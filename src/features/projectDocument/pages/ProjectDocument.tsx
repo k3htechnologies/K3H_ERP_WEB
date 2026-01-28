@@ -1025,13 +1025,27 @@ const ProjectDocument: React.FC = () => {
 
           if (deleteProjectDocumentDetailsData.IsMaster === 1) {
 
-            setProjectDocumentList(prevData => prevData.filter(item => item.ProjectDocumentId !== deleteProjectDocumentDetailsData.ProjectDocumentId));
+            const newTotalRecords = pagination.totalRecords - 1;
+
+            const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+            let pageToShow = pagination.currentPage;
+
+            if (pagination.currentPage > newTotalPages) {
+              pageToShow = newTotalPages;
+            }
+
+            else if (projectDocumentList.length === 1 && pagination.currentPage > 1) {
+              pageToShow = pagination.currentPage - 1;
+            }
 
             setPagination({
-              currentPage: pagination.currentPage,
-              totalRecords: pagination.totalRecords - 1,
-              totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
+              currentPage: pageToShow,
+              totalRecords: newTotalRecords,
+              totalPages: newTotalPages
             });
+
+            await loadProjectDocument(pageToShow, filters);
 
           }
           else {
@@ -1291,7 +1305,7 @@ const ProjectDocument: React.FC = () => {
         title={editingDocumentData ? 'Update Document Name' : 'Add Document Name'}
         onSubmit={(e) => handleAddUpdateDocument(1, e)}
         saveText={editingDocumentData ? 'Update' : 'Add'}
-       
+
         loading={isLoading}
         size='xl'
       >
@@ -1334,7 +1348,7 @@ const ProjectDocument: React.FC = () => {
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(0, e)}
         saveText={editingDocumentData ? 'Update' : 'Add'}
-        
+
         loading={isLoading}
         size='xl'
       >

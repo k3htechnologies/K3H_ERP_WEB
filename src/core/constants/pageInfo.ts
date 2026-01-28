@@ -272,6 +272,11 @@ export const getPageInfo = (path: string) => {
             }
 
         //REDEVELOPMENT
+        case 'redevelopmentDashboard':
+            return {
+                title: 'Redevelopment Dashboard',
+                description: 'Single source of truth for building information',
+            }
         case 'building':
             return {
                 title: 'Building',

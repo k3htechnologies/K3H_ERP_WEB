@@ -1,0 +1,2 @@
+export { BuildingTabs } from './BuildingTabs';
+

@@ -114,6 +114,8 @@ import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartn
 import EmployeeResignation from '@/features/resignation/pages/EmployeeResignation';
 import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
 import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
+import Parking from '@/features/parking/pages/Parking';
+import RedevelopmentDashboard from '@/features/redevelopmentDashboard/pages/RedevelopmentDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -265,7 +267,8 @@ function App() {
 
             {/* INVENTORY */}
             <Route path="inventory" element={<Inventory></Inventory>} />
-            <Route path="inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
+            <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
+            <Route path="parking" element={<Parking></Parking>} />
 
             {/* DOCUMENT */}
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />
@@ -292,6 +295,8 @@ function App() {
             <Route path="enquiry/add/:EnquiryId?" element={<EnquiryListStateProvider><AddUpdateEnquiry /></EnquiryListStateProvider>} />
 
             {/* REDEVELOPMENT */}
+
+            <Route path="redevelopmentDashboard" element={<RedevelopmentDashboard />} />
 
             <Route path="building" element={<BuildingListStateProvider><Building /></BuildingListStateProvider>} />
             <Route path="building/view" element={<BuildingListStateProvider><ViewBuilding /></BuildingListStateProvider>} />

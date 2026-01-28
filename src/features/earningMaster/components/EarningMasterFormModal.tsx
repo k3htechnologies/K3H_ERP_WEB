@@ -171,7 +171,14 @@ export const EarningMasterFormModal: React.FC<EarningMasterFormModalProps> = ({
               key={dropdownResetKey}
               title="Select Branch"
               dataFetchCallBack={fetchBranchMasterDropdown}
-              onSelected={(item) => onFieldChange("BranchMasterId", Number(item.value))}
+              onSelected={(item) => {
+                if (!item) {
+                  onFieldChange("BranchMasterId", null);
+                  return;
+                }
+
+                onFieldChange("BranchMasterId", Number(item.value));
+              }}
               initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
               error={errors.BranchMasterId}
             />

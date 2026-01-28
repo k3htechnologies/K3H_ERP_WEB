@@ -604,7 +604,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                   label="DOB"
                   value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
                   onChange={(val) => handleFieldChange('DateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                   required
+                  required
                   error={errors.DateOfBirth}
 
                 />
@@ -699,7 +699,15 @@ const AddUpdateEmployeePage: React.FC = () => {
                   required
                   size="lg"
                   dataFetchCallBack={fetchCompanyMasterDropdown}
-                  onSelected={(item) => handleFieldChange("CompanyId", Number(item.value))}
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("CompanyId", null);
+                      return;
+                    }
+
+                    handleFieldChange("CompanyId", Number(item.value));
+                  }}
+
                   initialValue={createDropdownInitialValue(formData.CompanyId, dropdownLabels.companyName)}
                   error={errors.CompanyId}
                 />
@@ -711,7 +719,14 @@ const AddUpdateEmployeePage: React.FC = () => {
                   title="Select Department"
                   size="lg"
                   dataFetchCallBack={fetchDepartmentMasterDropdown}
-                  onSelected={(item) => handleFieldChange("DepartmentMasterId", Number(item.value))}
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("DepartmentMasterId", null);
+                      return;
+                    }
+
+                    handleFieldChange("DepartmentMasterId", Number(item.value));
+                  }}
                   initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
                   error={errors.DepartmentMasterId}
                 />
@@ -723,7 +738,14 @@ const AddUpdateEmployeePage: React.FC = () => {
                   title="Select Branch"
                   size="lg"
                   dataFetchCallBack={fetchBranchMasterDropdown}
-                  onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("BranchMasterId", null);
+                      return;
+                    }
+
+                    handleFieldChange("BranchMasterId", Number(item.value));
+                  }}
                   initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
                   error={errors.BranchMasterId}
                 />
@@ -735,7 +757,14 @@ const AddUpdateEmployeePage: React.FC = () => {
                   title="Select Designation"
                   size="lg"
                   dataFetchCallBack={fetchDesignationMasterDropdown}
-                  onSelected={(item) => handleFieldChange("DesignationMasterId", Number(item.value))}
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("DesignationMasterId", null);
+                      return;
+                    }
+
+                    handleFieldChange("DesignationMasterId", Number(item.value));
+                  }}
                   initialValue={createDropdownInitialValue(formData.DesignationMasterId, dropdownLabels.designationName)}
                   error={errors.DesignationMasterId}
                 />
@@ -758,7 +787,14 @@ const AddUpdateEmployeePage: React.FC = () => {
                   title="Select Reporting Person"
                   size="lg"
                   dataFetchCallBack={fetchEmployeeMasterDropdown}
-                  onSelected={(item) => handleFieldChange("ReportPersonId", Number(item.value))}
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("ReportPersonId", null);
+                      return;
+                    }
+
+                    handleFieldChange("ReportPersonId", Number(item.value));
+                  }}
                   initialValue={createDropdownInitialValue(formData.ReportPersonId, dropdownLabels.reportPersonName)}
                   error={errors.ReportPersonId}
                 />
@@ -876,7 +912,14 @@ const AddUpdateEmployeePage: React.FC = () => {
                   title="Select Bank"
                   size="lg"
                   dataFetchCallBack={fetchBankListMasterDropdown}
-                  onSelected={(item) => { handleFieldChange("BankListMasterId", Number(item?.value || 0)); }}
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("BankListMasterId", null);
+                      return;
+                    }
+
+                    handleFieldChange("BankListMasterId", Number(item.value));
+                  }}
                   initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
                   error={errors.BankListMasterId}
                 />

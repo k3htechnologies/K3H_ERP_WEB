@@ -59,11 +59,11 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
 
             const payLoad: AddUpdateCompOff = {
                 CompOffId: params.CompOffId ?? 0,
-                Uniquekey: params.Uniquekey && params.Uniquekey.trim() !== '' 
-                    ? params.Uniquekey.trim() 
+                Uniquekey: params.Uniquekey && params.Uniquekey.trim() !== ''
+                    ? params.Uniquekey.trim()
                     : '3fa85f64-5717-4562-b3fc-2c963f66afa6',
                 CompOffDate: params.CompOffDate?.trim() || null,
-                RequestDate: params.RequestDate?.trim() || null,
+                WorkingDate: params.WorkingDate?.trim() || null,
                 Reason: params.Reason?.trim() || null,
             }
 
@@ -90,8 +90,8 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
 
             const payLoad: DeleteCompOffRequest = {
                 CompOffId: params.CompOffId ?? null,
-                Uniquekey: params.Uniquekey && params.Uniquekey.trim() !== '' 
-                    ? params.Uniquekey.trim() 
+                Uniquekey: params.Uniquekey && params.Uniquekey.trim() !== ''
+                    ? params.Uniquekey.trim()
                     : '3fa85f64-5717-4562-b3fc-2c963f66afa6',
             }
 

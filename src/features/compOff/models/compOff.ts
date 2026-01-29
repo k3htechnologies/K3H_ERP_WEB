@@ -1,11 +1,11 @@
 import type { ApiResponse } from '@/core/api/ApiResponse';
 
-export interface CompOffData{
-    CompOffId:number,
-    Uniquekey:string,
-    CompOffDate:string,
-    RequestDate :string,
-    Reason:string,
+export interface CompOffData {
+    CompOffId: number,
+    Uniquekey: string,
+    CompOffDate: string,
+    WorkingDate: string,
+    Reason: string,
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -16,15 +16,15 @@ export interface CompOffData{
     LastModifiedDate: string | null
 }
 
-export interface AddUpdateCompOff{
+export interface AddUpdateCompOff {
     CompOffId?: number | null,
     Uniquekey?: string | null,
     CompOffDate?: string | null,
-    RequestDate?: string | null,
+    WorkingDate?: string | null,
     Reason?: string | null
 
 }
-export interface FilterWithPaginationCompOff{
+export interface FilterWithPaginationCompOff {
     PageSize: number
     PageNumber: number
     CompOffId?: number

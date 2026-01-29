@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import React, {  useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
@@ -23,9 +23,9 @@ import { Plus, Trash2 } from 'lucide-react';
 import { fetchLeaveTypeMasterDropdown } from '@/features/leaveTypeMaster/leaveTypeMasterDropdown';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
 import { LEAVE_PERIOD_MODES } from '@/core/constants/staticData';
+import { useLeaveCreditConfigurationListState } from '@/features/leaveCreditConfiguration/context/LeaveCreditConfigurationListStateContext';
 
 const initialFormState = (): AddUpdateLeaveCreditConfigurationRequest => ({
     LeaveCreditConfigurationId: 0,
@@ -39,7 +39,6 @@ const initialFormState = (): AddUpdateLeaveCreditConfigurationRequest => ({
 });
 
 export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
-
     //#region STATE MANAGEMENT
     const [formData, setFormData] = useState<AddUpdateLeaveCreditConfigurationRequest>(() => initialFormState());
     const [isLoading, setIsLoading] = useState(false);
@@ -57,7 +56,6 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
 
     // NAVIGATE
     const navigate = useNavigate();
-    const location = useLocation();
 
     //GET VALUE FROM URL :ID
     const { id } = useParams<{ id?: string }>();
@@ -76,6 +74,10 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
 
     //#endregion
 
+    //#region LEAVE CREDIT CONFIGURATION LIST STATE CONTEXT
+    const { resetFilters } = useLeaveCreditConfigurationListState();
+    //#endregion
+
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/leaveCreditConfiguration');
     //#endregion
@@ -92,24 +94,22 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
 
     //#endregion
 
-    //#region LOAD LEAVE CREDIT CONFIGURATION DATA
-    const fetchLeaveCreditConfigurationDetails = useCallback(async () => {
+    //#region FETCH LEAVE CREDIT CONFIGURATION DETAILS
+    const fetchLeaveCreditConfigurationDetails = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const params: FilterWithPaginationLeaveCreditConfigurationRequest = {
                     PageNumber: 1,
                     PageSize: 1,
                     IsCheckPermission: false,
                     LeaveCreditConfigurationId: Number(id)
-                }
+                };
 
                 const response = await leaveCreditConfigurationService.apiCallPullLeaveCreditConfiguration(params);
 
                 if (E.isRight(response)) {
-
                     const row = response.right.Data?.[0];
 
                     if (row) {
@@ -149,30 +149,25 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                             setDesignationValue(null);
                         }
                     }
-
                 } else {
-
                     addToast({ type: 'error', title: response.left.message });
-
                 }
+
                 return response;
             },
             undefined,
             (error: any) => {
-
-                addToast({ type: 'error', title: error.message })
+                addToast({ type: 'error', title: error.message });
             },
             undefined,
             'Loading Leave Credit Configuration Data'
         );
-    }, [id, addToast]);
+    };
     //#endregion
 
     //#region INITIALIZATION
     useEffect(() => {
-
         if (id) {
-
             fetchLeaveCreditConfigurationDetails();
             return;
         }
@@ -182,8 +177,8 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
         setLeaveTypeLabels({});
         setDropdownLabels({});
         setDesignationValue(null);
-    }, [id, fetchLeaveCreditConfigurationDetails]);
-
+        setErrors({});
+    }, [id]);
     //#endregion
 
     const handleAddLeaveBalanceType = () => {
@@ -253,17 +248,13 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
         setLeaveBalanceTypes((prev) => prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)));
     };
 
-    //#region [VALIDATION FUNCTION]
-
-    const validateAddLeaveCreditConfigurationForm = (): {
-
-        isValid: boolean
-
-        errors: { [key: string]: string }
-
+    //#region LEAVE CREDIT CONFIGURATION VALIDATION | ADD | UPDATE ACTION
+    // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+    const validateLeaveCreditConfigurationForm = (): {
+        isValid: boolean;
+        errors: { [key: string]: string };
     } => {
-
-        const newErrors: { [key: string]: string } = {}
+        const newErrors: { [key: string]: string } = {};
 
         if (!formData.LeavePeriodMode?.trim()) {
             newErrors.LeavePeriodMode = "Leave Period Mode is required.";
@@ -306,55 +297,44 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
-        }
-    }
-    //#endregion
-
-    //#region ADD UPDATE LEAVE CREDIT CONFIGURATION
-    const PushLeaveCreditConfigurationFormData = (): AddUpdateLeaveCreditConfigurationRequest => {
-        // Get designation IDs from the hook
-        const designationIdsString = designationDropdown.selectedValues.length > 0
-            ? designationDropdown.selectedValues.join(',')
-            : '';
-
-        return {
-            ...formData,
-            DepartmentMasterId: formData.DepartmentMasterId || 0,
-            DesignationId: designationIdsString,
-            FinancialYearStartDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.FinancialYearStartDate),
-            FinancialYearEndDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.FinancialYearEndDate),
-            LeaveTypebalanceJSONList: JSON.stringify(
-                leaveBalanceTypes.map((item) => ({
-                    LeaveTypeBalanceId: item.LeaveTypeBalanceId || 0,
-                    LeaveTypeId: item.LeaveTypeId || 0,
-                    LeaveCredit: item.LeaveCredit || 0,
-                    LeaveCreditConfigurationId: item.LeaveCreditConfigurationId || formData.LeaveCreditConfigurationId || 0,
-                })),
-            ),
         };
-    }
+    };
 
-    const handleSubmit = async () => {
+    // ============================================================= [ADD UPDATE FUNCTION] =============================================================================================
+    const handleSave = async () => {
+        setErrors({});
 
-        setErrors({})
-
-
-        const validation = validateAddLeaveCreditConfigurationForm()
+        const validation = validateLeaveCreditConfigurationForm();
 
         if (!validation.isValid) {
-
-            setErrors(validation.errors)
-
-            return
+            setErrors(validation.errors);
+            return;
         }
 
         await runApiWithLoader(
             setIsLoading,
-
             setLoadingMessage,
             async () => {
+                // Get designation IDs from the hook
+                const designationIdsString = designationDropdown.selectedValues.length > 0
+                    ? designationDropdown.selectedValues.join(',')
+                    : '';
 
-                const payload = PushLeaveCreditConfigurationFormData();
+                const payload: AddUpdateLeaveCreditConfigurationRequest = {
+                    ...formData,
+                    DepartmentMasterId: formData.DepartmentMasterId || 0,
+                    DesignationId: designationIdsString,
+                    FinancialYearStartDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.FinancialYearStartDate),
+                    FinancialYearEndDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.FinancialYearEndDate),
+                    LeaveTypebalanceJSONList: JSON.stringify(
+                        leaveBalanceTypes.map((item) => ({
+                            LeaveTypeBalanceId: item.LeaveTypeBalanceId || 0,
+                            LeaveTypeId: item.LeaveTypeId || 0,
+                            LeaveCredit: item.LeaveCredit || 0,
+                            LeaveCreditConfigurationId: item.LeaveCreditConfigurationId || formData.LeaveCreditConfigurationId || 0,
+                        })),
+                    ),
+                };
 
                 const response = await leaveCreditConfigurationService.apiCallAddUpdateLeaveCreditConfiguration(payload);
 
@@ -366,68 +346,28 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                         addToast({ type: "error", title: apiResponse.ErrorMessage[0] });
                     } else if (apiResponse.WarningMessage && apiResponse.WarningMessage.length > 0) {
                         addToast({ type: "warning", title: apiResponse.WarningMessage[0] });
-                        // Get list state from navigation if available, otherwise use defaults
-                        const locationState = location.state as {
-                            listState?: {
-                                page?: number;
-                                filters?: any;
-                                sortInfo?: any;
-                                searchTerm?: string;
-                            };
-                        } | null;
-
-                        const listState = locationState?.listState || {
-                            page: 1,
-                            filters: {},
-                            sortInfo: undefined,
-                            searchTerm: '',
-                        };
-
-                        navigate("/leaveCreditConfiguration", {
-                            state: { listState }
-                        });
+                        resetFilters();
+                        navigate('/leaveCreditConfiguration');
                     } else {
                         // Success - use backend SuccessMessage
                         addToast({ type: "success", title: apiResponse.SuccessMessage?.[0] });
-
-                        // Get list state from navigation if available, otherwise use defaults
-                        const locationState = location.state as {
-                            listState?: {
-                                page?: number;
-                                filters?: any;
-                                sortInfo?: any;
-                                searchTerm?: string;
-                            };
-                        } | null;
-
-                        const listState = locationState?.listState || {
-                            page: 1,
-                            filters: {},
-                            sortInfo: undefined,
-                            searchTerm: '',
-                        };
-
-                        navigate("/leaveCreditConfiguration", {
-                            state: { listState }
-                        });
+                        resetFilters();
+                        navigate('/leaveCreditConfiguration');
                     }
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
+
                 return response;
             },
             undefined,
             (error: any) => {
-
-                addToast({ type: 'error', title: error.message })
+                addToast({ type: 'error', title: error.message });
             },
             undefined,
-
-            Number(id) === 0 ? 'Add' : 'Update'
-        )
-
+            formData.LeaveCreditConfigurationId === 0 ? 'Adding Leave Credit Configuration...' : 'Updating Leave Credit Configuration...'
+        );
     };
-
     //#endregion
 
     return (
@@ -436,13 +376,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                 <div />
             </Loader>
             <div className="space-y-6">
-                <HeaderActionBar
-                    titleText={formData.LeaveCreditConfigurationId && formData.LeaveCreditConfigurationId > 0 ? 'Update' : 'Add'}
-                    cancelText="Cancel"
-                    onCancel={() => navigate(-1)}
-                    canAction={false}
-                    isLoading={isLoading}
-                />
+               
 
                 {/* Details Card */}
                 <div className="rounded-lg shadow-sm border border-gray-200 p-6" style={{ backgroundColor: '#FFFFFF' }}>
@@ -610,12 +544,12 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
 
                 <BottomActionBar
                     cancelText="Cancel"
-                    saveText={formData.LeaveCreditConfigurationId ? "Update" : "Add"}
+                    saveText={formData.LeaveCreditConfigurationId && formData.LeaveCreditConfigurationId > 0 ? "Update" : "Add"}
                     onCancel={() => navigate(-1)}
-                    onSave={() => {
-                        handleSubmit();
-                    }}
                     canAction={canAction}
+                    onSave={() => {
+                        void handleSave();
+                    }}
                     isLoading={isLoading}
                 />
 

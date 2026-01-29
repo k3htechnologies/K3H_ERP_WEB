@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import type {
     LeaveCreditConfigurationData,
     FilterWithPaginationLeaveCreditConfigurationRequest,
@@ -14,13 +14,7 @@ import { runApiWithLoader } from '@/core/utils/apiLoaderHelper';
 import * as E from 'fp-ts/Either';
 import useToast from '@/core/hooks/useToast';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
-
-const DEFAULT_LIST_STATE = {
-    page: 1,
-    filters: {},
-    sortInfo: undefined,
-    searchTerm: '',
-};
+import { useLeaveCreditConfigurationListState } from '@/features/leaveCreditConfiguration/context/LeaveCreditConfigurationListStateContext';
 
 const ViewLeaveCreditConfiguration: React.FC = () => {
     //#region STATE MANAGEMENT
@@ -29,23 +23,14 @@ const ViewLeaveCreditConfiguration: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState('');
     //#endregion
 
-    //#region LOCATION & NAVIGATION
-    const location = useLocation() as {
-        state?: {
-            editLeaveCreditConfigurationData?: LeaveCreditConfigurationData | null;
-            data?: LeaveCreditConfigurationData | null;
-            listState?: {
-                page: number;
-                filters: any;
-                sortInfo?: any;
-                searchTerm?: string;
-                LeaveCreditConfigurationId?: number;
-            };
-        };
-    };
-
+    //#region NAVIGATION
     const navigate = useNavigate();
     const { id } = useParams<{ id?: string }>();
+    //#endregion
+
+    //#region LEAVE CREDIT CONFIGURATION LIST STATE CONTEXT
+    const { listState } = useLeaveCreditConfigurationListState();
+    const { leaveCreditConfigurationId } = listState;
     //#endregion
 
     //#region PERMISSIONS
@@ -56,12 +41,15 @@ const ViewLeaveCreditConfiguration: React.FC = () => {
     const { addToast } = useToast();
     //#endregion
 
-    //#region LIST STATE
-    const listState = location.state?.listState ?? DEFAULT_LIST_STATE;
-    //#endregion
-
     //#region DATA LOADING | FETCH | LOAD LEAVE CREDIT CONFIGURATION
     const loadLeaveCreditConfiguration = useCallback(async () => {
+        const leaveCreditConfigurationIdToUse = Number(id) || leaveCreditConfigurationId || 0;
+        
+        if (!leaveCreditConfigurationIdToUse) {
+            addToast({ type: 'error', title: 'Leave Credit Configuration ID is required' });
+            return;
+        }
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -70,7 +58,7 @@ const ViewLeaveCreditConfiguration: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 1,
                     IsCheckPermission: false,
-                    LeaveCreditConfigurationId: Number(id) || 0,
+                    LeaveCreditConfigurationId: leaveCreditConfigurationIdToUse,
                 };
 
                 const response = await leaveCreditConfigurationService.apiCallPullLeaveCreditConfiguration(params);
@@ -95,21 +83,15 @@ const ViewLeaveCreditConfiguration: React.FC = () => {
             undefined,
             'Loading Leave Credit Configuration'
         );
-    }, [id, addToast]);
+    }, [id, leaveCreditConfigurationId, addToast]);
     //#endregion
 
     //#region INIT
     useEffect(() => {
-        // Check if data is passed via location state first
-        const stateData = location.state?.editLeaveCreditConfigurationData ?? location.state?.data;
-        
-        if (stateData) {
-            setLeaveCreditConfigurationData(stateData);
-        } else if (id) {
-            // If no state data but we have an ID, fetch from API
+        if (id || leaveCreditConfigurationId) {
             loadLeaveCreditConfiguration();
         }
-    }, [id, location.state, loadLeaveCreditConfiguration]);
+    }, [id, leaveCreditConfigurationId, loadLeaveCreditConfiguration]);
     //#endregion
 
     //#region DATA
@@ -130,23 +112,13 @@ const ViewLeaveCreditConfiguration: React.FC = () => {
     const handleEditLeaveCreditConfiguration = (row: LeaveCreditConfigurationData) => {
         if (!row?.LeaveCreditConfigurationId) return;
 
-        navigate(`/leaveCreditConfiguration/add/${row.LeaveCreditConfigurationId}`, {
-            state: {
-                editLeaveCreditConfigurationData: row,
-                fromList: true,
-                listState,
-            },
-        });
+        navigate(`/leaveCreditConfiguration/add/${row.LeaveCreditConfigurationId}`);
     };
     //#endregion
 
     //#region BACK HANDLER
     const handleBackToListLeaveCreditConfiguration = () => {
-        navigate('/leaveCreditConfiguration', {
-            state: {
-                listState,
-            },
-        });
+        navigate('/leaveCreditConfiguration');
     };
     //#endregion
 

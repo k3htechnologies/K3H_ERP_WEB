@@ -32,6 +32,7 @@ export interface DateInputProps extends Omit<DatePickerProps, 'onChange'> {
   showClearButton?: boolean
   onClear?: () => void
   isActive?: boolean // For highlighting when active/editing
+  openCalendarOnClick?: boolean // If false, clicking on input won't open calendar
 }
 
 export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
@@ -48,6 +49,7 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
     showClearButton = true,
     onClear,
     isActive = false,
+    openCalendarOnClick = true,
     ...props
   }, ref) => {
     const theme = THEME
@@ -228,11 +230,11 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
             disabled={disabled}
             error={error}
             helperText={helperText}
-            onClick={handleToggleOpen}
+            onClick={openCalendarOnClick ? handleToggleOpen : undefined}
             leftIcon={<CalendarIcon size={18} />}
             placeholder="DD-MM-YYYY"
             style={{
-              cursor: disabled ? 'not-allowed' : 'pointer',
+              cursor: disabled ? 'not-allowed' : openCalendarOnClick ? 'pointer' : 'default',
               borderColor: isActive ? '#3b82f6' : undefined,
               borderWidth: isActive ? '2px' : undefined,
               paddingRight: showClearButton && displayValue ? '40px' : undefined,

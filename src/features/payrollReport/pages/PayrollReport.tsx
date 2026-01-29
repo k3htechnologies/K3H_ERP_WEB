@@ -358,14 +358,14 @@ export const PayrollReport: React.FC = () => {
     setTempFilters({});
     setFilters({});
     setPagination({ currentPage: 1 });
-    
+
     if (activeTab === "Comp-Off") loadCompOff(1, {});
     else if (activeTab === 'Leave') loadLeave(1, {});
     else if (activeTab === 'Outdoor') loadOutdoor(1, {});
     else if (activeTab === 'Resignation') loadResignations(1, {});
     else if (activeTab === "Attendance") loadAttendance(1, {});
     else if (activeTab === "Attendance Regularization") loadAttendanceRegularization(1, {});
-    
+
     setShowFilterPopup(false);
   };
 
@@ -521,7 +521,7 @@ export const PayrollReport: React.FC = () => {
         render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       },
       {
-        key: 'RequestDate',
+        key: 'WorkingDate',
         label: 'Request Date',
         width: '25',
         sortable: false,
@@ -805,15 +805,15 @@ export const PayrollReport: React.FC = () => {
         />
       </div>
 
-        <div className="space-y-4 p-4">
-          <DataTable
+      <div className="space-y-4 p-4">
+        <DataTable
           data={getCurrentData()}
           columns={getCurrentColumns()}
           pagination={paginationInfo}
           emptyMessage={getEmptyMessage()}
-            fixedHeight
-            recordsPerPage={20}
-            className="flex-1"
+          fixedHeight
+          recordsPerPage={20}
+          className="flex-1"
           sortInfo={sortInfo}
           onSort={handleSortColumn}
         />
@@ -831,7 +831,7 @@ export const PayrollReport: React.FC = () => {
         saveText="Apply "
         cancelText="Clear"
         onCancel={() => clearFilters()}
-       
+
         size="small-half"
       >
         <div className="space-y-6">

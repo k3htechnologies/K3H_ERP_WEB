@@ -22,7 +22,7 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  const [selectingStart, setSelectingStart] = useState(true);
+  const [, setSelectingStart] = useState(true);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

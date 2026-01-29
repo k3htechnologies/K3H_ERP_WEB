@@ -4,9 +4,8 @@ import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type Ta
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import type { LeaveCreditConfigurationData, FilterWithPaginationLeaveCreditConfigurationRequest, } from '@/features/leaveCreditConfiguration/models/LeaveCreditConfigurationModel';
-
-import { leaveCreditConfigurationService } from '@/features/leaveCreditConfiguration/services/LeaveCreditConfigurationService'
+import type { LeaveCreditConfigurationData, FilterWithPaginationLeaveCreditConfigurationRequest, DeleteLeaveCreditConfigurationRequest } from '@/features/leaveCreditConfiguration/models/LeaveCreditConfigurationModel';
+import { leaveCreditConfigurationService } from '@/features/leaveCreditConfiguration/services/LeaveCreditConfigurationService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -16,136 +15,64 @@ import { DateInput } from '@/ui/components/forms/DateInput';
 import { formatDate_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { Trash2 } from 'lucide-react';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import type { DeleteLeaveCreditConfigurationRequest } from '@/features/leaveCreditConfiguration/models/LeaveCreditConfigurationModel';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useLocation, type Location, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
+import { useLeaveCreditConfigurationListState } from '@/features/leaveCreditConfiguration/context/LeaveCreditConfigurationListStateContext';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 export const LeaveCreditConfiguration: React.FC = () => {
-
   //#region STATE
   const [leaveCreditConfigurationList, setLeaveCreditConfigurationList] = useState<LeaveCreditConfigurationData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
 
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
-  //TABLE SORT INFO
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
+  const { addToast } = useToast();
 
-  // TOAST
-  const { addToast } = useToast()
-
-  // SINGLE SEARCH TEXT BOX
-  const [searchTerm, setSearchTerm] = useState('')
-
-  const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchLeaveCreditConfigurations(value)
-  }, 350)
-
-
-  //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
+
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeLeaveCreditConfigurationColumnsModal, setIsShowCustomizeLeaveCreditConfigurationColumnsModal] = useState(false);
 
-  //DELETE CONFIRMATION DIALOG
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-  const [selectedLeaveCreditConfigurationToDelete, setSelectedLeaveCreditConfigurationToDelete] = useState<LeaveCreditConfigurationData | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  //#endregion
-
-  //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
+
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+
+  const [deleteLeaveCreditConfigurationData, setDeleteLeaveCreditConfigurationData] = useState<LeaveCreditConfigurationData | null>(null);
+
   //#endregion
 
-  //#region STATE CREATED PAGE AFTER NAVIGATE VIEW OR ADD UPDATE PAGE THEN CHECK
+  //#region LEAVE CREDIT CONFIGURATION LIST STATE CONTEXT
+  const { listState, updateListState, resetFilters, clearLeaveCreditConfigurationContext } = useLeaveCreditConfigurationListState();
 
-  const location = useLocation() as Location & {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: FilterInfo;
-        sortInfo?: SortInfo;
-        searchTerm?: string;
-        LeaveCreditConfigurationId?: number;
-      };
-    };
-  };
+  const { page, filters, sortInfo, searchTerm } = listState;
   //#endregion
 
-  //#region INIT
+  //#region DATA LOAD LEAVE CREDIT CONFIGURATION
 
-  useEffect(() => {
-
-    const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string; LeaveCreditConfigurationId?: number }
-      | undefined;
-
-    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '', LeaveCreditConfigurationId: 0 };
-
-
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
-    if (listState.searchTerm && String(listState.searchTerm).trim()) {
-
-      setSearchTerm(String(listState.searchTerm));
-
-      loadLeaveCreditConfigurations(listState.page ?? 1, { DepartmentName: String(listState.searchTerm).trim() });
-
-      return;
-    }
-
-
-    loadLeaveCreditConfigurations(listState.page ?? 1, listState.filters ?? {});
-
-  }, [location.state]);
-
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel?.()
-    }
-  }, [debouncedSearch])
-  //#endregion
-
-  //#region DATA LOAD
-  const fetchLeaveCreditConfigurationList = async (page: number = pagination.currentPage) => {
-    return await loadLeaveCreditConfigurations(page, filters);
-  }
-
-  const loadLeaveCreditConfigurations = async (page: number, filterParams: FilterInfo) => {
+  const loadLeaveCreditConfigurations = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
+        let sortByParam: string | undefined;
 
-        let sortByParam = undefined;
         if (sortInfo) {
-          const column = leaveCreditConfigurationColumns.find(col => col.key === sortInfo.column)
+          const column = leaveCreditConfigurationColumns.find(col => col.key === sortInfo.column);
           if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
+            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
+
         const params: FilterWithPaginationLeaveCreditConfigurationRequest = {
-          PageNumber: page,
+          PageNumber: pageNum,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
           LeaveCreditConfigurationId: filterParams.LeaveCreditConfigurationId ? Number(filterParams.LeaveCreditConfigurationId) : 0,
@@ -155,16 +82,16 @@ export const LeaveCreditConfiguration: React.FC = () => {
           DepartmentName: filterParams.DepartmentName?.trim() || undefined,
           DesignationName: filterParams.DesignationName?.trim() || undefined,
           SortBy: sortByParam
-        }
+        };
 
-        const response = await getLeaveCreditConfigurations(params);
+        const response = await leaveCreditConfigurationService.apiCallPullLeaveCreditConfiguration(params);
 
         if (E.isRight(response)) {
 
           setLeaveCreditConfigurationList(response.right.Data);
 
           setPagination({
-            currentPage: page,
+            currentPage: pageNum,
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
           });
@@ -173,68 +100,105 @@ export const LeaveCreditConfiguration: React.FC = () => {
 
           addToast({ type: 'error', title: response.left.message });
         }
-        return response
+
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message })
+        addToast({ type: 'error', title: error.message });
       },
       undefined,
       'Loading Leave Credit Configuration'
-    )
-  }
-
-  //#endregion
-
-  //#region SEARCH LEAVE CREDIT CONFIGURATION
-  const searchLeaveCreditConfigurations = async (searchValue: string) => {
-
-    setSearchTerm(searchValue);
-
-    if (searchValue.trim() === '') {
-      fetchLeaveCreditConfigurationList();
-      return;
-    }
-
-    const filterParams: FilterInfo = {
-      DepartmentName: searchValue.trim()
-    };
-
-    await loadLeaveCreditConfigurations(1, filterParams);
-  }
-  //#endregion
-
-  //#region CLEAR SEARCH LEAVE CREDIT CONFIGURATION
-  const clearsearchLeaveCreditConfigurations = () => {
-    setSearchTerm('');
-
-    debouncedSearch.cancel?.();
-
-    setFilters({});
-    setTempFilters({});
-    setPagination({ currentPage: 1 });
-    loadLeaveCreditConfigurations(1, {});
-    try {
-      navigate(location.pathname, { replace: true, state: {} });
-    } catch {
-    }
+    );
   };
 
   //#endregion
 
-  //#region EXCEL EXPORT PDF | EXCEL
+  //#region INIT
+  useEffect(() => {
+
+    clearLeaveCreditConfigurationContext();
+
+    if (searchTerm && searchTerm.trim()) {
+
+      loadLeaveCreditConfigurations(page, { DepartmentName: searchTerm.trim() }, sortInfo);
+
+    } else {
+
+      loadLeaveCreditConfigurations(page, filters, sortInfo);
+
+    }
+  }, [page, filters, sortInfo, searchTerm, clearLeaveCreditConfigurationContext]);
+
+
+  useEffect(() => {
+
+    setPagination({ currentPage: page });
+
+  }, [page]);
+
+  useEffect(() => {
+
+    setTempFilters(filters);
+
+  }, [filters]);
+
+  //#endregion
+
+  //#region SEARCH LEAVE CREDIT CONFIGURATION FILTER
+
+  const debouncedSearch = useDebouncedCallback((value: string, isSearch: boolean = true) => {
+
+    let filterParams: FilterInfo = {};
+
+    if (value.trim() === '') {
+
+      updateListState({ searchTerm: '', filters: {}, page: 1 });
+
+      return;
+    }
+
+    if (isSearch) {
+
+      filterParams = { DepartmentName: value.trim() };
+    }
+
+    updateListState({ searchTerm: value, filters: filterParams, page: 1 });
+
+  }, 350);
+
+  const searchLeaveCreditConfigurations = (searchValue: string) => {
+
+    updateListState({ searchTerm: searchValue });
+
+    debouncedSearch(searchValue, false);
+  };
+
+  //#endregion
+
+  //#region CLEAR SEARCH LEAVE CREDIT CONFIGURATION
+  const clearSearchLeaveCreditConfigurations = () => {
+    debouncedSearch.cancel?.();
+    resetFilters();
+    setTempFilters({});
+  };
+
+  //#endregion
+
+  //#region  EXCEL EXPORT TO EXCEL | PDF
   const handleExportLeaveCreditConfigurations = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam = undefined
+        let sortByParam: string | undefined;
         if (sortInfo) {
-          const column = leaveCreditConfigurationColumns.find(col => col.key === sortInfo.column)
+          const column = leaveCreditConfigurationColumns.find(col => col.key === sortInfo.column);
           if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
+            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
           }
         }
+
         const params: FilterWithPaginationLeaveCreditConfigurationRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -246,40 +210,36 @@ export const LeaveCreditConfiguration: React.FC = () => {
           DesignationName: filters.DesignationName?.trim() || undefined,
           SortBy: sortByParam,
           ExportType: exportType
-        }
-        const response = await getLeaveCreditConfigurations(params);
-        handleExportFile(response, exportType, 'Leave Credit Configuration', addToast)
+        };
+
+        const response = await leaveCreditConfigurationService.apiCallPullLeaveCreditConfiguration(params);
+
+        handleExportFile(response, exportType, 'Leave Credit Configuration', addToast);
+
         return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Export failed' })
+        addToast({ type: 'error', title: error.message || 'Export failed' });
       },
       undefined,
-      'Preparing Export...'
-    )
-  }
+      'Preparing Export'
+    );
+  };
 
-  const handleExportLeaveCreditConfigurationExcel = () => handleExportLeaveCreditConfigurations('Excel')
-  const handleExportLeaveCreditConfigurationPdf = () => handleExportLeaveCreditConfigurations('PDF')
-  //#endregion
+  const handleExportLeaveCreditConfigurationExcel = () => handleExportLeaveCreditConfigurations('Excel');
+  const handleExportLeaveCreditConfigurationPdf = () => handleExportLeaveCreditConfigurations('PDF');
 
-  //#region GET LEAVE CREDIT CONFIGURATION DATA FROM API
-  const getLeaveCreditConfigurations = async (filterParams: FilterWithPaginationLeaveCreditConfigurationRequest) => {
-    return await leaveCreditConfigurationService.apiCallPullLeaveCreditConfiguration(filterParams);
-  }
   //#endregion
 
   //#region TABLE CONFIG
-
-  const handlePageChange = useCallback((page: number) => {
-    fetchLeaveCreditConfigurationList(page);
-  }, []);
+  const handlePageChange = useCallback((newPage: number) => {
+    updateListState({ page: newPage });
+  }, [updateListState]);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
-    setSortInfo(sort);
-    fetchLeaveCreditConfigurationList(1);
-  }, []);
+    updateListState({ sortInfo: sort, page: 1 });
+  }, [updateListState]);
 
   const leaveCreditConfigurationPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -289,84 +249,31 @@ export const LeaveCreditConfiguration: React.FC = () => {
       pageSize: pagination.pageSize,
       onPageChange: handlePageChange
     }),
-    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
-  )
+    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize]
+  );
 
   const leaveCreditConfigurationListForTable = useMemo(() => leaveCreditConfigurationList, [leaveCreditConfigurationList]);
-
   //#endregion
 
   //#region VIEW LEAVE CREDIT CONFIGURATION DETAILS
   const handleViewLeaveCreditConfigurationDetails = useCallback((row: LeaveCreditConfigurationData) => {
-    navigate('/leaveCreditConfiguration/view', {
-      state: {
-        editLeaveCreditConfigurationData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          LeaveCreditConfigurationId: row.LeaveCreditConfigurationId,
-        },
-      },
+    updateListState({
+      leaveCreditConfigurationId: row.LeaveCreditConfigurationId,
     });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    navigate('/leaveCreditConfiguration/view');
+  }, [navigate, updateListState]);
   //#endregion
 
-  //#region DELETE LEAVE CREDIT CONFIGURATION
+  //#region CONFIRMATION DIALOG BOX
+
   const handleConfirmationDialogBoxOpen = useCallback((row: LeaveCreditConfigurationData) => {
-    setSelectedLeaveCreditConfigurationToDelete(row);
+    setDeleteLeaveCreditConfigurationData(row);
     setIsConfirmationDialogBoxOpen(true);
   }, []);
 
-  const handleDeleteLeaveCreditConfiguration = useCallback(async () => {
-    if (!selectedLeaveCreditConfigurationToDelete?.LeaveCreditConfigurationId || !selectedLeaveCreditConfigurationToDelete?.Uniquekey) return;
-
-    setIsDeleting(true);
-
-    const payload: DeleteLeaveCreditConfigurationRequest = {
-      LeaveCreditConfigurationId: selectedLeaveCreditConfigurationToDelete.LeaveCreditConfigurationId,
-      Uniquekey: selectedLeaveCreditConfigurationToDelete.Uniquekey,
-    };
-
-    await runApiWithLoader(
-      setIsLoading,
-      setLoadingMessage,
-      async () => {
-        const response = await leaveCreditConfigurationService.apiCallDeleteLeaveCreditConfiguration(payload);
-        if (E.isRight(response)) {
-          if (response.right.ErrorMessage && response.right.ErrorMessage.length > 0) {
-            addToast({ type: 'error', title: response.right.ErrorMessage[0] });
-          } else if (response.right.WarningMessage && response.right.WarningMessage.length > 0) {
-            addToast({ type: 'warning', title: response.right.WarningMessage[0] });
-            setIsConfirmationDialogBoxOpen(false);
-            setSelectedLeaveCreditConfigurationToDelete(null);
-            loadLeaveCreditConfigurations(pagination.currentPage, filters);
-          } else {
-            // Success - use backend SuccessMessage
-            addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
-            setIsConfirmationDialogBoxOpen(false);
-            setSelectedLeaveCreditConfigurationToDelete(null);
-            loadLeaveCreditConfigurations(pagination.currentPage, filters);
-          }
-        } else {
-          addToast({ type: 'error', title: response.left.message });
-        }
-        return response;
-      },
-      undefined,
-      (error: any) => addToast({ type: 'error', title: error?.message || 'An error occurred' }),
-      undefined,
-      'Deleting Leave Credit Configuration'
-    );
-
-    setIsDeleting(false);
-  }, [selectedLeaveCreditConfigurationToDelete, addToast, pagination.currentPage, filters]);
   //#endregion
 
   //#region TABLE COLUMN
-
   const leaveCreditConfigurationColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -455,78 +362,41 @@ export const LeaveCreditConfiguration: React.FC = () => {
       }
     ],
     [canAction, handleViewLeaveCreditConfigurationDetails, handleConfirmationDialogBoxOpen]
-  )
-
+  );
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
+  const requiredLeaveCreditConfigurationColumnKeys: string[] = ['DepartmentName'];
 
-  const requiredLeaveCreditConfigurationColumnKeys: string[] = ['DepartmentMasterId'];
+  const allLeaveCreditConfigurationColumnKeys: string[] = leaveCreditConfigurationColumns.map(c => c.key);
 
-  const [selectedLeaveCreditConfigurationColumnKeys, setSelectedLeaveCreditConfigurationColumnKeys] = useState<string[]>([]);
-
-  useEffect(() => {
-
-    if (leaveCreditConfigurationColumns.length === 0) return;
-
+  const [selectedLeaveCreditConfigurationColumnKeys, setSelectedLeaveCreditConfigurationColumnKeys] = useState<string[]>(() => {
     try {
       const saved = LocalStorageHelper.getLeaveCreditConfigurationTableColumns();
       if (saved) {
-        const parsed: string[] = JSON.parse(saved);
-        const filtered = parsed.filter(k =>
-          leaveCreditConfigurationColumns.some(col => col.key === k)
-        );
-        const final = Array.from(
-          new Set([
-            ...filtered,
-            ...requiredLeaveCreditConfigurationColumnKeys,
-          ])
-        );
-        setSelectedLeaveCreditConfigurationColumnKeys(final);
-        return;
+        const parsed = JSON.parse(saved) as string[];
+        const withRequired = Array.from(new Set([...parsed, ...requiredLeaveCreditConfigurationColumnKeys]));
+        return withRequired.filter(k => allLeaveCreditConfigurationColumnKeys.includes(k));
       }
-    } catch { }
+    } catch {
+      // ignore
+    }
+    return allLeaveCreditConfigurationColumnKeys;
+  });
 
-    const allKeys = leaveCreditConfigurationColumns.map(c => c.key);
-    const final = Array.from(
-      new Set([...allKeys, ...requiredLeaveCreditConfigurationColumnKeys])
+  useEffect(() => {
+    setSelectedLeaveCreditConfigurationColumnKeys(prev =>
+      Array.from(new Set([...prev, ...requiredLeaveCreditConfigurationColumnKeys])).filter(k =>
+        allLeaveCreditConfigurationColumnKeys.includes(k)
+      )
     );
-    setSelectedLeaveCreditConfigurationColumnKeys(final);
-  }, [leaveCreditConfigurationColumns]);
+
+  }, [leaveCreditConfigurationColumns.length]);
 
   const visibleLeaveCreditConfigurationColumns = useMemo(
-    () => leaveCreditConfigurationColumns.filter(col =>
-      selectedLeaveCreditConfigurationColumnKeys.includes(col.key)
-    ),
+    () => leaveCreditConfigurationColumns.filter(col => selectedLeaveCreditConfigurationColumnKeys.includes(col.key)),
     [leaveCreditConfigurationColumns, selectedLeaveCreditConfigurationColumnKeys]
   );
-
-  //#endregion
-
-  //#region FILTER HELPERS
-  const applyFilters = () => {
-    setFilters(tempFilters)
-    loadLeaveCreditConfigurations(1, tempFilters)
-    setShowFilterPopup(false)
-  }
-
-  const clearFilters = () => {
-    setTempFilters({});
-    setFilters({});
-
-    // reset page
-    setPagination({ currentPage: 1 });
-
-    // load empty filters
-    loadLeaveCreditConfigurations(1, {});
-
-    setShowFilterPopup(false);
-
-    // clear router state (very important)
-    navigate(location.pathname, { replace: true, state: {} });
-  };
-
-
   //#endregion
 
   //#region  HANDLE CHANGE EVENT
@@ -537,39 +407,103 @@ export const LeaveCreditConfiguration: React.FC = () => {
 
   //#endregion
 
-  //#region ADD LEAVE CREDIT CONFIGURATION THEN NAVIGATE
-  const handleAddLeaveCreditConfigurationModal = () => {
-    navigate('/leaveCreditConfiguration/add');
+  //#region  DELETE LEAVE CREDIT CONFIGURATION EVENT
+  const handleDeleteLeaveCreditConfiguration = async () => {
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteLeaveCreditConfigurationData) return;
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const params: DeleteLeaveCreditConfigurationRequest = {
+          LeaveCreditConfigurationId: deleteLeaveCreditConfigurationData.LeaveCreditConfigurationId,
+          Uniquekey: deleteLeaveCreditConfigurationData.Uniquekey ?? "",
+        };
+
+        const response = await leaveCreditConfigurationService.apiCallDeleteLeaveCreditConfiguration(params);
+
+        if (E.isRight(response)) {
+
+          const newTotalRecords = pagination.totalRecords - 1;
+
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (leaveCreditConfigurationList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
+
+          setPagination({
+            currentPage: pageToShow,
+            totalRecords: newTotalRecords,
+            totalPages: newTotalPages
+          });
+
+          await loadLeaveCreditConfigurations(pageToShow, filters, sortInfo);
+
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteLeaveCreditConfigurationData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+        }
+
+        return response
+      },
+      undefined,
+      (error: unknown) => {
+        const err = error as { message?: string };
+        addToast({ type: 'error', title: err.message || 'An error occurred' });
+      },
+      undefined,
+      'Delete Leave Credit Configuration'
+    );
   };
-  //#endregion
 
   //#endregion
+
 
   return (
-
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>
+        <div></div>
+      </Loader>
+
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
         searchPlaceholder="Search By Department Name..."
-        onSearchChange={(v) => {
-          setSearchTerm(v)
-          debouncedSearch(v)
-        }}
-        onClearSearch={clearsearchLeaveCreditConfigurations}
+        onSearchChange={searchLeaveCreditConfigurations}
+        onClearSearch={clearSearchLeaveCreditConfigurations}
         isShowFilterButton
         filters={filters}
         onOpenFilter={() => {
-          setTempFilters(filters)
-          setShowFilterPopup(true)
+          setTempFilters(filters);
+          setShowFilterPopup(true);
         }}
         isShowCustomizeButton
         onCustomize={() => setIsShowCustomizeLeaveCreditConfigurationColumnsModal(true)}
+        // ADD
         isShowAddButton={canAction}
-        addTitle=" Add"
-        onAdd={handleAddLeaveCreditConfigurationModal}
-        isShowExportButton={canExport}
+        addTitle="Add"
+        onAdd={() => navigate('/leaveCreditConfiguration/add')}
+        // EXPORT
+        isShowExportButton={canExport && leaveCreditConfigurationListForTable.length > 0}
         onExportExcel={handleExportLeaveCreditConfigurationExcel}
         onExportPdf={handleExportLeaveCreditConfigurationPdf}
         exportLoading={isLoading}
@@ -580,28 +514,24 @@ export const LeaveCreditConfiguration: React.FC = () => {
         columns={visibleLeaveCreditConfigurationColumns}
         pagination={leaveCreditConfigurationPaginationInfo}
         emptyMessage="No Leave Credit Configuration Data Found"
-        fixedHeight={true}
+        fixedHeight
         recordsPerPage={20}
         className="flex-1"
         sortInfo={sortInfo}
         onSort={handleSortColumn}
-        loading={isLoading}
       />
-
 
       <CustomizeColumnsModal
         isOpen={isShowCustomizeLeaveCreditConfigurationColumnsModal}
         onClose={() => setIsShowCustomizeLeaveCreditConfigurationColumnsModal(false)}
-        onApply={(keys) => {
-          const withRequired = Array.from(
-            new Set([...keys, ...requiredLeaveCreditConfigurationColumnKeys]),
-          )
-
-          setSelectedLeaveCreditConfigurationColumnKeys(withRequired)
-
+        onApply={keys => {
+          const withRequired = Array.from(new Set([...keys, ...requiredLeaveCreditConfigurationColumnKeys]));
+          setSelectedLeaveCreditConfigurationColumnKeys(withRequired);
           try {
-            LocalStorageHelper.storeLeaveCreditConfigurationTableColumns(JSON.stringify(withRequired))
-          } catch { }
+            LocalStorageHelper.storeLeaveCreditConfigurationTableColumns(JSON.stringify(withRequired));
+          } catch {
+            // ignore
+          }
         }}
         columns={leaveCreditConfigurationColumns}
         selectedKeys={selectedLeaveCreditConfigurationColumnKeys}
@@ -609,17 +539,34 @@ export const LeaveCreditConfiguration: React.FC = () => {
         title="Customize Table Columns"
       />
 
+      {/* DELETE CONFIRMATION MODAL */}
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false);
+          setDeleteLeaveCreditConfigurationData(null);
+        }}
+        onConfirm={handleDeleteLeaveCreditConfiguration}
+        loading={isLoading}
+        pageName='leaveCreditConfiguration'
+      />
+
       <Modal
         isOpen={showFilterPopup}
         onClose={() => setShowFilterPopup(false)}
         title="Filter - Leave Credit Configuration"
-        onSubmit={(e) => {
-          e.preventDefault()
-          applyFilters()
+        onSubmit={e => {
+          e.preventDefault();
+          updateListState({ filters: tempFilters, page: 1 });
+          setShowFilterPopup(false);
         }}
         saveText="Apply "
         cancelText="Clear"
-        onCancel={() => clearFilters()}
+        onCancel={() => {
+          setTempFilters({});
+          resetFilters();
+          setShowFilterPopup(false);
+        }}
         size="small-half"
       >
         <div className="space-y-6">
@@ -629,7 +576,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
                 label='Department'
                 type="text"
                 value={tempFilters.DepartmentName || ''}
-                onChange={(e) => handleFilterChange('DepartmentName', e.target.value)}
+                onChange={e => handleFilterChange('DepartmentName', e.target.value)}
                 placeholder="Enter department name"
               />
             </div>
@@ -638,7 +585,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
                 label='Designation'
                 type="text"
                 value={tempFilters.DesignationName || ''}
-                onChange={(e) => handleFilterChange('DesignationName', e.target.value)}
+                onChange={e => handleFilterChange('DesignationName', e.target.value)}
                 placeholder="Enter designation name"
               />
             </div>
@@ -659,28 +606,8 @@ export const LeaveCreditConfiguration: React.FC = () => {
           </div>
         </div>
       </Modal>
-
-      <ConfirmationDialogBox
-        isOpen={isConfirmationDialogBoxOpen}
-        onClose={() => {
-          setIsConfirmationDialogBoxOpen(false);
-          setSelectedLeaveCreditConfigurationToDelete(null);
-        }}
-        onConfirm={() => {
-          setIsConfirmationDialogBoxOpen(false);
-          void handleDeleteLeaveCreditConfiguration();
-        }}
-        title="You are about to delete Leave Credit Configuration"
-        message="Are you sure you want to delete this leave credit configuration?"
-        confirmText="Delete"
-        cancelText="Cancel"
-        loading={isDeleting}
-        variant="danger"
-      />
-
-    </div>
+    </div >
   );
 };
 
 export default LeaveCreditConfiguration;
-

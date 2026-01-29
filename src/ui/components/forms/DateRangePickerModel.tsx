@@ -76,6 +76,7 @@ export interface DateRangePickerModalProps {
     editingField?: 'start' | 'end' | null
     onSelectField?: (field: 'start' | 'end') => void
     onClearField?: (field: 'start' | 'end') => void
+    onUpdateDate?: (field: 'start' | 'end', date: string | null) => void
   }) => React.ReactNode
   // Summary customization
   showSummary?: boolean // Whether to show the summary section
@@ -241,31 +242,58 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   const handleDayClick = (date: Date | null) => {
     if (!date) return
 
-    // If editingField is set (from clicking on an input), update only that field
     if (editingField === 'start') {
       setTempStartDate(date)
-      setEditingField(null) // Clear editing state after selection
-      return
-    }
-    if (editingField === 'end') {
-      setTempEndDate(date)
-      setEditingField(null) // Clear editing state after selection
+      if (!tempEndDate || date > tempEndDate) {
+        setTempEndDate(null)
+      }
+      setEditingField('end')
       return
     }
 
-    // Fallback behavior (when no specific field selected)
-    // Prefer filling an empty slot without clearing the other date
+    if (editingField === 'end') {
+      if (tempStartDate && date < tempStartDate) {
+        setTempStartDate(date)
+        setTempEndDate(null)
+        setEditingField('end')
+      } else {
+        setTempEndDate(date)
+        setEditingField(null)
+      }
+      return
+    }
+
     if (!tempStartDate) {
       setTempStartDate(date)
-      return
-    }
-    if (!tempEndDate) {
-      setTempEndDate(date)
+      setEditingField('end')
       return
     }
 
-    // If both dates exist and no field is explicitly selected, update the start date only
-    setTempStartDate(date)
+    if (!tempEndDate) {
+      if (date < tempStartDate) {
+        setTempEndDate(tempStartDate)
+        setTempStartDate(date)
+        setEditingField(null)
+      } else {
+        setTempEndDate(date)
+        setEditingField(null)
+      }
+      return
+    }
+
+    if (date < tempStartDate) {
+      setTempStartDate(date)
+      setTempEndDate(null)
+      setEditingField('end')
+    } else if (date < tempEndDate) {
+      setTempStartDate(date)
+      setTempEndDate(null)
+      setEditingField('end')
+    } else {
+      setTempStartDate(tempStartDate)
+      setTempEndDate(date)
+      setEditingField(null)
+    }
   }
 
   const handleConfirm = (e: React.FormEvent) => {
@@ -322,13 +350,33 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   
   const handleSelectField = useCallback((field: 'start' | 'end') => {
     setEditingField(field)
-  }, [])
+    if (field === 'start' && tempStartDate) {
+      setTempStartDate(null)
+      setTempEndDate(null)
+    }
+  }, [tempStartDate])
   
   const handleClearField = useCallback((field: 'start' | 'end') => {
     if (field === 'start') {
       setTempStartDate(null)
     } else {
       setTempEndDate(null)
+    }
+    setEditingField(null)
+  }, [])
+
+  const handleUpdateDate = useCallback((field: 'start' | 'end', date: string | null) => {
+    const parsedDate = date ? parseYyyyMmDd(date) : null
+    if (field === 'start') {
+      setTempStartDate(parsedDate)
+      if (parsedDate) {
+        setCurrentMonth(parsedDate)
+      }
+    } else {
+      setTempEndDate(parsedDate)
+      if (parsedDate) {
+        setCurrentMonth(parsedDate)
+      }
     }
     setEditingField(null)
   }, [])
@@ -341,10 +389,11 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
         editingField,
         onSelectField: handleSelectField,
         onClearField: handleClearField,
+        onUpdateDate: handleUpdateDate,
       })
     }
     return children
-  }, [renderChildren, formattedStartDate, formattedEndDate, editingField, children, handleSelectField, handleClearField])
+  }, [renderChildren, formattedStartDate, formattedEndDate, editingField, children, handleSelectField, handleClearField, handleUpdateDate])
 
   return (
     <Modal

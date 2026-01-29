@@ -15,6 +15,7 @@ export abstract class LeaveDatasource {
     abstract pullLeave(params: FilterWithPaginationLeaveRequest, signal?: AbortSignal): Promise<LeaveListResponse>;
     abstract addUpdateLeave(data: AddUpdateLeaveRequest): Promise<LeaveSaveResponse>;
     abstract deleteLeave(params: DeleteLeaveRequest): Promise<LeaveDeleteResponse>;
+   
 }
 
 export class LeaveDatasourceImpl implements LeaveDatasource {
@@ -30,24 +31,24 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
                 PageNumber: (params.PageNumber ?? 1).toString(),
             })
 
-            if (params.LeaveId) queryParams.append('LeaveId', params.LeaveId.toString());
-            if (params.LeaveTypeMasterId) queryParams.append('LeaveTypeMasterId', params.LeaveTypeMasterId.toString());
-            if (params.LeaveType?.trim()) queryParams.append('LeaveType', params.LeaveType.trim());
-            if (params.StartDate?.trim()) queryParams.append('StartDate', params.StartDate.trim());
-            if (params.EndDate?.trim()) queryParams.append('EndDate', params.EndDate.trim());
-            if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
-            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+            if (params.LeaveId) queryParams.append('LeaveId', params.LeaveId.toString())
+            if (params.LeaveTypeMasterId) queryParams.append('LeaveTypeMasterId', params.LeaveTypeMasterId.toString())
+            if (params.LeaveType?.trim()) queryParams.append('LeaveType', params.LeaveType.trim())
+            if (params.StartDate?.trim()) queryParams.append('StartDate', params.StartDate.trim())
+            if (params.EndDate?.trim()) queryParams.append('EndDate', params.EndDate.trim())
+            if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim())
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType)
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${LeaveApi.PULL}?${queryParams.toString()}`, { signal }
             )
-            return response;
-        } catch (error: any) {
+            return response
+        } catch (error) {
 
-            console.error('ERROR: PULL LEAVE :', error);
+            console.error('Error: Pull LEAVE:', error);
 
             if (error === TokenExpiredException) {
-                await this.pullLeave(params);
+                await this.pullLeave(params)
             }
 
             throw error
@@ -57,34 +58,35 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
     async addUpdateLeave(params: AddUpdateLeaveRequest): Promise<LeaveSaveResponse> {
 
         try {
+
             const formData = new FormData();
 
-            formData.append('LeaveId', String(params.LeaveId ?? 0));
-            formData.append('Uniquekey', params.Uniquekey ?? '');
-            formData.append('LeaveTypeMasterId', String(params.LeaveTypeMasterId ?? 0));
-            formData.append('StartDate', params.StartDate ?? '');
-            formData.append('EndDate', params.EndDate ?? '');
-            formData.append('StartDateLeaveDuration', params.StartDateLeaveDuration ?? '');
-            formData.append('EndDateLeaveDuration', params.EndDateLeaveDuration ?? '');
-            formData.append('Reason', params.Reason ?? '');
+            formData.append('LeaveId', String(params.LeaveId ?? 0))
+            formData.append('Uniquekey', params.Uniquekey ?? '')
+            formData.append('LeaveTypeMasterId', String(params.LeaveTypeMasterId ?? 0))
+            formData.append('StartDate', params.StartDate ?? '')
+            formData.append('EndDate', params.EndDate ?? '')
+            formData.append('StartDateLeaveDuration', params.StartDateLeaveDuration ?? '')
+            formData.append('EndDateLeaveDuration', params.EndDateLeaveDuration ?? '')
+            formData.append('Reason', params.Reason ?? '')
 
             if (params.LeaveDocumentFiles && params.LeaveDocumentFiles.length > 0) {
-                params.LeaveDocumentFiles.forEach((file) => formData.append('LeaveDocumentURL', file));
+                params.LeaveDocumentFiles.forEach((file) => formData.append('LeaveDocumentURL', file))
             }
 
             const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
                 LeaveApi.ADD_UPDATE,
                 formData
-            );
+            )
 
             return response
         } catch (error) {
-
-            console.error('ERROR: ADD UPDATE LEAVE :', error)
+            console.error('Error: Add Update LEAVE:', error)
 
             if (error === TokenExpiredException) {
-                await this.addUpdateLeave(params);
+                await this.addUpdateLeave(params)
             }
+
             throw error
         }
     }
@@ -104,18 +106,15 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
 
         } catch (error) {
 
-            console.error('ERROR: DELETE LEAVE :', error)
+            console.error('Error: Delete LEAVE:', error)
 
             if (error === TokenExpiredException) {
-                await this.deleteLeave(params);
+                await this.deleteLeave(params)
             }
 
             throw error
         }
     }
 
-
 }
-
-
 

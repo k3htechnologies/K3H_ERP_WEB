@@ -47,6 +47,7 @@ const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
   MaritalStatus: "",
   DateOfBirth: null,
   JoiningDate: null,
+  IdCardIssuedDate: null,
   IsGeoFenceLocation: false,
   EmailId: "",
   OfficeEmailId: "",
@@ -212,6 +213,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               MaritalStatus: e.MaritalStatus ?? prev.MaritalStatus,
               DateOfBirth: convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(e.DateOfBirth),
               JoiningDate: convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(e.JoiningDate),
+              IdCardIssuedDate: convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(e.IdCardIssuedDate),
               IsGeoFenceLocation: !!e.IsGeoFenceLocation,
               EmailId: e.EmailId ?? prev.EmailId,
               OfficeEmailId: e.OfficeEmailId ?? prev.OfficeEmailId,
@@ -451,6 +453,7 @@ const AddUpdateEmployeePage: React.FC = () => {
       MaritalStatus: formData.MaritalStatus,
       DateOfBirth: formData.DateOfBirth,
       JoiningDate: formData.JoiningDate,
+      IdCardIssuedDate: formData.IdCardIssuedDate,
       IsGeoFenceLocation: formData.IsGeoFenceLocation,
       EmailId: formData.EmailId,
       OfficeEmailId: formData.OfficeEmailId,
@@ -777,6 +780,14 @@ const AddUpdateEmployeePage: React.FC = () => {
                   required
                   error={errors.JoiningDate}
 
+                />
+
+              </div>
+              <div>
+                <DatePickerInput
+                  label="Id Card Issued Date"
+                  value={formatDate_dd_mm_yyyy(formData.IdCardIssuedDate)}
+                  onChange={(val) => handleFieldChange('IdCardIssuedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                 />
 
               </div>

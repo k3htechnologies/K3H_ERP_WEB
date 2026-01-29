@@ -115,6 +115,7 @@ import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
 import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
 import Parking from '@/features/parking/pages/Parking';
 import RedevelopmentDashboard from '@/features/redevelopmentDashboard/pages/RedevelopmentDashboard';
+import InventoryDashboard from '@/features/inventoryDashboard/pages/InventoryDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -265,6 +266,7 @@ function App() {
             <Route path="payrollReport" element={<PayrollReport />} />
 
             {/* INVENTORY */}
+            <Route path="inventoryDashboard" element={<InventoryDashboard />} />
             <Route path="inventory" element={<Inventory></Inventory>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="parking" element={<Parking></Parking>} />

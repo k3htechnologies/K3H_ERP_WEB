@@ -13,7 +13,7 @@ import { runApiWithLoader } from "@/core/utils";
 import { Loader } from "@/core/utils/loader";
 import useToast from "@/core/hooks/useToast";
 import * as E from "fp-ts/Either";
-import { redevelopmentDashboardService } from "../services/RedevelopmentDashboardService";
+import { redevelopmentDashboardService } from "@/features/redevelopmentDashboard/services/RedevelopmentDashboardService";
 
 const RedevelopmentDashboard: React.FC = () => {
 
@@ -36,8 +36,10 @@ const RedevelopmentDashboard: React.FC = () => {
   }, [projectId]);
 
   useEffect(() => {
+
     if (!projectId) return;
     fetchInventory();
+
   }, [projectId, selectedBuildingId]);
 
   const fetchInventory = useCallback(async () => {
@@ -46,11 +48,7 @@ const RedevelopmentDashboard: React.FC = () => {
       setLoadingMessage,
       async () => {
 
-        const response =
-          await redevelopmentDashboardService.apiCallPullRedevelopmentDashboard(
-            Number(projectId),
-            selectedBuildingId
-          );
+        const response = await redevelopmentDashboardService.apiCallPullRedevelopmentDashboard(Number(projectId),selectedBuildingId );
 
         if (E.isRight(response)) {
 
@@ -82,11 +80,11 @@ const RedevelopmentDashboard: React.FC = () => {
 
       <Loader loading={isLoading} title={loadingMessage}><div /></Loader>
 
-      {buildingData.length > 0 && (
+      {buildingData.length > 0 ? (
         <>
-          <RedevelopmentHeader onBuildingChange={setSelectedBuildingId} 
-           proposedOfferProposedPlanData={proposedOfferProposedPlanData}
-           />
+          <RedevelopmentHeader onBuildingChange={setSelectedBuildingId}
+            proposedOfferProposedPlanData={proposedOfferProposedPlanData}
+          />
 
           <OverviewCards
             buildingData={buildingData}
@@ -109,9 +107,14 @@ const RedevelopmentDashboard: React.FC = () => {
             <TenantOverview tenantData={tenantData} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mt-5">
-            <BuildingOverview buildingData={buildingData} />
-            <AlertsPanel alertsData={alertsData} />
+          <div className="grid grid-cols-12 gap-4 mt-5">
+            <div className="col-span-8">
+              <BuildingOverview buildingData={buildingData} />
+            </div>
+
+            <div className="col-span-4">
+              <AlertsPanel alertsData={alertsData} />
+            </div>
           </div>
 
           <ProposalSummary
@@ -119,7 +122,10 @@ const RedevelopmentDashboard: React.FC = () => {
             tenantData={tenantData}
           />
         </>
-      )}
+      ) :
+        <div className="flex items-center justify-center text-gray-400">
+          {projectId ? "No data found" : "Please select a project"}
+        </div>}
 
     </div>
   );

@@ -296,7 +296,6 @@ export const useDesignationMaster = () => {
     setTempFilters({})
     setFilters({})
     loadDesignationMaster(1, {})
-    setShowFilterPopup(false)
   }
   //#endregion
 

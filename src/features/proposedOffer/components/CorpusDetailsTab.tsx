@@ -22,7 +22,7 @@ import { FLAT_UNIT_TYPE } from '@/core/constants';
 import {
   initialFormStateCorpusDetails,
   initialFormStateCorpusPaymentStage,
-} from '../utils/initialStates';
+} from '@/features/proposedOffer/utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
 interface CorpusDetailsTabProps {
@@ -618,6 +618,7 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
                 }
                 error={errorsCorpusDetails.CorpusOfferedToResidentialAmount}
                 placeholder="Enter Residential Corpus Amount"
+                disabled={corpusPaymentStageList.some(x => x.Type?.toUpperCase() === "RESIDENTIAL")}
               />
             </div>
 
@@ -634,6 +635,7 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
                     : Number(filterNumbersWithDecimal(e.target.value)))}
                 error={errorsCorpusDetails.CorpusOfferedToCommercialAmount}
                 placeholder="Enter Commercial Corpus Amount"
+                disabled={corpusPaymentStageList.some(x => x.Type?.toUpperCase() === "COMMERCIAL")}
               />
             </div>
           </div>

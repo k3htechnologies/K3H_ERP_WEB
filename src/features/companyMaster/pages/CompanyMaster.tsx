@@ -496,7 +496,6 @@ export const CompanyMaster: React.FC = () => {
         setTempFilters({});
         updateListState({ filters: {}, page: 1 });
         loadCompanys(1, {});
-        setShowFilterPopup(false);
     };
     //#endregion
 

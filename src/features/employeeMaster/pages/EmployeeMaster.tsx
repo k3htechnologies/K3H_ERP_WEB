@@ -14,7 +14,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
@@ -29,6 +29,8 @@ import { FileText } from 'lucide-react';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import { useEmployeeListState } from '@/features/employeeMaster/context/EmployeeListStateContext';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import DatePickerInput from '@/ui/components/forms/Datepicker';
+import Checkbox from '@/ui/components/forms/Checkbox';
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -105,7 +107,7 @@ export const EmployeeMaster: React.FC = () => {
           EmployeeCode: filterParams.EmployeeCode?.trim() || undefined,
           EmployeeName: searchtext ?? filterParams.EmployeeName?.trim() ?? undefined,
           MobileNumber: filterParams.MobileNumber?.trim() || undefined,
-          
+
           Gender: filterParams.Gender?.trim() || undefined,
 
           DepartmentName: filterParams.DepartmentName?.trim() || undefined,
@@ -116,6 +118,14 @@ export const EmployeeMaster: React.FC = () => {
           ReportPersonName: filterParams.ReportPersonName?.trim() || undefined,
           BankName: filterParams.BankName?.trim() || undefined,
           BankBranchName: filterParams.BankBranchName?.trim() || undefined,
+
+          IsEmployeeOnProbation: filterParams.IsEmployeeOnProbation ?? undefined,
+          IsIdCardIssued: filterParams.IsIdCardIssued ?? undefined,
+          FromDateOfBirth: filterParams.FromDateOfBirth || undefined,
+          ToDateOfBirth: filterParams.ToDateOfBirth || undefined,
+          FromJoiningDate: filterParams.FromJoiningDate || undefined,
+          ToJoiningDate: filterParams.ToJoiningDate || undefined,
+
           SortBy: getSortByParam(sortInfo ?? null, employeeColumns)
         };
 
@@ -187,7 +197,7 @@ export const EmployeeMaster: React.FC = () => {
           EmployeeCode: filters.EmployeeCode?.trim() || undefined,
           EmployeeName: filters.EmployeeName?.trim() || undefined,
           MobileNumber: filters.MobileNumber?.trim() || undefined,
-          
+
           Gender: filters.Gender?.trim() || undefined,
 
           DepartmentName: filters.DepartmentName?.trim() || undefined,
@@ -198,7 +208,15 @@ export const EmployeeMaster: React.FC = () => {
           ReportPersonName: filters.ReportPersonName?.trim() || undefined,
           BankName: filters.BankName?.trim() || undefined,
           BankBranchName: filters.BankBranchName?.trim() || undefined,
-          
+
+          IsEmployeeOnProbation: filters.IsEmployeeOnProbation ?? undefined,
+          IsIdCardIssued: filters.IsIdCardIssued ?? undefined,
+          FromDateOfBirth: filters.FromDateOfBirth || undefined,
+          ToDateOfBirth: filters.ToDateOfBirth || undefined,
+          FromJoiningDate: filters.FromJoiningDate || undefined,
+          ToJoiningDate: filters.ToJoiningDate || undefined,
+
+
           SortBy: getSortByParam(sortInfo ?? null, employeeColumns),
           ExportType: exportType
         };
@@ -440,6 +458,14 @@ export const EmployeeMaster: React.FC = () => {
         render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       },
       {
+        key: 'IdCardIssuedDate',
+        label: 'Id Card Issued Date',
+        width: '14',
+        sortable: false,
+        align: 'center',
+        render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
+      },
+      {
         key: 'MaritalStatus',
         label: 'Marital Status',
         width: '14',
@@ -601,7 +627,6 @@ export const EmployeeMaster: React.FC = () => {
     setTempFilters({});
     updateListState({ filters: {}, page: 1 });
     loadEmployees(1, {});
-    setShowFilterPopup(false);
   };
   //#endregion
 
@@ -613,7 +638,7 @@ export const EmployeeMaster: React.FC = () => {
 
   //#region  HANDLE CHANGE EVENT
 
-  const handleFilterChange = (key: string, value: string) => {
+  const handleFilterChange = (key: string, value: string | null) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
 
@@ -888,7 +913,63 @@ export const EmployeeMaster: React.FC = () => {
                 placeholder="Enter Bank Branch Name"
               />
             </div>
+            <div>
+              <Checkbox
+                label="Employee on Probation?"
+                checked={tempFilters.IsEmployeeOnProbation === "1"}
+                onChange={(e) => handleFilterChange('IsEmployeeOnProbation', e.target.checked ? "1" : "0")}
+              />
+            </div>
 
+            <div>
+              <Checkbox
+                label="Id Card Issued?"
+                checked={tempFilters.IdCardIssued === "1"}
+                onChange={(e) => handleFilterChange('IdCardIssued', e.target.checked ? "1" : "0")}
+              />
+            </div>
+
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+
+            <div>
+              <DatePickerInput
+                label="From DOB"
+                value={formatDate_dd_mm_yyyy(tempFilters.FromDateOfBirth)}
+                onChange={(val) => handleFilterChange('FromDateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+
+              />
+
+            </div>
+
+            <div>
+              <DatePickerInput
+                label="To DOB"
+                value={formatDate_dd_mm_yyyy(tempFilters.ToDateOfBirth)}
+                onChange={(val) => handleFilterChange('ToDateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+
+              />
+
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            <div>
+              <DatePickerInput
+                label="From Joining Date"
+                value={formatDate_dd_mm_yyyy(tempFilters.FromJoiningDate)}
+                onChange={(val) => handleFilterChange('FromJoiningDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+
+              />
+            </div>
+            <div>
+              <DatePickerInput
+                label="To Joining Date"
+                value={formatDate_dd_mm_yyyy(tempFilters.ToJoiningDate)}
+                onChange={(val) => handleFilterChange('ToJoiningDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+
+              />
+
+            </div>
           </div>
         </div>
       </Modal>

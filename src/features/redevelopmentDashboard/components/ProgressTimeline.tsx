@@ -14,57 +14,77 @@ interface Step {
 }
 
 export default function ProgressTimeline({
-  buildingData,
-  tenantApplicantChargesData,
-  alertsData,
-  tenantData,
-  proposedOfferProposedPlanData
+  buildingData = [],
+  tenantApplicantChargesData = [],
+  alertsData = [],
+  tenantData = [],
+  proposedOfferProposedPlanData = [],
 }: Props) {
+
+
+  const allCompleted =
+    buildingData.length > 0 &&
+    tenantData.length > 0 &&
+    tenantApplicantChargesData.length > 0 &&
+    proposedOfferProposedPlanData.length > 0 &&
+    alertsData.length === 0;
+
 
   const steps: Step[] = [
     {
       label: "Project Onboarding",
-      percent: buildingData.length > 0 ? 100 : 0
+      percent: buildingData.length > 0 ? 100 : 0,
     },
     {
       label: "Tenant Data",
-      percent: tenantData.length > 0 ? 100 : 0
+      percent: tenantData.length > 0 ? 100 : 0,
     },
     {
       label: "Offer",
-      percent: tenantApplicantChargesData.length > 0 ? 100 : 0
+      percent: tenantApplicantChargesData.length > 0 ? 100 : 0,
     },
     {
       label: "Plan",
-      percent: proposedOfferProposedPlanData.length > 0 ? 100 : 0
+      percent: proposedOfferProposedPlanData.length > 0 ? 100 : 0,
     },
     {
       label: "Execution",
-      percent: alertsData.length > 0 ? 0 : 0
-    }
+      percent: allCompleted ? 100 : 0,
+    },
   ];
 
-  const overallProgress =steps.reduce((sum, s) => sum + s.percent, 0) / steps.length;
+  /* ===== SORT: Completed First, Then Descending ===== */
+  const sortedSteps = [...steps].sort((a, b) => {
+    if (a.percent === 100 && b.percent !== 100) return -1;
+    if (a.percent !== 100 && b.percent === 100) return 1;
+    return b.percent - a.percent;
+  });
+
+  /* ===== Overall Progress ===== */
+  const overallProgress =
+    sortedSteps.reduce((sum, s) => sum + s.percent, 0) / sortedSteps.length;
 
   return (
-    <div className="bg-white p-4 rounded-xl mt-5" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
-
+    <div
+      className="bg-white p-4 rounded-xl mt-5 border border-gray-100"
+      style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
+    >
       <p className="text-sm text-gray-500 font-medium mb-4">
         Project Progress
       </p>
 
       <div className="relative flex items-center justify-between">
 
-        {/* Background line */}
+        {/* Background Line */}
         <div className="absolute left-0 right-0 top-3 h-2 bg-gray-200 rounded" />
 
-        {/* Progress line */}
+        {/* Progress Line */}
         <div
-          className="absolute left-0 top-3 h-2 rounded bg-gradient-to-r from-blue-600 via-purple-600 to-green-500"
+          className="absolute left-0 top-3 h-2 rounded bg-gradient-to-r from-blue-600 via-purple-600 to-green-500 transition-all"
           style={{ width: `${overallProgress}%` }}
         />
 
-        {steps.map((step, index) => {
+        {sortedSteps.map((step, index) => {
 
           const isCompleted = step.percent === 100;
 

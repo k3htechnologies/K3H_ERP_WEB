@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Loader } from '@/core/utils/loader';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
@@ -77,9 +77,6 @@ export const CompOff: React.FC = () => {
     setFilters,
   } = useCompOff();
 
-  const [isExportOpen, setIsExportOpen] = useState(false);
-  const exportRef = useRef<HTMLDivElement | null>(null);
-
   const compOffListForTable = useMemo(() => compOffList, [compOffList]);
 
   const compOffPaginationInfo = useMemo(
@@ -101,6 +98,31 @@ export const CompOff: React.FC = () => {
 
   );
 
+  // Optimized date range change handler
+  const handleDateRangeChange = useCallback((fromDate: string | null, toDate: string | null) => {
+    const newFilters = { ...filters };
+    
+    if (fromDate) {
+      newFilters.StartDate = fromDate;
+    } else {
+      delete newFilters.StartDate;
+    }
+    
+    if (toDate) {
+      newFilters.EndDate = toDate;
+    } else {
+      delete newFilters.EndDate;
+    }
+    
+    setTempFilters(newFilters);
+    setFilters(newFilters);
+    
+    // Only load data when both dates are selected to avoid unnecessary API calls
+    if (fromDate && toDate) {
+      loadCompOff(1, newFilters, sortInfo);
+    }
+  }, [filters, setTempFilters, setFilters, loadCompOff, sortInfo]);
+
   const handleViewModalClose = useCallback(() => {
 
     setIsViewModalOpen(false);
@@ -117,29 +139,6 @@ export const CompOff: React.FC = () => {
 
   }, [setIsConfirmationDialogBoxOpen, setDeleteCompOffDetailsData]);
 
-  // Close export dropdown when clicked outside or Escape pressed
-  useEffect(() => {
-    if (!isExportOpen) return;
-
-    function handleDocClick(e: MouseEvent) {
-      const target = e.target as Node | null;
-      if (exportRef.current && exportRef.current.contains(target!)) return;
-      setIsExportOpen(false);
-    }
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        setIsExportOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleDocClick);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', handleDocClick);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isExportOpen]);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -152,124 +151,34 @@ export const CompOff: React.FC = () => {
               <DateRangeSelector
                 fromDate={filters.StartDate ?? null}
                 toDate={filters.EndDate ?? null}
-                onBothDatesChange={(fromDate, toDate) => {
-                  const newFilters = { ...filters };
-                  if (fromDate) {
-                    newFilters.StartDate = fromDate;
-                  } else {
-                    delete newFilters.StartDate;
-                  }
-                  if (toDate) {
-                    newFilters.EndDate = toDate;
-                  } else {
-                    delete newFilters.EndDate;
-                  }
-                  setTempFilters(newFilters);
-                  if (fromDate && toDate) {
-                    setFilters(newFilters);
-                    loadCompOff(1, newFilters, sortInfo);
-                  } else {
-                    setFilters(newFilters);
-                  }
-                }}
-                onFromDateChange={(date) => {
-                  const newFilters = { ...filters };
-                  if (date) {
-                    newFilters.StartDate = date;
-                  } else {
-                    delete newFilters.StartDate;
-                  }
-                  setTempFilters(newFilters);
-                  setFilters(newFilters);
-                  loadCompOff(1, newFilters, sortInfo);
-                }}
-                onToDateChange={(date) => {
-                  const newFilters = { ...filters };
-                  if (date) {
-                    newFilters.EndDate = date;
-                  } else {
-                    delete newFilters.EndDate;
-                  }
-                  setTempFilters(newFilters);
-                  setFilters(newFilters);
-                  loadCompOff(1, newFilters, sortInfo);
-                }}
+                onBothDatesChange={handleDateRangeChange}
+                onFromDateChange={(date) => handleDateRangeChange(date, filters.EndDate ?? null)}
+                onToDateChange={(date) => handleDateRangeChange(filters.StartDate ?? null, date)}
               />
             </div>
 
             {/* RIGHT SIDE: Export and Add Buttons */}
             <div className="flex items-center space-x-3">
               {/* EXPORT BUTTON */}
-              {canExport && (
-                <div className="relative" ref={exportRef}>
+              {canExport && compOffListForTable.length > 0 && (
+                <div className="relative">
                   <Button
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      setIsExportOpen((s) => !s);
+                      handleExportCompOffExcel();
                     }}
                     color="blue"
                     colorMode="gradient_light"
                     size="mxs"
                     defineWidth
                     title="Export"
-                    aria-expanded={isExportOpen}
-                    aria-haspopup="menu"
                     style={{ width: '95px' }}
                     leftIcon={<Download className="h-4 w-4" />}
+                    disabled={isLoading}
                   >
                     <span>Export</span>
                   </Button>
-
-                  {isExportOpen && (
-                    <div
-                      className="absolute right-0 mt-2 min-w-[168px] bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-100"
-                      role="menu"
-                      aria-label="Export options"
-                    >
-                      <div className="py-1">
-                        {handleExportCompOffExcel && (
-                          <Button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleExportCompOffExcel();
-                              setIsExportOpen(false);
-                            }}
-                            disabled={isLoading}
-                            color="transparent"
-                            fullWidth
-                            isborderRadius
-                            size="sm"
-                            title="Export as Excel"
-                            style={{ justifyContent: "left" }}
-                          >
-                            Export as Excel
-                          </Button>
-                        )}
-
-                        {handleExportCompOffPdf && (
-                          <Button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleExportCompOffPdf();
-                              setIsExportOpen(false);
-                            }}
-                            disabled={isLoading}
-                            color="transparent"
-                            fullWidth
-                            isborderRadius
-                            size="sm"
-                            title="Export as PDF"
-                            style={{ justifyContent: "left" }}
-                          >
-                            Export as PDF
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -304,8 +213,8 @@ export const CompOff: React.FC = () => {
         pagination={compOffPaginationInfo}
         sortInfo={sortInfo}
         onSort={handleSortColumn}
-        onDelete={handleConfirmationDialogBoxOpen}
-        canAction={canAction}
+        onDelete={handleConfirmationDialogBoxOpen || (() => {})}
+        canAction={Boolean(canAction)}
         loading={isLoading}
       />
 
@@ -329,6 +238,8 @@ export const CompOff: React.FC = () => {
         editingData={editingCompOffData}
         loading={isLoading}
         modalKey={modalKey}
+        filterStartDate={filters.StartDate ?? null}
+        filterEndDate={filters.EndDate ?? null}
       />
 
       <CustomizeColumnsModal

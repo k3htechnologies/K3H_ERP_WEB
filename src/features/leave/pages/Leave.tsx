@@ -5,8 +5,8 @@ import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type {
-  FilterWithPaginationLeaveRequest,
-  LeaveData,
+    FilterWithPaginationLeaveRequest,
+    LeaveData,
 } from '@/features/leave/models/LeaveModel';
 import { LeaveService } from '@/features/leave/services/LeaveService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
@@ -22,10 +22,11 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useNavigate } from 'react-router-dom';
 import { updateFilter } from '@/core/utils/filterHelper';
-import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, formatDate_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { useLeaveListState } from '@/features/leave/context/LeaveListStateContext';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import DatePickerInput from '@/ui/components/forms/Datepicker';
 
 export const Leave: React.FC = () => {
   //#region STATE
@@ -524,7 +525,7 @@ export const Leave: React.FC = () => {
         searchTerm={searchTerm}
         searchPlaceholder="Search By Leave Type..."
         onSearchChange={
-         searchLeaves
+          searchLeaves
         }
         onClearSearch={clearSearchLeaves}
         isShowFilterButton
@@ -592,7 +593,7 @@ export const Leave: React.FC = () => {
         saveText="Apply "
         cancelText="Clear"
         onCancel={() => clearFilters()}
-
+       
         size="small-half"
       >
         <div className="space-y-6">
@@ -607,21 +608,17 @@ export const Leave: React.FC = () => {
               />
             </div>
             <div>
-              <Input
+              <DatePickerInput
                 label='Start Date'
-                type="date"
-                value={tempFilters.StartDate || ''}
-                onChange={(e) => handleFilterChange('StartDate', e.target.value)}
-                placeholder="Enter Start Date"
+                value={tempFilters.StartDate ? formatDate_dd_mm_yyyy(tempFilters.StartDate) : ''}
+                onChange={(val) => handleFilterChange('StartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
               />
             </div>
             <div>
-              <Input
+              <DatePickerInput
                 label='End Date'
-                type="date"
-                value={tempFilters.EndDate || ''}
-                onChange={(e) => handleFilterChange('EndDate', e.target.value)}
-                placeholder="Enter End Date"
+                value={tempFilters.EndDate ? formatDate_dd_mm_yyyy(tempFilters.EndDate) : ''}
+                onChange={(val) => handleFilterChange('EndDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
               />
             </div>
           </div>
@@ -638,7 +635,7 @@ export const Leave: React.FC = () => {
         loading={isLoading}
         pageName='leave'
       />
-  
+
 
     </div>
   )

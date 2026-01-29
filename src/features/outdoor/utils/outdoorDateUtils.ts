@@ -67,3 +67,17 @@ export const isPreviousDate = (date: Date): boolean => {
 };
 
 
+/**
+ * Extract time string (HH:MM) from ISO datetime string
+ * @param isoString - ISO datetime string (e.g., "2025-01-15T10:30:00" or "10:30")
+ * @returns Time string in HH:MM format or "00:00" if invalid
+ */
+export const parseTimeFromISO = (isoString: string): string => {
+  if (!isoString) return "00:00";
+  if (/^\d{2}:\d{2}$/.test(isoString)) {
+    return isoString;
+  }
+  const timeMatch = isoString.match(/T(\d{2}):(\d{2})/);
+  return timeMatch ? `${timeMatch[1]}:${timeMatch[2]}` : "00:00";
+};
+

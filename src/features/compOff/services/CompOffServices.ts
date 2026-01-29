@@ -6,6 +6,8 @@ import type {
     CompOffListResponse,
     CompOffSaveResponse,
     CompOffDeleteResponse,
+    CompOffDatesResponse,
+    PullCompOffDatesRequest,
 } from '@/features/compOff/models/compOff';
 
 import * as E from 'fp-ts/Either';
@@ -13,7 +15,7 @@ import { CompOffDatasourceImpl } from '../datasources/CompOffDatasources';
 
 const compOffDatasource = new CompOffDatasourceImpl();
 
-export const CompOffService = {
+export const compOffService = {
 
     apiCallPullCompOff: async (params: FilterWithPaginationCompOff, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, CompOffListResponse>> => {
         try {
@@ -43,6 +45,18 @@ export const CompOffService = {
         try {
 
             return E.right(await compOffDatasource.deleteCompOff(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallPullCompOffDates: async (params: PullCompOffDatesRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, CompOffDatesResponse>> => {
+        try {
+
+            return E.right(await compOffDatasource.pullCompOffDates(params, options?.signal));
 
         } catch (error: any) {
 

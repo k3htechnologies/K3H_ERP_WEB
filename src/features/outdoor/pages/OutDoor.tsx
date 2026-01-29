@@ -7,7 +7,7 @@ import type {
   FilterWithPaginationOutDoor,
   OutDoorMasterData,
 } from '@/features/outdoor/models/OutDoorModel';
-import { OutDoorService } from '@/features/outdoor/services/OutDoorDataService';
+import { outDoorService } from '@/features/outdoor/services/OutDoorDataService';
 import { formatDate_dd_MonthName_yy, formatTimeFromDateTime } from '@/core/utils/dateFormat';
 import { Loader } from '@/core/utils/loader';
 import { useNavigate } from 'react-router-dom';
@@ -20,7 +20,6 @@ import { Input, Button } from '@/ui/components/forms';
 import { TextArea } from '@/ui/components/forms/Textarea';
 import {
   Clock,
-  MapPin,
   Fingerprint,
   ClipboardCheck,
   AlertTriangle,
@@ -37,6 +36,9 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { Pagination, type PaginationInfo } from "@/ui/components/Pagination/Pagination";
 import { handleExportFile } from '@/core/utils/exportFile';
 import { DateRangeSelector } from '@/ui/components/forms/DateRangeSelector';
+import { FieldRow, FieldGridRow, PunchCard } from '../components';
+import { updateFiltersWithDates } from '../helpers';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const OutDoor: React.FC = () => {
   //#region STATE
@@ -60,11 +62,9 @@ export const OutDoor: React.FC = () => {
   const [conclusionText, setConclusionText] = useState("");
   const [isConclusionEditMode, setIsConclusionEditMode] = useState(false);
 
-  const [isExportOpen, setIsExportOpen] = useState(false);
-  const exportRef = useRef<HTMLDivElement | null>(null);
-
   const { canAction, canExport } = useMenuPermissions();
   //#endregion
+
 
   //#region OUTDOOR LIST STATE CONTEXT
   const { listState, updateListState, resetFilters, clearOutDoorContext } = useOutDoorListState();
@@ -72,74 +72,13 @@ export const OutDoor: React.FC = () => {
   const { page, filters: contextFilters, sortInfo: contextSortInfo } = listState;
   //#endregion
 
-  //#region INIT
-  useEffect(() => {
-    clearOutDoorContext();
-
-    setPagination({ currentPage: page });
-
-    setSortInfo(contextSortInfo);
-
-    setTempFilters(contextFilters);
-
-    // Flight booking behavior: Only load when both dates are selected
-    // Skip loading if only StartDate is set (user is still selecting end date)
-    const hasStartDate = !!contextFilters.StartDate;
-    const hasEndDate = !!contextFilters.EndDate;
-    
-    // Don't load if only StartDate is set (user is selecting end date)
-    // Load in all other cases: both dates set, no dates set, or other filters
-    if (!(hasStartDate && !hasEndDate)) {
-      loadOutDoors(page, contextFilters);
-    }
-
-  }, [page, contextFilters, contextSortInfo, clearOutDoorContext]);
-
-  useEffect(() => {
-    setTempFilters(contextFilters);
-  }, [contextFilters]);
-  //#endregion
-
-  //#region EXPORT DROPDOWN HANDLER
-  // Close export dropdown when clicked outside or Escape pressed
-  useEffect(() => {
-    if (!isExportOpen) return;
-
-    function handleDocClick(e: MouseEvent) {
-      const target = e.target as Node | null;
-      // click inside export menu -> do nothing
-      if (exportRef.current && exportRef.current.contains(target!)) return;
-      // otherwise close
-      setIsExportOpen(false);
-    }
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        setIsExportOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleDocClick);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', handleDocClick);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isExportOpen]);
-  //#endregion
-
   //#region DATA LOAD OUTDOOR
 
-  const loadOutDoors = async (page: number, filterParams: FilterInfo) => {
+  const loadOutDoors = useCallback(async (page: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam = undefined;
-        if (sortInfo) {
-          sortByParam = sortInfo;
-        }
-
         const params: FilterWithPaginationOutDoor = {
           PageNumber: page,
           PageSize: pagination.pageSize,
@@ -150,10 +89,10 @@ export const OutDoor: React.FC = () => {
             ? new Date(filterParams.EndDate).toISOString()
             : undefined,
           CompanyName: filterParams.CompanyName?.trim() || undefined,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, [])
         };
 
-        const response = await OutDoorService.apiCallPullOutDoorData(params);
+        const response = await outDoorService.apiCallPullOutDoorData(params);
 
         if (E.isRight(response)) {
 
@@ -178,21 +117,47 @@ export const OutDoor: React.FC = () => {
       undefined,
       'Loading Outdoor Data'
     );
-  };
+  }, [sortInfo, pagination.pageSize, addToast]);
 
   //#endregion
 
+  //#region INIT
+  useEffect(() => {
+    clearOutDoorContext();
+
+    setPagination({ currentPage: page });
+
+    setSortInfo(contextSortInfo);
+
+    setTempFilters(contextFilters);
+
+    // Flight booking behavior: Only load when both dates are selected
+    // Skip loading if only StartDate is set (user is still selecting end date)
+    const hasStartDate = !!contextFilters.StartDate;
+    const hasEndDate = !!contextFilters.EndDate;
+    
+    // Don't load if only StartDate is set (user is selecting end date)
+    // Load in all other cases: both dates set, no dates set, or other filters
+    if (!(hasStartDate && !hasEndDate)) {
+      loadOutDoors(page, contextFilters);
+    }
+
+  }, [page, contextFilters, contextSortInfo, clearOutDoorContext, loadOutDoors]);
+
+  useEffect(() => {
+    setTempFilters(contextFilters);
+  }, [contextFilters]);
+  //#endregion
+
+  //#region EXPORT DROPDOWN HANDLER
+  //#endregion
+
   //#region EXCEL EXPORT PDF | EXCEL
-  const handleExportOutDoors = async (exportType: 'Excel' | 'PDF') => {
+  const handleExportOutDoors = useCallback(async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam = undefined;
-        if (sortInfo) {
-          sortByParam = sortInfo;
-        }
-
         const params: FilterWithPaginationOutDoor = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -203,11 +168,11 @@ export const OutDoor: React.FC = () => {
             ? new Date(contextFilters.EndDate).toISOString()
             : undefined,
           CompanyName: contextFilters.CompanyName?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, []),
           ExportType: exportType
         };
 
-        const response = await OutDoorService.apiCallPullOutDoorData(params);
+        const response = await outDoorService.apiCallPullOutDoorData(params);
 
         handleExportFile(response, exportType, 'Outdoor', addToast);
 
@@ -220,10 +185,10 @@ export const OutDoor: React.FC = () => {
       undefined,
       'Preparing Export'
     );
-  };
+  }, [sortInfo, pagination.totalRecords, contextFilters, addToast]);
 
-  const handleExportOutDoorExcel = () => handleExportOutDoors('Excel');
-  const handleExportOutDoorPdf = () => handleExportOutDoors('PDF');
+  const handleExportOutDoorExcel = useCallback(() => handleExportOutDoors('Excel'), [handleExportOutDoors]);
+  const handleExportOutDoorPdf = useCallback(() => handleExportOutDoors('PDF'), [handleExportOutDoors]);
   //#endregion
 
   //#region HELPER FUNCTIONS
@@ -342,7 +307,7 @@ export const OutDoor: React.FC = () => {
           }
 
           // Use same API for both punch in and punch out
-          const response = await OutDoorService.apiCallPunchInOut({
+          const response = await outDoorService.apiCallPunchInOut({
             OutdoorId: item.OutdoorId,
             Punch: currentDateTime,
             Address: locationString
@@ -398,7 +363,7 @@ export const OutDoor: React.FC = () => {
       undefined,
       !item.PunchIn ? "Punching In..." : "Punching Out..."
     );
-  }, [punchingItemId, pagination.currentPage, contextFilters, addToast]);
+  }, [punchingItemId, pagination.currentPage, contextFilters, addToast, loadOutDoors]);
   //#endregion
 
   //#region CONCLUSION HANDLERS
@@ -427,7 +392,7 @@ export const OutDoor: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        const response = await OutDoorService.apiCallAddUpdateConclusion({
+        const response = await outDoorService.apiCallAddUpdateConclusion({
           OutdoorId: selectedOutdoorItem.OutdoorId,
           Conclusion: conclusionText
         });
@@ -475,32 +440,64 @@ export const OutDoor: React.FC = () => {
       undefined,
       'Saving conclusion...'
     );
-  }, [selectedOutdoorItem, conclusionText, pagination.currentPage, contextFilters, addToast, handleCloseConclusionModal]);
+  }, [selectedOutdoorItem, conclusionText, pagination.currentPage, contextFilters, addToast, handleCloseConclusionModal, loadOutDoors]);
   //#endregion
 
   //#region FILTER HELPERS
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     updateListState({ filters: tempFilters, page: 1 });
     setShowFilterPopup(false);
-  };
+  }, [tempFilters, updateListState]);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     resetFilters();
     setTempFilters({});
     setShowFilterPopup(false);
-  };
+  }, [resetFilters]);
+
   //#endregion
 
   //#region HANDLE CHANGE EVENT
-  const handleFilterChange = (key: string, value: string) => {
+  const handleFilterChange = useCallback((key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
-  };
+  }, []);
   //#endregion
 
   //#region ADD OUTDOOR THEN NAVIGATE
   const handleAddOutdoor = useCallback(() => {
     navigate("/outdoor/add");
   }, [navigate]);
+  //#endregion
+
+  //#region DATE RANGE HANDLERS
+  const handleBothDatesChange = useCallback((fromDate: string | null, toDate: string | null) => {
+    // Only trigger load if both dates are selected (flight booking behavior)
+    updateFiltersWithDates(
+      contextFilters,
+      { StartDate: fromDate, EndDate: toDate },
+      updateListState,
+      setTempFilters,
+      !!(fromDate && toDate)
+    );
+  }, [contextFilters, updateListState]);
+
+  const handleFromDateChange = useCallback((date: string | null) => {
+    updateFiltersWithDates(
+      contextFilters,
+      { StartDate: date },
+      updateListState,
+      setTempFilters
+    );
+  }, [contextFilters, updateListState]);
+
+  const handleToDateChange = useCallback((date: string | null) => {
+    updateFiltersWithDates(
+      contextFilters,
+      { EndDate: date },
+      updateListState,
+      setTempFilters
+    );
+  }, [contextFilters, updateListState]);
   //#endregion
 
   //#region PAGINATION CONFIG
@@ -530,124 +527,34 @@ export const OutDoor: React.FC = () => {
               <DateRangeSelector
                 fromDate={contextFilters.StartDate ?? null}
                 toDate={contextFilters.EndDate ?? null}
-                onBothDatesChange={(fromDate, toDate) => {
-                  // Batch update both dates together to avoid race conditions
-                  const newFilters = { ...contextFilters };
-                  if (fromDate) {
-                    newFilters.StartDate = fromDate;
-                  } else {
-                    delete newFilters.StartDate;
-                  }
-                  if (toDate) {
-                    newFilters.EndDate = toDate;
-                  } else {
-                    delete newFilters.EndDate;
-                  }
-                  setTempFilters(newFilters);
-                  // Only trigger load if both dates are selected (flight booking behavior)
-                  if (fromDate && toDate) {
-                    updateListState({ filters: newFilters, page: 1 });
-                  } else {
-                    // Just update state without loading when only one date is selected
-                    updateListState({ filters: newFilters });
-                  }
-                }}
-                onFromDateChange={(date) => {
-                  const newFilters = { ...contextFilters };
-                  if (date) {
-                    newFilters.StartDate = date;
-                  } else {
-                    delete newFilters.StartDate;
-                  }
-                  setTempFilters(newFilters);
-                  updateListState({ filters: newFilters, page: 1 });
-                }}
-                onToDateChange={(date) => {
-                  const newFilters = { ...contextFilters };
-                  if (date) {
-                    newFilters.EndDate = date;
-                  } else {
-                    delete newFilters.EndDate;
-                  }
-                  setTempFilters(newFilters);
-                  updateListState({ filters: newFilters, page: 1 });
-                }}
+                onBothDatesChange={handleBothDatesChange}
+                onFromDateChange={handleFromDateChange}
+                onToDateChange={handleToDateChange}
               />
             </div>
 
             {/* RIGHT SIDE: Export and Add Buttons */}
             <div className="flex items-center space-x-3">
               {/* EXPORT BUTTON */}
-              {canExport && (
-                <div className="relative" ref={exportRef}>
+              {canExport && outDoorList.length > 0 && (
+                <div className="relative">
                   <Button
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      setIsExportOpen((s) => !s);
+                      handleExportOutDoorExcel();
                     }}
                     color="blue"
                     colorMode="gradient_light"
                     size="mxs"
                     defineWidth
                     title="Export"
-                    aria-expanded={isExportOpen}
-                    aria-haspopup="menu"
                     style={{ width: '95px' }}
                     leftIcon={<Download className="h-4 w-4" />}
+                    disabled={isLoading}
                   >
                     <span>Export</span>
                   </Button>
-
-                  {isExportOpen && (
-                    <div
-                      className="absolute right-0 mt-2 min-w-[168px] bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-100"
-                      role="menu"
-                      aria-label="Export options"
-                    >
-                      <div className="py-1">
-                        {handleExportOutDoorExcel && (
-                          <Button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleExportOutDoorExcel();
-                              setIsExportOpen(false);
-                            }}
-                            disabled={isLoading}
-                            color="transparent"
-                            fullWidth
-                            isborderRadius
-                            size="sm"
-                            title="Export as Excel"
-                            style={{ justifyContent: "left" }}
-                          >
-                            Export as Excel
-                          </Button>
-                        )}
-
-                        {handleExportOutDoorPdf && (
-                          <Button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleExportOutDoorPdf();
-                              setIsExportOpen(false);
-                            }}
-                            disabled={isLoading}
-                            color="transparent"
-                            fullWidth
-                            isborderRadius
-                            size="sm"
-                            title="Export as PDF"
-                            style={{ justifyContent: "left" }}
-                          >
-                            Export as PDF
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -760,105 +667,56 @@ export const OutDoor: React.FC = () => {
                     }
                     child={
                       <div className="space-y-6">
-                        {/* Fields Grid - Aligned Side by Side */}
                         <div className="space-y-0">
-                          {/* Row 1: Company Name | Department */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-gray-200">
-                            <div className="flex items-start gap-2.5 p-3">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Name</p>
-                                <p className="text-sm font-medium text-gray-900">{item.CompanyName || '-'}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-start gap-2.5 p-3">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Department</p>
-                                <p className="text-sm font-medium text-gray-900">{item.DepartmentName || '-'}</p>
-                              </div>
-                            </div>
-                          </div>
+                          <FieldGridRow>
+                            <FieldRow label="Company Name" value={item.CompanyName || '-'} />
+                            <FieldRow label="Department" value={item.DepartmentName || '-'} />
+                          </FieldGridRow>
 
-                          {/* Row 2: Company Address | Accompanied By */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-gray-200">
-                            <div className="flex items-start gap-2.5 p-3">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Address</p>
-                                <p className="text-sm font-medium text-gray-900">{item.CompanyAddress || '-'}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-start gap-2.5 p-3">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Accompanied By</p>
-                                <p className="text-sm font-medium text-gray-900">{item.AccompaniedByName || '-'}</p>
-                              </div>
-                            </div>
-                          </div>
+                          <FieldGridRow>
+                            <FieldRow label="Company Address" value={item.CompanyAddress || '-'} />
+                            <FieldRow label="Accompanied By" value={item.AccompaniedByName || '-'} />
+                          </FieldGridRow>
 
-                          {/* Row 3: Purpose | Requested By */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-gray-200">
-                            <div className="flex items-start gap-2.5 p-3">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Purpose</p>
-                                <div className="text-sm font-medium text-gray-900">
-                                  <TooltipText
-                                    text={item.Purpose || '-'}
-                                    maxWidth="300px"
-                                    tooltipThreshold={30}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-start gap-2.5 p-3">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Requested By</p>
-                                <p className="text-sm font-medium text-gray-900">{item.CreatedBy || '-'}</p>
-                              </div>
-                            </div>
-                          </div>
+                          <FieldGridRow>
+                            <FieldRow 
+                              label="Purpose" 
+                              value={
+                                <TooltipText
+                                  text={item.Purpose || '-'}
+                                  maxWidth="300px"
+                                  tooltipThreshold={30}
+                                />
+                              } 
+                            />
+                            <FieldRow label="Requested By" value={item.CreatedBy || '-'} />
+                          </FieldGridRow>
 
-                          {/* Row 4: Conclusion | Empty */}
-                          {/* {item.Conclusion && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-gray-200">
-                              <div className="flex items-start gap-2.5 p-3">
-                                <div className="flex-1">
-                                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Conclusion</p>
-                                  <p className="text-sm font-medium text-gray-600">{item.Conclusion}</p>
-                                </div>
-                              </div>
-                              <div className="flex items-start gap-2.5 p-3">
-                                <div className="flex-1"></div>
-                              </div>
-                            </div>
-                          )} */}
-
-                          {/* Row 5: Visiting Card | Edit */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="flex items-start gap-2.5 p-3">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Visiting Card</p>
-                                <div className="text-sm font-medium text-gray-900">
-                                  {item.VisitingCardURL ? (() => {
-                                    const cardUrls = parseDocumentUrls(item.VisitingCardURL);
-                                    return (
-                                      <MultiImageViewer
-                                        images={cardUrls}
-                                        title="Visiting Card"
-                                        isIcon={true}
-                                        triggerLabel={
-                                          <span className="flex items-center gap-2 text-sm font-medium">
-                                            {cardUrls.length > 1 ? `View ${cardUrls.length} Cards` : 'View Card'}
-                                          </span>
-                                        }
-                                      />
-                                    );
-                                  })() : (
-                                    <span className="text-gray-400 italic">Not Uploaded</span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-
-                          </div>
+                          {/* Row 4: Visiting Card */}
+                          <FieldGridRow withBorder={false}>
+                            <FieldRow 
+                              label="Visiting Card" 
+                              value={
+                                item.VisitingCardURL ? (() => {
+                                  const cardUrls = parseDocumentUrls(item.VisitingCardURL);
+                                  return (
+                                    <MultiImageViewer
+                                      images={cardUrls}
+                                      title="Visiting Card"
+                                      isIcon={true}
+                                      triggerLabel={
+                                        <span className="flex items-center gap-2 text-sm font-medium">
+                                          {cardUrls.length > 1 ? `View ${cardUrls.length} Cards` : 'View Card'}
+                                        </span>
+                                      }
+                                    />
+                                  );
+                                })() : (
+                                  <span className="text-gray-400 italic">Not Uploaded</span>
+                                )
+                              } 
+                            />
+                          </FieldGridRow>
 
                           <div className="flex items-start gap-2.5 p-3">
                             <div className="flex-1 flex justify-end">
@@ -890,38 +748,18 @@ export const OutDoor: React.FC = () => {
                             ) : (
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {item.PunchIn && (
-                                  <div className="p-3 bg-green-50 rounded-lg border border-green-100">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                      <p className="text-xs font-semibold text-green-700 uppercase">Punch In</p>
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-900 mb-1">
-                                      {formatTimeFromDateTime(item.PunchIn) || '-'}
-                                    </p>
-                                    {item.PunchInAddress && (
-                                      <p className="text-xs text-gray-600 flex items-start gap-1">
-                                        <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                                        <span className="line-clamp-2">{item.PunchInAddress}</span>
-                                      </p>
-                                    )}
-                                  </div>
+                                  <PunchCard 
+                                    type="in" 
+                                    time={item.PunchIn} 
+                                    address={item.PunchInAddress} 
+                                  />
                                 )}
                                 {item.PunchOut && (
-                                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                      <p className="text-xs font-semibold text-blue-700 uppercase">Punch Out</p>
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-900 mb-1">
-                                      {formatTimeFromDateTime(item.PunchOut) || '-'}
-                                    </p>
-                                    {item.PunchOutAddress && (
-                                      <p className="text-xs text-gray-600 flex items-start gap-1">
-                                        <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                                        <span className="line-clamp-2">{item.PunchOutAddress}</span>
-                                      </p>
-                                    )}
-                                  </div>
+                                  <PunchCard 
+                                    type="out" 
+                                    time={item.PunchOut} 
+                                    address={item.PunchOutAddress} 
+                                  />
                                 )}
                               </div>
                             )}

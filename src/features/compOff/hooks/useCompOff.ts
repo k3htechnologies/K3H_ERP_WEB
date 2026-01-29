@@ -10,13 +10,13 @@ import type {
     AddUpdateCompOff,
     DeleteCompOffRequest,
 } from '@/features/compOff/models/compOff';
-import { CompOffService } from '@/features/compOff/services/CompOffServices';
+import { compOffService } from '@/features/compOff/services/CompOffServices';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { handleExportFile } from '@/core/utils/exportFile';
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
 import { getInitialFormState, getCompOffColumns, REQUIRED_COLUMN_KEYS } from '@/features/compOff/constants/compOffConstants';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const useCompOff = () => {
 
@@ -105,32 +105,21 @@ export const useCompOff = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-                let sortByParam = undefined;
-                if (sortInfo) {
-                    const column = compOffColumns.find(col => col.key === sortInfo.column);
-                    if (column) {
-                        sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-                    }
-                }
-
-                const startDate = filterParams.StartDate?.trim()
-                    ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.StartDate.trim())
-                    : undefined;
-                const endDate = filterParams.EndDate?.trim()
-                    ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.EndDate.trim())
-                    : undefined;
-
                 const params: FilterWithPaginationCompOff = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     CompOffId: filterParams.CompOffId ? Number(filterParams.CompOffId) : 0,
-                    StartDate: startDate || undefined,
-                    EndDate: endDate || undefined,
+                    StartDate: filterParams.StartDate
+                        ? new Date(filterParams.StartDate).toISOString()
+                        : undefined,
+                    EndDate: filterParams.EndDate
+                        ? new Date(filterParams.EndDate).toISOString()
+                        : undefined,
                     Reason: filterParams.Reason?.trim() || undefined,
-                    SortBy: sortByParam,
+                    SortBy: getSortByParam(sortInfo ?? null, compOffColumns),
                 };
 
-                const response = await CompOffService.apiCallPullCompOff(params);
+                const response = await compOffService.apiCallPullCompOff(params);
 
                 if (E.isRight(response)) {
                     setCompOffList(response.right.Data);
@@ -173,33 +162,22 @@ export const useCompOff = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-                let sortByParam = undefined;
-                if (sortInfo) {
-                    const column = compOffColumns.find(col => col.key === sortInfo.column);
-                    if (column) {
-                        sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-                    }
-                }
-
-                const startDate = filters.StartDate?.trim()
-                    ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.StartDate.trim())
-                    : undefined;
-                const endDate = filters.EndDate?.trim()
-                    ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.EndDate.trim())
-                    : undefined;
-
                 const params: FilterWithPaginationCompOff = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     CompOffId: filters.CompOffId ? Number(filters.CompOffId) : 0,
-                    StartDate: startDate || undefined,
-                    EndDate: endDate || undefined,
+                    StartDate: filters.StartDate
+                        ? new Date(filters.StartDate).toISOString()
+                        : undefined,
+                    EndDate: filters.EndDate
+                        ? new Date(filters.EndDate).toISOString()
+                        : undefined,
                     Reason: filters.Reason?.trim() || undefined,
-                    SortBy: sortByParam,
+                    SortBy: getSortByParam(sortInfo ?? null, compOffColumns),
                     ExportType: exportType,
                 };
 
-                const response = await CompOffService.apiCallPullCompOff(params);
+                const response = await compOffService.apiCallPullCompOff(params);
                 handleExportFile(response, exportType, 'Comp Off', addToast);
                 return response;
             },
@@ -232,27 +210,35 @@ export const useCompOff = () => {
     //#region CUSTOMIZE TABLE COLUMNS
     const requiredCompOffColumnKeys: string[] = REQUIRED_COLUMN_KEYS;
 
-    const allCompOffColumnKeys: string[] = compOffColumns.map(c => c.key);
+    const allCompOffColumnKeys = useMemo<string[]>(() => compOffColumns.map(c => c.key), [compOffColumns]);
 
     const [selectedCompOffColumnKeys, setSelectedCompOffColumnKeys] = useState<string[]>(() => {
         try {
             const saved = LocalStorageHelper.getCompOffTableColumns();
             if (saved) {
                 const parsed = JSON.parse(saved) as string[];
+                const allKeys = compOffColumns.map(c => c.key);
                 const withRequired = Array.from(new Set([...parsed, ...requiredCompOffColumnKeys]));
-                return withRequired.filter(k => allCompOffColumnKeys.includes(k));
+                return withRequired.filter(k => allKeys.includes(k));
             }
         } catch { }
-        return allCompOffColumnKeys;
+        return compOffColumns.map(c => c.key);
     });
 
     useEffect(() => {
-        setSelectedCompOffColumnKeys(prev => Array.from(new Set([...prev, ...requiredCompOffColumnKeys])).filter(k => allCompOffColumnKeys.includes(k)));
+        // Only update if the selected keys don't already include all required keys and valid keys
+        setSelectedCompOffColumnKeys(prev => {
+            const newKeys = Array.from(new Set([...prev, ...requiredCompOffColumnKeys])).filter(k => allCompOffColumnKeys.includes(k));
+            // Only update if something actually changed to prevent infinite loop
+            if (newKeys.length === prev.length && newKeys.every((key, idx) => prev[idx] === key)) {
+                return prev;
+            }
+            return newKeys;
+        });
     }, [allCompOffColumnKeys, requiredCompOffColumnKeys]);
 
     const visibleCompOffColumns = useMemo(() => {
         const filtered = compOffColumns.filter(col => selectedCompOffColumnKeys.includes(col.key));
-        // Ensure Actions column is always included (required column)
         const hasActions = filtered.some(col => col.key === 'Actions');
         if (!hasActions) {
             const actionsColumn = compOffColumns.find(col => col.key === 'Actions');
@@ -262,10 +248,6 @@ export const useCompOff = () => {
         }
         return filtered;
     }, [compOffColumns, selectedCompOffColumnKeys]);
-    //#endregion
-
-    //#region VIEW EDIT
-    // handleViewCompOffDetails is defined in TABLE COLUMN DEFINITION region above
     //#endregion
 
     //#region EDIT COMP OFF
@@ -385,7 +367,7 @@ export const useCompOff = () => {
                     Reason: updatedFormData.Reason?.trim() || null,
                 };
 
-                const response = await CompOffService.apiCallAddUpdateCompOff(payload);
+                const response = await compOffService.apiCallAddUpdateCompOff(payload);
 
                 if (E.isRight(response)) {
                     setIsAddUpdateModalOpen(false);
@@ -443,13 +425,11 @@ export const useCompOff = () => {
             setLoadingMessage,
             async () => {
                 const deleteRequest: DeleteCompOffRequest = {
-                    CompOffId: deleteCompOffDetailsData.CompOffId || null,
-                    Uniquekey: deleteCompOffDetailsData.Uniquekey && deleteCompOffDetailsData.Uniquekey.trim() !== ''
-                        ? deleteCompOffDetailsData.Uniquekey.trim()
-                        : '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+                    CompOffId: deleteCompOffDetailsData.CompOffId,
+                    Uniquekey: deleteCompOffDetailsData.Uniquekey
                 };
 
-                const response = await CompOffService.apiCallDeleteCompOff(deleteRequest);
+                const response = await compOffService.apiCallDeleteCompOff(deleteRequest);
 
                 if (E.isRight(response)) {
                     const newTotalRecords = pagination.totalRecords - 1;

@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { DateRangePickerModal } from '@/ui/components/forms/DateRangePickerModel';
 import { DateInput } from '@/ui/components/forms/DateInput';
 import { TextArea } from '@/ui/components/forms/Textarea';
 import {
     convert_dd_mm_yyyy_To_Yyyy_mm_dd,
     formatDate_dd_mm_yyyy,
+    convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd,
 } from '@/core/utils/dateFormat';
-import type { AddUpdateCompOff } from '@/features/compOff/models/compOff';
+import type { AddUpdateCompOff, PullCompOffDatesRequest } from '@/features/compOff/models/compOff';
+import { compOffService } from '@/features/compOff/services/CompOffServices';
+import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
+import * as E from 'fp-ts/Either';
 
 interface CompOffFormModalProps {
     isOpen: boolean;
@@ -19,6 +23,8 @@ interface CompOffFormModalProps {
     editingData: any;
     loading: boolean;
     modalKey: number;
+    filterStartDate?: string | null; // StartDate from DateRangeSelector filter
+    filterEndDate?: string | null;   // EndDate from DateRangeSelector filter
 }
 
 export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
@@ -32,7 +38,88 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
     editingData,
     loading,
     modalKey,
+    filterStartDate,
+    filterEndDate,
 }) => {
+    const [allowedDates, setAllowedDates] = useState<string[]>([]);
+    const [, setIsLoadingDates] = useState(false);
+
+    // Fetch dates for a specific month range
+    const fetchCompOffDates = (monthStart: string, monthEnd: string, abortController: AbortController) => {
+        setIsLoadingDates(true);
+        
+        const employeeData = LocalStorageHelper.getStoredEmployeeData();
+        const params: PullCompOffDatesRequest = {
+            PageSize: 1000, // Large page size to get all dates for the month
+            PageNumber: 1,
+            EmployeeId: employeeData?.EmployeeId,
+            StartDate: monthStart,
+            EndDate: monthEnd,
+        };
+
+        compOffService.apiCallPullCompOffDates(params, { signal: abortController.signal })
+            .then((response) => {
+                if (E.isRight(response)) {
+                    // Extract dates from AttendanceDate fields and convert ISO to YYYY-MM-DD format
+                    const dates = (response.right.Data || [])
+                        .map(item => {
+                            if (item?.AttendanceDate) {
+                                // Convert ISO format "2026-01-06T00:00:00" to "2026-01-06"
+                                return convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(item.AttendanceDate);
+                            }
+                            return null;
+                        })
+                        .filter((date): date is string => date !== null && date !== '');
+                    
+                    setAllowedDates(dates);
+                }
+                setIsLoadingDates(false);
+            })
+            .catch(() => {
+                setIsLoadingDates(false);
+            });
+    };
+
+    // Handle month change from DateRangePickerModal
+    const handleMonthChange = (monthStart: string, monthEnd: string) => {
+        const abortController = new AbortController();
+        fetchCompOffDates(monthStart, monthEnd, abortController);
+    };
+
+    useEffect(() => {
+        if (isOpen && !editingData) {
+            // Only fetch dates when adding (not editing)
+            const abortController = new AbortController();
+            
+            // Use filter dates from DateRangeSelector if available, otherwise use current month
+            let monthStart: string;
+            let monthEnd: string;
+
+            if (filterStartDate && filterEndDate) {
+                // Use filter dates from DateRangeSelector
+                monthStart = filterStartDate;
+                monthEnd = filterEndDate;
+            } else {
+                // Fallback to current month's start and end dates
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth();
+                monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+                const lastDay = new Date(year, month + 1, 0).getDate();
+                monthEnd = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+            }
+            
+            fetchCompOffDates(monthStart, monthEnd, abortController);
+
+            return () => {
+                abortController.abort();
+            };
+        } else if (isOpen && editingData) {
+            // Clear allowed dates when editing (allow any date)
+            setAllowedDates([]);
+        }
+    }, [isOpen, editingData, filterStartDate, filterEndDate]);
+
     return (
         <DateRangePickerModal
             key={modalKey}
@@ -48,7 +135,9 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
             cancelText=""
             loading={loading}
             showSummary={false}
-            renderChildren={({ startDate, endDate, onSelectField, onClearField, editingField, onUpdateDate }) => {
+            allowedDates={allowedDates}
+            onMonthChange={handleMonthChange}
+            renderChildren={({ startDate, endDate, onClearField, editingField, onUpdateDate }) => {
                 return (
                     <div className="space-y-4">
                         <DateInput

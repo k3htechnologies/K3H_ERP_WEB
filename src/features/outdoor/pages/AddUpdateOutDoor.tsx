@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import { Loader } from "@/core/utils/loader";
 import { useToast } from "@/core/hooks/useToast";
-import { OutDoorService } from "@/features/outdoor/services/OutDoorDataService";
+import { outDoorService } from "@/features/outdoor/services/OutDoorDataService";
 import type { OutDoorMasterData, AddUpdateOutDoor } from "../models/OutDoorModel";
 import * as E from "fp-ts/Either";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
@@ -14,7 +14,8 @@ import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialVa
 import { MultiFilePicker, type FileValue } from "@/ui/components/ImagePicker/MultiFilePicker";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
+import { parseTimeFromISO } from "../utils/outdoorDateUtils";
 import { runApiWithLoader } from '@/core/utils';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
@@ -116,7 +117,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        const apiResponse = await OutDoorService.apiCallPullOutDoorData({
+        const apiResponse = await outDoorService.apiCallPullOutDoorData({
           PageNumber: 1,
           PageSize: 1000,
         });
@@ -124,25 +125,8 @@ export const AddUpdateOutDoorPage: React.FC = () => {
         if (E.isRight(apiResponse)) {
           const outdoor = apiResponse.right.Data?.find((o: OutDoorMasterData) => o.OutdoorId === Number(outdoorId));
           if (outdoor) {
-            const parseDateFromISO = (isoString: string): string => {
-              if (!isoString) return "";
-              if (/^\d{4}-\d{2}-\d{2}$/.test(isoString)) {
-                return isoString;
-              }
-              const dateMatch = isoString.match(/^(\d{4}-\d{2}-\d{2})/);
-              return dateMatch ? dateMatch[1] : isoString;
-            };
 
-            const parseTimeFromISO = (isoString: string): string => {
-              if (!isoString) return "00:00";
-              if (/^\d{2}:\d{2}$/.test(isoString)) {
-                return isoString;
-              }
-              const timeMatch = isoString.match(/T(\d{2}):(\d{2})/);
-              return timeMatch ? `${timeMatch[1]}:${timeMatch[2]}` : "00:00";
-            };
-
-            const parsedDate = parseDateFromISO(outdoor.OutDoorDate || "");
+            const parsedDate = convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(outdoor.OutDoorDate || "") || "";
             const parsedTime = parseTimeFromISO(outdoor.OutDoorTime || "");
 
             // Set department first, then form data, to ensure hook can fetch options correctly
@@ -371,7 +355,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       async () => {
         const pushOutDoorFormData = PushOutDoorFormData();
 
-        const apiResponse = await OutDoorService.apiCallAddUpdateOutDoor(pushOutDoorFormData);
+        const apiResponse = await outDoorService.apiCallAddUpdateOutDoor(pushOutDoorFormData);
 
         if (E.isRight(apiResponse)) {
           const response = apiResponse.right;

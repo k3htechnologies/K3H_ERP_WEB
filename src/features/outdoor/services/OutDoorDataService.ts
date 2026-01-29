@@ -16,7 +16,7 @@ import * as E from 'fp-ts/Either';
 
 const outDoorDataSource = new OutDoorDataSourceImpl();
 
-export const OutDoorService = {
+export const outDoorService = {
 
     apiCallPullOutDoorData: async (params: FilterWithPaginationOutDoor, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, OutDoorDataListResponse>> => {
         try {

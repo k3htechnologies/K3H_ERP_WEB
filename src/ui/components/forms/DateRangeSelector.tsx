@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDate_dd_mm_yyyy } from '@/core/utils/dateFormat';
 import { THEME } from '@/core/constants/theme';
@@ -52,7 +52,8 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     };
   }, [isOpen]);
 
-  const parseDate = (dateStr: string | null): Date | null => {
+  // Memoize parseDate function
+  const parseDate = useCallback((dateStr: string | null): Date | null => {
     if (!dateStr) return null;
     try {
       // Handle ISO format dates (YYYY-MM-DDTHH:mm:ss.sssZ) by extracting just the date part
@@ -74,16 +75,32 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     } catch {
       return null;
     }
-  };
+  }, []);
 
-  const formatLocalDate = (date: Date): string => {
+  const formatLocalDate = useCallback((date: Date): string => {
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
-  };
+  }, []);
 
-  const handleDateClick = (date: Date) => {
+  // Memoize helper functions - must be defined before handleDateClick
+  const isSameDay = useCallback((d1: Date | null, d2: Date | null): boolean => {
+    if (!d1 || !d2) return false;
+    return d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate();
+  }, []);
+
+  const isDateInRange = useCallback((date: Date, start: Date | null, end: Date | null): boolean => {
+    if (!start || !end) return false;
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const startOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const endOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    return dateOnly > startOnly && dateOnly < endOnly;
+  }, []);
+
+  const handleDateClick = useCallback((date: Date) => {
     const dateStr = formatLocalDate(date);
     if (!dateStr) return;
 
@@ -184,24 +201,10 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
       }
     }
     // Keep calendar open - don't close it
-  };
+  }, [fromDate, toDate, formatLocalDate, parseDate, isSameDay, onBothDatesChange, onFromDateChange, onToDateChange]);
 
-  const isSameDay = (d1: Date | null, d2: Date | null): boolean => {
-    if (!d1 || !d2) return false;
-    return d1.getFullYear() === d2.getFullYear() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getDate() === d2.getDate();
-  };
-
-  const isDateInRange = (date: Date, start: Date | null, end: Date | null): boolean => {
-    if (!start || !end) return false;
-    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const startOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-    const endOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-    return dateOnly > startOnly && dateOnly < endOnly;
-  };
-
-  const generateCalendar = (baseDate: Date) => {
+  // Memoize calendar generation
+  const generateCalendar = useCallback((baseDate: Date) => {
     const year = baseDate.getFullYear();
     const month = baseDate.getMonth();
 
@@ -222,24 +225,33 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     }
 
     return { days, year, month };
-  };
+  }, []);
 
-  const handlePrevMonth = () => {
+  const handlePrevMonth = useCallback(() => {
     setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-  };
+  }, []);
 
-  const handleNextMonth = () => {
+  const handleNextMonth = useCallback(() => {
     setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  };
+  }, []);
 
 
-  const fromDateObj = parseDate(fromDate || null);
-  const toDateObj = parseDate(toDate || null);
-  const { days, year, month } = generateCalendar(currentMonth);
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  // Memoize parsed date objects
+  const fromDateObj = useMemo(() => parseDate(fromDate || null), [fromDate, parseDate]);
+  const toDateObj = useMemo(() => parseDate(toDate || null), [toDate, parseDate]);
 
-  // Format dates for display - ensure dates are in correct format
-  const getDisplayValue = (dateStr: string | null | undefined): string => {
+  // Memoize calendar generation
+  const calendarData = useMemo(() => generateCalendar(currentMonth), [currentMonth, generateCalendar]);
+  const { days, year, month } = calendarData;
+
+  // Memoize month names array
+  const monthNames = useMemo(() => 
+    ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    []
+  );
+
+  // Memoize display value formatter
+  const getDisplayValue = useCallback((dateStr: string | null | undefined): string => {
     if (!dateStr) return '';
 
     // Handle ISO format dates (YYYY-MM-DDTHH:mm:ss.sssZ) by extracting just the date part
@@ -261,10 +273,26 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     }
 
     return formatted || '';
-  };
+  }, []);
 
-  const displayFrom = getDisplayValue(fromDate);
-  const displayTo = getDisplayValue(toDate);
+  // Memoize display values
+  const displayFrom = useMemo(() => getDisplayValue(fromDate), [fromDate, getDisplayValue]);
+  const displayTo = useMemo(() => getDisplayValue(toDate), [toDate, getDisplayValue]);
+
+  // Memoize clear button handler - must be defined unconditionally
+  const handleClearDates = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    // Clear both dates explicitly - use batch update if available
+    if (onBothDatesChange) {
+      onBothDatesChange(null, null);
+    } else {
+      onToDateChange(null);
+      onFromDateChange(null);
+    }
+    setSelectingStart(true);
+    setIsOpen(false);
+  }, [onBothDatesChange, onToDateChange, onFromDateChange]);
 
   return (
     <div ref={wrapperRef} className="relative">
@@ -418,19 +446,7 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
             <div className="flex justify-end gap-2 pt-3 mt-3 border-t border-gray-200">
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  // Clear both dates explicitly - use batch update if available
-                  if (onBothDatesChange) {
-                    onBothDatesChange(null, null);
-                  } else {
-                    onToDateChange(null);
-                    onFromDateChange(null);
-                  }
-                  setSelectingStart(true);
-                  setIsOpen(false);
-                }}
+                onClick={handleClearDates}
                 className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
               >
                 Clear

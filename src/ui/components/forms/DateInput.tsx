@@ -33,6 +33,7 @@ export interface DateInputProps extends Omit<DatePickerProps, 'onChange'> {
   onClear?: () => void
   isActive?: boolean // For highlighting when active/editing
   openCalendarOnClick?: boolean // If false, clicking on input won't open calendar
+  allowedDates?: string[] // Array of dates in YYYY-MM-DD format that can be selected
 }
 
 export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
@@ -50,6 +51,7 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
     onClear,
     isActive = false,
     openCalendarOnClick = true,
+    allowedDates,
     ...props
   }, ref) => {
     const theme = THEME
@@ -214,6 +216,25 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
       if (!selectedDate) return false
       return date.toDateString() === selectedDate.toDateString()
     }
+    
+    // Convert date to YYYY-MM-DD format for comparison
+    const formatYyyyMmDd = (date: Date): string => {
+      const yyyy = date.getFullYear()
+      const mm = String(date.getMonth() + 1).padStart(2, '0')
+      const dd = String(date.getDate()).padStart(2, '0')
+      return `${yyyy}-${mm}-${dd}`
+    }
+    
+    const isDateAllowed = (date: Date): boolean => {
+      if (!allowedDates || allowedDates.length === 0) return true
+      const dateStr = formatYyyyMmDd(date)
+      return allowedDates.includes(dateStr)
+    }
+    
+    const isDateHighlighted = (date: Date): boolean => {
+      if (!allowedDates || allowedDates.length === 0) return false
+      return isDateAllowed(date)
+    }
 
     return (
       <div
@@ -374,7 +395,10 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
                 const today = isToday(date)
                 const selected = isSelected(date)
                 const dateYear = date.getFullYear()
-                const isDisabled = dateYear < minYear || dateYear > maxYear
+                const yearDisabled = dateYear < minYear || dateYear > maxYear
+                const dateNotAllowed = allowedDates && allowedDates.length > 0 && !isDateAllowed(date)
+                const isDisabled = yearDisabled || dateNotAllowed
+                const isHighlighted = isDateHighlighted(date) && !selected && !today
 
                 return (
                   <button
@@ -392,7 +416,9 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
                         ? theme.colors.primary
                         : today
                           ? theme.colors.primaryLight
-                          : 'transparent',
+                          : isHighlighted
+                            ? '#dbeafe'
+                            : 'transparent',
                       color: selected
                         ? '#fff'
                         : inMonth
@@ -400,10 +426,13 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
                           : theme.colors.textLight,
                       opacity: isDisabled ? 0.3 : 1,
                       fontWeight: selected || today ? theme.fontWeight.semibold : theme.fontWeight.normal,
+                      borderWidth: isHighlighted ? '1px' : '0',
+                      borderStyle: isHighlighted ? 'solid' : 'none',
+                      borderColor: isHighlighted ? '#3b82f6' : 'transparent',
                     }}
                     onMouseEnter={(e) => {
                       if (!isDisabled && !selected) {
-                        e.currentTarget.style.backgroundColor = theme.colors.hover
+                        e.currentTarget.style.backgroundColor = isHighlighted ? '#bfdbfe' : theme.colors.hover
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -412,7 +441,9 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
                           ? theme.colors.primary
                           : today
                             ? theme.colors.primaryLight
-                            : 'transparent'
+                            : isHighlighted
+                              ? '#dbeafe'
+                              : 'transparent'
                       }
                     }}
                   >

@@ -88,6 +88,8 @@ export interface DateRangePickerModalProps {
     endTime?: string
     summaryText: string
   }) => React.ReactNode // Custom render function for summary
+  allowedDates?: string[] // Array of dates in YYYY-MM-DD format that can be selected
+  onMonthChange?: (monthStart: string, monthEnd: string) => void // Callback when calendar month changes (YYYY-MM-DD format)
 }
 
 const parseTimeParts = (value: string) => {
@@ -152,6 +154,8 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   showSummary = true,
   summaryPrefix = 'Event:',
   renderSummary,
+  allowedDates,
+  onMonthChange,
 }) => {
   const theme = THEME
   const startDateObj = parseYyyyMmDd(startDate)
@@ -231,6 +235,28 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
     weeks.push(currentRow)
   }
 
+  // Calculate month start and end dates
+  const getMonthStartEnd = useCallback((date: Date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const monthStart = new Date(year, month, 1)
+    const monthEnd = new Date(year, month + 1, 0) // Last day of the month
+    return {
+      start: formatLocalDate(monthStart),
+      end: formatLocalDate(monthEnd)
+    }
+  }, [])
+
+  // Notify parent when month changes
+  useEffect(() => {
+    if (isOpen && onMonthChange) {
+      const { start, end } = getMonthStartEnd(currentMonth)
+      if (start && end) {
+        onMonthChange(start, end)
+      }
+    }
+  }, [currentMonth, isOpen, onMonthChange, getMonthStartEnd])
+
   const handlePrevMonth = () => {
     setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
   }
@@ -239,8 +265,44 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
     setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
   }
 
+  // Convert date to YYYY-MM-DD format for comparison
+  const formatYyyyMmDd = (date: Date): string => {
+    const yyyy = date.getFullYear()
+    const mm = String(date.getMonth() + 1).padStart(2, '0')
+    const dd = String(date.getDate()).padStart(2, '0')
+    return `${yyyy}-${mm}-${dd}`
+  }
+  
+  // Check if a selected date is from allowedDates (CompOff dates)
+  const isSelectedDateFromAllowedDates = (): boolean => {
+    if (!allowedDates || allowedDates.length === 0) return false
+    const selectedDateStr = tempStartDate ? formatYyyyMmDd(tempStartDate) : 
+                           (tempEndDate ? formatYyyyMmDd(tempEndDate) : null)
+    if (!selectedDateStr) return false
+    return allowedDates.includes(selectedDateStr)
+  }
+  
+  const isDateAllowed = (date: Date): boolean => {
+    if (!allowedDates || allowedDates.length === 0) return true
+    
+    // If a CompOff date is selected, invert the logic:
+    // - Disable dates from allowedDates (CompOff dates)
+    // - Enable all other dates
+    if (isSelectedDateFromAllowedDates()) {
+      const dateStr = formatYyyyMmDd(date)
+      return !allowedDates.includes(dateStr) // Invert: allow dates NOT in allowedDates
+    }
+    
+    // Default behavior: only allow dates from allowedDates
+    const dateStr = formatYyyyMmDd(date)
+    return allowedDates.includes(dateStr)
+  }
+
   const handleDayClick = (date: Date | null) => {
     if (!date) return
+    
+    // Check if date is allowed
+    if (!isDateAllowed(date)) return
 
     if (editingField === 'start') {
       setTempStartDate(date)
@@ -525,40 +587,59 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                     const isEnd = tempEndDate && isSameDay(date, tempEndDate)
                     const isInRange = tempStartDate && tempEndDate && isDateInRange(date, tempStartDate, tempEndDate)
                     const isSelected = isStart || isEnd
+                    const dateAllowed = isDateAllowed(date)
+                    const dateStr = formatYyyyMmDd(date)
+                    const isFromAllowedDates = allowedDates && allowedDates.length > 0 && allowedDates.includes(dateStr)
+                    const hasCompOffDateSelected = isSelectedDateFromAllowedDates()
+                    
+                    // Highlight logic: 
+                    // - If CompOff date is selected: highlight dates NOT in allowedDates (enabled dates)
+                    // - If no CompOff date selected: highlight dates IN allowedDates (CompOff dates)
+                    const isHighlighted = hasCompOffDateSelected 
+                        ? (!isFromAllowedDates && !isSelected && !isInRange && isCurrentMonth && dateAllowed)
+                        : (isFromAllowedDates && !isSelected && !isInRange && isCurrentMonth && dateAllowed)
 
                     return (
                       <button
                         key={`${wIdx}-${dIdx}`}
                         type="button"
                         onClick={() => handleDayClick(date)}
+                        disabled={!dateAllowed}
                         style={{
                           height: 42,
                           borderRadius: 10,
-                          border: 'none',
-                          cursor: 'pointer',
+                          border: isHighlighted ? '1px solid #3b82f6' : 'none',
+                          cursor: dateAllowed ? 'pointer' : 'not-allowed',
                           fontSize: theme.fontSize.sm,
                           backgroundColor: isSelected
                             ? theme.colors.primary1
                             : isInRange
                             ? theme.colors.backgroundSecondary
+                            : isHighlighted
+                            ? '#dbeafe'
                             : 'transparent',
                           color: isSelected
                             ? '#fff'
                             : !isCurrentMonth
                             ? theme.colors.textLight
+                            : !dateAllowed
+                            ? theme.colors.textLight
                             : theme.colors.text,
                           fontWeight: isSelected ? theme.fontWeight.medium : theme.fontWeight.normal,
                           transition: 'all 0.2s',
+                          opacity: !dateAllowed ? 0.3 : 1,
                         }}
                         onMouseEnter={(e) => {
-                          if (!isSelected && isCurrentMonth) {
-                            e.currentTarget.style.backgroundColor = theme.colors.backgroundSecondary
+                          if (!isSelected && isCurrentMonth && dateAllowed) {
+                            e.currentTarget.style.backgroundColor = isHighlighted ? '#bfdbfe' : theme.colors.backgroundSecondary
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected) {
                             e.currentTarget.style.backgroundColor = isInRange
                               ? theme.colors.backgroundSecondary
+                              : isHighlighted
+                              ? '#dbeafe'
                               : 'transparent'
                           }
                         }}

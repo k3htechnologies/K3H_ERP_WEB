@@ -1,7 +1,7 @@
 export interface AttendanceCalendarEvent {
   id: string;
   title: string;
-  type?: "PRESENT" | "ABSENT" | "LEAVE" | "HOLIDAY" | "LATE IN" | "HALF_DAY" |"WEEK OFF" |"EARLY LEAVE"|"COMP_OFF";
+  type?: "PRESENT" | "ABSENT" | "LEAVE" | "HOLIDAY" | "LATE IN" | "HALF_DAY" | "WEEK OFF" | "EARLY LEAVE" | "COMP_OFF";
   start: string;
   end?: string;
   description?: string;
@@ -13,31 +13,6 @@ export interface AttendanceCalendarEvent {
   CreatedBy?: string | ''
   CreatedDate?: string | null
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

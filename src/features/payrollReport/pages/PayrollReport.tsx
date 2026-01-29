@@ -18,9 +18,9 @@ import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 import type { CompOffData, FilterWithPaginationCompOff } from '@/features/compOff/models/compOff';
 import type { FilterWithPaginationLeaveRequest, LeaveData } from '@/features/leave/models/LeaveModel';
 import type { FilterWithPaginationOutDoor, OutDoorMasterData } from '@/features/outdoor/models/OutDoorModel';
-import { CompOffService } from '@/features/compOff/services/CompOffServices';
+import { compOffService } from '@/features/compOff/services/CompOffServices';
 import { LeaveService } from '@/features/leave/services/LeaveService';
-import { OutDoorService } from '@/features/outdoor/services/OutDoorDataService';
+import { outDoorService } from '@/features/outdoor/services/OutDoorDataService';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { updateFilter } from '@/core/utils/filterHelper';
@@ -223,7 +223,7 @@ export const PayrollReport: React.FC = () => {
           Reason: searchTerm?.trim() || activeFilters.Reason?.trim() || undefined,
         }
 
-        const response = await CompOffService.apiCallPullCompOff(params);
+        const response = await compOffService.apiCallPullCompOff(params);
 
         if (E.isRight(response)) {
 
@@ -311,7 +311,7 @@ export const PayrollReport: React.FC = () => {
           CompanyName: searchTerm?.trim() || activeFilters.CompanyName?.trim() || undefined,
         }
 
-        const response = await OutDoorService.apiCallPullOutDoorData(params);
+        const response = await outDoorService.apiCallPullOutDoorData(params);
 
         if (E.isRight(response)) {
 
@@ -408,7 +408,7 @@ export const PayrollReport: React.FC = () => {
             SortBy: sortByParam,
             ExportType: 'PDF'
           };
-          const response = await CompOffService.apiCallPullCompOff(params);
+          const response = await compOffService.apiCallPullCompOff(params);
           handleExportFile(response, 'PDF', 'Comp Off', addToast);
           return response;
         } else if (activeTab === 'Leave') {
@@ -434,7 +434,7 @@ export const PayrollReport: React.FC = () => {
             SortBy: sortByParam,
             ExportType: 'PDF'
           };
-          const response = await OutDoorService.apiCallPullOutDoorData(params);
+          const response = await outDoorService.apiCallPullOutDoorData(params);
           handleExportFile(response, 'PDF', 'Outdoor', addToast);
           return response;
         } else if (activeTab === 'Resignation') {

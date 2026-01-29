@@ -8,6 +8,8 @@ import type {
     CompOffListResponse,
     CompOffSaveResponse,
     CompOffDeleteResponse,
+    CompOffDatesResponse,
+    PullCompOffDatesRequest,
 } from '@/features/compOff/models/compOff'
 
 export abstract class CompOffDatasource {
@@ -15,6 +17,7 @@ export abstract class CompOffDatasource {
     abstract pullCompOff(params: FilterWithPaginationCompOff, signal?: AbortSignal): Promise<CompOffListResponse>;
     abstract addUpdateCompOff(data: AddUpdateCompOff): Promise<CompOffSaveResponse>;
     abstract deleteCompOff(params: DeleteCompOffRequest): Promise<CompOffDeleteResponse>;
+    abstract pullCompOffDates(params: PullCompOffDatesRequest, signal?: AbortSignal): Promise<CompOffDatesResponse>;
 }
 
 export class CompOffDatasourceImpl implements CompOffDatasource {
@@ -108,6 +111,38 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             if (error === TokenExpiredException) {
                 await this.deleteCompOff(params);
             }
+            throw error
+        }
+    }
+
+    async pullCompOffDates(params: PullCompOffDatesRequest, signal?: AbortSignal): Promise<CompOffDatesResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                PageSize: params.PageSize.toString(),
+                PageNumber: params.PageNumber.toString(),
+            });
+
+            if (params.EmployeeId !== undefined && params.EmployeeId !== null) {
+                queryParams.append('EmployeeId', params.EmployeeId.toString());
+            }
+            if (params.StartDate?.trim()) {
+                queryParams.append('StartDate', params.StartDate.trim());
+            }
+            if (params.EndDate?.trim()) {
+                queryParams.append('EndDate', params.EndDate.trim());
+            }
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${CompOffApi.PULL_COMP_OFF_DATES}?${queryParams.toString()}`, { signal }
+            )
+            return response;
+        } catch (error: any) {
+            console.error('ERROR: PULL COMP OFF DATES :', error);
+
+            if (error === TokenExpiredException) {
+                await this.pullCompOffDates(params);
+            }
+
             throw error
         }
     }

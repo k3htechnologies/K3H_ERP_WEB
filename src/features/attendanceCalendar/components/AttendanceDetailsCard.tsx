@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, formatTimeFromDateTime, convertUtcToLocal } from '@/core/utils/dateFormat';
 import { convertToISO, getStatusTextColor } from '../utils/attendanceUtils';
 import type { AttendanceData } from '../models/AttendanceModel';
 
@@ -22,6 +22,40 @@ export const AttendanceDetailsCard = React.memo<AttendanceDetailsCardProps>(({
     [attendance.AttendanceStatus]
   );
 
+  const formattedPunchIn = useMemo(() => {
+    if (!attendance.PunchIn) return '-';
+    try {
+      const localDate = convertUtcToLocal(attendance.PunchIn);
+      if (localDate) {
+        const dateStr = formatDate_dd_MonthName_yy(localDate);
+        const timeStr = formatTimeFromDateTime(attendance.PunchIn);
+        return timeStr ? `${dateStr} ${timeStr}` : dateStr;
+      }
+      // Fallback: try to format as is
+      const timeStr = formatTimeFromDateTime(attendance.PunchIn);
+      return timeStr || attendance.PunchIn;
+    } catch {
+      return attendance.PunchIn;
+    }
+  }, [attendance.PunchIn]);
+
+  const formattedPunchOut = useMemo(() => {
+    if (!attendance.PunchOut) return '-';
+    try {
+      const localDate = convertUtcToLocal(attendance.PunchOut);
+      if (localDate) {
+        const dateStr = formatDate_dd_MonthName_yy(localDate);
+        const timeStr = formatTimeFromDateTime(attendance.PunchOut);
+        return timeStr ? `${dateStr} ${timeStr}` : dateStr;
+      }
+      // Fallback: try to format as is
+      const timeStr = formatTimeFromDateTime(attendance.PunchOut);
+      return timeStr || attendance.PunchOut;
+    } catch {
+      return attendance.PunchOut;
+    }
+  }, [attendance.PunchOut]);
+
   return (
     <div className="rounded-lg border border-gray-200 p-3 sm:p-4 bg-white hover:shadow-md transition-shadow w-full">
       <div className="space-y-1.5 sm:space-y-2">
@@ -39,8 +73,8 @@ export const AttendanceDetailsCard = React.memo<AttendanceDetailsCardProps>(({
           </div>
         </div>
         <FieldItem label="Attendance Date" isRow value={formattedDate} />
-        <FieldItem label="Punch In" isRow value={attendance.PunchIn || '-'} />
-        <FieldItem label="Punch Out" isRow value={attendance.PunchOut || '-'} />
+        <FieldItem label="Punch In" isRow value={formattedPunchIn} />
+        <FieldItem label="Punch Out" isRow value={formattedPunchOut} />
         <FieldItem label="Working Hours" isRow value={attendance.WorkingHours || '-'} />
         <FieldItem label="Punch In Address" isRow value={attendance.PunchInAddress || '-'} />
         <FieldItem label="Punch Out Address" isRow value={attendance.PunchOutAddress || '-'} />

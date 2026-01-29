@@ -63,6 +63,20 @@ export const parseMMDDYYYY = (dateStr?: string | null): string | null => {
 
 export const convertToISO = (dateStr?: string | null): string | null => {
   if (!dateStr) return null;
+  
+  // If already in ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss)
+  if (dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+    // If it already has time part, return as is (or ensure it has time)
+    if (dateStr.includes('T')) {
+      // Already has time, return as is
+      return dateStr;
+    } else {
+      // Just date part, add default time
+      return `${dateStr}T00:00:00`;
+    }
+  }
+  
+  // Try parsing as MM/DD/YYYY format
   const [date, time = '00:00'] = dateStr.split(' ');
   const parsed = parseMMDDYYYY(date);
   if (!parsed) return null;
@@ -74,7 +88,21 @@ export const buildEventDateTime = (
   date?: string | null,
   time?: string | null
 ): string | null => {
-  const parsed = parseMMDDYYYY(date ?? undefined);
+  if (!date) return null;
+  
+  // If already in ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss)
+  if (date.match(/^\d{4}-\d{2}-\d{2}/)) {
+    // If it already has time part, return as is
+    if (date.includes('T')) {
+      return date;
+    } else {
+      // Just date part, add time if provided
+      return time ? `${date}T${time}:00` : `${date}T00:00:00`;
+    }
+  }
+  
+  // Try parsing as MM/DD/YYYY format
+  const parsed = parseMMDDYYYY(date);
   return parsed ? (time ? `${parsed}T${time}:00` : parsed) : null;
 };
 

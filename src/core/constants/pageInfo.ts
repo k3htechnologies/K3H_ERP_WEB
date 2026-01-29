@@ -164,7 +164,7 @@ export const getPageInfo = (path: string) => {
 
         case 'compOff':
             return {
-                title: 'compOff',
+                title: 'CompOff',
                 description: 'Manage compOff with complete CRUD operations',
             }
         case 'outdoor':

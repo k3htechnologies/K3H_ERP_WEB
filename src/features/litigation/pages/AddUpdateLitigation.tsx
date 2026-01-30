@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { AddUpdateLitigationRequest, FilterWithPaginationLitigationRequest } from "../models/LitigationModel";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import type { AddUpdateLitigationRequest, FilterWithPaginationLitigationRequest } from "@/features/litigation/models/LitigationModel";
+import { useNavigate, useParams } from "react-router-dom";
 import useToast from "@/core/hooks/useToast";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -44,11 +44,11 @@ export const AddUpdateLitigation: React.FC = () => {
 
     // NAVIGATE
     const navigate = useNavigate();
-    const location = useLocation();
 
     // GET VALUE FROM URL LITIGATION ID
     const { LitigationId } = useParams<{ LitigationId?: string }>();
     const litigationId = LitigationId ? Number(LitigationId) : 0;
+
     const isAddMode = litigationId === 0;
 
     // ERROR SET UP
@@ -185,12 +185,6 @@ export const AddUpdateLitigation: React.FC = () => {
         if (!formData.OpposingRepresentative) {
             newErrors.OpposingRepresentative = 'Opposing Representative is required.';
         }
-        if (!formData.CaseBrief) {
-            newErrors.CaseBrief = 'Case Brief is required.';
-        }
-        if (!formData.Remark) {
-            newErrors.Remark = 'Remark is required.';
-        }
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -250,25 +244,8 @@ export const AddUpdateLitigation: React.FC = () => {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-                    const locationState = location.state as {
-                        listState?: {
-                            page?: number;
-                            filters?: any;
-                            sortInfo?: any;
-                            searchTerm?: string;
-                        };
-                    } | null;
 
-                    const listState = locationState?.listState || {
-                        page: 1,
-                        filters: {},
-                        sortInfo: undefined,
-                        searchTerm: '',
-                    };
-                    navigate("/litigation",
-                        {
-                            state: { listState }
-                        });
+                    navigate("/litigation");
 
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -302,7 +279,7 @@ export const AddUpdateLitigation: React.FC = () => {
 
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Case Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                             <div>
                                 <Input
@@ -312,7 +289,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                     value={formData.Title ?? ""}
                                     onChange={(e) => handleFieldChange("Title", e.target.value)}
                                     placeholder="Enter Title "
-                                    maxLength={250}
+                                    maxLength={50}
                                     error={errors.Title}
                                 />
                             </div>
@@ -326,9 +303,6 @@ export const AddUpdateLitigation: React.FC = () => {
                                     error={errors.DateOfFilling}
                                 />
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
 
                             <div>
                                 <SinglePageSelection
@@ -356,7 +330,7 @@ export const AddUpdateLitigation: React.FC = () => {
                         </div>
 
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Case Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <Input
                                     type="text"
@@ -395,7 +369,7 @@ export const AddUpdateLitigation: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <Input
                                     type="text"
@@ -421,9 +395,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                     error={errors.Defendant}
                                 />
                             </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                             <div>
                                 <Input
                                     type="text"
@@ -451,33 +423,27 @@ export const AddUpdateLitigation: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-
-                            <div>
-                                <TextArea
-                                    label="Case Brief"
-                                    required
-                                    className='thin-scroll'
-                                    value={formData.CaseBrief ?? ""}
-                                    placeholder="Enter Case Brief"
-                                    maxLength={400}
-                                    onChange={(e) => handleFieldChange("CaseBrief", e.target.value)}
-                                    error={errors.CaseBrief} />
-                            </div>
-
-                            <div>
-                                <TextArea
-                                    label="Remarks"
-                                    required
-                                    className='thin-scroll'
-                                    value={formData.Remark ?? ""}
-                                    placeholder="Enter Remarks"
-                                    maxLength={400}
-                                    onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                    error={errors.Remark} />
-                            </div>
+                        <div>
+                            <TextArea
+                                label="Case Brief"
+                                required
+                                className='thin-scroll'
+                                value={formData.CaseBrief ?? ""}
+                                placeholder="Enter Case Brief"
+                                onChange={(e) => handleFieldChange("CaseBrief", e.target.value)}
+                                error={errors.CaseBrief} />
                         </div>
 
+                        <div>
+                            <TextArea
+                                label="Remarks"
+                                required
+                                className='thin-scroll'
+                                value={formData.Remark ?? ""}
+                                placeholder="Enter Remarks"
+                                onChange={(e) => handleFieldChange("Remark", e.target.value)}
+                                error={errors.Remark} />
+                        </div>
                     </div>
                 </form>
             </div>

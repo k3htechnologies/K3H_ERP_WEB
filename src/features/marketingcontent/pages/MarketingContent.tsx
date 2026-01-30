@@ -5,7 +5,7 @@ import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import * as E from 'fp-ts/Either';
 import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
 import usePagination from "@/core/hooks/usePagination";
@@ -25,6 +25,7 @@ import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import { useMarketingContentListState } from "@/features/marketingContent/context/MarketingContentListStateContext";
 
 
 const initialFormState = (): AddUpdateMarketingContentRequest => ({
@@ -86,9 +87,9 @@ export const MarketingContent: React.FC = () => {
     const { canAction } = useMenuPermissions();
     //#endregion
 
-    const location = useLocation();
-
-    const marketingContentFolderId = location?.state?.MarketingContentData?.MarketingContentFolderId ?? 0;
+    const { MarketingContentFolderId } = useParams<{ MarketingContentFolderId?: string }>();
+    const { listState } = useMarketingContentListState();
+    const marketingContentFolderId = MarketingContentFolderId ? Number(MarketingContentFolderId) : listState.MarketingContentFolderId;
     //#endregion
 
     //#region DATA LOADING | LOAD | SEARCH 

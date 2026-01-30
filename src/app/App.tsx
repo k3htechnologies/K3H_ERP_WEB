@@ -119,11 +119,15 @@ import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster
 import LitigationDocument from '@/features/litigation/pages/LitigationDocument';
 import { ApprovedBankFolder } from '@/features/approvedBank/pages/ApprovedBankFolder';
 import ApprovedBankFile from '@/features/approvedBank/pages/ApprovedBankFile';
-import MarketingContentFolder from '@/features/marketingcontent/pages/MarketingContentFolder';
-import { MarketingContent } from '@/features/marketingcontent/pages/MarketingContent';
+
 
 import Parking from '@/features/parking/pages/Parking';
 import RedevelopmentDashboard from '@/features/redevelopmentDashboard/pages/RedevelopmentDashboard';
+import MarketingContentFolder from '@/features/marketingContent/pages/MarketingContentFolder';
+import MarketingContent from '@/features/marketingContent/pages/MarketingContent';
+import { LitigationListStateProvider } from '@/features/litigation/context/LitigationListStateContext';
+import { ApprovedBankListStateProvider } from '@/features/approvedBank/context/ApprovedBankListStateContext';
+import { MarketingContentListStateProvider } from '@/features/marketingContent/context/MarketingContentListStateContext';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -293,18 +297,18 @@ function App() {
             <Route path="event" element={<Event />} />
 
             {/* LITIGATION */}
-            <Route path='litigation' element={<Litigation />} />
-            <Route path='litigation/add/:LitigationId?' element={<AddUpdateLitigation />} />
-            <Route path='litigation/view' element={<ViewLitigation />} />
-            <Route path='litigation/document' element={<LitigationDocument />} />
+            <Route path='litigation' element={<LitigationListStateProvider><Litigation /></LitigationListStateProvider>} />
+            <Route path='litigation/add/:LitigationId?' element={<LitigationListStateProvider><AddUpdateLitigation /></LitigationListStateProvider>} />
+            <Route path='litigation/view' element={<LitigationListStateProvider><ViewLitigation /></LitigationListStateProvider>} />
+            <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
 
             {/* PROJECT */}
-            <Route path='approvedBank' element={<ApprovedBankFolder />} />
-            <Route path='approvedBank/approvedBankFile/:ApprovedBankFolderId?' element={<ApprovedBankFile />} />
+            <Route path='approvedBank' element={<ApprovedBankListStateProvider><ApprovedBankFolder /></ApprovedBankListStateProvider>} />
+            <Route path='approvedBank/approvedBankFile/:ApprovedBankFolderId?' element={<ApprovedBankListStateProvider><ApprovedBankFile /></ApprovedBankListStateProvider>} />
 
             {/* MARKETING */}
-            <Route path='content' element={<MarketingContentFolder />} />
-            <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContent />} />
+            <Route path='content' element={<MarketingContentListStateProvider><MarketingContentFolder /></MarketingContentListStateProvider>} />
+            <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
             {/* SALES */}
             <Route path="channelPartner" element={<ChannelPartner />} />

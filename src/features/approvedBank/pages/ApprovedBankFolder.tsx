@@ -10,7 +10,7 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import { Download, Search, Trash2 } from 'lucide-react';
 import type { AddUpdateApprovedBankFolderRequest, ApprovedBankFolderData, DeleteApprovedBankFolderRequest, FilterWithPaginationApprovedBankFolderRequest } from '@/features/approvedBank/models/ApprovedBankFolderModel';
@@ -20,6 +20,8 @@ import { fetchBankListMasterDropdown } from '@/features/bankListMaster/bankListM
 import Checkbox from '@/ui/components/forms/Checkbox';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { useApprovedBankListState } from '@/features/approvedBank/context/ApprovedBankListStateContext';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
 
 const initialFormState = (): AddUpdateApprovedBankFolderRequest => ({
     ApprovedBankFolderId: 0,
@@ -41,18 +43,10 @@ export const ApprovedBankFolder: React.FC = () => {
     // PAGINATION STATE
     const { pagination, setPagination } = usePagination(20);
 
-    // TABLE SORT INFO
-    const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
     const { projectId } = useProject();
 
     // TOAST
     const { addToast } = useToast();
-
-    // SINGLE SEARCH TEXT BOX
-    const [searchTerm, setSearchTerm] = useState('');
-    const debouncedSearch = useDebouncedCallback((value: string) => {
-        searchApprovedBankFolder(value)
-    }, 350);
 
     // SINGLE SEARCH 
     const [searchBankNameTerm, setSearchBankNameTerm] = useState('');
@@ -79,31 +73,45 @@ export const ApprovedBankFolder: React.FC = () => {
     const { canAction } = useMenuPermissions();
     //#endregion
 
-    const location = useLocation();
+    //#region APPROVED BANK LIST STATE CONTEXT
+    const { listState, updateListState, clearApprovedBankContext } = useApprovedBankListState();
+    const { page, sortInfo, searchTerm } = listState;
     //#endregion
 
     //#region INIT
     useEffect(() => {
-        const incoming = location.state?.listState;
-        const listState = incoming ?? {
-            page: 1, sortInfo: undefined, searchTerm: ''
-        };
 
-        setPagination({ currentPage: listState.page ?? pagination.currentPage });
+        if (!projectId) return
 
-        setSortInfo(listState.sortInfo);
+        if (searchTerm && searchTerm.trim()) {
 
-        setSearchTerm(listState.searchTerm ?? '');
+            loadApprovedBankFolder(page, sortInfo, searchTerm?.trim());
 
-        if (listState.searchTerm && String(listState.searchTerm).trim()) {
+        } else {
 
-            loadApprovedBankFolder(listState.page ?? 1, listState.sortInfo,
-                String(listState.searchTerm).trim()
-            );
+            loadApprovedBankFolder(page, sortInfo);
+        }
+
+    }, [projectId, page, sortInfo, searchTerm, clearApprovedBankContext]);
+
+    useEffect(() => {
+
+        setPagination({ currentPage: page });
+
+    }, [page]);
+
+    //#endregion
+
+    const debouncedSearch = useDebouncedCallback((value: string) => {
+
+        if (value.trim() === '') {
+
+            updateListState({ searchTerm: '', page: 1 });
             return;
         }
-        loadApprovedBankFolder(listState.page ?? 1, listState.filters ?? {});
-    }, [location.state]);
+        updateListState({ searchTerm: value, page: 1 });
+    }, 350);
+    //#endregion
 
     //#region DATA LOADING |  LOAD | SEARCH 
     const fetchApprovedBankFolderList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
@@ -152,14 +160,6 @@ export const ApprovedBankFolder: React.FC = () => {
     }, [projectId])
     //#endregion
 
-    //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
-    useEffect(() => {
-        return () => {
-            debouncedSearch.cancel?.()
-        }
-    }, [debouncedSearch])
-    //#endregion
-
     useEffect(() => {
         if (!isAddUpdateModalOpen) return;
         const loadBankList = async () => {
@@ -193,31 +193,30 @@ export const ApprovedBankFolder: React.FC = () => {
 
     //#region SEARCH APPROVED BANK
     const searchApprovedBankFolder = async (searchValue: string) => {
-        setSearchTerm(searchValue);
+        updateListState({ searchTerm: searchValue, page: 1 });
         await loadApprovedBankFolder(1, sortInfo, searchValue);
     };
     //#endregion
 
     //#region CLEAR 
     const clearSearchApprovedBankFolder = () => {
-        setSearchTerm('');
+        updateListState({ searchTerm: '', page: 1 });
         debouncedSearch.cancel?.();
         setPagination({ currentPage: 1 });
         loadApprovedBankFolder(1, sortInfo, '');
     };
+
     //#endregion
 
     //#region HANDLE PAGE CHNAGE EVENT
-    const handlePageChange = useCallback((page: number) => {
-        loadApprovedBankFolder(page, sortInfo, searchTerm);
-    }, [searchTerm, sortInfo]);
-
+    const handlePageChange = useCallback((newPage: number) => {
+        updateListState({ page: newPage });
+    }, [updateListState]);
 
     //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
-        setSortInfo(sort);
-        loadApprovedBankFolder(1, sort, searchTerm);
-    }, [searchTerm]);
+        updateListState({ sortInfo: sort, page: 1 });
+    }, [updateListState]);
     //#endregion
 
     const handleDeleteDialogClose = useCallback(() => {
@@ -247,54 +246,11 @@ export const ApprovedBankFolder: React.FC = () => {
     //#endregion
 
     //#region NAVIGATE TO VIEW APPROVED BANK FILE
-    const handleNavigateToView = (row: ApprovedBankFolderData) => {
-        navigate(
-            `/approvedBank/approvedBankFile/${row.ApprovedBankFolderId}`,
-            { state: { ApprovedBankData: row } }
-        );
-    };
+    const handleNavigateToView = useCallback((row: ApprovedBankFolderData) => {
+        updateListState({ ApprovedBankFolderId: row.ApprovedBankFolderId ?? 0, BankName: row.BankName ?? '' });
 
-    //#region DOWNLOAD AS ZIP FILE
-    const handleDownloadApprovedBankFolder = (row: ApprovedBankFolderData) => {
-        runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-
-            async () => {
-                const params = new URLSearchParams({
-                    PageSize: '10',
-                    PageNumber: '1',
-                    ProjectId: String(row.ProjectId),
-                    ExportType: 'ZIP',
-                    ApprovedBankFolderId: String(row.ApprovedBankFolderId),
-                });
-
-                const response = await fetch(`/api/PullApprovedBankFile?${params}`);
-
-                if (!response.ok) throw new Error('Download failed');
-
-                const blob = await response.blob();
-
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `${row.BankName || 'ApprovedBank'}_Documents.zip`;
-
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-
-                addToast({ type: 'success', title: 'File download successfully ' });
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message || 'Download failed' });
-            },
-            undefined,
-            'Preparing Download'
-        );
-    };
+        navigate('/approvedBank/approvedBankFile/');
+    }, [navigate, updateListState]);
 
     //#region TABLE COLUMNS
     const ApprovedBankFolderColumns = useMemo<TableColumn[]>(() => [
@@ -356,7 +312,6 @@ export const ApprovedBankFolder: React.FC = () => {
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    handleDownloadApprovedBankFolder(row);
                                 }}
                                 color='transparent'
                                 isborderRadius
@@ -528,10 +483,7 @@ export const ApprovedBankFolder: React.FC = () => {
                 isShowSearchBar
                 searchTerm={searchTerm}
                 searchPlaceholder="Search By Bank Name"
-                onSearchChange={v => {
-                    setSearchTerm(v);
-                    debouncedSearch(v);
-                }}
+                onSearchChange={searchApprovedBankFolder}
                 onClearSearch={clearSearchApprovedBankFolder}
 
                 // ADD
@@ -596,7 +548,7 @@ export const ApprovedBankFolder: React.FC = () => {
                                 bank.label.toLowerCase().includes(searchBankNameTerm.toLowerCase())
                             ).length === 0 ? (
                             <div className="flex items-center justify-center h-100 text-gray-500 text-sm">
-                                No Data Found
+                                <NoDataView />
                             </div>
 
                         ) : (

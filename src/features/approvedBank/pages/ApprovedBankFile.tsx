@@ -6,7 +6,7 @@ import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import * as E from 'fp-ts/Either';
 import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { useLocation, useNavigate } from "react-router-dom";
+import {useNavigate, useParams } from "react-router-dom";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
 import usePagination from "@/core/hooks/usePagination";
@@ -24,6 +24,7 @@ import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import { useApprovedBankListState } from "@/features/approvedBank/context/ApprovedBankListStateContext";
 
 const initialFormState = (): AddUpdateApprovedBankFileRequest => ({
     ApprovedBankFileId: 0,
@@ -83,9 +84,9 @@ export const ApprovedBankFile: React.FC = () => {
     const { canAction } = useMenuPermissions();
     //#endregion
 
-    const location = useLocation();
-
-    const approvedBankFolderId = location?.state?.ApprovedBankData?.ApprovedBankFolderId ?? 0;
+    const { ApprovedBankFolderId } = useParams<{ ApprovedBankFolderId?: string }>();
+    const { listState } = useApprovedBankListState();
+    const approvedBankFolderId = ApprovedBankFolderId ? Number(ApprovedBankFolderId) : listState.ApprovedBankFolderId;
     //#endregion
 
     //#region DATA LOADING | LOAD | SEARCH 

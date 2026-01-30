@@ -1,10 +1,10 @@
 
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button } from "@/ui/components/forms";
@@ -18,7 +18,7 @@ import { Edit, Trash2 } from "lucide-react";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import type { AddUpdateLitigationClosureRequest, FilterWithPaginationLitigationClosureRequest, LitigationClosureData } from "@/features/litigation/models/LitigationClosureModel";
 import type { AddUpdateLitigationHearingRequest, DeleteLitigationHearingRequest, FilterWithPaginationLitigationHearingRequest, LitigationHearingData } from "@/features/litigation/models/LitigationHearingModel";
-import type { LitigationData, LitigationReopenData, UpdateLitigationReopenRequest } from "@/features/litigation/models/LitigationModel";
+import type { FilterWithPaginationLitigationRequest, LitigationData, LitigationReopenData, UpdateLitigationReopenRequest } from "@/features/litigation/models/LitigationModel";
 import { litigationClosureService } from "@/features/litigation/services/LitigationClosureServices";
 import { litigationHearingService } from "@/features/litigation/services/LitigationHearingServices";
 import { litigationService } from "@/features/litigation/services/LitigationServices";
@@ -26,31 +26,60 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import { useLitigationListState } from "@/features/litigation/context/LitigationListStateContext";
+import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
 
 const ViewLitigation: React.FC = () => {
 
+    // EDIT LITIGATION DATA FROM STATE
+    const { LitigationId } = useParams<{ LitigationId?: string }>();
+    const { listState } = useLitigationListState();
+    const currentLitigationId = LitigationId ? Number(LitigationId) : listState.LitigationId;
+
+    // PROJECT CONTEXT
+    const projectContext = useProject();
+    const projectId = projectContext?.projectId ? Number(projectContext.projectId) : 0;
+
+    const initialClosureFormData: AddUpdateLitigationClosureRequest = {
+        LitigationClosureId: 0,
+        Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        LitigationId: currentLitigationId,
+        ProjectId: Number(projectId),
+        ClosureDate: '',
+        Conclusion: '',
+        Remark: '',
+        ClosureAttachementURL: null,
+        RemoveClosureAttachementURL: ''
+    };
+
+    const initialHearingFormData = (): AddUpdateLitigationHearingRequest => ({
+        LitigationHearingId: 0,
+        Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        LitigationId: currentLitigationId,
+        ProjectId: Number(projectId),
+        HearingDate: '',
+        Remark: '',
+        HearingAttachementURL: null,
+        RemoveHearingAttachementURL: ''
+    });
+
     //#region STATE MANAGEMENT
+    const [litigationData, setLitigationData] = useState<LitigationData | null>(null);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isLitigationReopenDialogOpen, setIsLitigationReopenDialogOpen] = useState(false);
     const [selectedLitigationItem, setSelectedLitigationItem] = useState<LitigationReopenData | null>(null);
 
-    const [editClosureData, setEditClosureData] = useState<LitigationClosureData[]>([]);
+    const [closureData, setClosureData] = useState<LitigationClosureData[]>([]);
     const [isClosureModalOpen, setIsClosureModalOpen] = useState(false);
-    const [, setIsEditClosureMode] = useState(false);
 
-    const [editHearingData, setEditHearingData] = useState<LitigationHearingData[]>([]);
+    const [hearingData, setHearingData] = useState<LitigationHearingData[]>([]);
     const [isHearingModalOpen, setIsHearingModalOpen] = useState(false);
-    const [, setIsEditHearingMode] = useState(false);
 
     // DELETE HEARING STATE
     const [isDeleteHearingDialogOpen, setIsDeleteHearingDialogOpen] = useState(false);
     const [selectedHearingItem, setSelectedHearingItem] = useState<LitigationHearingData | null>(null);
-
-    // NAVIGATE
-    const navigate = useNavigate();
-    const location = useLocation();
 
     // HEARING ATTACHMENT URL FILES
     const [hearingURLFiles, setHearingURLFiles] = useState<(File | string)[]>([]);
@@ -61,6 +90,11 @@ const ViewLitigation: React.FC = () => {
     const [closureURLFiles, setClosureURLFiles] = useState<(File | string)[]>([]);
     const [removeClosureAttachementUrls, SetRemoveClosureAttachementUrls] = useState<string[]>([]);
     const [closureURL, setClosureURL] = useState<string>();
+    const [closureFormData, setClosureFormData] = useState<AddUpdateLitigationClosureRequest>(() => initialClosureFormData);
+    const [hearingFormData, setHearingFormData] = useState<AddUpdateLitigationHearingRequest>(() => initialHearingFormData());
+
+    // NAVIGATE
+    const navigate = useNavigate();
 
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/litigation');
@@ -69,98 +103,91 @@ const ViewLitigation: React.FC = () => {
     // TOAST
     const { addToast } = useToast();
 
-    // PROJECT CONTEXT
-    const projectContext = useProject();
-    const projectId = projectContext?.projectId;
-
-    // EDIT LITIGATION DATA FROM STATE
-    const editLitigationData = location.state?.editLitigationData as LitigationData;
-    const litigationStatus = editLitigationData?.Status
+    const litigationStatus = litigationData?.Status
     const isEditable = canAction && (litigationStatus === 'Open' || litigationStatus === 'Reopen');
-
-    // MESSAGE IF DATA NOT FOUND
-    if (!editLitigationData) return <div>No Litigation Data Found</div>;
 
     //#region ERROR STATE MANAGEMENT
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     //#region USE EFFECT TO FETCH CLOSURE DETAILS
     useEffect(() => {
-        if (!projectId) return;
+
+        if (!projectId || !currentLitigationId || currentLitigationId === 0) return;
+
+        fetchLitigationDetails();
+
         fetchClouserDetails();
+
         fetchHearingDetails();
-    }, [projectId, addToast]);
+
+    }, [projectId, currentLitigationId, addToast]);
     //#endregion
 
+    const fetchLitigationDetails = async () => {
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationLitigationRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    LitigationId: currentLitigationId,
+                    ProjectId: Number(projectId)
+                };
+                const response = await litigationService.apiCallPullLitigation(params);
+
+                if (E.isRight(response)) {
+
+                    const data = response.right.Data;
+
+                    setLitigationData(Array.isArray(data) ? data[0] ?? null : data);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Litigation'
+        );
+    };
+
     //#region CLOSURE MODAL MANAGEMENT
-    const [closureFormData, setClosureFormData] = useState<AddUpdateLitigationClosureRequest>({
-        LitigationClosureId: 0,
-        Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-        LitigationId: editLitigationData.LitigationId,
-        ProjectId: Number(projectId) || 0,
-        ClosureDate: '',
-        Conclusion: '',
-        Remark: '',
-        ClosureAttachementURL: '',
-        RemoveClosureAttachementURL: '',
-    });
 
     const handleopenClosureModal = (item?: LitigationClosureData) => {
+        if (litigationStatus !== 'Open' && litigationStatus !== 'Reopen') return;
 
-        const status = litigationStatus;
-        if (status !== 'Open' && status !== 'Reopen') {
-            return;
-        }
+        setErrors({});
+        setClosureURLFiles([]);
+        SetRemoveClosureAttachementUrls([]);
+
         if (item) {
             setClosureFormData({
-                LitigationClosureId: item.LitigationClosureId,
+                LitigationClosureId: item.LitigationClosureId || 0,
                 Uniquekey: item.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-                LitigationId: item.LitigationId,
-                ProjectId: projectId || 0,
+                LitigationId: currentLitigationId,
+                ProjectId: Number(projectId),
                 ClosureDate: item.ClosureDate || '',
                 Conclusion: item.Conclusion || '',
                 Remark: item.Remark || '',
-                ClosureAttachementURL: item.ClosureAttachementURL || null,
+                ClosureAttachementURL: item.ClosureAttachementURL || '',
                 RemoveClosureAttachementURL: '',
             });
-            setIsEditClosureMode(true);
-        } else {
-
-            setClosureFormData({
-                LitigationClosureId: 0,
-                Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-                LitigationId: editLitigationData.LitigationId!,
-                ProjectId: Number(projectId),
-                ClosureDate: '',
-                Conclusion: '',
-                Remark: '',
-                ClosureAttachementURL: null,
-                RemoveClosureAttachementURL: '',
-            });
-            setIsEditClosureMode(false);
-            setClosureURLFiles([])
-            SetRemoveClosureAttachementUrls([]);
+            setClosureURL(item.ClosureAttachementURL || '');
+            setIsClosureModalOpen(true);
         }
-        setErrors({});
-        setIsClosureModalOpen(true);
     };
     //#endregion
 
     //#region CLOSE CLOSURE MODAL
     const handleClosureModal = () => {
         setIsClosureModalOpen(false);
-        setIsEditClosureMode(false);
-        setClosureFormData({
-            LitigationClosureId: 0,
-            Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-            LitigationId: editLitigationData.LitigationId!,
-            ProjectId: Number(projectId),
-            ClosureDate: '',
-            Conclusion: '',
-            Remark: '',
-            ClosureAttachementURL: '',
-            RemoveClosureAttachementURL: '',
-        });
+        setClosureFormData(initialClosureFormData);
         setErrors({});
     };
     //endregion
@@ -183,18 +210,19 @@ const ViewLitigation: React.FC = () => {
             async () => {
                 const params: FilterWithPaginationLitigationClosureRequest = {
                     PageNumber: 1,
-                    PageSize: 100,
+                    PageSize: 50,
                     ProjectId: Number(projectId),
-                    LitigationId: editLitigationData.LitigationId
+                    LitigationId: currentLitigationId
                 };
 
                 const response = await litigationClosureService.apiCallPullLitigationClosure(params);
 
                 if (E.isRight(response)) {
 
-                    setEditClosureData(response.right.Data);
+                    setClosureData(response.right.Data);
 
                 } else {
+
                     addToast({ type: 'error', title: response.left.message });
                 }
                 return response;
@@ -221,14 +249,16 @@ const ViewLitigation: React.FC = () => {
         if (!closureFormData.ClosureDate?.trim()) {
             newErrors.ClosureDate = 'Closure Date is required.';
         }
+
         if (!closureFormData.Conclusion?.trim()) {
             newErrors.Conclusion = 'Conclusion is required.';
         }
+
         if (!closureFormData.Remark?.trim()) {
             newErrors.Remark = 'Remark is required.';
         }
-        const hasFile = closureFormData.ClosureAttachementURL || closureURLFiles.length > 0 || closureFormData.ClosureAttachementURL;
-        if (!hasFile) {
+
+        if (!hasAnyDocumentFile(closureURLFiles, closureURL, removeClosureAttachementUrls,)) {
             newErrors.ClosureAttachementURL = "File is required.";
         }
         return {
@@ -244,7 +274,7 @@ const ViewLitigation: React.FC = () => {
         const fd = new FormData();
         fd.append('LitigationClosureId', closureFormData.LitigationClosureId.toString());
         fd.append('Uniquekey', closureFormData.Uniquekey ?? '');
-        fd.append('LitigationId', editLitigationData.LitigationId!.toString());
+        fd.append('LitigationId', currentLitigationId.toString());
         fd.append('ProjectId', projectId!.toString());
         fd.append('ClosureDate', closureFormData.ClosureDate ?? '');
         fd.append('Conclusion', closureFormData.Conclusion ?? '');
@@ -289,9 +319,9 @@ const ViewLitigation: React.FC = () => {
                     setIsClosureModalOpen(false);
                     setClosureURL('');
                     SetRemoveClosureAttachementUrls([]);
-                    editLitigationData.Status = "Closed";
-
-                } else {
+                    fetchClouserDetails();
+                }
+                else {
                     addToast({ type: "error", title: response.left?.message });
                 }
                 return response;
@@ -308,68 +338,36 @@ const ViewLitigation: React.FC = () => {
     //#endregion
 
     //#region HEARING MODAL MANAGEMENT
-    const [hearingFormData, setHearingFormData] = useState<AddUpdateLitigationHearingRequest>({
-        LitigationHearingId: 0,
-        Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-        LitigationId: editLitigationData.LitigationId!,
-        ProjectId: Number(projectId) || 0,
-        HearingDate: '',
-        Remark: '',
-        HearingAttachementURL: '',
-        RemoveHearingAttachementURL: '',
-    });
 
     const handleopenHearingModal = (item?: Partial<LitigationHearingData>) => {
-        if (item?.LitigationHearingId) {
+        setErrors({});
+        setHearingURLFiles([]);
+        SetRemoveHearingAttachementUrls([]);
+
+        if (item) {
             setHearingFormData({
-                LitigationHearingId: item.LitigationHearingId,
+                LitigationHearingId: item.LitigationHearingId ?? 0,
                 Uniquekey: item.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-                LitigationId: editLitigationData.LitigationId!,
-                ProjectId: projectId || 0,
+                LitigationId: currentLitigationId,
+                ProjectId: Number(projectId),
                 HearingDate: item.HearingDate || '',
                 Remark: item.Remark || '',
-                HearingAttachementURL: item.HearingAttachementURL || null,
+                HearingAttachementURL: item.HearingAttachementURL || '',
                 RemoveHearingAttachementURL: '',
             });
-            setIsEditHearingMode(true);
-        } else {
-
-            setHearingFormData({
-                LitigationHearingId: 0,
-                Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-                LitigationId: editLitigationData.LitigationId!,
-                ProjectId: Number(projectId),
-                HearingDate: '',
-                Remark: '',
-                HearingAttachementURL: null,
-                RemoveHearingAttachementURL: '',
-            });
-            setIsEditHearingMode(false);
-            setHearingURLFiles([]);
-            SetRemoveHearingAttachementUrls([]);
+            setHearingURL(item.HearingAttachementURL || '');
         }
-        setErrors({});
         setIsHearingModalOpen(true);
     };
     //#endregion
 
-    //#region HEARING  MODAL
+    //#region HEARING MODAL
     const handleHearingModal = () => {
         setIsHearingModalOpen(false);
-        setIsEditHearingMode(false);
-        setHearingFormData({
-            LitigationHearingId: 0,
-            Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-            LitigationId: editLitigationData.LitigationId!,
-            ProjectId: Number(projectId),
-            HearingDate: '',
-            Remark: '',
-            HearingAttachementURL: '',
-            RemoveHearingAttachementURL: '',
-        });
+        setHearingFormData(initialHearingFormData)
         setErrors({});
     };
-    //endregion
+    //#endregion
 
     //HEARING HANDLE CHANGE 
     const handleHearingFieldChange = (field: keyof AddUpdateLitigationHearingRequest, value: any) => {
@@ -380,11 +378,6 @@ const ViewLitigation: React.FC = () => {
         }
     };
 
-    const handleDeleteDialogClose = useCallback(() => {
-        setIsDeleteHearingDialogOpen(false);
-        setSelectedHearingItem(null);
-    }, []);
-
     //#region FETCH HEARING DETAILS
     const fetchHearingDetails = async () => {
 
@@ -394,15 +387,15 @@ const ViewLitigation: React.FC = () => {
             async () => {
                 const params: FilterWithPaginationLitigationHearingRequest = {
                     PageNumber: 1,
-                    PageSize: 20,
+                    PageSize: 50,
                     ProjectId: Number(projectId),
-                    LitigationId: editLitigationData.LitigationId,
+                    LitigationId: currentLitigationId,
                 };
                 const response = await litigationHearingService.apiCallPullLitigationHearing(params);
 
                 if (E.isRight(response)) {
 
-                    setEditHearingData(response.right.Data);
+                    setHearingData(response.right.Data);
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -430,11 +423,10 @@ const ViewLitigation: React.FC = () => {
         if (!hearingFormData.Remark?.trim()) {
             newErrors.Remark = 'Remark is required.';
         }
-        const hasFile = hearingFormData.HearingAttachementURL || hearingURLFiles.length > 0 || hearingFormData.HearingAttachementURL;
-        if (!hasFile) {
+
+        if (!hasAnyDocumentFile(hearingURLFiles, hearingURL, removeHearingAttachementUrls,)) {
             newErrors.HearingAttachementURL = "File is required.";
         }
-
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -525,10 +517,9 @@ const ViewLitigation: React.FC = () => {
                 const params: DeleteLitigationHearingRequest = {
                     LitigationHearingId: selectedHearingItem.LitigationHearingId || 0,
                     Uniquekey: selectedHearingItem.Uniquekey || '',
-                    LitigationId: editLitigationData.LitigationId,
+                    LitigationId: currentLitigationId,
                     ProjectId: Number(projectId)
                 };
-
                 const response = await litigationHearingService.apiCallDeleteLitigationHearing(params);
 
                 if (E.isRight(response)) {
@@ -537,7 +528,6 @@ const ViewLitigation: React.FC = () => {
                     setIsDeleteHearingDialogOpen(false);
                     fetchHearingDetails();
                     setSelectedHearingItem(null);
-
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -567,35 +557,36 @@ const ViewLitigation: React.FC = () => {
 
     //#region HANDLE LITIGATION REOEPN
     const handleLitigationReopen = async () => {
+        if (!selectedLitigationItem) return;
 
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
                 const payload: UpdateLitigationReopenRequest = {
-                    LitigationId: editLitigationData.LitigationId,
-                    Uniquekey: editLitigationData.Uniquekey,
+                    LitigationId: selectedLitigationItem.LitigationId,
+                    Uniquekey: selectedLitigationItem.Uniquekey ?? '',
                     ProjectId: Number(projectId),
                 };
+
                 const response = await litigationService.apiCallUpdateLitigationReopen(payload);
 
                 if (E.isRight(response)) {
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
-                    editLitigationData.Status = "Reopen";
 
+                    setLitigationData(prev =>prev ? { ...prev, Status: "Reopen" } : prev );
+                    
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
+
                 setIsLitigationReopenDialogOpen(false);
                 setSelectedLitigationItem(null);
-
                 return response;
             },
             undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message });
-            },
+            (error: any) => addToast({ type: 'error', title: error.message }),
             undefined,
             'Reopening Case'
         );
@@ -612,14 +603,14 @@ const ViewLitigation: React.FC = () => {
 
             <HeaderActionBar
                 titleText="Litigation : "
-                subTitleText={editLitigationData.Title ?? ""}
-                subSubTitleText={editLitigationData.Status ?? ""}
+                subTitleText={litigationData?.Title ?? ""}
+                subSubTitleText={litigationData?.Status ?? ""}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListLitigation()}
                 canAction={isEditable}
                 onEdit={() => {
-                    if (editLitigationData) handleEditLitigation(editLitigationData!);
+                    if (litigationData) handleEditLitigation(litigationData!);
                 }}
                 isLoading={false}
             />
@@ -632,26 +623,19 @@ const ViewLitigation: React.FC = () => {
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
 
                         {/* ================= CASE DETAILS ================= */}
-                        <section className="bg-white border-b border-[#135bec2e] p-6">
+                        <section className="bg-white border-b border-[#135bec2e] px-4 pt-1 pb-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Case Details
                             </h4>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <FieldItem label="Case Title" value={editLitigationData.Title} />
-                                <FieldItem label="Project Name" value={editLitigationData.ProjectName} />
-                                <FieldItem label="Date Of Filling" value={editLitigationData.DateOfFilling ?
-                                    formatDate_dd_MonthName_yy(editLitigationData.DateOfFilling) : ""} />
-                                <FieldItem label="Case Type" value={editLitigationData.CaseType} />
-                                <FieldItem label="Case Number" value={editLitigationData.CaseNumber} />
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Case Title" value={litigationData?.Title} />
+                                <FieldItem label="Date Of Filling" value={litigationData?.DateOfFilling ?
+                                    formatDate_dd_MonthName_yy(litigationData.DateOfFilling) : ""} />
+                                <FieldItem label="Case Type" value={litigationData?.CaseType} />
+                                <FieldItem label="Case Number" value={litigationData?.CaseNumber} />
                             </div>
 
-                            <div className="lg:col-span-3 pt-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Case Brief" value={editLitigationData.CaseBrief} />
-                                    <FieldItem label="Remark" value={editLitigationData.Remark} />
-                                </div>
-                            </div>
                         </section>
 
                         {/* ================= COURT DETAILS ================= */}
@@ -659,89 +643,35 @@ const ViewLitigation: React.FC = () => {
 
                             <h4 className="text-lg font-semibold text-gray-900 mb-4"> Court Details</h4>
                             <div className="lg:col-span-3 pb-1">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem label="Court Type" value={editLitigationData.CourtType} />
-                                    <FieldItem label="Court Name" value={editLitigationData.CourtName} />
-                                    <FieldItem label="Court Location" value={editLitigationData.CourtLocation} />
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Court Type" value={litigationData?.CourtType} />
+                                    <FieldItem label="Court Name" value={litigationData?.CourtName} />
+                                    <FieldItem label="Court Location" value={litigationData?.CourtLocation} />
                                 </div>
                             </div>
                         </section>
 
                         {/* ================= PARTIES DETAILS ================= */}
-                        <section className="bg-white border-b border-[#135bec2e] p-4">
+                        <section className="bg-white p-4">
 
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Parties Details </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                <div className="lg:col-span-3 pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                        <FieldItem label="Plantiff" value={editLitigationData.Plantiff} />
-                                        <FieldItem label="Defendant" value={editLitigationData.Defendant} />
-
-                                    </div>
-                                </div>
-
-                                <div className="lg:col-span-3 pb-3 pt-1">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                        <FieldItem label="Assigned Representative" value={editLitigationData.AssignedRepresentative} />
-                                        <FieldItem label="Opposing Representative" value={editLitigationData.OpposingRepresentative} />
-
-                                    </div>
-                                </div>
-
-                            </div>
-                        </section>
-
-                        {/* ================= ACTION DETAILS ================= */}
-
-                        <section className="bg-white p-4 flex flex-col">
-
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">Action Details</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 mb-4">
                                 <div className="lg:col-span-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                        <FieldItem label="Created By" value={editLitigationData.CreatedBy} />
-                                        <FieldItem
-                                            label="Created Date"
-                                            value={editLitigationData.CreatedDate ?
-                                                formatDate_dd_MonthName_yy(editLitigationData.CreatedDate) : ""} />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                                        <FieldItem label="Plantiff" value={litigationData?.Plantiff} />
+                                        <FieldItem label="Defendant" value={litigationData?.Defendant} />
+
                                     </div>
                                 </div>
 
                                 <div className="lg:col-span-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                        <FieldItem
-                                            label="Modified Date"
-                                            value={editLitigationData.ModifiedDate ?
-                                                formatDate_dd_MonthName_yy(editLitigationData.ModifiedDate) : ""}
-                                        />
-                                        <FieldItem label="Modified By" value={editLitigationData.ModifiedBy} />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                                        <FieldItem label="Assigned Representative" value={litigationData?.AssignedRepresentative} />
+                                        <FieldItem label="Opposing Representative" value={litigationData?.OpposingRepresentative} />
 
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="flex justify-end gap-2">
-                                {(litigationStatus === 'Open' || litigationStatus === 'Reopen') && (
-                                    <Button
-                                        className="w-full sm:w-auto"
-                                        size="sm"
-                                        onClick={() => handleopenClosureModal()}
-                                    >
-                                        Close Case
-                                    </Button>
-                                )}
-
-                                {litigationStatus === 'Closed' && (
-                                    <Button
-                                        size="sm"
-                                        onClick={() => {
-                                            setSelectedLitigationItem(editLitigationData);
-                                            setIsLitigationReopenDialogOpen(true);
-                                        }}
-                                    >
-                                        Reopen
-                                    </Button>
-                                )}
                             </div>
                         </section>
                     </div>
@@ -750,25 +680,30 @@ const ViewLitigation: React.FC = () => {
 
                     {(litigationStatus === 'Closed' || litigationStatus === 'Reopen') && (
                         <div className="col-span-7">
-                            <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-2">
+                            <div className="bg-white rounded-lg border border-[#135bec2e] shadow-sm p-4 mt-2">
                                 <section>
-                                    <h4 className="text-lg font-semibold text-gray-900">
+                                    <h4 className="text-lg font-semibold text-gray-900 pb-2">
                                         Closure Details
                                     </h4>
 
-                                    {editClosureData.length === 0 ? (
+                                    {closureData.length === 0 ? (
                                         <p className="text-gray-500 text-sm">No closure history found.</p>
                                     ) : (
-                                        editClosureData.map((item, index) => {
+                                        closureData.map((item, index) => {
+
                                             const isLatest = index === 0;
                                             const isCaseReopen = litigationStatus === 'Reopen';
 
                                             return (
                                                 <div
                                                     key={item.LitigationClosureId}
-                                                    className="mb-4 pb-4 last:border-none last:pb-0"
+                                                    className="mb-4 pb-4 border-b border-gray-300 last:border-b-0 last:pb-0"
                                                 >
-                                                    <div className="flex justify-end">
+                                                    <div className="flex pb-2 justify-between">
+                                                        <FieldItem
+                                                            label="Closure Date"
+                                                            value={formatDate_dd_MonthName_yy(item.ClosureDate)}
+                                                        />
                                                         {isLatest && isCaseReopen && (
                                                             <Button
                                                                 color="transparent"
@@ -783,14 +718,12 @@ const ViewLitigation: React.FC = () => {
                                                         )}
                                                     </div>
 
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem
-                                                            label="Closure Date"
-                                                            value={formatDate_dd_MonthName_yy(item.ClosureDate)}
-                                                        />
+                                                    <div className="grid grid-cols-1 gap-4 ">
+
                                                         <FieldItem label="Remark" value={item.Remark || '-'} />
                                                         <FieldItem label="Conclusion" value={item.Conclusion || '-'} />
                                                     </div>
+
                                                 </div>
                                             );
                                         })
@@ -800,9 +733,100 @@ const ViewLitigation: React.FC = () => {
                         </div>
                     )}
 
+                    {/* =================CASE REMARKS DETAILS ================= */}
+
+                    <div className="col-span-7">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-2">
+                            <h4 className="text-lg font-semibold text-gray-900 pb-2">
+                                Case Remarks
+                            </h4>
+                            <div className="lg:col-span-3 pt-1">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                    <p>{litigationData?.Remark}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* =================CASE BRIEF DETAILS ================= */}
+
+                    <div className="col-span-7">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-2">
+                            <h4 className="text-lg font-semibold text-gray-900 pb-2">
+                                Case Brief
+                            </h4>
+                            <div className="lg:col-span-3 pt-1">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                    <p>{litigationData?.CaseBrief}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ================= ACTION DETAILS ================= */}
+
+                    <div className="col-span-7">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mt-2">
+
+                            <section className="bg-white p-4 flex flex-col">
+
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">Action Details</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 mb-4">
+                                    <div className="lg:col-span-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                                            <FieldItem label="Created By" value={litigationData?.CreatedBy} />
+                                            <FieldItem
+                                                label="Created Date"
+                                                value={litigationData?.CreatedDate ?
+                                                    formatDate_dd_MonthName_yy(litigationData.CreatedDate) : ""} />
+                                        </div>
+                                    </div>
+
+                                    <div className="lg:col-span-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                                            <FieldItem
+                                                label="Modified Date"
+                                                value={litigationData?.ModifiedDate ?
+                                                    formatDate_dd_MonthName_yy(litigationData.ModifiedDate) : ""}
+                                            />
+                                            <FieldItem label="Modified By" value={litigationData?.ModifiedBy} />
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-2">
+                                    {(litigationStatus === 'Open' || litigationStatus === 'Reopen') && (
+                                        <Button
+                                            className="w-full sm:w-auto"
+                                            size="sm"
+                                            onClick={() => handleopenClosureModal()}
+                                        >
+                                            Close Case
+                                        </Button>
+                                    )}
+
+                                    {litigationStatus === 'Closed' && (
+                                        <Button
+                                            size="sm"
+                                            onClick={() => {
+                                                setSelectedLitigationItem(litigationData);
+                                                setIsLitigationReopenDialogOpen(true);
+                                            }}
+                                        >
+                                            Reopen
+                                        </Button>
+                                    )}
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
                 </div>
+
                 {/*  RIGHT SIDE  */}
                 <div className="col-span-5">
+
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
 
                         <div className="border-b pb-2 mt-1">
@@ -816,7 +840,7 @@ const ViewLitigation: React.FC = () => {
                                             size="sm"
                                             onClick={() =>
                                                 handleopenHearingModal({
-                                                    LitigationId: editLitigationData.LitigationId
+                                                    LitigationId: litigationData?.LitigationId
                                                 })
                                             }
                                         >
@@ -827,15 +851,16 @@ const ViewLitigation: React.FC = () => {
                         </div>
 
                         <div className="mt-4 space-y-4">
-                            {editHearingData.length === 0 ? (
+                            {hearingData.length === 0 ? (
                                 <p className="text-gray-500 text-sm">No hearing history found.</p>
                             ) : (
-                                editHearingData.map((item, index) => {
+                                hearingData.map((item, index) => {
                                     const isLatest = index === 0;
 
-                                    const isCaseOpen =
-                                        litigationStatus === 'Open' ||
-                                        litigationStatus === 'Reopen';
+                                    const canEditHearing =
+                                        (litigationStatus === 'Open' || litigationStatus === 'Reopen')
+                                            ? isLatest
+                                            : false;
 
                                     return (
                                         <div
@@ -847,8 +872,8 @@ const ViewLitigation: React.FC = () => {
                                                     {formatDate_dd_MonthName_yy(item.HearingDate)}
                                                 </span>
 
-                                                {isLatest && isCaseOpen && (
-                                                    <div className="flex">
+                                                {canEditHearing && (
+                                                    <>
                                                         <Button
                                                             color="transparent"
                                                             isborderRadius
@@ -869,7 +894,7 @@ const ViewLitigation: React.FC = () => {
                                                             disabled={isLoading}
                                                             leftIcon={<Trash2 className="h-4 w-4" />}
                                                         />
-                                                    </div>
+                                                    </>
                                                 )}
                                             </div>
 
@@ -1047,7 +1072,10 @@ const ViewLitigation: React.FC = () => {
 
                 <DeleteDialog
                     isOpen={isDeleteHearingDialogOpen}
-                    onClose={handleDeleteDialogClose}
+                    onClose={() => {
+                        setIsDeleteHearingDialogOpen(false);
+                        setSelectedHearingItem(null);
+                    }}
                     onConfirm={handleConfirmDeleteHearing}
                     loading={isLoading}
                     pageName="Litigation Hearing"

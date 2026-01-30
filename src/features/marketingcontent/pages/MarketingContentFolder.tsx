@@ -10,7 +10,7 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import { Download, Edit, Trash2 } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
@@ -18,6 +18,7 @@ import type { AddUpdateMarketingContentFolderRequest, DeleteMarketingContentFold
 import { marketingContentFolderService } from '@/features/marketingContent/services/MarketingContentFolderService';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { useMarketingContentListState } from '@/features/marketingContent/context/MarketingContentListStateContext';
 
 
 const initialFormState = (): AddUpdateMarketingContentFolderRequest => ({
@@ -40,19 +41,11 @@ export const MarketingContentFolder: React.FC = () => {
     // PAGINATION STATE
     const { pagination, setPagination } = usePagination(20);
 
-    //TABLE SORT INFO
-    const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-
     const { projectId } = useProject();
 
     // TOAST
     const { addToast } = useToast();
 
-    // SINGLE SEARCH TEXT BOX
-    const [searchTerm, setSearchTerm] = useState('');
-    const debouncedSearch = useDebouncedCallback((value: string) => {
-        searchMarketingContentFolder(value)
-    }, 350);
 
     //DELETE MARKETING  CONTENT FOLDER 
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
@@ -72,31 +65,45 @@ export const MarketingContentFolder: React.FC = () => {
     const { canAction } = useMenuPermissions();
     //#endregion
 
-    const location = useLocation();
+    //#region LITIGATION LIST STATE CONTEXT
+    const { listState, updateListState, clearMarketingContentContext } = useMarketingContentListState();
+    const { page, sortInfo, searchTerm } = listState;
     //#endregion
 
     //#region INIT
     useEffect(() => {
-        const incoming = location.state?.listState;
-        const listState = incoming ?? {
-            page: 1, sortInfo: undefined, searchTerm: ''
-        };
 
-        setPagination({ currentPage: listState.page ?? pagination.currentPage });
+        if (!projectId) return
 
-        setSortInfo(listState.sortInfo);
+        if (searchTerm && searchTerm.trim()) {
 
-        setSearchTerm(listState.searchTerm ?? '');
+            loadMarketingContentFolder(page, sortInfo, searchTerm?.trim());
 
-        if (listState.searchTerm && String(listState.searchTerm).trim()) {
-            loadMarketingContentFolder(listState.page ?? 1, listState.sortInfo,
-                String(listState.searchTerm).trim()
-            ); return;
+        } else {
+
+            loadMarketingContentFolder(page, sortInfo);
         }
 
-        loadMarketingContentFolder(listState.page ?? 1, listState.filters ?? {});
-    }, [location.state]);
+    }, [projectId, page, sortInfo, searchTerm, clearMarketingContentContext]);
 
+    useEffect(() => {
+
+        setPagination({ currentPage: page });
+
+    }, [page]);
+
+    //#endregion
+
+    const debouncedSearch = useDebouncedCallback((value: string) => {
+
+        if (value.trim() === '') {
+
+            updateListState({ searchTerm: '', page: 1 });
+            return;
+        }
+        updateListState({ searchTerm: value, page: 1 });
+    }, 350);
+    //#endregion
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
     const fetchMarketingContentFolderList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadMarketingContentFolder(page, sort, searchTerm);
@@ -143,13 +150,6 @@ export const MarketingContentFolder: React.FC = () => {
     }, [projectId, sortInfo]);
     //#endregion
 
-    //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
-    useEffect(() => {
-        return () => {
-            debouncedSearch.cancel?.()
-        }
-    }, [debouncedSearch])
-
     useEffect(() => {
         if (isAddUpdateModalOpen) {
             if (editingMarketingContentFolderData) {
@@ -169,32 +169,29 @@ export const MarketingContentFolder: React.FC = () => {
 
     //#region SEARCH & CLEAR
     const searchMarketingContentFolder = async (searchValue: string) => {
-        setSearchTerm(searchValue);
+        updateListState({ searchTerm: searchValue, page: 1 });
         await loadMarketingContentFolder(1, sortInfo, searchValue);
     };
     //#endregion
 
     //#region CLEAR 
     const clearSearchMarketingContentFolder = () => {
-        setSearchTerm('');
+        updateListState({ searchTerm: '', page: 1 });
         debouncedSearch.cancel?.();
-
         setPagination({ currentPage: 1 });
         loadMarketingContentFolder(1, sortInfo, '');
     };
     //#endregion
 
     //#region HANDLE PAGE CHNAGE EVENT
-    const handlePageChange = useCallback((page: number) => {
-        loadMarketingContentFolder(page, sortInfo, searchTerm);
-    }, [searchTerm, sortInfo]);
+    const handlePageChange = useCallback((newPage: number) => {
+        updateListState({ page: newPage });
+    }, [updateListState]);
 
     //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
-        setSortInfo(sort);
-        loadMarketingContentFolder(1, sort, searchTerm);
-
-    }, [searchTerm]);
+        updateListState({ sortInfo: sort, page: 1 });
+    }, [updateListState]);
     //#endregion
 
     const handleDeleteDialogClose = useCallback(() => {
@@ -224,56 +221,12 @@ export const MarketingContentFolder: React.FC = () => {
     //#endregion
 
     //#region NAVIGATE TO VIEW MARKETING CONTENT DOCUMENT
-    const handleNavigateToView = (row: MarketingContentFolderData) => {
-        navigate(
-            `/content/contentDocument/${row.MarketingContentFolderId}`,
-            { state: { MarketingContentData: row } }
-        );
-    };
+    const handleNavigateToView = useCallback((row: MarketingContentFolderData) => {
+
+        updateListState({ MarketingContentFolderId: row.MarketingContentFolderId ?? 0, MarketingContentFolderName: row.MarketingContentFolderName ?? '' });
+        navigate('/content/contentDocument/');
+    }, [navigate, updateListState]);
     //#endregion
-
-    //#region DOWNLOAD AS ZIP FILE
-    const handleDownloadMarketingContentFolder = (row: MarketingContentFolderData) => {
-        runApiWithLoader(
-
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params = new URLSearchParams({
-                    PageSize: '10',
-                    PageNumber: '1',
-                    ProjectId: String(row.ProjectId),
-                    ExportType: 'ZIP',
-                    MarketingContentFolderId: String(row.MarketingContentFolderId),
-                }).toString();
-
-                const response = await fetch(`/api/PullMarketingContent?${params}`);
-
-                if (!response.ok) throw new Error('Download failed');
-
-                const blob = await response.blob();
-
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `${row.MarketingContentFolderName || 'Content'}_Documents.zip`;
-
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-
-                addToast({ type: 'success', title: 'File download successfully ' });
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message || 'Download failed' });
-            },
-            undefined,
-            'Preparing Download'
-        );
-    };
 
     //#region TABLE COLUMNS
     const MarketingContentFolderColumns = useMemo<TableColumn[]>(() => [
@@ -334,7 +287,6 @@ export const MarketingContentFolder: React.FC = () => {
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    handleDownloadMarketingContentFolder(row);
                                 }}
                                 color="transparent"
                                 isborderRadius
@@ -567,10 +519,7 @@ export const MarketingContentFolder: React.FC = () => {
                 isShowSearchBar
                 searchTerm={searchTerm}
                 searchPlaceholder="Search By Content Name"
-                onSearchChange={v => {
-                    setSearchTerm(v);
-                    debouncedSearch(v);
-                }}
+                onSearchChange={searchMarketingContentFolder}
                 onClearSearch={clearSearchMarketingContentFolder}
 
                 // ADD

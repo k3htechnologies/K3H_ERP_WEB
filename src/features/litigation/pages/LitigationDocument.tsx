@@ -13,7 +13,7 @@ import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
@@ -25,6 +25,7 @@ import type { AddUpdateLitigationDocumentRequest, DeleteLitigationDocumentReques
 import { litigationDocumentService } from '@/features/litigation/services/LitigationDocumentServices';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { useLitigationListState } from '@/features/litigation/context/LitigationListStateContext';
 
 const initialFormState = (): AddUpdateLitigationDocumentRequest => ({
     LitigationDocumentId: 0,
@@ -85,6 +86,10 @@ export const LitigationDocument: React.FC = () => {
     const { projectId } = useProject();
     //#endregion
 
+    const { LitigationId } = useParams<{ LitigationId?: string }>();
+    const { listState } = useLitigationListState();
+    const currentLitigationId = LitigationId ? Number(LitigationId) : listState.LitigationId;
+
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions();
     //#endregion
@@ -94,8 +99,7 @@ export const LitigationDocument: React.FC = () => {
 
         if (!projectId) return;
         fetchLitigationDocumentList();
-
-    }, [projectId])
+    }, [projectId, currentLitigationId])
 
     //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
     useEffect(() => {
@@ -111,7 +115,7 @@ export const LitigationDocument: React.FC = () => {
                 setFormData({
                     LitigationDocumentId: editingLitigationDocumentData.LitigationDocumentId,
                     Uniquekey: editingLitigationDocumentData.Uniquekey || initialFormState().Uniquekey,
-                    LitigationId: editingLitigationDocumentData.LitigationId,
+                    LitigationId: editingLitigationDocumentData.LitigationId || 0,
                     ProjectId: editingLitigationDocumentData.ProjectId,
                     DocumentName: editingLitigationDocumentData.DocumentName || null,
                     DocumentURL: null,
@@ -148,6 +152,7 @@ export const LitigationDocument: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
+                    LitigationId:currentLitigationId,
                     DocumentName: searchtext?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, LitigationDocumentColumns),
                 };
@@ -204,6 +209,7 @@ export const LitigationDocument: React.FC = () => {
                     PageSize: pagination.totalRecords,
                     ProjectId: projectId || undefined,
                     LitigationDocumentId: 1,
+                    LitigationId: currentLitigationId,
                     DocumentName: searchTerm?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, LitigationDocumentColumns),
                     ExportType: exportType
@@ -236,8 +242,7 @@ export const LitigationDocument: React.FC = () => {
     //#region TABLE SORT COLUMN
     const handleSortColumn = (sortInfo: SortInfo) => {
         setSortInfo(sortInfo);
-        fetchLitigationDocumentList(1);
-
+        loadLitigationDocument(1, sortInfo, searchTerm);
     }
     //#endregion
 
@@ -267,11 +272,6 @@ export const LitigationDocument: React.FC = () => {
 
     }, [])
     //#endregion
-
-    const handleDeleteDialogClose = useCallback(() => {
-        setIsConfirmationDialogBoxOpen(false);
-        setDeleteLitigationDocumentDetailsData(null);
-    }, [setIsConfirmationDialogBoxOpen, setDeleteLitigationDocumentDetailsData]);
 
     //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: LitigationDocumentData) => {
@@ -442,7 +442,7 @@ export const LitigationDocument: React.FC = () => {
 
         const fd = new FormData();
 
-        fd.append('LitigationId', String(formData.LitigationId ?? 0));
+        fd.append('LitigationId', String(currentLitigationId));
         fd.append('LitigationDocumentId', String(formData.LitigationDocumentId ?? 0));
         fd.append('Uniquekey', formData.Uniquekey ?? '');
         fd.append('ProjectId', String(projectId));
@@ -480,7 +480,6 @@ export const LitigationDocument: React.FC = () => {
 
             return
         }
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -494,36 +493,15 @@ export const LitigationDocument: React.FC = () => {
 
                     setIsAddUpdateModalOpen(false);
 
-                    const isAdd = formData.LitigationDocumentId === null || formData.LitigationDocumentId === 0;
+                    await loadLitigationDocument(pagination.currentPage || 1, sortInfo, searchTerm);
 
-                    if (isAdd) {
-
-                        const newRecord = response.right.Data[0] as LitigationDocumentData
-
-                        setLitigationDocumentList(prevData => [newRecord, ...prevData]);
-                        setPagination({
-                            currentPage: pagination.currentPage,
-                            totalRecords: pagination.totalRecords + 1,
-                            totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-                        });
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    } else {
-
-                        const updatedRecord = response.right.Data[0] as LitigationDocumentData;
-                        setLitigationDocumentList(prevData =>
-                            prevData.map(item =>
-                                item.LitigationDocumentId === formData.LitigationDocumentId
-                                    ? updatedRecord
-                                    : item
-                            )
-                        )
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    }
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
                     setEditingLitigationDocumentData(null);
                     setDocumentFiles([]);
                     setDocumentURL('');
                     setRemovedDocumentURLs([]);
-                } else {
+                }
+                else {
                     addToast({ type: "error", title: response.left?.message });
                 }
                 return response;
@@ -554,8 +532,8 @@ export const LitigationDocument: React.FC = () => {
                 const params: DeleteLitigationDocumentRequest = {
                     LitigationDocumentId: deleteLitigationDocumentDetailsData.LitigationDocumentId,
                     Uniquekey: deleteLitigationDocumentDetailsData.Uniquekey || '',
-                    LitigationId: deleteLitigationDocumentDetailsData.LitigationId,
-                    ProjectId: deleteLitigationDocumentDetailsData.ProjectId
+                    LitigationId: currentLitigationId,
+                    ProjectId: deleteLitigationDocumentDetailsData.ProjectId || 0
                 }
                 const response = await litigationDocumentService.apiCallDeleteLitigationDocument(params);
 
@@ -651,7 +629,7 @@ export const LitigationDocument: React.FC = () => {
             <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
 
                 <HeaderActionBar
-                    titleText={"Litigation Document"}
+                    titleText="Litigation Document"
                     cancelText="Cancel"
                     EditText=""
                     onCancel={() => handleBackToListLITIGATION()}
@@ -699,7 +677,6 @@ export const LitigationDocument: React.FC = () => {
                 title={editingLitigationDocumentData ? 'Update Litigation Document' : 'Add Litigation Document'}
                 onSubmit={handleAddUpdateLitigationDocument}
                 saveText={'Save'}
-                resetText='Reset'
                 loading={isLoading}
                 size='xl'
             >
@@ -745,7 +722,10 @@ export const LitigationDocument: React.FC = () => {
 
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
-                onClose={handleDeleteDialogClose}
+                onClose={() => {
+                    setIsConfirmationDialogBoxOpen(false);
+                    setDeleteLitigationDocumentDetailsData(null);
+                }}
                 onConfirm={handleDeleteLitigationDocument}
                 loading={isLoading}
                 pageName='Litigation Document'

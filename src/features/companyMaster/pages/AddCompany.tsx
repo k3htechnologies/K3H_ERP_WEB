@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { AddUpdateCompanyMasterRequest, AddUpdateCompanyPartnerRequest, CompanyPartnerData, FilterWithPaginationCompanyMasterRequest } from '@/features/companyMaster/models/CompanyMasterModel';
 import { Input } from '@/ui/components/forms';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { FIRMS_TYPE_OPTIONS,GENDER_OPTIONS } from '@/core/constants';
+import { FIRMS_TYPE_OPTIONS, GENDER_OPTIONS } from '@/core/constants';
 import { useCountryStateCityDistrictVillageData } from '@/core/hooks/useCountryStateCityDistrictVillage';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
@@ -477,7 +477,7 @@ const AddCompany: React.FC = () => {
     if (hasTANFile && !hasTANNumber) {
       newErrors.TANNumber = "TAN Number is required";
     }
-    
+
 
     // Location
     if (!formData.CountryMasterId) {
@@ -1452,7 +1452,7 @@ const AddCompany: React.FC = () => {
 
             </div>
 
-             <div>
+            <div>
               <MultiFilePicker
                 label='TAN'
                 placeholder='Select TAN'
@@ -1486,21 +1486,42 @@ const AddCompany: React.FC = () => {
 
               <SinglePageSelection
                 label='Country'
+                placeholder="Select Country"
                 required
                 value={selectedCountryId || ''}
                 error={errors.CountryMasterId}
-                onChange={val => {
-                  const id = Number(val)
-                  setSelectedCountryId(id)
-                  setSelectedStateId(null)
-                  setSelectedDistrictId(null)
-                  setSelectedCityId(null)
+                onChange={(item) => {
 
-                  handleFieldChange('CountryMasterId', id)
+                  if (!item) {
+                    setSelectedCountryId(null);
+                    setSelectedStateId(null);
+                    setSelectedDistrictId(null);
+                    setSelectedCityId(null);
+
+                    handleFieldChange('CountryMasterId', 0);
+                    handleFieldChange('StateMasterId', 0);
+                    handleFieldChange('DistrictMasterId', 0);
+                    handleFieldChange('CityMasterId', 0);
+
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedCountryId(id);
+                  setSelectedStateId(null);
+                  setSelectedDistrictId(null);
+                  setSelectedCityId(null);
+
+                  handleFieldChange('CountryMasterId', id);
+                  handleFieldChange('StateMasterId', 0);
+                  handleFieldChange('DistrictMasterId', 0);
+                  handleFieldChange('CityMasterId', 0);
                 }}
                 disabled={isLocationLoading}
                 options={countryOptions}
               />
+
 
             </div>
 
@@ -1508,20 +1529,38 @@ const AddCompany: React.FC = () => {
 
               <SinglePageSelection
                 label='State'
+                placeholder="Select State"
                 required
                 value={selectedStateId ?? ''}
                 error={errors.StateMasterId}
-                onChange={val => {
-                  const id = Number(val)
-                  setSelectedStateId(id)
-                  setSelectedDistrictId(null)
-                  setSelectedCityId(null)
+                onChange={(item) => {
 
-                  handleFieldChange('StateMasterId', id)
+                  if (!item) {
+                    setSelectedStateId(null);
+                    setSelectedDistrictId(null);
+                    setSelectedCityId(null);
+
+                    handleFieldChange("StateMasterId", 0);
+                    handleFieldChange("DistrictMasterId", 0);
+                    handleFieldChange("CityMasterId", 0);
+
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedStateId(id);
+                  setSelectedDistrictId(null);
+                  setSelectedCityId(null);
+
+                  handleFieldChange("StateMasterId", id);
+                  handleFieldChange("DistrictMasterId", 0);
+                  handleFieldChange("CityMasterId", 0);
                 }}
                 disabled={!selectedCountryId || stateOptions.length === 0}
                 options={stateOptions}
               />
+
 
             </div>
 
@@ -1529,39 +1568,58 @@ const AddCompany: React.FC = () => {
 
               <SinglePageSelection
                 label='District'
+                placeholder="Select District"
                 required
                 value={selectedDistrictId ?? ''}
                 error={errors.DistrictMasterId}
-                onChange={val => {
-                  const id = Number(val)
-                  setSelectedDistrictId(id)
-                  setSelectedCityId(null)
+                onChange={(item) => {
 
-                  handleFieldChange('DistrictMasterId', id)
+                  if (!item) {
+                    setSelectedDistrictId(null);
+                    setSelectedCityId(null);
+
+                    handleFieldChange('DistrictMasterId', 0);
+                    handleFieldChange('CityMasterId', 0);
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedDistrictId(id);
+                  setSelectedCityId(null);
+
+                  handleFieldChange('DistrictMasterId', id);
+                  handleFieldChange('CityMasterId', 0);
                 }}
                 disabled={!selectedStateId || districtOptions.length === 0}
                 options={districtOptions}
               />
-
-
             </div>
 
             <div>
 
               <SinglePageSelection
                 label='City'
+                placeholder="Select City"
                 required
                 value={selectedCityId ?? ''}
                 error={errors.CityMasterId}
-                onChange={val => {
-                  const id = Number(val)
-                  setSelectedCityId(id)
-                  handleFieldChange('CityMasterId', id)
+                onChange={(item) => {
+
+                  if (!item) {
+                    setSelectedCityId(null);
+                    handleFieldChange('CityMasterId', 0);
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedCityId(id);
+                  handleFieldChange('CityMasterId', id);
                 }}
                 disabled={!selectedDistrictId || cityOptions.length === 0}
                 options={cityOptions}
               />
-
 
             </div>
 

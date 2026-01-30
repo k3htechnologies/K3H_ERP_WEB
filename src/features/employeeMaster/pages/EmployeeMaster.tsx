@@ -30,7 +30,6 @@ import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import { useEmployeeListState } from '@/features/employeeMaster/context/EmployeeListStateContext';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
-import Checkbox from '@/ui/components/forms/Checkbox';
 import ToggleSwitch from '@/ui/components/forms/ToggleSwitch';
 
 export const EmployeeMaster: React.FC = () => {

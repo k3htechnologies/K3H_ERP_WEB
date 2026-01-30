@@ -408,9 +408,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <Loader loading={isLoading} title={loadingMessage}>
-        <div />
-      </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>  <div /> </Loader>
 
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
         <form onSubmit={handleSubmit}>

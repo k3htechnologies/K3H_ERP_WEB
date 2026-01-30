@@ -1,6 +1,6 @@
 import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
-import { OutDoorApi } from '../api/OutDoorApi'
+import { OutDoorApi } from '@/features/outdoor/api/OutDoorApi'
 import type {
     DeleteOutDoorRequest,
     FilterWithPaginationOutDoor,
@@ -11,14 +11,14 @@ import type {
     OutDoorPunchInOutResponse,
     AddUpdateConclusionRequest,
     OutDoorConclusionResponse
-} from '../models/OutDoorModel'
+} from '@/features/outdoor/models/OutDoorModel'
 
 export abstract class OutDoorDatasource {
     abstract pullOutDoor(params: FilterWithPaginationOutDoor, signal?: AbortSignal): Promise<OutDoorDataListResponse>;
     abstract addUpdateOutDoor(data: FormData): Promise<OutDoorSaveResponse>;
-    abstract deleteOutDoor(data: DeleteOutDoorRequest): Promise<OutDoorDeleteResponse>;
-    abstract punchIn(data: PunchInOutRequest): Promise<OutDoorPunchInOutResponse>;
-    abstract addUpdateConclusion(data: AddUpdateConclusionRequest): Promise<OutDoorConclusionResponse>;
+    abstract deleteOutDoor(params: DeleteOutDoorRequest): Promise<OutDoorDeleteResponse>;
+    abstract punchIn(params: PunchInOutRequest): Promise<OutDoorPunchInOutResponse>;
+    abstract addUpdateConclusion(params: AddUpdateConclusionRequest): Promise<OutDoorConclusionResponse>;
 }
 
 export class OutDoorDataSourceImpl implements OutDoorDatasource {
@@ -35,16 +35,18 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             })
 
             if (params.StartDate) {
-                const start = typeof params.StartDate === "string"
-                    ? params.StartDate
-                    : new Date(params.StartDate).toISOString();
+                // Convert YYYY-MM-DD to ISO format if needed (already ISO if contains 'T')
+                const start = params.StartDate.includes('T') 
+                    ? params.StartDate 
+                    : `${params.StartDate}T00:00:00Z`;
                 queryParams.append("StartDate", start);
             }
 
             if (params.EndDate) {
-                const end = typeof params.EndDate === "string"
-                    ? params.EndDate
-                    : new Date(params.EndDate).toISOString();
+                // Convert YYYY-MM-DD to ISO format if needed (already ISO if contains 'T')
+                const end = params.EndDate.includes('T') 
+                    ? params.EndDate 
+                    : `${params.EndDate}T00:00:00Z`;
                 queryParams.append("EndDate", end);
             }
             if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
@@ -58,7 +60,8 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             console.error('Error: Pull OUTDOOR:', error);
 
             if (error === TokenExpiredException) {
-                await this.pullOutDoor(params, signal);
+
+                await this.pullOutDoor(params);
             }
 
             throw error
@@ -80,18 +83,19 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             console.error('Error: Add Update OUTDOOR:', error)
 
             if (error === TokenExpiredException) {
+
                 await this.addUpdateOutDoor(payload);
             }
             throw error
         }
     }
 
-    async deleteOutDoor(payload: DeleteOutDoorRequest): Promise<OutDoorDeleteResponse> {
+    async deleteOutDoor(params: DeleteOutDoorRequest): Promise<OutDoorDeleteResponse> {
         try {
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 OutDoorApi.DELETE,
-                payload
+                params
             )
 
             return response
@@ -101,20 +105,20 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             console.error('ERRPR : DELETE OUTDOOR:', error)
 
             if (error === TokenExpiredException) {
-                await this.deleteOutDoor(payload);
+                await this.deleteOutDoor(params);
             }
 
             throw error
         }
     }
 
-    async punchIn(payload: PunchInOutRequest): Promise<OutDoorPunchInOutResponse> {
+    async punchIn(params: PunchInOutRequest): Promise<OutDoorPunchInOutResponse> {
 
         try {
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 OutDoorApi.PUNCH_IN,
-                payload
+                params
             )
 
             return response
@@ -123,19 +127,19 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             console.error('Error: PUNCH IN OUTDOOR:', error)
 
             if (error === TokenExpiredException) {
-                await this.punchIn(payload);
+                await this.punchIn(params);
             }
             throw error
         }
     }
 
-    async addUpdateConclusion(payload: AddUpdateConclusionRequest): Promise<OutDoorConclusionResponse> {
+    async addUpdateConclusion(params: AddUpdateConclusionRequest): Promise<OutDoorConclusionResponse> {
 
         try {
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 OutDoorApi.ADD_UPDATE_CONCLUSION,
-                payload
+                params
             )
 
             return response
@@ -144,7 +148,7 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             console.error('Error: Add Update CONCLUSION:', error)
 
             if (error === TokenExpiredException) {
-                await this.addUpdateConclusion(payload);
+                await this.addUpdateConclusion(params);
             }
             throw error
         }

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { DateRangeSelector } from '@/ui/components/forms/DateRangeSelector';
-import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
+import { Button } from '@/ui/components/forms';
+import { Download, Plus } from 'lucide-react';
 
 export interface DateRangeWithActionsProps {
   // Date Range Props
@@ -23,11 +24,6 @@ export interface DateRangeWithActionsProps {
   onExportExcel?: () => void;
   onExportPdf?: () => void;
   exportLoading?: boolean;
-  
-  // Optional: Additional props for TableActionToolbar
-  isShowSearchBar?: boolean;
-  isShowFilterButton?: boolean;
-  isShowCustomizeButton?: boolean;
 }
 
 export const DateRangeWithActions: React.FC<DateRangeWithActionsProps> = ({
@@ -44,13 +40,32 @@ export const DateRangeWithActions: React.FC<DateRangeWithActionsProps> = ({
   onExportExcel,
   onExportPdf,
   exportLoading = false,
-  isShowSearchBar = false,
-  isShowFilterButton = false,
-  isShowCustomizeButton = false,
 }) => {
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportRef.current && !exportRef.current.contains(event.target as Node)) {
+        setIsExportOpen(false);
+      }
+    };
+
+    if (isExportOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isExportOpen]);
+
+  const hasExportOptions = onExportExcel || onExportPdf;
+
   return (
     <div className="pb-4">
-      <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="relative min-w-0 w-[526px]">
           <DateRangeSelector
             fromDate={fromDate}
@@ -60,23 +75,114 @@ export const DateRangeWithActions: React.FC<DateRangeWithActionsProps> = ({
             onToDateChange={onToDateChange}
           />
         </div>
-      </div>
 
-      <TableActionToolbar
-        isShowSearchBar={isShowSearchBar}
-        isShowFilterButton={isShowFilterButton}
-        isShowCustomizeButton={isShowCustomizeButton}
-        // ADD
-        isShowAddButton={canAction}
-        addTitle={addTitle}
-        onAdd={onAdd}
-        // EXPORT
-        isShowExportButton={canExport && hasData}
-        onExportExcel={onExportExcel}
-        onExportPdf={onExportPdf}
-        exportLoading={exportLoading}
-      />
+        {/* RIGHT SIDE: Export and Add Buttons */}
+        <div className="flex items-center space-x-3">
+          {/* EXPORT BUTTON */}
+          {canExport && hasData && hasExportOptions && (
+            <div className="relative" ref={exportRef}>
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // If only one export option, call it directly; otherwise show dropdown
+                  if (onExportExcel && !onExportPdf) {
+                    onExportExcel();
+                  } else if (onExportPdf && !onExportExcel) {
+                    onExportPdf();
+                  } else {
+                    setIsExportOpen((prev) => !prev);
+                  }
+                }}
+                color="blue"
+                colorMode="gradient_light"
+                size="mxs"
+                defineWidth
+                title="Export"
+                aria-expanded={isExportOpen}
+                aria-haspopup={hasExportOptions ? "menu" : undefined}
+                style={{ width: '95px' }}
+                leftIcon={<Download className="h-4 w-4" />}
+                disabled={exportLoading}
+              >
+                <span>Export</span>
+              </Button>
+
+              {/* EXPORT DROPDOWN */}
+              {isExportOpen && hasExportOptions && (
+                <div
+                  className="absolute right-0 mt-2 min-w-[168px] bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-50"
+                  role="menu"
+                  aria-label="Export options"
+                >
+                  <div className="py-1">
+                    {onExportExcel && (
+                      <Button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onExportExcel();
+                          setIsExportOpen(false);
+                        }}
+                        disabled={exportLoading}
+                        color="transparent"
+                        fullWidth
+                        isborderRadius
+                        size="sm"
+                        title="Export as Excel"
+                        style={{ justifyContent: "left" }}
+                      >
+                        Export as Excel
+                      </Button>
+                    )}
+                    {onExportPdf && (
+                      <Button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onExportPdf();
+                          setIsExportOpen(false);
+                        }}
+                        disabled={exportLoading}
+                        color="transparent"
+                        fullWidth
+                        isborderRadius
+                        size="sm"
+                        title="Export as PDF"
+                        style={{ justifyContent: "left" }}
+                      >
+                        Export as PDF
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ADD BUTTON */}
+          {canAction && onAdd && (
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAdd();
+              }}
+              color="blue"
+              size="mxs"
+              variant="solid"
+              colorMode="gradient_dark"
+              defineWidth
+              title={addTitle}
+              aria-label={addTitle}
+              style={{ width: '95px' }}
+              leftIcon={<Plus className="h-4 w-4" />}
+            >
+              <span>{addTitle}</span>
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
-

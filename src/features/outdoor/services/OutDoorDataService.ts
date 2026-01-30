@@ -1,5 +1,5 @@
 import type { Failure } from '@/core/api/FailureResponse';
-import { OutDoorDataSourceImpl } from '../datasources/OutDoorDatasource';
+import { OutDoorDataSourceImpl } from '@/features/outdoor/datasources/OutDoorDatasource';
 import type {
     FilterWithPaginationOutDoor,
     OutDoorDataListResponse,
@@ -10,7 +10,7 @@ import type {
     OutDoorConclusionResponse,
     DeleteOutDoorRequest,
     OutDoorDeleteResponse
-} from '../models/OutDoorModel';
+} from '@/features/outdoor/models/OutDoorModel';
 
 import * as E from 'fp-ts/Either';
 

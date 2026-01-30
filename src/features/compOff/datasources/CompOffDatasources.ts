@@ -34,8 +34,20 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
                 CompOffId: (params.CompOffId ?? 0).toString(),
             })
 
-            if (params.StartDate?.trim()) queryParams.append('StartDate', params.StartDate.trim());
-            if (params.EndDate?.trim()) queryParams.append('EndDate', params.EndDate.trim());
+            if (params.StartDate) {
+                // Convert YYYY-MM-DD to ISO format if needed (already ISO if contains 'T')
+                const start = params.StartDate.includes('T') 
+                    ? params.StartDate 
+                    : `${params.StartDate}T00:00:00Z`;
+                queryParams.append('StartDate', start);
+            }
+            if (params.EndDate) {
+                // Convert YYYY-MM-DD to ISO format if needed (already ISO if contains 'T')
+                const end = params.EndDate.includes('T') 
+                    ? params.EndDate 
+                    : `${params.EndDate}T00:00:00Z`;
+                queryParams.append('EndDate', end);
+            }
             if (params.Reason?.trim()) queryParams.append('Reason', params.Reason.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);

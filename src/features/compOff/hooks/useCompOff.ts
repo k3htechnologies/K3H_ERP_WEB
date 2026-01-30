@@ -109,12 +109,8 @@ export const useCompOff = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     CompOffId: filterParams.CompOffId ? Number(filterParams.CompOffId) : 0,
-                    StartDate: filterParams.StartDate
-                        ? new Date(filterParams.StartDate).toISOString()
-                        : undefined,
-                    EndDate: filterParams.EndDate
-                        ? new Date(filterParams.EndDate).toISOString()
-                        : undefined,
+                    StartDate: filterParams.StartDate || undefined,
+                    EndDate: filterParams.EndDate || undefined,
                     Reason: filterParams.Reason?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, compOffColumns),
                 };
@@ -166,12 +162,8 @@ export const useCompOff = () => {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     CompOffId: filters.CompOffId ? Number(filters.CompOffId) : 0,
-                    StartDate: filters.StartDate
-                        ? new Date(filters.StartDate).toISOString()
-                        : undefined,
-                    EndDate: filters.EndDate
-                        ? new Date(filters.EndDate).toISOString()
-                        : undefined,
+                    StartDate: filters.StartDate || undefined,
+                    EndDate: filters.EndDate || undefined,
                     Reason: filters.Reason?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, compOffColumns),
                     ExportType: exportType,

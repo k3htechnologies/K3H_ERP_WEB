@@ -15,7 +15,7 @@ const STORAGE_KEY = 'outdoor.listState';
 const getInitialState = (): OutDoorListState => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    
+
     if (stored) {
       const parsed = JSON.parse(stored) as OutDoorListState;
       return {

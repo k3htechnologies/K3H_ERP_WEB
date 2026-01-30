@@ -26,7 +26,11 @@ export const FieldItem: React.FC<{
   isSetValue = true,
 }) => {
 
-    const displayValue = value !== undefined && value !== null && value !== '' ? String(value) : '-';
+    // Check if value is a ReactNode (React element)
+    const isReactNode = React.isValidElement(value);
+    const displayValue = value !== undefined && value !== null && value !== '' 
+      ? (isReactNode ? value : String(value)) 
+      : '-';
     const borderClass = withBorder ? 'border-b border-[#135bec2e]' : '';
 
     // parse urls (returns [])
@@ -79,6 +83,8 @@ export const FieldItem: React.FC<{
                     )
                   }
                 />
+              ) : isReactNode ? (
+                displayValue
               ) : (
                 <span
                   className={`text-sm text-[#1D1D1D] font-medium text-left break-words whitespace-normal max-w-[400px] ${className} min-w-0`}
@@ -120,6 +126,10 @@ export const FieldItem: React.FC<{
               )
             }
           />
+        ) : isReactNode ? (
+          <div className="mt-1">
+            {displayValue}
+          </div>
         ) : (
           <span className={`mt-1 text-sm text-[#1D1D1D] font-medium break-words whitespace-normal ${className} min-w-0`}>
             {displayValue}

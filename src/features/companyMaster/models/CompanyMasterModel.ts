@@ -6,14 +6,14 @@ export interface FilterWithPaginationCompanyMasterRequest {
     IsCheckPermission?: boolean
     CompanyId?: number
     CompanyName?: string
-    CompanyType?: string
+    FirmsType?: string
     ContactPerson?: string
     MobileNumber?: string
     CityName?: string
     GSTNumber?: string
     CINNumber?: string
     PANNumber?: string
-    RERANumber?: string
+    TANNumber?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -22,7 +22,7 @@ export interface CompanyMasterData {
     CompanyId: number
     Uniquekey: string
     CompanyName: string
-    CompanyType: string
+    FirmsType: string
     ContactPerson: string
     MobileNumber: string
     LandLineNumber: string
@@ -32,7 +32,8 @@ export interface CompanyMasterData {
     CINURL: string
     PANNumber: string
     PanCardURL: string
-    RERANumber: string
+    TANNumber: string
+    TANURL: string
     EmailId: string
     CountryMasterId: number
     CountryName: string
@@ -85,7 +86,7 @@ export interface AddUpdateCompanyMasterRequest {
     CompanyId: number | 0
     Uniquekey: string | null
     CompanyName: string | ''
-    CompanyType: string | ''
+    FirmsType: string | ''
     ContactPerson: string | ''
     MobileNumber: string | ''
     EmailId: string | ''
@@ -99,7 +100,9 @@ export interface AddUpdateCompanyMasterRequest {
     PanNumber: string | ''
     PanCardURL: File[] | null
     RemovePanCardURL: string | ''
-    RERANumber: string | ''
+    TANNumber: string | ''
+    TANURL: File[] | null
+    RemoveTANURL: string | ''
     CountryMasterId: number | 0
     StateMasterId: number | 0
     DistrictMasterId: number | 0

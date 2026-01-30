@@ -686,8 +686,8 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
         }}
         canAction={buildingId > 0 && canAction}
         onSave={handleSaveCorpusDetails}
-        onOtherActionText={buildingId > 0 && formDataCorpusDetails.ProposedOfferCorpusDetailsId > 0 ? "Generate" : ""}
-        onOtherAction={() =>
+        leftActionText={buildingId > 0 && formDataCorpusDetails.ProposedOfferCorpusDetailsId > 0 ? "Generate" : ""}
+        onLeftAction={() =>
           handleConfirmationDialogBoxOpenGenerateCorpusDetails(formDataCorpusDetails as ProposedOfferCorpusDetailsData)
         }
 

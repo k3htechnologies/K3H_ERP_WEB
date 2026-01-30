@@ -28,6 +28,8 @@ import type { EmployeeExperienceDetailsData, FilterWithPaginationEmployeeExperie
 import type { EmployeeEducationDetailsData, FilterWithPaginationEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
 import { employeeExperienceDetailsService } from '@/features/employeeMaster/services/EmployeeExperienceDetailsService';
 import { employeeEducationDetailsService } from '@/features/employeeMaster/services/EmployeeEducationDetailsService';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 
 export const ViewEmployeeMaster: React.FC = () => {
 
@@ -55,8 +57,8 @@ export const ViewEmployeeMaster: React.FC = () => {
 
     //LOCATION
     const navigate = useNavigate();
-    const { listState,updateListState } = useEmployeeListState();
-    
+    const { listState, updateListState } = useEmployeeListState();
+
     const employeeName = listState.employeeName || '';
 
     //#endregion
@@ -440,6 +442,13 @@ export const ViewEmployeeMaster: React.FC = () => {
 
     const safe = (value?: any) => (value === null || value === undefined || value === '' ? '-' : value)
 
+    const docsWithUrls = employeeDocumentList.filter(d => {
+        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+            .filter(x => x?.trim()?.length);
+
+        return urls.length > 0;
+    });
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}>
@@ -581,7 +590,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                         {/* ================== EMPLOYEE INFO ================== */}
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Employee Infoformation
+                                Employee Information
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
@@ -605,7 +614,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 </div>
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Employment Type" value={safe(employeeData!.EmployeeType)} />
+                                        <FieldItem label="Employee Type" value={safe(employeeData!.EmployeeType)} />
 
                                         <FieldItem label="Office Number" value={employeeData?.OfficeMobileNumber
                                             ? `+91 ${safe(employeeData?.OfficeMobileNumber)}`
@@ -834,30 +843,65 @@ export const ViewEmployeeMaster: React.FC = () => {
             )}
 
             {activeTab === 'Document' && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3">
-                    {employeeDocumentList?.some(doc => doc?.DocumentURL) ? (
-                        employeeDocumentList
-                            .filter(doc => doc?.DocumentURL)
-                            .map((doc, index) => (
-                                <section
-                                    key={index}
-                                    className="bg-white rounded-xl shadow-sm p-2 border border-gray-200"
-                                >
-                                    <FieldItem
-                                        label={doc?.DocumentName || ''}
-                                        urls={doc?.DocumentURL}
-                                        isIcon
-                                        isRow
-                                        isSetValue={false}
-                                    />
-                                </section>
-                            ))
-                    ) : (
-                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                    {docsWithUrls.length === 0 && (
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                             <NoDataView message="No Documents Found" />
                         </section>
                     )}
+
+                    {docsWithUrls.map(d => {
+                        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+                            .filter(x => x?.trim()?.length);
+
+                        return (
+                            <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
+
+                                <div className="flex items-start justify-between p-2 gap-2">
+                                    <div className="flex flex-col">
+
+                                        <span className="line-clamp-2 break-words font-medium text-gray-900">
+                                            {d.DocumentName}
+                                        </span>
+                                        <span className="text-sm text-gray-500 mt-1">
+                                            Document Count : {urls.length}
+                                        </span>
+                                    </div>
+
+                                    <MultiImageViewer
+                                        images={urls}
+                                        title={d.DocumentName ?? "Document"}
+                                        triggerLabel="View"
+                                        isIcon={false}
+                                    />
+
+
+                                </div>
+
+
+                                <div className="flex-grow" />
+
+                                <div className="bg-gray-50 p-2 mt-auto">
+                                    <FieldItem
+                                        label="Uploaded By / Date"
+                                        value={`${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
+                                            ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
+                                            : d?.CreatedDate
+                                                ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
+                                                : '-'
+                                            }`}
+                                    />
+                                </div>
+
+                            </div>
+
+                        );
+                    })}
+
                 </div>
+
             )}
 
 

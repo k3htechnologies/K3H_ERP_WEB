@@ -35,7 +35,7 @@ export const MASTER_DATA = {
 
   bloodGroups: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
 
-  companyType: ['LLP', 'Private Limited Company', 'Proprietorship'],
+  firmsType: ['LLP', 'Private Limited Company', 'Proprietorship'],
 
   projectStatus: ['On-Going', 'Completed', 'On-Hold', 'Cancelled', 'Planning'],
 
@@ -283,10 +283,10 @@ export const DEDUCTION_TYPE_OPTIONS = toOptions(MASTER_DATA.deductionType)
 export const DAYS_OPTIONS = toOptions(MASTER_DATA.days)
 export const MARITAL_STATUS_OPTIONS = toOptions(MASTER_DATA.maritalStatuses)
 export const BLOOD_GROUP_OPTIONS = toOptions(MASTER_DATA.bloodGroups)
-export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType)
+export const FIRMS_TYPE_OPTIONS = toOptions(MASTER_DATA.firmsType)
+export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.firmsType)
 export const PROJECT_STATUS_OPTIONS = toOptions(MASTER_DATA.projectStatus)
 export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory)
-export const COMPANY_TYPE = toOptions(MASTER_DATA.companyType)
 export const PROJECT_DOCUMENT_STATUS = toOptions(MASTER_DATA.documentStatus)
 export const ACCOMODATION_TYPE_OPTIONS = toOptions(MASTER_DATA.accomodation)
 export const REQUIREMENT_TYPE_OPTIONS = toOptions(MASTER_DATA.requirement)

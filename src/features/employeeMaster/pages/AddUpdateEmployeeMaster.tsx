@@ -32,6 +32,7 @@ import type { AddUpdateEmployeeMasterRequest, FilterWithPaginationEmployeeMaster
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Mail, Phone } from "lucide-react";
+import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 
 
 const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
@@ -433,6 +434,10 @@ const AddUpdateEmployeePage: React.FC = () => {
       newErrors.IFSCCode = 'Enter a valid IFSC Code'
     }
 
+    if (formData.IdCardIssuedDate && !isToDateGreaterOrEqualFromDate(formData.JoiningDate!, formData.IdCardIssuedDate!)) {
+      newErrors.IdCardIssuedDate = "Id card issued Date must be greater than or equal to Joining Date";
+    }
+
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors
@@ -453,7 +458,7 @@ const AddUpdateEmployeePage: React.FC = () => {
       MaritalStatus: formData.MaritalStatus,
       DateOfBirth: formData.DateOfBirth,
       JoiningDate: formData.JoiningDate,
-      IdCardIssuedDate: formData.IdCardIssuedDate,
+      IdCardIssuedDate: formData.IdCardIssuedDate ?? null,
       IsGeoFenceLocation: formData.IsGeoFenceLocation,
       EmailId: formData.EmailId,
       OfficeEmailId: formData.OfficeEmailId,
@@ -788,6 +793,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                   label="Id Card Issued Date"
                   value={formatDate_dd_mm_yyyy(formData.IdCardIssuedDate)}
                   onChange={(val) => handleFieldChange('IdCardIssuedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  error={errors.IdCardIssuedDate}
                 />
 
               </div>

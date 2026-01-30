@@ -31,6 +31,7 @@ import { useEmployeeListState } from '@/features/employeeMaster/context/Employee
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
 import Checkbox from '@/ui/components/forms/Checkbox';
+import ToggleSwitch from '@/ui/components/forms/ToggleSwitch';
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -291,7 +292,7 @@ export const EmployeeMaster: React.FC = () => {
         key: 'EmployeeCode',
         label: 'Employee Code',
         width: '14',
-        sortable: false,
+        sortable: true,
         align: 'center',
         render: value => (
           <TooltipText
@@ -566,7 +567,7 @@ export const EmployeeMaster: React.FC = () => {
                   color: 'green',
                   padding: '4px 8px'
                 }}
-                title="Building Document"
+                title="Employee Document"
               >
                 <FileText className="h-4 w-4" />
               </Button>
@@ -913,24 +914,29 @@ export const EmployeeMaster: React.FC = () => {
                 placeholder="Enter Bank Branch Name"
               />
             </div>
-            <div>
-              <Checkbox
-                label="Employee on Probation?"
-                checked={tempFilters.IsEmployeeOnProbation === "1"}
-                onChange={(e) => handleFilterChange('IsEmployeeOnProbation', e.target.checked ? "1" : "0")}
-              />
-            </div>
 
-            <div>
-              <Checkbox
-                label="Id Card Issued?"
-                checked={tempFilters.IdCardIssued === "1"}
-                onChange={(e) => handleFilterChange('IdCardIssued', e.target.checked ? "1" : "0")}
-              />
-            </div>
 
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            <div>
+              <ToggleSwitch
+                label='On Probation'
+                name="IsEmployeeOnProbation"
+                value={tempFilters.IsEmployeeOnProbation === "1"}
+                onChange={(name, value) => handleFilterChange(name, value ? "1" : "0")}
+              />
+            </div>
+
+            <div>
+              <ToggleSwitch
+                label='Card Issued'
+                name="IdCardIssued"
+                value={tempFilters.IdCardIssued === "1"}
+                onChange={(name, value) => handleFilterChange(name, value ? "1" : "0")}
+              />
+            </div>
+
 
             <div>
               <DatePickerInput
@@ -947,12 +953,9 @@ export const EmployeeMaster: React.FC = () => {
                 label="To DOB"
                 value={formatDate_dd_mm_yyyy(tempFilters.ToDateOfBirth)}
                 onChange={(val) => handleFilterChange('ToDateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-
               />
-
             </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+
             <div>
               <DatePickerInput
                 label="From Joining Date"

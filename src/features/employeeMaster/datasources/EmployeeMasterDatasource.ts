@@ -98,7 +98,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
                 MaritalStatus: params.MaritalStatus?.trim() ?? '',
                 DateOfBirth: params.DateOfBirth ?? '',
                 JoiningDate: params.JoiningDate ?? '',
-                IdCardIssuedDate: params.IdCardIssuedDate ?? '',
+                IdCardIssuedDate: params.IdCardIssuedDate ?? null,
                 IsGeoFenceLocation: params.IsGeoFenceLocation ?? false,
                 EmailId: params.EmailId?.trim() ?? '',
                 OfficeEmailId: params.OfficeEmailId?.trim() ?? '',

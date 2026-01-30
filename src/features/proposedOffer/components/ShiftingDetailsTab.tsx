@@ -670,8 +670,8 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
         canAction={canAction && buildingId > 0}
         onSave={handleSaveShiftingDetails}
 
-        onOtherActionText={buildingId > 0 && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0 ? "Generate" : ""}
-        onOtherAction={() =>
+        leftActionText={buildingId > 0 && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0 ? "Generate" : ""}
+        onLeftAction={() =>
           handleConfirmationDialogBoxOpenGenerateShiftingDetails(formDataShiftingDetails as ProposedOfferShiftingDetailsData)
         }
         isLoading={isLoading}

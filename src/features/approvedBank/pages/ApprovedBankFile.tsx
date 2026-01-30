@@ -1,5 +1,5 @@
 import { Loader } from "@/core/utils/loader";
-import type { AddUpdateApprovedBankFileRequest, ApprovedBankFileData, DeleteApprovedBankFileRequest, FilterWithPaginationApprovedBankFileRequest } from "../models/ApprovedBankFileModel";
+import type { AddUpdateApprovedBankFileRequest, ApprovedBankFileData, DeleteApprovedBankFileRequest, FilterWithPaginationApprovedBankFileRequest } from "@/features/approvedBank/models/ApprovedBankFileModel";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
@@ -592,7 +592,7 @@ export const ApprovedBankFile: React.FC = () => {
                 }}
                 title={editingApprovedBankFileData ? 'Update' : 'Add'}
                 onSubmit={handleAddUpdateApprovedBankFile}
-                saveText={'Save'}
+                saveText='Save'
                 loading={isLoading}
                 size='xl'
             >

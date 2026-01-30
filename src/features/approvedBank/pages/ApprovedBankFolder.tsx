@@ -55,13 +55,12 @@ export const ApprovedBankFolder: React.FC = () => {
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteApprovedBankFolderData, setDeleteApprovedBankFolderData] = useState<ApprovedBankFolderData | null>(null)
 
-    //ERROR SET UP
-    const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
     // ADD APPROVED BANK FOLDER
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-
     const [formData, setFormData] = useState<AddUpdateApprovedBankFolderRequest>(() => initialFormState());
+
+    //ERROR SET UP
+    const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     const [bankListOptions, setBankListOptions] = useState<
         { label: string; value: string }[]
@@ -131,7 +130,7 @@ export const ApprovedBankFolder: React.FC = () => {
                     SortBy: getSortByParam(sortInfo ?? null, ApprovedBankFolderColumns)
                 };
 
-                const response = await approvedBankFolderService.apiCallPullApprovedBankWithFolder(params);
+                const response = await approvedBankFolderService.apiCallPullApprovedBankFolder(params);
                 if (E.isRight(response)) {
                     setApprovedBankFolderList(response.right.Data);
                     setPagination({
@@ -362,7 +361,7 @@ export const ApprovedBankFolder: React.FC = () => {
             async () => {
 
                 const payload = PushApprovedBankFolderFormData();
-                const response = await approvedBankFolderService.apiCallAddUpdateApprovedBankWithFolder(payload);
+                const response = await approvedBankFolderService.apiCallAddUpdateApprovedBankFolder(payload);
 
                 if (E.isRight(response)) {
                     setIsAddUpdateModalOpen(false);
@@ -428,7 +427,7 @@ export const ApprovedBankFolder: React.FC = () => {
                     ProjectId: deleteApprovedBankFolderData.ProjectId || 0
                 };
 
-                const response = await approvedBankFolderService.apiCallDeleteApprovedBankWithFolder(params);
+                const response = await approvedBankFolderService.apiCallDeleteApprovedBankFolder(params);
 
                 if (E.isRight(response)) {
 
@@ -523,9 +522,9 @@ export const ApprovedBankFolder: React.FC = () => {
                     setErrors({});
                     setSearchBankNameTerm("");
                 }}
-                title={'Add Bank'}
+                title='Add Bank'
                 onSubmit={handleAddUpdateApprovedBankFolder}
-                saveText={'Add'}
+                saveText='Add'
                 loading={isLoading}
                 size="small-half"
             >

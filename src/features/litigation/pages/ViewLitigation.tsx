@@ -742,7 +742,7 @@ const ViewLitigation: React.FC = () => {
                             </h4>
                             <div className="lg:col-span-3 pt-1">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                    <p>{litigationData?.Remark}</p>
+                                    <p>{litigationData?.Remark ?? '-'}</p>
                                 </div>
                             </div>
                         </div>

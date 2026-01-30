@@ -64,12 +64,6 @@ export const MarketingContent: React.FC = () => {
     const [removeMarketingContentUrls, setRemoveMarketingContentUrls] = useState<string[]>([]);
     const [marketingContentURL, setMarketingContentURL] = useState<string>();
 
-    // SINGLE SEARCH TEXT BOX
-    const [searchTerm, setSearchTerm] = useState('');
-    const debouncedSearch = useDebouncedCallback((value: string) => {
-        searchMarketingContent(value)
-    }, 350);
-
     // ADD EDIT MARKETING CONTENT 
     const [editingMarketingContentData, setEditingMarketingContentData] = useState<MarketingContentData | null>(null);
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
@@ -77,6 +71,12 @@ export const MarketingContent: React.FC = () => {
     //DELETE MARKETING CONTENT 
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteMarketingContentData, setDeleteMarketingContentData] = useState<MarketingContentData | null>(null)
+
+    // SINGLE SEARCH TEXT BOX
+    const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearch = useDebouncedCallback((value: string) => {
+        searchMarketingContent(value)
+    }, 350);
 
     //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -110,7 +110,9 @@ export const MarketingContent: React.FC = () => {
                 };
 
                 const response = await marketingContentService.apiCallPullMarketingContent(params);
+
                 if (E.isRight(response)) {
+
                     setMarketingContentList(response.right.Data);
                     setPagination({
                         currentPage: page,
@@ -125,7 +127,7 @@ export const MarketingContent: React.FC = () => {
             undefined,
             (error: any) => addToast({ type: 'error', title: error.message }),
             undefined,
-            'Loading  Content '
+            'Loading Marketing Content '
         )
     }, [pagination.pageSize, marketingContentFolderId, projectId, addToast])
     //#endregion
@@ -216,10 +218,6 @@ export const MarketingContent: React.FC = () => {
     }, [])
     //#endregion
 
-    const handleDeleteDialogClose = useCallback(() => {
-        setIsConfirmationDialogBoxOpen(false);
-        setDeleteMarketingContentData(null);
-    }, [setIsConfirmationDialogBoxOpen, setDeleteMarketingContentData]);
 
     //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: MarketingContentData) => {
@@ -624,7 +622,7 @@ export const MarketingContent: React.FC = () => {
                 }}
                 title={editingMarketingContentData ? 'Update' : 'Add'}
                 onSubmit={handleAddUpdateMarketingContent}
-                saveText={'Save'}
+                saveText='Save'
                 loading={isLoading}
                 size='xl'
             >
@@ -680,7 +678,10 @@ export const MarketingContent: React.FC = () => {
             {/* DELETE CONFIRMATION MODAL */}
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
-                onClose={handleDeleteDialogClose}
+                onClose={() => {
+                    setIsConfirmationDialogBoxOpen(false);
+                    setDeleteMarketingContentData(null);
+                }}
                 onConfirm={handleDeleteMarketingContent}
                 loading={isLoading}
                 pageName='Content Document'

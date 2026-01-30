@@ -65,7 +65,7 @@ export const MarketingContentFolder: React.FC = () => {
     const { canAction } = useMenuPermissions();
     //#endregion
 
-    //#region LITIGATION LIST STATE CONTEXT
+    //#region MARKETING CONTENT FOLDER LIST STATE CONTEXT
     const { listState, updateListState, clearMarketingContentContext } = useMarketingContentListState();
     const { page, sortInfo, searchTerm } = listState;
     //#endregion
@@ -104,6 +104,7 @@ export const MarketingContentFolder: React.FC = () => {
         updateListState({ searchTerm: value, page: 1 });
     }, 350);
     //#endregion
+
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
     const fetchMarketingContentFolderList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadMarketingContentFolder(page, sort, searchTerm);
@@ -146,7 +147,9 @@ export const MarketingContentFolder: React.FC = () => {
     //#region INIT
     useEffect(() => {
         if (!projectId) return;
+
         fetchMarketingContentFolderList(1, sortInfo);
+
     }, [projectId, sortInfo]);
     //#endregion
 
@@ -194,10 +197,6 @@ export const MarketingContentFolder: React.FC = () => {
     }, [updateListState]);
     //#endregion
 
-    const handleDeleteDialogClose = useCallback(() => {
-        setIsConfirmationDialogBoxOpen(false);
-        setDeleteMarketingContentFolderData(null);
-    }, [setIsConfirmationDialogBoxOpen, setDeleteMarketingContentFolderData]);
 
     //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: MarketingContentFolderData) => {
@@ -354,8 +353,11 @@ export const MarketingContentFolder: React.FC = () => {
         const newErrors: { [key: string]: string } = {}
 
         if (!formData.MarketingContentFolderName?.trim()) {
+
             newErrors.MarketingContentFolderName = "Content Name is required.";
+
         } else if (formData.MarketingContentFolderName.trim().length < 3) {
+            
             newErrors.MarketingContentFolderName = "Content Name must be at least 3 characters long."
         }
 
@@ -587,7 +589,10 @@ export const MarketingContentFolder: React.FC = () => {
             {/* DELETE CONFIRMATION MODAL */}
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
-                onClose={handleDeleteDialogClose}
+                onClose={() => {
+                    setIsConfirmationDialogBoxOpen(false);
+                    setDeleteMarketingContentFolderData(null);
+                }}
                 onConfirm={handleDeleteMarketingContentFolder}
                 loading={isLoading}
                 pageName='Marketing Content Folder'

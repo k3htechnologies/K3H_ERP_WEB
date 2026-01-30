@@ -89,7 +89,7 @@ export class MarketingContentDatasourceImpl implements MarketingContentDatasourc
 
             if (error === TokenExpiredException) {
 
-                console.error("ERROR: DELETE MARKETING CONTENT  :", error);
+                console.error("ERROR: DELETE MARKETING CONTENT :", error);
 
                 await this.deleteMarketingContent(params);
             }

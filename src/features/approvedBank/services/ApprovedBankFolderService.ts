@@ -18,7 +18,7 @@ const ApprovedBankFolderDatasource = new ApprovedBankWithFolderDatasourceImpl();
 
 export const approvedBankFolderService = {
 
-    apiCallPullApprovedBankWithFolder: async (params: FilterWithPaginationApprovedBankFolderRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ApprovedBankFolderListResponse>> => {
+    apiCallPullApprovedBankFolder: async (params: FilterWithPaginationApprovedBankFolderRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ApprovedBankFolderListResponse>> => {
         try {
 
             return E.right(await ApprovedBankFolderDatasource.pullApprovedBankFolder(params, options?.signal));
@@ -30,7 +30,7 @@ export const approvedBankFolderService = {
         }
     },
 
-    apiCallAddUpdateApprovedBankWithFolder: async (params: AddUpdateApprovedBankFolderRequest): Promise<E.Either<Failure, ApprovedBankWithFolderSaveResponse>> => {
+    apiCallAddUpdateApprovedBankFolder: async (params: AddUpdateApprovedBankFolderRequest): Promise<E.Either<Failure, ApprovedBankWithFolderSaveResponse>> => {
         try {
 
             return E.right(await ApprovedBankFolderDatasource.addUpdateApprovedBankFolder(params));
@@ -43,7 +43,7 @@ export const approvedBankFolderService = {
     },
 
 
-    apiCallDeleteApprovedBankWithFolder: async (params: DeleteApprovedBankFolderRequest): Promise<E.Either<Failure, ApprovedBankWithFolderDeleteResponse>> => {
+    apiCallDeleteApprovedBankFolder: async (params: DeleteApprovedBankFolderRequest): Promise<E.Either<Failure, ApprovedBankWithFolderDeleteResponse>> => {
         try {
 
             return E.right(await ApprovedBankFolderDatasource.deleteApprovedBankFolder(params));

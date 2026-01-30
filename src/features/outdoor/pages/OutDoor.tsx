@@ -31,7 +31,7 @@ import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { Pagination, type PaginationInfo } from "@/ui/components/Pagination/Pagination";
 import { handleExportFile } from '@/core/utils/exportFile';
-import { PunchCard } from '../components';
+import { PunchCard } from '@/features/outdoor/components/PunchCard';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { DateRangeWithActions } from '@/ui/components/DateRangeWithActions';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
@@ -315,7 +315,7 @@ export const OutDoor: React.FC = () => {
             addToast({ type: "success", title: apiResponse.SuccessMessage?.[0] });
 
 
-          } else {
+            } else {
             addToast({ type: "error", title: response.left.message });
           }
 
@@ -375,17 +375,23 @@ export const OutDoor: React.FC = () => {
         if (E.isRight(response)) {
           addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
+          // Update the local state with the new conclusion
+          setOutDoorList(prevList =>
+            prevList.map(item =>
+              item.OutdoorId === selectedOutdoorItem.OutdoorId
+                ? { ...item, Conclusion: conclusionText }
+                : item
+            )
+          );
+
           // Close the modal
           setConclusionModalOpen(false);
           setSelectedOutdoorItem(null);
           setConclusionText("");
           setIsConclusionEditMode(false);
 
-          // Navigate back to outdoor list
-          navigate("/outdoor");
-
-        } else {
-          addToast({
+          } else {
+            addToast({
             type: "error", title: response.left.message
           });
         }
@@ -399,7 +405,7 @@ export const OutDoor: React.FC = () => {
       undefined,
       'Saving conclusion'
     );
-  }, [selectedOutdoorItem, conclusionText, addToast, navigate]);
+  }, [selectedOutdoorItem, conclusionText, addToast]);
 
   const handleConclusionSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -454,10 +460,10 @@ export const OutDoor: React.FC = () => {
 
   const outDoorPaginationInfo: PaginationInfo = useMemo(
     () => ({
-      currentPage: pagination.currentPage,
-      totalPages: pagination.totalPages,
-      totalRecords: pagination.totalRecords,
-      pageSize: pagination.pageSize,
+    currentPage: pagination.currentPage,
+    totalPages: pagination.totalPages,
+    totalRecords: pagination.totalRecords,
+    pageSize: pagination.pageSize,
       onPageChange: handlePageChange
     }),
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
@@ -572,17 +578,17 @@ export const OutDoor: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 border-b border-gray-200 pb-2">
                           <FieldItem label="Company Name" value={item.CompanyName || '-'} isRow={false} />
                           <FieldItem label="Department" value={item.DepartmentName || '-'} isRow={false} />
-                        </div>
+                            </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 border-b border-gray-200 pb-2 pt-2">
                           <FieldItem label="Company Address" value={item.CompanyAddress || '-'} isRow={false} />
                           <FieldItem label="Accompanied By" value={item.AccompaniedByName || '-'} isRow={false} />
-                        </div>
+                          </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 border-b border-gray-200 pb-2 pt-2">
                           <FieldItem label="Purpose" value={<TooltipText text={item.Purpose || '-'} maxWidth="300px" tooltipThreshold={30} />} isRow={false} />
                           <FieldItem label="Requested By" value={item.CreatedBy || '-'} isRow={false} />
-                        </div>
+                          </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 pt-2">
                           <FieldItem label="Visiting Card"
@@ -607,7 +613,7 @@ export const OutDoor: React.FC = () => {
                             }
                             isRow={false}
                           />
-                        </div>
+                          </div>
 
                         <div className="flex items-start gap-2.5 pt-2">
                           <div className="flex-1 flex justify-end">
@@ -620,8 +626,8 @@ export const OutDoor: React.FC = () => {
                               >
                                 Edit
                               </Button>
-                            )}
-                          </div>
+                          )}
+                        </div>
                         </div>
                       </div>
 
@@ -643,11 +649,11 @@ export const OutDoor: React.FC = () => {
                               )}
                               {item.PunchOut && (
                                 <PunchCard type="out" time={item.PunchOut} address={item.PunchOutAddress} />
+                                  )}
+                                </div>
                               )}
                             </div>
                           )}
-                        </div>
-                      )}
                     </div>
                   }
                 />
@@ -682,16 +688,16 @@ export const OutDoor: React.FC = () => {
         loading={isLoading}
       >
         <div className='-mt-2'>
-          <TextArea
+        <TextArea
 
-            label="Conclusion"
-            value={conclusionText}
-            onChange={(e) => setConclusionText(e.target.value)}
+          label="Conclusion"
+          value={conclusionText}
+          onChange={(e) => setConclusionText(e.target.value)}
             placeholder="Enter conclusion about the outdoor visit"
-            rows={6}
+          rows={6}
             autoResize
             disabled={selectedOutdoorItem?.Conclusion ? !isConclusionEditMode : false}
-          />
+        />
         </div>
 
       </Modal>

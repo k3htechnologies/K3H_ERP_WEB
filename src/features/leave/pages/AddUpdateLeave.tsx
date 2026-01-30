@@ -64,7 +64,9 @@ export const AddUpdateLeave: React.FC = () => {
     const [isDateModalOpen, setIsDateModalOpen] = useState(false);
     const [dropdownLabels, setDropdownLabels] = useState<{ leaveTypeName?: string }>({});
     const [dateModalKey, setDateModalKey] = useState(0);
+    const [leaveDocumentFiles, setLeaveDocumentFiles] = useState<(File | string)[]>([]);
     const [removedLeaveUrls, setRemovedLeaveUrls] = useState<string[]>([]);
+    const [leaveDocumentURL, setLeaveDocumentURL] = useState<string>("");
     const initialLeaveUrlsRef = useRef<string[]>([]);
     //#endregion
 
@@ -82,6 +84,8 @@ export const AddUpdateLeave: React.FC = () => {
         setFormData(initialFormState());
         setDropdownLabels({});
         setErrors({});
+        setLeaveDocumentFiles([]);
+        setLeaveDocumentURL("");
         initialLeaveUrlsRef.current = [];
         setRemovedLeaveUrls([]);
     }, [id]);
@@ -118,10 +122,11 @@ export const AddUpdateLeave: React.FC = () => {
                             StartDateLeaveDuration: e.StartDateLeaveDuration ?? prev.StartDateLeaveDuration,
                             EndDateLeaveDuration: e.EndDateLeaveDuration ?? prev.EndDateLeaveDuration,
                             Reason: e.Reason ?? prev.Reason,
-                            LeaveDocumentFiles: existingUrls,
                             RemoveLeaveURL: '',
                         }));
 
+                        setLeaveDocumentFiles([]);
+                        setLeaveDocumentURL(e.LeaveDocumentURL || "");
                         setRemovedLeaveUrls([]);
 
                         setDropdownLabels({
@@ -207,7 +212,7 @@ export const AddUpdateLeave: React.FC = () => {
                     ...formData,
                     StartDate: formData.StartDate,
                     EndDate: formData.EndDate,
-                    LeaveDocumentFiles: formData.LeaveDocumentFiles || [],
+                    LeaveDocumentFiles: leaveDocumentFiles || [],
                     RemoveLeaveURL: removedLeaveUrls.join(','),
                 };
                 const respEither = await LeaveService.apiCallAddUpdateLeave(payload);
@@ -244,17 +249,6 @@ export const AddUpdateLeave: React.FC = () => {
     };
     //#endregion
 
-    useEffect(() => {
-        if (id && initialLeaveUrlsRef.current.length > 0) {
-            const currentFiles = formData.LeaveDocumentFiles || [];
-            const currentUrls = currentFiles
-                .filter((file): file is string => typeof file === 'string');
-            const removed = initialLeaveUrlsRef.current.filter(
-                url => !currentUrls.includes(url)
-            );
-            setRemovedLeaveUrls(removed);
-        }
-    }, [formData.LeaveDocumentFiles, id]);
     //#endregion
 
     return (
@@ -328,8 +322,15 @@ export const AddUpdateLeave: React.FC = () => {
                             <div>
                                 <MultiFilePicker
                                     label="Leave Documents"
-                                    value={formData.LeaveDocumentFiles || []}
-                                    onChange={(files) => setFormData((prev) => ({ ...prev, LeaveDocumentFiles: files }))}
+                                    value={leaveDocumentFiles}
+                                    onChange={setLeaveDocumentFiles}
+                                    availableFilesURL={leaveDocumentURL ?? ""}
+                                    allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                                    maxFiles={5}
+                                    maxSizeMB={10}
+                                    onRemoveExisting={(url) => {
+                                        setRemovedLeaveUrls((prev) => [...prev, url]);
+                                    }}
                                 />
                             </div>
                         </div>

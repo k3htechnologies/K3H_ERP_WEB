@@ -71,7 +71,20 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
             formData.append('Reason', params.Reason ?? '')
 
             if (params.LeaveDocumentFiles && params.LeaveDocumentFiles.length > 0) {
-                params.LeaveDocumentFiles.forEach((file) => formData.append('LeaveDocumentURL', file))
+                params.LeaveDocumentFiles.forEach((file) => {
+                    if (file instanceof File) {
+                        formData.append('LeaveDocumentURL', file);
+                    }
+                });
+
+                const existingUrls = params.LeaveDocumentFiles
+                    .filter(x => typeof x === 'string' && String(x).trim().length > 0)
+                    .map(x => String(x).trim())
+                    .join(',');
+
+                if (existingUrls) {
+                    formData.append('LeaveDocumentURL', existingUrls);
+                }
             }
 
             formData.append('RemoveLeaveURL', params.RemoveLeaveURL ?? '')

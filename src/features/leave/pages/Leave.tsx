@@ -27,6 +27,7 @@ import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { useLeaveListState } from '@/features/leave/context/LeaveListStateContext';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const Leave: React.FC = () => {
   //#region STATE
@@ -185,14 +186,6 @@ export const Leave: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const column = leaveColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
 
         const params: FilterWithPaginationLeaveRequest = {
           PageNumber: pageNum,
@@ -201,7 +194,7 @@ export const Leave: React.FC = () => {
           LeaveTypeMasterId: filterParams.LeaveTypeMasterId ? Number(filterParams.LeaveTypeMasterId) : undefined,
           StartDate: filterParams.StartDate?.trim() || undefined,
           EndDate: filterParams.EndDate?.trim() || undefined,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, [])
         };
 
         const response = await LeaveService.apiCallPullLeave(params);
@@ -310,14 +303,7 @@ export const Leave: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const column = leaveColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
+  
 
         const params: FilterWithPaginationLeaveRequest = {
           PageNumber: 1,
@@ -326,7 +312,7 @@ export const Leave: React.FC = () => {
           LeaveTypeMasterId: filters.LeaveTypeMasterId ? Number(filters.LeaveTypeMasterId) : undefined,
           StartDate: filters.StartDate?.trim() || undefined,
           EndDate: filters.EndDate?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, []),
           ExportType: exportType
         };
 

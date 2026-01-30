@@ -62,6 +62,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   const [selectedTime, setSelectedTime] = useState<string>("00:00");
   const [visitingCardFiles, setVisitingCardFiles] = useState<FileValue[]>([]);
   const [removedVisitingCardUrls, setRemovedVisitingCardUrls] = useState<string[]>([]);
+  const [visitingCardURL, setVisitingCardURL] = useState<string>("");
   const initialVisitingCardUrlsRef = useRef<string[]>([]);
   const [dropdownLabels, setDropdownLabels] = useState<{ departmentName?: string; }>({});
   const [selectedDepartmentName, setSelectedDepartmentName] = useState<string>("");
@@ -96,6 +97,8 @@ export const AddUpdateOutDoorPage: React.FC = () => {
     setSelectedDepartmentName("");
     setSelectedAccompaniedValues(null);
     setDropdownLabels({});
+    setVisitingCardFiles([]);
+    setVisitingCardURL("");
     initialVisitingCardUrlsRef.current = [];
     setRemovedVisitingCardUrls([]);
     setErrors({});
@@ -158,7 +161,10 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
             setSelectedAccompaniedValues(e.AccompaniedById || null);
 
-            initialVisitingCardUrlsRef.current = parseDocumentUrls(e.VisitingCardURL || "");
+            const existingUrls = parseDocumentUrls(e.VisitingCardURL || "");
+            initialVisitingCardUrlsRef.current = existingUrls;
+            setVisitingCardFiles([]);
+            setVisitingCardURL(e.VisitingCardURL || "");
             setRemovedVisitingCardUrls([]);
             setSelectedTime(parsedTime);
           }
@@ -180,15 +186,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   }
   //#endregion
 
-  useEffect(() => {
-    if (outdoorId && initialVisitingCardUrlsRef.current.length > 0) {
-      const currentUrls = parseDocumentUrls(outdoorFormData.VisitingCardURL || "");
-      const removed = initialVisitingCardUrlsRef.current.filter(
-        url => !currentUrls.includes(url)
-      );
-      setRemovedVisitingCardUrls(removed);
-    }
-  }, [outdoorFormData.VisitingCardURL, outdoorId]);
 
   //#region FETCH EMPLOYEE DROPDOWN WITH DEPARTMENT
   const fetchEmployeeMasterDropdownWithDepartment = useCallback(
@@ -301,6 +298,15 @@ export const AddUpdateOutDoorPage: React.FC = () => {
         fd.append('VisitingCardURL', file);
       }
     });
+
+    const existingUrls = visitingCardFiles
+      .filter(x => typeof x === 'string' && String(x).trim().length > 0)
+      .map(x => String(x).trim())
+      .join(',');
+
+    if (existingUrls) {
+      fd.append('VisitingCardURL', existingUrls);
+    }
 
     fd.append('RemoveVisitingCardURL', removedVisitingCardUrls.join(','));
 
@@ -447,10 +453,13 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                   label="Upload visiting card"
                   value={visitingCardFiles}
                   onChange={setVisitingCardFiles}
-                  availableFilesURL={outdoorFormData?.VisitingCardURL ?? ""}
+                  availableFilesURL={visitingCardURL ?? ""}
                   allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                   maxFiles={5}
                   maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedVisitingCardUrls((prev) => [...prev, url]);
+                  }}
                 />
               </div>
             </div>

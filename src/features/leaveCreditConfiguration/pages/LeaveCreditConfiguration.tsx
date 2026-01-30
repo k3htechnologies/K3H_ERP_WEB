@@ -23,6 +23,7 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { useLeaveCreditConfigurationListState } from '@/features/leaveCreditConfiguration/context/LeaveCreditConfigurationListStateContext';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const LeaveCreditConfiguration: React.FC = () => {
   //#region STATE
@@ -62,15 +63,6 @@ export const LeaveCreditConfiguration: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const column = leaveCreditConfigurationColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
-
         const params: FilterWithPaginationLeaveCreditConfigurationRequest = {
           PageNumber: pageNum,
           PageSize: pagination.pageSize,
@@ -81,7 +73,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
           FinancialYearEndDate: filterParams.FinancialYearEndDate?.trim() ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FinancialYearEndDate) || undefined : undefined,
           DepartmentName: filterParams.DepartmentName?.trim() || undefined,
           DesignationName: filterParams.DesignationName?.trim() || undefined,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, [])
         };
 
         const response = await leaveCreditConfigurationService.apiCallPullLeaveCreditConfiguration(params);
@@ -93,11 +85,10 @@ export const LeaveCreditConfiguration: React.FC = () => {
           setPagination({
             currentPage: pageNum,
             totalRecords: response.right.TotalNumberOfRecord,
-            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
+            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize)
           });
 
         } else {
-
           addToast({ type: 'error', title: response.left.message });
         }
 
@@ -191,14 +182,6 @@ export const LeaveCreditConfiguration: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-        if (sortInfo) {
-          const column = leaveCreditConfigurationColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
-
         const params: FilterWithPaginationLeaveCreditConfigurationRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -208,7 +191,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
           FinancialYearEndDate: filters.FinancialYearEndDate?.trim() ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FinancialYearEndDate) || undefined : undefined,
           DepartmentName: filters.DepartmentName?.trim() || undefined,
           DesignationName: filters.DesignationName?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, []),
           ExportType: exportType
         };
 
@@ -267,9 +250,9 @@ export const LeaveCreditConfiguration: React.FC = () => {
   //#region CONFIRMATION DIALOG BOX
 
   const handleConfirmationDialogBoxOpen = useCallback((row: LeaveCreditConfigurationData) => {
-    setDeleteLeaveCreditConfigurationData(row);
-    setIsConfirmationDialogBoxOpen(true);
-  }, []);
+    setDeleteLeaveCreditConfigurationData(row)
+    setIsConfirmationDialogBoxOpen(true)
+  }, [])
 
   //#endregion
 
@@ -449,7 +432,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
 
           await loadLeaveCreditConfigurations(pageToShow, filters, sortInfo);
 
-          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
           setIsConfirmationDialogBoxOpen(false);
 

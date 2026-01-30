@@ -74,6 +74,8 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
                 params.LeaveDocumentFiles.forEach((file) => formData.append('LeaveDocumentURL', file))
             }
 
+            formData.append('RemoveLeaveURL', params.RemoveLeaveURL ?? '')
+
             const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
                 LeaveApi.ADD_UPDATE,
                 formData

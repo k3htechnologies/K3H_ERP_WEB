@@ -48,6 +48,7 @@ export interface AddUpdateLeaveRequest {
   EndDateLeaveDuration?: string
   Reason?: string
   LeaveDocumentFiles?: FileValue[]
+  RemoveLeaveURL?: string | ''
 }
 
 export interface DeleteLeaveRequest {

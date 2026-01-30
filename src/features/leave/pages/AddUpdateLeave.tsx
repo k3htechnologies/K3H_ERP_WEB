@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import { TextArea } from '@/ui/components/forms/Textarea';
@@ -18,6 +18,7 @@ import { runApiWithLoader } from '@/core/utils';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useLeaveListState } from '@/features/leave/context/LeaveListStateContext';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
 
 const LEAVE_DURATION_OPTIONS = [
     { label: 'Full Day', value: 'Full' },
@@ -35,6 +36,7 @@ const initialFormState = (): AddUpdateLeaveRequest => ({
     EndDateLeaveDuration: 'Full',
     Reason: '',
     LeaveDocumentFiles: [],
+    RemoveLeaveURL: '',
 });
 
 export const AddUpdateLeave: React.FC = () => {
@@ -62,6 +64,8 @@ export const AddUpdateLeave: React.FC = () => {
     const [isDateModalOpen, setIsDateModalOpen] = useState(false);
     const [dropdownLabels, setDropdownLabels] = useState<{ leaveTypeName?: string }>({});
     const [dateModalKey, setDateModalKey] = useState(0);
+    const [removedLeaveUrls, setRemovedLeaveUrls] = useState<string[]>([]);
+    const initialLeaveUrlsRef = useRef<string[]>([]);
     //#endregion
 
     //#region MENU PERMISSIONS
@@ -78,6 +82,8 @@ export const AddUpdateLeave: React.FC = () => {
         setFormData(initialFormState());
         setDropdownLabels({});
         setErrors({});
+        initialLeaveUrlsRef.current = [];
+        setRemovedLeaveUrls([]);
     }, [id]);
     //#endregion
 
@@ -99,6 +105,9 @@ export const AddUpdateLeave: React.FC = () => {
                     const e = response.right.Data?.[0];
 
                     if (e) {
+                        const existingUrls = parseDocumentUrls(e.LeaveDocumentURL || "");
+                        initialLeaveUrlsRef.current = existingUrls;
+
                         setFormData(prev => ({
                             ...prev,
                             LeaveId: e.LeaveId ?? prev.LeaveId,
@@ -109,8 +118,11 @@ export const AddUpdateLeave: React.FC = () => {
                             StartDateLeaveDuration: e.StartDateLeaveDuration ?? prev.StartDateLeaveDuration,
                             EndDateLeaveDuration: e.EndDateLeaveDuration ?? prev.EndDateLeaveDuration,
                             Reason: e.Reason ?? prev.Reason,
-                            LeaveDocumentFiles: [],
+                            LeaveDocumentFiles: existingUrls,
+                            RemoveLeaveURL: '',
                         }));
+
+                        setRemovedLeaveUrls([]);
 
                         setDropdownLabels({
                             leaveTypeName: e.LeaveType || '',
@@ -196,6 +208,7 @@ export const AddUpdateLeave: React.FC = () => {
                     StartDate: formData.StartDate,
                     EndDate: formData.EndDate,
                     LeaveDocumentFiles: formData.LeaveDocumentFiles || [],
+                    RemoveLeaveURL: removedLeaveUrls.join(','),
                 };
                 const respEither = await LeaveService.apiCallAddUpdateLeave(payload);
 
@@ -229,6 +242,19 @@ export const AddUpdateLeave: React.FC = () => {
             'Saving Leave...'
         );
     };
+    //#endregion
+
+    useEffect(() => {
+        if (id && initialLeaveUrlsRef.current.length > 0) {
+            const currentFiles = formData.LeaveDocumentFiles || [];
+            const currentUrls = currentFiles
+                .filter((file): file is string => typeof file === 'string');
+            const removed = initialLeaveUrlsRef.current.filter(
+                url => !currentUrls.includes(url)
+            );
+            setRemovedLeaveUrls(removed);
+        }
+    }, [formData.LeaveDocumentFiles, id]);
     //#endregion
 
     return (
@@ -322,7 +348,7 @@ export const AddUpdateLeave: React.FC = () => {
                 isLoading={isLoading}
             />
 
-        <DateRangePickerModal
+            <DateRangePickerModal
                 key={dateModalKey}
                 isOpen={isDateModalOpen}
                 onClose={() => setIsDateModalOpen(false)}

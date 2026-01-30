@@ -18,7 +18,7 @@ const outDoorDataSource = new OutDoorDataSourceImpl();
 
 export const outDoorService = {
 
-    apiCallPullOutDoorData: async (params: FilterWithPaginationOutDoor, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, OutDoorDataListResponse>> => {
+    apiCallPullOutDoor: async (params: FilterWithPaginationOutDoor, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, OutDoorDataListResponse>> => {
         try {
 
             return E.right(await outDoorDataSource.pullOutDoor(params, options?.signal));

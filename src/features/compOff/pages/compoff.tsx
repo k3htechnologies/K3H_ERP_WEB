@@ -11,9 +11,9 @@ import {
 } from '../components';
 import { createFormResetHandler } from '@/features/compOff/utils/compOffUtils';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
-import { DateRangeSelector } from '@/ui/components/forms/DateRangeSelector';
-import { Button } from '@/ui/components/forms';
-import { Download, Plus } from 'lucide-react';
+import { DateRangeWithActions } from '@/ui/components/DateRangeWithActions';
+import { updateFiltersWithDates } from '@/core/helpers/dateFilterHelper';
+import type { FilterInfo } from '@/ui/components/DataTable/DataTable';
 
 export const CompOff: React.FC = () => {
 
@@ -98,30 +98,43 @@ export const CompOff: React.FC = () => {
 
   );
 
-  // Optimized date range change handler
-  const handleDateRangeChange = useCallback((fromDate: string | null, toDate: string | null) => {
-    const newFilters = { ...filters };
-    
-    if (fromDate) {
-      newFilters.StartDate = fromDate;
-    } else {
-      delete newFilters.StartDate;
+  //#region DATE RANGE HANDLERS
+  const updateListState = useCallback((params: { filters: FilterInfo; page?: number }) => {
+    setFilters(params.filters);
+    setTempFilters(params.filters);
+    if (params.page !== undefined) {
+      loadCompOff(params.page, params.filters, sortInfo);
     }
-    
-    if (toDate) {
-      newFilters.EndDate = toDate;
-    } else {
-      delete newFilters.EndDate;
-    }
-    
-    setTempFilters(newFilters);
-    setFilters(newFilters);
-    
-    // Only load data when both dates are selected to avoid unnecessary API calls
-    if (fromDate && toDate) {
-      loadCompOff(1, newFilters, sortInfo);
-    }
-  }, [filters, setTempFilters, setFilters, loadCompOff, sortInfo]);
+  }, [setFilters, loadCompOff, sortInfo]);
+
+  const handleBothDatesChange = useCallback((fromDate: string | null, toDate: string | null) => {
+    updateFiltersWithDates(
+      filters,
+      { StartDate: fromDate, EndDate: toDate },
+      updateListState,
+      setTempFilters,
+      !!(fromDate && toDate)
+    );
+  }, [filters, updateListState]);
+
+  const handleFromDateChange = useCallback((date: string | null) => {
+    updateFiltersWithDates(
+      filters,
+      { StartDate: date },
+      updateListState,
+      setTempFilters
+    );
+  }, [filters, updateListState]);
+
+  const handleToDateChange = useCallback((date: string | null) => {
+    updateFiltersWithDates(
+      filters,
+      { EndDate: date },
+      updateListState,
+      setTempFilters
+    );
+  }, [filters, updateListState]);
+  //#endregion
 
   const handleViewModalClose = useCallback(() => {
 
@@ -145,67 +158,21 @@ export const CompOff: React.FC = () => {
 
       <Loader loading={isLoading} title={loadingMessage}><div></div></Loader>
 
-        <div className="pb-4">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="relative min-w-0 w-[526px]">
-              <DateRangeSelector
-                fromDate={filters.StartDate ?? null}
-                toDate={filters.EndDate ?? null}
-                onBothDatesChange={handleDateRangeChange}
-                onFromDateChange={(date) => handleDateRangeChange(date, filters.EndDate ?? null)}
-                onToDateChange={(date) => handleDateRangeChange(filters.StartDate ?? null, date)}
-              />
-            </div>
-
-            {/* RIGHT SIDE: Export and Add Buttons */}
-            <div className="flex items-center space-x-3">
-              {/* EXPORT BUTTON */}
-              {canExport && compOffListForTable.length > 0 && (
-                <div className="relative">
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleExportCompOffExcel();
-                    }}
-                    color="blue"
-                    colorMode="gradient_light"
-                    size="mxs"
-                    defineWidth
-                    title="Export"
-                    style={{ width: '95px' }}
-                    leftIcon={<Download className="h-4 w-4" />}
-                    disabled={isLoading}
-                  >
-                    <span>Export</span>
-                  </Button>
-                </div>
-              )}
-
-              {/* ADD BUTTON */}
-              {canAction && (
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleAddCompOffModal();
-                  }}
-                  color="blue"
-                  size="mxs"
-                  variant="solid"
-                  colorMode="gradient_dark"
-                  defineWidth
-                  title="Add"
-                  aria-label="Add"
-                  style={{ width: '95px' }}
-                  leftIcon={<Plus className="h-4 w-4" />}
-                >
-                  <span>Add</span>
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
+      <DateRangeWithActions
+        fromDate={filters.StartDate ?? null}
+        toDate={filters.EndDate ?? null}
+        onBothDatesChange={handleBothDatesChange}
+        onFromDateChange={handleFromDateChange}
+        onToDateChange={handleToDateChange}
+        canAction={canAction}
+        canExport={canExport}
+        addTitle="Add"
+        onAdd={handleAddCompOffModal}
+        hasData={compOffListForTable.length > 0}
+        onExportExcel={handleExportCompOffExcel}
+        onExportPdf={handleExportCompOffPdf}
+        exportLoading={isLoading}
+      />
 
       <CompOffTable
         data={compOffListForTable}

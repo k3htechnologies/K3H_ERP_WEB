@@ -34,21 +34,9 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
                 PageNumber: (params.PageNumber ?? 1).toString(),
             })
 
-            if (params.StartDate) {
-                // Convert YYYY-MM-DD to ISO format if needed (already ISO if contains 'T')
-                const start = params.StartDate.includes('T') 
-                    ? params.StartDate 
-                    : `${params.StartDate}T00:00:00Z`;
-                queryParams.append("StartDate", start);
-            }
-
-            if (params.EndDate) {
-                // Convert YYYY-MM-DD to ISO format if needed (already ISO if contains 'T')
-                const end = params.EndDate.includes('T') 
-                    ? params.EndDate 
-                    : `${params.EndDate}T00:00:00Z`;
-                queryParams.append("EndDate", end);
-            }
+            if (params.OutdoorId) queryParams.append('OutdoorId', params.OutdoorId.toString());
+            if (params.StartDate) queryParams.append("StartDate", params.StartDate.trim());
+            if (params.EndDate) queryParams.append("EndDate", params.EndDate.trim());
             if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);

@@ -3,6 +3,7 @@ import type { ApiResponse } from "@/core/api/ApiResponse"
 export interface FilterWithPaginationOutDoor {
   PageSize: number
   PageNumber: number
+  OutdoorId?: number
   StartDate?: string
   EndDate?: string
   CompanyName?: string
@@ -45,6 +46,7 @@ export interface AddUpdateOutDoor {
   CompanyName: string;
   CompanyAddress: string;
   VisitingCardURL: string;
+  RemoveVisitingCardURL: string | '';
   Purpose: string;
   Conclusion: string;
   PunchIn: string;

@@ -1,2 +1,2 @@
-export { updateFiltersWithDates } from './dateFilterHelper';
+export { updateFiltersWithDates } from '../../../core/helpers/dateFilterHelper';
 

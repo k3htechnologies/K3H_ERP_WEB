@@ -250,6 +250,10 @@ export const MASTER_DATA = {
 
   unitLayout: ['Living / Dining', 'Passage', 'Kitchen', 'Toilet','Master Bed Room','Main Door JAMB','KIT / Bed Door Jamb','Toilet Door Jamb'],
 
+  caseType: ['Civil', 'Criminal'],
+
+  courtType: ['Civil Court', 'District Court', 'High Court', 'Session Court', 'Supreme Court'],
+
 } as const
 
 // ============================================================================
@@ -344,6 +348,8 @@ export const PARKING_SUBCATEGORY_PIT_STACK = toOptions( MASTER_DATA.parkingSubCa
 export const PARKING_SIZE = toOptions(MASTER_DATA.parkingSize);
 export const PARKING_STATUS = toOptions(MASTER_DATA.parkingStatus);
 export const UNIT_LAYOUT = toOptions(MASTER_DATA.unitLayout);
+export const CASE_TYPE_OPTION = toOptions(MASTER_DATA.caseType)
+export const COURT_TYPE_OPTION = toOptions(MASTER_DATA.courtType)
 
 
 // ============================================================================

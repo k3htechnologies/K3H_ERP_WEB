@@ -105,7 +105,7 @@ export const ShiftMappingMasterFormModal: React.FC<ShiftMappingMasterFormModalPr
                     return;
                   }
 
-                  onFieldChange("EmployeeId", Number(item.value));
+                  onFieldChange("EmployeeId", item.value);
                 }}
                 initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.EmployeeName)}
                 error={errors.EmployeeId}
@@ -127,7 +127,7 @@ export const ShiftMappingMasterFormModal: React.FC<ShiftMappingMasterFormModalPr
                     return;
                   }
 
-                  onFieldChange("DepartmentMasterId", Number(item.value));
+                  onFieldChange("DepartmentMasterId", item.value);
                 }}
                 initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
                 error={errors.DepartmentMasterId}

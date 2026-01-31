@@ -8,6 +8,7 @@ export interface FilterWithPaginationShiftMappingMasterRequest {
     DepartmentName?: string
     EmployeeName?: string
     EmployeeId?: number
+    IsCheckEmployeeShift?:boolean
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

@@ -237,6 +237,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageSize: 20,
                     DepartmentName: undefined,
                     EmployeeId: listState.employeeId,
+                    IsCheckEmployeeShift: true
                 }
 
                 const response = await shiftMappingMasterService.apiCallPullShiftMappingMaster(params);
@@ -274,6 +275,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageSize: 100,
                     DepartmentName: undefined,
                     EmployeeId: listState.employeeId,
+                    IsCheckEmployeeWeekOffPolicy: true
                 }
 
                 const response = await weekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
@@ -1062,31 +1064,143 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                 return (
                                     <>
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
 
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3" >
-                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                Shift Policy Details
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                            {/* ================= LEFT SIDE (2/3) ================= */}
+                                            <div className="lg:col-span-2 space-y-6">
+                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                        Basic Shift Details
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem label="Department Name" value={shiftMappingPolicy!.DepartmentName} className='font-medium text-blue-900 ' />
-                                                        <FieldItem label="Employee Name" value={shiftMappingPolicy!.EmployeeName} />
-                                                        <FieldItem label="Shift Name" value={shiftMappingPolicy!.ShiftName} />
-                                                        <FieldItem label="Shift Code" value={shiftMappingPolicy!.ShiftCode} />
-                                                        <FieldItem label="Shift Begin Time" value={shiftMappingPolicy!.ShiftBeginTime} />
-                                                        <FieldItem label="Shift End Time" value={shiftMappingPolicy!.ShiftEndTime} />
-                                                        <FieldItem label="Shift Duration Time" value={shiftMappingPolicy!.ShiftDurationTime} />
-                                                        <FieldItem label="Shift Work Duration Time" value={shiftMappingPolicy!.ShiftWorkDurationTime} />
-                                                        <FieldItem label="Remarks" value={shiftMappingPolicy!.Remarks} />
+                                                        <div className="lg:col-span-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                <FieldItem label="Shift Begin Time" value={shiftMappingPolicy!.ShiftName} />
+                                                                <FieldItem label="Shift End Time" value={shiftMappingPolicy!.ShiftCode} />
 
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                </section>
+                                                {/* ================= SHIFT DURATION ================= */}
+                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                        Time Details
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                <FieldItem label="Shift Begin Time" value={shiftMappingPolicy!.ShiftBeginTime} />
+                                                                <FieldItem label="Shift End Time" value={shiftMappingPolicy!.ShiftEndTime} />
+                                                                <FieldItem label="Shift Duration Time" value={shiftMappingPolicy!.ShiftDurationTime} />
+
+                                                            </div>
+                                                        </div>
+                                                        <div className="lg:col-span-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                <FieldItem label="Shift Work Duration Time" value={shiftMappingPolicy!.ShiftWorkDurationTime} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+                                                {/* ================= HALF DAY AND ABSENCE RULES================= */}
+                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                        Advance Setting
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                                                <FieldItem label="First Half Up To" value={shiftMappingPolicy!.FirstHalfUpTo} />
+                                                            </div>
+                                                        </div>
+                                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                                                <FieldItem label="Calculate Absent if working hours less than" value={shiftMappingPolicy!.AbsentWorkingHours} />
+                                                                <FieldItem label="Calculate Half day working hours less than" value={shiftMappingPolicy!.HalfDayWorkingHours} />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="lg:col-span-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                                                <FieldItem label="Mark Half Day if Intime After" value={shiftMappingPolicy!.HalfDayInTimeAfter} />
+                                                                <FieldItem label="Mark Half Day if Outtime After" value={shiftMappingPolicy!.HalfDayOutTimeBefore} />
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+
 
                                             </div>
 
-                                        </section>
+                                            {/* ================= RIGHT SIDE (1/3) ================= */}
+                                            <div className="lg:col-span-1 space-y-6">
+
+                                                {/* ================= BREAK DETAILS ================= */}
+                                                <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                        Break Details
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                                <FieldItem label="Break Begin Time" value={shiftMappingPolicy!.BreakBeginTime} />
+                                                                <FieldItem label="Break End Time" value={shiftMappingPolicy!.BreakEndTime} />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="lg:col-span-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                                <FieldItem label="Break Duration Time" value={shiftMappingPolicy!.BreakDurationTime} />
+                                                                <FieldItem label="Grace Time" value={shiftMappingPolicy!.GraceTime} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+
+                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                        Time Allowed for Late Entry
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                        <div className="lg:col-span-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                                                <FieldItem label="Grace Time In Minutes" value={shiftMappingPolicy!.GraceTime} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                        Remarks
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                        <div className="lg:col-span-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                                                <FieldItem label="Remarks" value={shiftMappingPolicy!.Remarks} />
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+                                            </div>
+
+                                        </div>
                                     </>
                                 );
                             })}
@@ -1107,8 +1221,8 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                 return (
                                     <>
-
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3" >
+                                        {/* ================= BASIC DETAILS ================= */}
+                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3">
                                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                 Week Off Policy Details
                                             </h4>
@@ -1116,22 +1230,43 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem label="Week Off Policy Name" value={weekOffPolicyMapping!.WeekOffPolicyName} className='font-medium text-blue-900 ' />
+                                                        <FieldItem label="Week Off Policy Name" value={weekOffPolicyMapping!.WeekOffPolicyName} />
                                                         <FieldItem label="Week Off Policy Code" value={weekOffPolicyMapping!.WeekOffPolicyCode} />
-                                                        <FieldItem label="Department Name" value={weekOffPolicyMapping!.DepartmentName} />
-                                                        <FieldItem label="Employee Name" value={weekOffPolicyMapping!.EmployeeName} />
                                                         <FieldItem label="Week Days" value={weekOffPolicyMapping!.WeekDays} />
+
+                                                    </div>
+                                                </div>
+                                                <div className="lg:col-span-3 pt-3">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                         <FieldItem label="Week Days Starts On" value={weekOffPolicyMapping!.WeekDaysStartsOn} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+
+                                        {/* ================= WEEK OFF DETAILS ================= */}
+                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                Week Off Details
+                                            </h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                         <FieldItem label="Weekly Off" value={weekOffPolicyMapping!.WeeklyOff} />
                                                         <FieldItem label="Weekly Off2" value={weekOffPolicyMapping!.WeeklyOff2} />
                                                         <FieldItem label="Weekly Off2 Type" value={weekOffPolicyMapping!.WeeklyOff2Type} />
-                                                        <FieldItem label="Not Applicable For Months" value={weekOffPolicyMapping!.NotApplicableForMonths} />
 
                                                     </div>
                                                 </div>
 
-                                            </div>
+                                                <div className="lg:col-span-3 pt-3">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                        <FieldItem label="Not Applicable For Months" value={weekOffPolicyMapping!.NotApplicableForMonths} />
 
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </section>
                                     </>
                                 );

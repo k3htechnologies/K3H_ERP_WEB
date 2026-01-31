@@ -28,6 +28,7 @@ export class ShiftMappingMasterDatasourceImpl implements ShiftMappingMasterDatas
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
+                IsCheckEmployeeShift: (params.IsCheckEmployeeShift ?? false).toString(),
             })
 
             if (params.ShiftManagementMasterMappingId) queryParams.append('ShiftManagementMasterMappingId', params.ShiftManagementMasterMappingId.toString());

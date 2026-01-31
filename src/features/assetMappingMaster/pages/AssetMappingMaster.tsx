@@ -261,21 +261,15 @@ export const AssetMappingMaster: React.FC = () => {
     {
       key: 'EmployeeName',
       label: 'Employee Name',
-      width: '15',
+      width: '20',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || '-'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || ''
     },
     {
       key: 'AssignedDate',
       label: 'Assigned Date',
-      width: '15',
+      width: '20',
       sortable: false,
       align: 'center',
       render: (value) =>
@@ -283,8 +277,8 @@ export const AssetMappingMaster: React.FC = () => {
     },
     {
       key: 'ConditionOnIssue',
-      label: 'Condition On Issue',
-      width: '12',
+      label: 'Condition At Issue',
+      width: '20',
       sortable: false,
       align: 'center',
       render: (value) => (

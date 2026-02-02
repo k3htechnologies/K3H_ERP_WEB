@@ -56,4 +56,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     SHIFT_MASTER: 'shiftMaster.listState',
     WEEK_OFF_MASTER: 'weekOffMaster.listState',
     LITIGATION: 'Litigation.listState',
+    LEAVECREDITCONFIGURATION:'LeaveCreditConfiguration.listState',
+    LEAVE:'leave.listState',
+    OUTDOOR:'outdoor.listState'
 } as const

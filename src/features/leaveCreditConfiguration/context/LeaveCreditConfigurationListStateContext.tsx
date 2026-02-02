@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import type { FilterInfo, SortInfo } from "@/ui/components/DataTable/DataTable";
+import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants";
 
 export type LeaveCreditConfigurationListState = {
   page: number;
@@ -10,7 +11,7 @@ export type LeaveCreditConfigurationListState = {
   leaveCreditConfigurationId: number;
 };
 
-const STORAGE_KEY = 'leaveCreditConfiguration.listState';
+const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.LEAVECREDITCONFIGURATION;
 
 const getInitialState = (): LeaveCreditConfigurationListState => {
   try {

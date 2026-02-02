@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import type { FilterInfo, SortInfo } from "@/ui/components/DataTable/DataTable";
+import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants";
 
 export type LeaveListState = {
   page: number;
@@ -10,12 +11,12 @@ export type LeaveListState = {
   leaveId: number;
 };
 
-const STORAGE_KEY = 'leave.listState';
+const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.LEAVE;
 
 const getInitialState = (): LeaveListState => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    
+
     if (stored) {
       const parsed = JSON.parse(stored) as LeaveListState;
       return {

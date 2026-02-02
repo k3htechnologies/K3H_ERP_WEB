@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import type { FilterInfo, SortInfo } from "@/ui/components/DataTable/DataTable";
+import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants";
 
 export type OutDoorListState = {
   page: number;
@@ -10,7 +11,7 @@ export type OutDoorListState = {
   outdoorId: number;
 };
 
-const STORAGE_KEY = 'outdoor.listState';
+const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.OUTDOOR;
 
 const getInitialState = (): OutDoorListState => {
   try {

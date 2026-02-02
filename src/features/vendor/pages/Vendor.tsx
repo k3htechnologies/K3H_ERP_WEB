@@ -930,4 +930,3 @@ export const Vendor: React.FC = () => {
 
 export default Vendor
 
-

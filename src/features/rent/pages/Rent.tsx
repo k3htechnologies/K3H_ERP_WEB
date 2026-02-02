@@ -16,7 +16,7 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { fetchBuildingDropdown } from '@/features/building/buildingDropdown';
@@ -24,6 +24,7 @@ import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import Tabs, { type TabItem } from '@/ui/components/Tab/Tab';
 import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { Eye, Plus } from 'lucide-react';
 
 type PivotRentRow = {
   FlatNumber?: string;
@@ -45,7 +46,7 @@ export const Rent: React.FC = () => {
   //#region STATE
   const { projectId } = useProject();
   const { addToast } = useToast();
-  const { canExport } = useMenuPermissions();
+  const { canAction, canExport } = useMenuPermissions();
 
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo] = useState<SortInfo | undefined>();
@@ -383,7 +384,8 @@ export const Rent: React.FC = () => {
         render: (_, row) => {
           return `${row.ProposedOfferAmount || 0} ${row.Unit || ''}`;
         }
-      }
+      },
+
 
     ];
 
@@ -394,7 +396,35 @@ export const Rent: React.FC = () => {
       align: 'right' as const
     }));
 
-    return [...baseColumns, ...dynamicColumns];
+    const actionColumn: TableColumn[] = canAction
+      ? [{
+        key: 'Actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: () => (
+          <div className="flex items-center justify-center">
+            <Button
+              color="transparent"
+              isborderRadius
+              size="sm"
+              style={{ color: 'red', padding: '4px 8px' }} >
+              <Plus className="h-4 w-4" />
+            </Button>
+            <Button
+              color="transparent"
+              isborderRadius
+              size="sm"
+              style={{ color: 'blue', padding: '4px 8px' }} >
+              <Eye className="h-4 w-4" />
+            </Button>
+          </div>
+        )
+      }]
+      : [];
+
+    return [...baseColumns, ...dynamicColumns, ...actionColumn];
   }, [dynamicHeaders]);
 
 

@@ -60,7 +60,15 @@ export const ShiftMappingMasterFormModal: React.FC<ShiftMappingMasterFormModalPr
               size="lg"
               required
               dataFetchCallBack={fetchShiftMasterDropdown}
-              onSelected={(item) => onFieldChange("ShiftManagementMasterId", Number(item.value))}
+              onSelected={(item) => {
+                if (!item) {
+                  onFieldChange("ShiftManagementMasterId", null);
+                  return;
+                }
+
+                onFieldChange("ShiftManagementMasterId", Number(item.value));
+              }}
+
               initialValue={createDropdownInitialValue(formData.ShiftManagementMasterId, dropdownLabels.shiftName)}
               error={errors.ShiftManagementMasterId}
             />
@@ -91,7 +99,14 @@ export const ShiftMappingMasterFormModal: React.FC<ShiftMappingMasterFormModalPr
                 size="lg"
                 required
                 dataFetchCallBack={fetchEmployeeMasterDropdown}
-                onSelected={(item) => onFieldChange("EmployeeId", item.value)}
+                onSelected={(item) => {
+                  if (!item) {
+                    onFieldChange("EmployeeId", null);
+                    return;
+                  }
+
+                  onFieldChange("EmployeeId", item.value);
+                }}
                 initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.EmployeeName)}
                 error={errors.EmployeeId}
               />
@@ -106,7 +121,14 @@ export const ShiftMappingMasterFormModal: React.FC<ShiftMappingMasterFormModalPr
                 size="lg"
                 required
                 dataFetchCallBack={fetchDepartmentMasterDropdown}
-                onSelected={(item) => onFieldChange("DepartmentMasterId", String(item.value))}
+                onSelected={(item) => {
+                  if (!item) {
+                    onFieldChange("DepartmentMasterId", null);
+                    return;
+                  }
+
+                  onFieldChange("DepartmentMasterId", item.value);
+                }}
                 initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
                 error={errors.DepartmentMasterId}
               />

@@ -390,7 +390,7 @@ export const ViewBuilding: React.FC = () => {
                                     Google Location
                                 </div>
                                 {buildingData?.GoogleLocation !== "" ?
-                                    <span className="text-blue-600 underline cursor-pointer flex items-center"
+                                    <span className="text-blue-600 underline cursor-pointer break-all whitespace-normal"
                                         onClick={() => window.open(buildingData?.GoogleLocation, "_blank")}>
                                         {buildingData?.GoogleLocation}
                                     </span> : "-"}

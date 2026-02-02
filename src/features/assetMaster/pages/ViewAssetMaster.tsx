@@ -328,8 +328,8 @@ const ViewAssetPage: React.FC = () => {
                                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                         <FieldItem label="Employee Name" value={asset.EmployeeName} />
-                                                        <FieldItem label="ReturnDate" value={formatDate_dd_MonthName_yy(asset.ReturnDate ?? '')} />
-                                                        <FieldItem label="Condition On Return" value={asset.ConditionOnReturn} />
+                                                        <FieldItem label="Return Date" value={formatDate_dd_MonthName_yy(asset.ReturnDate ?? '')} />
+                                                        <FieldItem label="Condition At Return" value={asset.ConditionOnReturn} />
                                                     </div>
                                                 </div>
 

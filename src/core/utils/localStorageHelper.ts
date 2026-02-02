@@ -1020,6 +1020,30 @@ export const LocalStorageHelper = {
     },
     //#endregion
 
+     //#region STORE LITIGATION COLUMNS
+    storeLitigationTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Litigation Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET LITIGATION COLUMNS
+    getLitigationTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Litigation Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+
     //#region CLEAR LOCAL STORAGE 
     clearLocalStorageData: (): void => {
         try {
@@ -1056,6 +1080,7 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
 
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
@@ -1066,6 +1091,7 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.DEDUCTION_MASTER);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.SHIFT_MASTER);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.WEEK_OFF_MASTER);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.LITIGATION);
 
 
         } catch (error) {

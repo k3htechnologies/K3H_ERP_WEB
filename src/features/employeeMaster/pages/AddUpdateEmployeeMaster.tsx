@@ -32,6 +32,7 @@ import type { AddUpdateEmployeeMasterRequest, FilterWithPaginationEmployeeMaster
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Mail, Phone } from "lucide-react";
+import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 
 
 const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
@@ -47,6 +48,7 @@ const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
   MaritalStatus: "",
   DateOfBirth: null,
   JoiningDate: null,
+  IdCardIssuedDate: null,
   IsGeoFenceLocation: false,
   EmailId: "",
   OfficeEmailId: "",
@@ -212,6 +214,7 @@ const AddUpdateEmployeePage: React.FC = () => {
               MaritalStatus: e.MaritalStatus ?? prev.MaritalStatus,
               DateOfBirth: convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(e.DateOfBirth),
               JoiningDate: convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(e.JoiningDate),
+              IdCardIssuedDate: convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(e.IdCardIssuedDate),
               IsGeoFenceLocation: !!e.IsGeoFenceLocation,
               EmailId: e.EmailId ?? prev.EmailId,
               OfficeEmailId: e.OfficeEmailId ?? prev.OfficeEmailId,
@@ -431,6 +434,10 @@ const AddUpdateEmployeePage: React.FC = () => {
       newErrors.IFSCCode = 'Enter a valid IFSC Code'
     }
 
+    if (formData.IdCardIssuedDate && !isToDateGreaterOrEqualFromDate(formData.JoiningDate!, formData.IdCardIssuedDate!)) {
+      newErrors.IdCardIssuedDate = "Id card issued Date must be greater than or equal to Joining Date";
+    }
+
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors
@@ -451,6 +458,7 @@ const AddUpdateEmployeePage: React.FC = () => {
       MaritalStatus: formData.MaritalStatus,
       DateOfBirth: formData.DateOfBirth,
       JoiningDate: formData.JoiningDate,
+      IdCardIssuedDate: formData.IdCardIssuedDate ?? null,
       IsGeoFenceLocation: formData.IsGeoFenceLocation,
       EmailId: formData.EmailId,
       OfficeEmailId: formData.OfficeEmailId,
@@ -604,7 +612,7 @@ const AddUpdateEmployeePage: React.FC = () => {
                   label="DOB"
                   value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
                   onChange={(val) => handleFieldChange('DateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                   required
+                  required
                   error={errors.DateOfBirth}
 
                 />
@@ -699,7 +707,15 @@ const AddUpdateEmployeePage: React.FC = () => {
                   required
                   size="lg"
                   dataFetchCallBack={fetchCompanyMasterDropdown}
-                  onSelected={(item) => handleFieldChange("CompanyId", Number(item.value))}
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("CompanyId", null);
+                      return;
+                    }
+
+                    handleFieldChange("CompanyId", Number(item.value));
+                  }}
+
                   initialValue={createDropdownInitialValue(formData.CompanyId, dropdownLabels.companyName)}
                   error={errors.CompanyId}
                 />
@@ -711,7 +727,14 @@ const AddUpdateEmployeePage: React.FC = () => {
                   title="Select Department"
                   size="lg"
                   dataFetchCallBack={fetchDepartmentMasterDropdown}
-                  onSelected={(item) => handleFieldChange("DepartmentMasterId", Number(item.value))}
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("DepartmentMasterId", null);
+                      return;
+                    }
+
+                    handleFieldChange("DepartmentMasterId", Number(item.value));
+                  }}
                   initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
                   error={errors.DepartmentMasterId}
                 />
@@ -723,7 +746,14 @@ const AddUpdateEmployeePage: React.FC = () => {
                   title="Select Branch"
                   size="lg"
                   dataFetchCallBack={fetchBranchMasterDropdown}
-                  onSelected={(item) => handleFieldChange("BranchMasterId", Number(item.value))}
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("BranchMasterId", null);
+                      return;
+                    }
+
+                    handleFieldChange("BranchMasterId", Number(item.value));
+                  }}
                   initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
                   error={errors.BranchMasterId}
                 />
@@ -735,7 +765,14 @@ const AddUpdateEmployeePage: React.FC = () => {
                   title="Select Designation"
                   size="lg"
                   dataFetchCallBack={fetchDesignationMasterDropdown}
-                  onSelected={(item) => handleFieldChange("DesignationMasterId", Number(item.value))}
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("DesignationMasterId", null);
+                      return;
+                    }
+
+                    handleFieldChange("DesignationMasterId", Number(item.value));
+                  }}
                   initialValue={createDropdownInitialValue(formData.DesignationMasterId, dropdownLabels.designationName)}
                   error={errors.DesignationMasterId}
                 />
@@ -752,13 +789,29 @@ const AddUpdateEmployeePage: React.FC = () => {
 
               </div>
               <div>
+                <DatePickerInput
+                  label="Id Card Issued Date"
+                  value={formatDate_dd_mm_yyyy(formData.IdCardIssuedDate)}
+                  onChange={(val) => handleFieldChange('IdCardIssuedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  error={errors.IdCardIssuedDate}
+                />
+
+              </div>
+              <div>
                 <SingleSelectDropdownWithPagination
                   label="Reporting Person"
                   required
                   title="Select Reporting Person"
                   size="lg"
                   dataFetchCallBack={fetchEmployeeMasterDropdown}
-                  onSelected={(item) => handleFieldChange("ReportPersonId", Number(item.value))}
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("ReportPersonId", null);
+                      return;
+                    }
+
+                    handleFieldChange("ReportPersonId", Number(item.value));
+                  }}
                   initialValue={createDropdownInitialValue(formData.ReportPersonId, dropdownLabels.reportPersonName)}
                   error={errors.ReportPersonId}
                 />
@@ -791,76 +844,147 @@ const AddUpdateEmployeePage: React.FC = () => {
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <SinglePageSelection
-                  label="Country"
-                  value={selectedCountryId || ''} required
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedCountryId(id)
-                    setSelectedStateId(null)
-                    setSelectedDistrictId(null)
-                    setSelectedCityId(null)
 
-                    handleFieldChange('CountryMasterId', id)
-                  }}
-                  disabled={isLocationLoading}
-                  options={countryOptions}
-                  error={errors.CountryMasterId}
-                />
-              </div>
-              <div>
+            <div>
 
-                <SinglePageSelection
-                  label="State"
-                  placeholder="Select State"
-                  value={selectedStateId ?? ''} required
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedStateId(id)
-                    setSelectedDistrictId(null)
-                    setSelectedCityId(null)
+              <SinglePageSelection
+                label='Country'
+                placeholder="Select Country"
+                required
+                value={selectedCountryId || ''}
+                error={errors.CountryMasterId}
+                onChange={(item) => {
 
-                    handleFieldChange('StateMasterId', id)
-                  }}
-                  disabled={!selectedCountryId || stateOptions.length === 0}
-                  options={stateOptions}
-                  error={errors.StateMasterId}
-                />
-              </div>
-              <div>
-                <SinglePageSelection
-                  label="District"
-                  placeholder="Select District"
-                  value={selectedDistrictId ?? ''} required
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedDistrictId(id)
-                    setSelectedCityId(null)
+                  if (!item) {
+                    setSelectedCountryId(null);
+                    setSelectedStateId(null);
+                    setSelectedDistrictId(null);
+                    setSelectedCityId(null);
 
-                    handleFieldChange('DistrictMasterId', id)
-                  }}
-                  disabled={!selectedStateId || districtOptions.length === 0}
-                  options={districtOptions}
-                  error={errors.DistrictMasterId}
-                />
-              </div>
-              <div>
-                <SinglePageSelection
-                  label="City"
-                  placeholder="Select City"
-                  value={selectedCityId ?? ''} required
-                  onChange={val => {
-                    const id = Number(val)
-                    setSelectedCityId(id)
-                    handleFieldChange('CityMasterId', id)
-                  }}
-                  disabled={!selectedDistrictId || cityOptions.length === 0}
-                  options={cityOptions}
-                  error={errors.CityMasterId}
-                />
-              </div>
+                    handleFieldChange('CountryMasterId', 0);
+                    handleFieldChange('StateMasterId', 0);
+                    handleFieldChange('DistrictMasterId', 0);
+                    handleFieldChange('CityMasterId', 0);
 
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedCountryId(id);
+                  setSelectedStateId(null);
+                  setSelectedDistrictId(null);
+                  setSelectedCityId(null);
+
+                  handleFieldChange('CountryMasterId', id);
+                  handleFieldChange('StateMasterId', 0);
+                  handleFieldChange('DistrictMasterId', 0);
+                  handleFieldChange('CityMasterId', 0);
+                }}
+                disabled={isLocationLoading}
+                options={countryOptions}
+              />
+
+
+            </div>
+
+            <div>
+
+              <SinglePageSelection
+                label='State'
+                placeholder="Select State"
+                required
+                value={selectedStateId ?? ''}
+                error={errors.StateMasterId}
+                onChange={(item) => {
+
+                  if (!item) {
+                    setSelectedStateId(null);
+                    setSelectedDistrictId(null);
+                    setSelectedCityId(null);
+
+                    handleFieldChange("StateMasterId", 0);
+                    handleFieldChange("DistrictMasterId", 0);
+                    handleFieldChange("CityMasterId", 0);
+
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedStateId(id);
+                  setSelectedDistrictId(null);
+                  setSelectedCityId(null);
+
+                  handleFieldChange("StateMasterId", id);
+                  handleFieldChange("DistrictMasterId", 0);
+                  handleFieldChange("CityMasterId", 0);
+                }}
+                disabled={!selectedCountryId || stateOptions.length === 0}
+                options={stateOptions}
+              />
+
+
+            </div>
+
+            <div>
+
+              <SinglePageSelection
+                label='District'
+                placeholder="Select District"
+                required
+                value={selectedDistrictId ?? ''}
+                error={errors.DistrictMasterId}
+                onChange={(item) => {
+
+                  if (!item) {
+                    setSelectedDistrictId(null);
+                    setSelectedCityId(null);
+
+                    handleFieldChange('DistrictMasterId', 0);
+                    handleFieldChange('CityMasterId', 0);
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedDistrictId(id);
+                  setSelectedCityId(null);
+
+                  handleFieldChange('DistrictMasterId', id);
+                  handleFieldChange('CityMasterId', 0);
+                }}
+                disabled={!selectedStateId || districtOptions.length === 0}
+                options={districtOptions}
+              />
+            </div>
+
+            <div>
+
+              <SinglePageSelection
+                label='City'
+                placeholder="Select City"
+                required
+                value={selectedCityId ?? ''}
+                error={errors.CityMasterId}
+                onChange={(item) => {
+
+                  if (!item) {
+                    setSelectedCityId(null);
+                    handleFieldChange('CityMasterId', 0);
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedCityId(id);
+                  handleFieldChange('CityMasterId', id);
+                }}
+                disabled={!selectedDistrictId || cityOptions.length === 0}
+                options={cityOptions}
+              />
+
+            </div>
             </div>
           </div>
 
@@ -876,7 +1000,14 @@ const AddUpdateEmployeePage: React.FC = () => {
                   title="Select Bank"
                   size="lg"
                   dataFetchCallBack={fetchBankListMasterDropdown}
-                  onSelected={(item) => { handleFieldChange("BankListMasterId", Number(item?.value || 0)); }}
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("BankListMasterId", null);
+                      return;
+                    }
+
+                    handleFieldChange("BankListMasterId", Number(item.value));
+                  }}
                   initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
                   error={errors.BankListMasterId}
                 />

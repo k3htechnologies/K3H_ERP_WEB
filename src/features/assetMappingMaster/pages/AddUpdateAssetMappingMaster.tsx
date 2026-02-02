@@ -7,7 +7,7 @@ import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateAssetMappingMasterRequest, FilterWithPaginationAssetMappingMasterRequest } from "../models/AssetMappingMasterModel";
-import { assetMappingMasterService } from "../services/AssetMappingMasterService";
+import { assetMappingMasterService } from "@/features/assetMappingMaster//services/AssetMappingMasterService";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
@@ -267,7 +267,15 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                 size="lg"
                 required
                 dataFetchCallBack={fetchAssetMasterDropdown}
-                onSelected={(item) => handleFieldChange("AssetMasterId", Number(item.value))}
+                onSelected={(item) => {
+                  if (!item) {
+                    handleFieldChange("AssetMasterId", null);
+                    return;
+                  }
+
+                  handleFieldChange("AssetMasterId", Number(item.value));
+                }}
+
                 initialValue={createDropdownInitialValue(formData.AssetMasterId, dropdownLabels.assetName)}
                 error={errors.AssetMasterId}
               />
@@ -280,7 +288,14 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                 size="lg"
                 required
                 dataFetchCallBack={fetchEmployeeMasterDropdown}
-                onSelected={(item) => handleFieldChange("EmployeeId", Number(item.value))}
+                onSelected={(item) => {
+                  if (!item) {
+                    handleFieldChange("EmployeeId", null);
+                    return;
+                  }
+
+                  handleFieldChange("EmployeeId", Number(item.value));
+                }}
                 initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
                 error={errors.EmployeeId}
               />

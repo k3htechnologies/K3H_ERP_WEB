@@ -376,6 +376,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <SinglePageSelection
                             required={false}
                             size="md"
+                            isShowClearSelection={false}
                             options={(emp?.ProjectData ?? []).map(opt => ({
                                 label: opt.ProjectName,
                                 value: opt.ProjectId
@@ -576,7 +577,7 @@ export const Header: React.FC<HeaderProps> = ({
                                     Google Location
                                 </div>
                                 {projectMasterList[0]?.GoogleLocation !== "" ?
-                                    <span className="text-blue-600 underline cursor-pointer flex items-center"
+                                    <span className="text-blue-600 underline cursor-pointer  break-all whitespace-normal"
                                         onClick={() => window.open(projectMasterList[0]?.GoogleLocation, "_blank")}>
                                         {projectMasterList[0]?.GoogleLocation}
                                     </span> : "-"}

@@ -1,3 +1,5 @@
+import type { ApiResponse } from "@/core/api/ApiResponse";
+
 export interface RedevelopmentDashboardDataset {
   Table0: any[];
   Table1: any[];
@@ -6,3 +8,5 @@ export interface RedevelopmentDashboardDataset {
   Table4: any[];
   Table5: any[];
 }
+
+export type RedevelopmentDashboardDatasetResponse = ApiResponse<RedevelopmentDashboardDataset>;

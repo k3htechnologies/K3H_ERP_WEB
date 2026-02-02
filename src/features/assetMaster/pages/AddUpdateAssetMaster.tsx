@@ -7,11 +7,12 @@ import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateAssetMasterRequest, FilterWithPaginationAssetMasterRequest } from "../models/AssetMasterModel";
-import { assetMasterService } from "../services/AssetMasterService";
+import { assetMasterService } from "@/features/assetMaster/services/AssetMasterService";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 
 const initialFormState = (): AddUpdateAssetMasterRequest => ({
   AssetMasterId: 0,
@@ -196,7 +197,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
       AssetBrand: formData.AssetBrand,
       SerialNumber: formData.SerialNumber,
       PurchaseDate: formData.PurchaseDate,
-      WarrantyExpiryDate: formData.WarrantyExpiryDate,
+      WarrantyExpiryDate: formData.WarrantyExpiryDate=="" ? null :formData.WarrantyExpiryDate,
       AssetCost: formData.AssetCost,
       SupplierName: formData.SupplierName
     };
@@ -288,7 +289,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   value={formData.AssetCode?.toUpperCase() ?? ""}
                   onChange={(e) => handleFieldChange("AssetCode", e.target.value)}
                   placeholder="Enter Asset Code"
-                  maxLength={20}
+                  maxLength={4}
                   error={errors.AssetCode}
                 />
               </div>
@@ -370,12 +371,9 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   error={errors.AssetCost}
                   type="text"
                   value={formData.AssetCost ?? ''}
-                  maxLength={4}
                   rightIcon="₹"
-                  onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, '');
-                    handleFieldChange('AssetCost', digits === '' ? 0 : Number(digits));
-                  }}
+                  onChange={e => handleFieldChange('AssetCost', filterNumbersWithDecimal(e.target.value) || 0)}
+                  
                   placeholder="Enter Asset Cost"
                 />
               </div>

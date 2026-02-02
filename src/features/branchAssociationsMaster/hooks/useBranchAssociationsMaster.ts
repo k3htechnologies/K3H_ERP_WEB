@@ -271,11 +271,11 @@ export const useBranchAssociationsMaster = () => {
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (formData.BranchMasterId === "") {
+    if (!formData.BranchMasterId) {
       newErrors.BranchMasterId = "Branch is required"
     }
 
-    if (formData.EmployeeId === 0) {
+    if (!formData.EmployeeId) {
       newErrors.EmployeeId = "Employee is required";
     }
 

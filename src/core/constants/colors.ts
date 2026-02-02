@@ -188,6 +188,11 @@ export const COLOR_MAP = {
         border: '1px solid #3b82f6',
         hover: { backgroundColor: '#2563eb' },
       },
+      extraLight: {
+        backgroundColor: '#DBEAFE',
+        color: '#135BEC',
+        hover: { backgroundColor: '#DBEAFE' },
+      },
       dark: {
         backgroundColor: '#1d4ed8',
         color: '#dbeafe',

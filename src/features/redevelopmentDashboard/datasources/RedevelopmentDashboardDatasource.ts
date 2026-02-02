@@ -1,11 +1,11 @@
 import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { RedevelopmentDashboardApi } from '@/features/redevelopmentDashboard/api/RedevelopmentDashboardApi';
-import type { RedevelopmentDashboardDataset } from '@/features/redevelopmentDashboard/models/RedevelopmentDashboardModel';
+import type { RedevelopmentDashboardDatasetResponse } from '@/features/redevelopmentDashboard/models/RedevelopmentDashboardModel';
 
 export abstract class RedevelopmentDashboardDatasource {
 
-    abstract pullRedevelopmentDashboard(ProjectId: number, BuildingId?: number, signal?: AbortSignal): Promise<RedevelopmentDashboardDataset>;
+    abstract pullRedevelopmentDashboard(ProjectId: number, BuildingId?: number, signal?: AbortSignal): Promise<RedevelopmentDashboardDatasetResponse>;
 }
 
 export class RedevelopmentDashboardDatasourceImpl implements RedevelopmentDashboardDatasource {
@@ -14,7 +14,7 @@ export class RedevelopmentDashboardDatasourceImpl implements RedevelopmentDashbo
     }
 
 
-    async pullRedevelopmentDashboard(ProjectId: number, BuildingId?: number, signal?: AbortSignal): Promise<RedevelopmentDashboardDataset> {
+    async pullRedevelopmentDashboard(ProjectId: number, BuildingId?: number, signal?: AbortSignal): Promise<RedevelopmentDashboardDatasetResponse> {
         try {
 
             const queryParams = new URLSearchParams({

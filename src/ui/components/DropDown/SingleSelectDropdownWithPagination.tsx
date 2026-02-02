@@ -31,6 +31,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
       className = "",
       style,
       size = "md",
+      isShowClearSelection=true
     },
     ref
   ) => {
@@ -166,6 +167,17 @@ export const SingleSelectDropdownWithPagination = forwardRef<
         }
       });
     };
+
+    const clearSelection = () => {
+      setSelectedItem(null);
+      userSelectedRef.current = false;
+      prevInitialValueRef.current = null;
+      onSelected?.(null as any);
+      setSearchText("");
+      setPage(1);
+      fetchData(true, "");
+    };
+
 
     // sync initialValue with selectedItem (preserve user selection)
     useEffect(() => {
@@ -416,6 +428,22 @@ export const SingleSelectDropdownWithPagination = forwardRef<
           >
             {selectedItem?.label ?? title}
           </span>
+
+          {isShowClearSelection && selectedItem && !disabled && (
+            <X
+              size={14}
+              style={{
+                marginRight: 6,
+                cursor: "pointer",
+                color: "#888"
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                clearSelection();
+              }}
+            />
+          )}
+
 
           <svg
             width={sizeStyles.fontSize + 4}

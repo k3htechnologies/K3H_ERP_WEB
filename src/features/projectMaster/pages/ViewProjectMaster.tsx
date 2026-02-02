@@ -96,7 +96,8 @@ export const ViewProjectMaster: React.FC = () => {
                 const params: FilterWithPaginationProjectMasterRequest = {
                     PageNumber: 1,
                     PageSize: 1,
-                    ProjectId: listState.projectId
+                    ProjectId: listState.projectId,
+                    IsProjectAccess:false
                 };
                 const response = await projectMasterService.apiCallPullProjectMaster(params);
                 if (E.isRight(response)) {
@@ -350,7 +351,7 @@ export const ViewProjectMaster: React.FC = () => {
                                             Google Location
                                         </div>
                                         {editProjectData?.GoogleLocation !== "" ?
-                                            <span className="text-blue-600 underline cursor-pointer flex items-center"
+                                            <span className="text-blue-600 underline cursor-pointer break-all whitespace-normal"
                                                 onClick={() => window.open(editProjectData?.GoogleLocation, "_blank")}>
                                                 {editProjectData?.GoogleLocation}
                                             </span> : "-"}
@@ -628,14 +629,14 @@ export const ViewProjectMaster: React.FC = () => {
                                     </h4>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Company Type" value={c.CompanyType ?? "-"} />
+                                        <FieldItem label="Firms Type" value={c.FirmsType ?? "-"} />
                                         <FieldItem label="Contact Person" value={c.ContactPerson ?? "-"} />
                                         <FieldItem label="Mobile Number" value={c.MobileNumber ?? "-"} />
                                         <FieldItem label="E-mail Id" value={c.EmailId ?? "-"} />
                                         <FieldItem label="PAN Number" value={c?.PANNumber ?? '-'} urls={c?.PanCardURL} isIcon />
                                         <FieldItem label="GST Number" value={c?.GSTNumber ?? '-'} urls={c?.GSTCertificateURL} isIcon />
                                         <FieldItem label="CIN Number" value={c?.CINNumber ?? '-'} urls={c?.CINURL} isIcon />
-                                        <FieldItem label="RERA Number" value={c?.RERANumber ?? '-'} />
+                                        <FieldItem label="TAN Number" value={c?.TANNumber ?? '-'}  urls={c?.TANURL} isIcon/>
                                         <FieldItem label="City" value={c.CityName ?? "-"} />
                                     </div>
                                 </section>

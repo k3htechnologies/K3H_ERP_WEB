@@ -28,6 +28,8 @@ import type { EmployeeExperienceDetailsData, FilterWithPaginationEmployeeExperie
 import type { EmployeeEducationDetailsData, FilterWithPaginationEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
 import { employeeExperienceDetailsService } from '@/features/employeeMaster/services/EmployeeExperienceDetailsService';
 import { employeeEducationDetailsService } from '@/features/employeeMaster/services/EmployeeEducationDetailsService';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 
 export const ViewEmployeeMaster: React.FC = () => {
 
@@ -55,8 +57,8 @@ export const ViewEmployeeMaster: React.FC = () => {
 
     //LOCATION
     const navigate = useNavigate();
-    const { listState,updateListState } = useEmployeeListState();
-    
+    const { listState, updateListState } = useEmployeeListState();
+
     const employeeName = listState.employeeName || '';
 
     //#endregion
@@ -235,6 +237,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageSize: 20,
                     DepartmentName: undefined,
                     EmployeeId: listState.employeeId,
+                    IsCheckEmployeeShift: true
                 }
 
                 const response = await shiftMappingMasterService.apiCallPullShiftMappingMaster(params);
@@ -272,6 +275,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageSize: 100,
                     DepartmentName: undefined,
                     EmployeeId: listState.employeeId,
+                    IsCheckEmployeeWeekOffPolicy: true
                 }
 
                 const response = await weekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
@@ -440,6 +444,13 @@ export const ViewEmployeeMaster: React.FC = () => {
 
     const safe = (value?: any) => (value === null || value === undefined || value === '' ? '-' : value)
 
+    const docsWithUrls = employeeDocumentList.filter(d => {
+        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+            .filter(x => x?.trim()?.length);
+
+        return urls.length > 0;
+    });
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}>
@@ -490,7 +501,7 @@ export const ViewEmployeeMaster: React.FC = () => {
             </div>
 
             {activeTab === 'Overview' && employeeData && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
 
                     {/* ================= LEFT SIDE (2/3) ================= */}
                     <div className="lg:col-span-2 space-y-6">
@@ -581,7 +592,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                         {/* ================== EMPLOYEE INFO ================== */}
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Employee Infoformation
+                                Employee Information
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
@@ -605,7 +616,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 </div>
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Employment Type" value={safe(employeeData!.EmployeeType)} />
+                                        <FieldItem label="Employee Type" value={safe(employeeData!.EmployeeType)} />
 
                                         <FieldItem label="Office Number" value={employeeData?.OfficeMobileNumber
                                             ? `+91 ${safe(employeeData?.OfficeMobileNumber)}`
@@ -619,6 +630,11 @@ export const ViewEmployeeMaster: React.FC = () => {
                                         <FieldItem
                                             label="Probation Date"
                                             value={formatDate_dd_MonthName_yy(safe(employeeData!.ProbationDate))}
+                                        />
+
+                                        <FieldItem
+                                            label="Id Card Issued Date"
+                                            value={formatDate_dd_MonthName_yy(safe(employeeData!.IdCardIssuedDate))}
                                         />
                                     </div>
                                 </div>
@@ -829,30 +845,65 @@ export const ViewEmployeeMaster: React.FC = () => {
             )}
 
             {activeTab === 'Document' && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                    {employeeDocumentList?.some(doc => doc?.DocumentURL) ? (
-                        employeeDocumentList
-                            .filter(doc => doc?.DocumentURL)
-                            .map((doc, index) => (
-                                <section
-                                    key={index}
-                                    className="bg-white rounded-xl shadow-sm p-2 border border-gray-200"
-                                >
-                                    <FieldItem
-                                        label={doc?.DocumentName || ''}
-                                        urls={doc?.DocumentURL}
-                                        isIcon
-                                        isRow
-                                        isSetValue={false}
-                                    />
-                                </section>
-                            ))
-                    ) : (
-                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                    {docsWithUrls.length === 0 && (
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                             <NoDataView message="No Documents Found" />
                         </section>
                     )}
+
+                    {docsWithUrls.map(d => {
+                        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+                            .filter(x => x?.trim()?.length);
+
+                        return (
+                            <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
+
+                                <div className="flex items-start justify-between p-2 gap-2">
+                                    <div className="flex flex-col">
+
+                                        <span className="line-clamp-2 break-words font-medium text-gray-900">
+                                            {d.DocumentName}
+                                        </span>
+                                        <span className="text-sm text-gray-500 mt-1">
+                                            Document Count : {urls.length}
+                                        </span>
+                                    </div>
+
+                                    <MultiImageViewer
+                                        images={urls}
+                                        title={d.DocumentName ?? "Document"}
+                                        triggerLabel="View"
+                                        isIcon={false}
+                                    />
+
+
+                                </div>
+
+
+                                <div className="flex-grow" />
+
+                                <div className="bg-gray-50 p-2 mt-auto">
+                                    <FieldItem
+                                        label="Uploaded By / Date"
+                                        value={`${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
+                                            ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
+                                            : d?.CreatedDate
+                                                ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
+                                                : '-'
+                                            }`}
+                                    />
+                                </div>
+
+                            </div>
+
+                        );
+                    })}
+
                 </div>
+
             )}
 
 
@@ -860,7 +911,7 @@ export const ViewEmployeeMaster: React.FC = () => {
             {activeTab === 'Assets' && assetMappingMasterList && (
                 <div className="space-y-4">
                     {assetMappingMasterList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3" >
                             <NoDataView message='No Assets Found' />
                         </section>
                     ) : (
@@ -870,7 +921,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 return (
                                     <>
 
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3" >
                                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                 Asset Details
                                             </h4>
@@ -972,13 +1023,13 @@ export const ViewEmployeeMaster: React.FC = () => {
             {activeTab === "Project" && (
                 <div className="space-y-4">
                     {projectMasterList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3" >
                             <NoDataView message='No Project Found' />
                         </section>
                     ) : (
                         <div className="space-y-3">
                             {projectMasterList.map((project) => (
-                                <div key={project.ProjectId} className="border border-gray-200 p-3 rounded bg-white flex justify-between">
+                                <div key={project.ProjectId} className="border border-gray-200 p-3 rounded bg-white flex justify-between mt-3">
 
                                     <div className="flex items-center gap-4">
                                         <div className="w-14 h-14 bg-gray-100 rounded-full overflow-hidden">
@@ -1004,7 +1055,7 @@ export const ViewEmployeeMaster: React.FC = () => {
             {activeTab === 'Shift Policy' && shiftMappingMasterList && (
                 <div className="space-y-4">
                     {shiftMappingMasterList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3" >
                             <NoDataView message='No Shift Policy Found' />
                         </section>
                     ) : (
@@ -1013,31 +1064,143 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                 return (
                                     <>
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
 
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
-                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                Shift Policy Details
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                            {/* ================= LEFT SIDE (2/3) ================= */}
+                                            <div className="lg:col-span-2 space-y-6">
+                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                        Basic Shift Details
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem label="Department Name" value={shiftMappingPolicy!.DepartmentName} className='font-medium text-blue-900 ' />
-                                                        <FieldItem label="Employee Name" value={shiftMappingPolicy!.EmployeeName} />
-                                                        <FieldItem label="Shift Name" value={shiftMappingPolicy!.ShiftName} />
-                                                        <FieldItem label="Shift Code" value={shiftMappingPolicy!.ShiftCode} />
-                                                        <FieldItem label="Shift Begin Time" value={shiftMappingPolicy!.ShiftBeginTime} />
-                                                        <FieldItem label="Shift End Time" value={shiftMappingPolicy!.ShiftEndTime} />
-                                                        <FieldItem label="Shift Duration Time" value={shiftMappingPolicy!.ShiftDurationTime} />
-                                                        <FieldItem label="Shift Work Duration Time" value={shiftMappingPolicy!.ShiftWorkDurationTime} />
-                                                        <FieldItem label="Remarks" value={shiftMappingPolicy!.Remarks} />
+                                                        <div className="lg:col-span-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                <FieldItem label="Shift Begin Time" value={shiftMappingPolicy!.ShiftName} />
+                                                                <FieldItem label="Shift End Time" value={shiftMappingPolicy!.ShiftCode} />
 
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                </section>
+                                                {/* ================= SHIFT DURATION ================= */}
+                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                        Time Details
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                <FieldItem label="Shift Begin Time" value={shiftMappingPolicy!.ShiftBeginTime} />
+                                                                <FieldItem label="Shift End Time" value={shiftMappingPolicy!.ShiftEndTime} />
+                                                                <FieldItem label="Shift Duration Time" value={shiftMappingPolicy!.ShiftDurationTime} />
+
+                                                            </div>
+                                                        </div>
+                                                        <div className="lg:col-span-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                <FieldItem label="Shift Work Duration Time" value={shiftMappingPolicy!.ShiftWorkDurationTime} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+                                                {/* ================= HALF DAY AND ABSENCE RULES================= */}
+                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                        Advance Setting
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                                                <FieldItem label="First Half Up To" value={shiftMappingPolicy!.FirstHalfUpTo} />
+                                                            </div>
+                                                        </div>
+                                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                                                <FieldItem label="Calculate Absent if working hours less than" value={shiftMappingPolicy!.AbsentWorkingHours} />
+                                                                <FieldItem label="Calculate Half day working hours less than" value={shiftMappingPolicy!.HalfDayWorkingHours} />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="lg:col-span-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                                                <FieldItem label="Mark Half Day if Intime After" value={shiftMappingPolicy!.HalfDayInTimeAfter} />
+                                                                <FieldItem label="Mark Half Day if Outtime After" value={shiftMappingPolicy!.HalfDayOutTimeBefore} />
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+
 
                                             </div>
 
-                                        </section>
+                                            {/* ================= RIGHT SIDE (1/3) ================= */}
+                                            <div className="lg:col-span-1 space-y-6">
+
+                                                {/* ================= BREAK DETAILS ================= */}
+                                                <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                        Break Details
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                                <FieldItem label="Break Begin Time" value={shiftMappingPolicy!.BreakBeginTime} />
+                                                                <FieldItem label="Break End Time" value={shiftMappingPolicy!.BreakEndTime} />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="lg:col-span-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                                <FieldItem label="Break Duration Time" value={shiftMappingPolicy!.BreakDurationTime} />
+                                                                <FieldItem label="Grace Time" value={shiftMappingPolicy!.GraceTime} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+
+                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                        Time Allowed for Late Entry
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                        <div className="lg:col-span-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                                                <FieldItem label="Grace Time In Minutes" value={shiftMappingPolicy!.GraceTime} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                        Remarks
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                        <div className="lg:col-span-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                                                <FieldItem label="Remarks" value={shiftMappingPolicy!.Remarks} />
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+                                            </div>
+
+                                        </div>
                                     </>
                                 );
                             })}
@@ -1049,7 +1212,7 @@ export const ViewEmployeeMaster: React.FC = () => {
             {activeTab === 'Week Off Policy' && weekOffMappingMasterList && (
                 <div className="space-y-4">
                     {weekOffMappingMasterList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3" >
                             <NoDataView message='No Week Off Policy Found' />
                         </section>
                     ) : (
@@ -1058,8 +1221,8 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                 return (
                                     <>
-
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                                        {/* ================= BASIC DETAILS ================= */}
+                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3">
                                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                 Week Off Policy Details
                                             </h4>
@@ -1067,22 +1230,43 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem label="Week Off Policy Name" value={weekOffPolicyMapping!.WeekOffPolicyName} className='font-medium text-blue-900 ' />
+                                                        <FieldItem label="Week Off Policy Name" value={weekOffPolicyMapping!.WeekOffPolicyName} />
                                                         <FieldItem label="Week Off Policy Code" value={weekOffPolicyMapping!.WeekOffPolicyCode} />
-                                                        <FieldItem label="Department Name" value={weekOffPolicyMapping!.DepartmentName} />
-                                                        <FieldItem label="Employee Name" value={weekOffPolicyMapping!.EmployeeName} />
                                                         <FieldItem label="Week Days" value={weekOffPolicyMapping!.WeekDays} />
+
+                                                    </div>
+                                                </div>
+                                                <div className="lg:col-span-3 pt-3">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                         <FieldItem label="Week Days Starts On" value={weekOffPolicyMapping!.WeekDaysStartsOn} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+
+                                        {/* ================= WEEK OFF DETAILS ================= */}
+                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                Week Off Details
+                                            </h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                         <FieldItem label="Weekly Off" value={weekOffPolicyMapping!.WeeklyOff} />
                                                         <FieldItem label="Weekly Off2" value={weekOffPolicyMapping!.WeeklyOff2} />
                                                         <FieldItem label="Weekly Off2 Type" value={weekOffPolicyMapping!.WeeklyOff2Type} />
-                                                        <FieldItem label="Not Applicable For Months" value={weekOffPolicyMapping!.NotApplicableForMonths} />
 
                                                     </div>
                                                 </div>
 
-                                            </div>
+                                                <div className="lg:col-span-3 pt-3">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                        <FieldItem label="Not Applicable For Months" value={weekOffPolicyMapping!.NotApplicableForMonths} />
 
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </section>
                                     </>
                                 );

@@ -26,13 +26,13 @@ const TenantOverview: React.FC<Props> = ({ tenantData }) => {
     {
       name: "Residential",
       value: residentialCount,
-      color: "#2563EB",
+      color: "#13367A",
       bg: "#EFF6FF",
     },
     {
       name: "Commercial",
       value: commercialCount,
-      color: "#16A34A",
+      color: "#1D703C",
       bg: "#ECFDF5",
     },
    
@@ -42,7 +42,7 @@ const TenantOverview: React.FC<Props> = ({ tenantData }) => {
 
 
   return (
-    <div className="bg-white rounded-xl p-4">
+    <div className="bg-white rounded-xl p-4" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
       <h3 className="text-sm text-gray-500 font-medium mb-3">
         Tenant Overview

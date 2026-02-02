@@ -782,6 +782,7 @@ export const Tenant: React.FC = () => {
             key={projectId}
             label="Building"
             title="Select Building"
+            isShowClearSelection={false}
             size="lg"
             initialValue={
               buildingName

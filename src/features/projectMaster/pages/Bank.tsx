@@ -548,7 +548,7 @@ const Bank: React.FC = () => {
         title={editingProjectMasterWithBankDetailsData ? 'Update Bank Details' : 'Add Bank Details'}
         onSubmit={handleAddUpdateProjectMasterWithBankDetails}
         saveText={editingProjectMasterWithBankDetailsData ? 'Update Bank Details' : 'Save Bank Details'}
-        
+
         loading={isLoading}
         size='half-screen'
       >
@@ -574,7 +574,14 @@ const Bank: React.FC = () => {
                 title="Select Bank"
                 size="lg"
                 dataFetchCallBack={fetchBankListMasterDropdown}
-                onSelected={(item) => { handleFieldChange("BankListMasterId", Number(item?.value || 0)); }}
+                onSelected={(item) => {
+                  if (!item) {
+                    handleFieldChange("BankListMasterId", null);
+                    return;
+                  }
+
+                  handleFieldChange("BankListMasterId", Number(item.value));
+                }}
                 initialValue={createDropdownInitialValue(formDataForBankDetails.BankListMasterId, dropdownLabels.bankName)}
                 error={errorsForBankDetails.BankListMasterId}
               />

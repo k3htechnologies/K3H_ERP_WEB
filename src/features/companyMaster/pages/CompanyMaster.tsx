@@ -73,16 +73,15 @@ export const CompanyMaster: React.FC = () => {
 
     //#region INIT
     useEffect(() => {
-        // Sync pagination with context state
+
         setPagination({ currentPage: listState.page });
 
-        // Load companies with current context state
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
             loadCompanys(listState.page, { CompanyName: String(listState.searchTerm).trim() }, listState.sortInfo);
         } else {
             loadCompanys(listState.page, listState.filters, listState.sortInfo);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        
     }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
 
@@ -112,14 +111,14 @@ export const CompanyMaster: React.FC = () => {
                     IsCheckPermission: true,
                     CompanyId: filterParams.CompanyId ? Number(filterParams.CompanyId) : undefined,
                     CompanyName: searchtext ?? filterParams.CompanyName?.trim() ?? undefined,
-                    CompanyType: filterParams.CompanyType?.trim() || undefined,
-                    ContactPerson:filterParams.ContactPerson?.trim() || undefined,
-                    MobileNumber:filterParams.MobileNumber?.trim() || undefined,
-                    CityName:filterParams.CityName?.trim() || undefined,
-                    GSTNumber:filterParams.GSTNumber?.trim() || undefined,
-                    CINNumber:filterParams.CINNumber?.trim() || undefined,
-                    PANNumber:filterParams.PANNumber?.trim() || undefined,
-                    RERANumber:filterParams.RERANumber?.trim() || undefined,
+                    FirmsType: filterParams.FirmsType?.trim() || undefined,
+                    ContactPerson: filterParams.ContactPerson?.trim() || undefined,
+                    MobileNumber: filterParams.MobileNumber?.trim() || undefined,
+                    CityName: filterParams.CityName?.trim() || undefined,
+                    GSTNumber: filterParams.GSTNumber?.trim() || undefined,
+                    CINNumber: filterParams.CINNumber?.trim() || undefined,
+                    PANNumber: filterParams.PANNumber?.trim() || undefined,
+                    TANNumber: filterParams.TANNumber?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, companyColumns)
                 };
 
@@ -189,14 +188,14 @@ export const CompanyMaster: React.FC = () => {
                     PageSize: pagination.totalRecords,
                     IsCheckPermission: true,
                     CompanyName: filters.CompanyName?.trim() || undefined,
-                    CompanyType: filters.CompanyType?.trim() || undefined,
-                    ContactPerson:filters.ContactPerson?.trim() || undefined,
-                    MobileNumber:filters.MobileNumber?.trim() || undefined,
-                    CityName:filters.CityName?.trim() || undefined,
-                    GSTNumber:filters.GSTNumber?.trim() || undefined,
-                    CINNumber:filters.CINNumber?.trim() || undefined,
-                    PANNumber:filters.PANNumber?.trim() || undefined,
-                    RERANumber:filters.RERANumber?.trim() || undefined,
+                    FirmsType: filters.FirmsType?.trim() || undefined,
+                    ContactPerson: filters.ContactPerson?.trim() || undefined,
+                    MobileNumber: filters.MobileNumber?.trim() || undefined,
+                    CityName: filters.CityName?.trim() || undefined,
+                    GSTNumber: filters.GSTNumber?.trim() || undefined,
+                    CINNumber: filters.CINNumber?.trim() || undefined,
+                    PANNumber: filters.PANNumber?.trim() || undefined,
+                    TANNumber: filters.TANNumber?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, companyColumns),
                     ExportType: exportType
                 };
@@ -288,8 +287,8 @@ export const CompanyMaster: React.FC = () => {
                 )
             },
             {
-                key: 'CompanyType',
-                label: 'Company Type',
+                key: 'FirmsType',
+                label: 'Firms Type',
                 width: '15',
                 sortable: false,
                 align: 'center',
@@ -381,13 +380,22 @@ export const CompanyMaster: React.FC = () => {
                 }
             },
 
-            {
-                key: 'RERANumber',
-                label: 'RERA Number',
+             {
+                key: 'TANNumber',
+                label: 'TAN Number',
                 width: '15',
                 sortable: false,
                 align: 'center',
-                render: (value) => value || '-'
+                render: (value: string, row: any) => {
+                    return (
+                        <MultiImageViewer
+                            images={parseDocumentUrls(row.TANURL)}
+                            title="TAN Document"
+                            triggerLabel={value || '-'}
+                            isWrap={false}
+                        />
+                    );
+                }
             },
 
             {
@@ -496,7 +504,6 @@ export const CompanyMaster: React.FC = () => {
         setTempFilters({});
         updateListState({ filters: {}, page: 1 });
         loadCompanys(1, {});
-        setShowFilterPopup(false);
     };
     //#endregion
 
@@ -747,10 +754,10 @@ export const CompanyMaster: React.FC = () => {
                         <div>
 
                             <Input
-                                label='Company Type'
+                                label='Firms Type'
                                 type="text"
-                                value={tempFilters.CompanyType || ''}
-                                onChange={(e) => handleFilterChange('CompanyType', e.target.value)}
+                                value={tempFilters.FirmsType || ''}
+                                onChange={(e) => handleFilterChange('FirmsType', e.target.value)}
                                 placeholder="Enter Company Type"
                             />
                         </div>
@@ -819,11 +826,11 @@ export const CompanyMaster: React.FC = () => {
                         <div>
 
                             <Input
-                                label='RERA Number'
+                                label='TAN Number'
                                 type="text"
-                                value={tempFilters.RERANumber || ''}
-                                onChange={e => handleFilterChange('RERANumber', e.target.value)}
-                                placeholder="Enter RERA Number"
+                                value={tempFilters.TANNumber || ''}
+                                onChange={e => handleFilterChange('TANNumber', e.target.value)}
+                                placeholder="Enter TAN Number"
                             />
                         </div>
                     </div>

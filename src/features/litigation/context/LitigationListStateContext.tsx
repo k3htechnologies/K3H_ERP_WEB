@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { FilterInfo, SortInfo } from "@/ui/components/DataTable/DataTable";
+import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants";
 
 export type LitigationListState = {
   page: number;
@@ -13,7 +14,7 @@ export type LitigationListState = {
   Title: string;
 };
 
-const STORAGE_KEY = 'Litigation.listState';
+const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.LITIGATION;
 
 const getInitialState = (currentProjectId: number | null): LitigationListState => {
   if (!currentProjectId) {

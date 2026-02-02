@@ -54,26 +54,9 @@ export class AssetMasterDatasourceImpl implements AssetMasterDatasource {
     async addUpdateAssetMaster(params: AddUpdateAssetMasterRequest): Promise<AssetMasterSaveResponse> {
 
         try {
-
-            const payLoad: AddUpdateAssetMasterRequest = {
-                AssetMasterId: params.AssetMasterId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-                AssetCode: params.AssetCode?.trim() ?? '',
-                AssetName: params.AssetName?.trim() ?? '',
-                AssetType: params.AssetType?.trim() ?? '',
-                AssetModel: params.AssetModel?.trim() ?? '',
-                AssetBrand: params.AssetBrand?.trim() ?? '',
-                SerialNumber: params.SerialNumber?.trim() ?? '',
-                PurchaseDate: params.PurchaseDate ?? null,
-                WarrantyExpiryDate: params.WarrantyExpiryDate ?? null,
-                AssetCost: params.AssetCost ?? 0,
-                SupplierName: params.SupplierName?.trim() ?? ''
-            }
-
-
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 AssetMasterApi.ADD_UPDATE,
-                payLoad
+                params
             )
 
             return response

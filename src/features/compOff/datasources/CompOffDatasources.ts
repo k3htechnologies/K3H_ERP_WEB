@@ -8,6 +8,8 @@ import type {
     CompOffListResponse,
     CompOffSaveResponse,
     CompOffDeleteResponse,
+    CompOffDatesResponse,
+    PullCompOffDatesRequest,
 } from '@/features/compOff/models/compOff'
 
 export abstract class CompOffDatasource {
@@ -15,6 +17,7 @@ export abstract class CompOffDatasource {
     abstract pullCompOff(params: FilterWithPaginationCompOff, signal?: AbortSignal): Promise<CompOffListResponse>;
     abstract addUpdateCompOff(data: AddUpdateCompOff): Promise<CompOffSaveResponse>;
     abstract deleteCompOff(params: DeleteCompOffRequest): Promise<CompOffDeleteResponse>;
+    abstract pullCompOffDates(params: PullCompOffDatesRequest, signal?: AbortSignal): Promise<CompOffDatesResponse>;
 }
 
 export class CompOffDatasourceImpl implements CompOffDatasource {
@@ -31,8 +34,20 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
                 CompOffId: (params.CompOffId ?? 0).toString(),
             })
 
-            if (params.StartDate?.trim()) queryParams.append('StartDate', params.StartDate.trim());
-            if (params.EndDate?.trim()) queryParams.append('EndDate', params.EndDate.trim());
+            if (params.StartDate) {
+                // Convert YYYY-MM-DD to ISO format if needed (already ISO if contains 'T')
+                const start = params.StartDate.includes('T') 
+                    ? params.StartDate 
+                    : `${params.StartDate}T00:00:00Z`;
+                queryParams.append('StartDate', start);
+            }
+            if (params.EndDate) {
+                // Convert YYYY-MM-DD to ISO format if needed (already ISO if contains 'T')
+                const end = params.EndDate.includes('T') 
+                    ? params.EndDate 
+                    : `${params.EndDate}T00:00:00Z`;
+                queryParams.append('EndDate', end);
+            }
             if (params.Reason?.trim()) queryParams.append('Reason', params.Reason.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
@@ -59,11 +74,11 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
 
             const payLoad: AddUpdateCompOff = {
                 CompOffId: params.CompOffId ?? 0,
-                Uniquekey: params.Uniquekey && params.Uniquekey.trim() !== '' 
-                    ? params.Uniquekey.trim() 
+                Uniquekey: params.Uniquekey && params.Uniquekey.trim() !== ''
+                    ? params.Uniquekey.trim()
                     : '3fa85f64-5717-4562-b3fc-2c963f66afa6',
                 CompOffDate: params.CompOffDate?.trim() || null,
-                RequestDate: params.RequestDate?.trim() || null,
+                WorkingDate: params.WorkingDate?.trim() || null,
                 Reason: params.Reason?.trim() || null,
             }
 
@@ -90,8 +105,8 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
 
             const payLoad: DeleteCompOffRequest = {
                 CompOffId: params.CompOffId ?? null,
-                Uniquekey: params.Uniquekey && params.Uniquekey.trim() !== '' 
-                    ? params.Uniquekey.trim() 
+                Uniquekey: params.Uniquekey && params.Uniquekey.trim() !== ''
+                    ? params.Uniquekey.trim()
                     : '3fa85f64-5717-4562-b3fc-2c963f66afa6',
             }
 
@@ -108,6 +123,38 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             if (error === TokenExpiredException) {
                 await this.deleteCompOff(params);
             }
+            throw error
+        }
+    }
+
+    async pullCompOffDates(params: PullCompOffDatesRequest, signal?: AbortSignal): Promise<CompOffDatesResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                PageSize: params.PageSize.toString(),
+                PageNumber: params.PageNumber.toString(),
+            });
+
+            if (params.EmployeeId !== undefined && params.EmployeeId !== null) {
+                queryParams.append('EmployeeId', params.EmployeeId.toString());
+            }
+            if (params.StartDate?.trim()) {
+                queryParams.append('StartDate', params.StartDate.trim());
+            }
+            if (params.EndDate?.trim()) {
+                queryParams.append('EndDate', params.EndDate.trim());
+            }
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${CompOffApi.PULL_COMP_OFF_DATES}?${queryParams.toString()}`, { signal }
+            )
+            return response;
+        } catch (error: any) {
+            console.error('ERROR: PULL COMP OFF DATES :', error);
+
+            if (error === TokenExpiredException) {
+                await this.pullCompOffDates(params);
+            }
+
             throw error
         }
     }

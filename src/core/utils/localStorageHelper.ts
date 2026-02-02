@@ -550,23 +550,23 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
-    //#region STORE LEAVE CREDIT DEBIT COLUMNS
-    storeLeaveCreditDebitTableColumns: (columns: string): void => {
+    //#region STORE LEAVE CREDIT CONFIGURATION COLUMNS
+    storeLeaveCreditConfigurationTableColumns: (columns: string): void => {
         try {
-            localStorage.setItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_DEBIT_SELECTED_COLUMNS, columns);
+            localStorage.setItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_CONFIGURATION_SELECTED_COLUMNS, columns);
         } catch (error) {
-            console.error('Error Leave Credit Debit Columns Details:', error)
+            console.error('Error Leave Credit Configuration Columns Details:', error)
         }
     },
     //#endregion
-    //#region GET LEAVE CREDIT DEBIT COLUMNS
-    getLeaveCreditDebitTableColumns: (): string | null => {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_DEBIT_SELECTED_COLUMNS)
+    //#region GET LEAVE CREDIT CONFIGURATION COLUMNS
+    getLeaveCreditConfigurationTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_CONFIGURATION_SELECTED_COLUMNS)
         if (stored) {
             try {
-                return localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_DEBIT_SELECTED_COLUMNS);
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_CONFIGURATION_SELECTED_COLUMNS);
             } catch (error) {
-                console.error('Error reading Leave Credit Debit Columns Details:', error)
+                console.error('Error reading Leave Credit Configuration Columns Details:', error)
                 return null
             }
         }

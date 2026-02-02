@@ -221,6 +221,7 @@ export const MASTER_DATA = {
   weekdays: ['1', '2', '3', '4', '5', '6'],
 
   weekoff_type: ['Every', 'Alt(2,4)', 'Alt(1,3)', '1st', '2nd', '3rd', '4th', '5th'],
+  leavePeriodMode: ['Yearly', 'Monthly'],
 
   inventoryFlatStatus: ['Available', 'Booked', 'Blocked', 'Hold', 'Alloted'],
 
@@ -248,7 +249,7 @@ export const MASTER_DATA = {
 
   parkingStatus: ['Available', 'Block', 'Hold', 'Member'],
 
-  unitLayout: ['Living / Dining', 'Passage', 'Kitchen', 'Toilet','Master Bed Room','Main Door JAMB','KIT / Bed Door Jamb','Toilet Door Jamb'],
+  unitLayout: ['Living / Dining', 'Passage', 'Kitchen', 'Toilet', 'Master Bed Room', 'Main Door JAMB', 'KIT / Bed Door Jamb', 'Toilet Door Jamb'],
 
   caseType: ['Civil', 'Criminal'],
 
@@ -334,6 +335,7 @@ export const CTC_EARNINGS = toOptions(MASTER_DATA.ctc_earning)
 export const LEAVE_TYPE_MASTER = toOptions(MASTER_DATA.leaveTypeMaster)
 export const WEEKDAYS = toOptions(MASTER_DATA.weekdays)
 export const WEEK_OFF_TYPE = toOptions(MASTER_DATA.weekoff_type)
+export const LEAVE_PERIOD_MODES = toOptions(MASTER_DATA.leavePeriodMode)
 export const INVENTORY_FLAT_STATUS = toOptions(MASTER_DATA.inventoryFlatStatus)
 export const PARKING_CATEGORY = toOptions(MASTER_DATA.parkingCategory)
 export const PARKING_SUBCATEGORY_STACK = toOptions(MASTER_DATA.parkingSubCategory_StackParking)
@@ -342,9 +344,9 @@ export const PARKING_SUBCATEGORY_PUZZLE = toOptions(MASTER_DATA.parkingSubCatego
 export const PARKING_SUBCATEGORY_TOWER = toOptions(MASTER_DATA.parkingSubCategory_TowerParking)
 export const PARKING_SUBCATEGORY_PIT_PUZZLE = toOptions(MASTER_DATA.parkingSubCategory_PitPuzzleParking)
 export const PARKING_SUBCATEGORY_CANTILEVER = toOptions(MASTER_DATA.parkingSubCategory_CantileverParking)
-export const PARKING_SUBCATEGORY_TANDEM = toOptions( MASTER_DATA.parkingSubCategory_TandemParking)
-export const PARKING_SUBCATEGORY_PODIUM = toOptions( MASTER_DATA.parkingSubCategory_PodiumParking)
-export const PARKING_SUBCATEGORY_PIT_STACK = toOptions( MASTER_DATA.parkingSubCategory_Pit_StackParking)
+export const PARKING_SUBCATEGORY_TANDEM = toOptions(MASTER_DATA.parkingSubCategory_TandemParking)
+export const PARKING_SUBCATEGORY_PODIUM = toOptions(MASTER_DATA.parkingSubCategory_PodiumParking)
+export const PARKING_SUBCATEGORY_PIT_STACK = toOptions(MASTER_DATA.parkingSubCategory_Pit_StackParking)
 export const PARKING_SIZE = toOptions(MASTER_DATA.parkingSize);
 export const PARKING_STATUS = toOptions(MASTER_DATA.parkingStatus);
 export const UNIT_LAYOUT = toOptions(MASTER_DATA.unitLayout);

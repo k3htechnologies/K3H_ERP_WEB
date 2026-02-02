@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import React, {  useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
@@ -9,12 +9,12 @@ import { fetchDesignationMasterDropdown } from '@/features/designationMaster/des
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
 import type {
-    AddUpdateLeaveCreditDebitRequest,
+    AddUpdateLeaveCreditConfigurationRequest,
     LeaveBalanceType,
-    FilterWithPaginationLeaveCreditDebitRequest
-} from '@/features/leaveCreditDebit/models/leaveCreditDebit';
-import { leaveCreditDebitService } from '@/features/leaveCreditDebit/services/LeaveCreditDebitService';
-import { MONTHS_OPTIONS } from '@/core/constants/staticData';
+    FilterWithPaginationLeaveCreditConfigurationRequest
+} from '@/features/leaveCreditConfiguration/models/LeaveCreditConfigurationModel';
+import { leaveCreditConfigurationService } from '@/features/leaveCreditConfiguration/services/LeaveCreditConfigurationService';
+import { formatDate_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
@@ -23,27 +23,24 @@ import { Plus, Trash2 } from 'lucide-react';
 import { fetchLeaveTypeMasterDropdown } from '@/features/leaveTypeMaster/leaveTypeMasterDropdown';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
-const LEAVE_PERIOD_MODES = [
-    { label: 'Yearly', value: 'Yearly' },
-    { label: 'Monthly', value: 'Monthly' },
-];
+import DatePickerInput from '@/ui/components/forms/Datepicker';
+import { LEAVE_PERIOD_MODES } from '@/core/constants/staticData';
+import { useLeaveCreditConfigurationListState } from '@/features/leaveCreditConfiguration/context/LeaveCreditConfigurationListStateContext';
 
-const initialFormState = (): AddUpdateLeaveCreditDebitRequest => ({
-    LeaveCreditDebitId: 0,
+const initialFormState = (): AddUpdateLeaveCreditConfigurationRequest => ({
+    LeaveCreditConfigurationId: 0,
     Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
     LeavePeriodMode: '',
-    FYyear: new Date().getFullYear(),
-    Month: '',
+    FinancialYearStartDate: null,
+    FinancialYearEndDate: null,
     DepartmentMasterId: 0,
     DesignationId: '',
     LeaveTypebalanceJSONList: '',
 });
 
-export const AddUpdateLeaveCreditDebit: React.FC = () => {
-
+export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
     //#region STATE MANAGEMENT
-    const [formData, setFormData] = useState<AddUpdateLeaveCreditDebitRequest>(() => initialFormState());
+    const [formData, setFormData] = useState<AddUpdateLeaveCreditConfigurationRequest>(() => initialFormState());
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
@@ -59,7 +56,6 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
 
     // NAVIGATE
     const navigate = useNavigate();
-    const location = useLocation();
 
     //GET VALUE FROM URL :ID
     const { id } = useParams<{ id?: string }>();
@@ -78,12 +74,16 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
 
     //#endregion
 
+    //#region LEAVE CREDIT CONFIGURATION LIST STATE CONTEXT
+    const { resetFilters } = useLeaveCreditConfigurationListState();
+    //#endregion
+
     //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions('/leaveCreditDebit');
+    const { canAction } = useMenuPermissions('/leaveCreditConfiguration');
     //#endregion
 
     //#region HANDLE CHNAGE EVENT WHEN INPUT BOX ANY OTHER
-    const handleFieldChange = (field: keyof AddUpdateLeaveCreditDebitRequest, value: any) => {
+    const handleFieldChange = (field: keyof AddUpdateLeaveCreditConfigurationRequest, value: any) => {
 
         setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -94,34 +94,32 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
 
     //#endregion
 
-    //#region LOAD LEAVE CREDIT DEBIT DATA
-    const fetchLeaveCreditDebitDetails = useCallback(async () => {
+    //#region FETCH LEAVE CREDIT CONFIGURATION DETAILS
+    const fetchLeaveCreditConfigurationDetails = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-
-                const params: FilterWithPaginationLeaveCreditDebitRequest = {
+                const params: FilterWithPaginationLeaveCreditConfigurationRequest = {
                     PageNumber: 1,
                     PageSize: 1,
                     IsCheckPermission: false,
-                    LeaveCreditDebitId: Number(id)
-                }
+                    LeaveCreditConfigurationId: Number(id)
+                };
 
-                const response = await leaveCreditDebitService.apiCallPullLeaveCreditDebit(params);
+                const response = await leaveCreditConfigurationService.apiCallPullLeaveCreditConfiguration(params);
 
                 if (E.isRight(response)) {
-
                     const row = response.right.Data?.[0];
 
                     if (row) {
                         setFormData(prev => ({
                             ...prev,
-                            LeaveCreditDebitId: row.LeaveCreditDebitId ?? prev.LeaveCreditDebitId,
+                            LeaveCreditConfigurationId: row.LeaveCreditConfigurationId ?? prev.LeaveCreditConfigurationId,
                             Uniquekey: row.Uniquekey ?? prev.Uniquekey,
                             LeavePeriodMode: row.LeavePeriodMode ?? prev.LeavePeriodMode ?? '',
-                            FYyear: row.FYyear ?? prev.FYyear ?? new Date().getFullYear(),
-                            Month: row.Month ?? prev.Month ?? '',
+                            FinancialYearStartDate: row.FinancialYearStartDate ? formatDate_dd_mm_yyyy(row.FinancialYearStartDate) : (prev.FinancialYearStartDate ?? null),
+                            FinancialYearEndDate: row.FinancialYearEndDate ? formatDate_dd_mm_yyyy(row.FinancialYearEndDate) : (prev.FinancialYearEndDate ?? null),
                             DesignationId: row.DesignationId ?? prev.DesignationId ?? '',
                             DepartmentMasterId: row.DepartmentMasterId ?? prev.DepartmentMasterId ?? 0,
                             LeaveTypebalanceJSONList: '',
@@ -151,31 +149,26 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                             setDesignationValue(null);
                         }
                     }
-
                 } else {
-
                     addToast({ type: 'error', title: response.left.message });
-
                 }
+
                 return response;
             },
             undefined,
             (error: any) => {
-
-                addToast({ type: 'error', title: error.message })
+                addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Loading Leave Credit Debit Data'
+            'Loading Leave Credit Configuration Data'
         );
-    }, [id, addToast]);
+    };
     //#endregion
 
     //#region INITIALIZATION
     useEffect(() => {
-
         if (id) {
-
-            fetchLeaveCreditDebitDetails();
+            fetchLeaveCreditConfigurationDetails();
             return;
         }
 
@@ -184,8 +177,8 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
         setLeaveTypeLabels({});
         setDropdownLabels({});
         setDesignationValue(null);
-    }, [id, fetchLeaveCreditDebitDetails]);
-
+        setErrors({});
+    }, [id]);
     //#endregion
 
     const handleAddLeaveBalanceType = () => {
@@ -201,7 +194,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
         const newIndex = leaveBalanceTypes.length;
         setLeaveBalanceTypes((prev) => [
             ...prev,
-            { LeaveTypeBalanceId: 0, LeaveTypeId: 0, LeaveCredit: 0, LeaveCreditDebitId: 0, LeaveTypeName: '' },
+            { LeaveTypeBalanceId: 0, LeaveTypeId: 0, LeaveCredit: 0, LeaveCreditConfigurationId: 0, LeaveTypeName: '' },
         ]);
 
         // Scroll to the newly added item after it's rendered
@@ -255,28 +248,32 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
         setLeaveBalanceTypes((prev) => prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)));
     };
 
-    //#region [VALIDATION FUNCTION]
-
-    const validateAddLeaveCreditDebitForm = (): {
-
-        isValid: boolean
-
-        errors: { [key: string]: string }
-
+    //#region LEAVE CREDIT CONFIGURATION VALIDATION | ADD | UPDATE ACTION
+    // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+    const validateLeaveCreditConfigurationForm = (): {
+        isValid: boolean;
+        errors: { [key: string]: string };
     } => {
-
-        const newErrors: { [key: string]: string } = {}
+        const newErrors: { [key: string]: string } = {};
 
         if (!formData.LeavePeriodMode?.trim()) {
             newErrors.LeavePeriodMode = "Leave Period Mode is required.";
         }
 
-        if (!formData.FYyear || formData.FYyear === 0) {
-            newErrors.FYyear = "Financial Year is required.";
+        if (!formData.FinancialYearStartDate || formData.FinancialYearStartDate.trim() === '') {
+            newErrors.FinancialYearStartDate = "Financial Year Start Date is required.";
         }
 
-        if (formData.LeavePeriodMode === 'Monthly' && (!formData.Month || formData.Month.trim() === '')) {
-            newErrors.Month = "Month is required for Monthly mode.";
+        if (!formData.FinancialYearEndDate || formData.FinancialYearEndDate.trim() === '') {
+            newErrors.FinancialYearEndDate = "Financial Year End Date is required.";
+        }
+
+        if (formData.FinancialYearStartDate && formData.FinancialYearEndDate) {
+            const startDate = new Date(formData.FinancialYearStartDate.split('-').reverse().join('-'));
+            const endDate = new Date(formData.FinancialYearEndDate.split('-').reverse().join('-'));
+            if (endDate <= startDate) {
+                newErrors.FinancialYearEndDate = "End Date must be after Start Date.";
+            }
         }
 
         if (!formData.DepartmentMasterId || formData.DepartmentMasterId === 0) {
@@ -300,126 +297,77 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
-        }
-    }
-    //#endregion
-
-    //#region ADD UPDATE LEAVE CREDIT DEBIT
-    const PushLeaveCreditDebitFormData = (): AddUpdateLeaveCreditDebitRequest => {
-        // Get designation IDs from the hook
-        const designationIdsString = designationDropdown.selectedValues.length > 0
-            ? designationDropdown.selectedValues.join(',')
-            : '';
-
-        return {
-            ...formData,
-            DepartmentMasterId: formData.DepartmentMasterId || 0,
-            DesignationId: designationIdsString,
-            LeaveTypebalanceJSONList: JSON.stringify(
-                leaveBalanceTypes.map((item) => ({
-                    LeaveTypeBalanceId: item.LeaveTypeBalanceId || 0,
-                    LeaveTypeId: item.LeaveTypeId || 0,
-                    LeaveCredit: item.LeaveCredit || 0,
-                    LeaveCreditDebitId: item.LeaveCreditDebitId || formData.LeaveCreditDebitId || 0,
-                })),
-            ),
         };
-    }
+    };
 
-    const handleSubmit = async () => {
+    // ============================================================= [ADD UPDATE FUNCTION] =============================================================================================
+    const handleSave = async () => {
+        setErrors({});
 
-        setErrors({})
-
-
-        const validation = validateAddLeaveCreditDebitForm()
+        const validation = validateLeaveCreditConfigurationForm();
 
         if (!validation.isValid) {
-
-            setErrors(validation.errors)
-
-            return
+            setErrors(validation.errors);
+            return;
         }
 
         await runApiWithLoader(
             setIsLoading,
-
             setLoadingMessage,
             async () => {
+                // Get designation IDs from the hook
+                const designationIdsString = designationDropdown.selectedValues.length > 0
+                    ? designationDropdown.selectedValues.join(',')
+                    : '';
 
-                const payload = PushLeaveCreditDebitFormData();
+                const payload: AddUpdateLeaveCreditConfigurationRequest = {
+                    ...formData,
+                    DepartmentMasterId: formData.DepartmentMasterId || 0,
+                    DesignationId: designationIdsString,
+                    FinancialYearStartDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.FinancialYearStartDate),
+                    FinancialYearEndDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.FinancialYearEndDate),
+                    LeaveTypebalanceJSONList: JSON.stringify(
+                        leaveBalanceTypes.map((item) => ({
+                            LeaveTypeBalanceId: item.LeaveTypeBalanceId || 0,
+                            LeaveTypeId: item.LeaveTypeId || 0,
+                            LeaveCredit: item.LeaveCredit || 0,
+                            LeaveCreditConfigurationId: item.LeaveCreditConfigurationId || formData.LeaveCreditConfigurationId || 0,
+                        })),
+                    ),
+                };
 
-                const response = await leaveCreditDebitService.apiCallAddUpdateLeaveCreditDebit(payload);
+                const response = await leaveCreditConfigurationService.apiCallAddUpdateLeaveCreditConfiguration(payload);
 
                 if (E.isRight(response)) {
                     const apiResponse = response.right;
-                    
+
                     // Check backend ErrorMessage first
                     if (apiResponse.ErrorMessage && apiResponse.ErrorMessage.length > 0) {
                         addToast({ type: "error", title: apiResponse.ErrorMessage[0] });
                     } else if (apiResponse.WarningMessage && apiResponse.WarningMessage.length > 0) {
                         addToast({ type: "warning", title: apiResponse.WarningMessage[0] });
-                        // Get list state from navigation if available, otherwise use defaults
-                        const locationState = location.state as {
-                            listState?: {
-                                page?: number;
-                                filters?: any;
-                                sortInfo?: any;
-                                searchTerm?: string;
-                            };
-                        } | null;
-
-                        const listState = locationState?.listState || {
-                            page: 1,
-                            filters: {},
-                            sortInfo: undefined,
-                            searchTerm: '',
-                        };
-
-                        navigate("/leaveCreditDebit", {
-                            state: { listState }
-                        });
+                        resetFilters();
+                        navigate('/leaveCreditConfiguration');
                     } else {
                         // Success - use backend SuccessMessage
                         addToast({ type: "success", title: apiResponse.SuccessMessage?.[0] });
-
-                        // Get list state from navigation if available, otherwise use defaults
-                        const locationState = location.state as {
-                            listState?: {
-                                page?: number;
-                                filters?: any;
-                                sortInfo?: any;
-                                searchTerm?: string;
-                            };
-                        } | null;
-
-                        const listState = locationState?.listState || {
-                            page: 1,
-                            filters: {},
-                            sortInfo: undefined,
-                            searchTerm: '',
-                        };
-
-                        navigate("/leaveCreditDebit", {
-                            state: { listState }
-                        });
+                        resetFilters();
+                        navigate('/leaveCreditConfiguration');
                     }
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
+
                 return response;
             },
             undefined,
             (error: any) => {
-
-                addToast({ type: 'error', title: error.message })
+                addToast({ type: 'error', title: error.message });
             },
             undefined,
-
-            Number(id) === 0 ? 'Add' : 'Update'
-        )
-
+            formData.LeaveCreditConfigurationId === 0 ? 'Adding Leave Credit Configuration...' : 'Updating Leave Credit Configuration...'
+        );
     };
-
     //#endregion
 
     return (
@@ -428,61 +376,41 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                 <div />
             </Loader>
             <div className="space-y-6">
-                <HeaderActionBar
-                    titleText={formData.LeaveCreditDebitId && formData.LeaveCreditDebitId > 0 ? 'Update' : 'Add'}
-                    cancelText="Cancel"
-                    onCancel={() => navigate(-1)}
-                    canAction={false}
-                    isLoading={isLoading}
-                />
+               
 
                 {/* Details Card */}
                 <div className="rounded-lg shadow-sm border border-gray-200 p-6" style={{ backgroundColor: '#FFFFFF' }}>
                     <h3 className="text-md font-medium text-gray-500 mb-4">Details</h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <SinglePageSelection
                             label="Leave Period Mode"
                             required
-                            options={LEAVE_PERIOD_MODES}
+                            options={LEAVE_PERIOD_MODES.map((opt) => ({ label: opt.name, value: opt.id }))}
                             value={formData.LeavePeriodMode || ''}
                             onChange={(value) => {
                                 handleFieldChange('LeavePeriodMode', String(value));
-                                if (value !== 'Monthly') handleFieldChange('Month', '');
                             }}
                             error={errors.LeavePeriodMode}
                             placeholder="Select Leave Period Mode"
                             searchable
                             size="md"
                         />
-
-                        <Input
-                            label="Financial Year"
+                        <DatePickerInput
+                            label="Financial Year Start Date"
                             required
-                            type="number"
-                            value={formData.FYyear?.toString() || ''}
-                            onChange={(e) => handleFieldChange('FYyear', Number(e.target.value))}
-                            error={errors.FYyear}
-                            min={1950}
-                            max={2100}
+                            value={formData.FinancialYearStartDate || null}
+                            onChange={(value) => handleFieldChange('FinancialYearStartDate', value || null)}
+                            error={errors.FinancialYearStartDate}
+                        />
+                        <DatePickerInput
+                            label="Financial Year End Date"
+                            required
+                            value={formData.FinancialYearEndDate || null}
+                            onChange={(value) => handleFieldChange('FinancialYearEndDate', value || null)}
+                            error={errors.FinancialYearEndDate}
                         />
                     </div>
-
-                    {formData.LeavePeriodMode === 'Monthly' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <SinglePageSelection
-                                label="Month"
-                                required
-                                options={MONTHS_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                value={formData.Month || ''}
-                                onChange={(value) => handleFieldChange('Month', String(value))}
-                                error={errors.Month}
-                                placeholder="Select month"
-                                searchable
-                                size="md"
-                            />
-                        </div>
-                    )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <SingleSelectDropdownWithPagination
@@ -520,10 +448,10 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
 
                 {/* Leave Balance Type Card */}
                 <div
-                    className="rounded-lg shadow-sm border border-gray-200 p-6"
-                    style={{ backgroundColor: '#FFFFFF' }}
+                    className="rounded-lg shadow-sm border border-gray-200"
+                    style={{ backgroundColor: '#FFFFFF', padding: '24px' }}
                 >
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between">
                         <h3 className="text-md font-medium text-gray-500">Leave Balance Type</h3>
                         <Button
                             type="button"
@@ -532,7 +460,7 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                             onClick={handleAddLeaveBalanceType}
                             leftIcon={<Plus className="h-4 w-4" />}
                         >
-                            Add Leave Type
+                            Add Leave Credit
                         </Button>
                     </div>
                     {errors.LeaveBalanceTypes && (
@@ -548,63 +476,65 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
                                     ref={(el) => {
                                         leaveBalanceTypeRefs.current[index] = el;
                                     }}
-                                    className="relative"
                                 >
-                                    <Button
-                                        type="button"
-                                        color='red'
-                                        size='xs'
-                                        onClick={() => handleRemoveLeaveBalanceType(index)}
-                                        title="Remove"
-                                        className="absolute -top-2 right-2 bg-transparent border border-transparent text-red-500 hover:bg-red-100 transition-colors duration-200 rounded p-1"
-
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                        <SingleSelectDropdownWithPagination
-                                            key={`leave-type-${index}-${item.LeaveTypeId}`}
-                                            label="Leave Type"
-                                            title="Select Leave Type"
-                                            size="lg"
-                                            required
-                                            dataFetchCallBack={fetchLeaveTypeMasterDropdown}
-                                            onSelected={(selectedItem) => {
-                                                const leaveTypeId = Number(selectedItem.value);
-                                                if (leaveTypeId && leaveTypeId > 0) {
-                                                    handleUpdateLeaveBalanceType(index, 'LeaveTypeId', leaveTypeId);
-                                                    setLeaveTypeLabels((prev) => ({ ...prev, [index]: selectedItem.label || '' }));
-                                                    if (errors[`LeaveBalanceType_${index}_LeaveTypeId`]) {
-                                                        setErrors((prev) => ({ ...prev, [`LeaveBalanceType_${index}_LeaveTypeId`]: '' }));
+                                    <div className="flex flex-col md:flex-row gap-4 items-end">
+                                        <div className="flex-1">
+                                            <SingleSelectDropdownWithPagination
+                                                key={`leave-type-${index}-${item.LeaveTypeId}`}
+                                                label="Leave Type"
+                                                title="Select Leave Type"
+                                                size="md"
+                                                required
+                                                dataFetchCallBack={fetchLeaveTypeMasterDropdown}
+                                                onSelected={(selectedItem) => {
+                                                    const leaveTypeId = Number(selectedItem.value);
+                                                    if (leaveTypeId && leaveTypeId > 0) {
+                                                        handleUpdateLeaveBalanceType(index, 'LeaveTypeId', leaveTypeId);
+                                                        setLeaveTypeLabels((prev) => ({ ...prev, [index]: selectedItem.label || '' }));
+                                                        if (errors[`LeaveBalanceType_${index}_LeaveTypeId`]) {
+                                                            setErrors((prev) => ({ ...prev, [`LeaveBalanceType_${index}_LeaveTypeId`]: '' }));
+                                                        }
                                                     }
+                                                }}
+                                                initialValue={
+                                                    item.LeaveTypeId && item.LeaveTypeId > 0
+                                                        ? createDropdownInitialValue(String(item.LeaveTypeId), leaveTypeLabels[index] || '')
+                                                        : null
                                                 }
-                                            }}
-                                            initialValue={
-                                                item.LeaveTypeId && item.LeaveTypeId > 0
-                                                    ? createDropdownInitialValue(String(item.LeaveTypeId), leaveTypeLabels[index] || '')
-                                                    : null
-                                            }
-                                            error={errors[`LeaveBalanceType_${index}_LeaveTypeId`]}
-                                        />
-                                        <Input
-                                            label="Leave Credit"
-                                            required
-                                            type="number"
-                                            value={item.LeaveCredit}
-                                            onChange={(e) =>
-                                                handleUpdateLeaveBalanceType(
-                                                    index,
-                                                    'LeaveCredit',
-                                                    e.target.value === '' ? 0 : Number(e.target.value)
-                                                )
-                                            }
-                                            placeholder="Enter Leave Credit"
-                                            error={errors[`LeaveBalanceType_${index}_LeaveCredit`]}
-                                            min={0}
-                                            step={1}
-                                        />
-
+                                                error={errors[`LeaveBalanceType_${index}_LeaveTypeId`]}
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <Input
+                                                label="Leave Credit"
+                                                required
+                                                size="sm"
+                                                type="number"
+                                                value={item.LeaveCredit}
+                                                onChange={(e) =>
+                                                    handleUpdateLeaveBalanceType(
+                                                        index,
+                                                        'LeaveCredit',
+                                                        e.target.value === '' ? 0 : Number(e.target.value)
+                                                    )
+                                                }
+                                                placeholder="Enter Leave Credit"
+                                                error={errors[`LeaveBalanceType_${index}_LeaveCredit`]}
+                                                min={0}
+                                                step={1}
+                                            />
+                                        </div>
+                                        <div className="flex-shrink-0 pb-2">
+                                            <Button
+                                                type="button"
+                                                color='red'
+                                                size='xs'
+                                                onClick={() => handleRemoveLeaveBalanceType(index)}
+                                                title="Remove"
+                                            >
+                                                <Trash2 className="h-4 w-4 " />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -614,12 +544,12 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
 
                 <BottomActionBar
                     cancelText="Cancel"
-                    saveText={formData.LeaveCreditDebitId ? "Update" : "Add"}
+                    saveText={formData.LeaveCreditConfigurationId && formData.LeaveCreditConfigurationId > 0 ? "Update" : "Add"}
                     onCancel={() => navigate(-1)}
-                    onSave={() => {
-                        handleSubmit();
-                    }}
                     canAction={canAction}
+                    onSave={() => {
+                        void handleSave();
+                    }}
                     isLoading={isLoading}
                 />
 
@@ -629,4 +559,4 @@ export const AddUpdateLeaveCreditDebit: React.FC = () => {
     );
 };
 
-export default AddUpdateLeaveCreditDebit;
+export default AddUpdateLeaveCreditConfiguration;

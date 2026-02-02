@@ -18,9 +18,9 @@ import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 import type { CompOffData, FilterWithPaginationCompOff } from '@/features/compOff/models/compOff';
 import type { FilterWithPaginationLeaveRequest, LeaveData } from '@/features/leave/models/LeaveModel';
 import type { FilterWithPaginationOutDoor, OutDoorMasterData } from '@/features/outdoor/models/OutDoorModel';
-import { CompOffService } from '@/features/compOff/services/CompOffServices';
+import { compOffService } from '@/features/compOff/services/CompOffServices';
 import { LeaveService } from '@/features/leave/services/LeaveService';
-import { OutDoorService } from '@/features/outdoor/services/OutDoorDataService';
+import { outDoorService } from '@/features/outdoor/services/OutDoorDataService';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { updateFilter } from '@/core/utils/filterHelper';
@@ -223,7 +223,7 @@ export const PayrollReport: React.FC = () => {
           Reason: searchTerm?.trim() || activeFilters.Reason?.trim() || undefined,
         }
 
-        const response = await CompOffService.apiCallPullCompOff(params);
+        const response = await compOffService.apiCallPullCompOff(params);
 
         if (E.isRight(response)) {
 
@@ -311,7 +311,7 @@ export const PayrollReport: React.FC = () => {
           CompanyName: searchTerm?.trim() || activeFilters.CompanyName?.trim() || undefined,
         }
 
-        const response = await OutDoorService.apiCallPullOutDoorData(params);
+        const response = await outDoorService.apiCallPullOutDoorData(params);
 
         if (E.isRight(response)) {
 
@@ -358,14 +358,14 @@ export const PayrollReport: React.FC = () => {
     setTempFilters({});
     setFilters({});
     setPagination({ currentPage: 1 });
-    
+
     if (activeTab === "Comp-Off") loadCompOff(1, {});
     else if (activeTab === 'Leave') loadLeave(1, {});
     else if (activeTab === 'Outdoor') loadOutdoor(1, {});
     else if (activeTab === 'Resignation') loadResignations(1, {});
     else if (activeTab === "Attendance") loadAttendance(1, {});
     else if (activeTab === "Attendance Regularization") loadAttendanceRegularization(1, {});
-    
+
     setShowFilterPopup(false);
   };
 
@@ -408,7 +408,7 @@ export const PayrollReport: React.FC = () => {
             SortBy: sortByParam,
             ExportType: 'PDF'
           };
-          const response = await CompOffService.apiCallPullCompOff(params);
+          const response = await compOffService.apiCallPullCompOff(params);
           handleExportFile(response, 'PDF', 'Comp Off', addToast);
           return response;
         } else if (activeTab === 'Leave') {
@@ -434,7 +434,7 @@ export const PayrollReport: React.FC = () => {
             SortBy: sortByParam,
             ExportType: 'PDF'
           };
-          const response = await OutDoorService.apiCallPullOutDoorData(params);
+          const response = await outDoorService.apiCallPullOutDoorData(params);
           handleExportFile(response, 'PDF', 'Outdoor', addToast);
           return response;
         } else if (activeTab === 'Resignation') {
@@ -521,7 +521,7 @@ export const PayrollReport: React.FC = () => {
         render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
       },
       {
-        key: 'RequestDate',
+        key: 'WorkingDate',
         label: 'Request Date',
         width: '25',
         sortable: false,
@@ -805,15 +805,15 @@ export const PayrollReport: React.FC = () => {
         />
       </div>
 
-        <div className="space-y-4 p-4">
-          <DataTable
+      <div className="space-y-4 p-4">
+        <DataTable
           data={getCurrentData()}
           columns={getCurrentColumns()}
           pagination={paginationInfo}
           emptyMessage={getEmptyMessage()}
-            fixedHeight
-            recordsPerPage={20}
-            className="flex-1"
+          fixedHeight
+          recordsPerPage={20}
+          className="flex-1"
           sortInfo={sortInfo}
           onSort={handleSortColumn}
         />
@@ -831,7 +831,7 @@ export const PayrollReport: React.FC = () => {
         saveText="Apply "
         cancelText="Clear"
         onCancel={() => clearFilters()}
-       
+
         size="small-half"
       >
         <div className="space-y-6">

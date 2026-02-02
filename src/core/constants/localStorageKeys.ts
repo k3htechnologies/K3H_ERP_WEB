@@ -22,7 +22,7 @@ export const LOCAL_STORAGE_KEYS = {
     LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS: 'leaveEncashmentMaster.selectedColumns',
     LEAVE_TYPE_MASTER_SELECTED_COLUMNS: 'leaveTypeMaster.selectedColumns',
     LEAVE_SELECTED_COLUMNS: 'leave.selectedColumns',
-    LEAVE_CREDIT_DEBIT_SELECTED_COLUMNS: 'leaveCreditDebit.selectedColumns',
+    LEAVE_CREDIT_CONFIGURATION_SELECTED_COLUMNS: 'leaveCreditConfiguration.selectedColumns',
     COMP_OFF_SELECTED_COLUMNS: 'compOffTableColumns',
     SHIFT_MASTER_SELECTED_COLUMNS: 'shiftMaster.selectedColumns',
     SHIFT_MAPPING_MASTER_SELECTED_COLUMNS: 'shiftMappingMaster.selectedColumns',
@@ -56,4 +56,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     SHIFT_MASTER: 'shiftMaster.listState',
     WEEK_OFF_MASTER: 'weekOffMaster.listState',
     LITIGATION: 'Litigation.listState',
+    LEAVECREDITCONFIGURATION:'LeaveCreditConfiguration.listState',
+    LEAVE:'leave.listState',
+    OUTDOOR:'outdoor.listState'
 } as const

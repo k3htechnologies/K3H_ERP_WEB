@@ -149,10 +149,10 @@ export const getPageInfo = (path: string) => {
                 title: 'Week Off Mapping Master',
                 description: 'Manage and organize branch associations with complete CRUD operations',
             }
-        case 'leaveCreditDebit':
+        case 'leaveCreditConfiguration':
             return {
-                title: 'Leave Credit Debit Management',
-                description: 'Manage employee leave credit and debit with complete CRUD operations',
+                title: 'Leave Credit Configuration Management',
+                description: 'Manage leave credit Configuration',
             }
 
         // PAYROLL
@@ -164,12 +164,12 @@ export const getPageInfo = (path: string) => {
 
         case 'compOff':
             return {
-                title: 'compOff',
+                title: 'CompOff',
                 description: 'Manage compOff with complete CRUD operations',
             }
         case 'outdoor':
             return {
-                title: "Outdoor Managemen",
+                title: "Outdoor Management",
                 description: "outdoor visit information",
             }
         case 'resignation':

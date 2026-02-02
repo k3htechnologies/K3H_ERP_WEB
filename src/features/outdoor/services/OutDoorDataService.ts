@@ -1,5 +1,5 @@
 import type { Failure } from '@/core/api/FailureResponse';
-import { OutDoorDataSourceImpl } from '../datasources/OutDoorDatasource';
+import { OutDoorDataSourceImpl } from '@/features/outdoor/datasources/OutDoorDatasource';
 import type {
     FilterWithPaginationOutDoor,
     OutDoorDataListResponse,
@@ -10,15 +10,15 @@ import type {
     OutDoorConclusionResponse,
     DeleteOutDoorRequest,
     OutDoorDeleteResponse
-} from '../models/OutDoorModel';
+} from '@/features/outdoor/models/OutDoorModel';
 
 import * as E from 'fp-ts/Either';
 
 const outDoorDataSource = new OutDoorDataSourceImpl();
 
-export const OutDoorService = {
+export const outDoorService = {
 
-    apiCallPullOutDoorData: async (params: FilterWithPaginationOutDoor, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, OutDoorDataListResponse>> => {
+    apiCallPullOutDoor: async (params: FilterWithPaginationOutDoor, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, OutDoorDataListResponse>> => {
         try {
 
             return E.right(await outDoorDataSource.pullOutDoor(params, options?.signal));

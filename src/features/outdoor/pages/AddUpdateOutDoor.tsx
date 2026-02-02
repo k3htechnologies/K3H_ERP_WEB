@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
-import { Button } from "@/ui/components/forms/Button";
 import { Loader } from "@/core/utils/loader";
 import { useToast } from "@/core/hooks/useToast";
-import { OutDoorService } from "@/features/outdoor/services/OutDoorDataService";
-import type { OutDoorMasterData, AddUpdateOutDoor } from "../models/OutDoorModel";
+import { outDoorService } from "@/features/outdoor/services/OutDoorDataService";
+import type { AddUpdateOutDoor, FilterWithPaginationOutDoor } from "../models/OutDoorModel";
 import * as E from "fp-ts/Either";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
 import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
@@ -15,11 +14,13 @@ import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialVa
 import { MultiFilePicker, type FileValue } from "@/ui/components/ImagePicker/MultiFilePicker";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, parseTimeFromISO } from "@/core/utils/dateFormat";
 import { runApiWithLoader } from '@/core/utils';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
-import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
+import BottomActionBar from "@/ui/components/forms/BottomActionBar";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { TextArea } from "@/ui/components/forms/Textarea";
 
 const initialFormState = (): AddUpdateOutDoor => ({
   OutdoorId: 0,
@@ -31,6 +32,7 @@ const initialFormState = (): AddUpdateOutDoor => ({
   CompanyName: "",
   CompanyAddress: "",
   VisitingCardURL: "",
+  RemoveVisitingCardURL: "",
   Purpose: "",
   Conclusion: "",
   PunchIn: "",
@@ -43,15 +45,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   //#region STATE MANAGEMENT
   const [outdoorFormData, setOutdoorFormData] = useState<AddUpdateOutDoor>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("");
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [selectedTime, setSelectedTime] = useState<string>("00:00");
-  const [visitingCardFiles, setVisitingCardFiles] = useState<FileValue[]>([]);
-  const [removedVisitingCardUrls, setRemovedVisitingCardUrls] = useState<string[]>([]);
-  const initialVisitingCardUrlsRef = useRef<string[]>([]);
-  const [dropdownLabels, setDropdownLabels] = useState<{ departmentName?: string; }>({});
-  const [selectedDepartmentName, setSelectedDepartmentName] = useState<string>("");
-  const hasFetchedOutDoor = useRef(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // NAVIGATE
   const navigate = useNavigate();
@@ -61,70 +55,83 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
   // TOAST
   const { addToast } = useToast();
+
+  //ERROR SET UP
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+
+  const [selectedTime, setSelectedTime] = useState<string>("00:00");
+  const [visitingCardFiles, setVisitingCardFiles] = useState<FileValue[]>([]);
+  const [removedVisitingCardUrls, setRemovedVisitingCardUrls] = useState<string[]>([]);
+  const [visitingCardURL, setVisitingCardURL] = useState<string>("");
+  const initialVisitingCardUrlsRef = useRef<string[]>([]);
+  const [dropdownLabels, setDropdownLabels] = useState<{ departmentName?: string; }>({});
+  const [selectedDepartmentName, setSelectedDepartmentName] = useState<string>("");
+  const [selectedAccompaniedValues, setSelectedAccompaniedValues] = useState<string | number | null>(null);
   //#endregion
 
-  //#region HANDLE CHNAGE EVENT WHEN INPUT BOX ANY OTHER
-  const handleFieldChange = useCallback((field: keyof AddUpdateOutDoor, value: string | number) => {
-    setOutdoorFormData(prev => ({ ...prev, [field]: value }));
-    setErrors(prev => {
-      if (prev[field]) {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      }
-      return prev;
-    });
-  }, []);
+  //#region MENU PERMISSIONS
+  const { canAction } = useMenuPermissions('/outdoor');
+  //#endregion
+
+  //#region HANDLE FILED CHNAGE EVENT
+  const handleFieldChange = (field: keyof AddUpdateOutDoor, value: string | number) => {
+
+    setOutdoorFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
   //#endregion 
 
   //#region INITIALIZATION
+
   useEffect(() => {
-    hasFetchedOutDoor.current = false;
+    if (outdoorId) {
+      fetchOutDoorData();
+      return;
+    }
+
+    setOutdoorFormData(initialFormState());
+    setSelectedTime("00:00");
+    setSelectedDepartmentName("");
+    setSelectedAccompaniedValues(null);
+    setDropdownLabels({});
+    setVisitingCardFiles([]);
+    setVisitingCardURL("");
+    initialVisitingCardUrlsRef.current = [];
+    setRemovedVisitingCardUrls([]);
+    setErrors({});
+
   }, [outdoorId]);
+
   //#endregion
 
-  //#region INIT
-  const fetchOutDoorData = useCallback(async () => {
-    if (!outdoorId || hasFetchedOutDoor.current) return;
-
-    hasFetchedOutDoor.current = true;
-
+  //#region FETCH OUTDOOR DETAILS
+  const fetchOutDoorData = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        const apiResponse = await OutDoorService.apiCallPullOutDoorData({
+
+        const params: FilterWithPaginationOutDoor = {
           PageNumber: 1,
-          PageSize: 1000,
-        });
+          PageSize: 1,
+          OutdoorId: Number(outdoorId)
+        }
 
-        if (E.isRight(apiResponse)) {
-          const outdoor = apiResponse.right.Data?.find((o: OutDoorMasterData) => o.OutdoorId === Number(outdoorId));
-          if (outdoor) {
-            const parseDateFromISO = (isoString: string): string => {
-              if (!isoString) return "";
-              if (/^\d{4}-\d{2}-\d{2}$/.test(isoString)) {
-                return isoString;
-              }
-              const dateMatch = isoString.match(/^(\d{4}-\d{2}-\d{2})/);
-              return dateMatch ? dateMatch[1] : isoString;
-            };
+        const response = await outDoorService.apiCallPullOutDoor(params);
 
-            const parseTimeFromISO = (isoString: string): string => {
-              if (!isoString) return "00:00";
-              if (/^\d{2}:\d{2}$/.test(isoString)) {
-                return isoString;
-              }
-              const timeMatch = isoString.match(/T(\d{2}):(\d{2})/);
-              return timeMatch ? `${timeMatch[1]}:${timeMatch[2]}` : "00:00";
-            };
+        if (E.isRight(response)) {
 
-            const parsedDate = parseDateFromISO(outdoor.OutDoorDate || "");
-            const parsedTime = parseTimeFromISO(outdoor.OutDoorTime || "");
+          const e = response.right.Data?.[0];
 
-            // Set department first, then form data, to ensure hook can fetch options correctly
-            if (outdoor.DepartmentId && outdoor.DepartmentName) {
-              const departmentName = outdoor.DepartmentName;
+          if (e) {
+            const parsedDate = convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(e.OutDoorDate || "") || "";
+            const parsedTime = parseTimeFromISO(e.OutDoorTime || "");
+
+            if (e.DepartmentId && e.DepartmentName) {
+              const departmentName = e.DepartmentName;
               setSelectedDepartmentName(departmentName);
               setDropdownLabels(prev => ({
                 ...prev,
@@ -132,73 +139,53 @@ export const AddUpdateOutDoorPage: React.FC = () => {
               }));
             }
 
-            setOutdoorFormData({
-              OutdoorId: outdoor.OutdoorId,
-              Uniquekey: outdoor.Uniquekey,
-              OutDoorDate: parsedDate,
-              OutDoorTime: parsedTime,
-              AccompaniedById: outdoor.AccompaniedById || "",
-              DepartmentId: Number(outdoor.DepartmentId) || 0,
-              CompanyName: outdoor.CompanyName || "",
-              CompanyAddress: outdoor.CompanyAddress || "",
-              VisitingCardURL: outdoor.VisitingCardURL || "",
-              Purpose: outdoor.Purpose || "",
-              Conclusion: outdoor.Conclusion || "",
-              PunchIn: outdoor.PunchIn || "",
-              PunchOut: outdoor.PunchOut || "",
-              PunchInAddress: outdoor.PunchInAddress || "",
-              PunchOutAddress: outdoor.PunchOutAddress || "",
-            });
+            setOutdoorFormData(prev => ({
+              ...prev,
+              OutdoorId: e.OutdoorId ?? prev.OutdoorId,
+              Uniquekey: e.Uniquekey ?? prev.Uniquekey,
+              OutDoorDate: parsedDate || prev.OutDoorDate,
+              OutDoorTime: parsedTime || prev.OutDoorTime,
+              AccompaniedById: e.AccompaniedById ?? prev.AccompaniedById,
+              DepartmentId: Number(e.DepartmentId) || prev.DepartmentId,
+              CompanyName: e.CompanyName ?? prev.CompanyName,
+              CompanyAddress: e.CompanyAddress ?? prev.CompanyAddress,
+              VisitingCardURL: e.VisitingCardURL ?? prev.VisitingCardURL,
+              RemoveVisitingCardURL: "",
+              Purpose: e.Purpose ?? prev.Purpose,
+              Conclusion: e.Conclusion ?? prev.Conclusion,
+              PunchIn: e.PunchIn ?? prev.PunchIn,
+              PunchOut: e.PunchOut ?? prev.PunchOut,
+              PunchInAddress: e.PunchInAddress ?? prev.PunchInAddress,
+              PunchOutAddress: e.PunchOutAddress ?? prev.PunchOutAddress,
+            }));
 
-            initialVisitingCardUrlsRef.current = parseDocumentUrls(outdoor.VisitingCardURL || "");
+            setSelectedAccompaniedValues(e.AccompaniedById || null);
+
+            const existingUrls = parseDocumentUrls(e.VisitingCardURL || "");
+            initialVisitingCardUrlsRef.current = existingUrls;
+            setVisitingCardFiles([]);
+            setVisitingCardURL(e.VisitingCardURL || "");
             setRemovedVisitingCardUrls([]);
             setSelectedTime(parsedTime);
-
-          } else {
-            addToast({ type: "error", title: apiResponse.right.ErrorMessage?.[0] });
           }
         } else {
-          addToast({ type: "error", title: apiResponse.left.message });
+
+          addToast({ type: 'error', title: response.left.message });
+
         }
 
-        return apiResponse;
+        return response
       },
       undefined,
       (error: any) => {
-        addToast({ type: "error", title: error?.message });
+        addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Loading Outdoor Data'
-    );
-  }, [outdoorId, addToast]);
+      'Loading Outdoor'
+    )
+  }
   //#endregion
 
-  useEffect(() => {
-    if (outdoorId && initialVisitingCardUrlsRef.current.length > 0) {
-      const currentUrls = parseDocumentUrls(outdoorFormData.VisitingCardURL || "");
-      const removed = initialVisitingCardUrlsRef.current.filter(
-        url => !currentUrls.includes(url)
-      );
-      setRemovedVisitingCardUrls(removed);
-    }
-  }, [outdoorFormData.VisitingCardURL, outdoorId]);
-
-  useEffect(() => {
-    if (outdoorId) {
-      fetchOutDoorData();
-    } else {
-      // Reset form when in add mode
-      setOutdoorFormData(initialFormState());
-      setSelectedTime("00:00");
-      setSelectedDepartmentName("");
-      setDropdownLabels({});
-      initialVisitingCardUrlsRef.current = [];
-      setRemovedVisitingCardUrls([]);
-      setErrors({});
-    }
-  }, [outdoorId, fetchOutDoorData]);
-
-  //#endregion
 
   //#region FETCH EMPLOYEE DROPDOWN WITH DEPARTMENT
   const fetchEmployeeMasterDropdownWithDepartment = useCallback(
@@ -213,30 +200,17 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   //#endregion
 
   // Memoize fetchParams to prevent unnecessary re-renders and API loops
-  const fetchParams = useMemo(() => ({ 
-    departmentName: selectedDepartmentName || "" 
+  const fetchParams = useMemo(() => ({
+    departmentName: selectedDepartmentName || ""
   }), [selectedDepartmentName]);
 
-  // Use multi-select dropdown hook for Accompanied By (moved after fetchEmployeeMasterDropdownWithDepartment)
-  const hasDepartment = !!(selectedDepartmentName && outdoorFormData.DepartmentId && outdoorFormData.DepartmentId > 0);
   const accompaniedDropdown = useMultiSelectDropdown({
-    value: outdoorFormData.AccompaniedById,
+    value: selectedAccompaniedValues,
     fetchCallback: fetchEmployeeMasterDropdownWithDepartment,
     fetchParams: fetchParams,
-    autoFetchOptions: hasDepartment && !!outdoorFormData.AccompaniedById,
+    autoFetchOptions: true,
   });
 
-  // Note: The hook's autoFetchOptions will handle fetching when:
-  // 1. The value (AccompaniedById) changes
-  // 2. The fetchParams (departmentName) changes (via fetchOptionsForSelected dependency)
-  // No manual refresh needed to avoid API loops
-
-  //#region HANDLE ACCOMPANIED CHANGE
-  const handleAccompaniedChange = useCallback((values: (string | number)[]) => {
-    const { idsString } = accompaniedDropdown.handleChange(values);
-    handleFieldChange("AccompaniedById", idsString);
-  }, [handleFieldChange, accompaniedDropdown]);
-  //#endregion
 
   //#region HANDLE DEPARTMENT SELECTED
   const handleDepartmentSelected = useCallback((item: { label: string; value: string | number | null }) => {
@@ -257,12 +231,16 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       }
       return prev;
     });
-    // Options will reload automatically via useEffect when selectedDepartmentName changes
+    setSelectedAccompaniedValues(null);
   }, [handleFieldChange]);
   //#endregion
 
-  //#region VALIDATION
-  const validateForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
+  //#region OUTDOOR VALIDATION | ADD | UPDATE ACTION
+  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const validateForm = (): {
+    isValid: boolean
+    errors: { [key: string]: string }
+  } => {
     const newErrors: { [key: string]: string } = {};
 
     if (!outdoorFormData.OutDoorDate?.trim()) {
@@ -292,29 +270,18 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       newErrors.AccompaniedById = "Accompanied by field is required.";
     }
 
-    return { isValid: Object.keys(newErrors).length === 0, errors: newErrors };
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors
+    };
   };
-  //#endregion
 
-  //#region PUSH OUTDOOR FORM DATA
   const PushOutDoorFormData = (): FormData => {
     const fd = new FormData();
-
-    const toIsoDateTime = (date: string, time: string): string => {
-      if (!date || !time) return "";
-      const [hh, mm] = time.split(":");
-      const seconds = "00";
-      const milliseconds = "513";
-      return `${date}T${hh}:${mm}:${seconds}.${milliseconds}`;
-    };
-
-    const outDoorDateIso = toIsoDateTime(outdoorFormData.OutDoorDate, outdoorFormData.OutDoorTime);
-    const outDoorTimeIso = toIsoDateTime(outdoorFormData.OutDoorDate, outdoorFormData.OutDoorTime);
-
     fd.append('OutdoorId', String(outdoorFormData.OutdoorId ?? 0));
     fd.append('Uniquekey', outdoorFormData.Uniquekey ?? '');
-    fd.append('OutDoorDate', outDoorDateIso);
-    fd.append('OutDoorTime', outDoorTimeIso);
+    fd.append('OutDoorDate', outdoorFormData.OutDoorDate);
+    fd.append('OutDoorTime', outdoorFormData.OutDoorTime);
     fd.append('AccompaniedById', outdoorFormData.AccompaniedById ?? '');
     fd.append('DepartmentId', String(outdoorFormData.DepartmentId ?? 0));
     fd.append('CompanyName', outdoorFormData.CompanyName ?? '');
@@ -332,20 +299,31 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       }
     });
 
+    const existingUrls = visitingCardFiles
+      .filter(x => typeof x === 'string' && String(x).trim().length > 0)
+      .map(x => String(x).trim())
+      .join(',');
+
+    if (existingUrls) {
+      fd.append('VisitingCardURL', existingUrls);
+    }
+
     fd.append('RemoveVisitingCardURL', removedVisitingCardUrls.join(','));
 
     return fd;
   };
-  //#endregion
 
-  //#region ADD UPDATE OUTDOOR
-  const handleAddUpdateOutDoor = async () => {
-    setErrors({});
-    const validation = validateForm();
+  const handleSubmit = async () => {
+
+    setErrors({})
+
+    const validation = validateForm()
 
     if (!validation.isValid) {
-      setErrors(validation.errors);
-      return;
+
+      setErrors(validation.errors)
+
+      return
     }
 
     await runApiWithLoader(
@@ -354,50 +332,16 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       async () => {
         const pushOutDoorFormData = PushOutDoorFormData();
 
-        const apiResponse = await OutDoorService.apiCallAddUpdateOutDoor(pushOutDoorFormData);
+        const apiResponse = await outDoorService.apiCallAddUpdateOutDoor(pushOutDoorFormData);
 
         if (E.isRight(apiResponse)) {
-          const response = apiResponse.right;
 
-          // Check backend ErrorMessage first
-          if (response.ErrorMessage && response.ErrorMessage.length > 0) {
-            addToast({
-              type: "error",
-              title: response.ErrorMessage[0]
-            });
-          } else if (response.WarningMessage && response.WarningMessage.length > 0) {
-            addToast({
-              type: "warning",
-              title: response.WarningMessage[0]
-            });
-            navigate("/outdoor", {
-              state: {
-                listState: {
-                  page: 1,
-                  filters: {},
-                  sortInfo: undefined,
-                  searchTerm: ''
-                }
-              }
-            });
-          } else {
-            // Success - use backend SuccessMessage
-            addToast({
-              type: 'success',
-              title: response.SuccessMessage?.[0]
-            });
-            navigate("/outdoor", {
-              state: {
-                listState: {
-                  page: 1,
-                  filters: {},
-                  sortInfo: undefined,
-                  searchTerm: ''
-                }
-              }
-            });
-          }
-        } else {
+          addToast({ type: "success", title: apiResponse.right.SuccessMessage[0] });
+
+          navigate("/outdoor");
+
+        }
+        else {
           addToast({
             type: "error",
             title: apiResponse.left.message,
@@ -408,154 +352,156 @@ export const AddUpdateOutDoorPage: React.FC = () => {
       },
       undefined,
       (error: any) => {
-        addToast({
-          type: "error",
-          title: error.message
-        });
+
+        addToast({ type: 'error', title: error.message })
       },
       undefined,
-      outdoorFormData.OutdoorId === 0 ? 'Adding Outdoor Data...' : 'Updating Outdoor Data...'
-    );
+
+      Number(outdoorId ?? 0) === 0 ? 'Add Outdoor' : 'Update Outdoor'
+    )
+
   };
+
   //#endregion
 
 
   return (
-    <div className="p-6" style={{ backgroundColor: '#F9FAFB' }}>
-      <Loader loading={isLoading} title={loadingMessage}>
-        <div />
-      </Loader>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <Loader loading={isLoading} title={loadingMessage}>  <div /> </Loader>
 
-      <div className="space-y-6">
-        <HeaderActionBar
-          titleText={outdoorFormData.OutdoorId && outdoorFormData.OutdoorId > 0 ? 'Update' : 'Add'}
-          cancelText="Cancel"
-          onCancel={() => navigate(-1)}
-          canAction={false}
-          isLoading={isLoading}
-        />
+      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
+        <form onSubmit={handleSubmit}>
+          {/* ============================================================= [OUTDOOR DETAILS] ============================================================================================= */}
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Outdoor Details</h3>
 
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex-1 space-y-2 px-6 py-3 pb-20 overflow-y-auto thin-scroll">
-            <form onSubmit={(e) => { e.preventDefault(); handleAddUpdateOutDoor(); }} className="space-y-4">
-              <div className="space-y-4 pb-3">
-                <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Outdoor Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <DatePickerInput
-                    label="OutDoor Date"
-                    value={formatDate_dd_mm_yyyy(outdoorFormData.OutDoorDate)}
-                    onChange={(val) => handleFieldChange('OutDoorDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
-                    required
-                    disabled={!!outdoorFormData.PunchIn}
-                    error={errors.OutDoorDate}
-                  />
-
-                  <TimePicker
-                    label="Meeting Time"
-                    required
-                    size="sm"
-                    format={24}
-                    value={selectedTime}
-                    onChange={(val) => {
-                      setSelectedTime(val);
-                      handleFieldChange("OutDoorTime", val);
-                    }}
-                    disabled={!!outdoorFormData.PunchIn}
-                    error={errors.OutDoorTime}
-                  />
-
-                  <SingleSelectDropdownWithPagination
-                    label="Department"
-                    title="Select Department"
-                    size="md"
-                    dataFetchCallBack={fetchDepartmentMasterDropdown}
-                    onSelected={handleDepartmentSelected}
-                    initialValue={createDropdownInitialValue(outdoorFormData.DepartmentId, dropdownLabels.departmentName)}
-                    error={errors.DepartmentId}
-                    required
-                    disabled={!!outdoorFormData.PunchIn}
-                  />
-
-                  <div className="space-y-1">
-                    <MultiSelectPagination
-                      // key={`accompanied-by-${outdoorFormData.DepartmentId}-${selectedDepartmentName}`}
-                      label="Accompanied By"
-                      required
-                      dataFetchCallBack={fetchEmployeeMasterDropdownWithDepartment}
-                      selectedValues={accompaniedDropdown.selectedValues}
-                      options={accompaniedDropdown.initialOptions}
-                      onChange={handleAccompaniedChange}
-                      disabled={!!outdoorFormData.PunchIn || !outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
-                    />
-                    {errors.AccompaniedById && (
-                      <p className="text-xs text-red-600">{errors.AccompaniedById}</p>
-                    )}
-                  </div>
-
-                  <Input
-                    label="Purpose"
-                    required
-                    size="md"
-                    value={outdoorFormData.Purpose}
-                    onChange={(e) => handleFieldChange('Purpose', e.target.value)}
-                    error={errors.Purpose}
-                  />
-
-                  <Input
-                    label="Company Name"
-                    required
-                    size="md"
-                    value={outdoorFormData.CompanyName}
-                    onChange={(e) => handleFieldChange('CompanyName', e.target.value)}
-                    error={errors.CompanyName}
-                    disabled={!!outdoorFormData.PunchIn}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="md:col-span-2">
-                    <Input
-                      label="Company Address"
-                      required
-                      size="md"
-                      value={outdoorFormData.CompanyAddress}
-                      disabled={!!outdoorFormData.PunchIn}
-                      onChange={(e) => handleFieldChange("CompanyAddress", e.target.value)}
-                      error={errors.CompanyAddress}
-                    />
-                  </div>
-
-                  <div>
-                    <MultiFilePicker
-                      label="Upload visiting card"
-                      value={visitingCardFiles}
-                      onChange={setVisitingCardFiles}
-                      availableFilesURL={outdoorFormData?.VisitingCardURL ?? ""}
-                      allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
-                      maxFiles={5}
-                      maxSizeMB={10}
-                    />
-                  </div>
-                </div>
-
-
-                <div className="flex justify-end gap-4 mt-6 pt-6 border-t border-gray-200">
-                  <Button
-                    type="submit"
-                    color="blue"
-                    size="sm"
-                    loading={isLoading}
-                    className="px-6"
-                  >
-                    Save
-                  </Button>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <DatePickerInput
+                  label="OutDoor Date"
+                  value={formatDate_dd_mm_yyyy(outdoorFormData.OutDoorDate)}
+                  onChange={(val) => handleFieldChange('OutDoorDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
+                  required
+                  disabled={!!outdoorFormData.PunchIn}
+                  error={errors.OutDoorDate}
+                />
               </div>
-            </form>
+
+              <div>
+                <TimePicker
+                  label="Meeting Time"
+                  required
+                  size="sm"
+                  format={24}
+                  value={selectedTime}
+                  onChange={(val) => {
+                    setSelectedTime(val);
+                    handleFieldChange("OutDoorTime", val);
+                  }}
+                  disabled={!!outdoorFormData.PunchIn}
+                  error={errors.OutDoorTime}
+                />
+              </div>
+
+              <div>
+                <SingleSelectDropdownWithPagination
+                  label="Department"
+                  title="Select Department"
+                  size="md"
+                  dataFetchCallBack={fetchDepartmentMasterDropdown}
+                  onSelected={handleDepartmentSelected}
+                  initialValue={createDropdownInitialValue(outdoorFormData.DepartmentId, dropdownLabels.departmentName)}
+                  error={errors.DepartmentId}
+                  required
+                  disabled={!!outdoorFormData.PunchIn}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <MultiSelectPagination
+                  label="Accompanied By"
+                  required
+                  dataFetchCallBack={fetchEmployeeMasterDropdownWithDepartment}
+                  selectedValues={accompaniedDropdown.selectedValues}
+                  options={accompaniedDropdown.initialOptions}
+                  onChange={(values) => {
+                    const { idsString } = accompaniedDropdown.handleChange(values);
+                    setSelectedAccompaniedValues(idsString || null);
+                    handleFieldChange("AccompaniedById", idsString);
+                    if (errors.AccompaniedById) {
+                      setErrors((prev) => ({ ...prev, AccompaniedById: '' }));
+                    }
+                  }}
+                  disabled={!!outdoorFormData.PunchIn || !outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
+                />
+              </div>
+
+
+              <div>
+                <Input
+                  label="Company Name"
+                  required
+                  size="md"
+                  value={outdoorFormData.CompanyName}
+                  onChange={(e) => handleFieldChange('CompanyName', e.target.value)}
+                  error={errors.CompanyName}
+                  disabled={!!outdoorFormData.PunchIn}
+                />
+              </div>
+              <div>
+                <MultiFilePicker
+                  label="Upload visiting card"
+                  value={visitingCardFiles}
+                  onChange={setVisitingCardFiles}
+                  availableFilesURL={visitingCardURL ?? ""}
+                  allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                  maxFiles={5}
+                  maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedVisitingCardUrls((prev) => [...prev, url]);
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <TextArea
+                  label="Company Address"
+                  required
+                  value={outdoorFormData.CompanyAddress}
+                  disabled={!!outdoorFormData.PunchIn}
+                  onChange={(e) => handleFieldChange("CompanyAddress", e.target.value)}
+                  error={errors.CompanyAddress}
+                />
+              </div>
+
+              <div>
+                <TextArea
+                  label="Purpose"
+                  required
+                  value={outdoorFormData.Purpose}
+                  onChange={(e) => handleFieldChange('Purpose', e.target.value)}
+                  error={errors.Purpose}
+                />
+              </div>
+            </div>
+
+
           </div>
-        </div>
+        </form>
       </div>
+
+      <BottomActionBar
+        cancelText="Cancel"
+        saveText={outdoorFormData.OutdoorId && outdoorFormData.OutdoorId > 0 ? "Update" : "Add"}
+        onCancel={() => navigate(-1)}
+        canAction={canAction}
+        onSave={() => {
+          handleSubmit();
+        }}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

@@ -40,30 +40,3 @@ export const parseOutdoorTime = (dateString: string, timeString: string): Date |
   return null;
 };
 
-export const isToday = (date: Date): boolean => {
-  const today = new Date();
-  return (
-    date.getFullYear() === today.getFullYear() &&
-    date.getMonth() === today.getMonth() &&
-    date.getDate() === today.getDate()
-  );
-};
-
-export const isPreviousDate = (date: Date): boolean => {
-  const today = new Date();
-  const todayYear = today.getFullYear();
-  const todayMonth = today.getMonth();
-  const todayDay = today.getDate();
-  
-  const dateYear = date.getFullYear();
-  const dateMonth = date.getMonth();
-  const dateDay = date.getDate();
-  
-  return (
-    dateYear < todayYear ||
-    (dateYear === todayYear && dateMonth < todayMonth) ||
-    (dateYear === todayYear && dateMonth === todayMonth && dateDay < todayDay)
-  );
-};
-
-

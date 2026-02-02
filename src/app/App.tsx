@@ -77,6 +77,8 @@ import { AddUpdateChannelPartner } from '@/features/ChannelPartner/pages/AddUpda
 import BuildingDescription from '@/features/building/pages/BuildingDescription';
 import BuildingDocument from '@/features/building/pages/BuildingDocument';
 import { BuildingListStateProvider } from '@/features/building/context/BuildingListStateContext';
+import { OutDoorListStateProvider } from '@/features/outdoor/context/OutDoorListStateContext';
+import { LeaveListStateProvider } from '@/features/leave/context/LeaveListStateContext';
 import { TenantListStateProvider } from '@/features/tenant/context/TenantListStateContext';
 import { EmployeeListStateProvider } from '@/features/employeeMaster/context/EmployeeListStateContext';
 import { CompanyListStateProvider } from '@/features/companyMaster/context/CompanyListStateContext';
@@ -95,10 +97,12 @@ import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
 import Event from '@/features/event/pages/Event';
+import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
-import LeaveCreditDebit from '@/features/leaveCreditDebit/pages/LeaveCreditDebit';
-import AddUpdateLeaveCreditDebit from '@/features/leaveCreditDebit/pages/AddUpdateLeaveCreditDebit';
-import ViewLeaveCreditDebit from '@/features/leaveCreditDebit/pages/ViewLeaveCreditDebit';
+import LeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/LeaveCreditConfiguration';
+import AddUpdateLeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/AddUpdateLeaveCreditConfiguration';
+import ViewLeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/ViewLeaveCreditConfiguration';
+import { LeaveCreditConfigurationListStateProvider } from '@/features/leaveCreditConfiguration/context/LeaveCreditConfigurationListStateContext';
 import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor';
 import Leave from '@/features/leave/pages/Leave';
 import AddUpdateLeave from '@/features/leave/pages/AddUpdateLeave';
@@ -258,15 +262,15 @@ function App() {
 
             {/* PAYROLL */}
 
-            <Route path="compoff" element={<CompOff />} />
-            <Route path="outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
-            <Route path="leaveCreditDebit" element={<LeaveCreditDebit />} />
-            <Route path="leaveCreditDebit/add/:id?" element={<AddUpdateLeaveCreditDebit />} />
-            <Route path="leaveCreditDebit/view/:id?" element={<ViewLeaveCreditDebit />} />
-            <Route path="outdoor" element={<OutDoor />} />
-            <Route path="leave" element={<Leave />} />
-            <Route path="leave/add/:id?" element={<AddUpdateLeave />} />
-            <Route path="leave/view/:id?" element={<ViewLeave />} />
+            <Route path="compOff" element={<CompOff />} />
+            <Route path="outdoor/add/:outdoorId?" element={<OutDoorListStateProvider><AddUpdateOutDoorPage /></OutDoorListStateProvider>} />
+            <Route path="leaveCreditConfiguration" element={<LeaveCreditConfigurationListStateProvider><LeaveCreditConfiguration /></LeaveCreditConfigurationListStateProvider>} />
+            <Route path="leaveCreditConfiguration/add/:id?" element={<LeaveCreditConfigurationListStateProvider><AddUpdateLeaveCreditConfiguration /></LeaveCreditConfigurationListStateProvider>} />
+            <Route path="leaveCreditConfiguration/view/:id?" element={<LeaveCreditConfigurationListStateProvider><ViewLeaveCreditConfiguration /></LeaveCreditConfigurationListStateProvider>} />
+            <Route path="outdoor" element={<OutDoorListStateProvider><OutDoor /></OutDoorListStateProvider>} />
+            <Route path="leave" element={<LeaveListStateProvider><Leave /></LeaveListStateProvider>} />
+            <Route path="leave/add/:id?" element={<LeaveListStateProvider><AddUpdateLeave /></LeaveListStateProvider>} />
+            <Route path="leave/view/:id?" element={<LeaveListStateProvider><ViewLeave /></LeaveListStateProvider>} />
             <Route path="resignation" element={<EmployeeResignation />} />
             <Route path="payrollReport" element={<PayrollReport />} />
 
@@ -289,6 +293,7 @@ function App() {
 
             {/* COMMAN */}
             <Route path="event" element={<Event />} />
+            <Route path="attendanceCalendar" element={<AttendanceCalendar />} />
 
             {/* SALES */}
             <Route path="channelPartner" element={<ChannelPartner />} />

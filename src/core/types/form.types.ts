@@ -63,6 +63,7 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   style?: CSSProperties
   leftIcon?: ReactNode
   rightIcon?: ReactNode
+  centerIcon?: ReactNode
   loadingText?: string
   isborderRadius?: boolean
 }

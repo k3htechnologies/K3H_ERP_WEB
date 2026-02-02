@@ -8,6 +8,7 @@ import type {
   AddUpdateProposedOfferShiftingDetailsRequest,
   ProposedOfferShiftingDetailsWithPaymentStageData,
   AddUpdateGenerateProposedOfferRequest,
+  DeleteProposedOfferShiftingDetailsRequest,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
 import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Button, Input } from '@/ui/components/forms';
@@ -16,7 +17,7 @@ import { filterNumbersWithDecimal, isValidPercentage, allowPercentage, calculate
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { FLAT_UNIT_TYPE } from '@/core/constants';
 import {
@@ -52,9 +53,9 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
   const [formDataShiftingPaymentStage, setFormDataShiftingPaymentStage] = useState<ProposedOfferShiftingDetailsWithPaymentStageData>(() => initialFormStateShiftingPaymentStage());
   const [isConfirmationDialogBoxOpenShiftingPaymentStage, setIsConfirmationDialogBoxOpenShiftingPaymentStage] = useState(false);
   const [deleteShiftingPaymentStageData, setDeleteShiftingPaymentStageData] = useState<{ row: ProposedOfferShiftingDetailsWithPaymentStageData; index: number } | null>(null);
-
   const [generateShiftingDetailsData, setGenerateShiftingDetailsData] = useState<ProposedOfferShiftingDetailsData | null>(null);
   const [isConfirmationDialogBoxOpenGenerateShiftingDetails, setIsConfirmationDialogBoxOpenGenerateShiftingDetails] = useState(false);
+  const [isConfirmationDialogBoxOpenDeleteAllShiftingDetails, setIsConfirmationDialogBoxOpenDeleteAllShiftingDetails] = useState(false);
   useEffect(() => {
     if (!projectId || !buildingId) return;
     setErrorsShiftingDetails({});
@@ -588,14 +589,77 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
     [formDataShiftingDetails]
   );
 
+
+  const handleConfirmationDialogBoxOpenShiftingDetails = useCallback(() => {
+    setIsConfirmationDialogBoxOpenDeleteAllShiftingDetails(true);
+  }, []);
+
+  const handleDeleteAllShiftingDetails = async () => {
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const payload: DeleteProposedOfferShiftingDetailsRequest = {
+          BuildingId: buildingId,
+          ProjectId: Number(projectId)
+        };
+
+        const response = await proposedOfferService.apiCallDeleteShiftingDetails(payload);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+          setIsConfirmationDialogBoxOpenDeleteAllShiftingDetails(false);
+
+          fetchShiftingDetailsData();
+
+        } else {
+
+          addToast({ type: "error", title: response.left?.message });
+
+        }
+        return response;
+      },
+      undefined,
+
+      (error: any) => {
+
+        addToast({ type: 'error', title: error.message });
+
+      },
+      undefined,
+
+      'Delete All Shifting Details'
+    )
+  };
   return (
     <>
       <div className="space-y-6">
         {/* Shifting Amount Details Section */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
-            Shifting Amount Details
-          </h3>
+
+          <div className="flex items-center justify-between border-b border-gray-500 pb-2">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Shifting Amount Details
+            </h3>
+
+            {canAction && buildingId > 0 && shiftingPaymentStageList.length > 0 && (
+              <Button
+                onClick={handleConfirmationDialogBoxOpenShiftingDetails}
+                color="red"
+                variant="solid"
+                colorMode="extraLight"
+                style={{ width: '35px', height: '35px' }}
+                centerIcon={<Trash2 className="h-4 w-4" />}
+              >
+              </Button>
+            )}
+
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <Input
@@ -628,20 +692,18 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
 
         {/* Shifting List Section */}
         <div className="space-y-4 pb-5">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 border-b border-gray-300 pb-2">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Shifting List
-              </h3>
-            </div>
+          <div className="flex items-center justify-between border-b border-gray-300 pb-2">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Shifting List
+            </h3>
             {canAction && buildingId > 0 && (
               <Button
                 onClick={handleAddShiftingPaymentStageModal}
                 color="blue"
-                size="sm"
-                title="Add Shifting"
-              >
-                Add Shifting
+                variant="solid"
+                colorMode="extraLight"
+                style={{ width: '35px', height: '35px' }}
+                centerIcon={<Plus className="h-4 w-4" />}>
               </Button>
             )}
           </div>
@@ -656,20 +718,9 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
         </div>
       </div>
       <BottomActionBar
-        cancelText="Cancel"
-        saveText={(formDataShiftingDetails.ProposedOfferShiftingDetailsId && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0) ? 'Update' : 'Add'}
-        onCancel={() => {
-          setFormDataShiftingDetails({
-            ...initialFormStateShiftingDetails(),
-            ProjectId: Number(projectId)
-          });
-          setShiftingPaymentStageList([]);
-          setErrorsShiftingDetails({});
-          fetchShiftingDetailsData();
-        }}
+        saveText={(formDataShiftingDetails.ProposedOfferShiftingDetailsId && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0) ? 'Update' : 'Save'}
         canAction={canAction && buildingId > 0}
         onSave={handleSaveShiftingDetails}
-
         leftActionText={buildingId > 0 && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0 ? "Generate" : ""}
         onLeftAction={() =>
           handleConfirmationDialogBoxOpenGenerateShiftingDetails(formDataShiftingDetails as ProposedOfferShiftingDetailsData)
@@ -813,6 +864,16 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
         message="Once the shifting is generated, it cannot be deleted"
         confirmText='Generate'
         variant='generate'
+      />
+
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpenDeleteAllShiftingDetails}
+        onClose={() => { setIsConfirmationDialogBoxOpenDeleteAllShiftingDetails(false); }}
+        onConfirm={handleDeleteAllShiftingDetails}
+        loading={isLoading}
+        pageName='shifting'
+        title='Are sure you want delete Shifting Amount?'
+        confirmText='Delete All'
       />
 
     </>

@@ -67,6 +67,12 @@ import type {
     ProposedOfferProposedPlanSaveResponse,
     AddUpdateGenerateProposedOfferRequest,
     GenerateProposedOfferResponse,
+    DeleteProposedOfferCorpusDetailsRequest,
+    ProposedOfferCorpusDetailsDeleteResponse,
+    DeleteProposedOfferShiftingDetailsRequest,
+    ProposedOfferShiftingDetailsDeleteResponse,
+    DeleteProposedOfferSecurityDepositDetailsRequest,
+    ProposedOfferSecurityDepositDetailsDeleteResponse,
 
 } from '@/features/proposedOffer/models/ProposedOfferModel'
 
@@ -114,6 +120,14 @@ export const proposedOfferService = {
         }
     },
 
+    apiCallDeleteCorpusDetails: async (params: DeleteProposedOfferCorpusDetailsRequest): Promise<E.Either<Failure, ProposedOfferCorpusDetailsDeleteResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.deleteCorpusDetails(params))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
     //==================== RENT ====================
     apiCallPullRentDetails: async (params: FilterWithPaginationProposedOfferRentDetailsRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferRentDetailsListResponse>> => {
         try {
@@ -156,6 +170,13 @@ export const proposedOfferService = {
         }
     },
 
+    apiCallDeleteShiftingDetails: async (params: DeleteProposedOfferShiftingDetailsRequest): Promise<E.Either<Failure, ProposedOfferShiftingDetailsDeleteResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.deleteShiftingDetails(params))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
     //==================== SECURITY DEPOSIT ====================
     apiCallPullSecurityDepositDetails: async (params: FilterWithPaginationProposedOfferSecurityDepositDetailsRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferSecurityDepositDetailsListResponse>> => {
         try {
@@ -168,6 +189,14 @@ export const proposedOfferService = {
     apiCallAddUpdateSecurityDepositDetails: async (params: AddUpdateProposedOfferSecurityDepositDetailsRequest): Promise<E.Either<Failure, ProposedOfferSecurityDepositDetailsSaveResponse>> => {
         try {
             return E.right(await proposedOfferDatasource.addUpdateSecurityDepositDetails(params))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
+    apiCallDeleteSecurityDepositDetails: async (params: DeleteProposedOfferSecurityDepositDetailsRequest): Promise<E.Either<Failure, ProposedOfferSecurityDepositDetailsDeleteResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.deleteSecurityDepositDetails(params))
         } catch (error: any) {
             return E.left({ message: error.message, code: error.code })
         }

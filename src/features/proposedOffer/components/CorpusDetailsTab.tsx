@@ -8,6 +8,7 @@ import type {
   AddUpdateProposedOfferCorpusDetailsRequest,
   ProposedOfferCorpusDetailsWithPaymentStageData,
   AddUpdateGenerateProposedOfferRequest,
+  DeleteProposedOfferCorpusDetailsRequest,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
 import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Button, Input } from '@/ui/components/forms';
@@ -16,7 +17,7 @@ import { filterNumbersWithDecimal, isValidPercentage, allowPercentage, calculate
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { FLAT_UNIT_TYPE } from '@/core/constants';
 import {
@@ -54,6 +55,7 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
   const [deleteCorpusPaymentStageData, setDeleteCorpusPaymentStageData] = useState<{ row: ProposedOfferCorpusDetailsWithPaymentStageData; index: number } | null>(null);
   const [generateCorpusDetailsData, setGenerateCorpusDetailsData] = useState<ProposedOfferCorpusDetailsData | null>(null);
   const [isConfirmationDialogBoxOpenGenerateCorpusDetails, setIsConfirmationDialogBoxOpenGenerateCorpusDetails] = useState(false);
+  const [isConfirmationDialogBoxOpenDeleteAllCorpusDetails, setIsConfirmationDialogBoxOpenDeleteAllCorpusDetails] = useState(false);
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
@@ -593,14 +595,76 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
     [formDataCorpusDetails]
   );
 
+  const handleConfirmationDialogBoxOpenCorpusDetails = useCallback(() => {
+    setIsConfirmationDialogBoxOpenDeleteAllCorpusDetails(true);
+  }, []);
+
+  const handleDeleteAllCorpusDetails = async () => {
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const payload: DeleteProposedOfferCorpusDetailsRequest = {
+          BuildingId: buildingId,
+          ProjectId: Number(projectId)
+        };
+
+        const response = await proposedOfferService.apiCallDeleteCorpusDetails(payload);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+          setIsConfirmationDialogBoxOpenDeleteAllCorpusDetails(false);
+
+          fetchCorpusDetailsData();
+
+        } else {
+
+          addToast({ type: "error", title: response.left?.message });
+
+        }
+        return response;
+      },
+      undefined,
+
+      (error: any) => {
+
+        addToast({ type: 'error', title: error.message });
+
+      },
+      undefined,
+
+      'Delete All Corpus Details'
+    )
+  };
+
   return (
     <>
       <div className="space-y-6">
         {/* Corpus Amount Details Section */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
-            Corpus Amount Details
-          </h3>
+          <div className="flex items-center justify-between border-b border-gray-500 pb-2">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Corpus Amount Details
+            </h3>
+
+            {canAction && buildingId > 0 && corpusPaymentStageList.length > 0 && (
+              <Button
+                onClick={handleConfirmationDialogBoxOpenCorpusDetails}
+                color="red"
+                variant="solid"
+                colorMode="extraLight"
+                style={{ width: '35px', height: '35px' }}
+                centerIcon={<Trash2 className="h-4 w-4" />}
+              >
+
+              </Button>
+            )}
+
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <Input
@@ -643,25 +707,26 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
 
         {/* Corpus List Section */}
         <div className="space-y-4 pb-5">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 border-b border-gray-300 pb-2">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Corpus List
-              </h3>
-            </div>
+          <div className="flex items-center justify-between border-b border-gray-300 pb-2">
+
+            <h3 className="text-lg font-semibold text-gray-900">
+              Corpus List
+            </h3>
 
             {canAction && buildingId > 0 && (
               <Button
                 onClick={handleAddCorpusPaymentStageModal}
                 color="blue"
-                size="sm"
-                title="Add Corpus"
+                variant="solid"
+                colorMode="extraLight"
+                style={{ width: '35px', height: '35px' }}
+                centerIcon={<Plus className="h-4 w-4" /> }
               >
-                Add Corpus
               </Button>
             )}
 
           </div>
+
           <DataTable
             data={corpusPaymentStageList}
             columns={corpusPaymentStageColumns}
@@ -674,16 +739,7 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
       </div>
 
       <BottomActionBar
-        cancelText="Cancel"
-        saveText={(formDataCorpusDetails.ProposedOfferCorpusDetailsId && formDataCorpusDetails.ProposedOfferCorpusDetailsId > 0) ? 'Update' : 'Add'}
-        onCancel={() => {
-          setFormDataCorpusDetails({
-            ...initialFormStateCorpusDetails(),
-          });
-          setCorpusPaymentStageList([]);
-          setErrorsCorpusDetails({});
-          fetchCorpusDetailsData();
-        }}
+        saveText={(formDataCorpusDetails.ProposedOfferCorpusDetailsId && formDataCorpusDetails.ProposedOfferCorpusDetailsId > 0) ? 'Update' : 'Save'}
         canAction={buildingId > 0 && canAction}
         onSave={handleSaveCorpusDetails}
         leftActionText={buildingId > 0 && formDataCorpusDetails.ProposedOfferCorpusDetailsId > 0 ? "Generate" : ""}
@@ -832,6 +888,16 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
         message="Once the corpus is generated, it cannot be deleted"
         confirmText='Generate'
         variant='generate'
+      />
+
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpenDeleteAllCorpusDetails}
+        onClose={() => { setIsConfirmationDialogBoxOpenDeleteAllCorpusDetails(false); }}
+        onConfirm={handleDeleteAllCorpusDetails}
+        loading={isLoading}
+        pageName='corpus'
+        title='Are sure you want delete corpus amount?'
+        confirmText='Delete All'
       />
 
     </>

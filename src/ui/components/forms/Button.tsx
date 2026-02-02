@@ -17,6 +17,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             defineWidth = false,
             leftIcon,
             rightIcon,
+            centerIcon,
             loadingText,
             isborderRadius = false,
             children,
@@ -81,7 +82,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: theme.spacing.sm,
+            gap: centerIcon ? '' : theme.spacing.sm,
             boxShadow: 'none',
             opacity: disabled ? 0.6 : 1,
             ...(style || {}),
@@ -143,6 +144,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                             ? renderIconElement(React.Children.only(children), iconSizeNumber)
                             : <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: theme.spacing.sm }}>{children}</span>
                         }
+
+                        {centerIcon && <span >{renderIconElement(centerIcon)}</span>}
 
                         {rightIcon && <span style={{ fontSize: iconSizeCss }}>{renderIconElement(rightIcon)}</span>}
 

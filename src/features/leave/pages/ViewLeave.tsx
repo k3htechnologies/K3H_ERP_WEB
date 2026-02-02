@@ -11,6 +11,8 @@ import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import { useLeaveListState } from '@/features/leave/context/LeaveListStateContext';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 
 export const ViewLeave: React.FC = () => {
 
@@ -163,7 +165,29 @@ export const ViewLeave: React.FC = () => {
                                 <div className="lg:col-span-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="End Duration" value={leaveData.EndDateLeaveDuration || '-'} />
-                                        <FieldItem label="Document URL" value={leaveData.LeaveDocumentURL || 'No document uploaded.'} />
+                                        <FieldItem
+                                            label="Leave Documents"
+                                            value={
+                                                leaveData.LeaveDocumentURL ? (() => {
+                                                    const documentUrls = parseDocumentUrls(leaveData.LeaveDocumentURL);
+                                                    return (
+                                                        <MultiImageViewer
+                                                            images={documentUrls}
+                                                            title="Leave Documents"
+                                                            isIcon={true}
+                                                            triggerLabel={
+                                                                <span className="flex items-center gap-2 text-sm font-medium">
+                                                                    {documentUrls.length > 1 ? `View ${documentUrls.length} Documents` : 'View Document'}
+                                                                </span>
+                                                            }
+                                                        />
+                                                    );
+                                                })() : (
+                                                    <span className="text-gray-400 italic">No document uploaded</span>
+                                                )
+                                            }
+                                            isRow={false}
+                                        />
                                     </div>
                                 </div>
 

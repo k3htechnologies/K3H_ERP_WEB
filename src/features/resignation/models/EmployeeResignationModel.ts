@@ -19,6 +19,8 @@ export interface EmployeeResignationData {
   EmployeeName: string | ''
   ResignationDate: string | null
   ReasonOfLeaving: string | ''
+  NoticePeriod: number | 0
+  RelievingDate: string | null
   ExpectedRelievingDate: string | null
   IsAnyOfferInHand: boolean
   OfferLetterURL: string | ''

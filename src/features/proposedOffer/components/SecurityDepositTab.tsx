@@ -7,6 +7,7 @@ import type {
   FilterWithPaginationProposedOfferSecurityDepositDetailsRequest,
   AddUpdateProposedOfferSecurityDepositDetailsRequest,
   ProposedOfferSecurityDepositDetailsWithPaymentStageData,
+  DeleteProposedOfferSecurityDepositDetailsRequest,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
 import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Button, Input } from '@/ui/components/forms';
@@ -15,7 +16,7 @@ import { filterNumbersWithDecimal } from '@/core/utils/fileValidation';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { FLAT_UNIT_TYPE } from '@/core/constants';
 import {
@@ -51,6 +52,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
   const [formDataSecurityDepositPaymentStage, setFormDataSecurityDepositPaymentStage] = useState<ProposedOfferSecurityDepositDetailsWithPaymentStageData>(() => initialFormStateSecurityDepositPaymentStage());
   const [isConfirmationDialogBoxOpenSecurityDepositPaymentStage, setIsConfirmationDialogBoxOpenSecurityDepositPaymentStage] = useState(false);
   const [deleteSecurityDepositPaymentStageData, setDeleteSecurityDepositPaymentStageData] = useState<{ row: ProposedOfferSecurityDepositDetailsWithPaymentStageData; index: number } | null>(null);
+  const [isConfirmationDialogBoxOpenDeleteAllSecurityDepositDetails, setIsConfirmationDialogBoxOpenDeleteAllSecurityDepositDetails] = useState(false);
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
@@ -338,6 +340,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
   }, []);
 
   const handleDeleteSecurityDepositPaymentStage = () => {
+
     if (!deleteSecurityDepositPaymentStageData) return;
 
     const removeIndex = deleteSecurityDepositPaymentStageData.index;
@@ -428,14 +431,76 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
     [canAction, handleEditSecurityDepositPaymentStage, handleConfirmationDialogBoxOpenSecurityDepositPaymentStage]
   );
 
+  const handleConfirmationDialogBoxOpenSecurityDepositDetails = useCallback(() => {
+    setIsConfirmationDialogBoxOpenDeleteAllSecurityDepositDetails(true);
+  }, []);
+
+  const handleDeleteAllSecurityDepositDetails = async () => {
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const payload: DeleteProposedOfferSecurityDepositDetailsRequest = {
+          BuildingId: buildingId,
+          ProjectId: Number(projectId)
+        };
+
+        const response = await proposedOfferService.apiCallDeleteSecurityDepositDetails(payload);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+          setIsConfirmationDialogBoxOpenDeleteAllSecurityDepositDetails(false);
+
+          fetchSecurityDepositDetailsData();
+
+        } else {
+
+          addToast({ type: "error", title: response.left?.message });
+
+        }
+        return response;
+      },
+      undefined,
+
+      (error: any) => {
+
+        addToast({ type: 'error', title: error.message });
+
+      },
+      undefined,
+
+      'Delete All Security Deposit Details'
+    )
+  };
   return (
     <>
       <div className="space-y-6">
         {/* Security Deposit Amount Details Section */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
-            Security Deposit Amount Details
-          </h3>
+
+
+          <div className="flex items-center justify-between border-b border-gray-500 pb-2">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Security Deposit Amount Details
+            </h3>
+
+            {canAction && buildingId > 0 && securityDepositPaymentStageList.length > 0 && (
+              <Button
+                onClick={handleConfirmationDialogBoxOpenSecurityDepositDetails}
+                color="red"
+                variant="solid"
+                colorMode="extraLight"
+                style={{ width: '35px', height: '35px' }}
+                centerIcon={<Trash2 className="h-4 w-4" />}
+              >
+              </Button>
+            )}
+
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <Input
@@ -455,20 +520,18 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
 
         {/* Security Deposit List Section */}
         <div className="space-y-4 pb-5">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 border-b border-gray-300 pb-2">
+           <div className="flex items-center justify-between border-b border-gray-300 pb-2">
               <h3 className="text-lg font-semibold text-gray-900">
                 Security Deposit List
               </h3>
-            </div>
             {canAction && buildingId > 0 && (
               <Button
                 onClick={handleAddSecurityDepositPaymentStageModal}
-                color="blue"
-                size="sm"
-                title="Add Security Deposit"
-              >
-                Add Security Deposit
+               color="blue"
+                variant="solid"
+                colorMode="extraLight"
+                style={{ width: '35px', height: '35px' }}
+                centerIcon={<Plus className="h-4 w-4" /> }>
               </Button>
             )}
           </div>
@@ -483,17 +546,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
         </div>
       </div>
       <BottomActionBar
-        cancelText="Cancel"
-        saveText={(formDataSecurityDepositDetails.ProposedOfferSecurityDepositDetailsId && formDataSecurityDepositDetails.ProposedOfferSecurityDepositDetailsId > 0) ? 'Update' : 'Add'}
-        onCancel={() => {
-          setFormDataSecurityDepositDetails({
-            ...initialFormStateSecurityDepositDetails(),
-            ProjectId: Number(projectId)
-          });
-          setSecurityDepositPaymentStageList([]);
-          setErrorsSecurityDepositDetails({});
-          fetchSecurityDepositDetailsData();
-        }}
+        saveText={(formDataSecurityDepositDetails.ProposedOfferSecurityDepositDetailsId && formDataSecurityDepositDetails.ProposedOfferSecurityDepositDetailsId > 0) ? 'Update' : 'Save'}
         canAction={canAction && buildingId > 0}
         onSave={handleSaveSecurityDepositDetails}
         isLoading={isLoading}
@@ -516,7 +569,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
         }}
         title={editingSecurityDepositPaymentStageData ? 'Update Security Deposit Payment Stage' : 'Add Security Deposit Payment Stage'}
         onSubmit={handleAddUpdateSecurityDepositPaymentStage}
-        saveText={editingSecurityDepositPaymentStageData ? 'Update' : 'Add'}
+        saveText={editingSecurityDepositPaymentStageData ? 'Update' : 'Save'}
         cancelText="Cancel"
         loading={isLoading}
         size='lg'
@@ -581,6 +634,16 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
         onConfirm={handleDeleteSecurityDepositPaymentStage}
         loading={isLoading}
         pageName='security deposit payment stage'
+      />
+
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpenDeleteAllSecurityDepositDetails}
+        onClose={() => { setIsConfirmationDialogBoxOpenDeleteAllSecurityDepositDetails(false); }}
+        onConfirm={handleDeleteAllSecurityDepositDetails}
+        loading={isLoading}
+        pageName='security deposit'
+        title='Are sure you want delete Security Deposit Amount?'
+        confirmText='Delete All'
       />
     </>
   );

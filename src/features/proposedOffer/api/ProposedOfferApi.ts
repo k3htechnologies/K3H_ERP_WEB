@@ -10,6 +10,7 @@ export const ProposedOfferApi = {
     //=============================================================
     PULL_CORPUS_DETAILS: '/ProposedOffer/PullCorpusDetails',
     ADD_UPDATE_CORPUS_DETAILS: '/ProposedOffer/AddUpdateCorpusDetails',
+    DELETE_CORPUS_DETAILS: '/ProposedOffer/DeleteCorpusDetails',
 
     //=============================================================
     // [ RENT DETAILS ]
@@ -23,12 +24,14 @@ export const ProposedOfferApi = {
     //=============================================================
     PULL_SHIFTING_DETAILS: '/ProposedOffer/PullShiftingDetails',
     ADD_UPDATE_SHIFTING_DETAILS: '/ProposedOffer/AddUpdateShiftingDetails',
+    DELETE_SHIFTING_DETAILS: '/ProposedOffer/DeleteShiftingDetails',
 
     //=============================================================
     // [ SECURITY DEPOSIT DETAILS ]
     //=============================================================
     PULL_SECURITY_DEPOSIT_DETAILS: '/ProposedOffer/PullSecurityDepositDetails',
     ADD_UPDATE_SECURITY_DEPOSIT_DETAILS: '/ProposedOffer/AddUpdateSecurityDepositDetails',
+    DELETE_SECURITY_DEPOSIT_DETAILS: '/ProposedOffer/DeleteSecurityDepositDetails',
 
     //=============================================================
     // [ LIEN TO SOCIETY DETAILS ]

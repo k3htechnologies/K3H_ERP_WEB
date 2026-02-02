@@ -402,7 +402,6 @@ export const Header: React.FC<HeaderProps> = ({
                 {/* Notifications - Hidden on small mobile */}
                 <button
                     onClick={handleNotificationModal}
-
                     className="hidden sm:block p-1 bg-blue-50 rounded-md hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200 relative touch-manipulation">
                     <Bell className="h-5 w-6 text-blue-800" />
                     <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">

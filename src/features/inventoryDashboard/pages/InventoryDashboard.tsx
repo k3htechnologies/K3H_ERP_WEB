@@ -80,14 +80,14 @@ const InventoryDashboard: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-12 gap-4 mt-5">
-  <div className="col-span-8">
-    <BuildingOverview buildingOverviewData={buildingOverviewData} />
-  </div>
+            <div className="col-span-8">
+              <BuildingOverview buildingOverviewData={buildingOverviewData} />
+            </div>
 
-  <div className="col-span-4">
-    <AlertsPanel alertsData={alertsData} />
-  </div>
-</div>
+            <div className="col-span-4">
+              <AlertsPanel alertsData={alertsData} />
+            </div>
+          </div>
 
 
         </>

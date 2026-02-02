@@ -7,7 +7,7 @@ import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateAssetMappingMasterRequest, FilterWithPaginationAssetMappingMasterRequest } from "../models/AssetMappingMasterModel";
-import { assetMappingMasterService } from "../services/AssetMappingMasterService";
+import { assetMappingMasterService } from "@/features/assetMappingMaster//services/AssetMappingMasterService";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";

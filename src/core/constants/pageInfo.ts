@@ -310,6 +310,12 @@ export const getPageInfo = (path: string) => {
                 description: 'Profile',
             }
             {/* INVENTORY */ }
+
+        case 'inventoryDashboard':
+            return {
+                title: 'Inventory Dashboard',
+                description: 'Track building units, floors, and availability in real time',
+            }
         case 'inventory':
             return {
                 title: "Inventory Management",

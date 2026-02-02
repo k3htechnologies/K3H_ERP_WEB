@@ -17,6 +17,12 @@ export interface FilterWithPaginationEmployeeMasterRequest {
   EmailId?: string | ''
   BankName?: string | ''
   BankBranchName?: string | ''
+  IsEmployeeOnProbation?: string | ''
+  IsIdCardIssued?: string | ''
+  FromDateOfBirth?: string | ''
+  ToDateOfBirth?: string | ''
+  FromJoiningDate?: string | ''
+  ToJoiningDate?: string | ''
   SortBy?: string
   ExportType?: 'Excel' | 'PDF'
 }
@@ -41,6 +47,7 @@ export interface EmployeeMasterData {
   JoiningDate: string | null
   ProbationDate: string | null
   ResignationDate: string | null
+  IdCardIssuedDate: string | null
   IsGeoFenceLocation: boolean | false
   EmailId: string | ''
   OfficeEmailId: string | ''
@@ -105,6 +112,7 @@ export interface AddUpdateEmployeeMasterRequest {
   MaritalStatus: string;
   DateOfBirth: string | null;
   JoiningDate: string | null;
+  IdCardIssuedDate: string | null
   IsGeoFenceLocation: boolean;
   EmailId: string;
   OfficeEmailId: string;

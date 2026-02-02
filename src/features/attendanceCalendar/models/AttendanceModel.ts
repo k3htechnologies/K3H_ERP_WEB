@@ -35,6 +35,8 @@ export interface AddUpdateAttendance {
 }
 
 export type AttendanceListResponse = ApiResponse<AttendanceData[]>;
+export type AttendanceSaveResponse = ApiResponse<AttendanceData[]>;
+
 
 /* ================= ATTENDANCE REGULARIZATION ================= */
 

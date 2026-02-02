@@ -1,5 +1,6 @@
 export const AttendanceApi = {
     PULL: '/Attendance/PullAttendance',
+    ADD_UPDATE: '/Attendance/AddUpdateAttendance',
 } as const
 
 export type AttendanceApiKeys = keyof typeof AttendanceApi

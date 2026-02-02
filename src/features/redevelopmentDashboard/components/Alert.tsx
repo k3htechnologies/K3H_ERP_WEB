@@ -1,3 +1,4 @@
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import React from "react";
 
 interface Props {
@@ -18,7 +19,7 @@ const AlertsPanel: React.FC<Props> = ({ alertsData }) => {
 
         {alertsData.length === 0 && (
           <p className="text-sm text-gray-400 text-center mt-10">
-            No alerts available
+            <NoDataView message="No alerts available"/>
           </p>
         )}
 
@@ -29,7 +30,7 @@ const AlertsPanel: React.FC<Props> = ({ alertsData }) => {
               <p className="text-sm font-medium text-gray-800">
                 {alert.BuildingName || "-"}
                 <span className="text-gray-400 ml-2">
-                  {alert.UnitNumber || "-"}
+                  {alert.UnitNumber || ""}
                 </span>
               </p>
 

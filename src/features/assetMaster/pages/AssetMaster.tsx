@@ -249,7 +249,7 @@ export const AssetMaster: React.FC = () => {
     {
       key: 'AssetName',
       label: 'Asset Name',
-      width: '20',
+      width: '15',
       sortable: true,
       fixed: 'left',
       align: 'left',
@@ -280,8 +280,8 @@ export const AssetMaster: React.FC = () => {
     },
     {
       key: 'AssetBrand',
-      label: 'Brand',
-      width: '12',
+      label: 'Asset Brand',
+      width: '15',
       sortable: false,
       align: 'left',
       render: (value) => value || ''
@@ -289,7 +289,7 @@ export const AssetMaster: React.FC = () => {
     {
       key: 'AssetModel',
       label: 'Model',
-      width: '12',
+      width: '15',
       sortable: false,
       align: 'left',
       render: (value) => value || ''
@@ -305,7 +305,7 @@ export const AssetMaster: React.FC = () => {
     {
       key: 'Status',
       label: 'Status',
-      width: '20',
+      width: '15',
       sortable: false,
       align: 'center',
       render: (value) => value || ''
@@ -313,7 +313,7 @@ export const AssetMaster: React.FC = () => {
     {
       key: 'EmployeeName',
       label: 'Employee Name',
-      width: '20',
+      width: '15',
       sortable: false,
       align: 'center',
       render: (value) => value || ''

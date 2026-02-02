@@ -101,7 +101,7 @@ const ViewWeekOffMaster: React.FC = () => {
                         {/* ================= BASIC DETAILS ================= */}
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                WeekOff Policy Details
+                                Week Off Policy Details
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 

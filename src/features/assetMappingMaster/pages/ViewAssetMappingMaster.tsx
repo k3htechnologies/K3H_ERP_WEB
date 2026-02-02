@@ -206,7 +206,7 @@ const ViewAssetMappingMaster: React.FC = () => {
                                 </div>
                                 <div className="lg:col-span-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                        <FieldItem label="Condition On Return" value={editAssetMappingData!.ConditionOnReturn} />
+                                        <FieldItem label="Condition At Return" value={editAssetMappingData!.ConditionOnReturn} />
                                     </div>
 
                                 </div>

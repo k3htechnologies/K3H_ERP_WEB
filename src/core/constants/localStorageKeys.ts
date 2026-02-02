@@ -15,7 +15,7 @@ export const LOCAL_STORAGE_KEYS = {
     VENDOR_SELECTED_COLUMNS: 'vendor.selectedColumns',
     COMPANY_MASTER_SELECTED_COLUMNS: 'companyMaster.selectedColumns',
     CHANNEL_PARTNER_SELECTED_COLUMNS: 'channelPartnerMaster.selectedColumns',
-    ENQUIRY_SELECTED_COLUMNS:'enquiry.selectedColumns',
+    ENQUIRY_SELECTED_COLUMNS: 'enquiry.selectedColumns',
     BANK_LIST_MASTER_SELECTED_COLUMNS: 'bankListMaster.selectedColumns',
     HOLIDAY_MASTER_SELECTED_COLUMNS: 'holidayMaster.selectedColumns',
     HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS: 'holidayMappingMaster.selectedColumns',
@@ -39,9 +39,10 @@ export const LOCAL_STORAGE_KEYS = {
     MENU_MODULE: 'menuModule',
     COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER: 'country_state_district_city_village_data',
     SELECTED_PROJECT_ID: 'selectedProjectId',
-    OUTDOOR_SELECTED_COLUMNS:'outdoor.selectedColumns',
+    OUTDOOR_SELECTED_COLUMNS: 'outdoor.selectedColumns',
     REDEVELOPMENT_BUILDING_COLUMNS: 'redevelopmentBuilding.selectedColumns',
-    
+    LITIGATION_SELECTED_COLUMNS: 'litigation.selectedColumns',
+
 } as const
 
 export const LOCAL_STORAGE_FOR_STATE_KEYS = {
@@ -54,4 +55,5 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     DEDUCTION_MASTER: 'deductionMaster.listState',
     SHIFT_MASTER: 'shiftMaster.listState',
     WEEK_OFF_MASTER: 'weekOffMaster.listState',
+    LITIGATION: 'Litigation.listState',
 } as const

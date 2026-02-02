@@ -447,6 +447,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
                 error={errorsSecurityDepositDetails.SecurityDepositToSocietyAmount}
                 placeholder="Enter Security Deposit Amount"
                 rightIcon="₹"
+                disabled={securityDepositPaymentStageList.length > 0 ? true : false}
               />
             </div>
           </div>

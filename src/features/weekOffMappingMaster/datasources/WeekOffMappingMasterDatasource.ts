@@ -28,6 +28,7 @@ export class WeekOffMappingMasterDatasourceImpl implements WeekOffMappingMasterD
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
+                IsCheckEmployeeWeekOffPolicy: (params.IsCheckEmployeeWeekOffPolicy ?? false).toString(),
             })
 
             if (params.WeekOffPolicyMasterMappingId) queryParams.append('WeekOffPolicyMasterMappingId', params.WeekOffPolicyMasterMappingId.toString());
@@ -37,6 +38,7 @@ export class WeekOffMappingMasterDatasourceImpl implements WeekOffMappingMasterD
             if (params.EmployeeId) queryParams.append('EmployeeId', params.EmployeeId.toString());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${WeekOffMappingMasterApi.PULL}?${queryParams.toString()}`, { signal }

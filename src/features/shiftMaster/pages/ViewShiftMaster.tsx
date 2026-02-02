@@ -200,7 +200,7 @@ const ViewShiftMaster: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                 <div className="lg:col-span-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                                         <FieldItem label="Grace Time In Minutes" value={editShiftMasterData!.GraceTime} />
                                     </div>
                                 </div>

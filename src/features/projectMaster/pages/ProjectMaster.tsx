@@ -482,7 +482,6 @@ export const ProjectMaster: React.FC = () => {
     setTempFilters({});
     updateListState({ filters: {}, page: 1 });
     loadProjects(1, {});
-    setShowFilterPopup(false);
   };
 
 

@@ -481,6 +481,22 @@ export function isEndTimeGreater(startTime: string, endTime: string): boolean {
   return endMinutes > startMinutes;
 }
 
+// ----------------------------------
+// 🔹 FILTER TAN (ABCD12345E)
+// Only uppercase letters + numbers
+// ----------------------------------
+export const filterTAN = (value: string): string =>
+  value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 10);
+
+// ----------------------------------
+// 🔹 VALIDATE TAN
+// ----------------------------------
+export const isValidTAN = (tan: string): boolean => {
+  if (!tan) return false;
+  const value = tan.toUpperCase().trim();
+  const regex = /^[A-Z]{4}[0-9]{5}[A-Z]{1}$/;
+  return regex.test(value);
+};
 
 
 

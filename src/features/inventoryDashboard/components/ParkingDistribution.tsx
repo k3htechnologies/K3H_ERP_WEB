@@ -1,0 +1,70 @@
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
+
+interface Props {
+  parkingData: any[];
+}
+
+export default function ParkingDistribution({ parkingData = [] }: Props) {
+
+  return (
+
+    <div className="space-y-3 pt-5">
+
+      <h2 className="text-lg font-semibold text-gray-800">
+         Parking Distribution
+      </h2>
+      <div  className="bg-white p-4 rounded-xl mt-5 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+
+        <div className="h-[438px]">
+
+          <ResponsiveContainer>
+            
+            <BarChart data={parkingData} barGap={-30}>
+
+              <XAxis dataKey="FloorName" tick={{ fontSize: 11 }} />
+
+              <YAxis />
+
+              <Tooltip />
+
+              <Bar
+                dataKey="TotalParking"
+                radius={[8, 8, 0, 0]}
+                fill="#f3f4f6"
+                barSize={40}
+              >
+                <LabelList dataKey="TotalParking" position="top" fill="#9ca3af" />
+              </Bar>
+
+              {/* Available Parking (Green Foreground Bar) */}
+              <Bar
+                dataKey="AvailableParking"
+                radius={[8, 8, 0, 0]}
+                fill="#16a34a"
+                barSize={40}
+              >
+                <LabelList dataKey="AvailableParking" position="center" fill="#fff" />
+              </Bar>
+
+            </BarChart>
+          </ResponsiveContainer>
+
+        </div>
+
+        {/* Legend */}
+        <div className="flex justify-end gap-4 text-xs mt-2 text-gray-500">
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-gray-200 rounded-sm"></span>
+            Total Parking
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-green-600 rounded-sm"></span>
+            Available Parking
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+}

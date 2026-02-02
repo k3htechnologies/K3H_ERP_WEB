@@ -434,22 +434,33 @@ export const EmployeeDocument: React.FC = () => {
         }
 
       },
-      {
-        key: 'LastModifiedBy',
+       {
+        key: 'ModifiedBy',
         label: 'Last Modified By',
         width: '33',
-        sortable: true,
-        align: 'center',
-        render: (value) => value || '-'
+        sortable: false,
+        align: 'left',
+        render: (value, row) => (
+          <TooltipText
+            text={value || row.CreatedBy || '-'}
+            maxWidth="180px"
+            tooltipThreshold={18}
+          />
+        )
       },
       {
-        key: 'LastModifiedDate',
+        key: 'ModifiedDate',
         label: 'Last Modified Date',
         width: '33',
-        sortable: true,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
-      }
+        sortable: false,
+        align: 'left',
+        render: (value, row) =>
+          value
+            ? formatDate_dd_MonthName_yy(value)
+            : row.CreatedDate
+              ? formatDate_dd_MonthName_yy(row.CreatedDate)
+              : '-'
+      },
     ],
     // dependencies: include everything used inside that might change
     [canAction, handleEditEmployeeDocument, handleConfirmationDialogBoxOpen]
@@ -836,6 +847,7 @@ export const EmployeeDocument: React.FC = () => {
               <Input
                 label='Document Name'
                 required
+                disabled={editingEmployeeDocumentData ? true :false}
                 error={errors.DocumentName}
                 type="text"
                 value={formData.DocumentName || ''}
@@ -848,8 +860,8 @@ export const EmployeeDocument: React.FC = () => {
 
             <div>
               <MultiFilePicker
-                label="Document"
-                placeholder='Select Document File'
+                label="File"
+                placeholder='Select File'
                 required
                 error={errors.DocumentURL}
                 value={documentFiles}

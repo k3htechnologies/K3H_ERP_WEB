@@ -8,6 +8,7 @@ export interface FilterWithPaginationWeekOffMappingMasterRequest {
     DepartmentName?: string
     EmployeeName?: string
     EmployeeId?: number
+    IsCheckEmployeeWeekOffPolicy?:boolean
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

@@ -50,12 +50,17 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
             if (params.BranchName?.trim()) queryParams.append('BranchName', params.BranchName.trim());
             if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
             if (params.ReportPersonName?.trim()) queryParams.append('ReportPersonName', params.ReportPersonName.trim());
-
             if (params.EmailId?.trim()) queryParams.append('EmailId', params.EmailId.trim());
-
             if (params.BankName?.trim()) queryParams.append('BankName', params.BankName.trim());
-
             if (params.BankBranchName?.trim()) queryParams.append('BankBranchName', params.BankBranchName.trim());
+
+            if (params.IsEmployeeOnProbation !== undefined) queryParams.append('IsEmployeeOnProbation', String(params.IsEmployeeOnProbation));
+            if (params.IsIdCardIssued !== undefined) queryParams.append('IsIdCardIssued', String(params.IsIdCardIssued));
+            if (params.FromDateOfBirth) queryParams.append('FromDateOfBirth', params.FromDateOfBirth);
+            if (params.ToDateOfBirth) queryParams.append('ToDateOfBirth', params.ToDateOfBirth);
+            if (params.FromJoiningDate) queryParams.append('FromJoiningDate', params.FromJoiningDate);
+            if (params.ToJoiningDate) queryParams.append('ToJoiningDate', params.ToJoiningDate);
+
 
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
@@ -93,6 +98,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
                 MaritalStatus: params.MaritalStatus?.trim() ?? '',
                 DateOfBirth: params.DateOfBirth ?? '',
                 JoiningDate: params.JoiningDate ?? '',
+                IdCardIssuedDate: params.IdCardIssuedDate ?? null,
                 IsGeoFenceLocation: params.IsGeoFenceLocation ?? false,
                 EmailId: params.EmailId?.trim() ?? '',
                 OfficeEmailId: params.OfficeEmailId?.trim() ?? '',

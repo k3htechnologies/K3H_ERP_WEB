@@ -498,74 +498,146 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     placeholder="Enter Google Location"
                                 />
                             </div>
+
                             <div>
+
                                 <SinglePageSelection
-                                    label="Country"
+                                    label='Country'
                                     placeholder="Select Country"
                                     required
                                     value={selectedCountryId || ''}
-                                    onChange={(val) => {
-                                        const id = Number(val);
+                                    error={errors.CountryMasterId}
+                                    onChange={(item) => {
+
+                                        if (!item) {
+                                            setSelectedCountryId(null);
+                                            setSelectedStateId(null);
+                                            setSelectedDistrictId(null);
+                                            setSelectedCityId(null);
+
+                                            handleFieldChange('CountryMasterId', 0);
+                                            handleFieldChange('StateMasterId', 0);
+                                            handleFieldChange('DistrictMasterId', 0);
+                                            handleFieldChange('CityMasterId', 0);
+
+                                            return;
+                                        }
+
+                                        const id = Number(item);
+
                                         setSelectedCountryId(id);
                                         setSelectedStateId(null);
                                         setSelectedDistrictId(null);
                                         setSelectedCityId(null);
+
                                         handleFieldChange('CountryMasterId', id);
+                                        handleFieldChange('StateMasterId', 0);
+                                        handleFieldChange('DistrictMasterId', 0);
+                                        handleFieldChange('CityMasterId', 0);
                                     }}
                                     disabled={isLocationLoading}
                                     options={countryOptions}
                                 />
+
+
                             </div>
+
                             <div>
+
                                 <SinglePageSelection
-                                    label="State"
+                                    label='State'
                                     placeholder="Select State"
                                     required
-                                    error={errors.StateMasterId}
                                     value={selectedStateId ?? ''}
-                                    onChange={(val) => {
-                                        const id = Number(val);
+                                    error={errors.StateMasterId}
+                                    onChange={(item) => {
+
+                                        if (!item) {
+                                            setSelectedStateId(null);
+                                            setSelectedDistrictId(null);
+                                            setSelectedCityId(null);
+
+                                            handleFieldChange("StateMasterId", 0);
+                                            handleFieldChange("DistrictMasterId", 0);
+                                            handleFieldChange("CityMasterId", 0);
+
+                                            return;
+                                        }
+
+                                        const id = Number(item);
+
                                         setSelectedStateId(id);
                                         setSelectedDistrictId(null);
                                         setSelectedCityId(null);
-                                        handleFieldChange('StateMasterId', id);
+
+                                        handleFieldChange("StateMasterId", id);
+                                        handleFieldChange("DistrictMasterId", 0);
+                                        handleFieldChange("CityMasterId", 0);
                                     }}
                                     disabled={!selectedCountryId || stateOptions.length === 0}
                                     options={stateOptions}
                                 />
+
+
                             </div>
+
                             <div>
+
                                 <SinglePageSelection
-                                    label="District"
+                                    label='District'
                                     placeholder="Select District"
                                     required
-                                    error={errors.DistrictMasterId}
                                     value={selectedDistrictId ?? ''}
-                                    onChange={(val) => {
-                                        const id = Number(val);
+                                    error={errors.DistrictMasterId}
+                                    onChange={(item) => {
+
+                                        if (!item) {
+                                            setSelectedDistrictId(null);
+                                            setSelectedCityId(null);
+
+                                            handleFieldChange('DistrictMasterId', 0);
+                                            handleFieldChange('CityMasterId', 0);
+                                            return;
+                                        }
+
+                                        const id = Number(item);
+
                                         setSelectedDistrictId(id);
                                         setSelectedCityId(null);
+
                                         handleFieldChange('DistrictMasterId', id);
+                                        handleFieldChange('CityMasterId', 0);
                                     }}
                                     disabled={!selectedStateId || districtOptions.length === 0}
                                     options={districtOptions}
                                 />
                             </div>
+
                             <div>
+
                                 <SinglePageSelection
-                                    label="City"
+                                    label='City'
                                     placeholder="Select City"
                                     required
-                                    error={errors.CityMasterId}
                                     value={selectedCityId ?? ''}
-                                    onChange={(val) => {
-                                        const id = Number(val);
+                                    error={errors.CityMasterId}
+                                    onChange={(item) => {
+
+                                        if (!item) {
+                                            setSelectedCityId(null);
+                                            handleFieldChange('CityMasterId', 0);
+                                            return;
+                                        }
+
+                                        const id = Number(item);
+
                                         setSelectedCityId(id);
                                         handleFieldChange('CityMasterId', id);
                                     }}
                                     disabled={!selectedDistrictId || cityOptions.length === 0}
                                     options={cityOptions}
                                 />
+
                             </div>
                             <div>
                                 <Input

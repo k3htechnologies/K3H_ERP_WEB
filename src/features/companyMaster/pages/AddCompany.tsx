@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { AddUpdateCompanyMasterRequest, AddUpdateCompanyPartnerRequest, CompanyPartnerData, FilterWithPaginationCompanyMasterRequest } from '@/features/companyMaster/models/CompanyMasterModel';
 import { Input } from '@/ui/components/forms';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { COMPANY_TYPE_OPTIONS, GENDER_OPTIONS } from '@/core/constants';
+import { FIRMS_TYPE_OPTIONS, GENDER_OPTIONS } from '@/core/constants';
 import { useCountryStateCityDistrictVillageData } from '@/core/hooks/useCountryStateCityDistrictVillage';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
@@ -14,7 +14,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { Edit, IdCard, Mail, Phone, Trash2 } from 'lucide-react';
-import { calculateMergedFiles, createFileUrlString, filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterRERA, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidRERA, mergeFiles } from '@/core/utils/fileValidation';
+import { calculateMergedFiles, createFileUrlString, filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterTAN, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidTAN, mergeFiles } from '@/core/utils/fileValidation';
 import { runApiWithLoader } from '@/core/utils';
 import { companyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import * as E from 'fp-ts/Either';
@@ -29,21 +29,28 @@ const initialFormState = (): AddUpdateCompanyMasterRequest => ({
   CompanyId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   CompanyName: '',
-  CompanyType: '',
+  FirmsType: '',
   ContactPerson: '',
   MobileNumber: '',
   EmailId: '',
   LandLineNumber: '',
+
   GSTNumber: '',
   GSTCertificateURL: null,
   RemoveGSTCertificateURL: '',
+
   CINNumber: '',
   CINURL: null,
   RemoveCINURL: '',
+
   PanNumber: '',
   PanCardURL: null,
   RemovePanCardURL: '',
-  RERANumber: '',
+
+  TANNumber: '',
+  TANURL: null,
+  RemoveTANURL: '',
+
   CountryMasterId: 0,
   StateMasterId: 0,
   DistrictMasterId: 0,
@@ -104,6 +111,10 @@ const AddCompany: React.FC = () => {
   const [cinURLFiles, setCINURLFiles] = useState<(File | string)[]>([]);
   const [removedCinUrls, setRemovedCinUrls] = useState<string[]>([]);
   const [cinURL, setCinURL] = useState<string>();
+
+  const [tanURLFiles, setTANURLFiles] = useState<(File | string)[]>([]);
+  const [removedTanUrls, setRemovedTanUrls] = useState<string[]>([]);
+  const [tanURL, setTanURL] = useState<string>();
 
   const [companyLetterHeadHeaderFiles, setCompanyLetterHeadHeaderFiles] = useState<(File | string)[]>([]);
   const [removedCompanyLetterHeadHeaderUrls, setRemovedCompanyLetterHeadHeaderUrls] = useState<string[]>([]);
@@ -254,7 +265,7 @@ const AddCompany: React.FC = () => {
               CompanyId: row.CompanyId ?? prev.CompanyId,
               Uniquekey: row.Uniquekey ?? prev.Uniquekey,
               CompanyName: row.CompanyName ?? prev.CompanyName ?? '',
-              CompanyType: row.CompanyType ?? prev.CompanyType ?? '',
+              FirmsType: row.FirmsType ?? prev.FirmsType ?? '',
               ContactPerson: row.ContactPerson ?? prev.ContactPerson ?? '',
               MobileNumber: row.MobileNumber ?? prev.MobileNumber ?? '',
               EmailId: row.EmailId ?? prev.EmailId ?? '',
@@ -268,7 +279,7 @@ const AddCompany: React.FC = () => {
               PanNumber: row.PANNumber ?? prev.PanNumber ?? '',
               PanCardURL: null,
               RemovePanCardURL: '',
-              RERANumber: row.RERANumber ?? prev.RERANumber,
+              TANNumber: row.TANNumber ?? prev.TANNumber,
               CountryMasterId: row.CountryMasterId ?? prev.CountryMasterId ?? 1,
               DistrictMasterId: row.DistrictMasterId ?? prev.DistrictMasterId ?? 0,
               StateMasterId: row.StateMasterId ?? prev.StateMasterId ?? 0,
@@ -291,6 +302,10 @@ const AddCompany: React.FC = () => {
             setCINURLFiles([]);
             setCinURL(row.CINURL)
             setRemovedCinUrls([]);
+
+            setTANURLFiles([]);
+            setTanURL(row.TANURL)
+            setRemovedTanUrls([]);
 
             setCompanyLetterHeadHeaderFiles([]);
             setCompanyLetterHeadHeaderURL(row.CompanyLetterheadHeaderURL)
@@ -351,9 +366,9 @@ const AddCompany: React.FC = () => {
       newErrors.CompanyName = "Company Name must be at most 50 characters";
     }
 
-    // Company Type
-    if (!formData.CompanyType?.trim()) {
-      newErrors.CompanyType = "Company Type is required";
+    // Firms Type
+    if (!formData.FirmsType?.trim()) {
+      newErrors.FirmsType = "Firms Type is required";
     }
 
     // Contact Person
@@ -382,7 +397,7 @@ const AddCompany: React.FC = () => {
     const hasGSTFile = hasAnyFile(gstGSTCertificateFiles, gSTCertificateURL);
 
     // Rule 1 — number present but invalid
-    if (!isValidGST(gst)) {
+    if (hasGSTNumber && !isValidGST(gst)) {
       newErrors.GSTNumber = "Enter a Valid GST Number";
     }
 
@@ -404,7 +419,7 @@ const AddCompany: React.FC = () => {
     const hasPANNumber = pan !== "";
     const hasPANFile = hasAnyFile(panURLFiles, panURL);
 
-    if (!isValidPAN(pan)) {
+    if (hasPANNumber && !isValidPAN(pan)) {
       newErrors.PanNumber = "Enter a Valid PAN Number";
     }
 
@@ -425,7 +440,7 @@ const AddCompany: React.FC = () => {
     const hasCINNumber = cin !== "";
     const hasCINFile = hasAnyFile(cinURLFiles, cinURL);
 
-    if (!isValidCIN(cin)) {
+    if (hasCINNumber && !isValidCIN(cin)) {
       newErrors.CINNumber = "Enter a Valid CIN Number";
     }
 
@@ -441,12 +456,28 @@ const AddCompany: React.FC = () => {
       newErrors.CINNumber = "CIN Number is required";
     }
 
-    // RERA
-    if (!formData.RERANumber?.trim()) {
-      newErrors.RERANumber = "RERA Number is required";
-    } else if (!isValidRERA(formData.RERANumber?.trim())) {
-      newErrors.RERANumber = "Enter a Valid RERA Number";
+
+    // ===== TAN =====
+    const tan = formData.TANNumber?.trim() || "";
+    const hasTANNumber = tan !== "";
+    const hasTANFile = hasAnyFile(tanURLFiles, tanURL);
+
+    if (hasTANNumber && !isValidTAN(tan)) {
+      newErrors.TANNumber = "Enter a Valid TAN Number";
     }
+
+    if (hasTANNumber && !isValidTAN(tan)) {
+      newErrors.TANNumber = "Enter a Valid TAN Number";
+    }
+
+    if (hasTANNumber && !hasTANFile) {
+      newErrors.TANURL = "TAN Document is required";
+    }
+
+    if (hasTANFile && !hasTANNumber) {
+      newErrors.TANNumber = "TAN Number is required";
+    }
+
 
     // Location
     if (!formData.CountryMasterId) {
@@ -1054,7 +1085,7 @@ const AddCompany: React.FC = () => {
     fd.append('CompanyId', String(formData.CompanyId ?? 0));
     fd.append('Uniquekey', formData.Uniquekey ?? '');
     fd.append('CompanyName', formData.CompanyName ?? '');
-    fd.append('CompanyType', formData.CompanyType ?? '');
+    fd.append('FirmsType', formData.FirmsType ?? '');
     fd.append('ContactPerson', formData.ContactPerson ?? '');
     fd.append('MobileNumber', formData.MobileNumber ?? '');
     fd.append('EmailId', formData.EmailId ?? '');
@@ -1062,7 +1093,7 @@ const AddCompany: React.FC = () => {
     fd.append('GSTNumber', formData.GSTNumber ?? '');
     fd.append('PanNumber', formData.PanNumber ?? '');
     fd.append('CINNumber', formData.CINNumber ?? '');
-    fd.append('RERANumber', formData.RERANumber ?? '');
+    fd.append('TANNumber', formData.TANNumber ?? '');
     fd.append('CountryMasterId', String(formData.CountryMasterId ?? 0));
     fd.append('StateMasterId', String(formData.StateMasterId ?? 0));
     fd.append('DistrictMasterId', String(formData.DistrictMasterId ?? 0));
@@ -1077,6 +1108,9 @@ const AddCompany: React.FC = () => {
 
     cinURLFiles.forEach(file => file instanceof File && fd.append('CINURL', file));
     fd.append('RemoveCINURL', removedCinUrls.join(','));
+
+    tanURLFiles.forEach(file => file instanceof File && fd.append('TANURL', file));
+    fd.append('RemoveTANURL', removedTanUrls.join(','));
 
     companyLetterHeadHeaderFiles.forEach(file => file instanceof File && fd.append('CompanyLetterheadHeaderURL', file));
     fd.append('RemoveCompanyLetterheadHeaderURL', removedCompanyLetterHeadHeaderUrls.join(','));
@@ -1190,15 +1224,15 @@ const AddCompany: React.FC = () => {
             <div>
 
               <SinglePageSelection
-                label='Company Type'
+                label='Firms Type'
                 required
-                error={errors.CompanyType}
-                value={formData.CompanyType}
+                error={errors.FirmsType}
+                value={formData.FirmsType}
                 onChange={(e) => {
-                  handleFieldChange('CompanyType', String(e))
+                  handleFieldChange('FirmsType', String(e))
                 }}
 
-                options={COMPANY_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
+                options={FIRMS_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
 
 
             </div>
@@ -1284,7 +1318,6 @@ const AddCompany: React.FC = () => {
 
               <Input
                 label='GST Number'
-                required
                 type="text"
                 value={formData.GSTNumber}
                 error={errors.GSTNumber}
@@ -1302,7 +1335,6 @@ const AddCompany: React.FC = () => {
               <MultiFilePicker
                 label="GST Certificate"
                 placeholder='Select GST Certificate'
-                required
                 error={errors.GSTCertificateURL}
                 value={gstGSTCertificateFiles}
                 onChange={setGSTCertificateFiles}
@@ -1325,7 +1357,6 @@ const AddCompany: React.FC = () => {
 
               <Input
                 label='PAN Number'
-                required
                 type="text"
                 value={formData.PanNumber}
                 error={errors.PanNumber}
@@ -1343,7 +1374,6 @@ const AddCompany: React.FC = () => {
               <MultiFilePicker
                 label="PAN Card"
                 placeholder='Select Pan Card'
-                required
                 error={errors.PanCardURL}
                 value={panURLFiles}
                 onChange={setPANURLFiles}
@@ -1366,7 +1396,6 @@ const AddCompany: React.FC = () => {
 
               <Input
                 label='CIN Number'
-                required
                 type="text"
                 value={formData.CINNumber}
                 error={errors.CINNumber}
@@ -1408,18 +1437,40 @@ const AddCompany: React.FC = () => {
             <div>
 
               <Input
-                label='RERA Number'
-                required
+                label='TAN Number'
                 type="text"
-                value={formData.RERANumber}
-                error={errors.RERANumber}
+                value={formData.TANNumber}
+                error={errors.TANNumber}
                 rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
                 maxLength={20}
                 onChange={(e) => {
-                  const reraNumber = filterRERA(e.target.value);
-                  handleFieldChange('RERANumber', reraNumber)
+                  const tanNumber = filterTAN(e.target.value);
+                  handleFieldChange('TANNumber', tanNumber)
                 }}
-                placeholder="Enter Valid RERA Number"
+                placeholder="Enter Valid TAN Number"
+              />
+
+            </div>
+
+            <div>
+              <MultiFilePicker
+                label='TAN'
+                placeholder='Select TAN'
+                value={tanURLFiles}
+                error={errors.TANURL}
+                onChange={setTANURLFiles}
+                availableFilesURL={tanURL ?? ""}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf",
+                  "application/vnd.ms-excel",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ]}
+                maxFiles={5}
+                onRemoveExisting={(url) => {
+                  setRemovedTanUrls((prev) => [...prev, url])
+                }}
               />
 
             </div>
@@ -1435,21 +1486,42 @@ const AddCompany: React.FC = () => {
 
               <SinglePageSelection
                 label='Country'
+                placeholder="Select Country"
                 required
                 value={selectedCountryId || ''}
                 error={errors.CountryMasterId}
-                onChange={val => {
-                  const id = Number(val)
-                  setSelectedCountryId(id)
-                  setSelectedStateId(null)
-                  setSelectedDistrictId(null)
-                  setSelectedCityId(null)
+                onChange={(item) => {
 
-                  handleFieldChange('CountryMasterId', id)
+                  if (!item) {
+                    setSelectedCountryId(null);
+                    setSelectedStateId(null);
+                    setSelectedDistrictId(null);
+                    setSelectedCityId(null);
+
+                    handleFieldChange('CountryMasterId', 0);
+                    handleFieldChange('StateMasterId', 0);
+                    handleFieldChange('DistrictMasterId', 0);
+                    handleFieldChange('CityMasterId', 0);
+
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedCountryId(id);
+                  setSelectedStateId(null);
+                  setSelectedDistrictId(null);
+                  setSelectedCityId(null);
+
+                  handleFieldChange('CountryMasterId', id);
+                  handleFieldChange('StateMasterId', 0);
+                  handleFieldChange('DistrictMasterId', 0);
+                  handleFieldChange('CityMasterId', 0);
                 }}
                 disabled={isLocationLoading}
                 options={countryOptions}
               />
+
 
             </div>
 
@@ -1457,20 +1529,38 @@ const AddCompany: React.FC = () => {
 
               <SinglePageSelection
                 label='State'
+                placeholder="Select State"
                 required
                 value={selectedStateId ?? ''}
                 error={errors.StateMasterId}
-                onChange={val => {
-                  const id = Number(val)
-                  setSelectedStateId(id)
-                  setSelectedDistrictId(null)
-                  setSelectedCityId(null)
+                onChange={(item) => {
 
-                  handleFieldChange('StateMasterId', id)
+                  if (!item) {
+                    setSelectedStateId(null);
+                    setSelectedDistrictId(null);
+                    setSelectedCityId(null);
+
+                    handleFieldChange("StateMasterId", 0);
+                    handleFieldChange("DistrictMasterId", 0);
+                    handleFieldChange("CityMasterId", 0);
+
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedStateId(id);
+                  setSelectedDistrictId(null);
+                  setSelectedCityId(null);
+
+                  handleFieldChange("StateMasterId", id);
+                  handleFieldChange("DistrictMasterId", 0);
+                  handleFieldChange("CityMasterId", 0);
                 }}
                 disabled={!selectedCountryId || stateOptions.length === 0}
                 options={stateOptions}
               />
+
 
             </div>
 
@@ -1478,39 +1568,58 @@ const AddCompany: React.FC = () => {
 
               <SinglePageSelection
                 label='District'
+                placeholder="Select District"
                 required
                 value={selectedDistrictId ?? ''}
                 error={errors.DistrictMasterId}
-                onChange={val => {
-                  const id = Number(val)
-                  setSelectedDistrictId(id)
-                  setSelectedCityId(null)
+                onChange={(item) => {
 
-                  handleFieldChange('DistrictMasterId', id)
+                  if (!item) {
+                    setSelectedDistrictId(null);
+                    setSelectedCityId(null);
+
+                    handleFieldChange('DistrictMasterId', 0);
+                    handleFieldChange('CityMasterId', 0);
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedDistrictId(id);
+                  setSelectedCityId(null);
+
+                  handleFieldChange('DistrictMasterId', id);
+                  handleFieldChange('CityMasterId', 0);
                 }}
                 disabled={!selectedStateId || districtOptions.length === 0}
                 options={districtOptions}
               />
-
-
             </div>
 
             <div>
 
               <SinglePageSelection
                 label='City'
+                placeholder="Select City"
                 required
                 value={selectedCityId ?? ''}
                 error={errors.CityMasterId}
-                onChange={val => {
-                  const id = Number(val)
-                  setSelectedCityId(id)
-                  handleFieldChange('CityMasterId', id)
+                onChange={(item) => {
+
+                  if (!item) {
+                    setSelectedCityId(null);
+                    handleFieldChange('CityMasterId', 0);
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedCityId(id);
+                  handleFieldChange('CityMasterId', id);
                 }}
                 disabled={!selectedDistrictId || cityOptions.length === 0}
                 options={cityOptions}
               />
-
 
             </div>
 

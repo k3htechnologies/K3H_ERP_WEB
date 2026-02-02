@@ -119,6 +119,12 @@ import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
 import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
 import Parking from '@/features/parking/pages/Parking';
 import RedevelopmentDashboard from '@/features/redevelopmentDashboard/pages/RedevelopmentDashboard';
+import InventoryDashboard from '@/features/inventoryDashboard/pages/InventoryDashboard';
+import { LitigationListStateProvider } from '@/features/litigation/context/LitigationListStateContext';
+import Litigation from '@/features/litigation/pages/Litigation';
+import AddUpdateLitigation from '@/features/litigation/pages/AddUpdateLitigation';
+import ViewLitigation from '@/features/litigation/pages/ViewLitigation';
+import LitigationDocument from '@/features/litigation/pages/LitigationDocument';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -269,6 +275,7 @@ function App() {
             <Route path="payrollReport" element={<PayrollReport />} />
 
             {/* INVENTORY */}
+            <Route path="inventoryDashboard" element={<InventoryDashboard />} />
             <Route path="inventory" element={<Inventory></Inventory>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="parking" element={<Parking></Parking>} />
@@ -327,6 +334,13 @@ function App() {
             <Route path="siteProgress/SiteProgressFlatConstruction" element={<SiteProgressFlatConstruction />} />
             <Route path="siteProgress/SiteProgressConstructionActivity" element={<SiteProgressConstructionActivity />} />
             <Route path="siteProgress/SiteProgressConstructionSubActivity" element={<SiteProgressConstructionSubActivity />} />
+
+
+            {/* LITIGATION */}
+            <Route path='litigation' element={<LitigationListStateProvider><Litigation /></LitigationListStateProvider>} />
+            <Route path='litigation/add/:LitigationId?' element={<LitigationListStateProvider><AddUpdateLitigation /></LitigationListStateProvider>} />
+            <Route path='litigation/view' element={<LitigationListStateProvider><ViewLitigation /></LitigationListStateProvider>} />
+            <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
 
           </Route>
 

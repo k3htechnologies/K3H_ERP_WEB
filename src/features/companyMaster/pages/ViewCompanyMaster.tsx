@@ -32,6 +32,7 @@ export const ViewCompantMaster: React.FC = () => {
 
     //#region INIT - Load Company Data
     useEffect(() => {
+        
         if (listState.companyId) {
             loadCompany();
         }
@@ -54,8 +55,11 @@ export const ViewCompantMaster: React.FC = () => {
                 const response = await companyMasterService.apiCallPullCompanyMaster(filterParams);
 
                 if (E.isRight(response)) {
+
                     const companyList = Array.isArray(response.right.Data) ? response.right.Data : [];
+
                     setEditCompanyData(companyList[0] || null);
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -89,9 +93,9 @@ export const ViewCompantMaster: React.FC = () => {
     //#endregion
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <Loader loading={isLoading} title={loadingMessage}>
-                <div></div>
-            </Loader>
+
+            <Loader loading={isLoading} title={loadingMessage}> <div></div> </Loader>
+
             {/* Header */}
             <HeaderActionBar
                 titleText={'Company Details : '}
@@ -120,7 +124,7 @@ export const ViewCompantMaster: React.FC = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <FieldItem label="Company Name" value={editCompanyData?.CompanyName ?? '-'} />
-                            <FieldItem label="Company Type" value={editCompanyData?.CompanyType ?? '-'} />
+                            <FieldItem label="Firms Type" value={editCompanyData?.FirmsType ?? '-'} />
                             <FieldItem label="Contact Person" value={editCompanyData?.ContactPerson ?? '-'} />
                             <FieldItem label="Mobile Number" value={editCompanyData?.MobileNumber ?? '-'} />
                             <FieldItem label="Email" value={editCompanyData?.EmailId ?? '-'} />
@@ -138,7 +142,7 @@ export const ViewCompantMaster: React.FC = () => {
                             <FieldItem label="PAN Number" value={editCompanyData?.PANNumber ?? '-'} urls={editCompanyData?.PanCardURL} isIcon />
                             <FieldItem label="GST Number" value={editCompanyData?.GSTNumber ?? '-'} urls={editCompanyData?.GSTCertificateURL} isIcon />
                             <FieldItem label="CIN Number" value={editCompanyData?.CINNumber ?? '-'} urls={editCompanyData?.CINURL} isIcon />
-                            <FieldItem label="RERA Number" value={editCompanyData?.RERANumber ?? '-'} />
+                            <FieldItem label="TAN Number" value={editCompanyData?.TANNumber ?? '-'}  urls={editCompanyData?.TANURL} isIcon/>
 
                             <FieldItem
                                 label="Company Letter Head"
@@ -153,12 +157,6 @@ export const ViewCompantMaster: React.FC = () => {
                             />
                         </div>
                     </section>
-
-
-
-
-
-
 
                 </div>
 

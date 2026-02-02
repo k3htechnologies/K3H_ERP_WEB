@@ -63,3 +63,15 @@ export function formatToKLCr(value: number): string {
   return value.toString();
 }
 
+export const isToDateGreaterOrEqualFromDate = (
+  fromDate: string | Date,
+  toDate: string | Date
+): boolean => {
+  if (!fromDate || !toDate) return false;
+
+  const from = new Date(fromDate);
+  const to = new Date(toDate);
+
+  return to.getTime() >= from.getTime();
+};
+

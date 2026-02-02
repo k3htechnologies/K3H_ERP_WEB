@@ -104,7 +104,7 @@ export const WeekOffMappingMasterFormModal: React.FC<WeekOffMappingMasterFormMod
                     return;
                   }
 
-                  onFieldChange("EmployeeId", Number(item.value));
+                  onFieldChange("EmployeeId", item.value);
                 }}
                 initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
                 error={errors.EmployeeId}
@@ -126,7 +126,7 @@ export const WeekOffMappingMasterFormModal: React.FC<WeekOffMappingMasterFormMod
                     return;
                   }
 
-                  onFieldChange("DepartmentMasterId", Number(item.value));
+                  onFieldChange("DepartmentMasterId", item.value);
                 }}
                 initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
                 error={errors.DepartmentMasterId}

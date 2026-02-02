@@ -607,6 +607,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 onChange={(e) => handleFieldChangeShiftingDetails('ShiftingOfferedToResidentialAmount', filterNumbersWithDecimal(e.target.value))}
                 error={errorsShiftingDetails.ShiftingOfferedToResidentialAmount}
                 placeholder="Enter Residential Shifting Amount"
+                disabled={shiftingPaymentStageList.some(x => x.Type?.toUpperCase() === "RESIDENTIAL")}
               />
             </div>
             <div>
@@ -619,6 +620,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 onChange={(e) => handleFieldChangeShiftingDetails('ShiftingOfferedToCommercialAmount', filterNumbersWithDecimal(e.target.value))}
                 error={errorsShiftingDetails.ShiftingOfferedToCommercialAmount}
                 placeholder="Enter Commercial Shifting Amount"
+                disabled={shiftingPaymentStageList.some(x => x.Type?.toUpperCase() === "COMMERCIAL")}
               />
             </div>
           </div>
@@ -668,8 +670,8 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
         canAction={canAction && buildingId > 0}
         onSave={handleSaveShiftingDetails}
 
-        onOtherActionText={buildingId > 0 && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0 ? "Generate" : ""}
-        onOtherAction={() =>
+        leftActionText={buildingId > 0 && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0 ? "Generate" : ""}
+        onLeftAction={() =>
           handleConfirmationDialogBoxOpenGenerateShiftingDetails(formDataShiftingDetails as ProposedOfferShiftingDetailsData)
         }
         isLoading={isLoading}

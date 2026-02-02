@@ -100,7 +100,6 @@ export const DateRangeWithActions: React.FC<DateRangeWithActionsProps> = ({
                 defineWidth
                 title="Export"
                 aria-expanded={isExportOpen}
-                aria-haspopup={hasExportOptions ? "menu" : undefined}
                 style={{ width: '95px' }}
                 leftIcon={<Download className="h-4 w-4" />}
                 disabled={exportLoading}
@@ -109,7 +108,7 @@ export const DateRangeWithActions: React.FC<DateRangeWithActionsProps> = ({
               </Button>
 
               {/* EXPORT DROPDOWN */}
-              {isExportOpen && hasExportOptions && (
+              {isExportOpen &&  (
                 <div
                   className="absolute right-0 mt-2 min-w-[168px] bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-50"
                   role="menu"

@@ -311,7 +311,7 @@ export const PayrollReport: React.FC = () => {
           CompanyName: searchTerm?.trim() || activeFilters.CompanyName?.trim() || undefined,
         }
 
-        const response = await outDoorService.apiCallPullOutDoorData(params);
+        const response = await outDoorService.apiCallPullOutDoor(params);
 
         if (E.isRight(response)) {
 
@@ -434,7 +434,7 @@ export const PayrollReport: React.FC = () => {
             SortBy: sortByParam,
             ExportType: 'PDF'
           };
-          const response = await outDoorService.apiCallPullOutDoorData(params);
+          const response = await outDoorService.apiCallPullOutDoor(params);
           handleExportFile(response, 'PDF', 'Outdoor', addToast);
           return response;
         } else if (activeTab === 'Resignation') {

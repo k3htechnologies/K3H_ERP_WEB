@@ -16,7 +16,7 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { fetchBuildingDropdown } from '@/features/building/buildingDropdown';
@@ -24,6 +24,9 @@ import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import Tabs, { type TabItem } from '@/ui/components/Tab/Tab';
 import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { Eye, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useRentListState } from '@/features/rent/context/RentListStateContext';
 
 type PivotRentRow = {
   FlatNumber?: string;
@@ -37,6 +40,8 @@ type PivotRentRow = {
   ProposedOfferAmount?: number;
   Amount?: number;
   Unit?: string;
+  TenantApplicantId?: number;
+  TenantId?: number;
   [month: string]: any;
 };
 
@@ -45,7 +50,9 @@ export const Rent: React.FC = () => {
   //#region STATE
   const { projectId } = useProject();
   const { addToast } = useToast();
-  const { canExport } = useMenuPermissions();
+  const { canAction, canExport } = useMenuPermissions();
+  const navigate = useNavigate();
+  const { setPayTrackRentContext, updateListState } = useRentListState();
 
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo] = useState<SortInfo | undefined>();
@@ -263,6 +270,8 @@ export const Rent: React.FC = () => {
           FlatType: item.FlatType,
           Unit: item.Unit,
           ProposedOfferAmount: Number(item.ProposedOfferAmount) || 0,
+          TenantApplicantId: item.TenantApplicantId,
+          TenantId: item.TenantId,
           Total: 0,
           'Paid Total': 0
         };
@@ -383,7 +392,8 @@ export const Rent: React.FC = () => {
         render: (_, row) => {
           return `${row.ProposedOfferAmount || 0} ${row.Unit || ''}`;
         }
-      }
+      },
+
 
     ];
 
@@ -394,8 +404,87 @@ export const Rent: React.FC = () => {
       align: 'right' as const
     }));
 
-    return [...baseColumns, ...dynamicColumns];
-  }, [dynamicHeaders]);
+    const actionColumn: TableColumn[] = canAction
+      ? [{
+        key: 'Actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row: PivotRentRow) => {
+          const handleAddPayTrackRent = () => {
+            if (!row.TenantApplicantId || !buildingId) return;
+            
+            setPayTrackRentContext(
+              row.TenantApplicantId,
+              row.ApplicantName || ''
+            );
+            updateListState({
+              buildingId,
+              buildingName,
+              activeTab,
+              tenure: activeTenureTab,
+              tenantId: row.TenantId || 0,
+              tenantName: row.ApplicantName || '',
+              tenantApplicantId: row.TenantApplicantId || 0,
+              flatNumber: row.FlatNumber || '',
+              applicantName: row.ApplicantName || ''
+
+            });
+            navigate('/rent/pay');
+          };
+
+          const handleViewPayTrackRent = () => {
+            if (!row.TenantApplicantId || !buildingId) return;
+            
+            setPayTrackRentContext(
+              row.TenantApplicantId,
+              row.ApplicantName || ''
+            );
+            updateListState({
+              buildingId,
+              buildingName,
+              activeTab,
+              tenure: activeTenureTab,
+              tenantId: row.TenantId || 0,
+              tenantName: row.ApplicantName || '',
+              tenantApplicantId: row.TenantApplicantId || 0,
+              flatNumber: row.FlatNumber || '',
+              applicantName: row.ApplicantName || ''
+            });
+            navigate('/rent/paymentLedger');
+          };
+
+          return (
+            <div className="flex items-center justify-center">
+              <Button
+                color="transparent"
+                isborderRadius
+                size="sm"
+                style={{ color: 'red', padding: '4px 8px' }}
+                onClick={handleAddPayTrackRent}
+                title="Add Pay Track Rent"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+              <Button
+                color="transparent"
+                isborderRadius
+                size="sm"
+                style={{ color: 'blue', padding: '4px 8px' }}
+                onClick={handleViewPayTrackRent}
+                title="View Pay Track Rent"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            </div>
+          );
+        }
+      }]
+      : [];
+
+    return [...baseColumns, ...dynamicColumns, ...actionColumn];
+  }, [dynamicHeaders, canAction, buildingId, buildingName, activeTab, activeTenureTab, navigate, setPayTrackRentContext, updateListState]);
 
 
   const paginationInfo: PaginationInfo = {

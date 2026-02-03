@@ -255,6 +255,14 @@ export const MASTER_DATA = {
 
   courtType: ['Civil Court', 'District Court', 'High Court', 'Session Court', 'Supreme Court'],
 
+  paymentMode: ['Cash', 'Cheque', 'Demand Draft', 'IMPS', 'NEFT', 'Online Transfer', 'RTGS', 'UPI'],
+
+  paymentType: ['Advance', 'Late Fee', 'Penalty', 'Regular'],
+
+  amountType: ['Monthly', 'One Time', 'Quarterly', 'Yearly']
+
+
+
 } as const
 
 // ============================================================================
@@ -352,6 +360,10 @@ export const PARKING_STATUS = toOptions(MASTER_DATA.parkingStatus);
 export const UNIT_LAYOUT = toOptions(MASTER_DATA.unitLayout);
 export const CASE_TYPE_OPTION = toOptions(MASTER_DATA.caseType)
 export const COURT_TYPE_OPTION = toOptions(MASTER_DATA.courtType)
+
+export const PAYMENT_MODE = toOptions(MASTER_DATA.paymentMode);
+export const PAYMENT_TYPE = toOptions(MASTER_DATA.paymentType)
+export const AMOUNT_TYPE = toOptions(MASTER_DATA.amountType)
 
 
 // ============================================================================

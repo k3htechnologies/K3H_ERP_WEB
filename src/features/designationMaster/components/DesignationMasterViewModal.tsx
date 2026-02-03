@@ -53,7 +53,7 @@ export const DesignationMasterViewModal: React.FC<DesignationMasterViewModalProp
     >
       <div className="space-y-6">
         <div className="space-y-4">
-          <FieldItem label="Designation Code" value={data.DesignationName} isRow withBorder={true} />
+          <FieldItem label="Designation Name" value={data.DesignationName} isRow withBorder={true} />
           <FieldItem label="Notice Period" value={data.NoticePeriod} isRow withBorder={true} />
           <FieldItem label="Number of Employees" value={data.NumberOfEmployee} isRow withBorder={true} />
         </div>

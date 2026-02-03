@@ -165,17 +165,22 @@ export const getPageInfo = (path: string) => {
         case 'compOff':
             return {
                 title: 'CompOff',
-                description: 'Manage compOff with complete CRUD operations',
+                description: 'Smartly Track Extra Work. Seamlessly Grant Comp Off',
             }
         case 'outdoor':
             return {
-                title: "Outdoor Management",
-                description: "outdoor visit information",
+                title: "Outdoor",
+                description: "Outdoor Work. Indoor Balance",
+            }
+        case 'attendance':
+            return {
+                title: "Attendance",
+                description: "Accurate Attendance. Smarter Workforce",
             }
         case 'resignation':
             return {
                 title: "Resignation",
-                description: "Resignation information",
+                description: "Simple Resignations. Smooth Transitions",
             }
         case 'payrollReport':
             return {
@@ -207,12 +212,12 @@ export const getPageInfo = (path: string) => {
         case 'approvalDocument':
             return {
                 title: 'Approval Document',
-                description: 'Manage and organize company departments with complete CRUD operations',
+                description: 'Structured Approvals. Trusted Records',
             }
         case 'approvalCategory':
             return {
                 title: 'Approval Document Category',
-                description: 'Manage and organize company departments with complete CRUD operations',
+                description: 'Structured Categories for Smarter Approval Document',
             }
 
         //PROFILE
@@ -227,48 +232,48 @@ export const getPageInfo = (path: string) => {
             if (second === "SiteProgressSubConstruction") {
                 return {
                     title: "Site Progress Sub Construction",
-                    description: "Assign and manage module permissions for designations",
+                    description: "Structured Sub-Construction Progress, Simplified",
                 };
             }
 
             if (second === "SiteProgressWingConstruction") {
                 return {
                     title: "Wing Wise Construction",
-                    description: "Assign and manage module permissions for designations",
+                    description: "Structured Building Progress — One Wing at a Time",
                 };
             }
 
             if (second === "SiteProgressFloorConstruction") {
                 return {
                     title: "Floor Wise Construction",
-                    description: "Assign and manage module permissions for designations",
+                    description: "Clear Floor-Wise Visibility for Better Control",
                 };
             }
 
             if (second === "SiteProgressFlatConstruction") {
                 return {
                     title: "Flat Wise Construction",
-                    description: "Assign and manage module permissions for designations",
+                    description: "Track Progress, Flat by Flat",
                 };
             }
 
             if (second === "SiteProgressConstructionActivity") {
                 return {
                     title: "Activity",
-                    description: "Assign and manage module permissions for designations",
+                    description: "Track Every Action. Deliver Every Outcome.",
                 };
             }
 
             if (second === "SiteProgressConstructionSubActivity") {
                 return {
                     title: "Sub Activity",
-                    description: "Assign and manage module permissions for designations",
+                    description: "Small Steps. Big Progress",
                 };
             }
 
             return {
                 title: 'Site Progress',
-                description: 'Profile',
+                description: 'Clear Visibility Across Every Construction Stage',
             }
 
         //REDEVELOPMENT
@@ -314,7 +319,7 @@ export const getPageInfo = (path: string) => {
         case 'inventoryDashboard':
             return {
                 title: 'Inventory Dashboard',
-                description: 'Track building units, floors, and availability in real time',
+                description: 'Inventory Insights, Instantly',
             }
         case 'inventory':
             return {
@@ -337,6 +342,19 @@ export const getPageInfo = (path: string) => {
             return {
                 title: "Channel Partner",
                 description: "Single source of truth for channel partner information",
+            }
+
+        // MARKETING
+        case 'content':
+            return {
+                title: "Content",
+                description: "Profile",
+            }
+        // PROJECT
+        case 'approvedBank':
+            return {
+                title: "Approved Bank",
+                description: "Profile",
             }
 
         default:

@@ -125,6 +125,15 @@ import Litigation from '@/features/litigation/pages/Litigation';
 import AddUpdateLitigation from '@/features/litigation/pages/AddUpdateLitigation';
 import ViewLitigation from '@/features/litigation/pages/ViewLitigation';
 import LitigationDocument from '@/features/litigation/pages/LitigationDocument';
+import { ApprovedBankListStateProvider } from '@/features/approvedBank/context/ApprovedBankListStateContext';
+import ApprovedBankFolder from '@/features/approvedBank/pages/ApprovedBankFolder';
+import ApprovedBankFile from '@/features/approvedBank/pages/ApprovedBankFile';
+import { MarketingContentListStateProvider } from '@/features/marketingContent/context/MarketingContentListStateContext';
+import MarketingContentFolder from '@/features/marketingContent/pages/MarketingContentFolder';
+import MarketingContent from '@/features/marketingContent/pages/MarketingContent';
+import AddUpdatePayTrackRent from '@/features/payTrackRent/pages/AddUpdatePayTrackRent';
+import ViewPayTrackRent from '@/features/payTrackRent/pages/ViewPayTrackRent';
+import { RentListStateProvider } from '@/features/rent/context/RentListStateContext';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -263,16 +272,22 @@ function App() {
             {/* PAYROLL */}
 
             <Route path="compOff" element={<CompOff />} />
+
             <Route path="outdoor/add/:outdoorId?" element={<OutDoorListStateProvider><AddUpdateOutDoorPage /></OutDoorListStateProvider>} />
+            <Route path="outdoor" element={<OutDoorListStateProvider><OutDoor /></OutDoorListStateProvider>} />
+
             <Route path="leaveCreditConfiguration" element={<LeaveCreditConfigurationListStateProvider><LeaveCreditConfiguration /></LeaveCreditConfigurationListStateProvider>} />
             <Route path="leaveCreditConfiguration/add/:id?" element={<LeaveCreditConfigurationListStateProvider><AddUpdateLeaveCreditConfiguration /></LeaveCreditConfigurationListStateProvider>} />
             <Route path="leaveCreditConfiguration/view/:id?" element={<LeaveCreditConfigurationListStateProvider><ViewLeaveCreditConfiguration /></LeaveCreditConfigurationListStateProvider>} />
-            <Route path="outdoor" element={<OutDoorListStateProvider><OutDoor /></OutDoorListStateProvider>} />
+
             <Route path="leave" element={<LeaveListStateProvider><Leave /></LeaveListStateProvider>} />
             <Route path="leave/add/:id?" element={<LeaveListStateProvider><AddUpdateLeave /></LeaveListStateProvider>} />
             <Route path="leave/view/:id?" element={<LeaveListStateProvider><ViewLeave /></LeaveListStateProvider>} />
+
             <Route path="resignation" element={<EmployeeResignation />} />
             <Route path="payrollReport" element={<PayrollReport />} />
+
+            <Route path="attendance" element={<AttendanceCalendar />} />
 
             {/* INVENTORY */}
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
@@ -293,7 +308,7 @@ function App() {
 
             {/* COMMAN */}
             <Route path="event" element={<Event />} />
-            <Route path="attendanceCalendar" element={<AttendanceCalendar />} />
+
 
             {/* SALES */}
             <Route path="channelPartner" element={<ChannelPartner />} />
@@ -319,7 +334,9 @@ function App() {
             <Route path="tenant/add/:tenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
             <Route path="tenant/document" element={<TenantListStateProvider><TenantDocument /></TenantListStateProvider>} />
 
-            <Route path="rent" element={<Rent />} />
+            <Route path="rent" element={<RentListStateProvider><Rent /></RentListStateProvider>} />
+            <Route path="rent/pay" element={<RentListStateProvider><AddUpdatePayTrackRent /></RentListStateProvider>} />
+            <Route path="rent/paymentLedger" element={<RentListStateProvider><ViewPayTrackRent /></RentListStateProvider>} />
 
             <Route path="proposedOffer" element={<ProposedOffer />} />
 
@@ -341,6 +358,14 @@ function App() {
             <Route path='litigation/add/:LitigationId?' element={<LitigationListStateProvider><AddUpdateLitigation /></LitigationListStateProvider>} />
             <Route path='litigation/view' element={<LitigationListStateProvider><ViewLitigation /></LitigationListStateProvider>} />
             <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
+
+            {/* PROJECT */}
+            <Route path='approvedBank' element={<ApprovedBankListStateProvider><ApprovedBankFolder /></ApprovedBankListStateProvider>} />
+            <Route path='approvedBank/approvedBankFile/:ApprovedBankFolderId?' element={<ApprovedBankListStateProvider><ApprovedBankFile /></ApprovedBankListStateProvider>} />
+
+            {/* MARKETING */}
+            <Route path='content' element={<MarketingContentListStateProvider><MarketingContentFolder /></MarketingContentListStateProvider>} />
+            <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
           </Route>
 

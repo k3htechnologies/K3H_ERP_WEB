@@ -131,6 +131,9 @@ import ApprovedBankFile from '@/features/approvedBank/pages/ApprovedBankFile';
 import { MarketingContentListStateProvider } from '@/features/marketingContent/context/MarketingContentListStateContext';
 import MarketingContentFolder from '@/features/marketingContent/pages/MarketingContentFolder';
 import MarketingContent from '@/features/marketingContent/pages/MarketingContent';
+import AddUpdatePayTrackRent from '@/features/payTrackRent/pages/AddUpdatePayTrackRent';
+import ViewPayTrackRent from '@/features/payTrackRent/pages/ViewPayTrackRent';
+import { RentListStateProvider } from '@/features/rent/context/RentListStateContext';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -331,7 +334,9 @@ function App() {
             <Route path="tenant/add/:tenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
             <Route path="tenant/document" element={<TenantListStateProvider><TenantDocument /></TenantListStateProvider>} />
 
-            <Route path="rent" element={<Rent />} />
+            <Route path="rent" element={<RentListStateProvider><Rent /></RentListStateProvider>} />
+            <Route path="rent/pay" element={<RentListStateProvider><AddUpdatePayTrackRent /></RentListStateProvider>} />
+            <Route path="rent/paymentLedger" element={<RentListStateProvider><ViewPayTrackRent /></RentListStateProvider>} />
 
             <Route path="proposedOffer" element={<ProposedOffer />} />
 

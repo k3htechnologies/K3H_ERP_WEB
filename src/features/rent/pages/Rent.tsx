@@ -25,6 +25,8 @@ import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import Tabs, { type TabItem } from '@/ui/components/Tab/Tab';
 import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Eye, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useRentListState } from '@/features/rent/context/RentListStateContext';
 
 type PivotRentRow = {
   FlatNumber?: string;
@@ -38,6 +40,8 @@ type PivotRentRow = {
   ProposedOfferAmount?: number;
   Amount?: number;
   Unit?: string;
+  TenantApplicantId?: number;
+  TenantId?: number;
   [month: string]: any;
 };
 
@@ -47,6 +51,8 @@ export const Rent: React.FC = () => {
   const { projectId } = useProject();
   const { addToast } = useToast();
   const { canAction, canExport } = useMenuPermissions();
+  const navigate = useNavigate();
+  const { setPayTrackRentContext, updateListState } = useRentListState();
 
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo] = useState<SortInfo | undefined>();
@@ -264,6 +270,8 @@ export const Rent: React.FC = () => {
           FlatType: item.FlatType,
           Unit: item.Unit,
           ProposedOfferAmount: Number(item.ProposedOfferAmount) || 0,
+          TenantApplicantId: item.TenantApplicantId,
+          TenantId: item.TenantId,
           Total: 0,
           'Paid Total': 0
         };
@@ -403,29 +411,80 @@ export const Rent: React.FC = () => {
         width: '12',
         fixed: 'right',
         align: 'center',
-        render: () => (
-          <div className="flex items-center justify-center">
-            <Button
-              color="transparent"
-              isborderRadius
-              size="sm"
-              style={{ color: 'red', padding: '4px 8px' }} >
-              <Plus className="h-4 w-4" />
-            </Button>
-            <Button
-              color="transparent"
-              isborderRadius
-              size="sm"
-              style={{ color: 'blue', padding: '4px 8px' }} >
-              <Eye className="h-4 w-4" />
-            </Button>
-          </div>
-        )
+        render: (_value, row: PivotRentRow) => {
+          const handleAddPayTrackRent = () => {
+            if (!row.TenantApplicantId || !buildingId) return;
+            
+            setPayTrackRentContext(
+              row.TenantApplicantId,
+              row.ApplicantName || ''
+            );
+            updateListState({
+              buildingId,
+              buildingName,
+              activeTab,
+              tenure: activeTenureTab,
+              tenantId: row.TenantId || 0,
+              tenantName: row.ApplicantName || '',
+              tenantApplicantId: row.TenantApplicantId || 0,
+              flatNumber: row.FlatNumber || '',
+              applicantName: row.ApplicantName || ''
+
+            });
+            navigate('/rent/pay');
+          };
+
+          const handleViewPayTrackRent = () => {
+            if (!row.TenantApplicantId || !buildingId) return;
+            
+            setPayTrackRentContext(
+              row.TenantApplicantId,
+              row.ApplicantName || ''
+            );
+            updateListState({
+              buildingId,
+              buildingName,
+              activeTab,
+              tenure: activeTenureTab,
+              tenantId: row.TenantId || 0,
+              tenantName: row.ApplicantName || '',
+              tenantApplicantId: row.TenantApplicantId || 0,
+              flatNumber: row.FlatNumber || '',
+              applicantName: row.ApplicantName || ''
+            });
+            navigate('/rent/paymentLedger');
+          };
+
+          return (
+            <div className="flex items-center justify-center">
+              <Button
+                color="transparent"
+                isborderRadius
+                size="sm"
+                style={{ color: 'red', padding: '4px 8px' }}
+                onClick={handleAddPayTrackRent}
+                title="Add Pay Track Rent"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+              <Button
+                color="transparent"
+                isborderRadius
+                size="sm"
+                style={{ color: 'blue', padding: '4px 8px' }}
+                onClick={handleViewPayTrackRent}
+                title="View Pay Track Rent"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            </div>
+          );
+        }
       }]
       : [];
 
     return [...baseColumns, ...dynamicColumns, ...actionColumn];
-  }, [dynamicHeaders]);
+  }, [dynamicHeaders, canAction, buildingId, buildingName, activeTab, activeTenureTab, navigate, setPayTrackRentContext, updateListState]);
 
 
   const paginationInfo: PaginationInfo = {

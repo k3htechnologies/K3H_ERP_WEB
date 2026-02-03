@@ -36,7 +36,8 @@ export class PayTrackRentDatasourceImpl implements PayTrackRentDatasource {
             if (params.PayTrackRentId) queryParams.append('PayTrackRentId', params.PayTrackRentId.toString());
             if (params.FlatNumber?.trim()) queryParams.append('FlatNumber', params.FlatNumber.trim());
             if (params.ApplicantName?.trim()) queryParams.append('ApplicantName', params.ApplicantName.trim());
-
+            if (params.ChargeType?.trim()) queryParams.append('ChargeType', params.ChargeType.trim());
+            if (params.Tenure?.trim()) queryParams.append('Tenure', params.Tenure.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

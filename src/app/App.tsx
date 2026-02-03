@@ -335,7 +335,7 @@ function App() {
             <Route path="tenant/document" element={<TenantListStateProvider><TenantDocument /></TenantListStateProvider>} />
 
             <Route path="rent" element={<RentListStateProvider><Rent /></RentListStateProvider>} />
-            <Route path="rent/pay" element={<RentListStateProvider><AddUpdatePayTrackRent /></RentListStateProvider>} />
+            <Route path="rent/pay/:PayTrackRentId?" element={<RentListStateProvider><AddUpdatePayTrackRent /></RentListStateProvider>} />
             <Route path="rent/paymentLedger" element={<RentListStateProvider><ViewPayTrackRent /></RentListStateProvider>} />
 
             <Route path="proposedOffer" element={<ProposedOffer />} />

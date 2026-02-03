@@ -11,6 +11,8 @@ export interface FilterWithPaginationPayTrackRentRequest {
   PayTrackRentId?: number
   FlatNumber?: string | ''
   ApplicantName?: string | ''
+  ChargeType?: string | ''
+  Tenure?: string | null
   SortBy?: string
   ExportType?: 'Excel' | 'PDF'
 }
@@ -69,8 +71,10 @@ export interface PayTrackRentLedgerData {
   ProjectBankAccountNumber: string | null
   ProjectBankIFSCCode: string | null
   ProjectBankAccountHolderName: string | null
+
   BankListMasterId: number | null
   BankName: string | null
+  AccountHolderName: string | null
   AccountNumber: string | null
   IFSCCode: string | null
   AmountType: string | null

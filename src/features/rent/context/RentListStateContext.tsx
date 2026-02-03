@@ -17,6 +17,8 @@ export type RentListState = {
   applicantName: string;
   activeTab: string;
   tenure: string;
+  totalAmount: number;
+  paidTotalAmount: number;
   // PayTrackRent related state
   payTrackRentTenantApplicantId: number;
   payTrackRentTenantApplicantName: string;
@@ -41,6 +43,8 @@ const getInitialState = (projectId: number | null): RentListState => {
       applicantName: "",
       activeTab: "",
       tenure: "",
+      totalAmount: 0, 
+        paidTotalAmount: 0,
       payTrackRentTenantApplicantId: 0,
       payTrackRentTenantApplicantName: "",
     };
@@ -79,6 +83,8 @@ const getInitialState = (projectId: number | null): RentListState => {
     applicantName: "",
     activeTab: "",
     tenure: "",
+    totalAmount: 0,
+    paidTotalAmount: 0,
     payTrackRentTenantApplicantId: 0,
     payTrackRentTenantApplicantName: "",
   };
@@ -121,6 +127,8 @@ export const RentListStateProvider = ({ children }: { children: ReactNode }) => 
         applicantName: "",
         activeTab: "",
         tenure: "",
+        totalAmount: 0,
+        paidTotalAmount: 0,
         payTrackRentTenantApplicantId: 0,
         payTrackRentTenantApplicantName: "",
       };
@@ -183,6 +191,8 @@ export const RentListStateProvider = ({ children }: { children: ReactNode }) => 
       applicantName: "",
       activeTab: "",
       tenure: "",
+      totalAmount: 0,
+      paidTotalAmount: 0,
       payTrackRentTenantApplicantId: 0,
       payTrackRentTenantApplicantName: "",
     };

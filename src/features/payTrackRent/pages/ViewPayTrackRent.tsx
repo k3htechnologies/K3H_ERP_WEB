@@ -1,6 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { usePagination } from '@/core/hooks/usePagination';
-import { DataTable, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import React, { useCallback, useEffect, useState } from 'react';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
@@ -19,9 +17,155 @@ import { useNavigate } from 'react-router-dom';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
-import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { useRentListState } from '@/features/rent/context/RentListStateContext';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { Button } from '@/ui/components/forms';
+import { ChevronUp, ChevronDown } from 'lucide-react';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
+import BottomActionBar from '@/ui/components/forms/BottomActionBar';
+
+// Ledger Card Component
+interface LedgerCardProps {
+  ledger: PayTrackRentLedgerData;
+  index: number;
+  onDelete?: (ledger: PayTrackRentLedgerData) => void;
+  onEdit?: (ledger: PayTrackRentLedgerData) => void;
+  canAction: boolean;
+}
+
+const LedgerCard: React.FC<LedgerCardProps> = ({ ledger, index, onDelete, onEdit, canAction }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggle = () => setIsOpen(prev => !prev);
+
+  return (
+
+    <div className="w-full rounded-xl border border-slate-300 bg-white shadow-sm overflow-hidden" key={index}>
+      {/* HEADER SECTION */}
+      <div className="flex items-start px-4 py-4 relative">
+        {/* Avatar/Icon */}
+        <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mr-4 flex-shrink-0">
+          <span className="text-blue-600 font-semibold text-lg">₹</span>
+        </div>
+
+        {/* Right section fields */}
+        <div className="flex-1">
+          {/* TOP ROW */}
+          <div className="grid grid-cols-4 gap-4">
+            <FieldItem label="Payment Mode" value={ledger.PaymentMode || '-'} />
+            <FieldItem label="Amount Type" value={ledger.AmountType || '-'} />
+            <FieldItem label="Payment Type" value={ledger.PaymentType || '-'} />
+            <FieldItem
+              label="Amount (₹)"
+              value={ledger.PayAmount ? `₹${Number(ledger.PayAmount).toLocaleString('en-IN')}` : '-'}
+            />
+          </div>
+        </div>
+
+        {/* COLLAPSE BUTTON */}
+        <Button
+          onClick={toggle}
+          type='button'
+          color='transparent'
+        >
+          {isOpen ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+
+      {/* COLLAPSIBLE AREA */}
+      {isOpen && (
+        <div className="px-4 py-4 border-t bg-gray-50">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <FieldItem label="Account Holder Name" value={ledger.AccountHolderName || '-'} />
+
+            <FieldItem label="Bank Name" value={ledger.BankName || '-'} />
+            <FieldItem label="Account Number" value={ledger.AccountNumber || '-'} />
+            <FieldItem label="IFSC Code" value={ledger.IFSCCode || '-'} />
+
+            <FieldItem label="Transaction / Cheque /DD Number" value={ledger.TransactionChequeDemandDraftNumber || '-'} />
+            <FieldItem
+              label="Transaction / Cheque / DD Date"
+              value={ledger.TransactionChequeDemandDraftDate ? formatDate_dd_MonthName_yy(ledger.TransactionChequeDemandDraftDate) : '-'}
+            />
+            <FieldItem
+              label="Transaction /Cheque/DD Document"
+              value={ledger.TransactionChequeDemandDraftURL ? 'View Document' : '-'}
+              urls={ledger.TransactionChequeDemandDraftURL}
+              isIcon
+            />
+            <FieldItem
+              label="Payment Receipt"
+              value={ledger.PaymentReceiptURL ? 'View Receipt' : '-'}
+              urls={ledger.PaymentReceiptURL}
+              isIcon
+            />
+          </div>
+
+          <div className="my-4 h-[0.5px] w-full bg-[#3333334f]" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+            {/* Bank Details */}
+            <FieldItem label="Project Account Holder" value={ledger.ProjectBankAccountHolderName || '-'} />
+            <FieldItem label="Project Bank Name" value={ledger.ProjectBankName || '-'} />
+            <FieldItem label="Project Account Number" value={ledger.ProjectBankAccountNumber || '-'} />
+            <FieldItem label="Project IFSC Code" value={ledger.ProjectBankIFSCCode || '-'} />
+
+          </div>
+
+          <div className="my-4 h-[0.5px] w-full bg-[#3333334f]" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Approval Status */}
+            <FieldItem label="Approval Status" value={ledger.ApprovalStatus || '-'} />
+
+            {/* User Details */}
+            <FieldItem label="Created By" value={ledger.CreatedBy || '-'} />
+            <FieldItem
+              label="Created Date"
+              value={ledger.CreatedDate ? formatDate_dd_MonthName_yy(ledger.CreatedDate) : '-'}
+            />
+            <FieldItem label="Modified By" value={ledger.ModifiedBy || '-'} />
+            <FieldItem
+              label="Modified Date"
+              value={ledger.ModifiedDate ? formatDate_dd_MonthName_yy(ledger.ModifiedDate) : '-'}
+            />
+          </div>
+
+          {/* Action Buttons */}
+          {canAction && ledger.ApprovalStatus !== "Approved" && (
+            <div className="mt-4 pt-4 border-t flex justify-end gap-2">
+              {onEdit && (
+                <Button
+                  color="blue"
+                  size="sm"
+                  onClick={() => onEdit(ledger)}
+                >
+                  Edit
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  color="red"
+                  size="sm"
+                  onClick={() => onDelete(ledger)}
+                >
+                  Delete
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const ViewPayTrackRent: React.FC = () => {
   //#region STATE
@@ -29,8 +173,6 @@ export const ViewPayTrackRent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
-
-  const { pagination, setPagination } = usePagination(20);
 
   const { addToast } = useToast();
 
@@ -45,45 +187,43 @@ export const ViewPayTrackRent: React.FC = () => {
     searchPayTrackRent(value)
   }, 350);
 
-  //TABLE SORT INFO
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
   const { projectId } = useProject();
   const { listState, clearPayTrackRentContext } = useRentListState();
-  const { buildingId, payTrackRentTenantApplicantId, tenantId } = listState;
-  //#endregion
+  const { buildingId, payTrackRentTenantApplicantId, tenantId, tenantApplicantId, totalAmount, paidTotalAmount } = listState;
+
+  // Get Flat Number and Applicant Name from first record or context
+  const flatNumber = payTrackRentList.length > 0 ? payTrackRentList[0]?.FlatNumber : '';
+  const applicantName = payTrackRentList.length > 0 ? payTrackRentList[0]?.ApplicantName : listState.payTrackRentTenantApplicantName || '';
+  const tenure = listState.tenure || '';
+  const chargeType = listState.activeTab || '';
+  const flatCarpetAreaSqFt = payTrackRentList.length > 0 ? payTrackRentList[0]?.FlatCarpetAreaSqFt : 0;
+  const flatType = payTrackRentList.length > 0 ? payTrackRentList[0]?.FlatType : 0;
 
   //#region DATA LOAD
-  const loadPayTrackRent = useCallback(async (pageNum: number, searchtext?: string) => {
+  const loadPayTrackRent = useCallback(async (searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
 
         const params: FilterWithPaginationPayTrackRentRequest = {
-          PageNumber: pageNum,
-          PageSize: pagination.pageSize,
+          PageNumber: 1,
+          PageSize: 10000,
           IsCheckPermission: true,
           ProjectId: Number(projectId),
           BuildingId: buildingId > 0 ? buildingId : undefined,
           TenantId: tenantId > 0 ? tenantId : undefined,
-          TenantApplicantId: payTrackRentTenantApplicantId > 0 ? payTrackRentTenantApplicantId : undefined,
+          TenantApplicantId: tenantApplicantId > 0 ? tenantApplicantId : undefined,
           FlatNumber: searchtext?.trim() || undefined,
           ApplicantName: searchtext?.trim() || undefined,
-          SortBy: getSortByParam(sortInfo ?? null, payTrackRentColumns)
+          ChargeType: chargeType?.trim() || undefined,
+          Tenure: tenure || null
         };
 
         const response = await payTrackRentService.apiCallPullPayTrackRentLedger(params);
 
         if (E.isRight(response)) {
-
           setPayTrackRentList(response.right.Data);
-
-          setPagination({
-            currentPage: pageNum,
-            totalRecords: response.right.TotalNumberOfRecord,
-            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize)
-          });
-
         } else {
           addToast({ type: 'error', title: response.left.message });
         }
@@ -97,15 +237,16 @@ export const ViewPayTrackRent: React.FC = () => {
       undefined,
       'Loading Pay Track Rent'
     );
-  }, [projectId, pagination.pageSize, addToast, sortInfo, buildingId, payTrackRentTenantApplicantId]);
+  }, [projectId, addToast, buildingId, payTrackRentTenantApplicantId, tenantId]);
 
   //#endregion
 
   //#region INIT
   useEffect(() => {
     if (!projectId) return;
-    loadPayTrackRent(1, searchTerm);
-  }, [projectId, sortInfo, buildingId, payTrackRentTenantApplicantId]);
+    loadPayTrackRent(searchTerm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, buildingId, payTrackRentTenantApplicantId]);
 
   // Clear context when component unmounts
   useEffect(() => {
@@ -125,40 +266,26 @@ export const ViewPayTrackRent: React.FC = () => {
   //#region SEARCH & CLEAR
   const searchPayTrackRent = async (searchValue: string) => {
     setSearchTerm(searchValue);
-    await loadPayTrackRent(1, searchValue);
+    await loadPayTrackRent(searchValue);
   };
 
   const clearSearchPayTrackRent = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
-    setPagination({ currentPage: 1 });
-    loadPayTrackRent(1, '');
+    loadPayTrackRent('');
   };
   //#endregion
 
-  //#region HANDLE PAGE CHANGE EVENT
-  const handlePageChange = useCallback((page: number) => {
-    loadPayTrackRent(page, searchTerm);
-  }, [searchTerm]);
-
-  //#region TABLE SORT COLUMN
-  const handleSortColumn = useCallback((sort: SortInfo) => {
-    setSortInfo(sort);
-    loadPayTrackRent(1, searchTerm);
-  }, [searchTerm]);
-  //#endregion
-
   //#region HANDLE EDIT
-  const handleEdit = (row: PayTrackRentLedgerData) => {
-    if (!row?.PayTrackRentId) return;
-    navigate(`/payTrackRent/add/${row.PayTrackRentId}`);
+  const handleEdit = (ledger: PayTrackRentLedgerData) => {
+    if (!ledger.PayTrackRentId) return;
+    navigate(`/rent/pay/${ledger.PayTrackRentId}`);
   };
   //#endregion
 
   //#region HANDLE DELETE
-  const handleDelete = (row: PayTrackRentLedgerData) => {
-    if (!row?.PayTrackRentId) return;
-    setDeletePayTrackRentData(row);
+  const handleDelete = (ledger: PayTrackRentLedgerData) => {
+    setDeletePayTrackRentData(ledger);
     setIsConfirmationDialogBoxOpen(true);
   };
 
@@ -176,6 +303,7 @@ export const ViewPayTrackRent: React.FC = () => {
           TenantId: deletePayTrackRentData.TenantId || 0,
           TenantApplicantId: deletePayTrackRentData.TenantApplicantId || 0,
           BuildingId: deletePayTrackRentData.BuildingId || 0,
+
         };
 
         const response = await payTrackRentService.apiCallDeletePayTrackRent(params);
@@ -184,7 +312,7 @@ export const ViewPayTrackRent: React.FC = () => {
           addToast({ type: 'success', title: 'Pay Track Rent deleted successfully' });
           setIsConfirmationDialogBoxOpen(false);
           setDeletePayTrackRentData(null);
-          loadPayTrackRent(pagination.currentPage, searchTerm);
+          loadPayTrackRent(searchTerm);
         } else {
           addToast({ type: 'error', title: response.left.message });
         }
@@ -208,15 +336,18 @@ export const ViewPayTrackRent: React.FC = () => {
       setLoadingMessage,
       async () => {
         const params: FilterWithPaginationPayTrackRentRequest = {
+
           PageNumber: 1,
           PageSize: 10000,
           IsCheckPermission: true,
           ProjectId: Number(projectId),
           BuildingId: buildingId > 0 ? buildingId : undefined,
-          TenantApplicantId: payTrackRentTenantApplicantId > 0 ? payTrackRentTenantApplicantId : undefined,
+          TenantId: tenantId > 0 ? tenantId : undefined,
+          TenantApplicantId: tenantApplicantId > 0 ? tenantApplicantId : undefined,
           FlatNumber: searchTerm?.trim() || undefined,
           ApplicantName: searchTerm?.trim() || undefined,
-          SortBy: getSortByParam(sortInfo ?? null, payTrackRentColumns),
+          ChargeType: chargeType?.trim() || undefined,
+          Tenure: tenure || null,
           ExportType: exportType
         };
 
@@ -224,10 +355,12 @@ export const ViewPayTrackRent: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          handleExportFile(response.right, exportType, 'Pay Track Rent Ledger',addToast);
+          handleExportFile(response, exportType, 'Pay Track Rent Ledger', addToast);
 
         } else {
+
           addToast({ type: 'error', title: response.left.message });
+
         }
 
         return response;
@@ -240,95 +373,6 @@ export const ViewPayTrackRent: React.FC = () => {
       `Exporting ${exportType}`
     );
   };
-  //#endregion
-
-  //#region TABLE COLUMNS
-  const payTrackRentColumns = useMemo<TableColumn[]>(
-    () => [
-      {
-        key: 'FlatNumber',
-        label: 'Flat Number',
-        width: '10',
-        sortable: true,
-        align: 'left',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'ApplicantName',
-        label: 'Applicant Name',
-        width: '12',
-        sortable: true,
-        align: 'left',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'PaymentMode',
-        label: 'Payment Mode',
-        width: '10',
-        sortable: true,
-        align: 'left',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'AmountType',
-        label: 'Amount Type',
-        width: '10',
-        sortable: true,
-        align: 'left',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'PaymentType',
-        label: 'Payment Type',
-        width: '10',
-        sortable: true,
-        align: 'left',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'PayAmount',
-        label: 'Amount (₹)',
-        width: '10',
-        sortable: true,
-        align: 'right',
-        render: (value) => value ? `₹${Number(value).toLocaleString('en-IN')}` : '-'
-      },
-      {
-        key: 'TransactionChequeDemandDraftNumber',
-        label: 'Transaction/Cheque/DD Number',
-        width: '12',
-        sortable: false,
-        align: 'left',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'TransactionChequeDemandDraftDate',
-        label: 'Transaction/Cheque/DD Date',
-        width: '12',
-        sortable: true,
-        align: 'left',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
-      },
-      {
-        key: 'Tenure',
-        label: 'Tenure',
-        width: '8',
-        sortable: true,
-        align: 'left',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'ChargeType',
-        label: 'Charge Type',
-        width: '10',
-        sortable: true,
-        align: 'left',
-        render: (value) => value || '-'
-      },
-
-    ],
-    [canAction]
-  );
   //#endregion
 
   return (
@@ -347,29 +391,59 @@ export const ViewPayTrackRent: React.FC = () => {
         }}
         onClearSearch={clearSearchPayTrackRent}
         isShowFilterButton={false}
-        isShowAddButton={canAction}
-        addButtonText="Add Pay Track Rent"
-        onAddClick={() => navigate('/payTrackRent/add')}
+        isShowAddButton={canAction && (totalAmount - paidTotalAmount) > 0}
+        addTitle="Add"
+        onAdd={() => navigate('/rent/pay')}
         isShowExportButton={canExport}
         onExportExcel={() => handleExport('Excel')}
+        onExportPdf={() => handleExport('PDF')}
         exportLoading={isLoading}
       />
 
-      <div className="mt-4">
-        <DataTable
-          data={payTrackRentList}
-          columns={payTrackRentColumns}
-          emptyMessage="No Pay Track Rent records found"
-          fixedHeight={false}
-          recordsPerPage={pagination.pageSize}
-          currentPage={pagination.currentPage}
-          totalPages={pagination.totalPages}
-          totalRecords={pagination.totalRecords}
-          onPageChange={handlePageChange}
-          onSort={handleSortColumn}
-          sortInfo={sortInfo}
-          className="min-w-full"
-          aria-label="Pay Track Rent list"
+      {/* Flat Number and Applicant Name Display */}
+      {(flatNumber || applicantName) && (
+        <div className="mt-4 mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <FieldItem label="Flat Number" value={flatNumber || '-'} />
+            <FieldItem label="Applicant Name" value={applicantName || '-'} />
+            <FieldItem label="Tenure" value={tenure || '-'} />
+            <FieldItem label="Charge Type" value={chargeType || '-'} />
+            <FieldItem label="Carpet Area (Sq Ft)" value={flatCarpetAreaSqFt ? `${flatCarpetAreaSqFt} Sq Ft` : '-'} />
+            <FieldItem label="Flat Type" value={flatType || '-'} />
+            <FieldItem label="Total Amount" value={totalAmount > 0 ? `₹${totalAmount}` : '-'} />
+            <FieldItem label="Paid Total Amount" value={paidTotalAmount > 0 ? `₹${paidTotalAmount}` : '-'} />
+          </div>
+        </div>
+      )}
+
+
+      {payTrackRentList.length > 0 ? (
+        <div className="space-y-3">
+          {payTrackRentList.map((ledger, idx) => (
+            <LedgerCard
+              key={ledger.PayTrackRentId ?? idx}
+              ledger={ledger}
+              index={idx}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
+              canAction={canAction}
+            />
+          ))}
+
+
+        </div>
+      ) : (
+        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3" >
+          <NoDataView message='No Data Found' />
+        </section>
+      )}
+
+      <div className='pt-3'>
+        <BottomActionBar
+          cancelText="Cancel"
+          saveText={"Add"}
+          onCancel={() => navigate(-1)}
+          isLoading={isLoading}
         />
       </div>
 
@@ -390,4 +464,3 @@ export const ViewPayTrackRent: React.FC = () => {
 };
 
 export default ViewPayTrackRent;
-

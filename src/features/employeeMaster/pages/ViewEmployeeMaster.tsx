@@ -701,7 +701,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                         <FieldItem label="Created By" value={safe(employeeData!.CreatedBy)} />
                                         <FieldItem
                                             label="Created Date"
-                                            value={formatDate_dd_MonthName_yy(safe(employeeData!.CreatedDate))}
+                                            value={formatDate_dd_MonthName_yy_hh_mm(safe(employeeData!.CreatedDate))}
                                         />
                                     </div>
                                 </div>
@@ -1162,7 +1162,6 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                         <div className="lg:col-span-3 pt-3">
                                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                                                 <FieldItem label="Break Duration Time" value={shiftMappingPolicy!.BreakDurationTime} />
-                                                                <FieldItem label="Grace Time" value={shiftMappingPolicy!.GraceTime} />
                                                             </div>
                                                         </div>
                                                     </div>

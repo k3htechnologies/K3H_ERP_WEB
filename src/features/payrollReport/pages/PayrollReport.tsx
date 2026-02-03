@@ -221,6 +221,7 @@ export const PayrollReport: React.FC = () => {
           StartDate: activeFilters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.StartDate) || undefined : undefined,
           EndDate: activeFilters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.EndDate) || undefined : undefined,
           Reason: searchTerm?.trim() || activeFilters.Reason?.trim() || undefined,
+          IsReport: true
         }
 
         const response = await compOffService.apiCallPullCompOff(params);
@@ -311,7 +312,7 @@ export const PayrollReport: React.FC = () => {
           CompanyName: searchTerm?.trim() || activeFilters.CompanyName?.trim() || undefined,
         }
 
-        const response = await outDoorService.apiCallPullOutDoorData(params);
+        const response = await outDoorService.apiCallPullOutDoor(params);
 
         if (E.isRight(response)) {
 
@@ -405,6 +406,7 @@ export const PayrollReport: React.FC = () => {
             StartDate: filters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.StartDate) || undefined : undefined,
             EndDate: filters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.EndDate) || undefined : undefined,
             Reason: searchTerm?.trim() || filters.Reason?.trim() || undefined,
+            IsReport: true,
             SortBy: sortByParam,
             ExportType: 'PDF'
           };
@@ -434,7 +436,7 @@ export const PayrollReport: React.FC = () => {
             SortBy: sortByParam,
             ExportType: 'PDF'
           };
-          const response = await outDoorService.apiCallPullOutDoorData(params);
+          const response = await outDoorService.apiCallPullOutDoor(params);
           handleExportFile(response, 'PDF', 'Outdoor', addToast);
           return response;
         } else if (activeTab === 'Resignation') {

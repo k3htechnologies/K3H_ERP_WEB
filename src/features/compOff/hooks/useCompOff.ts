@@ -113,6 +113,7 @@ export const useCompOff = () => {
                     EndDate: filterParams.EndDate || undefined,
                     Reason: filterParams.Reason?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, compOffColumns),
+                    IsReport: false,
                 };
 
                 const response = await compOffService.apiCallPullCompOff(params);
@@ -167,6 +168,7 @@ export const useCompOff = () => {
                     Reason: filters.Reason?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, compOffColumns),
                     ExportType: exportType,
+                    IsReport: false,
                 };
 
                 const response = await compOffService.apiCallPullCompOff(params);

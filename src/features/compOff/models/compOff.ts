@@ -6,6 +6,7 @@ export interface CompOffData {
     CompOffDate: string,
     WorkingDate: string,
     Reason: string,
+    IsReport?: boolean,
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -32,6 +33,7 @@ export interface FilterWithPaginationCompOff {
     EndDate?: string
     Reason?: string
     SortBy?: string
+    IsReport?: boolean
     ExportType?: 'Excel' | 'PDF'
 }
 

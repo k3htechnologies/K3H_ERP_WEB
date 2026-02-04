@@ -11,16 +11,18 @@ import type {
 import { employeeResignationService } from '@/features/resignation/services/EmployeeResignationService';
 import { Loader } from '@/core/utils/loader';
 import Tabs from '@/ui/components/Tab/Tab';
-import { formatDate_dd_MonthName_yy, convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatTimeFromDateTime, parseTimeFromISO } from '@/core/utils/dateFormat';
 import { DataTable, type FilterInfo, type TableColumn, type PaginationInfo, type SortInfo } from '@/ui/components/DataTable/DataTable';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 import type { CompOffData, FilterWithPaginationCompOff } from '@/features/compOff/models/compOff';
 import type { FilterWithPaginationLeaveRequest, LeaveData } from '@/features/leave/models/LeaveModel';
 import type { FilterWithPaginationOutDoor, OutDoorMasterData } from '@/features/outdoor/models/OutDoorModel';
+import type { AttendanceRegularizationData, FilterWithPaginationAttendanceRegularizationRequest } from '@/features/attendanceCalendar/models/AttendanceModel';
 import { compOffService } from '@/features/compOff/services/CompOffServices';
 import { LeaveService } from '@/features/leave/services/LeaveService';
 import { outDoorService } from '@/features/outdoor/services/OutDoorDataService';
+import { attendanceRegularizationService } from '@/features/attendanceCalendar/services/AttendanceRegularizationService';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { updateFilter } from '@/core/utils/filterHelper';
@@ -36,7 +38,7 @@ export const PayrollReport: React.FC = () => {
   const [outDoorList, setOutDoorList] = useState<OutDoorMasterData[]>([]);
   const [employeeResignationList, setEmployeeResignationList] = useState<EmployeeResignationData[]>([]);
   const [attendanceList, setAttendanceList] = useState<any[]>([]);
-  const [attendanceRegularizationList, setAttendanceRegularizationList] = useState<any[]>([]);
+  const [attendanceRegularizationList, setAttendanceRegularizationList] = useState<AttendanceRegularizationData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
@@ -184,19 +186,39 @@ export const PayrollReport: React.FC = () => {
     )
 
   }
-  const loadAttendanceRegularization = async (_page: number, _filterParams?: FilterInfo) => {
-    // Placeholder for Attendance Regularization - to be implemented when API is available
+  const loadAttendanceRegularization = async (page: number, filterParams?: FilterInfo) => {
+    const activeFilters = filterParams || filters;
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        setAttendanceRegularizationList([]);
-        setPagination({
-          currentPage: 1,
-          totalRecords: 0,
-          totalPages: 1,
-        });
-        return E.right({ Data: [], TotalNumberOfRecord: 0 });
+
+        const params: FilterWithPaginationAttendanceRegularizationRequest = {
+          PageNumber: page,
+          PageSize: pagination.pageSize,
+          StartDate: activeFilters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.StartDate) || undefined : undefined,
+          EndDate: activeFilters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.EndDate) || undefined : undefined,
+        }
+
+        const response = await attendanceRegularizationService.apiCallPullAttendanceRegularization(params);
+
+        if (E.isRight(response)) {
+
+          setAttendanceRegularizationList(response.right.Data);
+
+          setPagination({
+            currentPage: page,
+            totalRecords: response.right.TotalNumberOfRecord,
+            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
+          });
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+        }
+
+        return response
       },
       undefined,
       (error: any) => {
@@ -453,6 +475,18 @@ export const PayrollReport: React.FC = () => {
           const response = await employeeResignationService.apiCallPullEmployeeResignation(params);
           handleExportFile(response, 'PDF', 'Resignation', addToast);
           return response;
+        } else if (activeTab === 'Attendance Regularization') {
+          const params: FilterWithPaginationAttendanceRegularizationRequest = {
+            PageNumber: 1,
+            PageSize: pagination.totalRecords || 1000,
+            StartDate: filters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.StartDate) || undefined : undefined,
+            EndDate: filters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.EndDate) || undefined : undefined,
+            SortBy: sortByParam,
+            ExportType: 'PDF'
+          };
+          const response = await attendanceRegularizationService.apiCallPullAttendanceRegularization(params);
+          handleExportFile(response, 'PDF', 'Attendance Regularization', addToast);
+          return response;
         }
         return E.right({ Data: [], TotalNumberOfRecord: 0 });
       },
@@ -494,6 +528,93 @@ export const PayrollReport: React.FC = () => {
   //#endregion
 
   //#region TABLE COLUMNS
+  // Helper function to format time to 12-hour format with AM/PM
+  // Uses existing utilities: formatTimeFromDateTime for datetime strings, 
+  // and handles plain HH:MM format by converting to 12-hour format
+  const formatTimeTo12Hour = useCallback((timeValue?: string | null): string => {
+    if (!timeValue) return '-';
+
+    const trimmed = timeValue.trim();
+    if (!trimmed) return '-';
+
+    // If it's already in HH:MM format (24-hour), convert to 12-hour format
+    // formatTimeFromDateTime returns HH:MM as-is, so we need to handle it
+    if (/^\d{2}:\d{2}$/.test(trimmed)) {
+      const [hoursStr, minutesStr] = trimmed.split(':');
+      const hours = parseInt(hoursStr, 10);
+      const minutes = parseInt(minutesStr, 10);
+
+      // Validate time values
+      if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        return trimmed; // Return as-is if invalid
+      }
+
+      // Convert to 12-hour format with AM/PM
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      let displayHours = hours % 12;
+      displayHours = displayHours === 0 ? 12 : displayHours; // 0 becomes 12, 12 stays 12
+
+      return `${displayHours}:${minutesStr} ${ampm}`;
+    }
+
+    // For datetime strings (ISO format), use formatTimeFromDateTime which handles UTC conversion
+    // This handles formats like "2025-01-01T09:30:00" or "2025-01-01T09:30:00Z"
+    const formatted = formatTimeFromDateTime(trimmed);
+    if (formatted) {
+      // formatTimeFromDateTime returns empty string if it can't parse, or formatted time
+      return formatted;
+    }
+
+    // Fallback: return original value if nothing worked
+    return trimmed;
+  }, []);
+
+  const attendanceRegularizationColumns = useMemo<TableColumn[]>(
+    () => [
+      {
+        key: 'AttendanceDate',
+        label: 'Attendance Date',
+        width: '20',
+        sortable: true,
+        align: 'left',
+        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+      },
+      {
+        key: 'PunchIn',
+        label: 'Punch In',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => parseTimeFromISO(value)
+      },
+      {
+        key: 'PunchOut',
+        label: 'Punch Out',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => parseTimeFromISO(value)
+      },
+      {
+        key: 'Reason',
+        label: 'Reason',
+        width: '35',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'Status',
+        label: 'Status',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+    ],
+    []
+  );
+
   const getCurrentColumns = (): TableColumn[] => {
     switch (activeTab) {
       case "Comp-Off":
@@ -505,8 +626,9 @@ export const PayrollReport: React.FC = () => {
       case "Resignation":
         return resignationColumns;
       case "Attendance":
-      case "Attendance Regularization":
         return attendanceColumns;
+      case "Attendance Regularization":
+        return attendanceRegularizationColumns;
       default:
         return [];
     }
@@ -717,6 +839,9 @@ export const PayrollReport: React.FC = () => {
         return "Search by Company Name";
       case "Resignation":
         return "Search by Employee Name";
+      case "Attendance":
+      case "Attendance Regularization":
+        return "Search...";
       default:
         return "Search...";
     }
@@ -910,10 +1035,28 @@ export const PayrollReport: React.FC = () => {
                 </div>
               </>
             )}
-            {(activeTab === "Attendance" || activeTab === "Attendance Regularization") && (
+            {activeTab === "Attendance" && (
               <div className="text-sm text-gray-500">
                 Filter options will be available when API is implemented.
               </div>
+            )}
+            {activeTab === "Attendance Regularization" && (
+              <>
+                <div>
+                  <DatePickerInput
+                    label='Start Date'
+                    value={tempFilters.StartDate || ''}
+                    onChange={(value) => handleFilterChange('StartDate', value || '')}
+                  />
+                </div>
+                <div>
+                  <DatePickerInput
+                    label='End Date'
+                    value={tempFilters.EndDate || ''}
+                    onChange={(value) => handleFilterChange('EndDate', value || '')}
+                  />
+                </div>
+              </>
             )}
           </div>
         </div>

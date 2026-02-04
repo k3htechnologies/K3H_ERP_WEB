@@ -121,6 +121,7 @@ import Litigation from '@/features/litigation/pages/Litigation';
 import AddUpdateLitigation from '@/features/litigation/pages/AddUpdateLitigation';
 import ViewLitigation from '@/features/litigation/pages/ViewLitigation';
 import LitigationDocument from '@/features/litigation/pages/LitigationDocument';
+import SettingsDashboard from '@/features/settingsDashboard/pages/SettingsDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -198,6 +199,8 @@ function App() {
 
             <Route path="bankListMaster" element={<BankListMaster />} />
 
+            {/* SETTING Dashboard */}
+            <Route path="settingsDashboard" element={<SettingsDashboard />} />
             {/* SETTING -> COMPANY SETUP -> PROCUREMENT MASTER */}
 
             <Route path="materialMaster" element={<MaterialMaster />} />

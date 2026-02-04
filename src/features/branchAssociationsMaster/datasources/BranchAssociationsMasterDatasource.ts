@@ -28,6 +28,7 @@ export class BranchAssociationsMasterDatasourceImpl implements BranchAssociation
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
+                IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
             })
 
             if (params.BranchAssociationsId) queryParams.append('BranchAssociationsId', params.BranchAssociationsId.toString());

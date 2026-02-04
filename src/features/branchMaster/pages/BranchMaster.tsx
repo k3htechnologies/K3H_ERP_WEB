@@ -122,7 +122,7 @@ export const BranchMaster: React.FC = () => {
           debouncedSearch(v)
         }}
         onClearSearch={clearsearchBranches}
-        isShowFilterButton={false}
+        isShowFilterButton={true}
         filters={filters}
         onOpenFilter={handleOpenFilter}
         isShowCustomizeButton

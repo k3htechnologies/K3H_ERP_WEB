@@ -265,8 +265,8 @@ function App() {
 
             <Route path="weekOffMaster" element={<WeekOffMasterListStateProvider><WeekOffMasterMaster /></WeekOffMasterListStateProvider>} />
 
-            <Route path="WeekOffMaster/view" element={<WeekOffMasterListStateProvider><ViewWeekOffMaster /></WeekOffMasterListStateProvider>} />
-            <Route path="WeekOffMaster/add/:WeekOffMasterId?" element={<WeekOffMasterListStateProvider><AddUpdateWeekOffMaster /></WeekOffMasterListStateProvider>} />
+            <Route path="weekOffMaster/view" element={<WeekOffMasterListStateProvider><ViewWeekOffMaster /></WeekOffMasterListStateProvider>} />
+            <Route path="weekOffMaster/add/:WeekOffMasterId?" element={<WeekOffMasterListStateProvider><AddUpdateWeekOffMaster /></WeekOffMasterListStateProvider>} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
 
             {/* PAYROLL */}

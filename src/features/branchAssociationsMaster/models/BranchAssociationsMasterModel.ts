@@ -4,6 +4,7 @@ export interface FilterWithPaginationBranchAssociationsMasterRequest {
     PageSize: number
     PageNumber: number
     BranchAssociationsId?: number
+    IsCheckPermission?: boolean
     EmployeeName?: string
     BranchMasterId?: string
     SortBy?: string

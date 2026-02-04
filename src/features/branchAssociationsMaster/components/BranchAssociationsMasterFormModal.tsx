@@ -51,7 +51,7 @@ export const BranchAssociationsMasterFormModal: React.FC<BranchAssociationsMaste
         <div className="space-y-4" >
           <div>
             <SingleSelectDropdownWithPagination
-              label="Branch"
+              label="Branch Name"
               key={dropdownResetKey}
               title="Select Branch"
               size="lg"

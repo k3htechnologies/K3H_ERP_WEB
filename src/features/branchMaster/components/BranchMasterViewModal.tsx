@@ -53,9 +53,9 @@ export const BranchMasterViewModal: React.FC<BranchMasterViewModalProps> = ({
     >
       <div className="space-y-6">
         <div className="space-y-4">
-          <FieldItem label="BranchName" value={data.BranchName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+          <FieldItem label="Branch Name" value={data.BranchName} isRow withBorder={true} className='font-medium text-blue-900 ' />
           <FieldItem label="Branch Code" value={data.BranchCode} isRow withBorder={true} />
-          <FieldItem label="HeadOffice" value={data.IsHeadOffice ? "Yes" : "No"} isRow withBorder={true} />
+          <FieldItem label="Head Office" value={data.IsHeadOffice ? "Yes" : "No"} isRow withBorder={true} />
           <FieldItem label="Location" value={data.Location} isRow withBorder={true} />
         </div>
         <div className="space-y-4">

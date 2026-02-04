@@ -153,6 +153,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 20,
                     EmployeeId: listState.employeeId,
+                    IsCheckPermission:false
 
                 };
 
@@ -237,7 +238,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageSize: 20,
                     DepartmentName: undefined,
                     EmployeeId: listState.employeeId,
-                    IsCheckEmployeeShift: true
+                    IsCheckEmployeeShift: true,
+                    IsCheckPermission:false
                 }
 
                 const response = await shiftMappingMasterService.apiCallPullShiftMappingMaster(params);
@@ -275,7 +277,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageSize: 100,
                     DepartmentName: undefined,
                     EmployeeId: listState.employeeId,
-                    IsCheckEmployeeWeekOffPolicy: true
+                    IsCheckEmployeeWeekOffPolicy: true,
+                    IsCheckPermission:false
                 }
 
                 const response = await weekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
@@ -947,69 +950,13 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                                 <div className="lg:col-span-3 pt-3">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem label="Status" value={asset.Status} />
+                                                        <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy(asset.AssignedDate || "-")} />
+                                                        <FieldItem label="Assigned By" value={asset.CreatedBy || "-"} />
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                Purchase Details
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem
-                                                            label="Purchase Date"
-                                                            value={
-                                                                asset.PurchaseDate
-                                                                    ? formatDate_dd_MonthName_yy(asset.PurchaseDate)
-                                                                    : "-"
-                                                            }
 
-                                                        />
-                                                        <FieldItem
-                                                            label="Warranty Expiry Date"
-                                                            value={
-                                                                asset.WarrantyExpiryDate
-                                                                    ? formatDate_dd_MonthName_yy(asset.WarrantyExpiryDate)
-                                                                    : "-"
-                                                            }
-
-                                                        />
-                                                        <FieldItem label="Supplier Name" value={asset.SupplierName} />
-
-                                                    </div>
-                                                </div>
-
-                                                <div className="lg:col-span-3 pt-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem label="Asset Cost" value={asset.AssetCost} />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <h4 className="text-lg font-semibold text-gray-900 pt-3">
-                                                Action Details
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-                                                        <FieldItem label="Created By" value={safe(asset!.CreatedBy)} />
-                                                        <FieldItem
-                                                            label="Created Date"
-                                                            value={formatDate_dd_MonthName_yy(safe(asset!.CreatedDate))}
-                                                        />
-                                                        <FieldItem label="Modified By" value={safe(asset!.ModifiedBy)} />
-                                                        <FieldItem
-                                                            label="Modified Date"
-                                                            value={formatDate_dd_MonthName_yy_hh_mm(safe(asset!.ModifiedDate))}
-                                                        />
-                                                    </div>
-                                                </div>
-
-
-                                            </div>
 
                                         </section>
                                     </>
@@ -1260,7 +1207,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                 </div>
 
                                                 <div className="lg:col-span-3 pt-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                                                         <FieldItem label="Not Applicable For Months" value={weekOffPolicyMapping!.NotApplicableForMonths} />
 
                                                     </div>

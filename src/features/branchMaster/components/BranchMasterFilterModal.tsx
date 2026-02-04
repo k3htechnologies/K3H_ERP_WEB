@@ -28,7 +28,9 @@ export const BranchMasterFilterModal: React.FC<BranchMasterFilterModalProps> = (
   tempFilters,
   onFilterChange,
   filterFields = [
-    { key: 'BranchName', label: 'Branch Name', placeholder: 'Enter Branch Name' }
+    { key: 'BranchName', label: 'Branch Name', placeholder: 'Enter Branch Name' },
+    { key: 'BranchCode', label: 'Branch Code', placeholder: 'Enter Branch Code' },
+    { key: 'Location', label: 'Location', placeholder: 'Enter Location' }
   ]
 }) => {
   return (

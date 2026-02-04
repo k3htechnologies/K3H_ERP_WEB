@@ -3,7 +3,7 @@ import { Loader } from '@/core/utils/loader';
 import { useNavigate } from 'react-router-dom';
 import { useProjectMasterListState } from '@/features/projectMaster/context/ProjectMasterListStateContext';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { Tabs } from '@/ui/components/Tab/Tab';
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData, ProjectWithBankDetails } from '@/features/projectMaster/models/ProjectMasterModel';
 import ImageCarousel from '@/ui/components/ImageViewer/ImageCarousel';
@@ -507,6 +507,25 @@ export const ViewProjectMaster: React.FC = () => {
                                         </div>
                                     </div>
                                 </section>
+                                 {/* ================= QUICK ACTIONS ================= */}
+                                            <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                                              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                Action Details
+                                              </h4>
+                                
+                                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                <FieldItem label="Created By" value={editProjectData?.CreatedBy ?? '-'} />
+                                                <FieldItem
+                                                  label="Created Date"
+                                                  value={formatDate_dd_MonthName_yy_hh_mm(editProjectData?.CreatedDate ?? '-')}
+                                                />
+                                                <FieldItem label="Modified By" value={editProjectData?.ModifiedBy ?? '-'} />
+                                                <FieldItem
+                                                  label="Modified Date"
+                                                  value={formatDate_dd_MonthName_yy_hh_mm(editProjectData?.ModifiedDate ?? '-')}
+                                                />
+                                              </div>
+                                            </section>
 
                             </div>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import {
   Eye,
@@ -105,7 +105,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
 
   const currentSize = sizeConfig[size]
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [isListOpen, setIsListOpen] = useState(false);
@@ -121,30 +121,32 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
   } | null>(null);
 
   const updatePortalPosition = useCallback(() => {
-    const node = containerRef.current;
+    const node = anchorRef.current;
     if (!node) return;
 
     const rect = node.getBoundingClientRect();
-    const vh = window.innerHeight;
-
-    const spaceBelow = vh - rect.bottom;
-    const spaceAbove = rect.top;
-
-    const openBelow =
-      spaceBelow >= DRAWER_HEIGHT + 20 || spaceBelow >= spaceAbove;
-
-    let top = openBelow
-      ? rect.bottom + 6
-      : rect.top - DRAWER_HEIGHT - 6;
-
-    top = Math.max(8, Math.min(top, vh - DRAWER_HEIGHT - 8));
 
     setPortalPos({
       left: rect.left,
-      top,
-      width: rect.width, // 🔒 SAME WIDTH AS INPUT
+      top: rect.bottom + 6,
+      width: rect.width,
     });
   }, []);
+
+  useLayoutEffect(() => {
+    if (!isListOpen) return;
+
+    updatePortalPosition();
+
+    const onUpdate = () => updatePortalPosition();
+    window.addEventListener("resize", onUpdate);
+    window.addEventListener("scroll", onUpdate, true);
+
+    return () => {
+      window.removeEventListener("resize", onUpdate);
+      window.removeEventListener("scroll", onUpdate, true);
+    };
+  }, [isListOpen, updatePortalPosition]);
 
   useEffect(() => {
     if (!isListOpen) return;
@@ -176,26 +178,14 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
     if (existingUrls.length + value.length === 0) setIsListOpen(false);
   }, [existingUrls, value]);
 
-  useEffect(() => {
-    const handleOutside = (e: MouseEvent) => {
-      if (
-        isListOpen &&
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setIsListOpen(false);
-      }
+   useEffect(() => {
+    const close = (e: MouseEvent) => {
+      if (!anchorRef.current?.contains(e.target as Node)) setIsListOpen(false);
     };
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsListOpen(false);
-    };
-    document.addEventListener("mousedown", handleOutside);
-    document.addEventListener("keydown", handleKey);
-    return () => {
-      document.removeEventListener("mousedown", handleOutside);
-      document.removeEventListener("keydown", handleKey);
-    };
-  }, [isListOpen]);
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
+
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -246,7 +236,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
   /* ================= Render ================= */
 
   return (
-    <div ref={containerRef} style={{ width: "100%", position: "relative" }}>
+    <div style={{ width: "100%" }}>
       {label && (
         <label
           style={{
@@ -264,6 +254,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
 
       {/* input area */}
       <div
+      ref={anchorRef}
         style={{
           height: currentSize.height,
           border: `0.5px solid ${error ? theme.colors.error : theme.colors.border}`,
@@ -310,7 +301,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
           <div
             onMouseDown={e => e.stopPropagation()}
             style={{
-              position: "fixed",
+              position: "absolute",
               left: portalPos.left,
               top: portalPos.top,
               width: portalPos.width,
@@ -336,7 +327,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
               <span>{totalCount} file(s)</span>
             </div>
 
-            <div style={{ maxHeight: DRAWER_HEIGHT, overflowY: "auto" }}>
+            <div className="thin-scroll" style={{ maxHeight: DRAWER_HEIGHT, overflowY: "auto" }}>
               {existingUrls.map((url, i) => (
                 <div key={i} style={{ display: "flex", padding: 8, gap: 8 }}>
                   {getFileIcon(guessMimeFromUrl(url))}

@@ -1,13 +1,12 @@
-// MultiImageViewer.tsx
 import React, { useCallback, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import { X, ChevronLeft, ChevronRight, Download, Eye } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Download, Eye, Minimize2, Maximize2 } from "lucide-react";
 import { COLORS } from "@/core/constants";
 
 type PanelSize = "sm" | "md" | "lg" | "xl";
 
 interface MultiImageViewerProps {
-  images: Array<string>; // array of image URLs (only images)
+  images: Array<string>;
   title?: string;
   triggerLabel?: React.ReactNode;
   size?: PanelSize;
@@ -32,35 +31,50 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
   closeOnOverlayClick = true,
   overlayZIndex = 9999,
   isIcon = true,
-  isWrap= true,
+  isWrap = true,
 }) => {
+
   const imageUrls = (images || []).filter((u) => typeof u === "string" && u.trim() !== "");
+
+  const isPdf = (url: string) => url.toLowerCase().includes(".pdf") || url.startsWith("blob:");
+
+
   const total = imageUrls.length;
 
   const [isOpen, setIsOpen] = useState(false);
+
   const [index, setIndex] = useState(0);
+
+  const [isMaximized, setIsMaximized] = useState(false);
 
   // open viewer at a given index
   const open = (i = 0) => {
     setIndex(Math.max(0, Math.min(i, Math.max(0, total - 1))));
     setIsOpen(true);
   };
+
   const close = () => setIsOpen(false);
 
-  
+
   useEffect(() => {
+
     if (!isOpen) return;
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
       if (e.key === "ArrowRight") setIndex((p) => (p + 1) % total);
       if (e.key === "ArrowLeft") setIndex((p) => (p - 1 + total) % total);
     };
+
     window.addEventListener("keydown", onKey);
+
     return () => window.removeEventListener("keydown", onKey);
+
   }, [isOpen, total]);
 
- 
+
   useEffect(() => {
+
     if (!isOpen) return;
     const prevOverflow = document.body.style.overflow;
     try {
@@ -71,7 +85,24 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
         document.body.style.overflow = prevOverflow ?? "";
       } catch { }
     };
+
   }, [isOpen]);
+
+  const readBlobOrUrl = async () => {
+    const url = imageUrls[index];
+
+    const response = await fetch(url);   // works for blob + normal url
+    const blob = await response.blob();  // REAL file data
+    return blob;
+  };
+
+  useEffect(() => {
+    if (!isOpen || !imageUrls[index]) return;
+
+    readBlobOrUrl();
+
+  }, [isOpen, index]);
+
 
   const prev = useCallback(() => setIndex((p) => (p - 1 + total) % total), [total]);
   const next = useCallback(() => setIndex((p) => (p + 1) % total), [total]);
@@ -90,28 +121,32 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     }
   };
 
-
   const onWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     if (e.deltaY > 0) next();
     else prev();
   };
 
-  
+
   const Portal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (typeof document === "undefined") return <>{children}</>;
     return ReactDOM.createPortal(children, document.body);
   };
 
-  
+
   if (total === 0) {
     return triggerLabel ? <span>{triggerLabel}</span> : null;
   }
 
-  
+
   const ViewerContent = () => (
     <div
-      className={`bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col`}
+      className={`bg-white shadow-xl w-full flex flex-col transition-all
+      ${
+        isMaximized
+          ? "fixed inset-0 rounded-none max-w-none h-screen"
+          : `${sizeClasses[size]} rounded-lg max-h-[90vh]`
+      }`}
       onClick={(e) => e.stopPropagation()}
       role="dialog"
       aria-modal="true"
@@ -120,24 +155,42 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200">
         <h3 className="text-md font-semibold text-gray-900 truncate">{title}</h3>
-        <button
-          type="button"
-          onClick={close}
-          className="p-1.5 rounded hover:bg-gray-100"
-          aria-label="Close"
-        >
-          <X className="h-5 w-5 text-gray-700" />
-        </button>
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsMaximized((p) => !p)}
+            className="px-2 hover:bg-gray-100 rounded"
+          >
+            {isMaximized ? <Minimize2 className="h-5 w-5 text-gray-700" /> : <Maximize2 className="h-5 w-5 text-gray-700" />}
+          </button>
+          <button
+            type="button"
+            onClick={close}
+            className="p-1.5 rounded hover:bg-gray-100"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5 text-gray-700" />
+          </button>
+        </div>
       </div>
 
       {/* Body */}
-      <div className="flex-1 min-h-0 overflow-hidden flex items-center justify-center bg-gray-50" onWheel={onWheel}>
-        <img
-          src={imageUrls[index]}
-          alt={`Image ${index + 1}`}
-          className="max-h-[75vh] max-w-full object-contain"
-          style={{ userSelect: "none" }}
-        />
+      <div className="flex-1 min-h-0 overflow-hidden flex items-center justify-center bg-gray-50" onWheel={!isPdf(imageUrls[index]) ? onWheel : undefined}>
+        {isPdf(imageUrls[index]) ? (
+          <iframe
+            src={imageUrls[index]}
+            className="w-full h-full"
+            title="pdf-preview"
+          />
+        ) : (
+          <img
+            src={imageUrls[index]}
+            alt={`Image ${index + 1}`}
+            className="max-h-[75vh] max-w-full object-contain"
+            style={{ userSelect: "none" }}
+          />
+        )}
+
       </div>
 
       {/* Footer */}
@@ -189,9 +242,9 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
       {triggerLabel ? (
         <>
           <div className="flex items-center gap-2">
-            
-           <span className={isWrap ? 'break-all whitespace-normal max-w-full' : ''}>
-            {isIcon && triggerLabel}
+
+            <span className={isWrap ? 'break-all whitespace-normal max-w-full' : ''}>
+              {isIcon && triggerLabel}
             </span>
 
             <button
@@ -201,7 +254,7 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
               style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
             >
               <Eye size={16} />
-              
+
             </button>
           </div>
 

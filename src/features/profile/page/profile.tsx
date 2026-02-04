@@ -197,6 +197,7 @@ export const Profile: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 20,
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
+                    IsCheckPermission:false
 
                 };
 
@@ -282,6 +283,7 @@ export const Profile: React.FC = () => {
                     DepartmentName: undefined,
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
                     IsCheckEmployeeShift: true,
+                    IsCheckPermission:false
                 }
 
                 const response = await shiftMappingMasterService.apiCallPullShiftMappingMaster(params);
@@ -319,7 +321,8 @@ export const Profile: React.FC = () => {
                     PageSize: 100,
                     DepartmentName: undefined,
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
-                    IsCheckEmployeeWeekOffPolicy: true
+                    IsCheckEmployeeWeekOffPolicy: true,
+                    IsCheckPermission:false
                 }
 
                 const response = await weekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
@@ -1335,43 +1338,8 @@ export const Profile: React.FC = () => {
 
                                                     <div className="lg:col-span-3 pt-3">
                                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem label="Status" value={asset.Status} />
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                    Purchase Details
-                                                </h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem
-                                                                label="Purchase Date"
-                                                                value={
-                                                                    asset.PurchaseDate
-                                                                        ? formatDate_dd_MonthName_yy(asset.PurchaseDate)
-                                                                        : "-"
-                                                                }
-
-                                                            />
-                                                            <FieldItem
-                                                                label="Warranty Expiry Date"
-                                                                value={
-                                                                    asset.WarrantyExpiryDate
-                                                                        ? formatDate_dd_MonthName_yy(asset.WarrantyExpiryDate)
-                                                                        : "-"
-                                                                }
-
-                                                            />
-                                                            <FieldItem label="Supplier Name" value={asset.SupplierName} />
-
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="lg:col-span-3 pt-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem label="Asset Cost" value={asset.AssetCost} />
+                                                            <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy(asset.AssignedDate || "-")} />
+                                                            <FieldItem label="Assigned By" value={asset.CreatedBy || "-"} />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1527,7 +1495,7 @@ export const Profile: React.FC = () => {
                                                             <div className="lg:col-span-3 pt-3">
                                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                                                     <FieldItem label="Break Duration Time" value={shiftMappingPolicy!.BreakDurationTime} />
-                                                                    
+
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1627,7 +1595,7 @@ export const Profile: React.FC = () => {
                                                     </div>
 
                                                     <div className="lg:col-span-3 pt-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                                                             <FieldItem label="Not Applicable For Months" value={weekOffPolicyMapping!.NotApplicableForMonths} />
 
                                                         </div>

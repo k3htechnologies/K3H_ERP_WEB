@@ -18,7 +18,7 @@ export const getDepartmentMasterColumns = (): TableColumn[] => [
   {
     key: 'DepartmentName',
     label: 'Department Name',
-    width: '33',
+    width: '30',
     sortable: true,
     fixed: 'left',
     align: 'left'
@@ -32,15 +32,15 @@ export const getDepartmentMasterColumns = (): TableColumn[] => [
   },
   {
     key: 'NumberOfEmployee',
-    label: 'Employee Count',
-    width: '20',
+    label: 'Number of Employees',
+    width: '30',
     sortable: false,
     align: 'center'
   },
   {
     key: 'Actions',
     label: 'Actions',
-    width: '12',
+    width: '30',
     fixed: 'right',
     align: 'center'
   }

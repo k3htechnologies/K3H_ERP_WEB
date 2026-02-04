@@ -158,7 +158,7 @@ export const BranchAssociationsMaster: React.FC = () => {
         onClose={handleDeleteDialogClose}
         onConfirm={handleDeleteBranchAssociations}
         loading={isLoading}
-        pageName='branchAssociation'
+        pageName='Branch Association'
       />
     </div>
 

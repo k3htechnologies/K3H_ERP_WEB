@@ -3,6 +3,7 @@ import type { ApiResponse } from "@/core/api/ApiResponse"
 export interface FilterWithPaginationShiftMappingMasterRequest {
     PageSize: number
     PageNumber: number
+    IsCheckPermission?: boolean
     ShiftManagementMasterMappingId?: number
     ShiftName?: string
     DepartmentName?: string

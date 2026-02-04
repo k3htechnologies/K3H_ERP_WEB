@@ -3,6 +3,7 @@ import type { ApiResponse } from "@/core/api/ApiResponse"
 export interface FilterWithPaginationWeekOffMappingMasterRequest {
     PageSize: number
     PageNumber: number
+    IsCheckPermission?: boolean
     WeekOffPolicyMasterMappingId?: number
     WeekOffPolicyName?: string
     DepartmentName?: string

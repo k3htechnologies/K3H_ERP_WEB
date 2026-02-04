@@ -28,6 +28,7 @@ export class WeekOffMappingMasterDatasourceImpl implements WeekOffMappingMasterD
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
+                IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
                 IsCheckEmployeeWeekOffPolicy: (params.IsCheckEmployeeWeekOffPolicy ?? false).toString(),
             })
 

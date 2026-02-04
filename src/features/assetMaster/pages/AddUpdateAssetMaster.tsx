@@ -13,6 +13,7 @@ import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 
 const initialFormState = (): AddUpdateAssetMasterRequest => ({
   AssetMasterId: 0,
@@ -26,7 +27,9 @@ const initialFormState = (): AddUpdateAssetMasterRequest => ({
   PurchaseDate: '',
   WarrantyExpiryDate: '',
   AssetCost: 0,
-  SupplierName: ''
+  SupplierName: '',
+  AssetInvoiceURL: null,
+  RemoveAssetInvoiceURL: '',
 });
 
 export const AddUpdateAssetMaster: React.FC = () => {
@@ -35,6 +38,10 @@ export const AddUpdateAssetMaster: React.FC = () => {
   const [formData, setFormData] = useState<AddUpdateAssetMasterRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
+
+  const [assetInvoiceFiles, setAssetInvoiceFiles] = useState<(File | string)[]>([]);
+  const [removedAssetInvoiceUrls, setRemovedAssetInvoiceUrls] = useState<string[]>([]);
+  const [assetInvoiceURL, setAssetInvoiceURL] = useState<string>();
 
   // NAVIGATE
   const navigate = useNavigate();
@@ -111,6 +118,9 @@ export const AddUpdateAssetMaster: React.FC = () => {
               WarrantyExpiryDate: e.WarrantyExpiryDate ?? prev.WarrantyExpiryDate,
               AssetType: e.AssetType ?? prev.AssetType
             }));
+            setAssetInvoiceFiles([]);
+            setAssetInvoiceURL(e.AssetInvoiceURL ?? undefined);
+            setRemovedAssetInvoiceUrls([]);
           }
         } else {
           addToast({ type: 'error', title: response.left.message });
@@ -186,21 +196,30 @@ export const AddUpdateAssetMaster: React.FC = () => {
   //#endregion
 
   //#region PUSH DATA
-  const PushAssetMasterFormData = (): AddUpdateAssetMasterRequest => {
-    return {
-      AssetMasterId: formData.AssetMasterId,
-      Uniquekey: formData.Uniquekey,
-      AssetCode: formData.AssetCode,
-      AssetName: formData.AssetName,
-      AssetType: formData.AssetType,
-      AssetModel: formData.AssetModel,
-      AssetBrand: formData.AssetBrand,
-      SerialNumber: formData.SerialNumber,
-      PurchaseDate: formData.PurchaseDate,
-      WarrantyExpiryDate: formData.WarrantyExpiryDate=="" ? null :formData.WarrantyExpiryDate,
-      AssetCost: formData.AssetCost,
-      SupplierName: formData.SupplierName
-    };
+  const PushAssetMasterFormData = (): FormData => {
+    const fd = new FormData();
+    fd.append('AssetMasterId', formData.AssetMasterId?.toString() ?? '');
+    fd.append('Uniquekey', formData.Uniquekey ?? '');
+    fd.append('AssetCode', formData.AssetCode ?? '');
+    fd.append('AssetName', formData.AssetName ?? '');
+    fd.append('AssetType', formData.AssetType ?? '');
+    fd.append('AssetModel', formData.AssetModel ?? '');
+    fd.append('AssetBrand', formData.AssetBrand ?? '');
+    fd.append('SerialNumber', formData.SerialNumber ?? '');
+    fd.append('PurchaseDate', formData.PurchaseDate ?? '');
+    fd.append('WarrantyExpiryDate', formData.WarrantyExpiryDate ?? "");
+    fd.append('AssetCost', formData.AssetCost?.toString() ?? '');
+    fd.append('SupplierName', formData.SupplierName ?? '');
+
+    assetInvoiceFiles.forEach(file => {
+      if (file instanceof File) {
+        fd.append('AssetInvoiceURL', file);
+      }
+    });
+
+    fd.append('RemoveAssetInvoiceURL', removedAssetInvoiceUrls.join(','));
+
+    return fd;
   }
   //#endregion
 
@@ -293,7 +312,7 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   error={errors.AssetCode}
                 />
               </div>
-              
+
               <div>
                 <Input
                   type="text"
@@ -331,12 +350,33 @@ export const AddUpdateAssetMaster: React.FC = () => {
                 />
               </div>
               <div>
+                <Input
+                  type="text"
+                  required
+                  label='Serial Number'
+                  value={formData.SerialNumber?.toUpperCase() ?? ""}
+                  onChange={(e) => handleFieldChange("SerialNumber", e.target.value)}
+                  placeholder="Enter Serial Number"
+                  maxLength={100}
+                  error={errors.SerialNumber}
+                />
+              </div>
+              <div>
                 <DatePickerInput
                   label="Purchase Date"
                   value={formatDate_dd_mm_yyyy(formData.PurchaseDate)}
                   onChange={(val) => handleFieldChange('PurchaseDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                   required
                   error={errors.PurchaseDate}
+                />
+              </div>
+              <div>
+                <DatePickerInput
+                  label="Warranty Expiry Date"
+                  value={formatDate_dd_mm_yyyy(formData.WarrantyExpiryDate)}
+                  onChange={(val) => handleFieldChange('WarrantyExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+
+                  error={errors.WarrantyExpiryDate}
                 />
               </div>
               <div>
@@ -351,19 +391,8 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   error={errors.SupplierName}
                 />
               </div>
-              <div>
-                <Input
-                  type="text"
-                  required
-                  label='Serial Number'
-                  value={formData.SerialNumber?.toUpperCase() ?? ""}
-                  onChange={(e) => handleFieldChange("SerialNumber", e.target.value)}
-                  placeholder="Enter Serial Number"
-                  maxLength={100}
-                  error={errors.SerialNumber}
-                />
-              </div>
-              
+
+
               <div>
                 <Input
                   label='Asset Cost (₹)'
@@ -373,20 +402,29 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   value={formData.AssetCost ?? ''}
                   rightIcon="₹"
                   onChange={e => handleFieldChange('AssetCost', filterNumbersWithDecimal(e.target.value) || 0)}
-                  
+
                   placeholder="Enter Asset Cost"
                 />
               </div>
 
               <div>
-                <DatePickerInput
-                  label="Warranty Expiry Date"
-                  value={formatDate_dd_mm_yyyy(formData.WarrantyExpiryDate)}
-                  onChange={(val) => handleFieldChange('WarrantyExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                  
-                  error={errors.WarrantyExpiryDate}
+                <MultiFilePicker
+                  label="Asset Invoice"
+                  placeholder="Select Asset Invoice"
+                  required
+                  error={errors.AssetInvoiceURL}
+                  value={assetInvoiceFiles}
+                  onChange={setAssetInvoiceFiles}
+                  availableFilesURL={assetInvoiceURL ?? ""}
+                  allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                  maxFiles={5}
+                  maxSizeMB={10}
+                  onRemoveExisting={(url) => {
+                    setRemovedAssetInvoiceUrls((prev) => [...prev, url])
+                  }}
                 />
               </div>
+
             </div>
           </div>
         </form>

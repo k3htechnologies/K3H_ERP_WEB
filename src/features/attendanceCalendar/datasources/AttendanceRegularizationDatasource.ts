@@ -37,6 +37,7 @@ export class AttendanceRegularizationDatasourceImpl implements AttendanceRegular
             if (params.StartDate?.trim()) queryParams.append('StartDate', params.StartDate.trim());
             if (params.EndDate?.trim()) queryParams.append('EndDate', params.EndDate.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
+            if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
@@ -86,6 +87,10 @@ export class AttendanceRegularizationDatasourceImpl implements AttendanceRegular
         }
     }
 }
+
+
+
+
 
 
 

@@ -7,6 +7,7 @@ export interface FilterWithPaginationAttendanceRequest {
     StartDate?: string
     EndDate?: string
     ApiKey?: string
+    IsReport?: boolean
 }
 
 export interface AttendanceData {
@@ -72,6 +73,7 @@ export interface FilterWithPaginationAttendanceRegularizationRequest {
     StartDate?: string;
     EndDate?: string;
     SortBy?: string;
+    IsReport?: boolean;
     ExportType?: 'Excel' | 'PDF';
 }
 

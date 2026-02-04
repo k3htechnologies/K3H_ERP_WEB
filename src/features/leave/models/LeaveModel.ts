@@ -10,6 +10,7 @@ export interface FilterWithPaginationLeaveRequest {
   StartDate?: string
   EndDate?: string
   SortBy?: string
+  IsReport?: boolean
   ExportType?: 'Excel' | 'PDF'
 }
 

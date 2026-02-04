@@ -11,7 +11,7 @@ import type {
 import { employeeResignationService } from '@/features/resignation/services/EmployeeResignationService';
 import { Loader } from '@/core/utils/loader';
 import Tabs from '@/ui/components/Tab/Tab';
-import { formatDate_dd_MonthName_yy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatTimeFromDateTime, parseTimeFromISO } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, parseTimeFromISO } from '@/core/utils/dateFormat';
 import { DataTable, type FilterInfo, type TableColumn, type PaginationInfo, type SortInfo } from '@/ui/components/DataTable/DataTable';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
@@ -131,6 +131,7 @@ export const PayrollReport: React.FC = () => {
           EmployeeId: searchTerm?.trim() && !isNaN(parseInt(searchTerm.trim())) ? parseInt(searchTerm.trim()) : undefined,
           ResignationDateFrom: activeFilters.ResignationDateFrom ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.ResignationDateFrom) || undefined : undefined,
           ResignationDateTo: activeFilters.ResignationDateTo ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.ResignationDateTo) || undefined : undefined,
+          IsReport: true
         }
 
         const response = await employeeResignationService.apiCallPullEmployeeResignation(params);
@@ -198,6 +199,7 @@ export const PayrollReport: React.FC = () => {
           PageSize: pagination.pageSize,
           StartDate: activeFilters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.StartDate) || undefined : undefined,
           EndDate: activeFilters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.EndDate) || undefined : undefined,
+          IsReport: true
         }
 
         const response = await attendanceRegularizationService.apiCallPullAttendanceRegularization(params);
@@ -288,6 +290,7 @@ export const PayrollReport: React.FC = () => {
           StartDate: activeFilters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.StartDate) || undefined : undefined,
           EndDate: activeFilters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.EndDate) || undefined : undefined,
           LeaveType: searchTerm?.trim() || activeFilters.LeaveType?.trim() || undefined,
+          IsReport: true
         }
 
         const response = await LeaveService.apiCallPullLeave(params);
@@ -332,6 +335,7 @@ export const PayrollReport: React.FC = () => {
           StartDate: activeFilters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.StartDate) || undefined : undefined,
           EndDate: activeFilters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.EndDate) || undefined : undefined,
           CompanyName: searchTerm?.trim() || activeFilters.CompanyName?.trim() || undefined,
+          IsReport: true
         }
 
         const response = await outDoorService.apiCallPullOutDoor(params);
@@ -442,6 +446,7 @@ export const PayrollReport: React.FC = () => {
             StartDate: filters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.StartDate) || undefined : undefined,
             EndDate: filters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.EndDate) || undefined : undefined,
             LeaveType: searchTerm?.trim() || filters.LeaveType?.trim() || undefined,
+            IsReport: true,
             SortBy: sortByParam,
             ExportType: 'PDF'
           };
@@ -455,6 +460,7 @@ export const PayrollReport: React.FC = () => {
             StartDate: filters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.StartDate) || undefined : undefined,
             EndDate: filters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.EndDate) || undefined : undefined,
             CompanyName: searchTerm?.trim() || filters.CompanyName?.trim() || undefined,
+            IsReport: true,
             SortBy: sortByParam,
             ExportType: 'PDF'
           };
@@ -469,6 +475,7 @@ export const PayrollReport: React.FC = () => {
             EmployeeId: searchTerm?.trim() && !isNaN(parseInt(searchTerm.trim())) ? parseInt(searchTerm.trim()) : undefined,
             ResignationDateFrom: filters.ResignationDateFrom ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ResignationDateFrom) || undefined : undefined,
             ResignationDateTo: filters.ResignationDateTo ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ResignationDateTo) || undefined : undefined,
+            IsReport: true,
             SortBy: sortByParam,
             ExportType: 'PDF'
           };
@@ -481,6 +488,7 @@ export const PayrollReport: React.FC = () => {
             PageSize: pagination.totalRecords || 1000,
             StartDate: filters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.StartDate) || undefined : undefined,
             EndDate: filters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.EndDate) || undefined : undefined,
+            IsReport: true,
             SortBy: sortByParam,
             ExportType: 'PDF'
           };
@@ -528,47 +536,6 @@ export const PayrollReport: React.FC = () => {
   //#endregion
 
   //#region TABLE COLUMNS
-  // Helper function to format time to 12-hour format with AM/PM
-  // Uses existing utilities: formatTimeFromDateTime for datetime strings, 
-  // and handles plain HH:MM format by converting to 12-hour format
-  const formatTimeTo12Hour = useCallback((timeValue?: string | null): string => {
-    if (!timeValue) return '-';
-
-    const trimmed = timeValue.trim();
-    if (!trimmed) return '-';
-
-    // If it's already in HH:MM format (24-hour), convert to 12-hour format
-    // formatTimeFromDateTime returns HH:MM as-is, so we need to handle it
-    if (/^\d{2}:\d{2}$/.test(trimmed)) {
-      const [hoursStr, minutesStr] = trimmed.split(':');
-      const hours = parseInt(hoursStr, 10);
-      const minutes = parseInt(minutesStr, 10);
-
-      // Validate time values
-      if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-        return trimmed; // Return as-is if invalid
-      }
-
-      // Convert to 12-hour format with AM/PM
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      let displayHours = hours % 12;
-      displayHours = displayHours === 0 ? 12 : displayHours; // 0 becomes 12, 12 stays 12
-
-      return `${displayHours}:${minutesStr} ${ampm}`;
-    }
-
-    // For datetime strings (ISO format), use formatTimeFromDateTime which handles UTC conversion
-    // This handles formats like "2025-01-01T09:30:00" or "2025-01-01T09:30:00Z"
-    const formatted = formatTimeFromDateTime(trimmed);
-    if (formatted) {
-      // formatTimeFromDateTime returns empty string if it can't parse, or formatted time
-      return formatted;
-    }
-
-    // Fallback: return original value if nothing worked
-    return trimmed;
-  }, []);
-
   const attendanceRegularizationColumns = useMemo<TableColumn[]>(
     () => [
       {

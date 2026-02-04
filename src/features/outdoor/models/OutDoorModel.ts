@@ -8,6 +8,7 @@ export interface FilterWithPaginationOutDoor {
   EndDate?: string
   CompanyName?: string
   SortBy?: string
+  IsReport?: boolean
   ExportType?: 'Excel' | 'PDF'
 }
 

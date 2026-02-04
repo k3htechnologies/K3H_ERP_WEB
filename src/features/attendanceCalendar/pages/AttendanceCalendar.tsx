@@ -93,6 +93,7 @@ const AttendanceCalendar: React.FC = () => {
           AttendanceId: 0,
           StartDate: fromDate.toISOString(),
           EndDate: toDate.toISOString(),
+          IsReport: false
         };
 
         const response = await attendanceService.apiCallPullAttendance(params);
@@ -125,6 +126,7 @@ const AttendanceCalendar: React.FC = () => {
           PageNumber: 1,
           StartDate: fromDate.toISOString(),
           EndDate: toDate.toISOString(),
+          IsReport: false
         };
 
         const response = await attendanceRegularizationService.apiCallPullAttendanceRegularization(params);

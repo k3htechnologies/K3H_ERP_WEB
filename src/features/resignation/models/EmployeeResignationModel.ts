@@ -9,6 +9,7 @@ export interface FilterWithPaginationEmployeeResignationRequest {
   ResignationDateFrom?: string | null
   ResignationDateTo?: string | null
   SortBy?: string
+  IsReport?: boolean
   ExportType?: 'Excel' | 'PDF'
 }
 

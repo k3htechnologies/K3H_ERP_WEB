@@ -148,7 +148,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ...(modules || []).map(module => ({
       id: `module-${module.ModulesMasterId}`,
       label: module.ModuleName,
-      path:module.Path,
+      path: module.Path,
       icon: renderIcon(module.Icon, <Home className="h-5 w-5" />, { isCollapsed: !isOpen, isActive: expandedItems.has(`module-${module.ModulesMasterId}`) }),
       children: (module.SubModuleData || []).map(subModule => ({
 
@@ -185,8 +185,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       console.log(item.label)
 
-      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard") {
-
+      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard" || item.path === "settingDashboard") {
+        
         const route = mapPathToRoute(item.path)
 
         const navigateTo = route || item.path;
@@ -199,7 +199,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       }
 
       toggleExpanded(item.id)
-      
+
     } else {
       if (item.path) {
 

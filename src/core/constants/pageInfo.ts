@@ -10,6 +10,11 @@ export const getPageInfo = (path: string) => {
             }
 
             {/* SETTING -> COMPANY SETUP */ }
+        case 'settingsDashboard':
+            return {
+                title: 'Settings Dashboard',
+                description: 'Overview of settings and configurations',
+            }
         case 'departmentMaster':
             return {
                 title: 'Department Master',

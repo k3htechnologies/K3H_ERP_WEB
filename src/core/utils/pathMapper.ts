@@ -64,7 +64,8 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/redevelopmentdashboard': '/redevelopmentDashboard',
         '/inventorydashboard': '/inventoryDashboard',
         '/approvedbank': '/approvedBank',
-        '/content': '/content'
+        '/content': '/content',
+        '/settingsdashboard': 'settingsDashboard'
     }
 
 

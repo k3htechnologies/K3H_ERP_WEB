@@ -134,6 +134,7 @@ import MarketingContent from '@/features/marketingContent/pages/MarketingContent
 import AddUpdatePayTrackRent from '@/features/payTrackRent/pages/AddUpdatePayTrackRent';
 import ViewPayTrackRent from '@/features/payTrackRent/pages/ViewPayTrackRent';
 import { RentListStateProvider } from '@/features/rent/context/RentListStateContext';
+import SettingsDashboard from '@/features/settingsDashboard/pages/SettingsDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -211,6 +212,8 @@ function App() {
 
             <Route path="bankListMaster" element={<BankListMaster />} />
 
+            {/* SETTING Dashboard */}
+            <Route path="settingsDashboard" element={<SettingsDashboard />} />
             {/* SETTING -> COMPANY SETUP -> PROCUREMENT MASTER */}
 
             <Route path="materialMaster" element={<MaterialMaster />} />

@@ -10,7 +10,7 @@ import type { AddUpdateChannelPartnerRequest, FilterWithPaginationChannelPartner
 import { ChannelPartnerService } from "../services/ChannelPartnerService";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { IdCard, Mail, Phone } from "lucide-react";
-import { filterAadhaar, filterEmail, filterGST, filterMobile, filterPAN, filterRERA, isValidAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidRERA } from "@/core/utils/fileValidation";
+import { filterAadhaar, filterEmail, filterGST, filterMobile, filterPAN, filterRERA, isValidAadhaar, isValidMobile, isValidPAN, isValidRERA } from "@/core/utils/fileValidation";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { FIRMS_TYPE_OPTIONS, SPECIALITY_TYPE } from "@/core/constants";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -198,12 +198,6 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
         if (!formData.Name) {
             newErrors.Name = 'Full Name is required';
-        }
-
-        if (!formData.EmailId?.trim()) {
-            newErrors.EmailId = 'E-mail Id is required';
-        } else if (!isValidEmail(formData.EmailId.trim())) {
-            newErrors.EmailId = 'Enter a Valid email address';
         }
 
 
@@ -423,7 +417,6 @@ export const AddUpdateChannelPartner: React.FC = () => {
                             <div>
                                 <Input
                                     label='Email Id'
-                                    required
                                     type="text"
                                     value={formData.EmailId}
                                     error={errors.EmailId}

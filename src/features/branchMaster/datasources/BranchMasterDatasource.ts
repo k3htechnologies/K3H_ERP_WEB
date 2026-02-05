@@ -33,6 +33,8 @@ export class BranchMasterDatasourceImpl implements BranchMasterDatasource {
 
             if (params.BranchMasterId) queryParams.append('BranchMasterId', params.BranchMasterId.toString());
             if (params.BranchName?.trim()) queryParams.append('BranchName', params.BranchName.trim());
+            if (params.BranchCode?.trim()) queryParams.append('BranchCode', params.BranchCode.trim());
+            if (params.Location?.trim()) queryParams.append('Location', params.Location.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

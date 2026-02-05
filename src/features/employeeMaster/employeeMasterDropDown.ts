@@ -33,3 +33,18 @@ export const fetchEmployeeMasterDropdown = async (pageNumber: number, params?: {
         return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
     }
 };
+
+export const fetchEmployeeMasterById = async (employeeId: number) => {
+
+    const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
+        PageSize: 1,
+        PageNumber: 1,
+        EmployeeId: employeeId,
+        IsCheckPermission: false,
+    });
+
+    if (E.isLeft(responseEither)) return null;
+
+    return responseEither.right.Data?.[0] || null;
+
+};

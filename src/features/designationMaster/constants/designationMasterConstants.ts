@@ -5,7 +5,8 @@ export const INITIAL_FORM_STATE: AddUpdateDesignationMasterRequest = {
   DesignationMasterId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   DesignationName: '',
-  NoticePeriod: 0
+  NoticePeriod: 0,
+  ProbationPeriod: 0
 };
 
 export const REQUIRED_COLUMN_KEYS: string[] = ['DesignationName', 'Actions'];
@@ -26,6 +27,13 @@ export const getDesignationMasterColumns = (): TableColumn[] => [
   {
     key: 'NoticePeriod',
     label: 'Notice Period',
+    width: '30',
+    sortable: false,
+    align: 'center'
+  },
+  {
+    key: 'ProbationPeriod',
+    label: 'Probation Period',
     width: '30',
     sortable: false,
     align: 'center'

@@ -124,6 +124,8 @@ export const useBranchMaster = () => {
           IsCheckPermission: true,
           BranchMasterId: filterParams.BranchMasterId ? Number(filterParams.BranchMasterId) : 0,
           BranchName: searchtext ?? filterParams.BranchName?.trim() ?? undefined,
+          BranchCode: filterParams.BranchCode?.trim() || "",
+          Location: filterParams.Location?.trim() || "",
           SortBy: getSortByParam(sortInfo ?? null, branchMasterColumns)
         }
 
@@ -183,7 +185,10 @@ export const useBranchMaster = () => {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
-          BranchName: filters.BranchName?.trim() || undefined,
+          BranchName: filters.BranchName?.trim() || "",
+          BranchCode: filters.BranchCode?.trim() || "",
+          Location: filters.Location?.trim() || "",
+                    
           SortBy: getSortByParam(sortInfo ?? null, branchMasterColumns),
           ExportType: exportType
         }
@@ -285,7 +290,6 @@ export const useBranchMaster = () => {
     setTempFilters({})
     setFilters({})
     loadBranches(1, {})
-    setShowFilterPopup(false)
   }
   //#endregion
 

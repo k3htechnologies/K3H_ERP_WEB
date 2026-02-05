@@ -3,7 +3,7 @@ import { useWeekOffMasterListState } from "@/features/weekOffMaster/context/Week
 import { useEffect, useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import type { FilterWithPaginationWeekOffMasterRequest, WeekOffMasterData } from "@/features/weekOffMaster/models/WeekOffMasterModel";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import {  formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import useToast from "@/core/hooks/useToast";
@@ -68,7 +68,7 @@ const ViewWeekOffMaster: React.FC = () => {
 
     const handleEditWeekOffMaster = (row: WeekOffMasterData) => {
         if (!row?.WeekOffPolicyMasterId) return;
-        navigate(`/WeekOffMaster/add/${row.WeekOffPolicyMasterId}`);
+        navigate(`/weekOffMaster/add/${row.WeekOffPolicyMasterId}`);
     };
 
     const handleBackToListWeekOffMaster = () => {
@@ -138,7 +138,7 @@ const ViewWeekOffMaster: React.FC = () => {
                                 </div>
 
                                 <div className="lg:col-span-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                                         <FieldItem label="Not Applicable For Months" value={editWeekOffPolicyMasterData!.NotApplicableForMonths} />
 
                                     </div>
@@ -164,7 +164,7 @@ const ViewWeekOffMaster: React.FC = () => {
                                             label="Created Date"
                                             value={
                                                 editWeekOffPolicyMasterData!.CreatedDate
-                                                    ? formatDate_dd_MonthName_yy(editWeekOffPolicyMasterData!.CreatedDate)
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(editWeekOffPolicyMasterData!.CreatedDate)
                                                     : "-"
                                             }
 
@@ -179,7 +179,7 @@ const ViewWeekOffMaster: React.FC = () => {
                                             label="Modified Date"
                                             value={
                                                 editWeekOffPolicyMasterData!.ModifiedDate
-                                                    ? formatDate_dd_MonthName_yy(editWeekOffPolicyMasterData!.ModifiedDate)
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(editWeekOffPolicyMasterData!.ModifiedDate)
                                                     : "-"
                                             }
 

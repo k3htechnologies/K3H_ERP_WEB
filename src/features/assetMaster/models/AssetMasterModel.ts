@@ -5,6 +5,10 @@ export interface FilterWithPaginationAssetMasterRequest {
     PageNumber: number
     AssetMasterId?: number
     AssetName?: string
+    AssetType?: string | null
+    AssetModel?: string | null
+    AssetBrand?: string | null
+    SerialNumber?: string | null
     Status?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
@@ -23,8 +27,13 @@ export interface AssetMasterData {
     WarrantyExpiryDate: string | null
     AssetCost: number | null
     SupplierName: string | null
+    AssetInvoiceURL: string | null
     Status: string | null
     EmployeeName: string | null
+    Department: string | null
+    Designation: string | null
+    Branch: string | null
+    AssignedDate: string | null
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -48,6 +57,8 @@ export interface AddUpdateAssetMasterRequest {
     WarrantyExpiryDate: string | null
     AssetCost: number | null
     SupplierName: string | null
+    AssetInvoiceURL: (File | string)[] | null;
+    RemoveAssetInvoiceURL: string | '';
 }
 
 export interface DeleteAssetMasterRequest {

@@ -1,7 +1,6 @@
 import type { Failure } from '@/core/api/FailureResponse';
 import type {
     FilterWithPaginationAssetMasterRequest,
-    AddUpdateAssetMasterRequest,
     DeleteAssetMasterRequest,
     AssetMasterListResponse,
     AssetMasterSaveResponse,
@@ -26,7 +25,7 @@ export const assetMasterService = {
         }
     },
 
-    apiCallAddUpdateAssetMaster: async (params: AddUpdateAssetMasterRequest): Promise<E.Either<Failure, AssetMasterSaveResponse>> => {
+    apiCallAddUpdateAssetMaster: async (params: FormData): Promise<E.Either<Failure, AssetMasterSaveResponse>> => {
         try {
 
             return E.right(await assetMasterDatasource.addUpdateAssetMaster(params));

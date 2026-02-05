@@ -30,6 +30,8 @@ import { employeeExperienceDetailsService } from '@/features/employeeMaster/serv
 import { employeeEducationDetailsService } from '@/features/employeeMaster/services/EmployeeEducationDetailsService';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
+import type { BranchAssociationsMasterData, FilterWithPaginationBranchAssociationsMasterRequest } from '@/features/branchAssociationsMaster/models/BranchAssociationsMasterModel';
+import { branchAssociationsService } from '@/features/branchAssociationsMaster/services/BranchAssociationsMasterService';
 
 export const ViewEmployeeMaster: React.FC = () => {
 
@@ -46,7 +48,10 @@ export const ViewEmployeeMaster: React.FC = () => {
     const [loadedSections, setLoadedSections] = useState<{
         educationDetails?: boolean;
         experienceDetails?: boolean;
+        branchAssociations?: boolean;
     }>({});
+
+    const [branchAssociationsMasterDataList, setBranchAssociationsMasterDataList] = useState<BranchAssociationsMasterData[]>([]);
 
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -153,6 +158,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 20,
                     EmployeeId: listState.employeeId,
+                    IsCheckPermission: false
 
                 };
 
@@ -237,7 +243,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageSize: 20,
                     DepartmentName: undefined,
                     EmployeeId: listState.employeeId,
-                    IsCheckEmployeeShift: true
+                    IsCheckEmployeeShift: true,
+                    IsCheckPermission: false
                 }
 
                 const response = await shiftMappingMasterService.apiCallPullShiftMappingMaster(params);
@@ -275,7 +282,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageSize: 100,
                     DepartmentName: undefined,
                     EmployeeId: listState.employeeId,
-                    IsCheckEmployeeWeekOffPolicy: true
+                    IsCheckEmployeeWeekOffPolicy: true,
+                    IsCheckPermission: false
                 }
 
                 const response = await weekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
@@ -410,6 +418,44 @@ export const ViewEmployeeMaster: React.FC = () => {
         )
     }
     //#endregion
+
+    //#region LOAD EMPLOYEE BRANCH ASSOCIATIONS
+    const loadEmployeeBranchAssociations = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationBranchAssociationsMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 100,
+                    EmployeeId: listState.employeeId,
+                    IsCheckPermission: false
+                }
+
+                const response = await branchAssociationsService.apiCallPullBranchAssociations(params);
+
+                if (E.isRight(response)) {
+
+                    setBranchAssociationsMasterDataList(response.right.Data);
+
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Loading Branch Associations'
+        )
+    }
+    //#endregion
+
 
     //#region EDIT EMPLOYEE
 
@@ -701,7 +747,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                         <FieldItem label="Created By" value={safe(employeeData!.CreatedBy)} />
                                         <FieldItem
                                             label="Created Date"
-                                            value={formatDate_dd_MonthName_yy(safe(employeeData!.CreatedDate))}
+                                            value={formatDate_dd_MonthName_yy_hh_mm(safe(employeeData!.CreatedDate))}
                                         />
                                     </div>
                                 </div>
@@ -779,7 +825,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                             allowMultipleOpen
                             items={[
                                 { key: 'Education Details', title: 'Education Details' },
-                                { key: 'Experience Details', title: 'Experience Details' }
+                                { key: 'Experience Details', title: 'Experience Details' },
+                                { key: 'Branch Associations', title: 'Branch Associations' }
                             ]}
                             renderItem={(item, isOpen, toggle) => (
                                 <div>
@@ -798,6 +845,11 @@ export const ViewEmployeeMaster: React.FC = () => {
                                             if (item.key === 'Experience Details' && !loadedSections.experienceDetails) {
                                                 await loadEmployeeExperienceDetails();
                                                 setLoadedSections(prev => ({ ...prev, experience: true }));
+                                            }
+
+                                            if (item.key === 'Branch Associations' && !loadedSections.branchAssociations) {
+                                                await loadEmployeeBranchAssociations();
+                                                setLoadedSections(prev => ({ ...prev, branchAssociations: true }));
                                             }
                                         }}
                                     >
@@ -831,6 +883,23 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                         </div>
                                                     ))
                                             )}
+
+                                            {item.key === 'Branch Associations' && (
+                                                branchAssociationsMasterDataList.length === 0 ? (
+                                                    <NoDataView message="No Branch Associations Details Found" />
+                                                ) : (
+                                                    <div className="flex flex-wrap gap-3">
+                                                        {branchAssociationsMasterDataList.map(e => (
+                                                            <div key={e.Uniquekey} className="px-5 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition cursor-pointer">
+                                                                <span className="font-medium text-gray-900 whitespace-nowrap">
+                                                                    {e.BranchName}
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )
+                                            )}
+
 
                                         </div>
                                     )}
@@ -947,69 +1016,13 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                                 <div className="lg:col-span-3 pt-3">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem label="Status" value={asset.Status} />
+                                                        <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy(asset.AssignedDate || "-")} />
+                                                        <FieldItem label="Assigned By" value={asset.CreatedBy || "-"} />
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                Purchase Details
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem
-                                                            label="Purchase Date"
-                                                            value={
-                                                                asset.PurchaseDate
-                                                                    ? formatDate_dd_MonthName_yy(asset.PurchaseDate)
-                                                                    : "-"
-                                                            }
 
-                                                        />
-                                                        <FieldItem
-                                                            label="Warranty Expiry Date"
-                                                            value={
-                                                                asset.WarrantyExpiryDate
-                                                                    ? formatDate_dd_MonthName_yy(asset.WarrantyExpiryDate)
-                                                                    : "-"
-                                                            }
-
-                                                        />
-                                                        <FieldItem label="Supplier Name" value={asset.SupplierName} />
-
-                                                    </div>
-                                                </div>
-
-                                                <div className="lg:col-span-3 pt-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem label="Asset Cost" value={asset.AssetCost} />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <h4 className="text-lg font-semibold text-gray-900 pt-3">
-                                                Action Details
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-                                                        <FieldItem label="Created By" value={safe(asset!.CreatedBy)} />
-                                                        <FieldItem
-                                                            label="Created Date"
-                                                            value={formatDate_dd_MonthName_yy(safe(asset!.CreatedDate))}
-                                                        />
-                                                        <FieldItem label="Modified By" value={safe(asset!.ModifiedBy)} />
-                                                        <FieldItem
-                                                            label="Modified Date"
-                                                            value={formatDate_dd_MonthName_yy_hh_mm(safe(asset!.ModifiedDate))}
-                                                        />
-                                                    </div>
-                                                </div>
-
-
-                                            </div>
 
                                         </section>
                                     </>
@@ -1162,7 +1175,6 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                         <div className="lg:col-span-3 pt-3">
                                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                                                 <FieldItem label="Break Duration Time" value={shiftMappingPolicy!.BreakDurationTime} />
-                                                                <FieldItem label="Grace Time" value={shiftMappingPolicy!.GraceTime} />
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1261,7 +1273,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                 </div>
 
                                                 <div className="lg:col-span-3 pt-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                                                         <FieldItem label="Not Applicable For Months" value={weekOffPolicyMapping!.NotApplicableForMonths} />
 
                                                     </div>

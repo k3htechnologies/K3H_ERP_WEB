@@ -1,9 +1,9 @@
 import React from 'react';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Input } from '@/ui/components/forms';
-import { TextArea } from '@/ui/components/forms/Textarea';
 import Checkbox from '@/ui/components/forms/Checkbox';
 import type { AddUpdateBranchMasterRequest } from '@/features/branchMaster/models/BranchMasterModel';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface BranchMasterFormModalProps {
   isOpen: boolean;

@@ -14,13 +14,7 @@ export interface ProjectBankDropdownItem {
   AcType: string;
 }
 
-export const fetchProjectBankDropdown = async (
-  _pageNumber: number,
-  params?: { projectId?: number }
-): Promise<{
-  totalNumberOfRecord: number;
-  itemList: ProjectBankDropdownItem[];
-}> => {
+export const fetchProjectBankDropdown = async (_pageNumber: number,params?: { projectId?: number }): Promise<{totalNumberOfRecord: number;itemList: ProjectBankDropdownItem[];}> => {
   try {
     const responseEither =
       await projectMasterService.apiCallPullProjectMasterWithBankDetails(

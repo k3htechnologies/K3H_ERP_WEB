@@ -3,6 +3,7 @@ import type { ApiResponse } from "@/core/api/ApiResponse"
 export interface FilterWithPaginationAssetMappingMasterRequest {
     PageSize: number
     PageNumber: number
+    IsCheckPermission?: boolean
     AssetMasterMappingId?: number
     AssetMasterId?: number
     AssetName?: string

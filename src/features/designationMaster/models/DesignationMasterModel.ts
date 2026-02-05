@@ -14,6 +14,7 @@ export interface DesignationMasterData {
     DesignationMasterId: number | 0
     Uniquekey: string | ''
     DesignationName: string | ''
+    ProbationPeriod: number | 0
     NoticePeriod: number | 0
     NumberOfEmployee: number | 0
     IsSetAccessModule?: boolean | false
@@ -30,8 +31,9 @@ export interface DesignationMasterData {
 export interface AddUpdateDesignationMasterRequest {
     DesignationMasterId?: number
     Uniquekey?: string
-    DesignationName:  string
+    DesignationName: string
     NoticePeriod: number
+    ProbationPeriod: number | 0
 }
 
 export interface DeleteDesignationMasterRequest {

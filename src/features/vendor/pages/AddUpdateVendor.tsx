@@ -911,7 +911,7 @@ export const AddUpdateVendor: React.FC = () => {
                       return (
                         <div
                           key={item.SubMaterialMasterId}
-                          className="bg-white rounded-lg p-1 flex justify-between items-center hover:bg-gray-50"
+                          className="bg-white rounded-lg p-1 flex justify-between items-center"
                         >
                           <div>
                             <p className="font-medium text-gray-900">{item.SubMaterialName}</p>

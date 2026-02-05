@@ -80,8 +80,8 @@ export const BranchMasterTable: React.FC<BranchMasterTableProps> = ({
           render: (value) => (
             <TooltipText
               text={value || '-'}
-              maxWidth="150px"
-              tooltipThreshold={20}
+              maxWidth="250px"
+              tooltipThreshold={35}
             />
           )
         };

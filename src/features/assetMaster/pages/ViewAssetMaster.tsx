@@ -3,7 +3,7 @@ import { useAssetMasterListState } from "@/features/assetMaster/context/AssetMas
 import type { AssetMasterData } from "../models/AssetMasterModel";
 import { useEffect, useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import Tabs from "@/ui/components/Tab/Tab";
@@ -94,7 +94,8 @@ const ViewAssetPage: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 100,
                     AssetMasterId: assetMasterId,
-                    Status: 'Inactive'
+                    Status: 'Inactive',
+                    IsCheckPermission: false
                 };
 
                 const response = await assetMappingMasterService.apiCallPullAssetMappingMaster(params);
@@ -131,7 +132,6 @@ const ViewAssetPage: React.FC = () => {
     };
 
     const editAssetData = editAssetMasterList.length > 0 ? editAssetMasterList[0] : null
-
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
 
@@ -235,6 +235,7 @@ const ViewAssetPage: React.FC = () => {
                                 <div className="lg:col-span-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Asset Cost (₹)" value={editAssetData!.AssetCost} />
+                                        <FieldItem label="Asset Invoice" value={"Invoice"} urls={editAssetData.AssetInvoiceURL} isIcon={true} />
                                     </div>
                                 </div>
                             </div>
@@ -260,7 +261,7 @@ const ViewAssetPage: React.FC = () => {
                                             label="Created Date"
                                             value={
                                                 editAssetData!.CreatedDate
-                                                    ? formatDate_dd_MonthName_yy(editAssetData!.CreatedDate)
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(editAssetData!.CreatedDate)
                                                     : "-"
                                             }
 
@@ -275,7 +276,7 @@ const ViewAssetPage: React.FC = () => {
                                             label="Modified Date"
                                             value={
                                                 editAssetData!.ModifiedDate
-                                                    ? formatDate_dd_MonthName_yy(editAssetData!.ModifiedDate)
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(editAssetData!.ModifiedDate)
                                                     : "-"
                                             }
 
@@ -286,20 +287,36 @@ const ViewAssetPage: React.FC = () => {
                         </section>
 
                         {/* ================= AUDIT TRAIL ================= */}
-                        <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+                        {editAssetData.EmployeeName?.trim() !== '' && (
+                            <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
 
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Alloted Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                <div className="lg:col-span-3 pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Employee Name" value={editAssetData!.EmployeeName} />
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Alloted Details
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <FieldItem label="Employee Name" value={editAssetData!.EmployeeName} />
+                                            <FieldItem label="Department" value={editAssetData!.Department} />
 
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pt-3 pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <FieldItem label="Designation" value={editAssetData!.Designation} />
+                                            <FieldItem label="Branch" value={editAssetData!.Branch} />
+
+
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy(editAssetData!.AssignedDate ?? '')} />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </section>
+                            </section>
+                        )}
 
                     </div>
 
@@ -328,7 +345,7 @@ const ViewAssetPage: React.FC = () => {
                                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                         <FieldItem label="Employee Name" value={asset.EmployeeName} />
-                                                        <FieldItem label="Return Date" value={formatDate_dd_MonthName_yy(asset.ReturnDate ?? '')} />
+                                                        <FieldItem label="Duration Date" value={formatDate_dd_MonthName_yy(asset.AssignedDate ?? '') + ' - To - ' + formatDate_dd_MonthName_yy(asset.ReturnDate ?? '')} />
                                                         <FieldItem label="Condition At Return" value={asset.ConditionOnReturn} />
                                                     </div>
                                                 </div>

@@ -11,6 +11,8 @@ import useToast from '@/core/hooks/useToast';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { vendorService } from '@/features/vendor/services/VendorService';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
+import Tabs from '@/ui/components/Tab/Tab';
 
 export const ViewVendor: React.FC = () => {
   //#region  LOADING STATE MANAGEMENT
@@ -24,6 +26,7 @@ export const ViewVendor: React.FC = () => {
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions('/vendor');
   const [editVendorMasterData, setEditVendorMasterData] = useState<VendorData | null>(null);
+  const [activeTab, setActiveTab] = useState("material");
 
   useEffect(() => {
     if (listState.vendorId) {
@@ -96,7 +99,7 @@ export const ViewVendor: React.FC = () => {
         }}
         isLoading={isLoading}
       />
-      
+
       {editVendorMasterData && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
 
@@ -163,24 +166,6 @@ export const ViewVendor: React.FC = () => {
               </div>
             </section>
 
-            {/* ================= MATERIALS & CONTRACTS ================= */}
-            <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Materials & Contracts
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FieldItem
-                  label="Available Materials"
-                  value={editVendorMasterData?.AvailableMaterialList ?? '-'}
-                />
-                <FieldItem
-                  label="Available Contracts"
-                  value={editVendorMasterData?.AvailableContractList ?? '-'}
-                />
-              </div>
-            </section>
-
 
           </div>
 
@@ -206,6 +191,73 @@ export const ViewVendor: React.FC = () => {
                 />
               </div>
             </section>
+          </div>
+
+          {/* ================= MATERIALS & CONTRACTS ================= */}
+         <div className="lg:col-span-3 space-y-4 pb-3">
+            <h3 className="text-lg font-semibold border-b border-gray-300 pb-2">
+              Material and Contract Management
+            </h3>
+
+            <Tabs
+              tabs={[
+                { id: "material", label: "Material" },
+                { id: "contract", label: "Contract" },
+              ]}
+
+              defaultActive={activeTab}
+              onTabChange={(tab) => setActiveTab(tab.id)}
+              islarge
+            />
+
+            {/* Material Tab Content */}
+            {activeTab === "material" && (
+              <div className="space-y-4">
+
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3 h-[400px] flex flex-col">
+
+                  <div className="space-y-2 flex-1 overflow-y-auto thin-scroll">
+                    
+                    {editVendorMasterData.SubMaterialMasterData.length > 0 ? (
+                      editVendorMasterData.SubMaterialMasterData.map((item) => {
+                        return (
+                          <div
+                            key={item.SubMaterialMasterId}
+                            className="bg-white rounded-lg p-1 flex justify-between items-center"
+                          >
+                            <div>
+                              <p className="font-medium text-gray-900">{item.SubMaterialName}</p>
+                              <p className="text-xs text-gray-500">{item.MaterialName}</p>
+                            </div>
+
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center text-gray-400 py-12">
+                        <NoDataView />
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+
+
+            {activeTab === "contract" && (
+              <div className="space-y-4">
+
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3" style={{ minHeight: "400px", maxHeight: "400px", display: "flex", flexDirection: "column" }}>
+
+                  <div className="flex-1 overflow-y-auto flex items-center justify-center">
+                    <NoDataView />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
         </div>

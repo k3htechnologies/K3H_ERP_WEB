@@ -35,6 +35,10 @@ import { Edit, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/ui/components/forms/Button';
 import type { DeleteEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
 import type { DeleteEmployeeExperienceDetailsRequest } from '@/features/employeeMaster/models/EmployeeExperienceDetailsModal';
+import type { BranchAssociationsMasterData, FilterWithPaginationBranchAssociationsMasterRequest } from '@/features/branchAssociationsMaster/models/BranchAssociationsMasterModel';
+import { branchAssociationsService } from '@/features/branchAssociationsMaster/services/BranchAssociationsMasterService';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 
 export const Profile: React.FC = () => {
 
@@ -50,7 +54,11 @@ export const Profile: React.FC = () => {
     const [loadedSections, setLoadedSections] = useState<{
         educationDetails?: boolean;
         experienceDetails?: boolean;
+        branchAssociations?: boolean;
     }>({});
+
+    const [branchAssociationsMasterDataList, setBranchAssociationsMasterDataList] = useState<BranchAssociationsMasterData[]>([]);
+
     const [projectMasterList, setProjectMasterList] = useState<ProjectMasterData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -197,6 +205,7 @@ export const Profile: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 20,
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
+                    IsCheckPermission: false
 
                 };
 
@@ -282,6 +291,7 @@ export const Profile: React.FC = () => {
                     DepartmentName: undefined,
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
                     IsCheckEmployeeShift: true,
+                    IsCheckPermission: false
                 }
 
                 const response = await shiftMappingMasterService.apiCallPullShiftMappingMaster(params);
@@ -319,7 +329,8 @@ export const Profile: React.FC = () => {
                     PageSize: 100,
                     DepartmentName: undefined,
                     EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
-                    IsCheckEmployeeWeekOffPolicy: true
+                    IsCheckEmployeeWeekOffPolicy: true,
+                    IsCheckPermission: false
                 }
 
                 const response = await weekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
@@ -418,6 +429,44 @@ export const Profile: React.FC = () => {
         )
     }
     //#endregion
+
+    //#region LOAD EMPLOYEE BRANCH ASSOCIATIONS
+    const loadEmployeeBranchAssociations = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationBranchAssociationsMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 100,
+                    EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
+                    IsCheckPermission: false
+                }
+
+                const response = await branchAssociationsService.apiCallPullBranchAssociations(params);
+
+                if (E.isRight(response)) {
+
+                    setBranchAssociationsMasterDataList(response.right.Data);
+
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Loading Branch Associations'
+        )
+    }
+    //#endregion
+
 
     //#region PROJECT MASTER
     const loadProjects = async () => {
@@ -783,6 +832,12 @@ export const Profile: React.FC = () => {
 
     const safe = (value?: any) => (value === null || value === undefined || value === '' ? '-' : value)
 
+    const docsWithUrls = employeeDocumentList.filter(d => {
+        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+            .filter(x => x?.trim()?.length);
+
+        return urls.length > 0;
+    });
     return (
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -1104,7 +1159,8 @@ export const Profile: React.FC = () => {
                                     allowMultipleOpen
                                     items={[
                                         { key: 'Education Details', title: 'Education Details' },
-                                        { key: 'Experience Details', title: 'Experience Details' }
+                                        { key: 'Experience Details', title: 'Experience Details' },
+                                        { key: 'Branch Associations', title: 'Branch Associations' }
                                     ]}
                                     renderItem={(item, isOpen, toggle) => (
                                         <div>
@@ -1124,33 +1180,39 @@ export const Profile: React.FC = () => {
                                                         await loadEmployeeExperienceDetails();
                                                         setLoadedSections(prev => ({ ...prev, experienceDetails: true }));
                                                     }
+
+                                                    if (item.key === 'Branch Associations' && !loadedSections.branchAssociations) {
+                                                        await loadEmployeeBranchAssociations();
+                                                        setLoadedSections(prev => ({ ...prev, branchAssociations: true }));
+                                                    }
                                                 }}
                                             >
                                                 <h4 className="font-semibold">{item.title}</h4>
 
                                                 {/* ADD BUTTON */}
 
-
-                                                <Button
-                                                    color='transparent'
-                                                    isborderRadius
-                                                    size='sm'
-                                                    style={{
-                                                        color: 'blue',
-                                                        padding: '4px 8px'
-                                                    }}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        if (item.key === 'Education Details') {
-                                                            handleOpenEducationModal()
-                                                        }
-                                                        else if (item.key === "Experience Details") {
-                                                            handleOpenExperienceModal();
-                                                        }
-                                                    }}
-                                                    leftIcon={<Plus className="h-4 w-4" />}
-                                                >
-                                                </Button>
+                                                {item.key !== 'Branch Associations' && (
+                                                    <Button
+                                                        color='transparent'
+                                                        isborderRadius
+                                                        size='sm'
+                                                        style={{
+                                                            color: 'blue',
+                                                            padding: '4px 8px'
+                                                        }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (item.key === 'Education Details') {
+                                                                handleOpenEducationModal()
+                                                            }
+                                                            else if (item.key === "Experience Details") {
+                                                                handleOpenExperienceModal();
+                                                            }
+                                                        }}
+                                                        leftIcon={<Plus className="h-4 w-4" />}
+                                                    >
+                                                    </Button>
+                                                )}
                                             </div>
 
                                             {/* === BODY === */}
@@ -1251,6 +1313,22 @@ export const Profile: React.FC = () => {
                                                             ))
                                                     )}
 
+                                                    {item.key === 'Branch Associations' && (
+                                                        branchAssociationsMasterDataList.length === 0 ? (
+                                                            <NoDataView message="No Branch Associations Details Found" />
+                                                        ) : (
+                                                            <div className="flex flex-wrap gap-3">
+                                                                {branchAssociationsMasterDataList.map(e => (
+                                                                    <div key={e.Uniquekey} className="px-5 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition cursor-pointer">
+                                                                        <span className="font-medium text-gray-900 whitespace-nowrap">
+                                                                            {e.BranchName}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )
+                                                    )}
+
                                                 </div>
                                             )}
                                         </div>
@@ -1264,33 +1342,63 @@ export const Profile: React.FC = () => {
                     </>
                 )}
 
-                {activeTab === 'Document' && employeeDocumentList && (
-                    <div className="grid grid-cols-1 md:grid-cols-1 gap-3 pt-5">
 
-                        {employeeDocumentList?.filter(doc => doc?.DocumentURL)?.length > 0 ? (
-                            employeeDocumentList
-                                .filter(doc => doc?.DocumentURL)
-                                .map((doc, index) => (
-                                    <section
-                                        key={index}
-                                        className="bg-white rounded-xl shadow-sm p-2 border border-gray-200"
-                                    >
-                                        <div className="flex items-center justify-between rounded-lg transition">
-                                            <FieldItem
-                                                label={doc?.DocumentName || ''}
-                                                urls={doc?.DocumentURL}
-                                                isIcon
-                                                isRow
-                                                isSetValue={false}
-                                            />
-                                        </div>
-                                    </section>
-                                ))
-                        ) : (
-                            <section className="md:col-span-2 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                {activeTab === 'Document' && (
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                        {docsWithUrls.length === 0 && (
+                            <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                                 <NoDataView message="No Documents Found" />
                             </section>
                         )}
+
+                        {docsWithUrls.map(d => {
+                            const urls = parseDocumentUrls(d.DocumentURL ?? "").filter(x => x?.trim()?.length);
+
+                            return (
+                                <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
+
+                                    <div className="flex items-start justify-between p-2 gap-2">
+                                        <div className="flex flex-col">
+
+                                            <span className="line-clamp-2 break-words font-medium text-gray-900">
+                                                {d.DocumentName}
+                                            </span>
+                                            <span className="text-sm text-gray-500 mt-1">
+                                                Document Count : {urls.length}
+                                            </span>
+                                        </div>
+
+                                        <MultiImageViewer
+                                            images={urls}
+                                            title={d.DocumentName ?? "Document"}
+                                            triggerLabel="View"
+                                            isIcon={false}
+                                        />
+
+
+                                    </div>
+
+
+                                    <div className="flex-grow" />
+
+                                    <div className="bg-gray-50 p-2 mt-auto">
+                                        <FieldItem
+                                            label="Uploaded By / Date"
+                                            value={`${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
+                                                ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
+                                                : d?.CreatedDate
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
+                                                    : '-'
+                                                }`}
+                                        />
+                                    </div>
+
+                                </div>
+
+                            );
+                        })}
 
                     </div>
 
@@ -1335,43 +1443,8 @@ export const Profile: React.FC = () => {
 
                                                     <div className="lg:col-span-3 pt-3">
                                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem label="Status" value={asset.Status} />
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                    Purchase Details
-                                                </h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem
-                                                                label="Purchase Date"
-                                                                value={
-                                                                    asset.PurchaseDate
-                                                                        ? formatDate_dd_MonthName_yy(asset.PurchaseDate)
-                                                                        : "-"
-                                                                }
-
-                                                            />
-                                                            <FieldItem
-                                                                label="Warranty Expiry Date"
-                                                                value={
-                                                                    asset.WarrantyExpiryDate
-                                                                        ? formatDate_dd_MonthName_yy(asset.WarrantyExpiryDate)
-                                                                        : "-"
-                                                                }
-
-                                                            />
-                                                            <FieldItem label="Supplier Name" value={asset.SupplierName} />
-
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="lg:col-span-3 pt-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem label="Asset Cost" value={asset.AssetCost} />
+                                                            <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy(asset.AssignedDate || "-")} />
+                                                            <FieldItem label="Assigned By" value={asset.CreatedBy || "-"} />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1527,7 +1600,7 @@ export const Profile: React.FC = () => {
                                                             <div className="lg:col-span-3 pt-3">
                                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                                                     <FieldItem label="Break Duration Time" value={shiftMappingPolicy!.BreakDurationTime} />
-                                                                    <FieldItem label="Grace Time" value={shiftMappingPolicy!.GraceTime} />
+
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1627,7 +1700,7 @@ export const Profile: React.FC = () => {
                                                     </div>
 
                                                     <div className="lg:col-span-3 pt-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                                                             <FieldItem label="Not Applicable For Months" value={weekOffPolicyMapping!.NotApplicableForMonths} />
 
                                                         </div>

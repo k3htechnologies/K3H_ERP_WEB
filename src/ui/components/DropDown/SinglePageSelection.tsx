@@ -37,17 +37,20 @@ export const SinglePageSelection = forwardRef<
       selectedTextColor,
       leftIcon,
       leftIconClick,
-      isShowClearSelection=true
+      isShowClearSelection = true
     },
     ref
   ) => {
     const theme = THEME;
 
-    const containerRef = useRef<HTMLDivElement>(null);
+    const anchorRef = useRef<HTMLDivElement | null>(null);
+    const portalRef = useRef<HTMLDivElement | null>(null);
 
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredOptions, setFilteredOptions] = useState(options);
+
+    const [, setOpenUpward] = useState(false);
 
     /* ================= SIZE CONFIG (UNCHANGED) ================= */
 
@@ -83,25 +86,32 @@ export const SinglePageSelection = forwardRef<
     /* ================= CLICK OUTSIDE / ESC (UNCHANGED) ================= */
 
     useEffect(() => {
-      const handleClick = (e: MouseEvent) => {
+      const handlePointerDown = (e: PointerEvent) => {
+        const target = e.target as Node;
+
         if (
-          containerRef.current &&
-          !containerRef.current.contains(e.target as Node)
+          anchorRef.current?.contains(target) ||
+          portalRef.current?.contains(target)
         ) {
-          setIsOpen(false);
+          return;
         }
+
+        setIsOpen(false);
       };
-      const handleKey = (e: KeyboardEvent) => {
+
+      const handleEscape = (e: KeyboardEvent) => {
         if (e.key === "Escape") setIsOpen(false);
       };
-      document.addEventListener("mousedown", handleClick);
-      document.addEventListener("keydown", handleKey);
+
+      // capture phase = runs BEFORE React onClick
+      document.addEventListener("pointerdown", handlePointerDown, true);
+      document.addEventListener("keydown", handleEscape);
+
       return () => {
-        document.removeEventListener("mousedown", handleClick);
-        document.removeEventListener("keydown", handleKey);
+        document.removeEventListener("pointerdown", handlePointerDown, true);
+        document.removeEventListener("keydown", handleEscape);
       };
     }, []);
-
     /* ================= SELECTED LABEL (UNCHANGED) ================= */
 
     const selectedLabel = options.find((opt: any) => opt[valueKey] === value)?.[labelKey] || placeholder;
@@ -118,62 +128,109 @@ export const SinglePageSelection = forwardRef<
 
     /* ================= PORTAL POSITION (ONLY NEW LOGIC) ================= */
 
-    const DROPDOWN_HEIGHT = 300;
+    const SIZE_MAP = {
+      sm: { fontSize: 12, padding: 6, dropdownHeight: 150 },
+      md: { fontSize: 14, padding: 6, dropdownHeight: 200 },
+      lg: { fontSize: 16, padding: 6, dropdownHeight: 250 },
+    };
 
+    const sizeStyles = SIZE_MAP[size as keyof typeof SIZE_MAP];
+
+    const DROPDOWN_ESTIMATED_HEIGHT = sizeStyles.dropdownHeight + 12;
     const [portalPos, setPortalPos] = useState<{
-      top: number;
       left: number;
+      top: number;
       width: number;
+      maxHeight: number;
     } | null>(null);
 
-    const updatePortalPosition = useCallback(() => {
-      const node = containerRef.current;
-      if (!node) return;
+    const updatePortalPos = useCallback(() => {
+      const node = anchorRef.current;
+      if (!node || typeof window === "undefined") {
+        setPortalPos(null);
+        return;
+      }
 
       const rect = node.getBoundingClientRect();
+      const vw = window.innerWidth;
       const vh = window.innerHeight;
 
+      const dropdownH = sizeStyles.dropdownHeight;
       const spaceBelow = vh - rect.bottom;
       const spaceAbove = rect.top;
 
-      const openBelow =
-        spaceBelow >= DROPDOWN_HEIGHT + 10 || spaceBelow >= spaceAbove;
+      // open below if enough space; otherwise open above
+      const openBelow = spaceBelow >= DROPDOWN_ESTIMATED_HEIGHT || spaceBelow >= spaceAbove;
 
-      let top = openBelow
-        ? rect.bottom + 4
-        : rect.top - DROPDOWN_HEIGHT - 4;
+      // compute top for fixed positioning (viewport coords)
+      let top = openBelow ? rect.bottom + 6 : rect.top - dropdownH - 6;
 
-      top = Math.max(8, Math.min(top, vh - DROPDOWN_HEIGHT - 8));
+      // clamp so popup remains on-screen
+      const minTop = 8;
+      const maxTop = Math.max(8, vh - dropdownH - 8);
+      top = Math.min(Math.max(top, minTop), maxTop);
 
-      setPortalPos({
-        left: rect.left,
-        top,
-        width: rect.width, // 🔒 EXACT SAME WIDTH AS INPUT
-      });
-    }, []);
+      // left and width (clamp right edge)
+      let left = rect.left;
+      let width = rect.width;
+      const rightOverflow = left + width - vw;
+      if (rightOverflow > 8) {
+        left = Math.max(8, left - rightOverflow);
+      }
 
-    useEffect(() => {
-      if (!isOpen) return;
+      setPortalPos({ left, top, width, maxHeight: dropdownH });
 
-      updatePortalPosition();
+      // also set openUpward (for backwards compatibility if needed)
+      setOpenUpward(!openBelow);
+    }, [sizeStyles.dropdownHeight]);
 
-      const onUpdate = () => updatePortalPosition();
-      window.addEventListener("resize", onUpdate);
-      window.addEventListener("scroll", onUpdate, true);
 
-      return () => {
-        window.removeEventListener("resize", onUpdate);
-        window.removeEventListener("scroll", onUpdate, true);
+  useEffect(() => {
+        if (!isOpen) return;
+        updatePortalPos(); // initial compute
+  
+        const onUpdate = () => updatePortalPos();
+        window.addEventListener("resize", onUpdate);
+        window.addEventListener("scroll", onUpdate, true); // track ancestor scroll too
+        return () => {
+          window.removeEventListener("resize", onUpdate);
+          window.removeEventListener("scroll", onUpdate, true);
+        };
+      }, [isOpen, updatePortalPos]);
+  
+      // handle toggle: compute portal position when opening
+      const handleToggle = () => {
+        if (disabled) return;
+  
+        const node = anchorRef.current;
+        if (!node || typeof window === "undefined") {
+          setIsOpen(prev => !prev);
+          return;
+        }
+  
+        const rect = node.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+  
+        const spaceBelow = windowHeight - rect.bottom;
+        const spaceAbove = rect.top;
+  
+        // maintain openUpward fallback
+        if (spaceBelow < DROPDOWN_ESTIMATED_HEIGHT && spaceAbove > spaceBelow) {
+          setOpenUpward(true);
+        } else {
+          setOpenUpward(false);
+        }
+  
+        setIsOpen(prev => {
+          const next = !prev;
+          if (next) {
+            setTimeout(() => updatePortalPos(), 0);
+          } else {
+            setPortalPos(null);
+          }
+          return next;
+        });
       };
-    }, [isOpen, updatePortalPosition]);
-
-    /* ================= TOGGLE (UNCHANGED BEHAVIOR) ================= */
-
-    const handleToggle = () => {
-      if (disabled) return;
-      setIsOpen(prev => !prev);
-    };
-
     /* ================= RENDER ================= */
 
     return (
@@ -183,7 +240,7 @@ export const SinglePageSelection = forwardRef<
             if (typeof ref === "function") ref(node);
             else ref.current = node;
           }
-          containerRef.current = node;
+          anchorRef.current = node;
         }}
         style={{ width: "100%", position: "relative" }}
         className={className}
@@ -295,6 +352,7 @@ export const SinglePageSelection = forwardRef<
           typeof document !== "undefined" &&
           createPortal(
             <div
+            ref={portalRef}
               onMouseDown={(e) => e.stopPropagation()}
               style={{
                 position: "fixed",

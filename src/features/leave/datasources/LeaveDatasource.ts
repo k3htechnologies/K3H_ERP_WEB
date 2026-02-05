@@ -15,7 +15,7 @@ export abstract class LeaveDatasource {
     abstract pullLeave(params: FilterWithPaginationLeaveRequest, signal?: AbortSignal): Promise<LeaveListResponse>;
     abstract addUpdateLeave(data: AddUpdateLeaveRequest): Promise<LeaveSaveResponse>;
     abstract deleteLeave(params: DeleteLeaveRequest): Promise<LeaveDeleteResponse>;
-   
+
 }
 
 export class LeaveDatasourceImpl implements LeaveDatasource {
@@ -40,11 +40,7 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
             if (params.EmployeeId !== undefined && params.EmployeeId !== null) queryParams.append('EmployeeId', params.EmployeeId.toString())
             if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim())
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim())
-<<<<<<< Updated upstream
             if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString())
-=======
-            if (params.IsReport === true) queryParams.append('IsReport', 'true')
->>>>>>> Stashed changes
             if (params.ExportType) queryParams.append('ExportType', params.ExportType)
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(

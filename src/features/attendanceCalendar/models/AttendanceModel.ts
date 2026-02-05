@@ -7,14 +7,11 @@ export interface FilterWithPaginationAttendanceRequest {
     StartDate?: string
     EndDate?: string
     ApiKey?: string
-<<<<<<< Updated upstream
-    IsReport?: boolean
-=======
     SortBy?: string
     IsReport?: boolean
     ExportType?: 'Excel' | 'PDF'
     EmployeeName?: string
->>>>>>> Stashed changes
+
 }
 
 export interface AttendanceData {

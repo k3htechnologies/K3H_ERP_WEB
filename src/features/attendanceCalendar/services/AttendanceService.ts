@@ -77,9 +77,6 @@ export const attendanceService = {
 
 
 
-<<<<<<< Updated upstream
 
 
 
-=======
->>>>>>> Stashed changes

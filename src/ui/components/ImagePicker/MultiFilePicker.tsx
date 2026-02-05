@@ -178,7 +178,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
     if (existingUrls.length + value.length === 0) setIsListOpen(false);
   }, [existingUrls, value]);
 
-   useEffect(() => {
+  useEffect(() => {
     const close = (e: MouseEvent) => {
       if (!anchorRef.current?.contains(e.target as Node)) setIsListOpen(false);
     };
@@ -254,7 +254,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
 
       {/* input area */}
       <div
-      ref={anchorRef}
+        ref={anchorRef}
         style={{
           height: currentSize.height,
           border: `0.5px solid ${error ? theme.colors.error : theme.colors.border}`,
@@ -388,3 +388,4 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
 };
 
 export default MultiFilePicker;
+

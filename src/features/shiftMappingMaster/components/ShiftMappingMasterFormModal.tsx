@@ -7,6 +7,7 @@ import { fetchDepartmentMasterDropdown } from '@/features/departmentMaster/depar
 import { fetchEmployeeMasterDropdown } from '@/features/employeeMaster/employeeMasterDropDown';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import type { AddUpdateShiftMappingMasterRequest } from '@/features/shiftMappingMaster/models/ShiftMappingMasterModel';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
 
 interface ShiftMappingMasterFormModalProps {
   isOpen: boolean;
@@ -22,6 +23,12 @@ interface ShiftMappingMasterFormModalProps {
   dropdownResetKey: number;
   mappingShift: string;
   onApplicableTypeChange: (value: string) => void;
+  departmentName: string;
+  designationName: string;
+  branchName: string;
+  reportingPersonName: string;
+  emailId: string;
+  personalMobileNumber: string;
 }
 
 export const ShiftMappingMasterFormModal: React.FC<ShiftMappingMasterFormModalProps> = ({
@@ -37,7 +44,13 @@ export const ShiftMappingMasterFormModal: React.FC<ShiftMappingMasterFormModalPr
   dropdownLabels,
   dropdownResetKey,
   mappingShift,
-  onApplicableTypeChange
+  onApplicableTypeChange,
+  departmentName,
+  designationName,
+  branchName,
+  reportingPersonName,
+  emailId,
+  personalMobileNumber,
 }) => {
   return (
     <Modal
@@ -110,6 +123,19 @@ export const ShiftMappingMasterFormModal: React.FC<ShiftMappingMasterFormModalPr
                 initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.EmployeeName)}
                 error={errors.EmployeeId}
               />
+
+              {!!formData.EmployeeId && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <FieldItem label="Department" value={departmentName || "-"} />
+                    <FieldItem label="Designation" value={designationName || "-"} />
+                    <FieldItem label="Branch" value={branchName || "-"} />
+                    <FieldItem label="Reporting Person" value={reportingPersonName || "-"} />
+                    <FieldItem label="Email ID" value={emailId || "-"} />
+                    <FieldItem label="Personal Mobile Number" value={personalMobileNumber || "-"} />
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {mappingShift === 'Department' && (
@@ -132,6 +158,15 @@ export const ShiftMappingMasterFormModal: React.FC<ShiftMappingMasterFormModalPr
                 initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
                 error={errors.DepartmentMasterId}
               />
+
+              {!!formData.DepartmentMasterId && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-gray-700">
+                    This Shift policy will be applied to
+                    <span className="font-semibold text-gray-900"> all employees in this department.</span>
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

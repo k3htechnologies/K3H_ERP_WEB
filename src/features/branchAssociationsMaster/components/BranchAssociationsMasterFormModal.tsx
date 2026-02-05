@@ -5,6 +5,7 @@ import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeM
 import { fetchBranchMasterDropdown } from "@/features/branchMaster/branchMasterDropDown";
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import type { AddUpdateBranchAssociationsMasterRequest } from '@/features/branchAssociationsMaster/models/BranchAssociationsMasterModel';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
 
 interface BranchAssociationsMasterFormModalProps {
   isOpen: boolean;
@@ -19,6 +20,13 @@ interface BranchAssociationsMasterFormModalProps {
   loading: boolean;
   dropdownLabels: { branchName?: string; employeeName?: string };
   dropdownResetKey: number;
+  departmentName: string;
+  designationName: string;
+  branchName: string;
+  reportingPersonName: string;
+  emailId: string;
+  personalMobileNumber: string;
+
 }
 
 export const BranchAssociationsMasterFormModal: React.FC<BranchAssociationsMasterFormModalProps> = ({
@@ -33,7 +41,14 @@ export const BranchAssociationsMasterFormModal: React.FC<BranchAssociationsMaste
   editingData,
   loading,
   dropdownLabels,
-  dropdownResetKey
+  dropdownResetKey,
+  departmentName,
+  designationName,
+  branchName,
+  reportingPersonName,
+  emailId,
+  personalMobileNumber,
+
 }) => {
   return (
     <Modal
@@ -87,6 +102,19 @@ export const BranchAssociationsMasterFormModal: React.FC<BranchAssociationsMaste
             initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
             error={errors.EmployeeId}
           />
+          {!!formData.EmployeeId && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <FieldItem label="Department" value={departmentName || "-"} />
+                <FieldItem label="Designation" value={designationName || "-"} />
+                <FieldItem label="Branch" value={branchName || "-"} />
+                <FieldItem label="Reporting Person" value={reportingPersonName || "-"} />
+                <FieldItem label="Email ID" value={emailId || "-"} />
+                <FieldItem label="Personal Mobile Number" value={personalMobileNumber || "-"} />
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </Modal>

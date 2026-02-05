@@ -18,6 +18,7 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { getInitialFormState, getShiftMappingMasterColumns, REQUIRED_COLUMN_KEYS } from '@/features/shiftMappingMaster/constants/shiftMappingMasterConstants';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { fetchEmployeeMasterById } from '@/features/employeeMaster/employeeMasterDropDown';
 
 export const useShiftMappingMaster = () => {
   //#region STATE MANAGEMENT
@@ -45,6 +46,14 @@ export const useShiftMappingMaster = () => {
   // EDIT SHIFT MAPPING MASTER
   const [editingShiftMappingMasterData, setEditingShiftMappingMasterData] = useState<ShiftMappingMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+
+  //SET UP EMPLOYEE DETAILS STATES
+  const [departmentName, setDepartmentName] = useState("");
+  const [designationName, setDesignationName] = useState("");
+  const [branchName, setBranchName] = useState("");
+  const [reportingPersonName, setReportingPersonName] = useState("");
+  const [emailId, setEmailId] = useState("");
+  const [personalMobileNumber, setPersonalMobileNumber] = useState("");
 
   //ADD UPDATE SHIFT MAPPING MASTER
   const [formData, setFormData] = useState<AddUpdateShiftMappingMasterRequest>(() => getInitialFormState());
@@ -116,6 +125,40 @@ export const useShiftMappingMaster = () => {
     }
   }, [isAddUpdateModalOpen, editingShiftMappingMasterData]);
 
+  useEffect(() => {
+    let mounted = true;
+
+    const loadEmployeeDetails = async () => {
+      if (!formData.EmployeeId) {
+        setDepartmentName("");
+        setDesignationName("");
+        setBranchName("");
+        setReportingPersonName("");
+        setEmailId("");
+        setPersonalMobileNumber("");
+        return;
+      }
+
+      const employee = await fetchEmployeeMasterById(Number(formData.EmployeeId));
+
+      if (!employee || !mounted) return;
+
+      setDepartmentName(employee.Department ?? "");
+      setDesignationName(employee.Designation ?? "");
+      setBranchName(employee.Branch ?? "");
+      setReportingPersonName(employee.ReportPersonName ?? "");
+      setEmailId(employee.EmailId ?? "");
+      setPersonalMobileNumber(employee.PersonalMobileNumber ?? "");
+    };
+
+    loadEmployeeDetails();
+
+    return () => {
+      mounted = false;
+    };
+  }, [formData.EmployeeId]);
+
+
   //#endregion
 
   //#region TABLE COLUMN DEFINITION
@@ -180,7 +223,7 @@ export const useShiftMappingMaster = () => {
       fetchShiftMappingList();
       return
     }
-     await loadShiftMappings(1, filters, sortInfo, searchValue)
+    await loadShiftMappings(1, filters, sortInfo, searchValue)
   }
   //#endregion
 
@@ -235,7 +278,7 @@ export const useShiftMappingMaster = () => {
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     loadShiftMappings(1, filters, sort, searchTerm || undefined);
-  }, [filters,searchTerm]);
+  }, [filters, searchTerm]);
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
@@ -520,6 +563,13 @@ export const useShiftMappingMaster = () => {
     dropdownLabels,
     dropdownResetKey,
     mappingShift,
+
+    departmentName,
+    designationName,
+    branchName,
+    reportingPersonName,
+    emailId,
+    personalMobileNumber,
 
     // Setters
     setSearchTerm,

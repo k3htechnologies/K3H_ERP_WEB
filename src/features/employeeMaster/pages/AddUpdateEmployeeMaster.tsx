@@ -23,7 +23,7 @@ import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd,
 import { filterEmail, filterIFSC, filterLetters, filterMobile, filterNumbers, isValidEmail, isValidIFSC, isValidMobile } from "@/core/utils/fileValidation";
 import { fetchDepartmentMasterDropdown } from "@/features/departmentMaster/departmentMasterDropdown";
 import { fetchDesignationMasterDropdown } from "@/features/designationMaster/designationMasterDropDown";
-import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
+import { fetchEmployeeMasterById, fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
 import { fetchCompanyMasterDropdown } from "@/features/companyMaster/companyMasterDropDown";
 import { fetchBranchMasterDropdown } from "@/features/branchMaster/branchMasterDropDown";
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
@@ -33,6 +33,7 @@ import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Mail, Phone } from "lucide-react";
 import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 
 const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
@@ -78,6 +79,14 @@ const AddUpdateEmployeePage: React.FC = () => {
   const [formData, setFormData] = useState<AddUpdateEmployeeMasterRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
+
+  //SET EMPLOYEE MASTER DETAILS
+  const [departmentName, setDepartmentName] = useState<string>();
+  const [designationName, setDesignationName] = useState<string>();
+  const [branchName, setBranchName] = useState<string>();
+  const [reportingPersonName, setReportingPersonName] = useState<string>();
+  const [emailId, setEmailId] = useState<string>();
+  const [personalMobileNumber, setPersonalMobileNumber] = useState<string>();
 
   // NAVIGATE
   const navigate = useNavigate();
@@ -176,6 +185,20 @@ const AddUpdateEmployeePage: React.FC = () => {
   }, [employeeId]);
 
 
+  useEffect(() => {
+    if (!formData.ReportPersonId) return;
+
+    fetchEmployeeMasterById(formData.ReportPersonId).then(employee => {
+      if (!employee) return;
+
+      setDepartmentName(employee.Department ?? "");
+      setDesignationName(employee.Designation ?? "");
+      setBranchName(employee.Branch ?? "");
+      setReportingPersonName(employee.ReportPersonName ?? "");
+      setEmailId(employee.EmailId ?? "");
+      setPersonalMobileNumber(employee.PersonalMobileNumber ?? "");
+    });
+  }, [formData.ReportPersonId]);
   //#endregion
 
   //#region FETCH EMPLOYEE MASTER DETAILS
@@ -797,6 +820,14 @@ const AddUpdateEmployeePage: React.FC = () => {
                 />
 
               </div>
+
+            </div>
+          </div>
+
+          {/* ============================================================= [REPORTING PERSON] ============================================================================================= */}
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Reporting Person</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <SingleSelectDropdownWithPagination
                   label="Reporting Person"
@@ -816,7 +847,20 @@ const AddUpdateEmployeePage: React.FC = () => {
                   error={errors.ReportPersonId}
                 />
               </div>
+
             </div>
+            {(formData.ReportPersonId != 0 && formData.ReportPersonId != null) && (
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <FieldItem label="Department" value={departmentName || '-'} />
+                  <FieldItem label="Designation" value={designationName || '-'} />
+                  <FieldItem label="Branch" value={branchName || '-'} />
+                  <FieldItem label="Reporting Person" value={reportingPersonName || '-'} />
+                  <FieldItem label="Email ID" value={emailId || '-'} />
+                  <FieldItem label="Personal Mobile Number" value={personalMobileNumber || '-'} />
+                </div>
+              </div>
+            )}
           </div>
           {/* ============================================================= [ADDRESS] ============================================================================================= */}
           <div className="space-y-4 pb-3">

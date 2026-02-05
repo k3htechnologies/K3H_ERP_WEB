@@ -16,8 +16,6 @@ import useToast from "@/core/hooks/useToast";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import type { FilterWithPaginationAssetMasterRequest } from "@/features/assetMaster/models/AssetMasterModel";
 import { assetMasterService } from "@/features/assetMaster/services/AssetMasterService";
-import { MultiImageViewer } from "@/ui/components/ImageViewer/ImageViewer";
-import { parseDocumentUrls } from "@/core/utils/documentUtils";
 
 const ViewAssetPage: React.FC = () => {
 
@@ -134,8 +132,6 @@ const ViewAssetPage: React.FC = () => {
     };
 
     const editAssetData = editAssetMasterList.length > 0 ? editAssetMasterList[0] : null
-    const assetInvoiceURL = parseDocumentUrls(editAssetData?.AssetInvoiceURL ?? "").filter(x => x?.trim()?.length);
-
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
 
@@ -239,8 +235,7 @@ const ViewAssetPage: React.FC = () => {
                                 <div className="lg:col-span-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Asset Cost (₹)" value={editAssetData!.AssetCost} />
-                                        <MultiImageViewer images={assetInvoiceURL}  title={"Document"} triggerLabel="View Documents" 
-                                        />
+                                        <FieldItem label="Asset Invoice" value={"Invoice"} urls={editAssetData.AssetInvoiceURL} isIcon={true} />
                                     </div>
                                 </div>
                             </div>
@@ -292,34 +287,36 @@ const ViewAssetPage: React.FC = () => {
                         </section>
 
                         {/* ================= AUDIT TRAIL ================= */}
-                        <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+                        {editAssetData.EmployeeName?.trim() !== '' && (
+                            <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
 
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Alloted Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Employee Name" value={editAssetData!.EmployeeName} />
-                                        <FieldItem label="Department" value={editAssetData!.Department} />
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Alloted Details
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <FieldItem label="Employee Name" value={editAssetData!.EmployeeName} />
+                                            <FieldItem label="Department" value={editAssetData!.Department} />
 
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pt-3 pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <FieldItem label="Designation" value={editAssetData!.Designation} />
+                                            <FieldItem label="Branch" value={editAssetData!.Branch} />
+
+
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy(editAssetData!.AssignedDate ?? '')} />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pt-3 pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Designation" value={editAssetData!.Designation} />
-                                        <FieldItem label="Branch" value={editAssetData!.Branch} />
-
-
-                                    </div>
-                                </div>
-                                <div className="lg:col-span-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy(editAssetData!.AssignedDate ?? '')} />
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
+                            </section>
+                        )}
 
                     </div>
 

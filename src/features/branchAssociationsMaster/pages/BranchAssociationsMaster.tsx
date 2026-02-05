@@ -33,6 +33,13 @@ export const BranchAssociationsMaster: React.FC = () => {
     dropdownLabels,
     dropdownResetKey,
 
+    departmentName,
+    designationName,
+    branchName,
+    reportingPersonName,
+    emailId,
+    personalMobileNumber,
+
     // Setters
     setSearchTerm,
     setIsViewModalOpen,
@@ -151,6 +158,13 @@ export const BranchAssociationsMaster: React.FC = () => {
         loading={isLoading}
         dropdownLabels={dropdownLabels}
         dropdownResetKey={dropdownResetKey}
+
+        departmentName={departmentName}
+        designationName={designationName}
+        branchName={branchName}
+        reportingPersonName={reportingPersonName}
+        emailId={emailId}
+        personalMobileNumber={personalMobileNumber}
       />
 
       <DeleteDialog

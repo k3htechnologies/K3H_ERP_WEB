@@ -30,6 +30,8 @@ import { employeeExperienceDetailsService } from '@/features/employeeMaster/serv
 import { employeeEducationDetailsService } from '@/features/employeeMaster/services/EmployeeEducationDetailsService';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
+import type { BranchAssociationsMasterData, FilterWithPaginationBranchAssociationsMasterRequest } from '@/features/branchAssociationsMaster/models/BranchAssociationsMasterModel';
+import { branchAssociationsService } from '@/features/branchAssociationsMaster/services/BranchAssociationsMasterService';
 
 export const ViewEmployeeMaster: React.FC = () => {
 
@@ -46,7 +48,10 @@ export const ViewEmployeeMaster: React.FC = () => {
     const [loadedSections, setLoadedSections] = useState<{
         educationDetails?: boolean;
         experienceDetails?: boolean;
+        branchAssociations?: boolean;
     }>({});
+
+    const [branchAssociationsMasterDataList, setBranchAssociationsMasterDataList] = useState<BranchAssociationsMasterData[]>([]);
 
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -153,7 +158,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 20,
                     EmployeeId: listState.employeeId,
-                    IsCheckPermission:false
+                    IsCheckPermission: false
 
                 };
 
@@ -239,7 +244,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     DepartmentName: undefined,
                     EmployeeId: listState.employeeId,
                     IsCheckEmployeeShift: true,
-                    IsCheckPermission:false
+                    IsCheckPermission: false
                 }
 
                 const response = await shiftMappingMasterService.apiCallPullShiftMappingMaster(params);
@@ -278,7 +283,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     DepartmentName: undefined,
                     EmployeeId: listState.employeeId,
                     IsCheckEmployeeWeekOffPolicy: true,
-                    IsCheckPermission:false
+                    IsCheckPermission: false
                 }
 
                 const response = await weekOffMappingMasterService.apiCallPullWeekOffMappingMaster(params);
@@ -413,6 +418,44 @@ export const ViewEmployeeMaster: React.FC = () => {
         )
     }
     //#endregion
+
+    //#region LOAD EMPLOYEE BRANCH ASSOCIATIONS
+    const loadEmployeeBranchAssociations = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationBranchAssociationsMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 100,
+                    EmployeeId: listState.employeeId,
+                    IsCheckPermission: false
+                }
+
+                const response = await branchAssociationsService.apiCallPullBranchAssociations(params);
+
+                if (E.isRight(response)) {
+
+                    setBranchAssociationsMasterDataList(response.right.Data);
+
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Loading Branch Associations'
+        )
+    }
+    //#endregion
+
 
     //#region EDIT EMPLOYEE
 
@@ -782,7 +825,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                             allowMultipleOpen
                             items={[
                                 { key: 'Education Details', title: 'Education Details' },
-                                { key: 'Experience Details', title: 'Experience Details' }
+                                { key: 'Experience Details', title: 'Experience Details' },
+                                { key: 'Branch Associations', title: 'Branch Associations' }
                             ]}
                             renderItem={(item, isOpen, toggle) => (
                                 <div>
@@ -801,6 +845,11 @@ export const ViewEmployeeMaster: React.FC = () => {
                                             if (item.key === 'Experience Details' && !loadedSections.experienceDetails) {
                                                 await loadEmployeeExperienceDetails();
                                                 setLoadedSections(prev => ({ ...prev, experience: true }));
+                                            }
+
+                                            if (item.key === 'Branch Associations' && !loadedSections.branchAssociations) {
+                                                await loadEmployeeBranchAssociations();
+                                                setLoadedSections(prev => ({ ...prev, branchAssociations: true }));
                                             }
                                         }}
                                     >
@@ -834,6 +883,23 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                         </div>
                                                     ))
                                             )}
+
+                                            {item.key === 'Branch Associations' && (
+                                                branchAssociationsMasterDataList.length === 0 ? (
+                                                    <NoDataView message="No Branch Associations Details Found" />
+                                                ) : (
+                                                    <div className="flex flex-wrap gap-3">
+                                                        {branchAssociationsMasterDataList.map(e => (
+                                                            <div key={e.Uniquekey} className="px-5 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition cursor-pointer">
+                                                                <span className="font-medium text-gray-900 whitespace-nowrap">
+                                                                    {e.BranchName}
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )
+                                            )}
+
 
                                         </div>
                                     )}

@@ -1,4 +1,3 @@
-// SingleSelectDropdownWithPagination.tsx
 import React, {
   useState,
   useEffect,
@@ -31,13 +30,15 @@ export const SingleSelectDropdownWithPagination = forwardRef<
       className = "",
       style,
       size = "md",
-      isShowClearSelection=true
+      isShowClearSelection = true
     },
     ref
   ) => {
     const theme = THEME;
 
-    const containerRef = useRef<HTMLDivElement | null>(null);
+    const anchorRef = useRef<HTMLDivElement | null>(null);
+const portalRef = useRef<HTMLDivElement | null>(null);
+
     const scrollRef = useRef<HTMLDivElement | null>(null);
 
     const [options, setOptions] = useState(dataList);
@@ -241,23 +242,30 @@ export const SingleSelectDropdownWithPagination = forwardRef<
 
     // close dropdown when clicking outside
     useEffect(() => {
-      function handleDocClick(e: MouseEvent) {
-        if (!containerRef.current) return;
-        if (!containerRef.current.contains(e.target as Node)) {
-          setIsOpen(false);
+      const handlePointerDown = (e: PointerEvent) => {
+        const target = e.target as Node;
+
+        if (
+          anchorRef.current?.contains(target) ||
+          portalRef.current?.contains(target)
+        ) {
+          return;
         }
-      }
-      // handle Escape key
-      function handleKey(e: KeyboardEvent) {
-        if (e.key === "Escape") {
-          setIsOpen(false);
-        }
-      }
-      document.addEventListener("mousedown", handleDocClick);
-      document.addEventListener("keydown", handleKey);
+
+        setIsOpen(false);
+      };
+
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setIsOpen(false);
+      };
+
+      // capture phase = runs BEFORE React onClick
+      document.addEventListener("pointerdown", handlePointerDown, true);
+      document.addEventListener("keydown", handleEscape);
+
       return () => {
-        document.removeEventListener("mousedown", handleDocClick);
-        document.removeEventListener("keydown", handleKey);
+        document.removeEventListener("pointerdown", handlePointerDown, true);
+        document.removeEventListener("keydown", handleEscape);
       };
     }, []);
 
@@ -271,7 +279,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
     } | null>(null);
 
     const updatePortalPos = useCallback(() => {
-      const node = containerRef.current;
+      const node = anchorRef.current;
       if (!node || typeof window === "undefined") {
         setPortalPos(null);
         return;
@@ -327,7 +335,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
     const handleToggle = () => {
       if (disabled) return;
 
-      const node = containerRef.current;
+      const node = anchorRef.current;
       if (!node || typeof window === "undefined") {
         setIsOpen(prev => !prev);
         return;
@@ -365,7 +373,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
             if (typeof ref === "function") ref(node);
             else (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
           }
-          containerRef.current = node;
+          anchorRef.current = node;
         }}
         className={className}
         style={{
@@ -464,6 +472,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
         {/* Portal popup: render into document.body so modal is not affected */}
         {isOpen && portalPos && typeof document !== "undefined" && createPortal(
           <div
+          ref={portalRef}
             onMouseDown={(e) => e.stopPropagation()} // avoid body click from closing while interacting
             style={{
               position: "fixed",

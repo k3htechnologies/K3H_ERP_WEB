@@ -223,7 +223,7 @@ export const ViewVendor: React.FC = () => {
                         return (
                           <div
                             key={item.SubMaterialMasterId}
-                            className="bg-white rounded-lg p-1 flex justify-between items-center hover:bg-gray-50"
+                            className="bg-white rounded-lg p-1 flex justify-between items-center"
                           >
                             <div>
                               <p className="font-medium text-gray-900">{item.SubMaterialName}</p>
@@ -250,7 +250,7 @@ export const ViewVendor: React.FC = () => {
             {activeTab === "contract" && (
               <div className="space-y-4">
 
-                <div className="bg-gray-50 border rounded-lg p-4 space-y-3" style={{ minHeight: "400px", maxHeight: "400px", display: "flex", flexDirection: "column" }}>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3" style={{ minHeight: "400px", maxHeight: "400px", display: "flex", flexDirection: "column" }}>
 
                   <div className="flex-1 overflow-y-auto flex items-center justify-center">
                     <NoDataView />

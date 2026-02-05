@@ -56,8 +56,6 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
   const [isReturnAsset, setIsReturnAsset] = useState(false);
 
-
-
   // NAVIGATE
   const navigate = useNavigate();
 

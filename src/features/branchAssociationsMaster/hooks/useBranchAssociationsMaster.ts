@@ -16,6 +16,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { getInitialFormState, getBranchAssociationsMasterColumns } from '@/features/branchAssociationsMaster/constants/branchAssociationsMasterConstants';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { fetchEmployeeMasterById } from '@/features/employeeMaster/employeeMasterDropDown';
 
 export const useBranchAssociationsMaster = () => {
   //#region STATE MANAGEMENT
@@ -45,6 +46,14 @@ export const useBranchAssociationsMaster = () => {
   //DELETE BRANCH ASSOCIATIONS MASTER STATES
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteBranchAssociationsData, setDeleteBranchAssociationsData] = useState<BranchAssociationsMasterData | null>(null)
+
+//SET UP EMPLOYEE DETAILS STATES
+  const [departmentName, setDepartmentName] = useState("");
+  const [designationName, setDesignationName] = useState("");
+  const [branchName, setBranchName] = useState("");
+  const [reportingPersonName, setReportingPersonName] = useState("");
+  const [emailId, setEmailId] = useState("");
+  const [personalMobileNumber, setPersonalMobileNumber] = useState("");
 
   //DROPDOWN STATES
   const [dropdownLabels, setDropdownLabels] = useState<{
@@ -96,6 +105,40 @@ export const useBranchAssociationsMaster = () => {
       setErrors({});
     }
   }, [isAddUpdateModalOpen, editingBranchAssociationMasterData]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadEmployeeDetails = async () => {
+      if (!formData.EmployeeId) {
+        setDepartmentName("");
+        setDesignationName("");
+        setBranchName("");
+        setReportingPersonName("");
+        setEmailId("");
+        setPersonalMobileNumber("");
+        return;
+      }
+
+      const employee = await fetchEmployeeMasterById(formData.EmployeeId);
+
+      if (!employee || !mounted) return;
+
+      setDepartmentName(employee.Department ?? "");
+      setDesignationName(employee.Designation ?? "");
+      setBranchName(employee.Branch ?? "");
+      setReportingPersonName(employee.ReportPersonName ?? "");
+      setEmailId(employee.EmailId ?? "");
+      setPersonalMobileNumber(employee.PersonalMobileNumber ?? "");
+    };
+
+    loadEmployeeDetails();
+
+    return () => {
+      mounted = false;
+    };
+  }, [formData.EmployeeId]);
+
 
   //#endregion
 
@@ -159,7 +202,7 @@ export const useBranchAssociationsMaster = () => {
       fetchBranchAssociationsList();
       return
     }
-    await loadBranchAssociations(1,sortInfo, searchValue)
+    await loadBranchAssociations(1, sortInfo, searchValue)
   }
   //#endregion
 
@@ -212,7 +255,7 @@ export const useBranchAssociationsMaster = () => {
 
     setSortInfo(sort);
 
-    loadBranchAssociations(1,sort, searchTerm || undefined);
+    loadBranchAssociations(1, sort, searchTerm || undefined);
 
   }, [searchTerm]);
   //#endregion
@@ -428,6 +471,13 @@ export const useBranchAssociationsMaster = () => {
     branchAssociationsMasterColumns,
     dropdownLabels,
     dropdownResetKey,
+
+    departmentName,
+    designationName,
+    branchName,
+    reportingPersonName,
+    emailId,
+    personalMobileNumber,
 
     // Setters
     setSearchTerm,

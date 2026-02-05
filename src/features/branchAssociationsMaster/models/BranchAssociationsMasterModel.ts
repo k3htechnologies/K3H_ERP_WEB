@@ -7,6 +7,7 @@ export interface FilterWithPaginationBranchAssociationsMasterRequest {
     IsCheckPermission?: boolean
     EmployeeName?: string
     BranchMasterId?: string
+    EmployeeId?: number
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

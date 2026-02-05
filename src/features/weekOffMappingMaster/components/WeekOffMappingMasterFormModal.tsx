@@ -7,6 +7,7 @@ import { fetchDepartmentMasterDropdown } from '@/features/departmentMaster/depar
 import { fetchEmployeeMasterDropdown } from '@/features/employeeMaster/employeeMasterDropDown';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import type { AddUpdateWeekOffMappingMasterRequest } from '@/features/weekOffMappingMaster/models/WeekOffMappingMasterModel';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
 
 interface WeekOffMappingMasterFormModalProps {
   isOpen: boolean;
@@ -22,6 +23,12 @@ interface WeekOffMappingMasterFormModalProps {
   dropdownResetKey: number;
   mappingWeekoff: string;
   onApplicableTypeChange: (value: string) => void;
+  departmentName: string;
+  designationName: string;
+  branchName: string;
+  reportingPersonName: string;
+  emailId: string;
+  personalMobileNumber: string;
 }
 
 export const WeekOffMappingMasterFormModal: React.FC<WeekOffMappingMasterFormModalProps> = ({
@@ -37,7 +44,13 @@ export const WeekOffMappingMasterFormModal: React.FC<WeekOffMappingMasterFormMod
   dropdownLabels,
   dropdownResetKey,
   mappingWeekoff,
-  onApplicableTypeChange
+  onApplicableTypeChange,
+  departmentName,
+  designationName,
+  branchName,
+  reportingPersonName,
+  emailId,
+  personalMobileNumber,
 }) => {
   return (
     <Modal
@@ -109,6 +122,18 @@ export const WeekOffMappingMasterFormModal: React.FC<WeekOffMappingMasterFormMod
                 initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
                 error={errors.EmployeeId}
               />
+              {!!formData.EmployeeId && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <FieldItem label="Department" value={departmentName || "-"} />
+                    <FieldItem label="Designation" value={designationName || "-"} />
+                    <FieldItem label="Branch" value={branchName || "-"} />
+                    <FieldItem label="Reporting Person" value={reportingPersonName || "-"} />
+                    <FieldItem label="Email ID" value={emailId || "-"} />
+                    <FieldItem label="Personal Mobile Number" value={personalMobileNumber || "-"} />
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {mappingWeekoff === 'Department' && (
@@ -131,6 +156,15 @@ export const WeekOffMappingMasterFormModal: React.FC<WeekOffMappingMasterFormMod
                 initialValue={createDropdownInitialValue(formData.DepartmentMasterId, dropdownLabels.departmentName)}
                 error={errors.DepartmentMasterId}
               />
+              {!!formData.DepartmentMasterId && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-gray-700">
+                    This week-off policy will be applied to
+                    <span className="font-semibold text-gray-900"> all employees in this department.</span>
+                  </p>
+                </div>
+              )}
+
             </div>
           )}
         </div>

@@ -101,7 +101,7 @@ export const FieldItem: React.FC<{
     // COLUMN layout (default)
     return (
       <div className={`flex flex-col ${borderClass} ${className} min-w-0`}>
-        <span className="text-sm font-medium text-[#1D1D1D80] truncate">
+        <span className=" text-sm font-medium text-[#1D1D1D80] truncate">
           {label}
         </span>
 
@@ -112,7 +112,7 @@ export const FieldItem: React.FC<{
             isIcon
             triggerLabel={
               isIcon === true ? (
-                <span className="flex items-center gap-2 text-sm font-medium">
+                <span className="flex items-center gap-2 text-sm font-medium mt-1 ">
                  {isSetValue ? <span>{displayValue}</span> : ''}
                 </span>
               ) : (

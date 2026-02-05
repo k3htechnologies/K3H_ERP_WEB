@@ -34,6 +34,7 @@ export class BranchAssociationsMasterDatasourceImpl implements BranchAssociation
             if (params.BranchAssociationsId) queryParams.append('BranchAssociationsId', params.BranchAssociationsId.toString());
             if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.BranchMasterId?.trim()) queryParams.append('BranchMasterId', params.BranchMasterId.trim());
+            if (params.EmployeeId) queryParams.append('EmployeeId', params.EmployeeId.toString());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

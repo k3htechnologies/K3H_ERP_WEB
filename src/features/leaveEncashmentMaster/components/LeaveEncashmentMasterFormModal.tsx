@@ -36,7 +36,7 @@ export const LeaveEncashmentMasterFormModal: React.FC<LeaveEncashmentMasterFormM
       isOpen={isOpen}
       onClose={onClose}
       onCancel={onCancel}
-      title={editingData ? 'Update LeaveEncashment Master' : 'Add LeaveEncashment Master'}
+      title={editingData ? 'Update LeaveEncashment Master' : 'Add Leave Encashment Master'}
       onSubmit={onSubmit}
       saveText={editingData ? 'Update' : 'Add'}
       onreset={onReset}

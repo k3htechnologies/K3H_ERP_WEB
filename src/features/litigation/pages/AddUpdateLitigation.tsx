@@ -329,7 +329,7 @@ export const AddUpdateLitigation: React.FC = () => {
                             </div>
                         </div>
 
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Case Details</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Court Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <Input

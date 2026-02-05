@@ -218,7 +218,6 @@ export const MarketingContent: React.FC = () => {
     }, [])
     //#endregion
 
-
     //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: MarketingContentData) => {
         setDeleteMarketingContentData(row)
@@ -327,7 +326,6 @@ export const MarketingContent: React.FC = () => {
                                     e.preventDefault()
                                     e.stopPropagation()
                                     handleConfirmationDialogBoxOpen(row)
-
                                 }}
                                 leftIcon={<Trash2 className="h-4 w-4" />}
                             />
@@ -336,7 +334,6 @@ export const MarketingContent: React.FC = () => {
                 </div>
             )
         },
-
     ], [canAction, handleEditMarketingContent, handleConfirmationDialogBoxOpen])
 
     const handleFieldChange = (field: keyof AddUpdateMarketingContentRequest, value: any) => {

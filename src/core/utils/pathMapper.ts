@@ -57,6 +57,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/approvaldocument': '/approvalDocument',
         '/channelpartner': '/channelPartner',
         '/enquiry': '/enquiry',
+        '/calltracker':'/callTracker',
         '/resignation': '/resignation',
         '/payrollreport': '/payrollReport',
         '/redevelopmentdashboard': 'redevelopmentDashboard',

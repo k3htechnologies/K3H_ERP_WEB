@@ -170,7 +170,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
         onClose={handleDeleteDialogClose}
         onConfirm={handleDeleteLeaveEncashmentMaster}
         loading={isLoading}
-        pageName='leaveEncashment'
+        pageName='Leave Encashment'
       />
     </div>
 

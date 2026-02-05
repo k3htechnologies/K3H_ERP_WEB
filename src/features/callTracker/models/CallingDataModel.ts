@@ -1,6 +1,6 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
-export interface FilterWithPaginationCallTrackerRequest {
+export interface FilterWithPaginationCallingDataRequest {
     PageSize: number
     PageNumber: number
     ProjectId?: number
@@ -12,7 +12,7 @@ export interface FilterWithPaginationCallTrackerRequest {
     ExportType?: 'Excel' | 'PDF'
 }
 
-export interface CallTrackerData {
+export interface CallingDataData {
     ProjectId: number | 0
     MobileNumber: number | 0
     Name: string | null
@@ -28,4 +28,4 @@ export interface CallTrackerData {
     LastModifiedDate: string | null
 }
 
-export type CallTrackerListResponse=ApiResponse<CallTrackerData[]>;
+export type CallingDataListResponse=ApiResponse<CallingDataData[]>;

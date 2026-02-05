@@ -199,7 +199,6 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
       NotApplicableForMonths: Array.isArray(formData.NotApplicableForMonths)
         ? formData.NotApplicableForMonths.join(",")
         : formData.NotApplicableForMonths,
-
     };
   }
   //#endregion

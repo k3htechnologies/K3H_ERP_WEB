@@ -345,11 +345,20 @@ export const getPageInfo = (path: string) => {
             }
 
             {/* SALES */ }
+
         case 'enquiry':
             return {
                 title: "Enquiry",
                 description: "Centralized enquiry management for faster response",
             }
+        case 'calltracker':
+            return {
+                title: "Call Tracker",
+                description: "Track, manage, and follow up every sales call with ease.",
+            }
+
+            {/* CHANNEL PARTNER */ }
+
         case 'channelPartner':
             return {
                 title: "Channel Partner",

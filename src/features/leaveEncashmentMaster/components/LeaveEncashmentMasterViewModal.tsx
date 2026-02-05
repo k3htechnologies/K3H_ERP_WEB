@@ -54,7 +54,7 @@ export const LeaveEncashmentMasterViewModal: React.FC<LeaveEncashmentMasterViewM
       <div className="space-y-6">
         <div className="space-y-4">
           <FieldItem label="Earning Name" value={data.EarningMasterName} isRow withBorder={true} className='font-medium text-blue-900 ' />
-          <FieldItem label="Encashment Rate (%" value={data.EncashmentRate} isRow withBorder={true} />
+          <FieldItem label="Encashment Rate (%)" value={data.EncashmentRate} isRow withBorder={true} />
           <FieldItem label="Min Salary (₹)" value={data.MinSalary} isRow withBorder={true} />
           <FieldItem label="Max Salary (₹)" value={data.MaxSalary} isRow withBorder={true} />
         </div>

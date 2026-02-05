@@ -6,8 +6,11 @@ export interface FilterWithPaginationEmployeeResignationRequest {
   IsCheckPermission?: boolean
   EmployeeResignationId?: number
   EmployeeId?: number
+  EmployeeName?: string
   ResignationDateFrom?: string | null
   ResignationDateTo?: string | null
+  Status?: string
+  ApprovalStatus?: string
   SortBy?: string
   IsReport?: boolean
   ExportType?: 'Excel' | 'PDF'

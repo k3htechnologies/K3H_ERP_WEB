@@ -51,7 +51,11 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
                 queryParams.append('EndDate', end);
             }
             if (params.Reason?.trim()) queryParams.append('Reason', params.Reason.trim());
+            if (params.Status?.trim()) queryParams.append('Status', params.Status.trim());
+            if (params.EmployeeId !== undefined && params.EmployeeId !== null) queryParams.append('EmployeeId', params.EmployeeId.toString());
+            if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
+            if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
             if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString());
 

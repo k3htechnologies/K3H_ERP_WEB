@@ -32,6 +32,9 @@ export type AttendanceRegularizationApiKeys = keyof typeof AttendanceRegularizat
 
 
 
+<<<<<<< Updated upstream
 
 
 
+=======
+>>>>>>> Stashed changes

@@ -121,6 +121,18 @@ export const parseTimeFromISO = (isoString: string): string => {
 };
 
 
+/**
+ * Get today's date in DD-MM-YYYY format
+ * @returns Today's date string in DD-MM-YYYY format (e.g., "15-01-2025")
+ */
+export const getTodayDate_dd_mm_yyyy = (): string => {
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, '0');
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const yyyy = today.getFullYear();
+  return `${dd}-${mm}-${yyyy}`;
+};
+
 export const isToday = (date: Date): boolean => {
   const today = new Date();
   return (

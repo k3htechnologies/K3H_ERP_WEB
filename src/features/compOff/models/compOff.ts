@@ -32,6 +32,9 @@ export interface FilterWithPaginationCompOff {
     StartDate?: string
     EndDate?: string
     Reason?: string
+    Status?: string
+    EmployeeId?: number
+    EmployeeName?: string
     SortBy?: string
     IsReport?: boolean
     ExportType?: 'Excel' | 'PDF'

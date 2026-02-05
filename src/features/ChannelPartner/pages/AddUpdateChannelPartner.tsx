@@ -10,9 +10,9 @@ import type { AddUpdateChannelPartnerRequest, FilterWithPaginationChannelPartner
 import { ChannelPartnerService } from "../services/ChannelPartnerService";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { IdCard, Mail, Phone } from "lucide-react";
-import { filterAadhaar, filterEmail, filterGST, filterMobile, filterPAN, filterRERA, isValidAadhaar, isValidEmail, isValidMobile, isValidPAN } from "@/core/utils/fileValidation";
+import { filterAadhaar, filterEmail, filterGST, filterMobile, filterPAN, filterRERA, isValidAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidRERA } from "@/core/utils/fileValidation";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { SPECIALITY_TYPE } from "@/core/constants";
+import { FIRMS_TYPE_OPTIONS, SPECIALITY_TYPE } from "@/core/constants";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
@@ -27,6 +27,7 @@ const initialFormState = (): AddUpdateChannelPartnerRequest => ({
     Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     Name: '',
     CompanyName: '',
+    FirmsType: '',
     MobileNumber: '',
     AlternativeMobileNumber: '',
     EmailId: '',
@@ -142,6 +143,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
                             Uniquekey: e.Uniquekey ?? prev.Uniquekey,
                             Name: e.Name ?? prev.Name,
                             CompanyName: e.CompanyName ?? prev.CompanyName,
+                            FirmsType: e.FirmsType ?? prev.FirmsType ?? '',
                             EmailId: e.EmailId ?? prev.EmailId,
                             MobileNumber: e.MobileNumber ?? prev.MobileNumber,
                             AlternativeMobileNumber: e.AlternativeMobileNumber ?? prev.AlternativeMobileNumber,
@@ -195,20 +197,20 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
 
         if (!formData.Name) {
-            newErrors.Name = 'Full Name is required.';
+            newErrors.Name = 'Full Name is required';
         }
 
         if (!formData.EmailId?.trim()) {
-            newErrors.EmailId = 'E-mail Id is required.';
+            newErrors.EmailId = 'E-mail Id is required';
         } else if (!isValidEmail(formData.EmailId.trim())) {
-            newErrors.EmailId = 'Enter a Valid email address.';
+            newErrors.EmailId = 'Enter a Valid email address';
         }
 
 
         if (!formData.MobileNumber?.trim()) {
-            newErrors.MobileNumber = 'Mobile Number is required.'
+            newErrors.MobileNumber = 'Mobile Number is required'
         } else if (!isValidMobile(formData.MobileNumber.trim())) {
-            newErrors.MobileNumber = 'Enter a Valid 10-digit mobile number.'
+            newErrors.MobileNumber = 'Enter a Valid 10-digit mobile number'
         }
 
         if (formData.AlternativeMobileNumber?.trim()) {
@@ -219,46 +221,53 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
 
         if (!formData.CompanyName) {
-            newErrors.CompanyName = ' Company Name is required.';
+            newErrors.CompanyName = ' Company Name is required';
         }
+
+        if (!formData.FirmsType?.trim()) {
+            newErrors.FirmsType = "Firms Type is required";
+        }
+
         if (!formData.Speciality) {
-            newErrors.Speciality = 'Speciality is required.';
+            newErrors.Speciality = 'Speciality is required';
         }
 
         if (!formData.OfficeAddress) {
-            newErrors.OfficeAddress = 'Office Address is required.';
+            newErrors.OfficeAddress = 'Office Address is required';
         }
 
         if (formData.IsRERANumber === 1 && !formData.RERANumber) {
-            newErrors.RERANumber = ' RERA Number is required.';
+            newErrors.RERANumber = ' RERA Number is required';
+        } else if (!isValidRERA(formData.RERANumber.trim())) {
+            newErrors.RERANumber = "Enter a valid RERA Number";
         }
 
         if (formData.ChannelPartnerId != 0) {
 
 
             if (!formData.AadharCardNumber?.trim()) {
-                newErrors.AadharCardNumber = 'Aadhar Number is required.'
+                newErrors.AadharCardNumber = 'Aadhaar Number is required'
             } else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
-                newErrors.AadharCardNumber = 'Enter a Valid 12-digit Aadhar Number.'
+                newErrors.AadharCardNumber = 'Enter a Valid 12-digit Aadhar Number'
             }
 
             if (!formData.PanNumber?.trim()) {
-                newErrors.PanNumber = 'PAN Number is required.'
+                newErrors.PanNumber = 'PAN Number is required'
             } else if (!isValidPAN(formData.PanNumber.trim())) {
-                newErrors.PanNumber = 'Enter a Valid PAN Number.'
+                newErrors.PanNumber = 'Enter a Valid PAN Number'
             }
 
 
             if (!formData.GSTNumber) {
-                newErrors.GSTNumber = 'GST Number is required.';
+                newErrors.GSTNumber = 'GST Number is required';
             }
 
             if (!panCardURLFiles.length && !panCardURL.length) {
-                newErrors.PanCardURL = "Pan Card is required.";
+                newErrors.PanCardURL = "Pan Card is required";
             }
 
             if (!aadharCardURLFiles.length && !aadharCardURL.length) {
-                newErrors.AadharCardURL = "Aadhar Card is required.";
+                newErrors.AadharCardURL = "Aadhar Card is required";
             }
         }
 
@@ -282,6 +291,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
         fd.append("Uniquekey", formData.Uniquekey ?? "");
         fd.append("Name", formData.Name ?? "");
         fd.append("CompanyName", formData.CompanyName ?? "");
+        fd.append('FirmsType', formData.FirmsType ?? '');
         fd.append("EmailId", formData.EmailId ?? "");
         fd.append("MobileNumber", formData.MobileNumber ?? "");
         fd.append("AlternativeMobileNumber", formData.AlternativeMobileNumber ?? "");
@@ -462,6 +472,22 @@ export const AddUpdateChannelPartner: React.FC = () => {
                                     error={errors.CompanyName}
                                 />
                             </div>
+                            <div>
+
+                                <SinglePageSelection
+                                    label='Firms Type'
+                                    placeholder="Select Firms Type"
+                                    required
+                                    error={errors.FirmsType}
+                                    value={formData.FirmsType}
+                                    onChange={(e) => {
+                                        handleFieldChange('FirmsType', String(e))
+                                    }}
+
+                                    options={FIRMS_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
+
+
+                            </div>
 
                         </div>
                     </div>
@@ -535,19 +561,6 @@ export const AddUpdateChannelPartner: React.FC = () => {
                                     />
                                 </div>
                                 <div>
-                                    <Input
-                                        type="text"
-                                        required
-                                        label='PAN Number'
-                                        value={formData.PanNumber.toUpperCase() ?? ""}
-                                        rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-                                        onChange={(e) => handleFieldChange("PanNumber", filterPAN(e.target.value).toUpperCase())}
-                                        placeholder="Enter Pan Number"
-                                        maxLength={10}
-                                        error={errors.PanNumber}
-                                    />
-                                </div>
-                                <div>
                                     <MultiFilePicker
                                         label=' Upload Aadhaar Card'
                                         placeholder="Select Aadhaar Card"
@@ -569,6 +582,20 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
                                     />
                                 </div>
+                                <div>
+                                    <Input
+                                        type="text"
+                                        required
+                                        label='PAN Number'
+                                        value={formData.PanNumber.toUpperCase() ?? ""}
+                                        rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                                        onChange={(e) => handleFieldChange("PanNumber", filterPAN(e.target.value).toUpperCase())}
+                                        placeholder="Enter Pan Number"
+                                        maxLength={10}
+                                        error={errors.PanNumber}
+                                    />
+                                </div>
+
                                 <div>
                                     <MultiFilePicker
                                         label=' Upload PAN Card'

@@ -28,17 +28,24 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
             })
 
             if (params.ChannelPartnerId) queryParams.append('ChannelPartnerId', params.ChannelPartnerId.toString());
-            if (params.Name?.trim()) queryParams.append('ChannelPartnerName', params.Name.trim());
+            if (params.ChannelPartnerName?.trim()) queryParams.append('ChannelPartnerName', params.ChannelPartnerName.trim());
             if (params.MobileNumber?.trim()) queryParams.append('MobileNumber', params.MobileNumber.trim());
             if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
+            if (params.FirmsType?.trim()) queryParams.append('FirmsType', params.FirmsType.trim());
+            if (params.OfficeAddress?.trim()) queryParams.append('OfficeAddress', params.OfficeAddress.trim());
+            if (params.GSTNumber?.trim()) queryParams.append('GSTNumber', params.GSTNumber.trim());
+            if (params.RERANumber?.trim()) queryParams.append('RERANumber', params.RERANumber.trim());
+            if (params.PanNumber?.trim()) queryParams.append('PanNumber', params.PanNumber.trim());
+            if (params.AadharCardNumber?.trim()) queryParams.append('AadharCardNumber', params.AadharCardNumber.trim());
+            if (params.Speciality?.trim()) queryParams.append('Speciality', params.Speciality.trim());
+            if (params.ProjectName?.trim()) queryParams.append('ProjectName', params.ProjectName.trim());
+            if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
             if (params.Status?.trim()) queryParams.append('Status', params.Status.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${ChannelPartnerApi.PULL}?${queryParams.toString()}`, { signal }
-            )
-            return response;
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${ChannelPartnerApi.PULL}?${queryParams.toString()}`, { signal });
+
         } catch (error: any) {
             console.error('ERROR: PULL CHANNEL PARTNER :', error);
 
@@ -51,11 +58,9 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
 
     async addUpdateChannelPartner(formData: FormData): Promise<ChannelPartnerSaveResponse> {
         try {
-            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
-                ChannelPartnerApi.ADD_UPDATE,
-                formData
-            )
-            return response;
+
+            return await this.k3hHttpClient.multipartRequestWithAuthentication(ChannelPartnerApi.ADD_UPDATE, formData);
+
         } catch (error) {
 
             console.error('ERROR: ADD UPDATE CHANNEL PARTNER :', error)
@@ -74,16 +79,13 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
                 UniqueKey: params.Uniquekey ?? '',
             })
 
-            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
-                `${ChannelPartnerApi.DELETE}?${queryParams.toString()}`
-            )
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(`${ChannelPartnerApi.DELETE}?${queryParams.toString()}`)
 
-            return response
 
         } catch (error) {
 
             console.error('ERROR: DELETE CHANNEL PARTNER :', error)
-            
+
             if (error === TokenExpiredException) {
 
                 await this.deleteChannelPartnerRequest(params);

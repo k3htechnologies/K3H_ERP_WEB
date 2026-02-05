@@ -22,22 +22,31 @@ export const ChannelPartnerService ={
         } catch (error: any) {
 
             return E.left({ message: error.message, code: error.code });
+            
         }
     },
 
    apiCallAddUpdateChannelPartner: async (formData: FormData): Promise<E.Either<Failure, ChannelPartnerSaveResponse>> => {
     try {
+
         return E.right(await channelPartnerDatasource.addUpdateChannelPartner(formData));
+
     } catch (error: any) {
+
         return E.left({ message: error.message, code: error.code });
+
     }
 },
 
 apiCallDeleteChannelPartner: async (params: DeleteChannelPartnerRequest): Promise<E.Either<Failure, ChannelPartnerSaveResponse>> => {
     try {
+
         return E.right(await channelPartnerDatasource.deleteChannelPartnerRequest(params));
+
     } catch (error: any) {
+
         return E.left({ message: error.message, code: error.code });
+
     }
 },
 

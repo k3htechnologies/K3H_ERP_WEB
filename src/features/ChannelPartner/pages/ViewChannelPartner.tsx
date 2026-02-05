@@ -4,6 +4,7 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 const ViewChannelPartner: React.FC = () => {
 
@@ -78,20 +79,38 @@ const ViewChannelPartner: React.FC = () => {
             <div className="grid grid-cols-12 gap-4 pt-5">
 
                 {/* LEFT SIDE PROFILE CARD */}
-                <div className="col-span-6">
+                <div className="col-span-8">
 
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
 
                         {/* HEADER  DETAILS */}
-                        <div className="mt-2 pb-4 border-b-2 border-gray-300">
-                            <div className="flex items-center gap-28">
+                        <div className="pl-4 pb-4 border-b-2 border-gray-300">
+                            <div className="flex flex-col gap-2">
 
-                                <div className="flex items-center gap-2">
-                                    <span className="text-gray-500 font-medium text-sm">Company Name:</span>
-                                    <span className="text-black text-sm">{editChannelPartnerData.CompanyName || '-'} </span>
+                                <div className="flex items-start">
+                                    <span className="text-gray-500 font-medium text-sm w-[120px]">
+                                        Company Name
+                                    </span>
+                                    <span className="text-gray-500 font-medium text-sm px-2">:</span>
+                                    <span className="text-black text-sm break-all">
+                                        {editChannelPartnerData.CompanyName || '-'}
+                                    </span>
                                 </div>
+
+                                <div className="flex items-start">
+                                    <span className="text-gray-500 font-medium text-sm w-[120px]">
+                                        Firm Type
+                                    </span>
+                                    <span className="text-gray-500 font-medium text-sm px-2">:</span>
+                                    <span className="text-black text-sm break-all">
+                                        {editChannelPartnerData.FirmsType || '-'}
+                                    </span>
+                                </div>
+
                             </div>
                         </div>
+
+
 
                         {/* Basic Deatils */}
 
@@ -104,7 +123,7 @@ const ViewChannelPartner: React.FC = () => {
                             <FieldItem label="RERA Number" value={editChannelPartnerData.RERANumber} />
                             <FieldItem label="Office Address" value={editChannelPartnerData.OfficeAddress} />
                             <FieldItem label="PAN Number" value={editChannelPartnerData.PanNumber} urls={editChannelPartnerData.PanCardURL} isIcon />
-                            <FieldItem label="Aadhar Number" value={editChannelPartnerData.AadharCardNumber} urls={editChannelPartnerData.AadharCardURL} isIcon />
+                            <FieldItem label="Aadhaar Number" value={editChannelPartnerData.AadharCardNumber} urls={editChannelPartnerData.AadharCardURL} isIcon />
                             <FieldItem label="GST Number" value={editChannelPartnerData.GSTNumber} />
                             <FieldItem label="Created By" value={editChannelPartnerData.CreatedBy} />
                             <FieldItem label="Created Date" value={editChannelPartnerData.CreatedDate ? formatDate_dd_MonthName_yy(editChannelPartnerData.CreatedDate) : ""} />
@@ -115,30 +134,36 @@ const ViewChannelPartner: React.FC = () => {
                 </div>
 
                 {/*  RIGHT SIDE  */}
-                <div className="col-span-6">
+                <div className="col-span-4">
+
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
 
                         <div className="mt-2 pb-4 border-b-2 border-gray-300">
                             <div className="flex items-center gap-4">
-                                <h1 className="text-lg text-black">Project</h1>
+                                <h1 className="text-lg text-black">Project Assigned to this Channel Partner</h1>
                             </div>
                         </div>
-
-                        <div className="mt-4 flex flex-wrap gap-2">
-                            {editChannelPartnerData?.ProjectName?.split(',')
-                                .map(p => p.trim())
-                                .filter(p => p.length > 0)
-                                .map((p, i) => (
-                                    <span
-                                        key={i}
-                                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
-                                    >
-                                        {p}
-                                    </span>
-                                ))}
+                        {editChannelPartnerData?.ProjectName !== "" ? (
+                            <div className="mt-4 flex flex-wrap gap-2">
+                                {editChannelPartnerData?.ProjectName?.split(',')
+                                    .map(p => p.trim())
+                                    .filter(p => p.length > 0)
+                                    .map((p, i) => (
+                                        <span
+                                            key={i}
+                                            className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
+                                        >
+                                            {p}
+                                        </span>
+                                    ))}
+                            </div>
+                        ) : <div className="flex items-center justify-center  h-full ">
+                            <NoDataView message="No Project Assigned to this Channel Partner" />
                         </div>
+                        }
 
                     </div>
+
                 </div>
 
 

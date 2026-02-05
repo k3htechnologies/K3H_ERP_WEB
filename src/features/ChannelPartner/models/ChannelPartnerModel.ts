@@ -5,10 +5,18 @@ export interface FilterWithPaginationChannelPartnerRequest {
     PageNumber: number
     IsCheckPermission?: boolean
     ChannelPartnerId?: number
-    Name?: string
+    ChannelPartnerName?: string
     MobileNumber?: string
-    ProjectId?:number
     CompanyName?: string
+    FirmsType?: string  
+    OfficeAddress?: string
+    GSTNumber?: string
+    RERANumber?: string
+    PanNumber?: string
+    AadharCardNumber?: string
+    Speciality?: string
+    ProjectName?: string
+    ProjectId?:number
     Status?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
@@ -19,6 +27,7 @@ export interface ChannelPartnerData {
     Uniquekey: string
     Name: string
     CompanyName: string
+    FirmsType: string  
     MobileNumber: string
     EmailId: string
     OfficeAddress: string
@@ -51,6 +60,7 @@ export interface AddUpdateChannelPartnerRequest {
     Uniquekey: string | null
     Name: string
     CompanyName: string
+    FirmsType: string   
     MobileNumber: string
     AlternativeMobileNumber: string
     EmailId: string

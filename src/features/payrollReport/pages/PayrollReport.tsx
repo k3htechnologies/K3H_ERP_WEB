@@ -11,29 +11,18 @@ import type {
 import { employeeResignationService } from '@/features/resignation/services/EmployeeResignationService';
 import { Loader } from '@/core/utils/loader';
 import Tabs from '@/ui/components/Tab/Tab';
-<<<<<<< Updated upstream
-import { formatDate_dd_MonthName_yy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, parseTimeFromISO } from '@/core/utils/dateFormat';
-=======
 import { formatDate_dd_MonthName_yy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, parseTimeFromISO, getTodayDate_dd_mm_yyyy } from '@/core/utils/dateFormat';
->>>>>>> Stashed changes
 import { DataTable, type FilterInfo, type TableColumn, type PaginationInfo, type SortInfo } from '@/ui/components/DataTable/DataTable';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 import type { CompOffData, FilterWithPaginationCompOff } from '@/features/compOff/models/compOff';
 import type { FilterWithPaginationLeaveRequest, LeaveData } from '@/features/leave/models/LeaveModel';
 import type { FilterWithPaginationOutDoor, OutDoorMasterData } from '@/features/outdoor/models/OutDoorModel';
-<<<<<<< Updated upstream
-import type { AttendanceRegularizationData, FilterWithPaginationAttendanceRegularizationRequest } from '@/features/attendanceCalendar/models/AttendanceModel';
 import { compOffService } from '@/features/compOff/services/CompOffServices';
 import { LeaveService } from '@/features/leave/services/LeaveService';
 import { outDoorService } from '@/features/outdoor/services/OutDoorDataService';
-=======
 import type { FilterWithPaginationAttendanceRequest, AttendanceData, FilterWithPaginationAttendanceRegularizationRequest, AttendanceRegularizationData } from '@/features/attendanceCalendar/models/AttendanceModel';
-import { compOffService } from '@/features/compOff/services/CompOffServices';
-import { LeaveService } from '@/features/leave/services/LeaveService';
-import { outDoorService } from '@/features/outdoor/services/OutDoorDataService';
 import { attendanceService } from '@/features/attendanceCalendar/services/AttendanceService';
->>>>>>> Stashed changes
 import { attendanceRegularizationService } from '@/features/attendanceCalendar/services/AttendanceRegularizationService';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
@@ -50,11 +39,7 @@ export const PayrollReport: React.FC = () => {
   const [leaveList, setLeaveList] = useState<LeaveData[]>([]);
   const [outDoorList, setOutDoorList] = useState<OutDoorMasterData[]>([]);
   const [employeeResignationList, setEmployeeResignationList] = useState<EmployeeResignationData[]>([]);
-<<<<<<< Updated upstream
-  const [attendanceList, setAttendanceList] = useState<any[]>([]);
-=======
   const [attendanceList, setAttendanceList] = useState<AttendanceData[]>([]);
->>>>>>> Stashed changes
   const [attendanceRegularizationList, setAttendanceRegularizationList] = useState<AttendanceRegularizationData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -116,7 +101,7 @@ export const PayrollReport: React.FC = () => {
   useEffect(() => {
     setSearchTerm('');
     setSortInfo(undefined);
-    
+
     // Set default dates for Attendance tab
     if (activeTab === "Attendance") {
       const todayStr = getTodayDate_dd_mm_yyyy();
@@ -153,18 +138,12 @@ export const PayrollReport: React.FC = () => {
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
-<<<<<<< Updated upstream
-          EmployeeId: searchTerm?.trim() && !isNaN(parseInt(searchTerm.trim())) ? parseInt(searchTerm.trim()) : undefined,
-          ResignationDateFrom: activeFilters.ResignationDateFrom ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.ResignationDateFrom) || undefined : undefined,
-          ResignationDateTo: activeFilters.ResignationDateTo ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.ResignationDateTo) || undefined : undefined,
-=======
           EmployeeId: searchTerm?.trim() && !isNaN(parseInt(searchTerm.trim())) ? parseInt(searchTerm.trim()) : (activeFilters.EmployeeId && !isNaN(parseInt(activeFilters.EmployeeId.toString())) ? parseInt(activeFilters.EmployeeId.toString()) : undefined),
           EmployeeName: activeFilters.EmployeeName?.trim() || undefined,
           ResignationDateFrom: activeFilters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.StartDate) || undefined : undefined,
           ResignationDateTo: activeFilters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.EndDate) || undefined : undefined,
           Status: activeFilters.Status?.trim() || undefined,
           ApprovalStatus: activeFilters.ApprovalStatus?.trim() || undefined,
->>>>>>> Stashed changes
           IsReport: true
         }
 
@@ -200,11 +179,11 @@ export const PayrollReport: React.FC = () => {
 
   const loadAttendance = async (page: number, filterParams?: FilterInfo) => {
     const activeFilters = filterParams || filters;
-    
+
     // Use today's date as default if no filters are set
     const startDate = activeFilters.StartDate || getTodayDate_dd_mm_yyyy();
     const endDate = activeFilters.EndDate || getTodayDate_dd_mm_yyyy();
-    
+
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -306,12 +285,9 @@ export const PayrollReport: React.FC = () => {
           StartDate: activeFilters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.StartDate) || undefined : undefined,
           EndDate: activeFilters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.EndDate) || undefined : undefined,
           Reason: searchTerm?.trim() || activeFilters.Reason?.trim() || undefined,
-<<<<<<< Updated upstream
-=======
           Status: activeFilters.Status?.trim() || undefined,
           EmployeeId: activeFilters.EmployeeId && !isNaN(parseInt(activeFilters.EmployeeId.toString())) ? parseInt(activeFilters.EmployeeId.toString()) : undefined,
           EmployeeName: activeFilters.EmployeeName?.trim() || undefined,
->>>>>>> Stashed changes
           IsReport: true
         }
 
@@ -357,12 +333,9 @@ export const PayrollReport: React.FC = () => {
           StartDate: activeFilters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.StartDate) || undefined : undefined,
           EndDate: activeFilters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.EndDate) || undefined : undefined,
           LeaveType: searchTerm?.trim() || activeFilters.LeaveType?.trim() || undefined,
-<<<<<<< Updated upstream
-=======
           Status: activeFilters.Status?.trim() || undefined,
           EmployeeId: activeFilters.EmployeeId && !isNaN(parseInt(activeFilters.EmployeeId.toString())) ? parseInt(activeFilters.EmployeeId.toString()) : undefined,
           EmployeeName: activeFilters.EmployeeName?.trim() || undefined,
->>>>>>> Stashed changes
           IsReport: true
         }
 
@@ -408,12 +381,9 @@ export const PayrollReport: React.FC = () => {
           StartDate: activeFilters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.StartDate) || undefined : undefined,
           EndDate: activeFilters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.EndDate) || undefined : undefined,
           CompanyName: searchTerm?.trim() || activeFilters.CompanyName?.trim() || undefined,
-<<<<<<< Updated upstream
-=======
           Status: activeFilters.Status?.trim() || undefined,
           EmployeeId: activeFilters.EmployeeId && !isNaN(parseInt(activeFilters.EmployeeId.toString())) ? parseInt(activeFilters.EmployeeId.toString()) : undefined,
           EmployeeName: activeFilters.EmployeeName?.trim() || undefined,
->>>>>>> Stashed changes
           IsReport: true
         }
 
@@ -511,12 +481,9 @@ export const PayrollReport: React.FC = () => {
             StartDate: filters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.StartDate) || undefined : undefined,
             EndDate: filters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.EndDate) || undefined : undefined,
             Reason: searchTerm?.trim() || filters.Reason?.trim() || undefined,
-<<<<<<< Updated upstream
-=======
             Status: filters.Status?.trim() || undefined,
             EmployeeId: filters.EmployeeId && !isNaN(parseInt(filters.EmployeeId.toString())) ? parseInt(filters.EmployeeId.toString()) : undefined,
             EmployeeName: filters.EmployeeName?.trim() || undefined,
->>>>>>> Stashed changes
             IsReport: true,
             SortBy: sortByParam,
             ExportType: 'PDF'
@@ -531,12 +498,9 @@ export const PayrollReport: React.FC = () => {
             StartDate: filters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.StartDate) || undefined : undefined,
             EndDate: filters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.EndDate) || undefined : undefined,
             LeaveType: searchTerm?.trim() || filters.LeaveType?.trim() || undefined,
-<<<<<<< Updated upstream
-=======
             Status: filters.Status?.trim() || undefined,
             EmployeeId: filters.EmployeeId && !isNaN(parseInt(filters.EmployeeId.toString())) ? parseInt(filters.EmployeeId.toString()) : undefined,
             EmployeeName: filters.EmployeeName?.trim() || undefined,
->>>>>>> Stashed changes
             IsReport: true,
             SortBy: sortByParam,
             ExportType: 'PDF'
@@ -551,12 +515,9 @@ export const PayrollReport: React.FC = () => {
             StartDate: filters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.StartDate) || undefined : undefined,
             EndDate: filters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.EndDate) || undefined : undefined,
             CompanyName: searchTerm?.trim() || filters.CompanyName?.trim() || undefined,
-<<<<<<< Updated upstream
-=======
             Status: filters.Status?.trim() || undefined,
             EmployeeId: filters.EmployeeId && !isNaN(parseInt(filters.EmployeeId.toString())) ? parseInt(filters.EmployeeId.toString()) : undefined,
             EmployeeName: filters.EmployeeName?.trim() || undefined,
->>>>>>> Stashed changes
             IsReport: true,
             SortBy: sortByParam,
             ExportType: 'PDF'
@@ -569,18 +530,12 @@ export const PayrollReport: React.FC = () => {
             PageNumber: 1,
             PageSize: pagination.totalRecords || 1000,
             IsCheckPermission: true,
-<<<<<<< Updated upstream
-            EmployeeId: searchTerm?.trim() && !isNaN(parseInt(searchTerm.trim())) ? parseInt(searchTerm.trim()) : undefined,
-            ResignationDateFrom: filters.ResignationDateFrom ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ResignationDateFrom) || undefined : undefined,
-            ResignationDateTo: filters.ResignationDateTo ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ResignationDateTo) || undefined : undefined,
-=======
             EmployeeId: searchTerm?.trim() && !isNaN(parseInt(searchTerm.trim())) ? parseInt(searchTerm.trim()) : (filters.EmployeeId && !isNaN(parseInt(filters.EmployeeId.toString())) ? parseInt(filters.EmployeeId.toString()) : undefined),
             EmployeeName: filters.EmployeeName?.trim() || undefined,
             ResignationDateFrom: filters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.StartDate) || undefined : undefined,
             ResignationDateTo: filters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.EndDate) || undefined : undefined,
             Status: filters.Status?.trim() || undefined,
             ApprovalStatus: filters.ApprovalStatus?.trim() || undefined,
->>>>>>> Stashed changes
             IsReport: true,
             SortBy: sortByParam,
             ExportType: 'PDF'
@@ -588,23 +543,6 @@ export const PayrollReport: React.FC = () => {
           const response = await employeeResignationService.apiCallPullEmployeeResignation(params);
           handleExportFile(response, 'PDF', 'Resignation', addToast);
           return response;
-<<<<<<< Updated upstream
-=======
-        } else if (activeTab === 'Attendance') {
-          const params: FilterWithPaginationAttendanceRequest = {
-            PageNumber: 1,
-            PageSize: pagination.totalRecords || 1000,
-            StartDate: filters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.StartDate) || undefined : undefined,
-            EndDate: filters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.EndDate) || undefined : undefined,
-            EmployeeName: searchTerm?.trim() || filters.EmployeeName?.trim() || undefined,
-            IsReport: true,
-            SortBy: sortByParam,
-            ExportType: 'PDF'
-          };
-          const response = await attendanceService.apiCallPullAttendance(params);
-          handleExportFile(response, 'PDF', 'Attendance', addToast);
-          return response;
->>>>>>> Stashed changes
         } else if (activeTab === 'Attendance Regularization') {
           const params: FilterWithPaginationAttendanceRegularizationRequest = {
             PageNumber: 1,
@@ -892,51 +830,7 @@ export const PayrollReport: React.FC = () => {
     []
   );
 
-  const attendanceRegularizationColumns = useMemo<TableColumn[]>(
-    () => [
-      {
-        key: 'AttendanceDate',
-        label: 'Attendance Date',
-        width: '20',
-        sortable: true,
-        align: 'left',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
-      },
-      {
-        key: 'PunchIn',
-        label: 'Punch In',
-        width: '15',
-        sortable: false,
-        align: 'left',
-        render: (value) => parseTimeFromISO(value)
-      },
-      {
-        key: 'PunchOut',
-        label: 'Punch Out',
-        width: '15',
-        sortable: false,
-        align: 'left',
-        render: (value) => parseTimeFromISO(value)
-      },
-      {
-        key: 'Reason',
-        label: 'Reason',
-        width: '35',
-        sortable: false,
-        align: 'left',
-        render: (value) => value || '-'
-      },
-      {
-        key: 'Status',
-        label: 'Status',
-        width: '15',
-        sortable: false,
-        align: 'left',
-        render: (value) => value || '-'
-      },
-    ],
-    []
-  );
+
 
   const attendanceColumns = useMemo<TableColumn[]>(
     () => [
@@ -1008,12 +902,8 @@ export const PayrollReport: React.FC = () => {
       case "Resignation":
         return "Search by Employee Name";
       case "Attendance":
-<<<<<<< Updated upstream
       case "Attendance Regularization":
-        return "Search...";
-=======
         return "Search by Employee Name";
->>>>>>> Stashed changes
       default:
         return "Search...";
     }
@@ -1280,11 +1170,6 @@ export const PayrollReport: React.FC = () => {
               </>
             )}
             {activeTab === "Attendance" && (
-<<<<<<< Updated upstream
-              <div className="text-sm text-gray-500">
-                Filter options will be available when API is implemented.
-              </div>
-=======
               <>
                 <div>
                   <DatePickerInput
@@ -1319,7 +1204,6 @@ export const PayrollReport: React.FC = () => {
                   />
                 </div>
               </>
->>>>>>> Stashed changes
             )}
             {activeTab === "Attendance Regularization" && (
               <>

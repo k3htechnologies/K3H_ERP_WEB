@@ -28,9 +28,6 @@ export interface AttendanceCalendarEvent {
 
 
 
-<<<<<<< Updated upstream
 
 
 
-=======
->>>>>>> Stashed changes

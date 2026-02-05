@@ -6,8 +6,8 @@ export interface FilterWithPaginationBranchMasterRequest {
     IsCheckPermission?: boolean
     BranchMasterId?: number
     BranchName?: string
-    BranchCode: string | ''
-    Location: string | ''
+    BranchCode?: string | ''
+    Location?: string | ''
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

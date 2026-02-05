@@ -496,10 +496,15 @@ export const LitigationDocument: React.FC = () => {
                     await loadLitigationDocument(pagination.currentPage || 1, sortInfo, searchTerm);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
                     setEditingLitigationDocumentData(null);
+
                     setDocumentFiles([]);
+
                     setDocumentURL('');
+
                     setRemovedDocumentURLs([]);
+                    
                 }
                 else {
                     addToast({ type: "error", title: response.left?.message });

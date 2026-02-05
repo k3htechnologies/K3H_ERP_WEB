@@ -235,7 +235,7 @@ const ViewAssetPage: React.FC = () => {
                                 <div className="lg:col-span-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Asset Cost (₹)" value={editAssetData!.AssetCost} />
-                                        <FieldItem label="Asset Invoice" value={"Invoice"} urls={editAssetData.AssetInvoiceURL} isIcon={true} />
+                                        {editAssetData.AssetInvoiceURL && (<FieldItem label="Asset Invoice" value={"Invoice"} urls={editAssetData.AssetInvoiceURL} isIcon={true} />)}
                                     </div>
                                 </div>
                             </div>
@@ -345,17 +345,22 @@ const ViewAssetPage: React.FC = () => {
                                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                         <FieldItem label="Employee Name" value={asset.EmployeeName} />
-                                                        <FieldItem label="Duration Date" value={formatDate_dd_MonthName_yy(asset.AssignedDate ?? '') + ' - To - ' + formatDate_dd_MonthName_yy(asset.ReturnDate ?? '')} />
-                                                        <FieldItem label="Condition At Return" value={asset.ConditionOnReturn} />
+                                                        <FieldItem label="Duration From" value={formatDate_dd_MonthName_yy(asset.AssignedDate ?? '')} />
+                                                        <FieldItem label="Duration To" value={formatDate_dd_MonthName_yy(asset.ReturnDate ?? '')} />
                                                     </div>
                                                 </div>
 
-                                                <div className="lg:col-span-3 pt-3">
+                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pt-3 pb-3">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                         <FieldItem label="Department" value={asset.Department} />
                                                         <FieldItem label="Designation" value={asset.Designation} />
                                                         <FieldItem label="Branch" value={asset.Branch} />
+                                                    </div>
+                                                </div>
 
+                                                <div className="lg:col-span-3 pt-3">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                                        <FieldItem label="Condition At Return" value={asset.ConditionOnReturn} />
                                                     </div>
                                                 </div>
 

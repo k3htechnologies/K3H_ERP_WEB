@@ -68,8 +68,10 @@ export default function CallLog() {
     // PAGINATION
     const { pagination, setPagination } = usePagination(20);
 
+    //#region PROJECT SELECTION GET ID
     const { projectId } = useProject();
-
+    //#endregion
+    
     // TOAST
     const { addToast } = useToast();
 

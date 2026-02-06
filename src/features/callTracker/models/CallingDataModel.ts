@@ -6,8 +6,8 @@ export interface FilterWithPaginationCallingDataRequest {
     ProjectId?: number
     MobileNumber?: number
     Name?: string
-    FromDate?: number
-    ToDate?: number
+    FromDate?: string
+    ToDate?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

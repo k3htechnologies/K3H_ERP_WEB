@@ -14,13 +14,14 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { updateFilter } from "@/core/utils/filterHelper";
 import ExportImport from "@/ui/components/ExcelImport/ExcelImport";
-import { Input } from "@/ui/components/forms";
 import { Modal } from "@/ui/components/Modal/Modal";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { Loader } from "@/core/utils/loader";
 import { callingDataService } from "@/features/callTracker/services/CallingDataService";
 import * as E from 'fp-ts/Either';
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
+import DatePickerInput from "@/ui/components/forms/Datepicker";
 
 
 export default function CallingData() {
@@ -73,6 +74,8 @@ export default function CallingData() {
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     Name: searchText?.trim() || undefined,
+                    FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
+                    ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
                     MobileNumber: filterParams.MobileNumber ? Number(filterParams.MobileNumber) : undefined,
                     SortBy: getSortByParam(sort ?? null, CallingDataColumns),
                 };
@@ -136,9 +139,7 @@ export default function CallingData() {
         setPagination({ currentPage: 1 });
 
         loadCallingData(1, filters, sort, searchTerm);
-    },
-        [searchTerm]
-    );
+    }, [searchTerm]);
     //#endregion
 
     //#region EXPORT / IMPORT EXCEL AND PDF
@@ -239,18 +240,11 @@ export default function CallingData() {
 
     //#region CALLIING DATA TABLE COLUMNS
     const CallingDataColumns = useMemo<TableColumn[]>(() => [
-        {
-            key: 'Address',
-            label: 'Location',
-            width: '20',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
-        },
+
         {
             key: 'Name',
             label: 'Customer Name',
-            width: '20',
+            width: '25',
             sortable: true,
             fixed: 'left',
             align: 'left',
@@ -263,17 +257,23 @@ export default function CallingData() {
             ),
         },
         {
-            key: 'MobileNumber',
-            label: 'Mobile Number',
-            width: '15',
+            key: 'Address',
+            label: 'Location',
+            width: '25',
             sortable: false,
             align: 'center',
-            render: value => value || '-'
+            render: (value) => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="250px"
+                    tooltipThreshold={25}
+                />
+            ),
         },
         {
-            key: 'Designation',
-            label: 'Designation',
-            width: '20',
+            key: 'MobileNumber',
+            label: 'Phone Number',
+            width: '15',
             sortable: false,
             align: 'center',
             render: value => value || '-'
@@ -453,19 +453,19 @@ export default function CallingData() {
                 <div className="space-y-4">
 
                     <div>
-                        <Input type="text"
-                            label="Customer Name"
-                            value={tempFilters?.Name ?? ''}
-                            onChange={e => handleFilterChange('Name', e.target.value)}
-                            placeholder="Enter Customer Name" />
+                        <DatePickerInput
+                            label='From Date'
+                            value={tempFilters.FromDate || ''}
+                            onChange={(value) => handleFilterChange('FromDate', value || '')}
+                        />
                     </div>
 
                     <div>
-                        <Input type="text"
-                            label=" Mobile Number"
-                            value={tempFilters?.MobileNumber ?? ''}
-                            onChange={e => handleFilterChange('MobileNumber', e.target.value)}
-                            placeholder="Enter Mobile Number" />
+                        <DatePickerInput
+                            label='To Date'
+                            value={tempFilters.ToDate || ''}
+                            onChange={(value) => handleFilterChange('ToDate', value || '')}
+                        />
                     </div>
                 </div>
             </Modal>

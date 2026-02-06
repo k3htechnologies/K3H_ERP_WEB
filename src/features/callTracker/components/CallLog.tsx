@@ -169,9 +169,7 @@ export default function CallLog() {
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
         loadCallLogData(1, filters, sort, searchTerm);
-    },
-        [searchTerm]
-    );
+    }, [searchTerm]);
     //#endregion
 
     //#region EXPORT / IMPORT EXCEL AND PDF
@@ -233,6 +231,7 @@ export default function CallLog() {
 
 
     // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+
     const validateUpdateCallLogForm = (): {
         isValid: boolean;
         errors: { [key: string]: string };
@@ -365,7 +364,7 @@ export default function CallLog() {
         },
         {
             key: 'MobileNumber',
-            label: 'Mobile Number',
+            label: 'Phone Number',
             width: '15',
             sortable: false,
             align: 'center',
@@ -373,7 +372,7 @@ export default function CallLog() {
         },
         {
             key: 'CallDate',
-            label: 'Call Date',
+            label: 'Call Time',
             width: '15',
             sortable: false,
             align: 'center',

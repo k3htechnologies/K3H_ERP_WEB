@@ -18,21 +18,22 @@ import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
 import { updateFilter } from "@/core/utils/filterHelper";
-import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { runApiWithLoader } from "@/core/utils";
-import { EnquiryService } from "../services/EnquiryServices";
+import { EnquiryService } from "@/features/enquiry/services/EnquiryServices";
 import * as E from 'fp-ts/Either';
 import { handleExportFile } from "@/core/utils/exportFile";
 import { Loader } from "@/core/utils/loader";
 import { Trash2 } from "lucide-react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel";
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import { useEnquiryListState } from "@/features/enquiry/context/EnquiryListStateContext";
 import { getStatusColor } from "./Status";
-
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import DatePickerInput from "@/ui/components/forms/Datepicker";
 
 export const Enquiry: React.FC = () => {
 
@@ -63,15 +64,12 @@ export const Enquiry: React.FC = () => {
     //CUSTOMIZE COLUMN MODAL
     const [isShowCustomizeEnquiryColumnsModal, setIsShowCustomizeEnquiryColumnsModal] = useState(false);
 
-    //#region MENU PERMISSIONS
+    //MENU PERMISSIONS
     const { canAction, canExport } = useMenuPermissions();
     //#endregion
 
-    //#region ENQUIRY LIST STATE CONTEXT
     const { listState, updateListState, resetFilters, clearEnquiryContext } = useEnquiryListState();
     const { page, filters, sortInfo, searchTerm } = listState;
-    //#endregion
-
     //#endregion
 
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
@@ -84,21 +82,43 @@ export const Enquiry: React.FC = () => {
             setLoadingMessage,
 
             async () => {
-                let sortByParam: string | undefined;
-                if (sortInfo) {
-                    const column = EnquiryColumns.find(col => col.key === sortInfo.column);
-                    if (column) {
-                        sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-                    }
-                }
+
                 const params: FilterWithPaginationEnquiryRequest = {
                     PageNumber: pageNum,
                     PageSize: pagination.pageSize,
-                    Name: filterParams.Name?.trim() || undefined,
-                    EnquiryId: filterParams.EnquiryId ? Number(filterParams.EnquiryId) : undefined,
+
                     ProjectId: Number(projectId),
+                    EnquiryId: filterParams.EnquiryId ? Number(filterParams.EnquiryId) : undefined,
+
+                    SystemGeneratedCode: filterParams.SystemGeneratedCode?.trim() || undefined,
+                    Name: filterParams.Name?.trim() || undefined,
+                    MobileNumber: filterParams.MobileNumber || undefined,
                     Budget: filterParams.Budget?.trim() || undefined,
-                    SortBy: sortByParam
+                    RequirementType: filterParams.RequirementType || undefined,
+
+                    Source: filterParams.Source || undefined,
+                    SubSource: filterParams.SubSource || undefined,
+                    SubSubSource: filterParams.SubSubSource || undefined,
+                    ChannelPartnerMobileNumber: filterParams.ChannelPartnerMobileNumber?.trim() || undefined,
+
+                    Nationality: filterParams.Nationality?.trim() || undefined,
+                    CurrentLocation: filterParams.CurrentLocation?.trim() || undefined,
+                    CustomerClassification: filterParams.CustomerClassification?.trim() || undefined,
+                    Ethnicity: filterParams.Ethnicity?.trim() || undefined,
+
+                    SalesAdvisor: filterParams.SalesAdvisor?.trim() || undefined,
+                    SourcingManager: filterParams.SourcingManager?.trim() || undefined,
+
+                    FromDate: filterParams.FromDate || undefined,
+                    ToDate: filterParams.ToDate || undefined,
+
+                    Accommodation: filterParams.Accommodation?.trim() || undefined,
+
+                    Stage: filterParams.Stage || undefined,
+                    EnquiryFollowUpDays: filterParams.EnquiryFollowUpDays || undefined,
+                    FinalStage: filterParams.FinalStage || undefined,
+
+                    SortBy: getSortByParam(sortInfo ?? null, EnquiryColumns)
                 };
                 const response = await EnquiryService.apiCallPullEnquiry(params);
 
@@ -127,16 +147,17 @@ export const Enquiry: React.FC = () => {
     //#endregion
 
     //#region INIT
-
     useEffect(() => {
         if (!projectId) return;
 
-        // clearEnquiryContext();
-
         if (searchTerm && searchTerm.trim()) {
+
             loadEnquiry(page, { Name: searchTerm.trim() }, sortInfo);
+
         } else {
+
             loadEnquiry(page, filters, sortInfo);
+
         }
     }, [projectId, page, filters, sortInfo, searchTerm, clearEnquiryContext, loadEnquiry]);
 
@@ -189,18 +210,39 @@ export const Enquiry: React.FC = () => {
             setLoadingMessage,
             async () => {
 
-                let sortByParam;
-                if (sortInfo) {
-                    const column = EnquiryColumns.find(col => col.key === sortInfo.column);
-                    if (column) {
-                        sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-                    }
-                }
                 const params: FilterWithPaginationEnquiryRequest = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
+
+                    SystemGeneratedCode: filters.SystemGeneratedCode?.trim() || undefined,
                     Name: filters.Name?.trim() || undefined,
-                    SortBy: sortByParam,
+                    MobileNumber: filters.MobileNumber || undefined,
+                    Budget: filters.Budget?.trim() || undefined,
+                    RequirementType: filters.RequirementType || undefined,
+
+                    Source: filters.Source || undefined,
+                    SubSource: filters.SubSource || undefined,
+                    SubSubSource: filters.SubSubSource || undefined,
+                    ChannelPartnerMobileNumber: filters.ChannelPartnerMobileNumber?.trim() || undefined,
+
+                    Nationality: filters.Nationality?.trim() || undefined,
+                    CurrentLocation: filters.CurrentLocation?.trim() || undefined,
+                    CustomerClassification: filters.CustomerClassification?.trim() || undefined,
+                    Ethnicity: filters.Ethnicity?.trim() || undefined,
+
+                    SalesAdvisor: filters.SalesAdvisor?.trim() || undefined,
+                    SourcingManager: filters.SourcingManager?.trim() || undefined,
+
+                    FromDate: filters.FromDate || undefined,
+                    ToDate: filters.ToDate || undefined,
+
+                    Accommodation: filters.Accommodation?.trim() || undefined,
+
+                    Stage: filters.Stage || undefined,
+                    EnquiryFollowUpDays: filters.EnquiryFollowUpDays || undefined,
+                    FinalStage: filters.FinalStage || undefined,
+
+                    SortBy: getSortByParam(sortInfo ?? null, EnquiryColumns),
                     ExportType: exportType,
                     ProjectId: Number(projectId)
                 };
@@ -249,7 +291,7 @@ export const Enquiry: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-                // Find the column label for sorting
+
                 const params: FilterPullExcelSample = {
                     TableName: 'ENQUIRY'
                 }
@@ -284,6 +326,7 @@ export const Enquiry: React.FC = () => {
     const handleSortColumn = useCallback((sort: SortInfo) => {
         updateListState({ sortInfo: sort, page: 1 });
     }, [updateListState]);
+
 
     //#region TABLE PAGINATION INFO
     const EnquiryPaginationInfo: PaginationInfo = useMemo(
@@ -476,6 +519,14 @@ export const Enquiry: React.FC = () => {
             render: value => value || '-'
         },
         {
+            key: 'SubSubSource',
+            label: 'Sub Sub Source',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
             key: 'Nationality',
             label: 'Nationality',
             width: '14',
@@ -484,12 +535,12 @@ export const Enquiry: React.FC = () => {
             render: value => value || '-'
         },
         {
-            key: 'Age',
-            label: 'Age',
+            key: 'DateOfBirth',
+            label: 'Date Of Birth',
             width: '14',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: value => value ? formatDate_dd_MonthName_yy(value) : '-'
         },
         {
             key: 'DesiredFloorBand',
@@ -499,14 +550,7 @@ export const Enquiry: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
-        {
-            key: 'NeighborhoodPlacesInterestedIn',
-            label: 'Neighborhood Places',
-            width: '14',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
-        },
+       
         {
             key: 'SourceOfFunding',
             label: 'Source Of Funding',
@@ -592,16 +636,7 @@ export const Enquiry: React.FC = () => {
             render: value => value || '-'
         },
         {
-            key: 'PresalesExecutive',
-            label: 'Presales Executive',
-            width: '14',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
-        },
-
-        {
-            key: 'actions',
+            key: 'Actions',
             label: 'Actions',
             width: '12',
             fixed: 'right',
@@ -635,7 +670,7 @@ export const Enquiry: React.FC = () => {
     //#endregion
 
     //#region COLUMN CUSTOMIZATION
-    const requiredEnquiryColumnKeys: string[] = ['Name'];
+    const requiredEnquiryColumnKeys: string[] = ['Name','Actions'];
 
     const allEnquiryColumnKeys: string[] = EnquiryColumns.map(c => c.key);
 
@@ -677,12 +712,11 @@ export const Enquiry: React.FC = () => {
     const clearFilters = () => {
         setTempFilters({});
         resetFilters();
-        setShowFilterPopup(false);
     };
     //#endregion
 
     //#region HANDLE FILTER CHNAGE
-    const handleFilterChange = (key: string, value: string) => {
+    const handleFilterChange = (key: string, value: string | null) => {
         setTempFilters(prev => updateFilter(prev, key, value));
     }
     //#endregion
@@ -832,27 +866,104 @@ export const Enquiry: React.FC = () => {
                 size="small-half"
             >
                 <div className="space-y-6">
-                    <div className="space-y-4">
-                        <Input type="text"
-                            label="Enquiry Name"
-                            value={tempFilters?.Name ?? ''}
-                            onChange={e => handleFilterChange('Name', e.target.value)}
-                            placeholder="Enter Enquiry Name" />
+                    <div>
+                        <Input type="text" label="System Generated Code" value={tempFilters?.SystemGeneratedCode ?? ''} onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)} placeholder="Enter System Code" />
                     </div>
+
+                    <div>
+                        <Input type="text" label="Enquiry Name" value={tempFilters?.Name ?? ''} onChange={e => handleFilterChange('Name', e.target.value)} placeholder="Enter Enquiry Name" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Mobile Number" value={tempFilters?.MobileNumber ?? ''} onChange={e => handleFilterChange('MobileNumber', e.target.value)} placeholder="Enter Mobile Number" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Budget" value={tempFilters?.Budget ?? ''} onChange={e => handleFilterChange('Budget', e.target.value)} placeholder="Enter Budget" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Requirement Type" value={tempFilters?.RequirementType ?? ''} onChange={e => handleFilterChange('RequirementType', e.target.value)} placeholder="Enter Requirement Type" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Source" value={tempFilters?.Source ?? ''} onChange={e => handleFilterChange('Source', e.target.value)} placeholder="Enter Source" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Sub Source" value={tempFilters?.SubSource ?? ''} onChange={e => handleFilterChange('SubSource', e.target.value)} placeholder="Enter Sub Source" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Sub Sub Source" value={tempFilters?.SubSubSource ?? ''} onChange={e => handleFilterChange('SubSubSource', e.target.value)} placeholder="Enter Sub Sub Source" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Channel Partner Mobile" value={tempFilters?.ChannelPartnerMobileNumber ?? ''} onChange={e => handleFilterChange('ChannelPartnerMobileNumber', e.target.value)} placeholder="Enter Channel Partner Mobile" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Nationality" value={tempFilters?.Nationality ?? ''} onChange={e => handleFilterChange('Nationality', e.target.value)} placeholder="Enter Nationality" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Current Location" value={tempFilters?.CurrentLocation ?? ''} onChange={e => handleFilterChange('CurrentLocation', e.target.value)} placeholder="Enter Current Location" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Customer Classification" value={tempFilters?.CustomerClassification ?? ''} onChange={e => handleFilterChange('CustomerClassification', e.target.value)} placeholder="Enter Classification" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Ethnicity" value={tempFilters?.Ethnicity ?? ''} onChange={e => handleFilterChange('Ethnicity', e.target.value)} placeholder="Enter Ethnicity" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Sales Advisor" value={tempFilters?.SalesAdvisor ?? ''} onChange={e => handleFilterChange('SalesAdvisor', e.target.value)} placeholder="Enter Sales Advisor" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Sourcing Manager" value={tempFilters?.SourcingManager ?? ''} onChange={e => handleFilterChange('SourcingManager', e.target.value)} placeholder="Enter Sourcing Manager" />
+                    </div>
+
+                    <div>
+                        <DatePickerInput
+                            label="From Date"
+                            value={formatDate_dd_mm_yyyy(tempFilters.FromDate)}
+                            onChange={(val) => handleFilterChange('FromDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+
+                        />
+                    </div>
+
+                    <div>
+                        <DatePickerInput
+                            label="To Date"
+                            value={formatDate_dd_mm_yyyy(tempFilters.ToDate)}
+                            onChange={(val) => handleFilterChange('ToDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                        />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Accommodation" value={tempFilters?.Accommodation ?? ''} onChange={e => handleFilterChange('Accommodation', e.target.value)} placeholder="Enter Accommodation" />
+                    </div>
+                   
+                    <div>
+                        <Input type="text" label="Follow Up Days" value={tempFilters?.EnquiryFollowUpDays ?? ''} onChange={e => handleFilterChange('EnquiryFollowUpDays', e.target.value)} placeholder="Enter Follow Up Days" />
+                    </div>
+
+                    <div>
+                        <Input type="text" label="Final Stage" value={tempFilters?.FinalStage ?? ''} onChange={e => handleFilterChange('FinalStage', e.target.value)} placeholder="Enter Final Stage" />
+                    </div>
+
                 </div>
             </Modal>
 
-            {/* DELETE CONFIRMATION ENQUIRY MODAL */}
-            <ConfirmationDialogBox
+            <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
                 onClose={() => setIsConfirmationDialogBoxOpen(false)}
                 onConfirm={handleDeleteEnquiry}
-                title="You are about to delete this Enquiry?"
-                message="Deleting this Enquiry will permanently remove its data."
-                confirmText="Delete"
-                cancelText="Cancel"
                 loading={isLoading}
-                variant="danger"
+                pageName='Enquiry'
             />
         </div>
     );

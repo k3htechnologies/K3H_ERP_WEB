@@ -83,6 +83,7 @@ import { TenantListStateProvider } from '@/features/tenant/context/TenantListSta
 import { EmployeeListStateProvider } from '@/features/employeeMaster/context/EmployeeListStateContext';
 import { CompanyListStateProvider } from '@/features/companyMaster/context/CompanyListStateContext';
 import { VendorListStateProvider } from '@/features/vendor/context/VendorListStateContext';
+import { ChannelPartnerListStateProvider } from '@/features/ChannelPartner/context/ChannelPartnerListStateContext';
 import { ProjectMasterListStateProvider } from '@/features/projectMaster/context/ProjectMasterListStateContext';
 import { AssetMasterListStateProvider } from '@/features/assetMaster/context/AssetMasterListStateContext';
 import { AssetMappingMasterListStateProvider } from '@/features/assetMappingMaster/context/AssetMappingMasterListStateContext';
@@ -311,9 +312,9 @@ function App() {
 
 
             {/* SALES */}
-            <Route path="channelPartner" element={<ChannelPartner />} />
-            <Route path="channelPartner/view" element={<ViewChannelPartner />} />
-            <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartner />} />
+            <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
+            <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
+            <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
 
             <Route path="enquiry" element={<EnquiryListStateProvider><Enquiry /></EnquiryListStateProvider>} />
             <Route path="enquiry/view/:EnquiryId?" element={<EnquiryListStateProvider><ViewEnquiry /></EnquiryListStateProvider>} />

@@ -6,7 +6,7 @@ export const fetchChannelPartnerDropdown = async (pageNumber: number, params?: {
         const responseEither = await ChannelPartnerService.apiCallPullChannelPartner({
             PageSize: 10,
             PageNumber: pageNumber,
-            Name: params?.value || ""
+            ChannelPartnerName: params?.value || ""
         });
 
         if (E.isLeft(responseEither)) {
@@ -30,4 +30,19 @@ export const fetchChannelPartnerDropdown = async (pageNumber: number, params?: {
         console.error('FETCH CHANNEL MASTER DROPDOWN ERROR', err);
         return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
     }
+};
+
+export const fetchChannelPartnerByMobileNumber = async (mobileNumber: string) => {
+
+    const responseEither = await ChannelPartnerService.apiCallPullChannelPartner({
+        PageSize: 1,
+        PageNumber: 1,
+        IsCheckPermission: false,
+        MobileNumber: mobileNumber.trim()
+    });
+
+    if (E.isLeft(responseEither)) return null;
+
+    return responseEither.right.Data?.[0] || null;
+
 };

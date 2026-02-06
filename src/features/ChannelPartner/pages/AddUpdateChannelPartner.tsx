@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/ui/components/forms/Input";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
@@ -66,7 +66,6 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
     // NAVIGATE
     const navigate = useNavigate();
-    const location = useLocation();
 
     const [selectedProjectValues, setSelectedProjectValues] = useState<string | number | null>(null);
 
@@ -232,7 +231,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
         if (formData.IsRERANumber === 1 && !formData.RERANumber) {
             newErrors.RERANumber = ' RERA Number is required';
-        } else if (!isValidRERA(formData.RERANumber.trim())) {
+        } else if (formData.IsRERANumber === 1 && !isValidRERA(formData.RERANumber.trim())) {
             newErrors.RERANumber = "Enter a valid RERA Number";
         }
 
@@ -344,27 +343,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
                 if (E.isRight(response)) {
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
-
-                    const locationState = location.state as {
-                        listState?: {
-                            page?: number;
-                            filters?: any;
-                            sortInfo?: any;
-                            searchTerm?: string;
-                        };
-                    } | null;
-
-                    const listState = locationState?.listState || {
-                        page: 1,
-                        filters: {},
-                        sortInfo: undefined,
-                        searchTerm: '',
-                    };
-
-                    navigate("/channelPartner",
-                        {
-                            state: { listState }
-                        });
+                    navigate("/channelPartner");
 
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -416,7 +395,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
                             <div>
                                 <Input
-                                    label='Email Id'
+                                    label='E-mail Id'
                                     type="text"
                                     value={formData.EmailId}
                                     error={errors.EmailId}
@@ -489,7 +468,16 @@ export const AddUpdateChannelPartner: React.FC = () => {
                             <Checkbox
                                 label="Do you have RERA Number?"
                                 checked={formData.IsRERANumber === 1}
-                                onChange={(e) => handleFieldChange('IsRERANumber', e.target.checked ? 1 : 0)}
+                                onChange={(e) => {
+                                    const isChecked = e.target.checked ? 1 : 0;
+
+                                    handleFieldChange("IsRERANumber", isChecked);
+
+                                    if (!e.target.checked) {
+
+                                        handleFieldChange("RERANumber", "");
+                                    }
+                                }}
                             />
                         </h3>
 
@@ -520,6 +508,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
                             <div>
                                 <SinglePageSelection
                                     label="Speciality"
+                                    placeholder="Select Speciality"
                                     required
                                     value={formData.Speciality}
                                     onChange={(e) => handleFieldChange('Speciality', String(e))}

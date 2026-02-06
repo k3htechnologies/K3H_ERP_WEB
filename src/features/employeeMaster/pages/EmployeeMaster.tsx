@@ -65,19 +65,14 @@ export const EmployeeMaster: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
-    // Sync pagination with context state
     setPagination({ currentPage: listState.page });
 
-    // Load employees with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
       loadEmployees(listState.page, { EmployeeName: String(listState.searchTerm).trim() }, listState.sortInfo);
     } else {
       loadEmployees(listState.page, listState.filters, listState.sortInfo);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
-
-
 
   useEffect(() => {
     return () => {

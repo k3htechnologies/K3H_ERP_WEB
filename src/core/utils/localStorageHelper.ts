@@ -1069,6 +1069,7 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.SHIFT_MASTER);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.WEEK_OFF_MASTER);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.LITIGATION);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.CHANNEL_PARTNER);
 
 
         } catch (error) {

@@ -19,10 +19,11 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { FINAL_STAGE_TYPE_OPTIONS } from "@/core/constants";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
-import { Input } from "@/ui/components/forms";
+import { TextArea } from "@/ui/components/forms/Textarea";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { Edit, Trash2 } from "lucide-react";
 import { getStatusColor } from "./Status";
+import { calculateAge } from "@/core/utils/comman";
 
 const ViewEnquiry: React.FC = () => {
 
@@ -71,8 +72,6 @@ const ViewEnquiry: React.FC = () => {
 
         fetchEnquiryDetails();
 
-        fetchEnquiryFollowUpDetails();
-
     }, [projectId, currentEnquiryId, addToast]);
     //#endregion
 
@@ -97,6 +96,8 @@ const ViewEnquiry: React.FC = () => {
                     const enquiryList = Array.isArray(response.right.Data) ? response.right.Data : [];
 
                     setEditEnquiryData(enquiryList);
+
+                    fetchEnquiryFollowUpDetails();
 
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -339,7 +340,7 @@ const ViewEnquiry: React.FC = () => {
 
             {/* Header Details*/}
             <HeaderActionBar
-                titleText={enquiryData?.Name ?? ''}
+                titleText={enquiryData?.Name ? `${enquiryData.Name} :` : ''}
                 subTitleText={enquiryData?.FinalStage ?? ''}
                 cancelText="Cancel"
                 EditText="Edit"
@@ -353,21 +354,17 @@ const ViewEnquiry: React.FC = () => {
 
             <div className="grid grid-cols-12 gap-4 pt-5">
 
-                {/* LEFT SIDE PROFILE CARD */}
                 <div className="col-span-6">
 
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
 
-                        {/* HEADER  DETAILS */}
                         <div className="border-b pb-2 mt-1">
                             <div className="flex items-start justify-between">
 
-                                {/* LEFT — TITLE */}
                                 <h1 className="text-lg font-semibold text-black">
                                     Lead Information
                                 </h1>
 
-                                {/* RIGHT — DATES */}
                                 <div className="text-xs text-gray-700">
 
                                     <div className="flex items-center gap-2">
@@ -402,7 +399,8 @@ const ViewEnquiry: React.FC = () => {
                             <FieldItem label="Unique Code:" value={safe(enquiryData?.SystemGeneratedCode)} />
                             <FieldItem label="Mobile No:" value={safe(enquiryData?.MobileNumber) ? `+91 ${safe(enquiryData?.MobileNumber)}` : '-'} />
                             <FieldItem label="E-Mail ID" value={safe(enquiryData?.EmailId)} />
-                            <FieldItem label="Age" value={safe(enquiryData?.Age)} />
+                            <FieldItem label="Date of Birth" value={safe(enquiryData?.DateOfBirth) ? formatDate_dd_MonthName_yy(safe(enquiryData?.DateOfBirth)) : ""} />
+                            <FieldItem label="Age" value={calculateAge(enquiryData?.DateOfBirth || "")} />
                             <FieldItem label="Accommodation" value={safe(enquiryData?.Accommodation)} />
                             <FieldItem label="Occupation Type" value={safe(enquiryData?.OccupationType)} />
                             <FieldItem label="Nationality" value={safe(enquiryData?.Nationality)} />
@@ -413,34 +411,127 @@ const ViewEnquiry: React.FC = () => {
                                 </>
                             ) : null}
 
-                            <FieldItem label="Possession Type" value={safe(enquiryData?.PossessionType)} />
-                            <FieldItem label="Area Preferred" value={safe(enquiryData?.AreaPreferred)} />
-                            <FieldItem label="Desired Floor Band" value={safe(enquiryData?.DesiredFloorBand)} />
-                            <FieldItem label="Budget (In CR)" value={safe(enquiryData?.Budget)} />
-                            <FieldItem label="Neighborhood Places" value={safe(enquiryData?.NeighborhoodPlacesInterestedIn)} />
-                            <FieldItem label="Requirement" value={safe(enquiryData?.Requirement)} />
-                            <FieldItem label="Requirement Type" value={safe(enquiryData?.RequirementType)} />
-                            <FieldItem label="Customer Classification" value={safe(enquiryData?.CustomerClassification)} />
-                            <FieldItem label="Source Of Funding" value={safe(enquiryData?.SourceOfFunding)} />
-                            <FieldItem label="Ethnicity" value={safe(enquiryData?.Ethnicity)} />
+
+
+
                             <FieldItem label="Source " value={safe(enquiryData?.Source)} />
-                            {safe(enquiryData?.SubSource) !== "" ? <FieldItem label="Sub Source " value={safe(enquiryData?.SubSource)} /> : ""}
-                            {safe(enquiryData?.ChannelPartnerName) !== "" ? <FieldItem label="Channel Partner " value={safe(enquiryData?.ChannelPartnerName)} /> : ""}
-                            {safe(enquiryData?.ChannelPartnerName) !== "" ? <FieldItem label="Channel Partner Number:" value={safe(enquiryData?.ChannelPartnerMobileNumber) ? `+91 ${safe(enquiryData?.ChannelPartnerMobileNumber)}` : '-'} /> : ""}
-                            <FieldItem label="Final Stage " value={safe(enquiryData?.FinalStage)} />
-                            {safe(enquiryData?.FinalStageDetail) !== "" ? <FieldItem label="Final Stage Detail " value={safe(enquiryData?.FinalStageDetail)} /> : ""}
-                            <FieldItem label="Sales Advisor" value={safe(enquiryData?.SalesAdvisor)} />
-                            <FieldItem label="Sourcing Manager" value={safe(enquiryData?.SourcingManager)} />
-                            <FieldItem label="Presales Executive" value={safe(enquiryData?.PresalesExecutive)} />
+
+                            {enquiryData?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
+                                <>
+                                    <FieldItem label="Channel Partner " value={safe(enquiryData?.ChannelPartnerName)} />
+                                    <FieldItem label="Channel Partner Number:" value={safe(enquiryData?.ChannelPartnerMobileNumber) ? `+91 ${safe(enquiryData?.ChannelPartnerMobileNumber)}` : '-'} />
+                                </>
+                            )}
+
+                            {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource === 'Advertisement' && (
+                                <>
+                                    <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
+                                    <FieldItem label="Sub Sub Source" value={safe(enquiryData?.SubSubSource)} />
+                                </>
+                            )}
+
+                            {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource !== 'Advertisement' && (
+                                <>
+                                    <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
+                                </>
+                            )}
+
+
                             <FieldItem label="Customer Time In" value={safe(enquiryData?.EnquiryTimeIn)} />
-                            <FieldItem label="Customer Time Out" value={safe(enquiryData?.EnquiryTimeOut)} />
-                            <FieldItem label="Remarks" value={safe(enquiryData?.Remark)} />
-                            <FieldItem label="Created By" value={safe(enquiryData?.CreatedBy)} />
-                            <FieldItem label="Created Date" value={safe(enquiryData?.CreatedDate) ? formatDate_dd_MonthName_yy(safe(enquiryData?.CreatedDate)) : ""} />
-                            <FieldItem label="Modified By" value={safe(enquiryData?.ModifiedBy)} />
-                            <FieldItem label="Modified Date" value={safe(enquiryData?.ModifiedDate) ? formatDate_dd_MonthName_yy(safe(enquiryData?.ModifiedDate)) : ""} />
 
                         </div>
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Address
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                <FieldItem label="Current Location" value={safe(enquiryData?.CurrentLocation)} />
+                            </div>
+                        </section>
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Property Preferences
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Possession Type" value={safe(enquiryData?.PossessionType)} />
+                                <FieldItem label="Area Preferred" value={safe(enquiryData?.AreaPreferred)} />
+                                <FieldItem label="Desired Floor Band" value={safe(enquiryData?.DesiredFloorBand)} />
+                                <FieldItem label="Budget (In CR)" value={safe(enquiryData?.Budget)} />
+                                <FieldItem label="Requirement" value={safe(enquiryData?.Requirement)} />
+                                <FieldItem
+                                    label={
+                                        enquiryData?.Requirement === "Residential"
+                                            ? "Residential Type"
+                                            : enquiryData?.Requirement === "Commercial"
+                                                ? "Commercial Type"
+                                                : "Type"
+                                    }
+                                    value={safe(enquiryData?.RequirementType)}
+                                />
+                            </div>
+                        </section>
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Customer Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Customer Classification" value={safe(enquiryData?.CustomerClassification)} />
+                                <FieldItem label="Source Of Funding" value={safe(enquiryData?.SourceOfFunding)} />
+                                <FieldItem label="Ethnicity" value={safe(enquiryData?.Ethnicity)} />
+                            </div>
+                        </section>
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Enquiry Information
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Final Stage " value={safe(enquiryData?.FinalStage)} />
+                                {safe(enquiryData?.FinalStageDetail) !== "" ? <FieldItem label="Final Stage Detail " value={safe(enquiryData?.FinalStageDetail)} /> : ""}
+
+                            </div>
+                        </section>
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Sales Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Sales Advisor" value={safe(enquiryData?.SalesAdvisor)} />
+                                <FieldItem label="Sourcing Manager" value={safe(enquiryData?.SourcingManager)} />
+                                <FieldItem label="Customer Time Out" value={safe(enquiryData?.EnquiryTimeOut)} />
+                            </div>
+                        </section>
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                               Enquiry Remark
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                <FieldItem label="Remark" value={safe(enquiryData?.Remark)} />
+                            </div>
+                        </section>
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Action Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Created By" value={enquiryData?.CreatedBy ?? '-'} />
+                                <FieldItem
+                                    label="Created Date"
+                                    value={formatDate_dd_MonthName_yy_hh_mm(enquiryData?.CreatedDate ?? '-')}
+                                />
+                                <FieldItem label="Modified By" value={enquiryData?.ModifiedBy ?? '-'} />
+                                <FieldItem
+                                    label="Modified Date"
+                                    value={formatDate_dd_MonthName_yy_hh_mm(enquiryData?.ModifiedDate ?? '-')}
+                                />
+                            </div>
+                        </section>
                     </div>
                 </div>
 
@@ -623,15 +714,15 @@ const ViewEnquiry: React.FC = () => {
                     />
 
                     {/* REMARK */}
-                    <Input
-                        type="text"
-                        label="Remark"
-                        value={enquiryFollowUpFormData.Remark ?? ''}
-                        onChange={(e) => setEnquiryFollowUpFormData({ ...enquiryFollowUpFormData, Remark: e.target.value })}
-                        required
-                        error={enquiryFollowUpFormErrors.Remark}
-                        placeholder="Enter Remark"
-                    />
+                    <TextArea
+                                                            label="Remark"
+                                                            placeholder="Enter Remark"
+                                                            required
+                                                            className='thin-scroll'
+                                                            value={enquiryFollowUpFormData.Remark ?? ""}
+                                                            onChange={(e) => setEnquiryFollowUpFormData({ ...enquiryFollowUpFormData, Remark: e.target.value })}
+                                                            error={enquiryFollowUpFormErrors.Remark} />
+                    
 
                 </div>
 

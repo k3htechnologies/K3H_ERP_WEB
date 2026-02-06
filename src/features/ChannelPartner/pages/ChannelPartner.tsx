@@ -21,7 +21,7 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChannelPartnerService } from '../services/ChannelPartnerService';
+import { ChannelPartnerService } from '@/features/ChannelPartner/services/ChannelPartnerService';
 import { updateFilter } from '@/core/utils/filterHelper';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
@@ -32,6 +32,7 @@ import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { useChannelPartnerListState } from '@/features/ChannelPartner/context/ChannelPartnerListStateContext';
 
 
 export const ChannelPartner: React.FC = () => {
@@ -47,25 +48,21 @@ export const ChannelPartner: React.FC = () => {
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
-  //TABLE SORT INFO
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-
   // TOAST
   const { addToast } = useToast();
 
   const { projectId } = useProject();
 
-  // SINGLE SEARCH TEXT BOX
-  const [searchTerm, setSearchTerm] = useState('');
+  // CONTEXT STATE
+  const { listState, updateListState } = useChannelPartnerListState();
+  const { searchTerm, filters, sortInfo } = listState;
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
-
     searchChannelPartner(value)
   }, 350);
 
   //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   //DELETE ChannelPartner MASTER
@@ -88,32 +85,16 @@ export const ChannelPartner: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
-    const incoming = location.state?.listState;
+    // Sync pagination with context state
+    setPagination({ currentPage: listState.page });
 
-    const listState = incoming ?? {
-      page: 1, filters:
-        {} as FilterInfo,
-      sortInfo: undefined,
-      searchTerm: ''
-    };
-
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
+    // Load channel partners with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadChannelPartner(listState.page ?? 1, { Name: String(listState.searchTerm).trim() });
-      return;
+      loadChannelPartner(listState.page, { Name: String(listState.searchTerm).trim() }, listState.sortInfo);
+    } else {
+      loadChannelPartner(listState.page, listState.filters, listState.sortInfo);
     }
-
-    loadChannelPartner(listState.page ?? 1, listState.filters ?? {});
-  }, [location.state]);
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
@@ -185,12 +166,14 @@ export const ChannelPartner: React.FC = () => {
   //#region SEARCH & CLEAR
   const searchChannelPartner = async (searchValue: string) => {
 
-    setSearchTerm(searchValue);
+    updateListState({ searchTerm: searchValue, page: 1 });
 
     if (searchValue.trim() === '') {
 
-      fetchChannelPartnerList();
+      updateListState({ filters: {}, searchTerm: '' });
 
+      fetchChannelPartnerList(1);
+      
       return
     }
 
@@ -201,14 +184,10 @@ export const ChannelPartner: React.FC = () => {
 
   //#region CLEAR CHANNEL PARTNER MASTER 
   const clearSearchChannelPartner = () => {
-    setSearchTerm('');
-
     debouncedSearch.cancel?.();
-
-    setFilters({});
+    updateListState({ searchTerm: '', filters: {}, page: 1, sortInfo: undefined });
     setTempFilters({});
-    setPagination({ currentPage: 1 });
-    loadChannelPartner(1, { Name: '' }, sortInfo, undefined);
+    loadChannelPartner(1, {}, undefined, undefined);
     try {
       navigate(location.pathname, {
         replace: true,
@@ -334,14 +313,16 @@ export const ChannelPartner: React.FC = () => {
 
   //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = useCallback((page: number) => {
+    updateListState({ page });
     fetchChannelPartnerList(page);
-  }, []);
+  }, [updateListState]);
 
   //#region TABLE SORT COLUMN
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
+    updateListState({ sortInfo: sort, page: 1 });
     loadChannelPartner(1, filters, sort, searchTerm || undefined);
-  }, [filters, searchTerm]);
+  }, [filters, searchTerm, updateListState]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -361,28 +342,22 @@ export const ChannelPartner: React.FC = () => {
 
   //#region NAVIGATE TO  VIEW CHANNEL PARTNER
   const handleNavigateToView = (row: ChannelPartnerData) => {
-    navigate('/channelPartner/view', {
-      state: {
-        editChannelPartnerData: row,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm
-        }
-      }
+    updateListState({
+      channelPartnerId: row.ChannelPartnerId,
+      channelPartnerName: row.Name,
+      uniquekey: row.Uniquekey
     });
+    navigate('/channelPartner/view');
   };
 
   //#region NAVIGATE TO ADD CHANNEL PARTNER
   const handleAddChannelPartnerModal = useCallback(() => {
     navigate('/channelPartner/add', {
       state: {
-        fromList: true,
-        listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
+        fromList: true
       }
     });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  }, [navigate]);
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
@@ -432,7 +407,7 @@ export const ChannelPartner: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => value ? `+91 ${value}` : '-'
+      render: (value) => value || '-'
     },
     {
       key: 'MobileNumber',
@@ -582,10 +557,8 @@ export const ChannelPartner: React.FC = () => {
 
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters);
-
-    loadChannelPartner(1, tempFilters);
-
+    updateListState({ filters: tempFilters, page: 1 });
+    loadChannelPartner(1, tempFilters, sortInfo);
     setShowFilterPopup(false);
   };
   //#endregion
@@ -593,16 +566,9 @@ export const ChannelPartner: React.FC = () => {
   //#region Clear
   const clearFilters = () => {
     setTempFilters({});
-    setFilters({});
-
-    // reset page
-    setPagination({ currentPage: 1 });
-
-    // load empty filters
-    loadChannelPartner(1, {});
-
+    updateListState({ filters: {}, page: 1, searchTerm: '', sortInfo: undefined });
+    loadChannelPartner(1, {}, undefined);
     navigate(location.pathname, { replace: true, state: {} });
-
   };
   //#endregion
 
@@ -690,14 +656,14 @@ export const ChannelPartner: React.FC = () => {
         searchTerm={searchTerm}
         searchPlaceholder="Search By Full Name"
         onSearchChange={v => {
-          setSearchTerm(v);
+          updateListState({ searchTerm: v });
           debouncedSearch(v);
         }}
         onClearSearch={clearSearchChannelPartner}
         isShowFilterButton
         filters={filters}
         onOpenFilter={() => {
-          setTempFilters(filters);
+          setTempFilters(filters || {});
           setShowFilterPopup(true);
         }}
         isShowCustomizeButton

@@ -58,5 +58,6 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     LITIGATION: 'Litigation.listState',
     LEAVECREDITCONFIGURATION:'LeaveCreditConfiguration.listState',
     LEAVE:'leave.listState',
-    OUTDOOR:'outdoor.listState'
+    OUTDOOR:'outdoor.listState',
+    CHANNEL_PARTNER: 'channelPartner.listState'
 } as const

@@ -440,6 +440,8 @@ const ViewEnquiry: React.FC = () => {
                             <FieldItem label="Customer Time In" value={safe(enquiryData?.EnquiryTimeIn)} />
 
                         </div>
+                        <hr className="border-t border-gray-200" />
+
                         <section className="p-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Address
@@ -449,6 +451,9 @@ const ViewEnquiry: React.FC = () => {
                                 <FieldItem label="Current Location" value={safe(enquiryData?.CurrentLocation)} />
                             </div>
                         </section>
+
+                        <hr className="border-t border-gray-200" />
+                        
                         <section className="p-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Property Preferences
@@ -472,6 +477,7 @@ const ViewEnquiry: React.FC = () => {
                                 />
                             </div>
                         </section>
+                        <hr className="border-t border-gray-200" />
                         <section className="p-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Customer Details
@@ -483,6 +489,7 @@ const ViewEnquiry: React.FC = () => {
                                 <FieldItem label="Ethnicity" value={safe(enquiryData?.Ethnicity)} />
                             </div>
                         </section>
+                        <hr className="border-t border-gray-200" />
                         <section className="p-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Enquiry Information
@@ -494,6 +501,7 @@ const ViewEnquiry: React.FC = () => {
 
                             </div>
                         </section>
+                        <hr className="border-t border-gray-200" />
                         <section className="p-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Sales Details
@@ -505,6 +513,7 @@ const ViewEnquiry: React.FC = () => {
                                 <FieldItem label="Customer Time Out" value={safe(enquiryData?.EnquiryTimeOut)} />
                             </div>
                         </section>
+                        <hr className="border-t border-gray-200" />
                         <section className="p-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                Enquiry Remark
@@ -514,6 +523,7 @@ const ViewEnquiry: React.FC = () => {
                                 <FieldItem label="Remark" value={safe(enquiryData?.Remark)} />
                             </div>
                         </section>
+                        <hr className="border-t border-gray-200" />
                         <section className="p-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Action Details

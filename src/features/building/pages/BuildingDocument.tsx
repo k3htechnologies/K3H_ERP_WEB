@@ -27,6 +27,7 @@ import { useBuildingListState } from '@/features/building/context/BuildingListSt
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 
 const initialFormState = (): AddUpdateBuildingDocumentRequest => ({
@@ -169,14 +170,7 @@ const BuildingDocument: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const column = buildingDocumentColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
+        
         const params: FilterWithPaginationBuildingDocumentRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
@@ -185,7 +179,7 @@ const BuildingDocument: React.FC = () => {
           BuildingId: Number(buildingId),
           BuildingDocumentId: Number(filterParams.BuildingDocumentId) ?? undefined,
           DocumentName: filterParams.DocumentName,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, buildingDocumentColumns)
         };
 
         const response = await buildingService.apiCallPullBuildingDocument(params);

@@ -29,6 +29,7 @@ import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { getDocumentStatusColor } from '@/features/projectDocument/pages/ProjectDocumentStatus';
 import { TextArea } from '@/ui/components/forms/Textarea';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 
 const initialFormState = (): AddUpdateProjectRERADocumentRequest => ({
@@ -269,14 +270,7 @@ const ProjectRERADocument: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const column = projectRERADocumentColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
+        
         const params: FilterWithPaginationProjectRERADocument = {
           PageNumber: page,
           PageSize: pagination.pageSize,
@@ -286,7 +280,7 @@ const ProjectRERADocument: React.FC = () => {
           ProjectRERADocumentStatus: filterParams.ProjectRERADocumentStatus ?? "",
           ProjectRERADocumentCategory: filterParams.ProjectRERADocumentCategory ?? "",
           ProjectRERADocumentCategoryId: Number(getActiveTabId(filterParams)),
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, projectRERADocumentColumns)
         };
 
         const response = await projectRERADocumentService.apiCallPullProjectRERADocument(params);

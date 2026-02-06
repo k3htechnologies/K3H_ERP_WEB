@@ -22,6 +22,7 @@ import { FileText, Info, Trash2 } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { useBuildingListState } from '@/features/building/context/BuildingListStateContext';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const Building: React.FC = () => {
   //#region STATE
@@ -65,15 +66,7 @@ export const Building: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const column = buildingColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
-
+       
         const params: FilterWithPaginationBuildingRequest = {
           PageNumber: pageNum,
           PageSize: pagination.pageSize,
@@ -85,7 +78,7 @@ export const Building: React.FC = () => {
           RoadWidth: filterParams.RoadWidth?.trim() || undefined,
           CityName: filterParams.CityName?.trim() || undefined,
           VillageName: filterParams.VillageName?.trim() || undefined,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, buildingColumns)
         };
 
         const response = await buildingService.apiCallPullBuilding(params);
@@ -196,13 +189,7 @@ export const Building: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-        if (sortInfo) {
-          const column = buildingColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
+        
 
         const params: FilterWithPaginationBuildingRequest = {
           PageNumber: 1,
@@ -214,7 +201,7 @@ export const Building: React.FC = () => {
           RoadWidth: filters.RoadWidth?.trim() || undefined,
           CityName: filters.CityName?.trim() || undefined,
           VillageName: filters.VillageName?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, buildingColumns),
           ExportType: exportType
         };
 

@@ -32,6 +32,7 @@ import { useTenantListState } from '@/features/tenant/context/TenantListStateCon
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 
 const initialFormState = (): AddUpdateTenantDocumentRequest => ({
@@ -172,16 +173,6 @@ export const TenantDocument: React.FC = () => {
       setLoadingMessage,
       async () => {
 
-        let sortByParam = undefined;
-
-        if (sortInfo) {
-
-          const column = tenantDocumentColumns.find(col => col.key === sortInfo.column)
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
-          }
-
-        }
 
         const params: FilterWithPaginationTenantDocumentRequest = {
           PageNumber: page,
@@ -192,7 +183,7 @@ export const TenantDocument: React.FC = () => {
           TenantId: tenantId,
           TenantDocumentId: filterParams.TenantDocumentId ? Number(filterParams.TenantDocumentId) : undefined,
           DocumentName: filterParams.DocumentName?.trim() || undefined,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, tenantDocumentColumns)
         }
 
         const response = await tenantService.apiCallPullTenantDocument(params);
@@ -261,16 +252,7 @@ export const TenantDocument: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-
-          const column = tenantDocumentColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
-
+       
         const params: FilterWithPaginationTenantDocumentRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -279,7 +261,7 @@ export const TenantDocument: React.FC = () => {
           BuildingId: buildingId || undefined,
           TenantId: tenantId || undefined,
           DocumentName: filters.DocumentName?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, tenantDocumentColumns),
           ExportType: exportType
         }
 

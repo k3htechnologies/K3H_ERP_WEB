@@ -27,6 +27,7 @@ import { proposedOfferService } from '@/features/proposedOffer/services/Proposed
 import { Eye, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useRentListState } from '@/features/rent/context/RentListStateContext';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 type PivotRentRow = {
   FlatNumber?: string;
@@ -203,22 +204,14 @@ export const Rent: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const col = columns.find(c => c.key === sortInfo.column);
-          if (col) {
-            sortByParam = `${col.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
-
+        
         const params: FilterWithPaginationTenantApplicantChargesRequest = {
           PageNumber: listState.page || pagination.currentPage,
           PageSize: listState.pageSize || pagination.pageSize,
           ProjectId: Number(projectId),
           BuildingId: buildingId,
           ...filters,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, columns)
         };
 
         const response = await rentService.apiCallPullTenantApplicantCharges(params);
@@ -378,14 +371,7 @@ export const Rent: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-        if (sortInfo) {
-          const column = columns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
-
+        
         const params: FilterWithPaginationTenantApplicantChargesRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -401,7 +387,7 @@ export const Rent: React.FC = () => {
           FlatCarpetAreaSqFt: filters.FlatCarpetAreaSqFt ? Number(filters.FlatCarpetAreaSqFt) : undefined,
           FlatType: filters.FlatType?.trim() || undefined,
           FlatConfiguration: filters.FlatConfiguration?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, columns),
           ExportType: exportType
         };
 

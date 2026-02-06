@@ -6,7 +6,7 @@ import type {
     FilterWithPaginationEnquiryRequest
 } from '@/features/enquiry/models/EnquiryModel';
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
-import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
+import { useDebouncedCallback } from "@/core/hooks/useDebouncedCallback";
 import { DataTable, type FilterInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import usePagination from "@/core/hooks/usePagination";
 import { useNavigate } from "react-router-dom";
@@ -68,7 +68,7 @@ export const Enquiry: React.FC = () => {
     const { canAction, canExport } = useMenuPermissions();
     //#endregion
 
-    const { listState, updateListState, resetFilters, clearEnquiryContext } = useEnquiryListState();
+    const { listState, updateListState, resetFilters } = useEnquiryListState();
     const { page, filters, sortInfo, searchTerm } = listState;
     //#endregion
 
@@ -159,7 +159,7 @@ export const Enquiry: React.FC = () => {
             loadEnquiry(page, filters, sortInfo);
 
         }
-    }, [projectId, page, filters, sortInfo, searchTerm, clearEnquiryContext, loadEnquiry]);
+    }, [projectId, page, filters, sortInfo, searchTerm, loadEnquiry]);
 
     useEffect(() => {
         setPagination({ currentPage: page });
@@ -172,25 +172,26 @@ export const Enquiry: React.FC = () => {
     //#endregion
 
     //#region SEARCH & CLEAR
-    const debouncedSearch = useDebouncedCallback((value: string, isSerach: boolean = true) => {
-        let filterParams: FilterInfo = {};
+    const debouncedSearch = useDebouncedCallback((value: string) => {
+        const trimmed = value.trim();
 
-        if (value.trim() === '') {
-            updateListState({ searchTerm: '', filters: {}, page: 1 });
+        if (trimmed === '') {
+            updateListState({ searchTerm: '', page: 1 });
             return;
         }
 
-        if (isSerach) {
-
-            filterParams = { BuildingName: value.trim() };
-        }
-
-        updateListState({ searchTerm: value, filters: filterParams, page: 1 });
+        updateListState({ searchTerm: trimmed, page: 1 });
     }, 350);
+
+    useEffect(() => {
+        return () => {
+            debouncedSearch.cancel?.();
+        };
+    }, [debouncedSearch]);
 
     const handleSearchEnquiry = (searchValue: string) => {
         updateListState({ searchTerm: searchValue });
-        debouncedSearch(searchValue, false);
+        debouncedSearch(searchValue);
     };
     //#endregion
 
@@ -839,7 +840,7 @@ export const Enquiry: React.FC = () => {
                     setSelectedEnquiryColumnKeys(withRequired);
 
                     try {
-                        LocalStorageHelper.storeEarningMasterTableColumns?.(
+                        LocalStorageHelper.storeEnquiryTableColumns?.(
                             JSON.stringify(withRequired)
                         );
                     } catch { }

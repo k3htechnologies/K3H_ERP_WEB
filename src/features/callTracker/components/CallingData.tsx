@@ -32,7 +32,6 @@ export default function CallingData() {
     //FILTER STATES
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-
     const [filters, setFilters] = useState<FilterInfo>({});
 
     //#region MENU PERMISSIONS

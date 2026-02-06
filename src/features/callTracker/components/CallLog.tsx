@@ -12,7 +12,7 @@ import * as E from 'fp-ts/Either';
 import { Edit, Trash2 } from "lucide-react";
 import { Button, Input } from "@/ui/components/forms";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
-import { getCallTrackerStatuscolor } from "@/features/callTracker/pages/Status";
+import { getCallTrackerStatuscolor } from "@/features/callTracker/utils/Status";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { updateFilter } from "@/core/utils/filterHelper";
@@ -55,7 +55,6 @@ export default function CallLog() {
     //FILTER STATES
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-
     const [filters, setFilters] = useState<FilterInfo>({});
 
     //CUSTOMIZE COLUMN MODAL
@@ -71,13 +70,12 @@ export default function CallLog() {
     //#region PROJECT SELECTION GET ID
     const { projectId } = useProject();
     //#endregion
-    
+
     // TOAST
     const { addToast } = useToast();
 
     //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
 
     //#region DATA LOADING | FETCH |  LOAD | SEARCH
     const loadCallLogData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {

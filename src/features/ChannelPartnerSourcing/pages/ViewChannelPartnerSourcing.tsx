@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import type { ChannelPartnerSourcingData } from "../models/ChannelPartnerSourcingModel";
+import type { ChannelPartnerSourcingData, AddUpdateChannelPartnerSourcingRequest } from "../models/ChannelPartnerSourcingModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
@@ -12,7 +12,26 @@ import type { FilterWithPaginationChannelPartnerSourcingRequest } from "../model
 import { ChannelPartnerSourcingService } from "../services/ChannelPartnerSourcingService";
 import { useChannelPartnerSourcingListState } from "../context/ChannelPartnerSourcingListStateContext";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { fetchChannelPartnerByMobileNumber } from "@/features/ChannelPartner/channelPartnerDropDown";
+import { fetchChannelPartnerById } from "@/features/ChannelPartner/channelPartnerDropDown";
+import { Button } from "@/ui/components/forms/Button";
+import { Modal } from "@/ui/components/Modal/Modal";
+import { TextArea } from "@/ui/components/forms/Textarea";
+import RadioPill from "@/ui/components/forms/RadioPill";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import { Edit, Trash2 } from "lucide-react";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import { Tabs, type TabItem } from "@/ui/components/Tab/Tab";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+
+const initialFormState = (): AddUpdateChannelPartnerSourcingRequest => ({
+  ChannelPartnerSourcingId: 0,
+  Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  ChannelPartnerId: 0,
+  ProjectId: 0,
+  SourcingRemark: "",
+  IBM_OBM: "IBM"
+});
+
 
 const ViewChannelPartnerSourcing: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +41,18 @@ const ViewChannelPartnerSourcing: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
 
-  const [sourcingData, setSourcingData] = useState<ChannelPartnerSourcingData | null>(null);
+  const [sourcingDataList, setSourcingDataList] = useState<ChannelPartnerSourcingData[]>([]);
+  const [activeTab, setActiveTab] = useState<"IBM" | "OBM">("IBM");
+  const [isRemarkModalOpen, setIsRemarkModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedRemark, setSelectedRemark] = useState<ChannelPartnerSourcingData | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const [formData, setFormData] = useState<AddUpdateChannelPartnerSourcingRequest>(() => initialFormState());
+
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+
+  const [ibmobm, setIbmObm] = useState<string>("IBM");
 
   const { listState } = useChannelPartnerSourcingListState();
 
@@ -31,6 +61,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
   //SET CHANNEL PARTNER DETAILS
   const [channelPartnerId, setChannelPartnerId] = useState<number>();
   const [channelPartnerFullName, setChannelPartnerFullName] = useState<string>();
+  const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] = useState<string>();
   const [channelPartnerCompanyName, setChannelPartnerCompanyName] = useState<string>();
   const [channelPartnerFirmsType, setChannelPartnerFirmsType] = useState<string>();
   const [channelPartnerPanNumber, setChannelPartnerPanNumber] = useState<string>();
@@ -41,17 +72,20 @@ const ViewChannelPartnerSourcing: React.FC = () => {
     if (listState.channelPartnerId) {
       loadSourcingDetails();
     }
-  }, [listState.channelPartnerId]);
+  }, [listState.channelPartnerId, activeTab]);
 
   useEffect(() => {
-    const mobile = listState.channelPartnerMobileNumber?.trim() || "";
+    const channelPartnerId = listState.channelPartnerId || 0;
 
-    fetchChannelPartnerByMobileNumber(mobile).then(channelPartner => {
+
+    fetchChannelPartnerById(Number(channelPartnerId)).then(channelPartner => {
+
       if (!channelPartner) return;
 
       setChannelPartnerId(Number(channelPartner.ChannelPartnerId));
 
       setChannelPartnerFullName(channelPartner.Name ?? "");
+      setChannelPartnerMobileNumber(channelPartner.MobileNumber ?? "");
       setChannelPartnerFirmsType(channelPartner.FirmsType ?? "");
       setChannelPartnerCompanyName(channelPartner.CompanyName ?? "");
       setChannelPartnerPanNumber(channelPartner.PanNumber ?? "");
@@ -59,18 +93,17 @@ const ViewChannelPartnerSourcing: React.FC = () => {
       setChannelPartnerRERANUmber(channelPartner.RERANumber ?? "");
     });
 
-  }, [listState.channelPartnerMobileNumber]);
+  }, [listState.channelPartnerId]);
 
   const loadSourcingDetails = async () => {
-
     await runApiWithLoader(
-
       setIsLoading,
       setLoadingMessage,
       async () => {
+
         const params: FilterWithPaginationChannelPartnerSourcingRequest = {
           PageNumber: 1,
-          PageSize: 1,
+          PageSize: 100,
           ChannelPartnerId: listState.channelPartnerId || undefined,
           ProjectId: projectId || undefined,
         };
@@ -79,7 +112,18 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          setSourcingData(response.right.Data?.[0] || null);
+          const filteredData = (response.right.Data || []).filter(
+            item => item.IBM_OBM === activeTab
+          );
+
+          filteredData.sort((a, b) => {
+            const dateA = a.CreatedDate ? new Date(a.CreatedDate).getTime() : 0;
+            const dateB = b.CreatedDate ? new Date(b.CreatedDate).getTime() : 0;
+            return dateB - dateA;
+          });
+
+          setSourcingDataList(filteredData);
+
         } else {
           addToast({ type: "error", title: response.left.message });
         }
@@ -99,9 +143,159 @@ const ViewChannelPartnerSourcing: React.FC = () => {
     navigate("/sourcing");
   };
 
-  const handleEdit = () => {
-    if (!sourcingData?.ChannelPartnerSourcingId) return;
-    navigate(`/sourcing/add`);
+  //#region HANDLE FILED CHNAGE EVENT
+  const handleFieldChange = (field: keyof AddUpdateChannelPartnerSourcingRequest, value: any) => {
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+  //#endregion
+
+  const handleOpenRemarkModal = (item?: ChannelPartnerSourcingData) => {
+    if (item) {
+      setFormData({
+        ChannelPartnerSourcingId: item.ChannelPartnerSourcingId,
+        Uniquekey: item.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        ChannelPartnerId: item.ChannelPartnerId,
+        ProjectId: projectId || 0,
+        SourcingRemark: item.SourcingRemark || "",
+        IBM_OBM: item.IBM_OBM || activeTab
+      });
+      setIbmObm(item.IBM_OBM || activeTab);
+      setIsEditMode(true);
+      setSelectedRemark(item);
+    } else {
+      setFormData({
+        ChannelPartnerSourcingId: 0,
+        Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        ChannelPartnerId: listState.channelPartnerId || 0,
+        ProjectId: projectId || 0,
+        SourcingRemark: "",
+        IBM_OBM: activeTab
+      });
+      setIbmObm(activeTab);
+      setIsEditMode(false);
+      setSelectedRemark(null);
+    }
+    setErrors({});
+    setIsRemarkModalOpen(true);
+  };
+
+  const handleCloseRemarkModal = () => {
+    setIsRemarkModalOpen(false);
+    setIsEditMode(false);
+    setSelectedRemark(null);
+    setFormData({
+      ChannelPartnerSourcingId: 0,
+      Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      ChannelPartnerId: 0,
+      ProjectId: 0,
+      SourcingRemark: "",
+      IBM_OBM: activeTab
+    });
+    setErrors({});
+  };
+
+  const validateRemarkForm = (): boolean => {
+    const errors: { SourcingRemark?: string; IBM_OBM?: string } = {};
+
+    if (!formData.SourcingRemark?.trim()) {
+      errors.SourcingRemark = "Remark is required";
+    }
+    if (!formData.IBM_OBM?.trim()) {
+      errors.IBM_OBM = "IBM / OBM selection is required";
+    }
+
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleRemarkFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateRemarkForm()) {
+      return;
+    }
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const params: AddUpdateChannelPartnerSourcingRequest = {
+          ChannelPartnerSourcingId: formData.ChannelPartnerSourcingId,
+          Uniquekey: formData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          ChannelPartnerId: channelPartnerId || 0,
+          ProjectId: projectId || 0,
+          SourcingRemark: formData.SourcingRemark?.trim() || "",
+          IBM_OBM: formData.IBM_OBM
+        };
+
+        const response = await ChannelPartnerSourcingService.apiCallAddUpdateChannelPartnerSourcing(params);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+          handleCloseRemarkModal();
+          loadSourcingDetails();
+
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: "error", title: error.message });
+      },
+      undefined,
+      isEditMode ? "Updating Remark" : "Adding Remark"
+    );
+  };
+
+  const handleDeleteRemark = (item: ChannelPartnerSourcingData) => {
+    setSelectedRemark(item);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDeleteRemark = async () => {
+    if (!selectedRemark) return;
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const response = await ChannelPartnerSourcingService.apiCallDeleteChannelPartnerSourcing({
+          ChannelPartnerSourcingId: selectedRemark.ChannelPartnerSourcingId,
+          Uniquekey: selectedRemark.Uniquekey || ""
+        });
+
+        if (E.isRight(response)) {
+
+          addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+          setIsDeleteDialogOpen(false);
+
+          setSelectedRemark(null);
+
+          loadSourcingDetails();
+
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: "error", title: error.message });
+      },
+      undefined,
+      "Deleting Remark"
+    );
   };
 
 
@@ -113,13 +307,11 @@ const ViewChannelPartnerSourcing: React.FC = () => {
       </Loader>
 
       <HeaderActionBar
-        titleText="Channel Partner Sourcing : "
+        titleText="Channel Partner : "
         subTitleText={listState.channelPartnerName || ""}
         cancelText="Back"
         EditText="Edit"
         onCancel={handleBackToList}
-        canAction={canAction}
-        onEdit={handleEdit}
         isLoading={false}
       />
 
@@ -128,28 +320,192 @@ const ViewChannelPartnerSourcing: React.FC = () => {
           <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
             <div className="grid grid-cols-2 gap-x-10 gap-y-6 p-4">
               <FieldItem label="Full Name" value={channelPartnerFullName || '-'} />
+              <FieldItem label="Personal Mobile No." value={channelPartnerMobileNumber ? `+91 ${channelPartnerMobileNumber}` : '-'}  />
               <FieldItem label="Company Name" value={channelPartnerCompanyName || '-'} />
               <FieldItem label="Firms Type" value={channelPartnerFirmsType || '-'} />
               <FieldItem label="PAN Number" value={channelPartnerPanNumber || '-'} />
               <FieldItem label="Aadhaar Card Number" value={channelPartnerAadhaarCardNumber || '-'} />
               <FieldItem label="RERA Number" value={channelPartnerRERANUmber || '-'} />
+
             </div>
           </div>
         </div>
 
         <div className="col-span-7">
           <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
-            <div className="mt-2 pb-2 border-b-2 border-gray-300">
-              <h1 className="text-gray-500 font-medium text-sm">
-                Channel Partner Sourcing Details
-              </h1>
+            <div className="border-b pb-2 mt-1">
+              <div className="flex items-start justify-between">
+                <h1 className="text-lg font-semibold text-black">
+                  Remark & Activity
+                </h1>
+                <div className="flex items-center gap-2">
+                  <Button
+                    color="blue"
+                    size="sm"
+                    onClick={() => handleOpenRemarkModal()}
+                    title="Add Remark"
+                  >
+                    Add Remark
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div className="mt-4 space-y-3 text-sm text-gray-700">
+
+            {/* IBM/OBM Tabs */}
+            <div className="mt-4">
+              <Tabs
+                tabs={[
+                  { id: "IBM", label: "IBM" },
+                  { id: "OBM", label: "OBM" }
+                ]}
+                defaultActive={activeTab}
+                onTabChange={(tab: TabItem) => {
+                  setActiveTab(tab.id as "IBM" | "OBM");
+                }}
+                isChips={true}
+              />
+            </div>
+
+            {/* Timeline */}
+            <div className="mt-3">
+              {sourcingDataList?.length > 0 ? (
+                sourcingDataList.map((item, index) => {
+                  const isModified = !!(item.ModifiedBy && item.ModifiedDate);
+
+                  return (
+                    <div
+                      key={item.ChannelPartnerSourcingId}
+                      className="grid grid-cols-[24px_1fr] gap-3"
+                    >
+                      {/* LEFT — DOT + LINE */}
+                      <div className="flex flex-col items-center">
+                        <div className="h-4 w-4 rounded-full bg-blue-600"></div>
+
+                        {index !== sourcingDataList.length - 1 && (
+                          <div className="w-[3px] bg-blue-600 flex-1"></div>
+                        )}
+                      </div>
+
+                      {/* RIGHT — CONTENT */}
+                      <div>
+                        <div className="flex items-center gap-3">
+
+                          <span className="font-semibold text-gray-900">
+                            {formatDate_dd_MonthName_yy_hh_mm(
+                              isModified ? item.ModifiedDate! : item.CreatedDate ?? ""
+                            )}
+                          </span>
+
+                          <span className="font-medium text-gray-400 text-sm">
+                            {isModified ? item.ModifiedBy : item.CreatedBy}
+                          </span>
+
+                          {index === 0 && canAction && (
+                            <div className="flex items-center gap-1 ml-auto">
+                              <Button
+                                color="transparent"
+                                isborderRadius
+                                size="sm"
+                                style={{ color: "blue", padding: "4px 8px" }}
+                                title="Edit"
+                                onClick={() => handleOpenRemarkModal(item)}
+                                disabled={isLoading}
+                                leftIcon={<Edit className="h-4 w-4" />}
+                              />
+
+                              <Button
+                                color="transparent"
+                                isborderRadius
+                                size="sm"
+                                style={{ color: "red", padding: "4px 8px" }}
+                                title="Delete"
+                                onClick={() => handleDeleteRemark(item)}
+                                disabled={isLoading}
+                                leftIcon={<Trash2 className="h-4 w-4" />}
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        <p className="mt-2 text-sm text-gray-700 leading-relaxed pb-5">
+                          {item.SourcingRemark || "-"}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <NoDataView message={`No remarks found for ${activeTab}`} />
+                </div>
+              )}
 
             </div>
           </div>
         </div>
       </div>
+
+      {/* Add/Edit Remark Modal */}
+      <Modal
+        isOpen={isRemarkModalOpen}
+        onClose={handleCloseRemarkModal}
+        title={isEditMode ? "Update Remark" : "Add Remark"}
+        onSubmit={handleRemarkFormSubmit}
+        saveText={isEditMode ? "Update" : "Add"}
+        loading={isLoading}
+        size="xl"
+      >
+        <div className="space-y-4">
+
+          <div className="flex gap-3">
+
+            <RadioPill
+              name="IBM_OBM"
+              label="IBM"
+              value={formData.IBM_OBM ?? ''}
+              checked={ibmobm === "IBM"}
+              onChange={() => {
+                setIbmObm("IBM");
+                handleFieldChange("IBM_OBM", "IBM");
+              }}
+            />
+
+            <RadioPill
+              name="IBM_OBM"
+              label="OBM"
+              value={formData.IBM_OBM ?? ''}
+              checked={ibmobm === "OBM"}
+              onChange={() => {
+                setIbmObm("OBM");
+                handleFieldChange("IBM_OBM", "OBM");
+              }}
+
+            />
+
+          </div>
+          <TextArea
+            label="Remark"
+            placeholder="Enter Remark"
+            required
+            className='thin-scroll'
+            value={formData.SourcingRemark}
+            onChange={(e) => handleFieldChange("SourcingRemark", e.target.value)}
+            error={errors.SourcingRemark} />
+
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setSelectedRemark(null);
+        }}
+        onConfirm={handleConfirmDeleteRemark}
+        loading={isLoading}
+        pageName='Remark'
+      />
     </div>
   );
 };

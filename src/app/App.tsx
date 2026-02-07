@@ -75,7 +75,7 @@ import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
 import { ChannelPartner } from '@/features/ChannelPartner/pages/ChannelPartner';
 import { AddUpdateChannelPartner } from '@/features/ChannelPartner/pages/AddUpdateChannelPartner';
 import { ChannelPartnerSourcing } from '@/features/ChannelPartnerSourcing/pages/ChannelPartnerSourcing';
-import AddUpdateChannelPartnerSourcing from '@/features/ChannelPartnerSourcing/pages/AddUpdateChannelPartnerSourcing';
+
 import ViewChannelPartnerSourcing from '@/features/ChannelPartnerSourcing/pages/ViewChannelPartnerSourcing';
 import BuildingDescription from '@/features/building/pages/BuildingDescription';
 import BuildingDocument from '@/features/building/pages/BuildingDocument';
@@ -322,8 +322,7 @@ function App() {
            
             <Route path="sourcing" element={<ChannelPartnerSourcingListStateProvider><ChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
             <Route path="sourcing/view" element={<ChannelPartnerSourcingListStateProvider><ViewChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
-            <Route path="sourcing/add" element={<ChannelPartnerSourcingListStateProvider><AddUpdateChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
-
+           
             <Route path="enquiry" element={<EnquiryListStateProvider><Enquiry /></EnquiryListStateProvider>} />
             <Route path="enquiry/view/:EnquiryId?" element={<EnquiryListStateProvider><ViewEnquiry /></EnquiryListStateProvider>} />
             <Route path="enquiry/add/:EnquiryId?" element={<EnquiryListStateProvider><AddUpdateEnquiry /></EnquiryListStateProvider>} />

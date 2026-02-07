@@ -14,6 +14,8 @@ import { useChannelPartnerSourcingListState } from '@/features/ChannelPartnerSou
 import { useNavigate } from 'react-router-dom';
 import type { ChannelPartnerData, FilterWithPaginationChannelPartnerRequest } from '@/features/ChannelPartner/models/ChannelPartnerModel';
 import { ChannelPartnerService } from '@/features/ChannelPartner/services/ChannelPartnerService';
+import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
 
 export const ChannelPartnerSourcing: React.FC = () => {
 
@@ -206,7 +208,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         width: '16',
         sortable: false,
         align: 'left',
-        render: value => (value ? `+91 ${value}` : '-')
+        render: value => value || '-'
       },
       {
         key: 'EmailId',
@@ -217,22 +219,60 @@ export const ChannelPartnerSourcing: React.FC = () => {
         render: value => value || '-'
       },
       {
-        key: 'RERANumber',
-        label: 'RERA Number',
-        width: '16',
+        key: 'PanNumber',
+        label: 'Pan Number',
+        width: '12',
         sortable: false,
-        align: 'left',
-        render: value => value || '-'
+        align: 'center',
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.PanCardURL)}
+              title="Pan Card Document"
+              triggerLabel={value || '-'}
+              isWrap={false}
+            />
+          );
+        }
       },
       {
-        key: 'OfficeAddress',
-        label: 'Office Address',
-        width: '24',
+        key: 'AadharCardNumber',
+        label: 'Aadhaar Card Number',
+        width: '12',
         sortable: false,
-        align: 'left',
-        render: value => (
-          <TooltipText text={value || '-'} maxWidth="260px" tooltipThreshold={26} />
+        align: 'center',
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.AadharCardURL)}
+              title="Aadhaar Document"
+              triggerLabel={value || '-'}
+              isWrap={false}
+            />
+          );
+        }
+      },
+      {
+        key: 'GSTNumber',
+        label: 'GST Number',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => (
+          <TooltipText
+            text={value || '-'}
+            maxWidth="150px"
+            tooltipThreshold={15}
+          />
         )
+      },
+      {
+        key: 'RERANumber',
+        label: 'RERA Number',
+        width: '12',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
       },
     ],
     [canAction]

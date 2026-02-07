@@ -412,6 +412,29 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE CHANNEL PARTNER SOURCING COLUMNS
+    storeChannelPartnerSourcingTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Channel Partner Sourcing Columns Details:', error);
+        }
+    },
+    //#endregion
+    //#region GET CHANNEL PARTNER SOURCING COLUMNS
+    getChannelPartnerSourcingTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS);
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Channel Partner Sourcing Columns Details:', error);
+                return null;
+            }
+        }
+        return null;
+    },
+    //#endregion
     //#region STORE ENQUIRY MASTER COLUMNS
     storeEnquiryTableColumns: (columns: string): void => {
         try {

@@ -50,6 +50,7 @@ const initialFormState = (): AddUpdateBuildingRequest => ({
 const AddUpdateBuilding: React.FC = () => {
 
   //#region STATE MANAGEMENT
+  
   const [formData, setFormData] = useState<AddUpdateBuildingRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');

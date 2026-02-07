@@ -15,6 +15,7 @@ export const LOCAL_STORAGE_KEYS = {
     VENDOR_SELECTED_COLUMNS: 'vendor.selectedColumns',
     COMPANY_MASTER_SELECTED_COLUMNS: 'companyMaster.selectedColumns',
     CHANNEL_PARTNER_SELECTED_COLUMNS: 'channelPartnerMaster.selectedColumns',
+    CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS: 'channelPartnerSourcing.selectedColumns',
     ENQUIRY_SELECTED_COLUMNS: 'enquiry.selectedColumns',
     BANK_LIST_MASTER_SELECTED_COLUMNS: 'bankListMaster.selectedColumns',
     HOLIDAY_MASTER_SELECTED_COLUMNS: 'holidayMaster.selectedColumns',
@@ -59,5 +60,6 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     LEAVECREDITCONFIGURATION:'LeaveCreditConfiguration.listState',
     LEAVE:'leave.listState',
     OUTDOOR:'outdoor.listState',
-    CHANNEL_PARTNER: 'channelPartner.listState'
+    CHANNEL_PARTNER: 'channelPartner.listState',
+    CHANNEL_PARTNER_SOURCING: 'channelPartnerSourcing.listState'
 } as const

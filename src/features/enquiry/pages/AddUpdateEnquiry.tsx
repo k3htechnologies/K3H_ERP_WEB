@@ -91,7 +91,7 @@ export const AddUpdateEnquiry: React.FC = () => {
     const [channelPartnerId, setChannelPartnerId] = useState<number>();
     const [calculatedAge, setCalculatedAge] = useState<string>();
 
-    //SET EMPLOYEE MASTER DETAILS
+    //SET CHANNEL PARTNER DETAILS
 
     const [channelPartnerFullName, setChannelPartnerFullName] = useState<string>();
     const [channelPartnerCompanyName, setChannelPartnerCompanyName] = useState<string>();

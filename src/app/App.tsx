@@ -74,6 +74,9 @@ import ViewTenant from '@/features/tenant/pages/ViewTenant';
 import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
 import { ChannelPartner } from '@/features/ChannelPartner/pages/ChannelPartner';
 import { AddUpdateChannelPartner } from '@/features/ChannelPartner/pages/AddUpdateChannelPartner';
+import { ChannelPartnerSourcing } from '@/features/ChannelPartnerSourcing/pages/ChannelPartnerSourcing';
+import AddUpdateChannelPartnerSourcing from '@/features/ChannelPartnerSourcing/pages/AddUpdateChannelPartnerSourcing';
+import ViewChannelPartnerSourcing from '@/features/ChannelPartnerSourcing/pages/ViewChannelPartnerSourcing';
 import BuildingDescription from '@/features/building/pages/BuildingDescription';
 import BuildingDocument from '@/features/building/pages/BuildingDocument';
 import { BuildingListStateProvider } from '@/features/building/context/BuildingListStateContext';
@@ -84,6 +87,7 @@ import { EmployeeListStateProvider } from '@/features/employeeMaster/context/Emp
 import { CompanyListStateProvider } from '@/features/companyMaster/context/CompanyListStateContext';
 import { VendorListStateProvider } from '@/features/vendor/context/VendorListStateContext';
 import { ChannelPartnerListStateProvider } from '@/features/ChannelPartner/context/ChannelPartnerListStateContext';
+import { ChannelPartnerSourcingListStateProvider } from '@/features/ChannelPartnerSourcing/context/ChannelPartnerSourcingListStateContext';
 import { ProjectMasterListStateProvider } from '@/features/projectMaster/context/ProjectMasterListStateContext';
 import { AssetMasterListStateProvider } from '@/features/assetMaster/context/AssetMasterListStateContext';
 import { AssetMappingMasterListStateProvider } from '@/features/assetMappingMaster/context/AssetMappingMasterListStateContext';
@@ -315,6 +319,10 @@ function App() {
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
+           
+            <Route path="sourcing" element={<ChannelPartnerSourcingListStateProvider><ChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
+            <Route path="sourcing/view" element={<ChannelPartnerSourcingListStateProvider><ViewChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
+            <Route path="sourcing/add" element={<ChannelPartnerSourcingListStateProvider><AddUpdateChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
 
             <Route path="enquiry" element={<EnquiryListStateProvider><Enquiry /></EnquiryListStateProvider>} />
             <Route path="enquiry/view/:EnquiryId?" element={<EnquiryListStateProvider><ViewEnquiry /></EnquiryListStateProvider>} />

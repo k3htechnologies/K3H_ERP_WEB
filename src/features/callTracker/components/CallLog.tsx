@@ -34,7 +34,7 @@ const initialFormState = (): UpdateCallLogRequest => ({
     Remark: '',
 });
 
-export default function CallLog() {
+export const CallLog: React.FC = () => {
 
     // STATE
     const [callLogList, setCallLogList] = useState<CallLogData[]>([]);
@@ -785,7 +785,4 @@ export default function CallLog() {
         </div>
     );
 };
-
-
-
-
+export default CallLog;

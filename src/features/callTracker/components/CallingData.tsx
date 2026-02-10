@@ -24,8 +24,12 @@ import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 
 
-export default function CallingData() {
+export const CallingData: React.FC = () => {
 
+    // STATE
+    const [callingDataList, setCallingDataList] = useState<CallingDataData[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortInfo, setSortInfo] = useState<SortInfo>();
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
@@ -51,10 +55,6 @@ export default function CallingData() {
     // TOAST
     const { addToast } = useToast();
 
-    // STATE
-    const [CallingDataList, setCallingDataList] = useState<CallingDataData[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [sortInfo, setSortInfo] = useState<SortInfo>();
 
     //CUSTOMIZE COLUMN MODAL
     const [isShowCustomizeCallingDataColumnsModal, setIsShowCustomizeCallingDataColumnsModal] = useState(false);
@@ -359,9 +359,10 @@ export default function CallingData() {
         }),
         [pagination, handlePageChange]
     )
-    const CallingDataForTable = useMemo(() => CallingDataList, [CallingDataList]);
-    //#region
+    const CallingDataForTable = useMemo(() => callingDataList, [callingDataList]);
+    //#endregion
 
+    //#region
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
@@ -482,3 +483,4 @@ export default function CallingData() {
         </div>
     );
 }
+export default CallingData;

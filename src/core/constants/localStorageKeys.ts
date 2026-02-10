@@ -21,6 +21,7 @@ export const LOCAL_STORAGE_KEYS = {
     LITIGATION_SELECTED_COLUMNS: 'litigation.selectedColumns',
     CALLING_DATA_SELECTED_COLUMNS: 'callTracker.selectedColumns',
     CALL_LOG_SELECTED_COLUMNS: 'callLog.selectedColumns',
+    SALE_TARGET_SELECTED_COLUMNS: 'saleTarget.selectedColumns',
     APPROVED_BANK_FOLDER_SELECTED_COLUMNS: 'approvedBank.selectedColumns',
     MARKETING_CONTENT_FOLDER_SELECTED_COLUMNS: 'marketingContent.selectedColumns',
     HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS: 'holidayMappingMaster.selectedColumns',

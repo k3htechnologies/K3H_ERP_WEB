@@ -1019,23 +1019,23 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
-    //#region STORE CALL DATA COLUMNS
+    //#region STORE CALLING DATA COLUMNS
     storeCallingDataTableColumns: (columns: string): void => {
         try {
             localStorage.setItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS, columns);
         } catch (error) {
-            console.error('Error Call Data Columns Details:', error)
+            console.error('Error Calling Data Columns Details:', error)
         }
     },
     //#endregion
-    //#region GET CALL DATA COLUMNS
+    //#region GET CALLING DATA COLUMNS
     getCallingDataTableColumns: (): string | null => {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS)
         if (stored) {
             try {
                 return localStorage.getItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS);
             } catch (error) {
-                console.error('Error reading Call Data Columns Details:', error)
+                console.error('Error reading Calling Data Columns Details:', error)
                 return null
             }
         }
@@ -1059,6 +1059,29 @@ export const LocalStorageHelper = {
                 return localStorage.getItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS);
             } catch (error) {
                 console.error('Error reading Call Log Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE SALE TARGET COLUMNS
+    storeSaleTargetTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.SALE_TARGET_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Sale Target Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET SALE TARGET COLUMNS
+    getSaleTargetTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SALE_TARGET_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.SALE_TARGET_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Sale Target Columns Details:', error)
                 return null
             }
         }

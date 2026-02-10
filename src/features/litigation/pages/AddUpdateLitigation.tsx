@@ -152,9 +152,7 @@ export const AddUpdateLitigation: React.FC = () => {
 
         if (!formData.Title?.trim()) {
             newErrors.Title = 'Title  is required.';
-        } else if (formData.Title.trim().length > 50) {
-            newErrors.Title = 'Title  must be at most 50 characters';
-        }
+        } 
         if (!formData.DateOfFilling) {
             newErrors.DateOfFilling = 'Date Of Filling is required.';
         }
@@ -289,7 +287,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                     value={formData.Title ?? ""}
                                     onChange={(e) => handleFieldChange("Title", e.target.value)}
                                     placeholder="Enter Title "
-                                    maxLength={50}
+                                    maxLength={250}
                                     error={errors.Title}
                                 />
                             </div>
@@ -319,11 +317,11 @@ export const AddUpdateLitigation: React.FC = () => {
                                 <Input
                                     type="text"
                                     required
-                                    label='Case Number'
+                                    label='Case / Petition / Dispute Number'
                                     value={formData.CaseNumber?.toUpperCase() ?? ""}
                                     onChange={(e) => handleFieldChange("CaseNumber", e.target.value)}
                                     placeholder="Enter Case Number"
-                                    maxLength={16}
+                                    maxLength={250}
                                     error={errors.CaseNumber}
                                 />
                             </div>
@@ -374,10 +372,10 @@ export const AddUpdateLitigation: React.FC = () => {
                                 <Input
                                     type="text"
                                     required
-                                    label='Plantiff'
+                                    label='Plainiff'
                                     value={formData.Plantiff ?? ""}
                                     onChange={(e) => handleFieldChange("Plantiff", e.target.value)}
-                                    placeholder="Enter Plantiff"
+                                    placeholder="Enter Plainiff"
                                     maxLength={250}
                                     error={errors.Plantiff}
                                 />
@@ -387,7 +385,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                 <Input
                                     type="text"
                                     required
-                                    label='Defendant'
+                                    label='Defendant / Opposite Party / Respondent'
                                     value={formData.Defendant ?? ""}
                                     onChange={(e) => handleFieldChange("Defendant", e.target.value)}
                                     placeholder="Enter Defendant"
@@ -425,7 +423,7 @@ export const AddUpdateLitigation: React.FC = () => {
 
                         <div>
                             <TextArea
-                                label="Case Brief"
+                                label="Case Brief / Petition / Suit"
                                 required
                                 className='thin-scroll'
                                 value={formData.CaseBrief ?? ""}
@@ -436,7 +434,7 @@ export const AddUpdateLitigation: React.FC = () => {
 
                         <div>
                             <TextArea
-                                label="Remarks"
+                                label=" Case Remarks / Comments"
                                 required
                                 className='thin-scroll'
                                 value={formData.Remark ?? ""}

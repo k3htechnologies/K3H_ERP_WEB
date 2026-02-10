@@ -131,6 +131,8 @@ import { MarketingContentListStateProvider } from '@/features/marketingContent/c
 import MarketingContentFolder from '@/features/marketingContent/pages/MarketingContentFolder';
 import MarketingContent from '@/features/marketingContent/pages/MarketingContent';
 import CallTracker from '@/features/callTracker/pages/CallTracker';
+import { SaleTarget } from '@/features/saleTarget/pages/SaleTarget';
+import { AddUpdateSaleTarget } from '@/features/saleTarget/pages/AddUpdateSaleTarget';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -324,6 +326,9 @@ function App() {
             <Route path="enquiry/add/:EnquiryId?" element={<EnquiryListStateProvider><AddUpdateEnquiry /></EnquiryListStateProvider>} />
 
             <Route path="callTracker" element={<CallTracker />} />
+
+            <Route path="target" element={<SaleTarget />} />
+            <Route path="saleTarget/add" element={<AddUpdateSaleTarget />} />
 
 
             {/* REDEVELOPMENT */}

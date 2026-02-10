@@ -362,13 +362,6 @@ function App() {
             <Route path="siteProgress/SiteProgressConstructionActivity" element={<SiteProgressConstructionActivity />} />
             <Route path="siteProgress/SiteProgressConstructionSubActivity" element={<SiteProgressConstructionSubActivity />} />
 
-
-            {/* LITIGATION */}
-            <Route path='litigation' element={<LitigationListStateProvider><Litigation /></LitigationListStateProvider>} />
-            <Route path='litigation/add/:LitigationId?' element={<LitigationListStateProvider><AddUpdateLitigation /></LitigationListStateProvider>} />
-            <Route path='litigation/view' element={<LitigationListStateProvider><ViewLitigation /></LitigationListStateProvider>} />
-            <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
-
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

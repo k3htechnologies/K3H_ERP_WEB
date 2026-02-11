@@ -12,6 +12,7 @@ export type LitigationListState = {
   projectId: number | null;
   LitigationId: number;
   Title: string;
+  
 };
 
 const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.LITIGATION;

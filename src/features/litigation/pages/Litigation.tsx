@@ -116,7 +116,6 @@ export const Litigation: React.FC = () => {
     //#endregion
 
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
-
     const loadLitigation = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
         await runApiWithLoader(
             setIsLoading,
@@ -242,7 +241,7 @@ export const Litigation: React.FC = () => {
 
     //#region NAVIGATE TO LITIGATION DOCUMENT
     const handleViewLitigationDocument = useCallback((row: LitigationData) => {
-        updateListState({ LitigationId: row.LitigationId, Title: row.Title});
+        updateListState({ LitigationId: row.LitigationId, Title: row.Title });
         navigate('/litigation/document');
 
     }, [navigate, updateListState]);
@@ -399,33 +398,30 @@ export const Litigation: React.FC = () => {
             fixed: 'right',
             align: 'center',
             render: (_value, row) => {
-                const status = row?.Status?.toLowerCase();
-
+                
                 if (!canAction) return null;
 
                 return (
                     <div className="flex items-center justify-center gap-2">
-                        {(status === 'open' || status === 'reopen') && (
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleViewLitigationDocument(row);
-                                }}
-                                color="transparent"
-                                isborderRadius
-                                size="sm"
-                                style={{
-                                    color: 'green',
-                                    padding: '4px 8px',
-                                }}
-                                title="Litigation Document"
-                            >
-                                <FileText className="h-4 w-4" />
-                            </Button>
-                        )}
+                        <Button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleViewLitigationDocument(row);
+                            }}
+                            color="transparent"
+                            isborderRadius
+                            size="sm"
+                            style={{
+                                color: 'green',
+                                padding: '4px 8px',
+                            }}
+                            title="Litigation Document"
+                        >
+                            <FileText className="h-4 w-4" />
+                        </Button>
 
-                        {status === 'open' && (
+                        {row?.IsDelete && (
                             <Button
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -444,6 +440,7 @@ export const Litigation: React.FC = () => {
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         )}
+
                     </div>
                 );
             }

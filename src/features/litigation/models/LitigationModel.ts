@@ -33,7 +33,7 @@ export interface LitigationData {
     Remark: string | ''
     CaseBrief: string | ''
     AddUpdateLitigationDocuments: string | ''
-    ProjectName: string | ''
+    IsDelete: boolean | false
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

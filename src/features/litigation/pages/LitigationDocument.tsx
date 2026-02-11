@@ -26,6 +26,8 @@ import { litigationDocumentService } from '@/features/litigation/services/Litiga
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { useLitigationListState } from '@/features/litigation/context/LitigationListStateContext';
+import type { FilterWithPaginationLitigationRequest, LitigationData } from '@/features/litigation/models/LitigationModel';
+import { litigationService } from '../services/LitigationServices';
 
 const initialFormState = (): AddUpdateLitigationDocumentRequest => ({
     LitigationDocumentId: 0,
@@ -40,6 +42,7 @@ const initialFormState = (): AddUpdateLitigationDocumentRequest => ({
 export const LitigationDocument: React.FC = () => {
 
     //#region STATE MANAGEMENT
+    const [litigationData, setLitigationData] = useState<LitigationData | null>(null);
     const [LitigationDocumentList, setLitigationDocumentList] = useState<LitigationDocumentData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -90,15 +93,19 @@ export const LitigationDocument: React.FC = () => {
     const { listState } = useLitigationListState();
     const currentLitigationId = LitigationId ? Number(LitigationId) : listState.LitigationId;
 
+    const litigationStatus = litigationData?.Status
+    const canModifyDocument = litigationStatus === 'Open' || litigationStatus === 'Reopen';
+
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions();
     //#endregion
 
-    //#region INITIALIZATION
+    //#region INIT
     useEffect(() => {
 
         if (!projectId) return;
         fetchLitigationDocumentList();
+        fetchLitigationDetails();
     }, [projectId, currentLitigationId])
 
     //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
@@ -138,7 +145,7 @@ export const LitigationDocument: React.FC = () => {
     }, [isAddUpdateModalOpen, editingLitigationDocumentData, projectId]);
     //#endregion
 
-    //#region DATA LOADING | FETCH |  LOAD | SEARCH 
+    //#region DATA LOADING | FETCH |  LOAD | SEARCH LITIGATION DOCUMENT
     const fetchLitigationDocumentList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadLitigationDocument(page, sort, searchTerm);
     }
@@ -152,7 +159,7 @@ export const LitigationDocument: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
-                    LitigationId:currentLitigationId,
+                    LitigationId: currentLitigationId,
                     DocumentName: searchtext?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, LitigationDocumentColumns),
                 };
@@ -181,6 +188,41 @@ export const LitigationDocument: React.FC = () => {
         )
     }
     //#endregion
+    
+    //#region FETCH LITIGATION DETAILS
+    const fetchLitigationDetails = async () => {
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationLitigationRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    LitigationId: currentLitigationId,
+                    ProjectId: Number(projectId)
+                };
+                const response = await litigationService.apiCallPullLitigation(params);
+
+                if (E.isRight(response)) {
+
+                    const data = response.right.Data;
+
+                    setLitigationData(Array.isArray(data) ? data[0] ?? null : data);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Litigation'
+        );
+    };
 
     //#region SERACH LITIGATION DOCUMENT 
     const searchLitigationDocuments = async (searchValue: string) => {
@@ -301,47 +343,35 @@ export const LitigationDocument: React.FC = () => {
 
                         <div className="flex justify-between items-center">
 
-                            {canAction && (
+                            {canModifyDocument && (
                                 <>
                                     <Button
-                                        color='transparent'
-                                        size='sm'
-                                        style={{
-                                            color: '#0B3251',
-                                            padding: '0px 8px'
-                                        }}
+                                        color="transparent"
+                                        size="sm"
+                                        style={{ color: '#0B3251', padding: '0px 8px' }}
                                         onClick={(e) => {
-                                            e.preventDefault()
-                                            e.stopPropagation()
-                                            setIsAddUpdateModalOpen(false)
-                                            handleEditLitigationDocument(row)
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            handleEditLitigationDocument(row);
                                         }}
                                         leftIcon={<Edit className="h-4 w-4" />}
-                                    >
-                                    </Button>
-
+                                    />
 
                                     <Button
-                                        color='transparent'
-                                        size='sm'
-                                        style={{
-                                            color: 'red',
-                                            padding: '0px 8px'
-                                        }}
+                                        color="transparent"
+                                        size="sm"
+                                        style={{ color: 'red', padding: '0px 8px' }}
                                         onClick={(e) => {
-                                            e.preventDefault()
-                                            e.stopPropagation()
-                                            setIsAddUpdateModalOpen(false)
-
-                                            handleConfirmationDialogBoxOpen(row)
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            handleConfirmationDialogBoxOpen(row);
                                         }}
                                         leftIcon={<Trash2 className="h-4 w-4" />}
-                                    >
-                                    </Button>
+                                    />
                                 </>
                             )}
-                        </div>
 
+                        </div>
                     </div>
                 )
             },
@@ -381,7 +411,7 @@ export const LitigationDocument: React.FC = () => {
                 render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
             }
         ],
-        [canAction, handleEditLitigationDocument, handleConfirmationDialogBoxOpen]
+        [canAction, canModifyDocument, handleEditLitigationDocument, handleConfirmationDialogBoxOpen]
     )
     //#endregion
 
@@ -496,15 +526,10 @@ export const LitigationDocument: React.FC = () => {
                     await loadLitigationDocument(pagination.currentPage || 1, sortInfo, searchTerm);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
-
                     setEditingLitigationDocumentData(null);
-
                     setDocumentFiles([]);
-
                     setDocumentURL('');
-
                     setRemovedDocumentURLs([]);
-                    
                 }
                 else {
                     addToast({ type: "error", title: response.left?.message });
@@ -617,7 +642,7 @@ export const LitigationDocument: React.FC = () => {
                 isShowCustomizeButton={false}
 
                 // ADD
-                isShowAddButton={canAction}
+                isShowAddButton={canAction && canModifyDocument}
                 addTitle="Add"
                 onAdd={handleAddLitigationDocumentModal}
 

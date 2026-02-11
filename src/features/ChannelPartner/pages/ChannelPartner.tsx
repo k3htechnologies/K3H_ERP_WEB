@@ -26,7 +26,6 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { Trash2 } from 'lucide-react';
-import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
@@ -50,8 +49,6 @@ export const ChannelPartner: React.FC = () => {
 
   // TOAST
   const { addToast } = useToast();
-
-  const { projectId } = useProject();
 
   // CONTEXT STATE
   const { listState, updateListState } = useChannelPartnerListState();
@@ -123,6 +120,7 @@ export const ChannelPartner: React.FC = () => {
           ChannelPartnerName: searchtext ?? filterParams.Name?.trim() ?? undefined,
           CompanyName: filterParams.CompanyName?.trim() || undefined,
           FirmsType: filterParams.FirmsType?.trim() || undefined,
+          Type: filterParams.Type?.trim() || undefined,
           MobileNumber: filterParams.MobileNumber?.trim() || undefined,
           OfficeAddress: filterParams.OfficeAddress?.trim() || undefined,
           GSTNumber: filterParams.GSTNumber?.trim() || undefined,
@@ -130,9 +128,9 @@ export const ChannelPartner: React.FC = () => {
           PanNumber: filterParams.PanNumber?.trim() || undefined,
           AadharCardNumber: filterParams.AadharCardNumber?.trim() || undefined,
           Speciality: filterParams.Speciality?.trim() || undefined,
-          ProjectName: filterParams.ProjectName?.trim() || undefined,
-          SortBy: getSortByParam(sortInfo ?? null, ChannelPartnerColumns),
-          ProjectId: Number(projectId),
+          CityName: filterParams.CityName?.trim() || undefined,
+          VillageName: filterParams.VillageName?.trim() || undefined,
+          SortBy: getSortByParam(sortInfo ?? null, ChannelPartnerColumns)
 
         };
 
@@ -173,7 +171,7 @@ export const ChannelPartner: React.FC = () => {
       updateListState({ filters: {}, searchTerm: '' });
 
       fetchChannelPartnerList(1);
-      
+
       return
     }
 
@@ -211,6 +209,7 @@ export const ChannelPartner: React.FC = () => {
           ChannelPartnerName: filters.Name?.trim() || undefined,
           CompanyName: filters.CompanyName?.trim() || undefined,
           FirmsType: filters.FirmsType?.trim() || undefined,
+          Type: filters.Type?.trim() || undefined,
           MobileNumber: filters.MobileNumber?.trim() || undefined,
           OfficeAddress: filters.OfficeAddress?.trim() || undefined,
           GSTNumber: filters.GSTNumber?.trim() || undefined,
@@ -218,8 +217,8 @@ export const ChannelPartner: React.FC = () => {
           PanNumber: filters.PanNumber?.trim() || undefined,
           AadharCardNumber: filters.AadharCardNumber?.trim() || undefined,
           Speciality: filters.Speciality?.trim() || undefined,
-          ProjectName: filters.ProjectName?.trim() || undefined,
-          ProjectId: Number(projectId),
+          CityName: filters.CityName?.trim() || undefined,
+          VillageName: filters.VillageName?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, ChannelPartnerColumns),
           ExportType: exportType
         };
@@ -386,6 +385,31 @@ export const ChannelPartner: React.FC = () => {
       )
     },
     {
+            key: 'SystemGeneratedCode',
+            label: 'Unique Code',
+            width: '20',
+            sortable: true,
+            fixed: 'left',
+            align: 'left',
+            render: value => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="150px"
+                    tooltipThreshold={20}
+                    tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                />
+            )
+        },
+    
+     {
+      key: 'Designation',
+      label: 'Designation',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || '-'
+    },
+    {
       key: 'CompanyName',
       label: 'Company Name',
       width: '15',
@@ -401,6 +425,15 @@ export const ChannelPartner: React.FC = () => {
       align: 'center',
       render: (value) => value || '-'
     },
+    {
+      key: 'Type',
+      label: 'Type',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || '-'
+    },
+   
     {
       key: 'EmailId',
       label: 'Email Id',
@@ -418,14 +451,7 @@ export const ChannelPartner: React.FC = () => {
       render: (value) => value ? `+91 ${value}` : '-'
     },
 
-    {
-      key: 'OfficeAddress',
-      label: 'Office Address',
-      width: '12',
-      sortable: false,
-      align: 'center',
-      render: (value) => value || '-'
-    },
+    
 
     {
       key: 'PanNumber',
@@ -478,6 +504,46 @@ export const ChannelPartner: React.FC = () => {
     {
       key: 'RERANumber',
       label: 'RERA Number',
+      width: '12',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || '-'
+    },
+    {
+      key: 'CountryName',
+      label: 'Country',
+      width: '14',
+      sortable: false,
+      align: 'left',
+      render: value => value || '-'
+    },
+    {
+      key: 'DistrictName',
+      label: 'District',
+      width: '14',
+      sortable: false,
+      align: 'left',
+      render: value => value || '-'
+    },
+    {
+      key: 'CityName',
+      label: 'City',
+      width: '14',
+      sortable: false,
+      align: 'left',
+      render: value => value || '-'
+    },
+    {
+      key: 'VillageName',
+      label: 'Village',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || '-'
+    },
+    {
+      key: 'OfficeAddress',
+      label: 'Office Address',
       width: '12',
       sortable: false,
       align: 'center',
@@ -763,6 +829,14 @@ export const ChannelPartner: React.FC = () => {
           </div>
           <div>
             <Input type="text"
+              label='Type'
+              value={tempFilters?.Type ?? ''}
+              onChange={e => handleFilterChange('Type', e.target.value)}
+              placeholder="Enter Type" />
+          </div>
+
+          <div>
+            <Input type="text"
               label='Mobile Number'
               value={tempFilters?.MobileNumber ?? ''}
               onChange={e => handleFilterChange('MobileNumber', e.target.value)}
@@ -811,11 +885,24 @@ export const ChannelPartner: React.FC = () => {
               placeholder="Enter Speciality" />
           </div>
           <div>
-            <Input type="text"
-              label='Project Name'
-              value={tempFilters?.ProjectName ?? ''}
-              onChange={e => handleFilterChange('ProjectName', e.target.value)}
-              placeholder="Enter Project Name" />
+
+            <Input
+              label='City'
+              type="text"
+              value={tempFilters.CityName || ''}
+              onChange={e => handleFilterChange('CityName', e.target.value)}
+              placeholder="Enter City"
+            />
+          </div>
+          <div>
+
+            <Input
+              label='Village'
+              type="text"
+              value={tempFilters.VillageName || ''}
+              onChange={e => handleFilterChange('VillageName', e.target.value)}
+              placeholder="Enter Village"
+            />
           </div>
         </div>
       </Modal>

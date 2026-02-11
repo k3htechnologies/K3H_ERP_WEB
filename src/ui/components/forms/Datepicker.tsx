@@ -40,6 +40,7 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
   minYear = 1950,
   maxYear = new Date().getFullYear() + 20,
   disabled = false,
+  isDisplayCurrentDate = false,
   helperText,
 }) => {
   const theme = THEME
@@ -51,6 +52,12 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
   const initialDate = parseDdMmYyyy(value)
   const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate)
   const [currentMonth, setCurrentMonth] = useState<Date>(initialDate ?? new Date())
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0);
+
+  const isToday = (d: Date) => isSameDay(d, today)
+
 
   /* ================= Portal Position (ONLY LOGIC CHANGE) ================= */
 
@@ -128,6 +135,17 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
     setSelectedDate(parsed)
     if (parsed) setCurrentMonth(parsed)
   }, [value])
+
+  useEffect(() => {
+    if (!value && isDisplayCurrentDate) {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      setSelectedDate(today)
+      setCurrentMonth(today)
+      onChange(formatDdMmYyyy(today))
+    }
+  }, [isDisplayCurrentDate])
 
   /* ================= Calendar Logic ================= */
 
@@ -315,12 +333,17 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
                       border: 'none',
                       cursor: 'pointer',
                       fontSize: theme.fontSize.sm,
-                      backgroundColor: isSameDay(date, selectedDate)
-                        ? theme.colors.primary1
-                        : 'transparent',
-                      color: isSameDay(date, selectedDate)
-                        ? '#fff'
-                        : theme.colors.text,
+                      backgroundColor:
+                        isSameDay(date, selectedDate) ||
+                          (!selectedDate && isToday(date))
+                          ? theme.colors.primary1
+                          : 'transparent',
+                      color:
+                        isSameDay(date, selectedDate) ||
+                          (!selectedDate && isToday(date))
+                          ? '#fff'
+                          : theme.colors.text,
+
                     }}
                   >
                     {date.getDate()}

@@ -48,6 +48,8 @@ export interface EnquiryData {
     DateOfBirth: string | null;
 
     CurrentLocation: string | null;
+    VillageMasterId: string | null;
+    VillageName: string | null;
     OccupationType: string | null;
     Accommodation: string | null;
 
@@ -60,11 +62,29 @@ export interface EnquiryData {
 
     Source: string | null;
     SubSource: string | null;
-    SubSubSource?: string | null;
+    SubSubSource: string | null;
+
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+    ReferelName: string | null;
+    ReferelMobileNumber: string | null;
+    ReferelProjectName: string | null;
+    ReferelUnitNumber: string | null;
+
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+    LoyaltyExistingProjectName: string | null;
+    LoyaltyExistingUnitNumber: string | null;
+
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+    EmployeeReferenceMobileNumber: string | null;
+    EmployeeReferenceName: string | null;
 
     ChannelPartnerId: number | null;
     ChannelPartnerName: string | null;
     ChannelPartnerMobileNumber: number | null;
+
+    ChannelPartnerTeamMemberId: number;
+    ChannelPartnerTeamMemberName: string | null;
+    ChannelPartnerTeamMemberMobileNumber: string | null;
 
     FinalStage: string | null;
     FinalStageDetail: string | null;
@@ -80,6 +100,7 @@ export interface EnquiryData {
     CustomerClassification: string | null;
     SourceOfFunding: string | null;
     Ethnicity: string | null;
+    Timeline: string | null;
 
     SalesAdvisorId: number | null;
     SalesAdvisor: string | null;
@@ -138,6 +159,24 @@ export interface AddUpdateEnquiryRequest {
     SubSource?: string | null;
     SubSubSource?: string | null;
 
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+    ReferelName: string | null;
+    ReferelMobileNumber: string | null;
+    ReferelProjectName: string | null;
+    ReferelUnitNumber: string | null;
+
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+    LoyaltyExistingProjectName: string | null;
+    LoyaltyExistingUnitNumber: string | null;
+
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+    EmployeeReferenceMobileNumber: string | null;
+    EmployeeReferenceName: string | null;
+
+    ChannelPartnerTeamMemberId?: number | null;
+    ChannelPartnerTeamMemberName?: string | null;
+    ChannelPartnerTeamMemberMobileNumber?: string | null;
+
     Nationality?: string | null;
     CountryOfResidence?: string | null;
     CityOfResidence?: string | null;
@@ -154,6 +193,7 @@ export interface AddUpdateEnquiryRequest {
     CustomerClassification?: string | null;
     SourceOfFunding?: string | null;
     Ethnicity?: string | null;
+    Timeline?: string | null;
 
     FinalStage?: string | null;
     FinalStageDetail?: string | null;
@@ -167,6 +207,8 @@ export interface AddUpdateEnquiryRequest {
     EnquiryTimeIn?: string | null;
 
     Remark?: string | null;
+
+    VillageMasterId?: string | null;
 }
 
 

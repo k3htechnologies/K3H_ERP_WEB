@@ -368,22 +368,7 @@ export const Enquiry: React.FC = () => {
     //#region TABLE COLUMNS
     const EnquiryColumns = useMemo<TableColumn[]>(() => [
 
-        {
-            key: 'SystemGeneratedCode',
-            label: 'Unique Code',
-            width: '20',
-            sortable: true,
-            fixed: 'left',
-            align: 'left',
-            render: value => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="140px"
-                    tooltipThreshold={14}
-                    tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-                />
-            )
-        },
+        
         {
             key: 'Name',
             label: 'Name',
@@ -397,6 +382,22 @@ export const Enquiry: React.FC = () => {
                     maxWidth="250px"
                     tooltipThreshold={25}
                     onClick={() => handleNavigateToView(row)}
+                />
+            )
+        },
+        {
+            key: 'SystemGeneratedCode',
+            label: 'Unique Code',
+            width: '20',
+            sortable: true,
+            fixed: 'left',
+            align: 'left',
+            render: value => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="150px"
+                    tooltipThreshold={20}
+                    tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
                 />
             )
         },
@@ -551,7 +552,7 @@ export const Enquiry: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
-       
+
         {
             key: 'SourceOfFunding',
             label: 'Source Of Funding',
@@ -642,19 +643,21 @@ export const Enquiry: React.FC = () => {
             width: '12',
             fixed: 'right',
             align: 'center',
-            render: (_value, row) => (
-                canAction ? (
-                    <div className="flex items-center justify-center gap-2">
+            render: (_value, row) => {
 
+                const canDelete =canAction && row?.FinalStage?.toLowerCase() !== "lost";;
+
+                return canDelete ? (
+                    <div className="flex items-center justify-center gap-2">
                         <Button
                             onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
                                 handleConfirmationDialogBoxOpen(row)
                             }}
-                            color='transparent'
+                            color="transparent"
                             isborderRadius
-                            size='sm'
+                            size="sm"
                             style={{
                                 color: 'red',
                                 padding: '4px 8px'
@@ -665,13 +668,14 @@ export const Enquiry: React.FC = () => {
                         </Button>
                     </div>
                 ) : null
-            )
+            }
         }
+
     ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
     //#endregion
 
     //#region COLUMN CUSTOMIZATION
-    const requiredEnquiryColumnKeys: string[] = ['Name','Actions'];
+    const requiredEnquiryColumnKeys: string[] = ['Name', 'Actions'];
 
     const allEnquiryColumnKeys: string[] = EnquiryColumns.map(c => c.key);
 
@@ -947,7 +951,7 @@ export const Enquiry: React.FC = () => {
                     <div>
                         <Input type="text" label="Accommodation" value={tempFilters?.Accommodation ?? ''} onChange={e => handleFilterChange('Accommodation', e.target.value)} placeholder="Enter Accommodation" />
                     </div>
-                   
+
                     <div>
                         <Input type="text" label="Follow Up Days" value={tempFilters?.EnquiryFollowUpDays ?? ''} onChange={e => handleFilterChange('EnquiryFollowUpDays', e.target.value)} placeholder="Enter Follow Up Days" />
                     </div>

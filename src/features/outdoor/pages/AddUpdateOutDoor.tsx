@@ -418,6 +418,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
               </div>
 
               <div className="space-y-1">
+
                 <MultiSelectPagination
                   label="Accompanied By"
                   required
@@ -434,6 +435,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                   }}
                   disabled={!!outdoorFormData.PunchIn || !outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
                 />
+                
               </div>
 
 

@@ -139,6 +139,12 @@ import MarketingContent from '@/features/marketingContent/pages/MarketingContent
 import AddUpdatePayTrackRent from '@/features/payTrackRent/pages/AddUpdatePayTrackRent';
 import ViewPayTrackRent from '@/features/payTrackRent/pages/ViewPayTrackRent';
 import { RentListStateProvider } from '@/features/rent/context/RentListStateContext';
+import { BookingListStateProvider } from '@/features/booking/context/BookingListStateContext';
+import Booking from '@/features/booking/pages/Booking';
+import AddUpdateBooking from '@/features/booking/pages/AddUpdateBooking';
+import ViewBooking from '@/features/booking/pages/ViewBooking';
+import CallTracker from '@/features/callTracker/pages/CallTracker';
+import OtherCharges from '@/features/otherCharges/pages/OtherCharges';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -319,13 +325,21 @@ function App() {
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
-           
+
             <Route path="sourcing" element={<ChannelPartnerSourcingListStateProvider><ChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
             <Route path="sourcing/view" element={<ChannelPartnerSourcingListStateProvider><ViewChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
-           
+
             <Route path="enquiry" element={<EnquiryListStateProvider><Enquiry /></EnquiryListStateProvider>} />
             <Route path="enquiry/view/:EnquiryId?" element={<EnquiryListStateProvider><ViewEnquiry /></EnquiryListStateProvider>} />
             <Route path="enquiry/add/:EnquiryId?" element={<EnquiryListStateProvider><AddUpdateEnquiry /></EnquiryListStateProvider>} />
+
+            <Route path="callTracker" element={<CallTracker />} />
+
+            <Route path="otherCharges" element={<OtherCharges />} />
+
+            <Route path="booking" element={<BookingListStateProvider><Booking /></BookingListStateProvider>} />
+            <Route path="booking/view" element={<BookingListStateProvider><ViewBooking /></BookingListStateProvider>} />
+            <Route path="booking/add" element={<BookingListStateProvider><AddUpdateBooking /></BookingListStateProvider>} />
 
             {/* REDEVELOPMENT */}
 

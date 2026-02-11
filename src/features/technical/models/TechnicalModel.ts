@@ -87,7 +87,23 @@ export interface FilterMagicLinkWithValidate {
 
 //#endregion END  NOTIFICATION
 
+//#region VILLAGE
+export interface FilterWithPaginationVillageRequest {
+    PageSize: number | 0
+    PageNumber: number | 0
+    VillageMasterId?: number | 0
+    VillageName?: string | ''
+}
+
+export interface VillageData {
+    VillageMasterId: number | 0
+    VillageName: string | ''
+}
+
+//#endregion END
+
 export type TechnicalListResponse = ApiResponse<TechnicalData[]>;
 export type NotificationListResponse = ApiResponse<NotificationData[]>;
 export type CountryStateCityDistrictVillageListResponse = ApiResponse<CountryStateCityDistrictVillageDataWrapper[]>;
 export type MaterialSubMaterialMasterUOMListResponse = ApiResponse<{ MaterialMasterSubMaterialMasterData: MaterialSubMaterialUOM[] }>
+export type VillageListResponse = ApiResponse<VillageData[]>;

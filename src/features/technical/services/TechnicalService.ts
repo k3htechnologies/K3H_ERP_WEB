@@ -1,7 +1,7 @@
 import type { Failure } from '@/core/api/FailureResponse';
 import * as E from 'fp-ts/Either';
 import { TechnicalDatasourceImpl } from '@/features/technical/datasources/TechnicalDatasource';
-import type { CountryStateCityDistrictVillageListResponse, FilterMagicLinkWithValidate, FilterPullExcelSample, FilterRefreshTokenRequest, FilterWithPaginationMaterialSubMaterialMasterUOM, FilterWithPaginationNotificationRequest, MaterialSubMaterialMasterUOMListResponse, NotificationListResponse, TechnicalListResponse } from '@/features/technical/models/TechnicalModel';
+import type { CountryStateCityDistrictVillageListResponse, FilterMagicLinkWithValidate, FilterPullExcelSample, FilterRefreshTokenRequest, FilterWithPaginationMaterialSubMaterialMasterUOM, FilterWithPaginationNotificationRequest, FilterWithPaginationVillageRequest, MaterialSubMaterialMasterUOMListResponse, NotificationListResponse, TechnicalListResponse, VillageListResponse } from '@/features/technical/models/TechnicalModel';
 import type { ApiResponse } from '@/core/api/ApiResponse';
 
 const technicalDatasource = new TechnicalDatasourceImpl();
@@ -95,6 +95,18 @@ export const technicalService = {
         try {
 
             return E.right(await technicalDatasource.pullMagicLinkWithValidate(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallPullVillage: async (params: FilterWithPaginationVillageRequest): Promise<E.Either<Failure, VillageListResponse>> => {
+        try {
+
+            return E.right(await technicalDatasource.pullVillage(params));
 
         } catch (error: any) {
 

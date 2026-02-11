@@ -43,6 +43,11 @@ export const LOCAL_STORAGE_KEYS = {
     OUTDOOR_SELECTED_COLUMNS: 'outdoor.selectedColumns',
     REDEVELOPMENT_BUILDING_COLUMNS: 'redevelopmentBuilding.selectedColumns',
     LITIGATION_SELECTED_COLUMNS: 'litigation.selectedColumns',
+    
+    CALLING_DATA_SELECTED_COLUMNS: 'callTracker.selectedColumns',
+    CALL_LOG_SELECTED_COLUMNS: 'callLog.selectedColumns',
+    OTHER_CHARGES_SELECTED_COLUMNS: 'otherCharges.selectedColumns',
+
 
 } as const
 
@@ -57,9 +62,9 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     SHIFT_MASTER: 'shiftMaster.listState',
     WEEK_OFF_MASTER: 'weekOffMaster.listState',
     LITIGATION: 'Litigation.listState',
-    LEAVECREDITCONFIGURATION:'LeaveCreditConfiguration.listState',
-    LEAVE:'leave.listState',
-    OUTDOOR:'outdoor.listState',
+    LEAVECREDITCONFIGURATION: 'LeaveCreditConfiguration.listState',
+    LEAVE: 'leave.listState',
+    OUTDOOR: 'outdoor.listState',
     CHANNEL_PARTNER: 'channelPartner.listState',
     CHANNEL_PARTNER_SOURCING: 'channelPartnerSourcing.listState'
 } as const

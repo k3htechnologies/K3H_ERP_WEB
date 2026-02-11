@@ -46,7 +46,6 @@ export const LOCAL_STORAGE_KEYS = {
     
     CALLING_DATA_SELECTED_COLUMNS: 'callTracker.selectedColumns',
     CALL_LOG_SELECTED_COLUMNS: 'callLog.selectedColumns',
-    OTHER_CHARGES_SELECTED_COLUMNS: 'otherCharges.selectedColumns',
 
 
 } as const

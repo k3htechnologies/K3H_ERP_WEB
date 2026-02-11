@@ -1044,30 +1044,6 @@ export const LocalStorageHelper = {
     },
     //#endregion
 
-    //#region STORE OTHER CHARGES COLUMNS
-    storeOtherChargesTableColumns: (columns: string): void => {
-        try {
-            localStorage.setItem(LOCAL_STORAGE_KEYS.OTHER_CHARGES_SELECTED_COLUMNS, columns);
-        } catch (error) {
-            console.error('Error Other Charges Columns Details:', error)
-        }
-    },
-    //#endregion
-    //#region GET OTHER CHARGES COLUMNS
-    getOtherChargesTableColumns: (): string | null => {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.OTHER_CHARGES_SELECTED_COLUMNS)
-        if (stored) {
-            try {
-                return localStorage.getItem(LOCAL_STORAGE_KEYS.OTHER_CHARGES_SELECTED_COLUMNS);
-            } catch (error) {
-                console.error('Error reading Other Charges Columns Details:', error)
-                return null
-            }
-        }
-        return null
-    },
-    //#endregion
-
     //#region STORE CALLING DATA COLUMNS
     storeCallingDataTableColumns: (columns: string): void => {
         try {
@@ -1154,7 +1130,6 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.OTHER_CHARGES_SELECTED_COLUMNS);
 
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);

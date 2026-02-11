@@ -76,6 +76,8 @@ export interface FilterWithPaginationAttendanceRegularizationRequest {
     AttendanceRegularizationId?: number;
     StartDate?: string;
     EndDate?: string;
+    EmployeeId?: number;
+    EmployeeName?: string;
     SortBy?: string;
     IsReport?: boolean;
     ExportType?: 'Excel' | 'PDF';

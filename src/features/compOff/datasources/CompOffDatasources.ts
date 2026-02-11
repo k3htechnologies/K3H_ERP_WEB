@@ -28,36 +28,33 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
 
     async pullCompOff(params: FilterWithPaginationCompOff, signal?: AbortSignal): Promise<CompOffListResponse> {
         try {
-            debugger
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
                 CompOffId: (params.CompOffId ?? 0).toString(),
-
+            
             })
 
             if (params.StartDate) {
                 // Convert YYYY-MM-DD to ISO format if needed (already ISO if contains 'T')
-                const start = params.StartDate.includes('T')
-                    ? params.StartDate
+                const start = params.StartDate.includes('T') 
+                    ? params.StartDate 
                     : `${params.StartDate}T00:00:00Z`;
                 queryParams.append('StartDate', start);
             }
             if (params.EndDate) {
                 // Convert YYYY-MM-DD to ISO format if needed (already ISO if contains 'T')
-                const end = params.EndDate.includes('T')
-                    ? params.EndDate
+                const end = params.EndDate.includes('T') 
+                    ? params.EndDate 
                     : `${params.EndDate}T00:00:00Z`;
                 queryParams.append('EndDate', end);
             }
             if (params.Reason?.trim()) queryParams.append('Reason', params.Reason.trim());
-            if (params.Status?.trim()) queryParams.append('Status', params.Status.trim());
             if (params.EmployeeId !== undefined && params.EmployeeId !== null) queryParams.append('EmployeeId', params.EmployeeId.toString());
             if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
-            if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
-            if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString());
+            if(params.IsReport) queryParams.append('IsReport', params.IsReport.toString());
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${CompOffApi.PULL}?${queryParams.toString()}`, { signal }

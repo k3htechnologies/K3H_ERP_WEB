@@ -1090,6 +1090,29 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE BOOKING COLUMNS
+    storeBookingTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error BOOKING Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET BOOKING COLUMNS
+    getBookingTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Booking Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
 
     //#region CLEAR LOCAL STORAGE 
     clearLocalStorageData: (): void => {
@@ -1130,6 +1153,7 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS);
+             localStorage.removeItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
 
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);

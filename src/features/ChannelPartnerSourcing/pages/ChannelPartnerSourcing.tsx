@@ -195,29 +195,74 @@ export const ChannelPartnerSourcing: React.FC = () => {
         )
       },
       {
-        key: 'MobileNumber',
-        label: 'Mobile Number',
-        width: '16',
-        sortable: false,
+        key: 'SystemGeneratedCode',
+        label: 'Unique Code',
+        width: '20',
+        sortable: true,
+        fixed: 'left',
         align: 'left',
-        render: value => (value ? `+91 ${value}` : '-')
+        render: value => (
+          <TooltipText
+            text={value || '-'}
+            maxWidth="150px"
+            tooltipThreshold={20}
+            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+          />
+        )
+      },
+
+      {
+        key: 'Designation',
+        label: 'Designation',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
       },
       {
         key: 'CompanyName',
         label: 'Company Name',
-        width: '16',
+        width: '15',
         sortable: false,
-        align: 'left',
-        render: value => value || '-'
+        align: 'center',
+        render: (value) => value || '-'
       },
       {
+        key: 'FirmsType',
+        label: 'Firm Type',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'Type',
+        label: 'Type',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+
+      {
         key: 'EmailId',
-        label: 'Email',
-        width: '20',
+        label: 'Email Id',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'MobileNumber',
+        label: 'Mobile Number',
+        width: '15',
         sortable: false,
         align: 'left',
-        render: value => value || '-'
+        render: (value) => value ? `+91 ${value}` : '-'
       },
+
+
+
       {
         key: 'PanNumber',
         label: 'Pan Number',
@@ -269,6 +314,46 @@ export const ChannelPartnerSourcing: React.FC = () => {
       {
         key: 'RERANumber',
         label: 'RERA Number',
+        width: '12',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'CountryName',
+        label: 'Country',
+        width: '14',
+        sortable: false,
+        align: 'left',
+        render: value => value || '-'
+      },
+      {
+        key: 'DistrictName',
+        label: 'District',
+        width: '14',
+        sortable: false,
+        align: 'left',
+        render: value => value || '-'
+      },
+      {
+        key: 'CityName',
+        label: 'City',
+        width: '14',
+        sortable: false,
+        align: 'left',
+        render: value => value || '-'
+      },
+      {
+        key: 'VillageName',
+        label: 'Village',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'OfficeAddress',
+        label: 'Office Address',
         width: '12',
         sortable: false,
         align: 'center',

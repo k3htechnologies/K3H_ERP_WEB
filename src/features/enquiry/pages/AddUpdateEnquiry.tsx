@@ -25,7 +25,7 @@ import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 import RadioPill from "@/ui/components/forms/RadioPill";
 import { RangeSelector } from "@/ui/components/forms/RangeSelector";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
-import { calculateAge, isDateWithinPastDays } from "@/core/utils/comman";
+import { calculateAge, isDateWithinPastDays, isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { fetchChannelPartnerByMobileNumber, fetchChannelPartnerTeamMemberDropdown } from "@/features/ChannelPartner/channelPartnerDropDown";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
@@ -472,9 +472,6 @@ export const AddUpdateEnquiry: React.FC = () => {
             newErrors.ChannelPartnerTeamMemberMobileNumber = 'Enter a valid 10-digit mobile number';
         }
 
-
-
-
         if (!formData.EnquiryDate) {
             newErrors.EnquiryDate = "Enquiry date is required";
         } else if (!isDateWithinPastDays(formData.EnquiryDate, 2)) {
@@ -492,6 +489,10 @@ export const AddUpdateEnquiry: React.FC = () => {
         if (!formData.NextFollowUpDate) {
             newErrors.NextFollowUpDate = 'Next Follow-Up Date is required';
         }
+
+        if (formData.NextFollowUpDate && !isToDateGreaterOrEqualFromDate(formData.EnquiryDate || "", formData.NextFollowUpDate!)) {
+              newErrors.NextFollowUpDate = "Next Follow Up Date must be greater than or equal to Enquiry Date";
+            }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -515,14 +516,14 @@ export const AddUpdateEnquiry: React.FC = () => {
         });
 
         // =====================[DIRECT WALKING → REFERENCE]=========================
-        const isDirectReference = formData.Source === 'DIRECT WALKING' && formData.SubSource === 'REFERENCE';
+        const isDirectReference = formData.Source?.toUpperCase() === 'DIRECT WALKING' && formData.SubSource?.toUpperCase() === 'REFERENCE';
         // =====================[DIRECT WALKING → LOYALTY]=========================
-        const isDirectLoyalty = formData.Source === 'DIRECT WALKING' && formData.SubSource === 'LOYALTY';
+        const isDirectLoyalty = formData.Source?.toUpperCase() === 'DIRECT WALKING' && formData.SubSource?.toUpperCase() === 'LOYALTY';
 
         // =====================[DIRECT WALKING → EMPLOYEE REFERENCE]=========================
-        const isEmployeeReference = formData.Source === 'DIRECT WALKING' && formData.SubSource === 'EMPLOYEE REFERENCE';
+        const isEmployeeReference = formData.Source?.toUpperCase() === 'DIRECT WALKING' && formData.SubSource?.toUpperCase() === 'EMPLOYEE REFERENCE';
 
-        const isIndian = formData.Nationality === '' || formData.Nationality === 'Indian';
+        const isIndian = formData.Nationality === '' || formData.Nationality?.toUpperCase() === 'Indian';
 
         return {
             EnquiryId: formData.EnquiryId,

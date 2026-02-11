@@ -420,18 +420,20 @@ export const Rent: React.FC = () => {
       { key: 'ApplicantType', label: 'Applicant Type', width: '18' },
       { key: 'FlatType', label: 'Existing Unit Type', width: '18' },
       { key: 'FlatCarpetAreaSqFt', label: 'Existing Carpet Area (SqFt)', width: '18' },
-      {
-        key: 'ProposedOfferAmount',
-        label: 'Proposed Offer Amount (₹)',
-        width: '20',
-        align: 'right',
-        render: (_, row) => {
-          return `${row.ProposedOfferAmount || 0} ${row.Unit || ''}`;
-        }
-      },
-
-
+      
     ];
+
+    const proposedOfferColumn: TableColumn[] =
+    ['Rent', 'Brokerage','Additional Rent'].includes(activeTab)
+      ? [{
+          key: 'ProposedOfferAmount',
+          label: 'Proposed Offer Amount (₹)',
+          width: '20',
+          align: 'right',
+          render: (_, row) =>
+            `${row.ProposedOfferAmount || 0} ${row.Unit || ''}`
+        }]
+      : [];
 
     const dynamicColumns: TableColumn[] = dynamicHeaders.map(h => ({
       key: h,
@@ -534,8 +536,8 @@ export const Rent: React.FC = () => {
       }]
       : [];
 
-    return [...baseColumns, ...dynamicColumns, ...actionColumn];
-  }, [dynamicHeaders, canAction, buildingId, buildingName, activeTab, activeTenureTab, navigate, setPayTrackRentContext, updateListState, filters]);
+    return [...baseColumns,...proposedOfferColumn, ...dynamicColumns, ...actionColumn];
+  }, [dynamicHeaders, canAction,activeTab, buildingId, buildingName, activeTab, activeTenureTab, navigate, setPayTrackRentContext, updateListState, filters]);
 
 
   const paginationInfo: PaginationInfo = {

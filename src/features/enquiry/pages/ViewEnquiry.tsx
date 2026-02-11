@@ -430,6 +430,7 @@ const ViewEnquiry: React.FC = () => {
 
 
                             <FieldItem label="Customer Time In" value={safe(enquiryData?.EnquiryTimeIn)} />
+                            <FieldItem label="Customer Time Out" value={safe(enquiryData?.EnquiryTimeOut)} />
 
                         </div>
                         <hr className="border-t border-gray-200" />
@@ -451,8 +452,8 @@ const ViewEnquiry: React.FC = () => {
                                         <FieldItem label="Channel Partner " value={safe(enquiryData?.ChannelPartnerName)} />
                                         <FieldItem label="Channel Partner Number" value={safe(enquiryData?.ChannelPartnerMobileNumber) ? `+91 ${safe(enquiryData?.ChannelPartnerMobileNumber)}` : '-'} />
 
-                                        <FieldItem label="Cp Team Member Name " value={safe(enquiryData?.ChannelPartnerTeamMemberName)} />
-                                        <FieldItem label="Cp Team Member Mobile Number" value={safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber) ? `+91 ${safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber)}` : '-'} />
+                                        {enquiryData?.ChannelPartnerTeamMemberName && (<FieldItem label="Cp Team Member Name " value={safe(enquiryData?.ChannelPartnerTeamMemberName)} />)}
+                                        {enquiryData?.ChannelPartnerTeamMemberMobileNumber && (<FieldItem label="Cp Team Member Mobile Number" value={safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber) ? `+91 ${safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber)}` : '-'} />)}
                                     </>
                                 )}
 
@@ -570,7 +571,6 @@ const ViewEnquiry: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <FieldItem label="Sales Advisor" value={safe(enquiryData?.SalesAdvisor)} />
                                 <FieldItem label="Sourcing Manager" value={safe(enquiryData?.SourcingManager)} />
-                                <FieldItem label="Customer Time Out" value={safe(enquiryData?.EnquiryTimeOut)} />
                             </div>
                         </section>
                         <hr className="border-t border-gray-200" />

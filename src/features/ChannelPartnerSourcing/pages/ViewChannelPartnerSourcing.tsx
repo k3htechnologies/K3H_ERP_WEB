@@ -67,6 +67,23 @@ const ViewChannelPartnerSourcing: React.FC = () => {
   const [channelPartnerPanNumber, setChannelPartnerPanNumber] = useState<string>();
   const [channelPartnerAadhaarCardNumber, setChannelPartnerAadhaarCardNumber] = useState<string>();
   const [channelPartnerRERANUmber, setChannelPartnerRERANUmber] = useState<string>();
+  const [channelPartnerSystemGeneratedCode, setChannelPartnerSystemGeneratedCode] = useState<string>();
+  const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
+  // Channel Partner – Additional Details
+  const [channelPartnerType, setChannelPartnerType] = useState<string>();
+  const [channelPartnerGSTNumber, setChannelPartnerGSTNumber] = useState<string>();
+  const [channelPartnerOfficeAddress, setChannelPartnerOfficeAddress] = useState<string>();
+
+  // Location Details
+  const [channelPartnerCountryName, setChannelPartnerCountryName] = useState<string>();
+  const [channelPartnerStateName, setChannelPartnerStateName] = useState<string>();
+  const [channelPartnerDistrictName, setChannelPartnerDistrictName] = useState<string>();
+  const [channelPartnerCityName, setChannelPartnerCityName] = useState<string>();
+  const [channelPartnerVillageName, setChannelPartnerVillageName] = useState<string>();
+
+  // Professional Details
+  const [channelPartnerSpeciality, setChannelPartnerSpeciality] = useState<string>();
+
 
   useEffect(() => {
     if (listState.channelPartnerId) {
@@ -91,6 +108,22 @@ const ViewChannelPartnerSourcing: React.FC = () => {
       setChannelPartnerPanNumber(channelPartner.PanNumber ?? "");
       setChannelPartnerAadhaarCardNumber(channelPartner.AadharCardNumber ?? "");
       setChannelPartnerRERANUmber(channelPartner.RERANumber ?? "");
+      setChannelPartnerGSTNumber(channelPartner.GSTNumber ?? '');
+      setChannelPartnerSystemGeneratedCode(channelPartner.SystemGeneratedCode ?? '');
+      setChannelPartnerDesignation(channelPartner.Designation ?? '');
+      // Type & Address
+      setChannelPartnerType(channelPartner.Type ?? '');
+      setChannelPartnerOfficeAddress(channelPartner.OfficeAddress ?? '');
+
+      // Location Details
+      setChannelPartnerCountryName(channelPartner.CountryName ?? '');
+      setChannelPartnerStateName(channelPartner.StateName ?? '');
+      setChannelPartnerDistrictName(channelPartner.DistrictName ?? '');
+      setChannelPartnerCityName(channelPartner.CityName ?? '');
+      setChannelPartnerVillageName(channelPartner.VillageName ?? '');
+
+      // Professional Details
+      setChannelPartnerSpeciality(channelPartner.Speciality ?? '');
     });
 
   }, [listState.channelPartnerId]);
@@ -308,7 +341,8 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
       <HeaderActionBar
         titleText="Channel Partner : "
-        subTitleText={listState.channelPartnerName || ""}
+        subTitleText={listState.channelPartnerName || ''}
+        subSubTitleText={channelPartnerSystemGeneratedCode || ''}
         cancelText="Back"
         EditText="Edit"
         onCancel={handleBackToList}
@@ -318,17 +352,110 @@ const ViewChannelPartnerSourcing: React.FC = () => {
       <div className="grid grid-cols-12 gap-4 pt-5">
         <div className="col-span-5">
           <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
-            <div className="grid grid-cols-2 gap-x-10 gap-y-6 p-4">
-              <FieldItem label="Full Name" value={channelPartnerFullName || '-'} />
-              <FieldItem label="Personal Mobile No." value={channelPartnerMobileNumber ? `+91 ${channelPartnerMobileNumber}` : '-'}  />
-              <FieldItem label="Company Name" value={channelPartnerCompanyName || '-'} />
-              <FieldItem label="Firms Type" value={channelPartnerFirmsType || '-'} />
-              <FieldItem label="PAN Number" value={channelPartnerPanNumber || '-'} />
-              <FieldItem label="Aadhaar Card Number" value={channelPartnerAadhaarCardNumber || '-'} />
-              <FieldItem label="RERA Number" value={channelPartnerRERANUmber || '-'} />
 
+            {/* HEADER DETAILS */}
+            <div className="pl-4 pb-4 border-b-2 border-gray-300">
+              <div className="flex flex-col gap-2">
+
+                <div className="flex items-start">
+                  <span className="text-gray-500 font-medium text-sm w-[140px]">
+                    Company Name
+                  </span>
+                  <span className="text-gray-500 font-medium text-sm px-2">:</span>
+                  <span className="text-black text-sm break-all">
+                    {channelPartnerCompanyName || '-'}
+                  </span>
+                </div>
+
+                <div className="flex items-start">
+                  <span className="text-gray-500 font-medium text-sm w-[140px]">
+                    Firms Type
+                  </span>
+                  <span className="text-gray-500 font-medium text-sm px-2">:</span>
+                  <span className="text-black text-sm break-all">
+                    {channelPartnerFirmsType || '-'}
+                  </span>
+                </div>
+
+              </div>
             </div>
+
+            {/* BASIC DETAILS */}
+            <section className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FieldItem label="Unique Key" value={channelPartnerSystemGeneratedCode || '-'} />
+                <FieldItem label="Full Name" value={channelPartnerFullName || '-'} />
+                <FieldItem
+                  label="Mobile No."
+                  value={channelPartnerMobileNumber ? `+91 ${channelPartnerMobileNumber}` : '-'}
+                />
+                <FieldItem label="Designation" value={channelPartnerDesignation || '-'} />
+                <FieldItem label="Speciality" value={channelPartnerSpeciality || '-'} />
+                <FieldItem label="Channel Partner Type" value={channelPartnerType || '-'} />
+              </div>
+            </section>
+
+            <hr className="border-t border-gray-200" />
+
+            {/* RERA DETAILS */}
+            <section className="p-4">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                RERA Details
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FieldItem
+                  label="Available RERA Number"
+                  value={channelPartnerRERANUmber ? 'Yes' : 'No'}
+                />
+                <FieldItem
+                  label="RERA Number"
+                  value={channelPartnerRERANUmber || '-'}
+                />
+              </div>
+            </section>
+
+            <hr className="border-t border-gray-200" />
+
+            {/* ADDRESS DETAILS */}
+            <section className="p-4">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Address
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FieldItem label="Country" value={channelPartnerCountryName || '-'} />
+                <FieldItem label="State" value={channelPartnerStateName || '-'} />
+                <FieldItem label="District" value={channelPartnerDistrictName || '-'} />
+                <FieldItem label="City" value={channelPartnerCityName || '-'} />
+                <FieldItem label="Village" value={channelPartnerVillageName || '-'} />
+              </div>
+
+              <div className="grid grid-cols-1 pt-5">
+                <FieldItem
+                  label="Office Address"
+                  value={channelPartnerOfficeAddress || '-'}
+                />
+              </div>
+            </section>
+
+            <hr className="border-t border-gray-200" />
+
+            {/* DOCUMENT DETAILS */}
+            <section className="p-4">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Document Details
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FieldItem label="PAN Number" value={channelPartnerPanNumber || '-'} />
+                <FieldItem label="Aadhaar Number" value={channelPartnerAadhaarCardNumber || '-'} />
+                <FieldItem label="GST Number" value={channelPartnerGSTNumber || '-'} />
+              </div>
+            </section>
+
           </div>
+
         </div>
 
         <div className="col-span-7">

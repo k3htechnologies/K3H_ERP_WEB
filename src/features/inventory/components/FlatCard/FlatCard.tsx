@@ -104,7 +104,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                 )}
             </div>
 
-            {flat.FlatStatus === "Available" && (
+            {flat.FlatStatus === "Available" && flat.FlatType!=="" && flat.RERACarpetAreaSqFt >0 && (
                 <div className="flex items-center justify-center mt-2">
                     <Button
                         onClick={handleBook}

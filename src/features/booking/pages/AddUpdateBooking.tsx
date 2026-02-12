@@ -5,7 +5,7 @@ import * as E from 'fp-ts/Either';
 import { runApiWithLoader } from '@/core/utils';
 import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
-import type { AddUpdateBookingRequest, FilterWithPaginationBookingRequest, AddUpdateBookingApplicantRequest, BookingApplicantData } from '../models/BookingModel';
+import type { AddUpdateBookingRequest, FilterWithPaginationBookingRequest, AddUpdateBookingApplicantRequest, BookingApplicantData, AddUpdateBookingPaymentScheduleRequest } from '../models/BookingModel';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from '@/core/utils/dateFormat';
 import { TextArea } from '@/ui/components/forms/Textarea';
@@ -41,10 +41,9 @@ const initialFormState = (): AddUpdateBookingRequest => ({
     BookingId: 0,
     Uniquekey: null,
     ProjectId: 0,
+    EnquiryId: 0,
     PermanentAddress: '',
     CommunicationAddress: '',
-    Source: '',
-    SubSource: '',
     BrokeragePercentage: 0,
     BrokerageAmount: 0,
     InventoryFlatId: 0,
@@ -188,6 +187,7 @@ export const AddUpdateBooking: React.FC = () => {
     //#region BOOKING APPLICANT
     const [formDataForApplicant, setFormDataForApplicant] = useState<AddUpdateBookingApplicantRequest>(() => initialFormStateApplicantDetails());
     const [editingApplicantData, setEditingApplicantData] = useState<{ row: BookingApplicantWithFiles; index: number } | null>(null);
+    
     const [isAddUpdateApplicantModalOpen, setIsAddUpdateApplicantModalOpen] = useState(false);
 
     // ================= PHOTO =================
@@ -336,6 +336,7 @@ export const AddUpdateBooking: React.FC = () => {
             setSelectedWing(flatDataFromState.Wing || '');
             setSelectedFloor(flatDataFromState.Floor || '');
             setSelectedFlatId(flatDataFromState.InventoryFlatId || null);
+            formData.BookingType = flatDataFromState.InventoryFlatId > 0 ? 'FLAT' : 'PARKING';
 
         } else if (!isAddMode && bookingId) {
             fetchBookingDetails();
@@ -428,6 +429,9 @@ export const AddUpdateBooking: React.FC = () => {
 
             // Location & Sales
             setCurrentLocation(enquiry.CurrentLocation ?? "");
+            formData.PermanentAddress = enquiry.CurrentLocation;
+            formData.CommunicationAddress = enquiry.CurrentLocation;
+
             setSalesAdvisor(enquiry.SalesAdvisor ?? "");
             setSourcingManager(enquiry.SourcingManager ?? "");
         });
@@ -461,10 +465,9 @@ export const AddUpdateBooking: React.FC = () => {
                             BookingId: booking.BookingId ?? 0,
                             Uniquekey: booking.Uniquekey,
                             ProjectId: booking.ProjectId ?? Number(projectId),
+                            EnquiryId: booking.EnquiryId ?? 0,
                             PermanentAddress: booking.PermanentAddress ?? '',
                             CommunicationAddress: booking.CommunicationAddress ?? '',
-                            Source: booking.Source ?? '',
-                            SubSource: booking.SubSource ?? '',
                             BrokeragePercentage: booking.BrokeragePercentage ?? 0,
                             BrokerageAmount: booking.BrokerageAmount ?? 0,
                             InventoryFlatId: booking.InventoryFlatId ?? 0,
@@ -866,7 +869,16 @@ export const AddUpdateBooking: React.FC = () => {
                                     setEditingPaymentScheduleIndex(index);
                                     setPaymentScheduleType((row.Type === 'Date' || row.Type === 'Stage') ? row.Type : 'Date');
                                     setPaymentScheduleDate(row.Date ? formatDate_dd_mm_yyyy(row.Date) : '');
-                                    setPaymentScheduleStage(row.Name || '');
+
+                                    const stageExists = paymentScheduleOptions.some(opt => opt.value === row.Name);
+                                    if (row.Type === 'Stage' && row.Name && !stageExists) {
+                                        setPaymentScheduleStage('Other');
+                                        setPaymentScheduleStageOther(row.Name || '');
+                                    } else {
+                                        setPaymentScheduleStage(row.Name || '');
+                                        setPaymentScheduleStageOther('');
+                                    }
+
                                     setPaymentSchedulePercentage(String(row.PaymentSchedulePercentage || ''));
                                     setIsPaymentScheduleModalOpen(true);
                                 }}
@@ -896,7 +908,7 @@ export const AddUpdateBooking: React.FC = () => {
                 )
             }
         ],
-        [cumulativePercentages, canAction]
+        [cumulativePercentages, canAction, paymentScheduleOptions]
     );
     //#endregion
 
@@ -1017,9 +1029,7 @@ export const AddUpdateBooking: React.FC = () => {
             newErrors.ProjectId = 'Project is required';
         }
 
-        if (!formData.BookingType) {
-            newErrors.BookingType = 'Booking Type is required';
-        }
+
         if (!formData.PermanentAddress) {
             newErrors.PermanentAddress = 'Permanent Address is required';
         }
@@ -1385,10 +1395,9 @@ export const AddUpdateBooking: React.FC = () => {
                     formDataToSend.append('Uniquekey', formData.Uniquekey);
                 }
                 formDataToSend.append('ProjectId', String(formData.ProjectId ?? 0));
+                formDataToSend.append('Enquiry', String(enquiryId ?? 0));
                 formDataToSend.append('PermanentAddress', formData.PermanentAddress ?? '');
                 formDataToSend.append('CommunicationAddress', formData.CommunicationAddress ?? '');
-                formDataToSend.append('Source', formData.Source ?? '');
-                formDataToSend.append('SubSource', formData.SubSource ?? '');
                 formDataToSend.append('BrokeragePercentage', String(formData.BrokeragePercentage ?? 0));
                 formDataToSend.append('BrokerageAmount', String(formData.BrokerageAmount ?? 0));
                 formDataToSend.append('InventoryFlatId', String(formData.InventoryFlatId ?? 0));
@@ -1704,6 +1713,7 @@ export const AddUpdateBooking: React.FC = () => {
                                 value={formData.PermanentAddress === "" ? currentLocation : formData.PermanentAddress ?? ""}
                                 onChange={(e) => handleFieldChange('PermanentAddress', e.target.value)}
                                 placeholder="Enter Permanent Address"
+                                error={errors.PermanentAddress}
                             />
                             <TextArea
                                 label="Communication Address"
@@ -1711,6 +1721,7 @@ export const AddUpdateBooking: React.FC = () => {
                                 value={formData.CommunicationAddress === "" ? currentLocation : formData.CommunicationAddress ?? ""}
                                 onChange={(e) => handleFieldChange('CommunicationAddress', e.target.value)}
                                 placeholder="Enter Communication Address"
+                                error={errors.CommunicationAddress}
                             />
                         </div>
                     </div>
@@ -1794,6 +1805,15 @@ export const AddUpdateBooking: React.FC = () => {
                                             : (agreementValue * 1) / 100;
 
                                     handleFieldChange('RegistrationFees', registrationFees.toFixed(2));
+
+                                    // ================= RECALCULATE PAYMENT SCHEDULE AMOUNTS =================
+                                    if (paymentSchedules.length > 0) {
+                                        setPaymentSchedules(prev => prev.map(schedule => ({
+                                            ...schedule,
+                                            PaymentScheduleAmount: (agreementValue * (schedule.PaymentSchedulePercentage || 0)) / 100
+                                        })));
+                                    }
+
                                 }}
                                 placeholder="Agreement Value"
                                 rightIcon="₹"
@@ -1883,6 +1903,45 @@ export const AddUpdateBooking: React.FC = () => {
                             />
                         </div>
                     </div>
+
+                    {/* ============================================================= [BROKERAGE DETAILS] ============================================================================================= */}
+                    {source?.toUpperCase() === "CHANNEL PARTNER" && (
+                        <div className="space-y-4 pb-3">
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Brokerage Details</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <Input
+                                    label="Channel Partner Brokerage (%)"
+                                    value={formData.BrokeragePercentage?.toString() ?? ''}
+                                    disabled={Number(formData.AgreementValue) > 0 ? false : true}
+                                    required
+                                    onChange={(e) => {
+                                        const val = allowPercentage(e.target.value);
+                                        if (val !== null) {
+                                            const percentage = filterNumbersWithDecimal(e.target.value);
+                                            handleFieldChange('BrokeragePercentage', percentage);
+
+                                            // Calculate Brokerage Amount
+                                            const agreementValue = formData.AgreementValue || 0;
+
+                                            const cstAmount = (agreementValue * Number(percentage)) / 100;
+
+                                            handleFieldChange('BrokerageAmount', cstAmount.toFixed(2));
+                                        }
+                                    }}
+                                    placeholder="Brokerage (%)"
+                                    rightIcon="%"
+                                    error={errors.BrokeragePercentage}
+                                />
+                                <Input
+                                    label="Brokerage Amount (₹)"
+                                    value={formData.BrokerageAmount?.toString() ?? ''}
+                                    disabled
+                                    rightIcon="₹"
+                                />
+
+                            </div>
+                        </div>
+                    )}
 
                     {/* ============================================================= [OTHER DETAILS] ============================================================================================= */}
                     <div className="space-y-4 pb-3">
@@ -2400,6 +2459,7 @@ export const AddUpdateBooking: React.FC = () => {
                     setPaymentScheduleType('Date');
                     setPaymentScheduleDate('');
                     setPaymentScheduleStage('');
+                    setPaymentScheduleStageOther('');
                     setPaymentSchedulePercentage('');
                     setEditingPaymentScheduleIndex(null);
                 }}
@@ -2421,8 +2481,8 @@ export const AddUpdateBooking: React.FC = () => {
                         addToast({ type: 'error', title: 'Please select a stage' });
                         return;
                     }
-                    if (paymentScheduleType === 'Stage' && paymentScheduleStage==="Other" && paymentScheduleStageOther) {
-                        addToast({ type: 'error', title: 'Please enter a other stage' });
+                    if (paymentScheduleType === 'Stage' && paymentScheduleStage === "Other" && !paymentScheduleStageOther?.trim()) {
+                        addToast({ type: 'error', title: 'Please enter a stage name' });
                         return;
                     }
 
@@ -2448,21 +2508,15 @@ export const AddUpdateBooking: React.FC = () => {
 
                     const amount = (agreementValue * percentage) / 100;
 
-                    const newSchedule: BookingPaymentScheduleData = {
-                        BookingPaymentScheduleId: editingPaymentScheduleIndex !== null ? paymentSchedules[editingPaymentScheduleIndex]?.BookingPaymentScheduleId ?? null : null,
+                    const newSchedule: AddUpdateBookingPaymentScheduleRequest = {
+                        BookingPaymentScheduleId: editingPaymentScheduleIndex !== null ? paymentSchedules[editingPaymentScheduleIndex]?.BookingPaymentScheduleId ?? 0 : 0,
                         Type: paymentScheduleType,
-                        Name: paymentScheduleType === 'Stage' ? paymentScheduleStage === 'Other' ? paymentScheduleStageOther : paymentScheduleStage: null,
+                        Name: paymentScheduleType === 'Stage' ? paymentScheduleStage === 'Other' ? paymentScheduleStageOther : paymentScheduleStage : null,
                         Date: paymentScheduleType === 'Date' && paymentScheduleDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(paymentScheduleDate) : null,
                         PaymentSchedulePercentage: percentage,
                         PaymentScheduleAmount: amount,
                         PaymentScheduleGSTAmount: 0,
-                        PaymentScheduleTDSAmount: 0,
-                        CreatedById: null,
-                        CreatedBy: null,
-                        CreatedDate: null,
-                        ModifiedById: null,
-                        ModifiedBy: null,
-                        ModifiedDate: null,
+                        PaymentScheduleTDSAmount: 0
                     };
 
                     if (editingPaymentScheduleIndex !== null) {
@@ -2479,6 +2533,7 @@ export const AddUpdateBooking: React.FC = () => {
                     setPaymentScheduleType('Date');
                     setPaymentScheduleDate('');
                     setPaymentScheduleStage('');
+                    setPaymentScheduleStageOther('');
                     setPaymentSchedulePercentage('');
                     setEditingPaymentScheduleIndex(null);
                     addToast({ type: 'success', title: 'Payment schedule added successfully' });
@@ -2497,6 +2552,7 @@ export const AddUpdateBooking: React.FC = () => {
                                 onChange={() => {
                                     setPaymentScheduleType('Date');
                                     setPaymentScheduleStage('');
+                                    setPaymentScheduleStageOther('');
                                 }}
                                 name="paymentScheduleType"
                                 value="Date"
@@ -2507,6 +2563,7 @@ export const AddUpdateBooking: React.FC = () => {
                                 onChange={() => {
                                     setPaymentScheduleType('Stage');
                                     setPaymentScheduleDate('');
+                                    setPaymentScheduleStageOther('');
                                 }}
                                 name="paymentScheduleType"
                                 value="Stage"
@@ -2532,19 +2589,25 @@ export const AddUpdateBooking: React.FC = () => {
                                 label="Stage"
                                 placeholder="Select Stage"
                                 value={paymentScheduleStage}
-                                onChange={(e) => setPaymentScheduleStage(String(e))}
+                                onChange={(e) => {
+                                    const selectedStage = String(e);
+                                    setPaymentScheduleStage(selectedStage);
+                                    if (selectedStage !== 'Other') {
+                                        setPaymentScheduleStageOther('');
+                                    }
+                                }}
                                 options={paymentScheduleOptions}
                             />
                         </div>
                     )}
 
-                    {paymentScheduleType === 'Stage' && paymentScheduleStage==="Other" && (
+                    {paymentScheduleType === 'Stage' && paymentScheduleStage === "Other" && (
 
                         <div>
                             <Input
                                 label="Other Stage"
                                 value={paymentScheduleStageOther}
-                                onChange={(e) => setPaymentScheduleStageOther(String(e))}
+                                onChange={(e) => setPaymentScheduleStageOther(String(e.target.value))}
                                 placeholder="Enter Stage"
                                 required
                             />
@@ -2582,6 +2645,7 @@ export const AddUpdateBooking: React.FC = () => {
                 }}
                 title="Add Other Charges"
                 onSubmit={() => {
+
                     if (!otherChargeName || !otherChargeName.trim()) {
                         addToast({ type: 'error', title: 'Please enter a charge name' });
                         return;
@@ -2602,6 +2666,7 @@ export const AddUpdateBooking: React.FC = () => {
                     const gstValue = (value * gstPercentage) / 100;
 
                     const newCharge: BookingOtherChargesData = {
+
                         BookingOtherChargesId: editingOtherChargeIndex !== null ? otherCharges[editingOtherChargeIndex]?.BookingOtherChargesId ?? null : null,
                         Uniquekey: editingOtherChargeIndex !== null ? otherCharges[editingOtherChargeIndex]?.Uniquekey ?? null : null,
                         ChargeName: otherChargeName.trim(),
@@ -2653,8 +2718,8 @@ export const AddUpdateBooking: React.FC = () => {
 
                     <div>
                         <SinglePageSelection
-                            label="Sq. ft / Lumpsum"
-                            placeholder="Select"
+                            label="Sq.Ft / Lumpsum"
+                            placeholder="Select Sq.Ft / Lumpsum"
                             value={otherChargeCalculatedOn}
                             onChange={(e) => setOtherChargeCalculatedOn(String(e))}
                             options={UNIT_SQFT_LUMPSUM.map((opt) => ({ label: opt.name, value: opt.id }))}
@@ -2668,6 +2733,7 @@ export const AddUpdateBooking: React.FC = () => {
                             onChange={(e) => setOtherChargeValue(filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter Value"
                             required
+                            rightIcon="₹"
                         />
                     </div>
 
@@ -2676,8 +2742,14 @@ export const AddUpdateBooking: React.FC = () => {
                             label="GST"
                             value={otherChargeGSTPercentage}
                             onChange={(e) => {
-                                const gstValue = filterNumbersWithDecimal(e.target.value);
-                                setOtherChargeGSTPercentage(gstValue);
+                                {
+                                    const val = allowPercentage(e.target.value);
+
+                                    if (val !== null) {
+                                        const gstValue = filterNumbersWithDecimal(e.target.value);
+                                        setOtherChargeGSTPercentage(gstValue);
+                                    }
+                                }
                             }}
                             placeholder="Enter GST Percentage"
                             required

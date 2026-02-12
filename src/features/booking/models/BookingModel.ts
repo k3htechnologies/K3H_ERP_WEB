@@ -54,6 +54,7 @@ export interface BookingData {
     BookingId: number | null;
     Uniquekey: string | null;
     ProjectName: string | null;
+    EnquiryId: number | null;
 
     // APPLICANT DETAILS
     ApplicantName: string | null;
@@ -80,11 +81,6 @@ export interface BookingData {
     CommunicationAddress: string | null;
 
     // SOURCE DETAILS
-    Source: string | null;
-    SubSource: string | null;
-    ChannelPartnerName: string | null;
-    ChannelPartnerCompany: string | null;
-    ChannelPartnerMobileNumber: string | null;
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
 
@@ -225,10 +221,9 @@ export interface AddUpdateBookingRequest {
     BookingId: number | null;
     Uniquekey: string | null;
     ProjectId: number | null;
+    EnquiryId: number | null;
     PermanentAddress: string | null;
     CommunicationAddress: string | null;
-    Source: string | null;
-    SubSource: string | null;
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
     InventoryFlatId: number | null;
@@ -283,7 +278,26 @@ export interface AddUpdateBookingApplicantRequest {
     GSTNumberURL?: File[] | null;
     RemoveGSTNumberURL?: string | null;
 }
+export interface AddUpdateBookingOtherChargesRequest {
+    BookingOtherChargesId: number | null;
+    Uniquekey: string | null;
+    ChargeName: string | null;
+    CalculatedOn: string | null;
+    Value: number | null;
+    GSTPercentage: number | null;
+    GSTValue: number | null;
+}
 
+export interface AddUpdateBookingPaymentScheduleRequest {
+    BookingPaymentScheduleId: number | null;
+    Type: string | null;
+    Name: string | null;
+    Date: string | null;
+    PaymentSchedulePercentage: number | null;
+    PaymentScheduleAmount: number | null;
+    PaymentScheduleGSTAmount: number | null;
+    PaymentScheduleTDSAmount: number | null;
+}
 //=============================================================
 // [ CANCEL REQUEST ]
 //=============================================================

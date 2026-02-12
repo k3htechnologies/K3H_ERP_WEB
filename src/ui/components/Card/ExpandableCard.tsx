@@ -18,7 +18,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   customizedIcon,
   child,
   height = 50,
-  expandedheight = 250,
+  expandedheight = 280,
   defaultOpen = false
 }) => {
   const [isExpandableOpen, setExpandableOpen] = useState(defaultOpen);

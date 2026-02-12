@@ -1,3 +1,4 @@
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { useMemo } from "react";
 
@@ -21,7 +22,7 @@ export default function ActiveCases({ activeCaseData = [] }: Props) {
                 label: "Case Title",
                 align: "left",
                 render: (value: string) => (
-                    <span className="font-medium text-black">
+                    <span className="text-blue-600 cursor-pointer hover:underline">
                         {(value || '')}
                     </span>
                 )
@@ -50,11 +51,7 @@ export default function ActiveCases({ activeCaseData = [] }: Props) {
                 key: "HearingDate",
                 label: "Hearing Date",
                 align: "left",
-                render: (value: string) => (
-                    <span className="font-medium text-black">
-                        {(value || '')}
-                    </span>
-                )
+                render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
             },
             {
                 key: "Status",

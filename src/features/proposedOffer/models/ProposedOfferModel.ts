@@ -103,8 +103,14 @@ export interface AddUpdateProposedOfferCorpusDetailsRequest {
     CorpusDetailsWithPaymentStageJSON?: string
 }
 
+export interface DeleteProposedOfferCorpusDetailsRequest {
+    BuildingId?: number
+    ProjectId: number
+}
+
 export type ProposedOfferCorpusDetailsListResponse = ApiResponse<ProposedOfferCorpusDetailsData[]>;
 export type ProposedOfferCorpusDetailsSaveResponse = ApiResponse<ProposedOfferCorpusDetailsData[]>;
+export type ProposedOfferCorpusDetailsDeleteResponse = ApiResponse<number>;
 //=============================================================
 // [ RENT DETAILS ]
 //=============================================================
@@ -227,9 +233,14 @@ export interface AddUpdateProposedOfferShiftingDetailsRequest {
     ShiftingDetailsWithPaymentStageJSON?: string
 }
 
+export interface DeleteProposedOfferShiftingDetailsRequest {
+    BuildingId?: number
+    ProjectId: number
+}
+
 export type ProposedOfferShiftingDetailsListResponse = ApiResponse<ProposedOfferShiftingDetailsData[]>;
 export type ProposedOfferShiftingDetailsSaveResponse = ApiResponse<ProposedOfferShiftingDetailsData[]>;
-
+export type ProposedOfferShiftingDetailsDeleteResponse = ApiResponse<number>;
 
 //=============================================================
 // [ SECURITY DEPOSIT DETAILS ]
@@ -288,9 +299,14 @@ export interface AddUpdateProposedOfferSecurityDepositDetailsRequest {
     SecurityDepositToSocietyWithPaymentStageJSON?: string
 }
 
+export interface DeleteProposedOfferSecurityDepositDetailsRequest {
+    BuildingId?: number
+    ProjectId: number
+}
+
 export type ProposedOfferSecurityDepositDetailsListResponse = ApiResponse<ProposedOfferSecurityDepositDetailsData[]>;
 export type ProposedOfferSecurityDepositDetailsSaveResponse = ApiResponse<ProposedOfferSecurityDepositDetailsData[]>;
-
+export type ProposedOfferSecurityDepositDetailsDeleteResponse = ApiResponse<number>;
 //=============================================================
 // [ LIEN TO SOCIETY DETAILS ]
 //=============================================================

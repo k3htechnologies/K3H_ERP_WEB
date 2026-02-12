@@ -24,6 +24,7 @@ import { Trash2 } from "lucide-react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { UNIT_SQFT_LUMPSUM } from "@/core/constants";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 const initialFormState = (): AddUpdateOtherChargesRequest => ({
     OtherChargesId: 0,
@@ -229,15 +230,15 @@ export const OtherCharges: React.FC = () => {
             sortable: false,
             align: 'center',
             render: (value, row) => (
-                <span
-                    className="text-blue-600 cursor-pointer hover:underline"
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="250px"
+                    tooltipThreshold={25}
                     onClick={() => {
                         setEditingOtherChargesData(row);
                         setIsViewModalOpen(true);
                     }}
-                >
-                    {value || '-'}
-                </span>
+                />
             )
         },
         {
@@ -637,7 +638,7 @@ export const OtherCharges: React.FC = () => {
             />
 
             {/* DATA TABLE OTHER CHARGES*/}
-            
+
             <DataTable
                 data={OtherChargesForTable}
                 columns={visibleOtherChargesColumns}

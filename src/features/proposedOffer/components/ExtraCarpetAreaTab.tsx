@@ -255,14 +255,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
       </div>
 
       <BottomActionBar
-        cancelText="Cancel"
         saveText={(formDataExtraCarpetArea.ProposedOfferExtraCarpetAreaId && formDataExtraCarpetArea.ProposedOfferExtraCarpetAreaId > 0) ? 'Update' : 'Add'}
-        onCancel={() => {
-          setFormDataExtraCarpetArea({
-            ...initialFormStateExtraCarpetArea(),
-          });
-          setErrors({});
-        }}
         canAction={buildingId > 0 && canAction}
         onSave={handleSaveExtraCarpetArea}
         isLoading={isLoading}

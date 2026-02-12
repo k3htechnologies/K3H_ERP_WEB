@@ -68,6 +68,12 @@ import type {
     //GENERATE PROPOSED PLAN
 
     AddUpdateGenerateProposedOfferRequest,
+    ProposedOfferCorpusDetailsDeleteResponse,
+    DeleteProposedOfferCorpusDetailsRequest,
+    DeleteProposedOfferShiftingDetailsRequest,
+    ProposedOfferShiftingDetailsDeleteResponse,
+    DeleteProposedOfferSecurityDepositDetailsRequest,
+    ProposedOfferSecurityDepositDetailsDeleteResponse,
 
 } from '@/features/proposedOffer/models/ProposedOfferModel'
 
@@ -81,6 +87,7 @@ export abstract class ProposedOfferDatasource {
 
     abstract pullCorpusDetails(params: FilterWithPaginationProposedOfferCorpusDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferCorpusDetailsListResponse>
     abstract addUpdateCorpusDetails(data: AddUpdateProposedOfferCorpusDetailsRequest): Promise<ProposedOfferCorpusDetailsSaveResponse>
+    abstract deleteCorpusDetails(params: DeleteProposedOfferCorpusDetailsRequest): Promise<ProposedOfferCorpusDetailsDeleteResponse>
 
     abstract pullRentDetails(params: FilterWithPaginationProposedOfferRentDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferRentDetailsListResponse>
     abstract addUpdateRentDetails(data: AddUpdateProposedOfferRentDetailsRequest): Promise<ProposedOfferRentDetailsSaveResponse>
@@ -88,9 +95,11 @@ export abstract class ProposedOfferDatasource {
 
     abstract pullShiftingDetails(params: FilterWithPaginationProposedOfferShiftingDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferShiftingDetailsListResponse>
     abstract addUpdateShiftingDetails(data: AddUpdateProposedOfferShiftingDetailsRequest): Promise<ProposedOfferShiftingDetailsSaveResponse>
+    abstract deleteShiftingDetails(params: DeleteProposedOfferShiftingDetailsRequest): Promise<ProposedOfferShiftingDetailsDeleteResponse>
 
     abstract pullSecurityDepositDetails(params: FilterWithPaginationProposedOfferSecurityDepositDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferSecurityDepositDetailsListResponse>
     abstract addUpdateSecurityDepositDetails(data: AddUpdateProposedOfferSecurityDepositDetailsRequest): Promise<ProposedOfferSecurityDepositDetailsSaveResponse>
+    abstract deleteSecurityDepositDetails(params: DeleteProposedOfferSecurityDepositDetailsRequest): Promise<ProposedOfferSecurityDepositDetailsDeleteResponse>
 
     abstract pullLienToSocietyDetails(params: FilterWithPaginationProposedOfferLienToSocietyDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferLienToSocietyDetailsListResponse>
     abstract addUpdateLienToSocietyDetails(data: AddUpdateProposedOfferLienToSocietyDetailsRequest): Promise<ProposedOfferLienToSocietyDetailsSaveResponse>
@@ -106,7 +115,7 @@ export abstract class ProposedOfferDatasource {
 
     abstract pullProposedPlan(params: FilterWithPaginationProposedOfferProposedPlanRequest, signal?: AbortSignal): Promise<ProposedOfferProposedPlanListResponse>
     abstract addUpdateProposedPlan(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse>
-    
+
     abstract addUpdateGenerateProposedOffer(params: AddUpdateGenerateProposedOfferRequest): Promise<GenerateProposedOfferResponse>
 }
 //=============================================================
@@ -207,6 +216,27 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         }
     }
 
+    async deleteCorpusDetails(params: DeleteProposedOfferCorpusDetailsRequest): Promise<ProposedOfferCorpusDetailsDeleteResponse> {
+
+        try {
+            const queryParams = new URLSearchParams()
+            queryParams.append('ProjectId', params.ProjectId.toString())
+            if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
+
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${ProposedOfferApi.DELETE_CORPUS_DETAILS}?${queryParams.toString()}`
+            )
+        } catch (error) {
+
+            console.error('ERROR: DELETE CORPUS DETAILS:', error)
+
+            if (error === TokenExpiredException) {
+                await this.deleteCorpusDetails(params)
+            }
+
+            throw error
+        }
+    }
 
     //==================== RENT ====================
     async pullRentDetails(params: FilterWithPaginationProposedOfferRentDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferRentDetailsListResponse> {
@@ -317,6 +347,28 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         }
     }
 
+    async deleteShiftingDetails(params: DeleteProposedOfferShiftingDetailsRequest): Promise<ProposedOfferShiftingDetailsDeleteResponse> {
+
+        try {
+            const queryParams = new URLSearchParams()
+            queryParams.append('ProjectId', params.ProjectId.toString())
+            if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
+
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${ProposedOfferApi.DELETE_SHIFTING_DETAILS}?${queryParams.toString()}`
+            )
+        } catch (error) {
+
+            console.error('ERROR: DELETE SHIFTING DETAILS:', error)
+
+            if (error === TokenExpiredException) {
+                await this.deleteShiftingDetails(params)
+            }
+
+            throw error
+        }
+    }
+
     //==================== SECURITY DEPOSIT ====================
     async pullSecurityDepositDetails(params: FilterWithPaginationProposedOfferSecurityDepositDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferSecurityDepositDetailsListResponse> {
         try {
@@ -351,6 +403,28 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error === TokenExpiredException) {
                 await this.addUpdateSecurityDepositDetails(params)
+            }
+
+            throw error
+        }
+    }
+
+    async deleteSecurityDepositDetails(params: DeleteProposedOfferSecurityDepositDetailsRequest): Promise<ProposedOfferSecurityDepositDetailsDeleteResponse> {
+
+        try {
+            const queryParams = new URLSearchParams()
+            queryParams.append('ProjectId', params.ProjectId.toString())
+            if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
+
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${ProposedOfferApi.DELETE_SECURITY_DEPOSIT_DETAILS}?${queryParams.toString()}`
+            )
+        } catch (error) {
+
+            console.error('ERROR: DELETE SECURITY DEPOSIT DETAILS:', error)
+
+            if (error === TokenExpiredException) {
+                await this.deleteSecurityDepositDetails(params)
             }
 
             throw error
@@ -554,7 +628,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
             throw error
         }
     }
-    
+
 
     //====================GENERATE PROPOSED PLAN ====================
 

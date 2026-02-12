@@ -457,15 +457,15 @@ export const EmployeeResignation: React.FC = () => {
 
                 {/* Details Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
                   <FieldItem label="Resignation Date" value={data.ResignationDate ? formatDate_dd_MonthName_yy(data.ResignationDate) : '-'} />
+                  <FieldItem label="Notice Period" value={data.NoticePeriod} />
+                  <FieldItem label="Relieving Date" value={data.RelievingDate ? formatDate_dd_MonthName_yy(data.RelievingDate) : '-'} />
                   <FieldItem label="Expected Relieving Date" value={data.ExpectedRelievingDate ? formatDate_dd_MonthName_yy(data.ExpectedRelievingDate) : '-'} />
                   <FieldItem label="Reason Of Leaving" value={data.ReasonOfLeaving} />
-                  <FieldItem label="Is Any Offer In Hand" value={data.IsAnyOfferInHand ? 'Yes' : 'No'} />
+                  <FieldItem label="Offer In Hand" value={data.IsAnyOfferInHand ? 'Yes' : 'No'} />
                   <FieldItem label="Offer Amount" value={data.OfferAmount ?? 0} urls={data?.OfferLetterURL} isIcon />
                   <FieldItem label="Approval Status" value={data.ApprovalStatus} className='' />
                 </div>
-
               </section>
 
             );
@@ -538,7 +538,7 @@ export const EmployeeResignation: React.FC = () => {
 
             <div>
               <Checkbox
-                label='Is Any Offer In Hand'
+                label='Offer In Hand'
                 checked={formData.IsAnyOfferInHand === true}
                 onChange={(e) => handleFieldChange('IsAnyOfferInHand', e.target.checked ? true : false)}
               />

@@ -30,7 +30,7 @@ const LitigationDashboard: React.FC = () => {
     const [upComingHearingData, setUpComingHearingData] = useState<any[]>([]);
     const [courtDistributionData, setCourtDistributionData] = useState<any[]>([]);
     const [uploadedDocumentData, setUploadedDocumentData] = useState<any[]>([]);
-    const[caseTypeDistributionData,setCaseTypeDistributionData]=useState<any[]>([]);
+    const [caseTypeDistributionData, setCaseTypeDistributionData] = useState<any[]>([]);
 
     useEffect(() => {
         if (!projectId) return;
@@ -95,7 +95,7 @@ const LitigationDashboard: React.FC = () => {
         },
         {
             CourtName: "Supreme Court",
-            TotalCase: 380,
+            TotalCase: 240,
             OpenCase: 74,
         },
     ];
@@ -104,19 +104,22 @@ const LitigationDashboard: React.FC = () => {
         {
             CaseNumber: "CN-2024-001",
             CaseType: "Civil Suit",
-            Location: "borivali",
+            CourtType: "District Court",
+            Location: "Borivali",
             HearingDate: "2026-02-15",
         },
         {
             CaseNumber: "CN-2024-002",
             CaseType: "Criminal Appeal",
-            Location: "mumbai",
+            CourtType: "District Court",
+            Location: "Mumbai",
             HearingDate: "2026-02-18",
         },
         {
             CaseNumber: "CN-2024-003",
             CaseType: "Writ Petition",
-            Location: "borivali",
+            CourtType: "District Court",
+            Location: "Borivali",
             HearingDate: "2026-02-20",
         },
     ];
@@ -176,27 +179,27 @@ const LitigationDashboard: React.FC = () => {
         <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}><div /></Loader>
 
-            {/* <div className="cursor-pointer" onClick={() => navigate("/litigation")}> */}
-            <OverviewCards overViewData={overViewData} />
+            <div className="cursor-pointer" onClick={() => navigate("/litigation")}>
+                <OverviewCards overViewData={overViewData} />
 
-            <div className="grid grid-cols-2 gap-4">
-                <CaseTypeDistribution CaseTypeData={caseTypeStaticData} />
-                <CourtDistribution courtData={courtStaticData} />
-            </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <CaseTypeDistribution CaseTypeData={caseTypeStaticData} />
+                    <CourtDistribution courtData={courtStaticData} />
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                <ActiveCases activeCaseData={ActiveCasesStaticData} />
-                <UpComingHearing upComingHearingData={upComingHearingStaticData} />
+                <div className="grid grid-cols-2 gap-4">
+                    <ActiveCases activeCaseData={ActiveCasesStaticData} />
+                    <UpComingHearing upComingHearingData={upComingHearingStaticData} />
 
-            </div>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                <CaseAnalysis CaseAnalysisData={data} />
-                <UploadedDocument uploadedDocumentData={uploadedDocumentStaticData} />
+                <div className="grid grid-cols-2 gap-4">
+                    <CaseAnalysis CaseAnalysisData={data} />
+                    <UploadedDocument uploadedDocumentData={uploadedDocumentStaticData} />
 
+                </div>
             </div>
         </div>
-        // </div>
     )
 }
 export default LitigationDashboard;

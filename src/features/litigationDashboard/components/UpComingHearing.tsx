@@ -1,8 +1,8 @@
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 
 interface UpComingHearingTableRecord {
   CaseNumber: string;
   CaseType: string;
+  CourtType: string;
   Location: string;
   HearingDate: string;
 }
@@ -28,8 +28,10 @@ export default function UpComingHearing({ upComingHearingData = [] }: Props) {
             <div>
               <p className="text-sm font-semibold text-gray-900">
                 Case No: {item.CaseNumber}</p>
-              <p className="text-xs text-gray-600 mt-1">
+              <p className="text-xs text-gray-600 mt-2">
                 {item.CaseType}</p>
+              <p className="text-xs text-gray-600 mt-2">
+                {item.CourtType}</p>
             </div>
 
             {/* Right content */}
@@ -38,9 +40,10 @@ export default function UpComingHearing({ upComingHearingData = [] }: Props) {
                 {item.Location}
               </p>
 
-              <p className="text-xs text-gray-500">
-                {formatDate_dd_MonthName_yy(item.HearingDate)}
-              </p>
+              <span className="bg-purple-800 text-white px-1 py-1 mt-3 rounded">
+                {`in ${Math.ceil((new Date(item.HearingDate).getTime() - new Date().setHours(0, 0, 0, 0)) / (1000 * 60 * 60 * 24))} days`}
+              </span>
+
             </div>
           </div>
         ))}

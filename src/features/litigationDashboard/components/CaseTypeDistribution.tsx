@@ -13,7 +13,7 @@ export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {
         { name: "Criminal Cases", value: data.CriminalCases ?? 0 },
     ];
 
-    const COLORS = ["#2563eb", "#0c3ca3", "#ef4444", "#eab308", "#111827"];
+    const COLORS = ["#2563eb", "#0c3ca3"];
 
     return (
 
@@ -28,7 +28,7 @@ export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {
                 {/* Donut */}
                 <div className="flex justify-center relative">
 
-                    <PieChart width={220} height={220}>
+                    <PieChart width={220} height={200}>
                         <Pie
                             data={chartData}
                             innerRadius={70}
@@ -44,7 +44,7 @@ export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {
 
                     {/* Center Text */}
                     <div className="absolute top-1/2 -translate-y-1/2 text-center">
-                        <p className="text-xs text-gray-500">Total Cases</p>
+                        <p className="text-xl font-semibold">Total Cases</p>
                         <p className="text-xl font-semibold">{data.TotalCases ?? 0}</p>
                     </div>
                 </div>
@@ -52,8 +52,8 @@ export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {
                 {/* Bottom Cards */}
                 <div className="grid grid-cols-2 gap-3 mt-4">
 
-                    <Card title="Civil Cases" value={data.CivilCases} color="text-black-500" />
-                    <Card title="Criminal Cases" value={data.CriminalCases} color="text-purple-500" />
+                    <Card title="Civil Cases" value={data.CivilCases} color={COLORS[0]} />
+                    <Card title="Criminal Cases" value={data.CriminalCases} color={COLORS[1]} />
 
                 </div>
             </div>
@@ -65,9 +65,10 @@ export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {
 
 function Card({ title, value, color }: any) {
     return (
-        <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs text-gray-500">{title}</p>
-            <p className={`text-lg font-semibold ${color}`}>{value ?? 0}</p>
+        <div className="bg-gray-50 rounded-lg p-3"
+        >
+            <p className="text-xl font-semibold" style={{ color: color }}>{title}</p>
+            <p className="text-xl font-semibold" style={{ color: color }}>{value ?? 0}</p>
         </div>
     );
 }

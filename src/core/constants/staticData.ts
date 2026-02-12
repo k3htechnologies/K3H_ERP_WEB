@@ -351,7 +351,6 @@ export const UNIT_LAYOUT = toOptions(MASTER_DATA.unitLayout);
 export const CASE_TYPE_OPTION = toOptions(MASTER_DATA.caseType)
 export const COURT_TYPE_OPTION = toOptions(MASTER_DATA.courtType)
 
-
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)
 // ============================================================================

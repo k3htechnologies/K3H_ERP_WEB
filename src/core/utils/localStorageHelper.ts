@@ -1088,6 +1088,29 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE OTHER CHARGES COLUMNS
+    storeOtherChargesTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.OTHER_CHARGES_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Other Charges Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET OTHER CHARGES COLUMNS
+    getOtherChargesTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.OTHER_CHARGES_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.OTHER_CHARGES_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Other Charges Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
     //#region CLEAR LOCAL STORAGE 
     clearLocalStorageData: (): void => {
         try {

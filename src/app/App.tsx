@@ -133,6 +133,8 @@ import MarketingContent from '@/features/marketingContent/pages/MarketingContent
 import CallTracker from '@/features/callTracker/pages/CallTracker';
 import { SaleTarget } from '@/features/saleTarget/pages/SaleTarget';
 import { AddUpdateSaleTarget } from '@/features/saleTarget/pages/AddUpdateSaleTarget';
+import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
+import OtherCharges from '@/features/otherCharges/pages/OtherCharges';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -308,6 +310,9 @@ function App() {
             <Route path='litigation/view' element={<LitigationListStateProvider><ViewLitigation /></LitigationListStateProvider>} />
             <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
 
+            {/* LITIGATION DASHBOARD*/}
+            <Route path="litigationDashboard" element={<LitigationDashboard />} />
+
             {/* PROJECT */}
             <Route path='approvedBank' element={<ApprovedBankListStateProvider><ApprovedBankFolder /></ApprovedBankListStateProvider>} />
             <Route path='approvedBank/approvedBankFile/:ApprovedBankFolderId?' element={<ApprovedBankListStateProvider><ApprovedBankFile /></ApprovedBankListStateProvider>} />
@@ -330,6 +335,7 @@ function App() {
             <Route path="target" element={<SaleTarget />} />
             <Route path="saleTarget/add" element={<AddUpdateSaleTarget />} />
 
+            <Route path="otherCharges" element={<OtherCharges />} />
 
             {/* REDEVELOPMENT */}
 

@@ -92,7 +92,7 @@ export const MASTER_DATA = {
 
   budget: ['<1', '2', '3', '4', '5', '6', '8', '10', '12', '15', '20', '25+'],
 
-  accomodation: ["Rented", "Self-Owned",],
+  accomodation: ["Rented", "Self-Owned"],
 
   requirement: ["Commercial", "Commercial Leasing", "Residential"],
 
@@ -271,7 +271,9 @@ export const MASTER_DATA = {
 
   enquiryTimeLine: ['Beyond 1 Month', 'Within 1 Month'],
 
-  supportType: ['A', 'B'],
+  supportType: ['Below The Line (BTL)', 'Paper Insert', 'Standee Require', 'Vedio Recording'],
+
+  handoverType: ['Bare Shell', 'Builder Finished']
 
 } as const
 
@@ -373,6 +375,7 @@ export const CASE_TYPE_OPTION = toOptions(MASTER_DATA.caseType);
 export const COURT_TYPE_OPTION = toOptions(MASTER_DATA.courtType);
 
 export const PAYMENT_MODE = toOptions(MASTER_DATA.paymentMode);
+export const HANDOVER_TYPE = toOptions(MASTER_DATA.handoverType);
 export const PAYMENT_TYPE = toOptions(MASTER_DATA.paymentType);
 export const AMOUNT_TYPE = toOptions(MASTER_DATA.amountType);
 export const CHANNE_PARTNER_DESIGNATION = toOptions(MASTER_DATA.channelPartnerDesignation);

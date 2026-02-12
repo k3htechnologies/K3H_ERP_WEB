@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Input } from '@/ui/components/forms/Input';
 import * as E from 'fp-ts/Either';
 import { runApiWithLoader } from '@/core/utils';
@@ -12,27 +12,30 @@ import { TextArea } from '@/ui/components/forms/Textarea';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { bookingService } from '../services/BookingService';
-import { calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterLetters, filterMobile, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidDrivingLicenseNumber, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from '@/core/utils/fileValidation';
+import { allowPercentage, calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterLetters, filterMobile, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidDrivingLicenseNumber, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from '@/core/utils/fileValidation';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useBookingListState } from '@/features/booking/context/BookingListStateContext';
 import { Button } from '@/ui/components/forms';
-import { Edit, IdCardIcon, Trash2 } from 'lucide-react';
+import { Edit, IdCardIcon, Search, Trash2 } from 'lucide-react';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { APPLICANT_TYPE, PAYMENT_MODE, UNIT_SQFT_LUMPSUM } from '@/core/constants';
+import { APPLICANT_TYPE, HANDOVER_TYPE, PAYMENT_MODE, UNIT_SQFT_LUMPSUM } from '@/core/constants';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
-import type { InventoryData, InventoryFlatData } from '@/features/inventory/models/InventoryMasterModel';
+import type { InventoryFlatData } from '@/features/inventory/models/InventoryMasterModel';
 import { fetchBankListMasterDropdown } from '@/features/bankListMaster/bankListMasterDropDown';
 import { Plus } from 'lucide-react';
 import RadioPill from '@/ui/components/forms/RadioPill';
-import type { BookingPaymentScheduleData, PaymentScheduleStagesData, BookingOtherChargesData } from '../models/BookingModel';
+import type { BookingPaymentScheduleData, BookingOtherChargesData } from '../models/BookingModel';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { fetchEnquiryBySystemGeneratedCode } from '@/features/enquiry/enquiryDropDown';
+import { fetchPaymentScheduleDropdown } from '@/features/paymentSchedule/paymentScheduleDropDown';
 
 const initialFormState = (): AddUpdateBookingRequest => ({
     BookingId: 0,
@@ -122,6 +125,7 @@ export const AddUpdateBooking: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const navigate = useNavigate();
+    const location = useLocation();
     const { projectId } = useProject();
 
     //#region BOOKING LIST STATE CONTEXT
@@ -133,6 +137,52 @@ export const AddUpdateBooking: React.FC = () => {
     const { addToast } = useToast();
     const { canAction } = useMenuPermissions('/booking');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
+    //#endregion
+
+    //#region ENQUIRY DETAILS
+    const [enquiryUniqueCode, setEnquiryUniqueCode] = useState<string>();
+    const [enquiryId, setEnquiryId] = useState<number | null>(null);
+
+    const [mobileNumber, setMobileNumber] = useState<string | null>(null);
+    const [name, setName] = useState<string | null>(null);
+
+    const [source, setSource] = useState<string | null>(null);
+    const [subSource, setSubSource] = useState<string | null>(null);
+    const [subSubSource, setSubSubSource] = useState<string | null>(null);
+
+
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+    const [referelName, setReferelName] = useState<string | null>(null);
+    const [referelMobileNumber, setReferelMobileNumber] = useState<string | null>(null);
+    const [referelProjectName, setReferelProjectName] = useState<string | null>(null);
+    const [referelUnitNumber, setReferelUnitNumber] = useState<string | null>(null);
+
+
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+    const [loyaltyExistingProjectName, setLoyaltyExistingProjectName] = useState<string | null>(null);
+
+    const [loyaltyExistingUnitNumber, setLoyaltyExistingUnitNumber] = useState<string | null>(null);
+
+
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+    const [employeeReferenceName, setEmployeeReferenceName] = useState<string | null>(null);
+
+    const [employeeReferenceMobileNumber, setEmployeeReferenceMobileNumber] = useState<string | null>(null);
+
+    const [channelPartnerName, setChannelPartnerName] = useState<string | null>(null);
+
+    const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] = useState<number | null>(null);
+
+    const [channelPartnerTeamMemberName, setChannelPartnerTeamMemberName] = useState<string | null>(null);
+
+    const [channelPartnerTeamMemberMobileNumber, setChannelPartnerTeamMemberMobileNumber] = useState<string | null>(null);
+
+    const [currentLocation, setCurrentLocation] = useState<string>('');
+
+    const [salesAdvisor, setSalesAdvisor] = useState<string>("");
+    const [sourcingManager, setSourcingManager] = useState<string>("");
+
+
     //#endregion
 
     //#region BOOKING APPLICANT
@@ -177,13 +227,11 @@ export const AddUpdateBooking: React.FC = () => {
     //#endregion
 
     //#region INVENTORY SELECTION STATE
-    const [inventoryData, setInventoryData] = useState<InventoryData[]>([]);
-    const [selectedBuildingId, setSelectedBuildingId] = useState<number | null>(null);
     const [selectedWing, setSelectedWing] = useState<string>('');
     const [selectedFloor, setSelectedFloor] = useState<string>('');
     const [selectedFlatId, setSelectedFlatId] = useState<number | null>(null);
     const [selectedFlatData, setSelectedFlatData] = useState<InventoryFlatData | null>(null);
-    
+
     const [dropdownLabels, setDropdownLabels] = useState<{
         buildingName?: string;
         bankName?: string;
@@ -193,12 +241,14 @@ export const AddUpdateBooking: React.FC = () => {
 
     //#region PAYMENT SCHEDULE STATE
     const [paymentSchedules, setPaymentSchedules] = useState<BookingPaymentScheduleData[]>([]);
+    const [paymentScheduleOptions, setPaymentScheduleOptions] = useState<{ label: string; value: string }[]>([]);
+
     const [isPaymentScheduleModalOpen, setIsPaymentScheduleModalOpen] = useState(false);
     const [paymentScheduleType, setPaymentScheduleType] = useState<'Date' | 'Stage'>('Date');
     const [paymentScheduleDate, setPaymentScheduleDate] = useState<string>('');
     const [paymentScheduleStage, setPaymentScheduleStage] = useState<string>('');
+    const [paymentScheduleStageOther, setPaymentScheduleStageOther] = useState<string>('');
     const [paymentSchedulePercentage, setPaymentSchedulePercentage] = useState<string>('');
-    const [paymentScheduleStages, setPaymentScheduleStages] = useState<PaymentScheduleStagesData[]>([]);
     const [editingPaymentScheduleIndex, setEditingPaymentScheduleIndex] = useState<number | null>(null);
     //#endregion
 
@@ -229,15 +279,164 @@ export const AddUpdateBooking: React.FC = () => {
 
     //#endregion
 
+    useEffect(() => {
+        const loadPaymentSchedule = async () => {
+            const response = await fetchPaymentScheduleDropdown({
+                projectId: Number(projectId),
+                value: 1, // optional
+            });
+
+            setPaymentScheduleOptions(response.itemList);
+        };
+
+        loadPaymentSchedule();
+    }, [projectId]);
+
+
     //#region INITIALIZATION
     useEffect(() => {
         if (!projectId) return;
-        if (!isAddMode && bookingId) {
+
+        // Check if flatData is passed from inventory (Book button)
+        const flatDataFromState = (location.state as any)?.flatData;
+
+        if (flatDataFromState && isAddMode) {
+            // Prefill form data from inventory flat selection
+            setFormData(prev => ({
+                ...prev,
+                ProjectId: Number(projectId),
+                InventoryFlatId: flatDataFromState.InventoryFlatId || 0,
+            }));
+
+            // Set selected flat data for Project Details display
+            setSelectedFlatData({
+                InventoryFlatId: flatDataFromState.InventoryFlatId || 0,
+                Uniquekey: '',
+                InventoryBuildingId: 0,
+                BuildingNumber: flatDataFromState.BuildingNumber || '',
+                InventoryFlatFloorBasementPodiumWingId: 0,
+                Wing: flatDataFromState.Wing || '',
+                InventoryFloorId: 0,
+                Floor: flatDataFromState.Floor || '',
+                Flat: flatDataFromState.Flat || '',
+                RERACarpetAreaSqFt: flatDataFromState.RERACarpetAreaSqFt || 0,
+                FlatType: flatDataFromState.FlatType || '',
+                FlatConfiguration: flatDataFromState.FlatConfiguration || '',
+                FlatStatus: 'Available',
+                FlatFacing: '',
+                InventoryFlatSpecificationData: [],
+                OwnerName: '',
+                BookingId: 0,
+                BookingCreatedById: 0,
+                BookingCreatedBy: '',
+                BookingCreatedDate: null,
+            });
+
+            // Set selected values for display
+            setSelectedWing(flatDataFromState.Wing || '');
+            setSelectedFloor(flatDataFromState.Floor || '');
+            setSelectedFlatId(flatDataFromState.InventoryFlatId || null);
+
+        } else if (!isAddMode && bookingId) {
             fetchBookingDetails();
         } else {
             setFormData(prev => ({ ...prev, ProjectId: Number(projectId) }));
         }
-    }, [bookingId, projectId, isAddMode]);
+    }, [bookingId, projectId, isAddMode, location.state]);
+    //#endregion
+
+    //#region HANDLE SEARCH CHANGE EVENT CHANNEL PARTNER
+
+    const clearEnquiryDetails = () => {
+
+        setEnquiryId(null);
+
+        setName(null);
+        setMobileNumber(null);
+
+        setSource(null);
+        setSubSource(null);
+        setSubSubSource(null);
+
+        setReferelName(null);
+        setReferelMobileNumber(null);
+        setReferelProjectName(null);
+        setReferelUnitNumber(null);
+
+        setLoyaltyExistingProjectName(null);
+        setLoyaltyExistingUnitNumber(null);
+
+        setEmployeeReferenceName(null);
+        setEmployeeReferenceMobileNumber(null);
+
+        setChannelPartnerName(null);
+        setChannelPartnerMobileNumber(null);
+        setChannelPartnerTeamMemberName(null);
+        setChannelPartnerTeamMemberMobileNumber(null);
+
+        setCurrentLocation('');
+        setSalesAdvisor("");
+        setSourcingManager("");
+    };
+
+    useEffect(() => {
+
+        const code = enquiryUniqueCode?.trim();
+
+        if (!code || code.length !== 18) {
+            clearEnquiryDetails();   // ✅ only clears dependent fields
+            return;
+        }
+
+        fetchEnquiryBySystemGeneratedCode(code, Number(projectId)).then((enquiry) => {
+            if (!enquiry) {
+                clearEnquiryDetails();
+                return;
+            }
+
+            setEnquiryId(enquiry.EnquiryId);
+
+            setName(enquiry.Name);
+            setMobileNumber(enquiry.MobileNumber);
+
+            // Source
+            setSource(enquiry.Source);
+            setSubSource(enquiry.SubSource);
+            setSubSubSource(enquiry.SubSubSource);
+
+            // Reference
+            setReferelName(enquiry.ReferelName);
+            setReferelMobileNumber(enquiry.ReferelMobileNumber);
+            setReferelProjectName(enquiry.ReferelProjectName);
+            setReferelUnitNumber(enquiry.ReferelUnitNumber);
+
+            // Loyalty
+            setLoyaltyExistingProjectName(enquiry.LoyaltyExistingProjectName);
+            setLoyaltyExistingUnitNumber(enquiry.LoyaltyExistingUnitNumber);
+
+            // Employee Reference
+            setEmployeeReferenceName(enquiry.EmployeeReferenceName);
+            setEmployeeReferenceMobileNumber(enquiry.EmployeeReferenceMobileNumber);
+
+            // Channel Partner
+            setChannelPartnerName(enquiry.ChannelPartnerName);
+            setChannelPartnerMobileNumber(enquiry.ChannelPartnerMobileNumber);
+            setChannelPartnerTeamMemberName(enquiry.ChannelPartnerTeamMemberName);
+            setChannelPartnerTeamMemberMobileNumber(
+                enquiry.ChannelPartnerTeamMemberMobileNumber
+            );
+
+            // Location & Sales
+            setCurrentLocation(enquiry.CurrentLocation ?? "");
+            setSalesAdvisor(enquiry.SalesAdvisor ?? "");
+            setSourcingManager(enquiry.SourcingManager ?? "");
+        });
+
+    }, [enquiryUniqueCode, projectId]);
+
+
+
+
     //#endregion
 
     //#region FETCH BOOKING DETAILS
@@ -821,13 +1020,34 @@ export const AddUpdateBooking: React.FC = () => {
         if (!formData.BookingType) {
             newErrors.BookingType = 'Booking Type is required';
         }
-
-        if (!formData.InventoryFlatId || formData.InventoryFlatId === 0) {
-            newErrors.InventoryFlatId = 'Flat is required';
+        if (!formData.PermanentAddress) {
+            newErrors.PermanentAddress = 'Permanent Address is required';
+        }
+        if (!formData.CommunicationAddress) {
+            newErrors.CommunicationAddress = 'Communication Address is required';
         }
 
         if (!formData.AgreementValue || formData.AgreementValue === 0) {
             newErrors.AgreementValue = 'Agreement Value is required';
+        }
+        if (!formData.AgreementValueGSTPercentage) {
+            newErrors.AgreementValueGSTPercentage = 'Agreement GST (%) is required';
+        } else if (formData.AgreementValueGSTPercentage === 0) {
+            newErrors.AgreementValueGSTPercentage = 'Agreement GST (%) is required';
+        }
+
+        if (!formData.StampDutyPercentage) {
+            newErrors.StampDutyPercentage = 'Stamp Duty (%) is required';
+        } else if (formData.StampDutyPercentage === 0) {
+            newErrors.StampDutyPercentage = 'Stamp Duty (%) is required';
+        }
+
+        if (!formData.HandoverType) {
+            newErrors.HandoverType = 'Handover Type is required';
+        }
+
+        if (!formData.ModeOfPayment) {
+            newErrors.ModeOfPayment = 'Mode Of Payment is required';
         }
 
         if (!formData.RegistrationDate) {
@@ -884,14 +1104,14 @@ export const AddUpdateBooking: React.FC = () => {
         const hasAadharCardNumber = AadharCardNumber !== "";
         const hasAadharCardNumberFile = mergedAadharFiles.length > 0;
 
-        if (hasAadharCardNumber && !isValidAadhaar(AadharCardNumber)) {
+        if (!hasAadharCardNumber) {
+            newErrorsBookingApplicant.AadharCardNumber = "Enter a valid Aadhaar Card Number";
+        } else if (!isValidAadhaar(AadharCardNumber)) {
             newErrorsBookingApplicant.AadharCardNumber = "Enter a valid Aadhaar Card Number";
         }
+
         if (hasAadharCardNumber && !hasAadharCardNumberFile) {
             newErrorsBookingApplicant.AadharCardURL = "Aadhaar document is required";
-        }
-        if (hasAadharCardNumberFile && !hasAadharCardNumber) {
-            newErrorsBookingApplicant.AadharCardNumber = "Aadhaar Card Number is required";
         }
 
         const mergedPanFiles = editingApplicantData
@@ -901,14 +1121,13 @@ export const AddUpdateBooking: React.FC = () => {
         const hasPanNumber = PanNumber !== "";
         const hasPanFile = mergedPanFiles.length > 0;
 
-        if (hasPanNumber && !isValidPAN(PanNumber)) {
+        if (!hasPanNumber) {
+            newErrorsBookingApplicant.PanNumber = "Enter a valid PAN Card Number";
+        } else if (!isValidPAN(PanNumber)) {
             newErrorsBookingApplicant.PanNumber = "Enter a valid PAN Card Number";
         }
-        if (hasPanNumber && !hasPanFile) {
+        if (!hasPanFile) {
             newErrorsBookingApplicant.PanCardURL = "PAN document is required";
-        }
-        if (hasPanFile && !hasPanNumber) {
-            newErrorsBookingApplicant.PanNumber = "PAN Card Number is required";
         }
 
         const mergedPassportFiles = editingApplicantData
@@ -1131,19 +1350,27 @@ export const AddUpdateBooking: React.FC = () => {
 
         // Validate payment schedule total percentage
         if (paymentSchedules.length > 0 && totalPercentage !== 100) {
-            addToast({
-                type: 'error',
-                title: `Payment schedule total must be exactly 100%. Current total is ${totalPercentage.toFixed(2)}%`
-            });
+            addToast({ type: 'error', title: `Payment schedule total must be exactly 100%. Current total is ${totalPercentage.toFixed(2)}%` });
+            return;
+        }
+
+        else if (!formData.InventoryFlatId || formData.InventoryFlatId === 0) {
+
+            addToast({ type: 'error', title: 'Flat is required' });
+
             return;
         }
 
         const validation = validateForm();
 
         if (!validation.isValid) {
+
             setErrors(validation.errors);
-            addToast({ type: 'error', title: 'Please fix the validation errors' });
+
+            addToast({ type: 'error', title: 'Please fill the required filed' });
+
             return;
+
         }
 
         await runApiWithLoader(
@@ -1291,8 +1518,122 @@ export const AddUpdateBooking: React.FC = () => {
 
             <div className="flex-1 space-y-2 px-6 py-3">
                 <form onSubmit={handleSubmit}>
+
+                    <div >
+                        <Input
+                            type="text"
+                            required
+                            label="Enquiry Unique Code"
+                            value={enquiryUniqueCode}
+                            onChange={(e) => {
+                                setEnquiryUniqueCode(e.target.value);
+                            }}
+                            placeholder="Search By Enquiry Unique Code"
+                            leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+                            error={errors.ChannelPartnerId}
+
+                        />
+
+                    </div>
+
+                    {enquiryUniqueCode && enquiryUniqueCode.trim() !== '' && (
+                        Number(enquiryId) ? (
+                            <div className="space-y-4 pt-5 pb-3">
+
+                                {/* ===================== ENQUIRY DETAILS ===================== */}
+                                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+                                    Enquiry Details
+                                </h3>
+
+                                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
+
+                                        <FieldItem label="Enquiry Code" value={enquiryUniqueCode || '-'} />
+                                        <FieldItem label="Name" value={name || '-'} />
+                                        <FieldItem label="Mobile No" value={mobileNumber ? `+91 ${mobileNumber}` : '-'} />
+                                        <FieldItem label="Source" value={source || '-'} />
+                                        <FieldItem label="Sub Source" value={subSource || '-'} />
+                                        {source?.toUpperCase() !== 'CHANNEL PARTNER' && !!subSubSource?.trim() && (
+                                            <FieldItem label="Sub Sub Source" value={subSubSource || '-'} />
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3 pt-5">
+                                        <FieldItem label="Sales Advisor" value={salesAdvisor ?? '-'} />
+                                        <FieldItem label="Sourcing Manager" value={sourcingManager ?? '-'} />
+
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-1 gap-3 pt-5">
+                                        <FieldItem label="Current Location" value={currentLocation || '-'} />
+                                    </div>
+                                </div>
+
+                                {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
+                                {source === 'Direct Walking' && subSource === 'Reference' && (
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+
+                                            <FieldItem label="Referral Name" value={referelName || '-'} />
+                                            <FieldItem label="Referral Mobile" value={referelMobileNumber ? `+91 ${referelMobileNumber}` : '-'} />
+                                            <FieldItem label="Referral Project" value={referelProjectName || '-'} />
+                                            <FieldItem label="Referral Unit No" value={referelUnitNumber || '-'} />
+
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
+                                {source === 'Direct Walking' && subSource === 'Loyalty' && (
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+
+                                            <FieldItem label="Existing Project" value={loyaltyExistingProjectName || '-'} />
+                                            <FieldItem label="Existing Unit No" value={loyaltyExistingUnitNumber || '-'} />
+
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
+                                {source === 'Direct Walking' && subSource === 'Employee Reference' && (
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+
+                                            <FieldItem label="Employee Name" value={employeeReferenceName || '-'} />
+                                            <FieldItem label="Employee Mobile" value={employeeReferenceMobileNumber ? `+91 ${employeeReferenceMobileNumber}` : '-'} />
+
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ===================== CHANNEL PARTNER DETAILS ===================== */}
+                                {source?.toUpperCase() === 'CHANNEL PARTNER' && (
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+
+                                            <FieldItem label="Channel Partner" value={channelPartnerName || '-'} />
+                                            <FieldItem label="CP Mobile" value={channelPartnerMobileNumber ? `+91 ${channelPartnerMobileNumber}` : '-'} />
+                                            <FieldItem label="CP Team Member" value={channelPartnerTeamMemberName || '-'} />
+                                            <FieldItem label="CP Team Mobile" value={channelPartnerTeamMemberMobileNumber || '-'} />
+
+                                        </div>
+                                    </div>
+                                )}
+
+                            </div>
+                        ) : (
+                            !Number(enquiryId) && (
+                                <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200 text-sm text-red-700 ">
+                                    No Enquiry details found for this Unique Code
+                                </div>
+                            )
+                        )
+                    )}
+
+
                     {/* ============================================================= [APPLICANT DETAILS] ============================================================================================= */}
-                    <div className="space-y-4 pb-3">
+                    <div className="space-y-4 pt-3 pb-3">
                         <div className="flex items-center justify-between">
                             <div className="flex-1 border-b border-gray-500 pb-2">
                                 <HeaderActionBar
@@ -1359,13 +1700,15 @@ export const AddUpdateBooking: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                             <TextArea
                                 label="Permanent Address"
-                                value={formData.PermanentAddress ?? ''}
+                                required
+                                value={formData.PermanentAddress === "" ? currentLocation : formData.PermanentAddress ?? ""}
                                 onChange={(e) => handleFieldChange('PermanentAddress', e.target.value)}
                                 placeholder="Enter Permanent Address"
                             />
                             <TextArea
                                 label="Communication Address"
-                                value={formData.CommunicationAddress ?? ''}
+                                required
+                                value={formData.CommunicationAddress === "" ? currentLocation : formData.CommunicationAddress ?? ""}
                                 onChange={(e) => handleFieldChange('CommunicationAddress', e.target.value)}
                                 placeholder="Enter Communication Address"
                             />
@@ -1375,58 +1718,52 @@ export const AddUpdateBooking: React.FC = () => {
                     {/* ============================================================= [PROJECT DETAILS] ============================================================================================= */}
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <div>
-                                <Input
-                                    label="Wing"
-                                    type="text"
-                                    value="A"
-                                    disabled
-                                    placeholder="Wing"
-                                />
-                            </div>
-                            <div>
-                                <Input
-                                    label="Floor"
-                                    type="text"
-                                    value="A"
-                                    disabled
-                                    placeholder="Floor"
-                                />
-                            </div>
-                            <div>
-                                <Input
-                                    label="Unit No"
-                                    type="text"
-                                    value="A"
-                                    disabled
-                                    placeholder="Unit No"
-                                />
-                            </div>
 
-                            <Input
-                                label="Category"
-                                type="text"
-                                value={selectedFlatData?.FlatType ?? ''}
-                                disabled
-                                placeholder="Category"
-                            />
-                            <Input
-                                label="Configuration"
-                                type="text"
-                                value={selectedFlatData?.FlatConfiguration ?? ''}
-                                disabled
-                                placeholder="Configuration"
-                            />
-                            <Input
-                                label="RERA Carpet Area"
-                                type="text"
-                                value={selectedFlatData?.RERACarpetAreaSqFt?.toString() ?? ''}
-                                disabled
-                                placeholder="RERA Carpet Area"
-                                rightIcon="SqFt"
-                            />
+                        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+
+                                <FieldItem
+                                    label="Building"
+                                    value={selectedFlatData?.BuildingNumber || '-'}
+                                />
+
+                                <FieldItem
+                                    label="Wing"
+                                    value={selectedFlatData?.Wing || selectedWing || '-'}
+                                />
+
+                                <FieldItem
+                                    label="Floor"
+                                    value={selectedFlatData?.Floor || selectedFloor || '-'}
+                                />
+
+                                <FieldItem
+                                    label="Unit No"
+                                    value={selectedFlatData?.Flat || '-'}
+                                />
+
+                                <FieldItem
+                                    label="Category"
+                                    value={selectedFlatData?.FlatType || '-'}
+                                />
+
+                                <FieldItem
+                                    label="Configuration"
+                                    value={selectedFlatData?.FlatConfiguration || '-'}
+                                />
+
+                                <FieldItem
+                                    label="RERA Carpet Area (SqFt)"
+                                    value={
+                                        selectedFlatData?.RERACarpetAreaSqFt
+                                            ? `${selectedFlatData.RERACarpetAreaSqFt} SqFt`
+                                            : '-'
+                                    }
+                                />
+
+                            </div>
                         </div>
+
                     </div>
 
                     {/* ============================================================= [AGREEMENT DETAILS] ============================================================================================= */}
@@ -1434,33 +1771,49 @@ export const AddUpdateBooking: React.FC = () => {
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Agreement Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <Input
-                                label="Unit Value (With TDS)"
-                                type="number"
+                                label="Agreement Value (With TDS) (₹)"
                                 value={formData.AgreementValue?.toString() ?? ''}
                                 onChange={(e) => {
                                     const value = filterNumbersWithDecimal(e.target.value);
+                                    const agreementValue = Number(value || 0);
+
                                     handleFieldChange('AgreementValue', value);
+
+                                    // ================= TDS RULE =================
+                                    const tdsAmount =
+                                        agreementValue > 4999999.99
+                                            ? (agreementValue * 1) / 100
+                                            : 0;
+
+                                    handleFieldChange('AgreementValueTDS', tdsAmount.toFixed(2));
+
+                                    /* ================= REGISTRATION FEES ================= */
+                                    const registrationFees =
+                                        agreementValue > 4999999.99
+                                            ? 30000
+                                            : (agreementValue * 1) / 100;
+
+                                    handleFieldChange('RegistrationFees', registrationFees.toFixed(2));
                                 }}
-                                placeholder="0.00"
+                                placeholder="Agreement Value"
+                                rightIcon="₹"
                                 required
                                 error={errors.AgreementValue}
                             />
+
                             <Input
-                                label="TDS"
-                                type="number"
+                                label="TDS (₹)"
                                 value={formData.AgreementValueTDS?.toString() ?? ''}
-                                onChange={(e) => {
-                                    const value = filterNumbersWithDecimal(e.target.value);
-                                    handleFieldChange('AgreementValueTDS', value);
-                                }}
-                                placeholder="0.0"
+                                disabled
+                                rightIcon="₹"
                             />
+
                             <Input
-                                label="Unit Value (Without TDS)"
-                                type="number"
+                                label="Agreement Value (Without TDS) (₹)"
                                 value={((formData.AgreementValue || 0) - (formData.AgreementValueTDS || 0)).toFixed(2)}
                                 disabled
-                                placeholder="0.00"
+                                rightIcon="₹"
+                                placeholder="Agreement Value - Agreement Value TDS"
                             />
                         </div>
                     </div>
@@ -1470,53 +1823,63 @@ export const AddUpdateBooking: React.FC = () => {
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Tax Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <Input
-                                label="Agreement CST (%)"
-                                type="number"
+                                label="Agreement GST (%)"
                                 value={formData.AgreementValueGSTPercentage?.toString() ?? ''}
+                                required
                                 onChange={(e) => {
-                                    const percentage = filterNumbersWithDecimal(e.target.value);
-                                    handleFieldChange('AgreementValueGSTPercentage', percentage);
-                                    // Calculate CST Amount
-                                    const agreementValue = formData.AgreementValue || 0;
-                                    const cstAmount = (agreementValue * Number(percentage)) / 100;
-                                    handleFieldChange('AgreementValueGSTAmount', cstAmount.toFixed(2));
+                                    const val = allowPercentage(e.target.value);
+                                    if (val !== null) {
+                                        const percentage = filterNumbersWithDecimal(e.target.value);
+                                        handleFieldChange('AgreementValueGSTPercentage', percentage);
+
+                                        // Calculate CST Amount
+                                        const agreementValue = formData.AgreementValue || 0;
+
+                                        const cstAmount = (agreementValue * Number(percentage)) / 100;
+
+                                        handleFieldChange('AgreementValueGSTAmount', cstAmount.toFixed(2));
+                                    }
                                 }}
-                                placeholder="Agreement CST (%)"
+                                placeholder="Agreement GST (%)"
+                                rightIcon="%"
+                                error={errors.AgreementValueGSTPercentage}
                             />
                             <Input
-                                label="Agreement CST Amount"
-                                type="number"
+                                label="Agreement GST Amount (₹)"
                                 value={formData.AgreementValueGSTAmount?.toString() ?? ''}
                                 disabled
-                                placeholder="0.00"
+                                rightIcon="₹"
                             />
                             <Input
                                 label="Stamp Duty (%)"
-                                type="number"
+                                required
                                 value={formData.StampDutyPercentage?.toString() ?? ''}
                                 onChange={(e) => {
-                                    const percentage = filterNumbersWithDecimal(e.target.value);
-                                    handleFieldChange('StampDutyPercentage', percentage);
-                                    // Calculate Stamp Duty Amount
-                                    const agreementValue = formData.AgreementValue || 0;
-                                    const stampDutyAmount = (agreementValue * Number(percentage)) / 100;
-                                    handleFieldChange('StampDutyAmount', stampDutyAmount.toFixed(2));
+                                    const val = allowPercentage(e.target.value);
+                                    if (val !== null) {
+                                        const percentage = filterNumbersWithDecimal(e.target.value);
+                                        handleFieldChange('StampDutyPercentage', percentage);
+                                        // Calculate Stamp Duty Amount
+                                        const agreementValue = formData.AgreementValue || 0;
+                                        const stampDutyAmount = (agreementValue * Number(percentage)) / 100;
+                                        handleFieldChange('StampDutyAmount', stampDutyAmount.toFixed(2));
+                                    }
                                 }}
                                 placeholder="Stamp Duty (%)"
+                                rightIcon="%"
+                                error={errors.StampDutyPercentage}
                             />
                             <Input
-                                label="Stamp Duty Amount"
-                                type="number"
+                                label="Stamp Duty Amount (₹)"
                                 value={formData.StampDutyAmount?.toString() ?? ''}
                                 disabled
-                                placeholder="0.00"
+                                rightIcon="₹"
                             />
                             <Input
-                                label="Registration Fees"
-                                type="number"
+                                label="Registration Fees (₹)"
                                 value={formData.RegistrationFees?.toString() ?? ''}
-                                onChange={(e) => handleFieldChange('RegistrationFees', filterNumbersWithDecimal(e.target.value))}
-                                placeholder="0.00"
+                                disabled
+                                rightIcon="₹"
                             />
                         </div>
                     </div>
@@ -1538,9 +1901,9 @@ export const AddUpdateBooking: React.FC = () => {
                                     required
                                     value={formData.HandoverType ?? ''}
                                     onChange={(e) => handleFieldChange('HandoverType', String(e))}
-                                    options={[]} // TODO: Add HANDOVER_TYPE constant if available
+                                    options={HANDOVER_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
                                     error={errors.HandoverType}
-                                    placeholder="SELECT Handover Type"
+                                    placeholder="Select Handover Type"
                                 />
                             </div>
                             <DatePickerInput
@@ -1590,22 +1953,25 @@ export const AddUpdateBooking: React.FC = () => {
                                 </div>
                             )}
 
-                            <Button
-                                type="button"
-                                onClick={() => {
-                                    setPaymentScheduleType('Date');
-                                    setPaymentScheduleDate('');
-                                    setPaymentScheduleStage('');
-                                    setPaymentSchedulePercentage('');
-                                    setEditingPaymentScheduleIndex(null);
-                                    setIsPaymentScheduleModalOpen(true);
-                                }}
-                                color="blue"
-                                size="sm"
-                            >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add Payment Schedule
-                            </Button>
+                            {Number(formData.AgreementValue) > 0 && (
+                                <Button
+                                    type="button"
+                                    onClick={() => {
+                                        setPaymentScheduleType('Date');
+                                        setPaymentScheduleDate('');
+                                        setPaymentScheduleStage('');
+                                        setPaymentSchedulePercentage('');
+                                        setEditingPaymentScheduleIndex(null);
+                                        setIsPaymentScheduleModalOpen(true);
+                                    }}
+                                    color="blue"
+                                    size="sm"
+                                >
+                                    <Plus className="h-4 w-4 mr-2" />
+
+                                    Add Payment Schedule
+                                </Button>
+                            )}
                         </div>
                         {paymentSchedules.length > 0 ? (
                             <DataTable
@@ -1618,7 +1984,7 @@ export const AddUpdateBooking: React.FC = () => {
                                 aria-label="Payment schedule list"
                             />
                         ) :
-                        <div className="flex items-center justify-center">
+                            <div className="flex items-center justify-center">
                                 <span className="text-gray-500 text-sm font-medium">
                                     No payment schedules found
                                 </span>
@@ -1660,8 +2026,8 @@ export const AddUpdateBooking: React.FC = () => {
                                 className="min-w-full"
                                 aria-label="Other charges list"
                             />
-                        ):
-                        <div className="flex items-center justify-center">
+                        ) :
+                            <div className="flex items-center justify-center">
                                 <span className="text-gray-500 text-sm font-medium">
                                     No other charges found
                                 </span>
@@ -1711,50 +2077,6 @@ export const AddUpdateBooking: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* ============================================================= [MANAGEMENT DETAILS] ============================================================================================= */}
-                    <div className="space-y-4 pb-3">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Management Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Sourcing Manager"
-                                    title="Select Sourcing Manager"
-                                    size="lg"
-                                    dataFetchCallBack={async () => {
-                                        // TODO: Implement fetchEmployeesByDept("Sale") similar to enquiry
-                                        return { totalNumberOfRecord: 0, itemList: [] };
-                                    }}
-                                    onSelected={() => {
-                                        // TODO: Handle sourcing manager selection
-                                    }}
-                                    initialValue={createDropdownInitialValue(0, dropdownLabels.sourcingManager)}
-                                />
-                            </div>
-                            <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Closing Manager"
-                                    title="Select Closing Manager"
-                                    size="lg"
-                                    dataFetchCallBack={async () => {
-                                        // TODO: Implement fetchEmployeesByDept("Sale")
-                                        return { totalNumberOfRecord: 0, itemList: [] };
-                                    }}
-                                    onSelected={() => {
-                                        // TODO: Handle closing manager selection
-                                    }}
-                                    initialValue={createDropdownInitialValue(0, dropdownLabels.closingManager)}
-                                />
-                            </div>
-                            <DatePickerInput
-                                label="Client Attended Date"
-                                value=""
-                                onChange={() => {
-                                    // TODO: Handle client attended date
-                                }}
-                                placeholder="DD/MM/YYYY"
-                            />
-                        </div>
-                    </div>
                 </form>
             </div>
 
@@ -1892,6 +2214,7 @@ export const AddUpdateBooking: React.FC = () => {
                             <Input
                                 label="Aadhaar Number"
                                 error={errorsBookingApplicant.AadharCardNumber}
+                                required
                                 type="text"
                                 value={formDataForApplicant.AadharCardNumber ?? ''}
                                 maxLength={12}
@@ -1905,6 +2228,7 @@ export const AddUpdateBooking: React.FC = () => {
                         <div>
                             <MultiFilePicker
                                 label="Aadhaar Card"
+                                required
                                 placeholder="Select Aadhaar Card"
                                 error={errorsBookingApplicant.AadharCardURL}
                                 value={aadharCardFiles}
@@ -1919,6 +2243,7 @@ export const AddUpdateBooking: React.FC = () => {
                         <div>
                             <Input
                                 label="PAN Number"
+                                required
                                 error={errorsBookingApplicant.PanNumber}
                                 type="text"
                                 value={formDataForApplicant.PanNumber ?? ''}
@@ -1933,6 +2258,7 @@ export const AddUpdateBooking: React.FC = () => {
                         <div>
                             <MultiFilePicker
                                 label="PAN Card"
+                                required
                                 placeholder="Select PAN Card"
                                 error={errorsBookingApplicant.PanCardURL}
                                 value={panCardFiles}
@@ -2080,6 +2406,7 @@ export const AddUpdateBooking: React.FC = () => {
 
                 title="Add Payment Schedule"
                 onSubmit={() => {
+
                     if (!paymentSchedulePercentage || Number(paymentSchedulePercentage) <= 0) {
                         addToast({ type: 'error', title: 'Please enter a valid percentage' });
                         return;
@@ -2094,16 +2421,22 @@ export const AddUpdateBooking: React.FC = () => {
                         addToast({ type: 'error', title: 'Please select a stage' });
                         return;
                     }
+                    if (paymentScheduleType === 'Stage' && paymentScheduleStage==="Other" && paymentScheduleStageOther) {
+                        addToast({ type: 'error', title: 'Please enter a other stage' });
+                        return;
+                    }
 
                     const agreementValue = formData.AgreementValue || 0;
                     const percentage = Number(paymentSchedulePercentage);
 
                     // Calculate new total percentage
                     const currentTotal = paymentSchedules.reduce((sum, s, idx) => {
+
                         if (editingPaymentScheduleIndex !== null && idx === editingPaymentScheduleIndex) {
                             return sum; // Exclude the one being edited
                         }
                         return sum + (s.PaymentSchedulePercentage || 0);
+
                     }, 0);
 
                     const newTotal = currentTotal + percentage;
@@ -2118,7 +2451,7 @@ export const AddUpdateBooking: React.FC = () => {
                     const newSchedule: BookingPaymentScheduleData = {
                         BookingPaymentScheduleId: editingPaymentScheduleIndex !== null ? paymentSchedules[editingPaymentScheduleIndex]?.BookingPaymentScheduleId ?? null : null,
                         Type: paymentScheduleType,
-                        Name: paymentScheduleType === 'Stage' ? paymentScheduleStage : null,
+                        Name: paymentScheduleType === 'Stage' ? paymentScheduleStage === 'Other' ? paymentScheduleStageOther : paymentScheduleStage: null,
                         Date: paymentScheduleType === 'Date' && paymentScheduleDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(paymentScheduleDate) : null,
                         PaymentSchedulePercentage: percentage,
                         PaymentScheduleAmount: amount,
@@ -2198,24 +2531,38 @@ export const AddUpdateBooking: React.FC = () => {
                             <SinglePageSelection
                                 label="Stage"
                                 placeholder="Select Stage"
-                                required
                                 value={paymentScheduleStage}
                                 onChange={(e) => setPaymentScheduleStage(String(e))}
-                                options={paymentScheduleStages.map(stage => ({
-                                    label: stage.Stages || '',
-                                    value: stage.Stages || ''
-                                }))}
+                                options={paymentScheduleOptions}
+                            />
+                        </div>
+                    )}
+
+                    {paymentScheduleType === 'Stage' && paymentScheduleStage==="Other" && (
+
+                        <div>
+                            <Input
+                                label="Other Stage"
+                                value={paymentScheduleStageOther}
+                                onChange={(e) => setPaymentScheduleStageOther(String(e))}
+                                placeholder="Enter Stage"
+                                required
                             />
                         </div>
                     )}
 
                     <div>
                         <Input
-                            label="Percentage"
-                            type="number"
+                            label="Percentage (%)"
                             value={paymentSchedulePercentage}
-                            onChange={(e) => setPaymentSchedulePercentage(filterNumbersWithDecimal(e.target.value))}
+                            onChange={(e) => {
+                                const val = allowPercentage(e.target.value);
+                                if (val !== null) {
+                                    setPaymentSchedulePercentage(filterNumbersWithDecimal(e.target.value))
+                                }
+                            }}
                             placeholder="Enter Percentage"
+                            rightIcon="%"
                             required
                         />
                     </div>
@@ -2317,7 +2664,6 @@ export const AddUpdateBooking: React.FC = () => {
                     <div>
                         <Input
                             label="Value (in ₹)"
-                            type="number"
                             value={otherChargeValue}
                             onChange={(e) => setOtherChargeValue(filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter Value"
@@ -2328,7 +2674,6 @@ export const AddUpdateBooking: React.FC = () => {
                     <div>
                         <Input
                             label="GST"
-                            type="number"
                             value={otherChargeGSTPercentage}
                             onChange={(e) => {
                                 const gstValue = filterNumbersWithDecimal(e.target.value);

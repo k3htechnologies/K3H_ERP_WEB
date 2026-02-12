@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { Edit, Eye, Trash } from "lucide-react";
+import { Edit, Eye, Trash, BookOpen } from "lucide-react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { Button } from "@/ui/components/forms";
 import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
 import { colorsForFlatComponent } from "@/features/inventory/utils/flatColors";
 
@@ -8,9 +9,12 @@ interface FlatCardProps {
     flat: InventoryFlatData;
     projectId: number;
     onDelete: (flat: InventoryFlatData) => void;
+    wing?: string;
+    floor?: string;
+    buildingNumber?: string;
 }
 
-export const FlatCard = ({ flat, projectId, onDelete }: FlatCardProps) => {
+export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumber }: FlatCardProps) => {
     const navigate = useNavigate();
 
     const hexToRgba = (hex: string, alpha: number = 0.12) => {
@@ -42,6 +46,24 @@ export const FlatCard = ({ flat, projectId, onDelete }: FlatCardProps) => {
         onDelete(flat);
     };
 
+    const handleBook = () => {
+        
+        navigate('/booking/add', {
+            state: {
+                flatData: {
+                    InventoryFlatId: flat.InventoryFlatId,
+                    Flat: flat.Flat,
+                    FlatType: flat.FlatType,
+                    RERACarpetAreaSqFt: flat.RERACarpetAreaSqFt,
+                    FlatConfiguration: flat.FlatConfiguration,
+                    Wing: wing || flat.Wing,
+                    Floor: floor || flat.Floor,
+                    BuildingNumber: buildingNumber || flat.BuildingNumber,
+                }
+            }
+        });
+    };
+
     const getOwnerLabel = () => {
         if (flat.FlatStatus === "Booked") return "Owner : ";
         if (flat.FlatStatus === "Alloted") return "Alloted : ";
@@ -50,7 +72,7 @@ export const FlatCard = ({ flat, projectId, onDelete }: FlatCardProps) => {
 
     return (
         <div
-            className={`flex flex-col justify-evenly h-[200px] w-[250px] rounded-[8px] border ${colorsForFlatComponent[flat.FlatStatus].Border} border-[0.3px] px-2`}
+            className={`flex flex-col justify-evenly ${flat.FlatStatus === "Available" ? "min-h-[240px]" : "h-[200px]"} w-[250px] rounded-[8px] border ${colorsForFlatComponent[flat.FlatStatus].Border} border-[0.3px] px-2`}
             style={gradientStyle}
         >
             <FieldItem label="Unit No " value={flat.Flat} isRow={true} isUsedForInventoryFlat={true} />
@@ -81,6 +103,20 @@ export const FlatCard = ({ flat, projectId, onDelete }: FlatCardProps) => {
                     <Trash onClick={handleDelete} color="red" size={16} />
                 )}
             </div>
+
+            {flat.FlatStatus === "Available" && (
+                <div className="flex items-center justify-center mt-2">
+                    <Button
+                        onClick={handleBook}
+                        color="blue"
+                        size="sm"
+                        className="w-full"
+                    >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Book
+                    </Button>
+                </div>
+            )}
 
             <p className="text-center text-[#135BEC] font-semibold">
                 {getOwnerLabel()}{flat.OwnerName}

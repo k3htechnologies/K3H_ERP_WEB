@@ -173,6 +173,9 @@ export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkin
                                 flat={flat}
                                 projectId={projectId}
                                 onDelete={onDelete}
+                                wing={wing.Wing}
+                                floor={floor.Floor}
+                                buildingNumber={building.BuildingNumber}
                             />
                         ))}
                     </div>

@@ -37,7 +37,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
     const theme = THEME;
 
     const anchorRef = useRef<HTMLDivElement | null>(null);
-const portalRef = useRef<HTMLDivElement | null>(null);
+    const portalRef = useRef<HTMLDivElement | null>(null);
 
     const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -472,7 +472,7 @@ const portalRef = useRef<HTMLDivElement | null>(null);
         {/* Portal popup: render into document.body so modal is not affected */}
         {isOpen && portalPos && typeof document !== "undefined" && createPortal(
           <div
-          ref={portalRef}
+            ref={portalRef}
             onMouseDown={(e) => e.stopPropagation()} // avoid body click from closing while interacting
             style={{
               position: "fixed",

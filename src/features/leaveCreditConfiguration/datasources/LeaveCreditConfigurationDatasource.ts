@@ -26,8 +26,8 @@ export class LeaveCreditConfigurationDatasourceImpl implements LeaveCreditConfig
 
             if (params.LeaveCreditConfigurationId) queryParams.append('LeaveCreditConfigurationId', params.LeaveCreditConfigurationId.toString());
             if (params.LeavePeriodMode?.trim()) queryParams.append('LeavePeriodMode', params.LeavePeriodMode.trim());
-            if (params.FinancialYearStartDate?.trim()) queryParams.append('FinancialYearStartDate', params.FinancialYearStartDate.trim());
-            if (params.FinancialYearEndDate?.trim()) queryParams.append('FinancialYearEndDate', params.FinancialYearEndDate.trim());
+            if (params.StartDate?.trim()) queryParams.append('startDate', params.StartDate.trim());
+            if (params.EndDate?.trim()) queryParams.append('endDate', params.EndDate.trim());
             if (params.DepartmentName?.trim()) queryParams.append('DepartmentName', params.DepartmentName.trim());
             if (params.DesignationName?.trim()) queryParams.append('DesignationName', params.DesignationName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());

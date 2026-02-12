@@ -6,8 +6,8 @@ export interface FilterWithPaginationLeaveCreditConfigurationRequest {
     IsCheckPermission?: boolean
     LeaveCreditConfigurationId?: number
     LeavePeriodMode?: string
-    FinancialYearStartDate?: string
-    FinancialYearEndDate?: string
+    StartDate?: string
+    EndDate?: string
     DepartmentName?: string
     DesignationName?: string
     SortBy?: string
@@ -49,8 +49,8 @@ export interface AddUpdateLeaveCreditConfigurationRequest {
     LeaveCreditConfigurationId?: number
     Uniquekey?: string
     LeavePeriodMode?: string
-    FinancialYearStartDate?: string | null
-    FinancialYearEndDate?: string | null
+    StartDate?: string | null
+    EndDate?: string | null
     DepartmentMasterId?: number
     DesignationId?: string
     LeaveTypebalanceJSONList?: string

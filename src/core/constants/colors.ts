@@ -17,7 +17,7 @@ export const COLORS = {
   placeholder: '#9ca3af',       // Placeholder text
   black: '#333',
   white: '#FFFFFF',
-  hover: '#f1e5e5ff',
+  hover: '#e6f0ff',
   menu_toggleColor: '#DBEAFE',
   primary1: '#135BEC',
   green: '#8d99ba1f'
@@ -210,7 +210,7 @@ export const COLOR_MAP = {
           background: 'linear-gradient(90deg, #135BEC -56.5%, #121258 140%)' // slightly darker hover shade
         },
       },
-      
+
       gradient_light: {
         background: 'linear-gradient(90deg, #0BB4FD -19.07%, #135BEC 88.98%)',
         color: '#fff',  // text must be white (or readable)
@@ -385,7 +385,7 @@ export const COLOR_MAP = {
     },
   },
 
-   cancel: {
+  cancel: {
     solid: {
       light: {
         backgroundColor: '#D0D7DE',
@@ -393,7 +393,7 @@ export const COLOR_MAP = {
         border: '1px solid #D0D7DE',
         hover: { backgroundColor: '#D0D7DE' },
       },
-      
+
       dark: {
         backgroundColor: '#D0D7DE',
         color: '#1D1D1D50',

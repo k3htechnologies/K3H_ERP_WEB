@@ -69,8 +69,8 @@ export const LeaveCreditConfiguration: React.FC = () => {
           IsCheckPermission: true,
           LeaveCreditConfigurationId: filterParams.LeaveCreditConfigurationId ? Number(filterParams.LeaveCreditConfigurationId) : 0,
           LeavePeriodMode: filterParams.LeavePeriodMode?.trim() || undefined,
-          FinancialYearStartDate: filterParams.FinancialYearStartDate?.trim() ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FinancialYearStartDate) || undefined : undefined,
-          FinancialYearEndDate: filterParams.FinancialYearEndDate?.trim() ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FinancialYearEndDate) || undefined : undefined,
+          StartDate: filterParams.StartDate?.trim() ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.StartDate) || undefined : undefined,
+          EndDate: filterParams.EndDate?.trim() ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.EndDate) || undefined : undefined,
           DepartmentName: filterParams.DepartmentName?.trim() || undefined,
           DesignationName: filterParams.DesignationName?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, [])
@@ -187,8 +187,8 @@ export const LeaveCreditConfiguration: React.FC = () => {
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
           LeavePeriodMode: filters.LeavePeriodMode?.trim() || undefined,
-          FinancialYearStartDate: filters.FinancialYearStartDate?.trim() ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FinancialYearStartDate) || undefined : undefined,
-          FinancialYearEndDate: filters.FinancialYearEndDate?.trim() ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FinancialYearEndDate) || undefined : undefined,
+          StartDate: filters.StartDate?.trim() ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.StartDate) || undefined : undefined,
+          EndDate: filters.EndDate?.trim() ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.EndDate) || undefined : undefined,
           DepartmentName: filters.DepartmentName?.trim() || undefined,
           DesignationName: filters.DesignationName?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, []),
@@ -574,16 +574,16 @@ export const LeaveCreditConfiguration: React.FC = () => {
             </div>
             <div>
               <DateInput
-                label='Financial Year Start Date'
-                value={tempFilters.FinancialYearStartDate || null}
-                onChange={(value) => handleFilterChange('FinancialYearStartDate', value || '')}
+                label='Start Date'
+                value={tempFilters.StartDate || null}
+                onChange={(value) => handleFilterChange('StartDate', value || '')}
               />
             </div>
             <div>
               <DateInput
-                label='Financial Year End Date'
-                value={tempFilters.FinancialYearEndDate || null}
-                onChange={(value) => handleFilterChange('FinancialYearEndDate', value || '')}
+                label='End Date'
+                value={tempFilters.EndDate || null}
+                onChange={(value) => handleFilterChange('EndDate', value || '')}
               />
             </div>
           </div>

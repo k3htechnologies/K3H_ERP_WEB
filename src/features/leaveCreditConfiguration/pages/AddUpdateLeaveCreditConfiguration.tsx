@@ -31,8 +31,8 @@ const initialFormState = (): AddUpdateLeaveCreditConfigurationRequest => ({
     LeaveCreditConfigurationId: 0,
     Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
     LeavePeriodMode: '',
-    FinancialYearStartDate: null,
-    FinancialYearEndDate: null,
+    StartDate: null,
+    EndDate: null,
     DepartmentMasterId: 0,
     DesignationId: '',
     LeaveTypebalanceJSONList: '',
@@ -118,8 +118,8 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                             LeaveCreditConfigurationId: row.LeaveCreditConfigurationId ?? prev.LeaveCreditConfigurationId,
                             Uniquekey: row.Uniquekey ?? prev.Uniquekey,
                             LeavePeriodMode: row.LeavePeriodMode ?? prev.LeavePeriodMode ?? '',
-                            FinancialYearStartDate: row.FinancialYearStartDate ? formatDate_dd_mm_yyyy(row.FinancialYearStartDate) : (prev.FinancialYearStartDate ?? null),
-                            FinancialYearEndDate: row.FinancialYearEndDate ? formatDate_dd_mm_yyyy(row.FinancialYearEndDate) : (prev.FinancialYearEndDate ?? null),
+                            StartDate: row.FinancialYearStartDate ? formatDate_dd_mm_yyyy(row.FinancialYearStartDate) : (prev.StartDate ?? null),
+                            EndDate: row.FinancialYearEndDate ? formatDate_dd_mm_yyyy(row.FinancialYearEndDate) : (prev.EndDate ?? null),
                             DesignationId: row.DesignationId ?? prev.DesignationId ?? '',
                             DepartmentMasterId: row.DepartmentMasterId ?? prev.DepartmentMasterId ?? 0,
                             LeaveTypebalanceJSONList: '',
@@ -260,19 +260,19 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
             newErrors.LeavePeriodMode = "Leave Period Mode is required.";
         }
 
-        if (!formData.FinancialYearStartDate || formData.FinancialYearStartDate.trim() === '') {
-            newErrors.FinancialYearStartDate = "Financial Year Start Date is required.";
+        if (!formData.StartDate || formData.StartDate.trim() === '') {
+            newErrors.StartDate = "Start Date is required.";
         }
 
-        if (!formData.FinancialYearEndDate || formData.FinancialYearEndDate.trim() === '') {
-            newErrors.FinancialYearEndDate = "Financial Year End Date is required.";
+        if (!formData.EndDate || formData.EndDate.trim() === '') {
+            newErrors.EndDate = "End Date is required.";
         }
 
-        if (formData.FinancialYearStartDate && formData.FinancialYearEndDate) {
-            const startDate = new Date(formData.FinancialYearStartDate.split('-').reverse().join('-'));
-            const endDate = new Date(formData.FinancialYearEndDate.split('-').reverse().join('-'));
+        if (formData.StartDate && formData.EndDate) {
+            const startDate = new Date(formData.StartDate.split('-').reverse().join('-'));
+            const endDate = new Date(formData.EndDate.split('-').reverse().join('-'));
             if (endDate <= startDate) {
-                newErrors.FinancialYearEndDate = "End Date must be after Start Date.";
+                newErrors.EndDate = "End Date must be after Start Date.";
             }
         }
 
@@ -324,8 +324,8 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                     ...formData,
                     DepartmentMasterId: formData.DepartmentMasterId || 0,
                     DesignationId: designationIdsString,
-                    FinancialYearStartDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.FinancialYearStartDate),
-                    FinancialYearEndDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.FinancialYearEndDate),
+                    StartDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.StartDate),
+                    EndDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.EndDate),
                     LeaveTypebalanceJSONList: JSON.stringify(
                         leaveBalanceTypes.map((item) => ({
                             LeaveTypeBalanceId: item.LeaveTypeBalanceId || 0,
@@ -397,18 +397,18 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                             size="md"
                         />
                         <DatePickerInput
-                            label="Financial Year Start Date"
+                            label="Start Date"
                             required
-                            value={formData.FinancialYearStartDate || null}
-                            onChange={(value) => handleFieldChange('FinancialYearStartDate', value || null)}
-                            error={errors.FinancialYearStartDate}
+                            value={formData.StartDate || null}
+                            onChange={(value) => handleFieldChange('StartDate', value || null)}
+                            error={errors.StartDate}
                         />
                         <DatePickerInput
-                            label="Financial Year End Date"
+                            label="End Date"
                             required
-                            value={formData.FinancialYearEndDate || null}
-                            onChange={(value) => handleFieldChange('FinancialYearEndDate', value || null)}
-                            error={errors.FinancialYearEndDate}
+                            value={formData.EndDate || null}
+                            onChange={(value) => handleFieldChange('EndDate', value || null)}
+                            error={errors.EndDate}
                         />
                     </div>
 

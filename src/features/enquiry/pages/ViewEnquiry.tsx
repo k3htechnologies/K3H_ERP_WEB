@@ -23,7 +23,7 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { Edit, Trash2 } from "lucide-react";
 import { getStatusColor } from "./Status";
-import { calculateAge } from "@/core/utils/comman";
+import { calculateAge, isDateWithinPastDays } from "@/core/utils/comman";
 
 const ViewEnquiry: React.FC = () => {
 
@@ -235,7 +235,7 @@ const ViewEnquiry: React.FC = () => {
             errors.LostReason = 'Lost Reason is required';
         }
 
-        if (enquiryFollowUpFormData.Status?.trim() !== "Lost" && !enquiryFollowUpFormData.NextFollowUpDate?.trim()) {
+        if (enquiryFollowUpFormData.Status?.trim() !== "Lost" && enquiryFollowUpFormData.Status?.trim() !== 'Booking Done' && enquiryFollowUpFormData.Status?.trim() !== 'Cancelled' && !enquiryFollowUpFormData.NextFollowUpDate?.trim()) {
             errors.NextFollowUpDate = 'Next FollowUp Date is required';
         }
         if (!enquiryFollowUpFormData.Remark?.trim()) {
@@ -344,7 +344,7 @@ const ViewEnquiry: React.FC = () => {
 
     const safe = (value?: any) => (value === null || value === undefined || value === '' ? '-' : value)
 
-    const canActionPerform = canAction && enquiryData?.FinalStage?.toLowerCase() !== "lost";
+    const canActionPerform = canAction && enquiryData?.FinalStage?.toUpperCase() !== "LOST" && enquiryData?.FinalStage?.toUpperCase() !== 'BOOKING DONE' && enquiryData?.FinalStage?.toUpperCase() !== 'CANCELLED';
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
@@ -682,7 +682,7 @@ const ViewEnquiry: React.FC = () => {
                                                 </span>
                                             </div>
 
-                                            {index === 0 && canActionPerform && (
+                                            {index === 0 && canActionPerform && isDateWithinPastDays(item.CreatedDate, 2) &&(
                                                 <div className="flex items-center gap-1">
                                                     <Button
                                                         color="transparent"
@@ -795,7 +795,7 @@ const ViewEnquiry: React.FC = () => {
                         </div>
                     )}
 
-                    {enquiryFollowUpFormData.Status !== 'Lost' && (
+                    {enquiryFollowUpFormData.Status !== 'Lost' && enquiryFollowUpFormData.Status !== 'Booking Done' && enquiryFollowUpFormData.Status !== 'Cancelled'  && (
                         <DatePickerInput
                             label="Next Follow Up Date"
                             required

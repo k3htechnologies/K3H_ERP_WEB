@@ -526,7 +526,7 @@ export const Enquiry: React.FC = () => {
             width: '14',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: (value, row) =>row?.Source === 'Channel Partner' ? '-' : value || '-'
         },
         {
             key: 'Nationality',
@@ -597,7 +597,7 @@ export const Enquiry: React.FC = () => {
 
         {
             key: 'FinalStageDetail',
-            label: 'Final Stage Detail',
+            label: 'Stage Detail',
             width: '14',
             sortable: false,
             align: 'left',
@@ -618,8 +618,7 @@ export const Enquiry: React.FC = () => {
             width: '12',
             sortable: false,
             align: 'center',
-            render: (value?: string) =>
-                value ? formatDate_dd_MonthName_yy(value) : '-'
+            render: (value?: string) =>value ? formatDate_dd_MonthName_yy(value) : '-'
         },
         {
             key: 'SalesAdvisor',
@@ -645,7 +644,7 @@ export const Enquiry: React.FC = () => {
             align: 'center',
             render: (_value, row) => {
 
-                const canDelete =canAction && row?.FinalStage?.toLowerCase() !== "lost";;
+                const canDelete =canAction && row?.FinalStage?.toUpperCase() == "";
 
                 return canDelete ? (
                     <div className="flex items-center justify-center gap-2">

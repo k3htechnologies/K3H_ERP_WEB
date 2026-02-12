@@ -127,6 +127,10 @@ export const AddUpdateEnquiry: React.FC = () => {
     const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
     const [channelPartnerType, setChannelPartnerType] = useState<string>();
 
+    
+    
+        const [enquiryUniqueKey, setEnquiryUniqueKey] = useState<string>();
+
 
     // NAVIGATE
     const navigate = useNavigate();
@@ -299,7 +303,9 @@ export const AddUpdateEnquiry: React.FC = () => {
 
                         const age = calculateAge(e.DateOfBirth || "")
 
-                        setCalculatedAge(age)
+                        setCalculatedAge(age);
+
+                        setEnquiryUniqueKey(e.SystemGeneratedCode || '');
 
                         if (e.Source === 'Channel Partner') {
                         } setChannelPartnerSearchByMobileNumber(e.ChannelPartnerMobileNumber ? e.ChannelPartnerMobileNumber.toString() : '');
@@ -491,8 +497,8 @@ export const AddUpdateEnquiry: React.FC = () => {
         }
 
         if (formData.NextFollowUpDate && !isToDateGreaterOrEqualFromDate(formData.EnquiryDate || "", formData.NextFollowUpDate!)) {
-              newErrors.NextFollowUpDate = "Next Follow Up Date must be greater than or equal to Enquiry Date";
-            }
+            newErrors.NextFollowUpDate = "Next Follow Up Date must be greater than or equal to Enquiry Date";
+        }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -744,6 +750,15 @@ export const AddUpdateEnquiry: React.FC = () => {
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Enquiry Details</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <Input
+                                    type="text"
+                                    disabled
+                                    label='Unique key'
+                                    value={enquiryUniqueKey ?? ""}
+                                    placeholder="System Generated Unique key"
+                                />
+                            </div>
                             <div>
                                 <TimePicker
                                     label="Customer Time In"

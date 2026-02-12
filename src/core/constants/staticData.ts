@@ -269,7 +269,9 @@ export const MASTER_DATA = {
 
   channelPartnerType: ['International Channel Partner (IPC)', 'Institutional Channel Partner (ICP)', 'Retail Channel Partner (RCP)'],
 
-  enquiryTimeLine: ['Beyond 1 Month', 'Within 1 Month']
+  enquiryTimeLine: ['Beyond 1 Month', 'Within 1 Month'],
+
+  supportType: ['A', 'B'],
 
 } as const
 
@@ -376,6 +378,7 @@ export const AMOUNT_TYPE = toOptions(MASTER_DATA.amountType);
 export const CHANNE_PARTNER_DESIGNATION = toOptions(MASTER_DATA.channelPartnerDesignation);
 export const CHANNE_PARTNER_TYPE = toOptions(MASTER_DATA.channelPartnerType);
 export const ENQUIRY_TIMELINE = toOptions(MASTER_DATA.enquiryTimeLine);
+export const SUPPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.supportType);
 
 
 

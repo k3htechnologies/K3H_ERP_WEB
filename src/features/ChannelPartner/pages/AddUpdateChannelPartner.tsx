@@ -239,7 +239,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
                         setIsReadOnly(e.Designation === "Owner" ? false : true)
 
-                        setChannelPartnerUniqueKey(e.SystemGeneratedCode || '')
+                        setChannelPartnerUniqueKey(e.SystemGeneratedCode || '');
                     }
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -524,7 +524,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
                             <div>
                                 <Input
                                     type="text"
-                                    readOnly
+                                    disabled
                                     label='Unique key'
                                     value={channelPartnerUniqueKey ?? ""}
                                     placeholder="System Generated Unique key"

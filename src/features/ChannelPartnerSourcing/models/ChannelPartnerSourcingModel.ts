@@ -17,6 +17,7 @@ export interface ChannelPartnerSourcingData {
   ProjectId?: number;
   IBM_OBM?: string;
   SourcingRemark: string;
+  Support: string;
   SourcingLocation: string;
   CreatedById: number | null;
   CreatedBy: string;
@@ -34,6 +35,7 @@ export interface AddUpdateChannelPartnerSourcingRequest {
   ChannelPartnerId: number;
   ProjectId?: number;
   SourcingRemark: string;
+  Support: string;
   IBM_OBM?: string;
 }
 

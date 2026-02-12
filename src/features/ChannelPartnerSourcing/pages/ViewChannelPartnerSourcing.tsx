@@ -22,6 +22,9 @@ import { Edit, Trash2 } from "lucide-react";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { Tabs, type TabItem } from "@/ui/components/Tab/Tab";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { SUPPORT_TYPE_OPTIONS } from "@/core/constants";
+import { isDateWithinPastDays } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateChannelPartnerSourcingRequest => ({
   ChannelPartnerSourcingId: 0,
@@ -29,6 +32,7 @@ const initialFormState = (): AddUpdateChannelPartnerSourcingRequest => ({
   ChannelPartnerId: 0,
   ProjectId: 0,
   SourcingRemark: "",
+  Support: "",
   IBM_OBM: "IBM"
 });
 
@@ -195,6 +199,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
         ChannelPartnerId: item.ChannelPartnerId,
         ProjectId: projectId || 0,
         SourcingRemark: item.SourcingRemark || "",
+        Support: item.Support || "",
         IBM_OBM: item.IBM_OBM || activeTab
       });
       setIbmObm(item.IBM_OBM || activeTab);
@@ -207,6 +212,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
         ChannelPartnerId: listState.channelPartnerId || 0,
         ProjectId: projectId || 0,
         SourcingRemark: "",
+        Support: "",
         IBM_OBM: activeTab
       });
       setIbmObm(activeTab);
@@ -227,6 +233,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
       ChannelPartnerId: 0,
       ProjectId: 0,
       SourcingRemark: "",
+      Support: "",
       IBM_OBM: activeTab
     });
     setErrors({});
@@ -263,6 +270,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
           ChannelPartnerId: channelPartnerId || 0,
           ProjectId: projectId || 0,
           SourcingRemark: formData.SourcingRemark?.trim() || "",
+          Support: formData.Support?.trim() || "",
           IBM_OBM: formData.IBM_OBM
         };
 
@@ -500,10 +508,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                   const isModified = !!(item.ModifiedBy && item.ModifiedDate);
 
                   return (
-                    <div
-                      key={item.ChannelPartnerSourcingId}
-                      className="grid grid-cols-[24px_1fr] gap-3"
-                    >
+                    <div key={item.ChannelPartnerSourcingId} className="grid grid-cols-[24px_1fr] gap-3">
                       {/* LEFT — DOT + LINE */}
                       <div className="flex flex-col items-center">
                         <div className="h-4 w-4 rounded-full bg-blue-600"></div>
@@ -518,16 +523,16 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                         <div className="flex items-center gap-3">
 
                           <span className="font-semibold text-gray-900">
-                            {formatDate_dd_MonthName_yy_hh_mm(
-                              isModified ? item.ModifiedDate! : item.CreatedDate ?? ""
-                            )}
+
+                            {formatDate_dd_MonthName_yy_hh_mm(isModified ? item.ModifiedDate! : item.CreatedDate ?? "")}
+
                           </span>
 
                           <span className="font-medium text-gray-400 text-sm">
                             {isModified ? item.ModifiedBy : item.CreatedBy}
                           </span>
 
-                          {index === 0 && canAction && (
+                          {index === 0 && canAction && isDateWithinPastDays(item.CreatedDate, 2) && (
                             <div className="flex items-center gap-1 ml-auto">
                               <Button
                                 color="transparent"
@@ -554,6 +559,11 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                           )}
                         </div>
 
+                        {item.Support?.toLowerCase() !== "" && (
+                          <span className="block mt-1 text-xs text-gray-500 italic">
+                            Support: {item.Support || "-"}
+                          </span>
+                        )}
                         <p className="mt-2 text-sm text-gray-700 leading-relaxed pb-5">
                           {item.SourcingRemark || "-"}
                         </p>
@@ -619,6 +629,21 @@ const ViewChannelPartnerSourcing: React.FC = () => {
             onChange={(e) => handleFieldChange("SourcingRemark", e.target.value)}
             error={errors.SourcingRemark} />
 
+          <div>
+
+            <SinglePageSelection
+              label='Support'
+              placeholder="Select Support"
+              error={errors.Support}
+              value={formData.Support}
+              onChange={(e) => {
+                handleFieldChange('Support', String(e))
+              }}
+
+              options={SUPPORT_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
+
+
+          </div>
         </div>
       </Modal>
 

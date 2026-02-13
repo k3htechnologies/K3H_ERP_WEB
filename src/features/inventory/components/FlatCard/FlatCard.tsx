@@ -47,7 +47,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
     };
 
     const handleBook = () => {
-        
+
         navigate('/booking/add', {
             state: {
                 flatData: {
@@ -59,6 +59,8 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                     Wing: wing || flat.Wing,
                     Floor: floor || flat.Floor,
                     BuildingNumber: buildingNumber || flat.BuildingNumber,
+                    PageName: "UNIT BOOK",
+                    InventoryFlatFloorBasementPodiumWingId:flat.InventoryFlatFloorBasementPodiumWingId
                 }
             }
         });
@@ -79,7 +81,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
             <FieldItem label="Type " value={flat.FlatType} isRow={true} isUsedForInventoryFlat={true} />
             <FieldItem label="Area (SqFt) " value={flat.RERACarpetAreaSqFt} isRow={true} isUsedForInventoryFlat={true} />
             <FieldItem label="Configuration " value={flat.FlatConfiguration} isRow={true} isUsedForInventoryFlat={true} />
-            
+
             <div className="flex items-center justify-evenly gap-2">
                 <div
                     className={`
@@ -92,19 +94,19 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                 >
                     {flat.FlatStatus}
                 </div>
-                
-                {(flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted" ) && <Eye size={16}  onClick={handleEdit}/>}
-                
+
+                {(flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted") && <Eye size={16} onClick={handleEdit} />}
+
                 {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available" || flat.FlatStatus === "Hold") && (
                     <Edit className="cursor-pointer" onClick={handleEdit} size={16} />
                 )}
-                
+
                 {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
                     <Trash onClick={handleDelete} color="red" size={16} />
                 )}
             </div>
 
-            {flat.FlatStatus === "Available" && flat.FlatType!=="" && flat.RERACarpetAreaSqFt >0 && (
+            {flat.FlatStatus === "Available" && flat.FlatType !== "" && flat.RERACarpetAreaSqFt > 0 && (
                 <div className="flex items-center justify-center mt-2">
                     <Button
                         onClick={handleBook}

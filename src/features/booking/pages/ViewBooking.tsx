@@ -12,7 +12,7 @@ import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useBookingListState } from '@/features/booking/context/BookingListStateContext';
 import Tabs from '@/ui/components/Tab/Tab';
-import { formatDate_dd_MonthName_yy_hh_mm, formatDate_MonthName_yy } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm, formatDate_MonthName_yy } from '@/core/utils/dateFormat';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 
 export const ViewBooking: React.FC = () => {
@@ -205,11 +205,6 @@ export const ViewBooking: React.FC = () => {
                                         Source Details
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Source" value={safe(bookingData.Source)} />
-                                        <FieldItem label="Sub Source" value={safe(bookingData.SubSource)} />
-                                        <FieldItem label="Channel Partner" value={safe(bookingData.ChannelPartnerName)} />
-                                        <FieldItem label="Channel Partner Company" value={safe(bookingData.ChannelPartnerCompany)} />
-                                        <FieldItem label="Channel Mobile Number" value={safe(bookingData.ChannelPartnerMobileNumber)} />
                                         <FieldItem label="Brokerage (%)" value={safe(bookingData.BrokeragePercentage)} />
                                         <FieldItem label="Brokerage Amount (₹)" value={formatCurrency(bookingData.BrokerageAmount)} />
                                     </div>
@@ -342,7 +337,7 @@ export const ViewBooking: React.FC = () => {
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{safe(schedule.Type)}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{safe(schedule.Name)}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                                {schedule.Date ? formatDate_MonthName_yy(schedule.Date) : '-'}
+                                                                {schedule.Date ? formatDate_dd_MonthName_yy(schedule.Date) : '-'}
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{safe(schedule.PaymentSchedulePercentage)}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(schedule.PaymentScheduleAmount)}</td>

@@ -5,7 +5,7 @@ import * as E from 'fp-ts/Either';
 import { runApiWithLoader } from '@/core/utils';
 import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
-import type { AddUpdateBookingRequest, FilterWithPaginationBookingRequest, AddUpdateBookingApplicantRequest, BookingApplicantData, AddUpdateBookingPaymentScheduleRequest } from '../models/BookingModel';
+import type { AddUpdateBookingRequest, FilterWithPaginationBookingRequest, AddUpdateBookingApplicantRequest, BookingApplicantData, AddUpdateBookingPaymentScheduleRequest, AddUpdateBookingOtherChargesRequest } from '../models/BookingModel';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from '@/core/utils/dateFormat';
 import { TextArea } from '@/ui/components/forms/Textarea';
@@ -32,7 +32,6 @@ import type { InventoryFlatData } from '@/features/inventory/models/InventoryMas
 import { fetchBankListMasterDropdown } from '@/features/bankListMaster/bankListMasterDropDown';
 import { Plus } from 'lucide-react';
 import RadioPill from '@/ui/components/forms/RadioPill';
-import type { BookingPaymentScheduleData, BookingOtherChargesData } from '../models/BookingModel';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { fetchEnquiryBySystemGeneratedCode } from '@/features/enquiry/enquiryDropDown';
 import { fetchPaymentScheduleDropdown } from '@/features/paymentSchedule/paymentScheduleDropDown';
@@ -187,7 +186,7 @@ export const AddUpdateBooking: React.FC = () => {
     //#region BOOKING APPLICANT
     const [formDataForApplicant, setFormDataForApplicant] = useState<AddUpdateBookingApplicantRequest>(() => initialFormStateApplicantDetails());
     const [editingApplicantData, setEditingApplicantData] = useState<{ row: BookingApplicantWithFiles; index: number } | null>(null);
-    
+
     const [isAddUpdateApplicantModalOpen, setIsAddUpdateApplicantModalOpen] = useState(false);
 
     // ================= PHOTO =================
@@ -240,7 +239,7 @@ export const AddUpdateBooking: React.FC = () => {
     }>({});
 
     //#region PAYMENT SCHEDULE STATE
-    const [paymentSchedules, setPaymentSchedules] = useState<BookingPaymentScheduleData[]>([]);
+    const [paymentSchedules, setPaymentSchedules] = useState<AddUpdateBookingPaymentScheduleRequest[]>([]);
     const [paymentScheduleOptions, setPaymentScheduleOptions] = useState<{ label: string; value: string }[]>([]);
 
     const [isPaymentScheduleModalOpen, setIsPaymentScheduleModalOpen] = useState(false);
@@ -253,7 +252,7 @@ export const AddUpdateBooking: React.FC = () => {
     //#endregion
 
     //#region OTHER CHARGES STATE
-    const [otherCharges, setOtherCharges] = useState<BookingOtherChargesData[]>([]);
+    const [otherCharges, setOtherCharges] = useState<AddUpdateBookingOtherChargesRequest[]>([]);
     const [isOtherChargesModalOpen, setIsOtherChargesModalOpen] = useState(false);
     const [otherChargeName, setOtherChargeName] = useState<string>('');
     const [otherChargeCalculatedOn, setOtherChargeCalculatedOn] = useState<string>('');
@@ -280,10 +279,14 @@ export const AddUpdateBooking: React.FC = () => {
     //#endregion
 
     useEffect(() => {
+
+        const flatDataFromState = (location.state as any)?.flatData;
+
         const loadPaymentSchedule = async () => {
+
             const response = await fetchPaymentScheduleDropdown({
                 projectId: Number(projectId),
-                value: 1, // optional
+                value: flatDataFromState.InventoryFlatFloorBasementPodiumWingId, // optional
             });
 
             setPaymentScheduleOptions(response.itemList);
@@ -295,20 +298,23 @@ export const AddUpdateBooking: React.FC = () => {
 
     //#region INITIALIZATION
     useEffect(() => {
+
         if (!projectId) return;
+
 
         // Check if flatData is passed from inventory (Book button)
         const flatDataFromState = (location.state as any)?.flatData;
 
-        if (flatDataFromState && isAddMode) {
-            // Prefill form data from inventory flat selection
+        formData.BookingType = flatDataFromState.PageName === "UNIT BOOK" ? 'Flat' : 'Parking';
+
+        if (flatDataFromState && flatDataFromState.PageName === "UNIT BOOK") {
+
             setFormData(prev => ({
                 ...prev,
                 ProjectId: Number(projectId),
                 InventoryFlatId: flatDataFromState.InventoryFlatId || 0,
             }));
 
-            // Set selected flat data for Project Details display
             setSelectedFlatData({
                 InventoryFlatId: flatDataFromState.InventoryFlatId || 0,
                 Uniquekey: '',
@@ -336,7 +342,6 @@ export const AddUpdateBooking: React.FC = () => {
             setSelectedWing(flatDataFromState.Wing || '');
             setSelectedFloor(flatDataFromState.Floor || '');
             setSelectedFlatId(flatDataFromState.InventoryFlatId || null);
-            formData.BookingType = flatDataFromState.InventoryFlatId > 0 ? 'FLAT' : 'PARKING';
 
         } else if (!isAddMode && bookingId) {
             fetchBookingDetails();
@@ -484,7 +489,7 @@ export const AddUpdateBooking: React.FC = () => {
                             ModeOfPayment: booking.ModeOfPayment ?? '',
                             FlatAlterationRemark: booking.FlatAlterationRemark ?? '',
                             TermsAndConditionsDescription: booking.TermsAndConditionsDescription ?? '',
-                            BookingType: booking.BookingType ?? '',
+                            BookingType: booking.BookingType === "" ? 'FLAT' : '',
                             OtherChargesDetailJSON: booking.BookingOtherChargesData ? JSON.stringify(booking.BookingOtherChargesData) : null,
                             PaymentScheduleDetailJSON: booking.BookingPaymentScheduleData ? JSON.stringify(booking.BookingPaymentScheduleData) : null,
                             BookingAmount: booking.BookingAmount ?? 0,
@@ -519,8 +524,31 @@ export const AddUpdateBooking: React.FC = () => {
                         }));
 
                         setApplicantList(applicantsWithFiles);
-                        setPaymentSchedules(booking?.BookingPaymentScheduleData || []);
-                        setOtherCharges(booking?.BookingOtherChargesData || []);
+
+                        // Map BookingPaymentScheduleData to AddUpdateBookingPaymentScheduleRequest
+                        const paymentSchedulesMapped: AddUpdateBookingPaymentScheduleRequest[] = (booking?.BookingPaymentScheduleData || []).map(schedule => ({
+                            BookingPaymentScheduleId: schedule.BookingPaymentScheduleId ?? 0,
+                            Type: schedule.Type ?? null,
+                            Name: schedule.Name ?? null,
+                            Date: schedule.Date ?? null,
+                            PaymentSchedulePercentage: schedule.PaymentSchedulePercentage ?? null,
+                            PaymentScheduleAmount: schedule.PaymentScheduleAmount ?? null,
+                            PaymentScheduleGSTAmount: schedule.PaymentScheduleGSTAmount ?? null,
+                            PaymentScheduleTDSAmount: schedule.PaymentScheduleTDSAmount ?? null,
+                        }));
+                        setPaymentSchedules(paymentSchedulesMapped);
+
+                        // Map BookingOtherChargesData to AddUpdateBookingOtherChargesRequest
+                        const otherChargesMapped: AddUpdateBookingOtherChargesRequest[] = (booking?.BookingOtherChargesData || []).map(charge => ({
+                            BookingOtherChargesId: charge.BookingOtherChargesId ?? null,
+                            Uniquekey: charge.Uniquekey ?? null,
+                            ChargeName: charge.ChargeName ?? null,
+                            CalculatedOn: charge.CalculatedOn ?? null,
+                            Value: charge.Value ?? null,
+                            GSTPercentage: charge.GSTPercentage ?? null,
+                            GSTValue: charge.GSTValue ?? null,
+                        }));
+                        setOtherCharges(otherChargesMapped);
                     }
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -2509,9 +2537,10 @@ export const AddUpdateBooking: React.FC = () => {
                     const amount = (agreementValue * percentage) / 100;
 
                     const newSchedule: AddUpdateBookingPaymentScheduleRequest = {
+
                         BookingPaymentScheduleId: editingPaymentScheduleIndex !== null ? paymentSchedules[editingPaymentScheduleIndex]?.BookingPaymentScheduleId ?? 0 : 0,
                         Type: paymentScheduleType,
-                        Name: paymentScheduleType === 'Stage' ? paymentScheduleStage === 'Other' ? paymentScheduleStageOther : paymentScheduleStage : null,
+                        Name: paymentScheduleType === 'Stage' ? paymentScheduleStage === 'Other' ? paymentScheduleStageOther : paymentScheduleStage : "",
                         Date: paymentScheduleType === 'Date' && paymentScheduleDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(paymentScheduleDate) : null,
                         PaymentSchedulePercentage: percentage,
                         PaymentScheduleAmount: amount,
@@ -2665,8 +2694,7 @@ export const AddUpdateBooking: React.FC = () => {
                     const gstPercentage = Number(otherChargeGSTPercentage);
                     const gstValue = (value * gstPercentage) / 100;
 
-                    const newCharge: BookingOtherChargesData = {
-
+                    const newCharge: AddUpdateBookingOtherChargesRequest = {
                         BookingOtherChargesId: editingOtherChargeIndex !== null ? otherCharges[editingOtherChargeIndex]?.BookingOtherChargesId ?? null : null,
                         Uniquekey: editingOtherChargeIndex !== null ? otherCharges[editingOtherChargeIndex]?.Uniquekey ?? null : null,
                         ChargeName: otherChargeName.trim(),
@@ -2674,12 +2702,6 @@ export const AddUpdateBooking: React.FC = () => {
                         Value: value,
                         GSTPercentage: gstPercentage,
                         GSTValue: gstValue,
-                        CreatedById: null,
-                        CreatedBy: null,
-                        CreatedDate: null,
-                        ModifiedById: null,
-                        ModifiedBy: null,
-                        ModifiedDate: null,
                     };
 
                     if (editingOtherChargeIndex !== null) {

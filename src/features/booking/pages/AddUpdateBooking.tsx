@@ -1143,6 +1143,7 @@ export const AddUpdateBooking: React.FC = () => {
             newErrors.ProjectId = 'Project is required';
         }
 
+        
 
         if (!formData.PermanentAddress) {
             newErrors.PermanentAddress = 'Permanent Address is required';
@@ -1682,6 +1683,7 @@ export const AddUpdateBooking: React.FC = () => {
                         <Input
                             type="text"
                             required
+                            disabled={bookingId > 0 ? true :false}
                             label="Enquiry Unique Code"
                             value={enquiryUniqueCode}
                             onChange={(e) => {
@@ -1689,7 +1691,7 @@ export const AddUpdateBooking: React.FC = () => {
                             }}
                             placeholder="Search By Enquiry Unique Code"
                             leftIcon={<Search className="h-4 w-4 text-gray-400" />}
-                            error={errors.ChannelPartnerId}
+                            error={errors.EnquiryId}
 
                         />
 
@@ -2717,12 +2719,13 @@ export const AddUpdateBooking: React.FC = () => {
                 }}
 
                 title="Add Payment Schedule"
-                onSubmit={() => {
+                onSubmit={(e) => {
+                    e.preventDefault();
 
                     if (!paymentSchedulePercentage || Number(paymentSchedulePercentage) <= 0) {
 
                         addToast({ type: 'error', title: 'Please enter a valid percentage' });
-                        
+
                         return;
                     }
 
@@ -2733,7 +2736,7 @@ export const AddUpdateBooking: React.FC = () => {
                     }
 
                     if (paymentScheduleType === 'Stage' && !paymentScheduleStage) {
-                        
+
                         addToast({ type: 'error', title: 'Please select a stage' });
                         return;
 
@@ -2744,6 +2747,31 @@ export const AddUpdateBooking: React.FC = () => {
                         return;
                     }
 
+                    const scheduleName = paymentScheduleType === 'Stage' ? (paymentScheduleStage === 'Other' ? paymentScheduleStageOther : paymentScheduleStage) : "";
+                    const scheduleDate = paymentScheduleType === 'Date' && paymentScheduleDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(paymentScheduleDate) : null;
+
+                    const hasDuplicate = paymentSchedules.some((schedule, idx) => {
+                       
+                        if (editingPaymentScheduleIndex !== null && idx === editingPaymentScheduleIndex) {
+                            return false;
+                        }
+
+                        if (paymentScheduleType === 'Date' && schedule.Type === 'Date') {
+                            return schedule.Date === scheduleDate;
+                        } else if (paymentScheduleType === 'Stage' && schedule.Type === 'Stage') {
+                           
+                            return schedule.Name === scheduleName;
+                        }
+                        return false;
+                    });
+
+                    if (hasDuplicate) {
+
+                        const duplicateMessage = paymentScheduleType === 'Date' ? 'A payment schedule with this date already exists' : 'A payment schedule with this stage name already exists';
+                        addToast({ type: 'error', title: duplicateMessage });
+                        return;
+                    }
+
                     const agreementValue = formData.AgreementValue || 0;
                     const percentage = Number(paymentSchedulePercentage);
 
@@ -2751,7 +2779,7 @@ export const AddUpdateBooking: React.FC = () => {
                     const currentTotal = paymentSchedules.reduce((sum, s, idx) => {
 
                         if (editingPaymentScheduleIndex !== null && idx === editingPaymentScheduleIndex) {
-                            return sum; // Exclude the one being edited
+                            return sum;
                         }
                         return sum + (s.PaymentSchedulePercentage || 0);
 
@@ -2770,8 +2798,8 @@ export const AddUpdateBooking: React.FC = () => {
 
                         BookingPaymentScheduleId: editingPaymentScheduleIndex !== null ? paymentSchedules[editingPaymentScheduleIndex]?.BookingPaymentScheduleId ?? 0 : 0,
                         Type: paymentScheduleType,
-                        Name: paymentScheduleType === 'Stage' ? paymentScheduleStage === 'Other' ? paymentScheduleStageOther : paymentScheduleStage : "",
-                        Date: paymentScheduleType === 'Date' && paymentScheduleDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(paymentScheduleDate) : null,
+                        Name: scheduleName,
+                        Date: scheduleDate,
                         PaymentSchedulePercentage: percentage,
                         PaymentScheduleAmount: amount,
                         PaymentScheduleGSTAmount: 0,
@@ -2905,7 +2933,8 @@ export const AddUpdateBooking: React.FC = () => {
                     setEditingOtherChargeIndex(null);
                 }}
                 title="Add Other Charges"
-                onSubmit={() => {
+                onSubmit={(e) => {
+                    e.preventDefault();
 
                     if (!otherChargeName || !otherChargeName.trim()) {
                         addToast({ type: 'error', title: 'Please enter a charge name' });
@@ -2922,6 +2951,21 @@ export const AddUpdateBooking: React.FC = () => {
                         return;
                     }
 
+                    // Check for duplicate ChargeName (excluding the item being edited)
+                    const trimmedChargeName = otherChargeName.trim();
+                    const hasDuplicate = otherCharges.some((charge, idx) => {
+                        // Skip the item being edited
+                        if (editingOtherChargeIndex !== null && idx === editingOtherChargeIndex) {
+                            return false;
+                        }
+                        return charge.ChargeName?.trim().toLowerCase() === trimmedChargeName.toLowerCase();
+                    });
+
+                    if (hasDuplicate) {
+                        addToast({ type: 'error', title: 'A charge with this name already exists' });
+                        return;
+                    }
+
                     const value = Number(otherChargeValue);
                     const gstPercentage = Number(otherChargeGSTPercentage);
                     const gstValue = (value * gstPercentage) / 100;
@@ -2929,7 +2973,7 @@ export const AddUpdateBooking: React.FC = () => {
                     const newCharge: AddUpdateBookingOtherChargesRequest = {
                         BookingOtherChargesId: editingOtherChargeIndex !== null ? otherCharges[editingOtherChargeIndex]?.BookingOtherChargesId ?? null : null,
                         Uniquekey: editingOtherChargeIndex !== null ? otherCharges[editingOtherChargeIndex]?.Uniquekey ?? null : null,
-                        ChargeName: otherChargeName.trim(),
+                        ChargeName: trimmedChargeName,
                         CalculatedOn: otherChargeCalculatedOn || null,
                         Value: value,
                         GSTPercentage: gstPercentage,

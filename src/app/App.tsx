@@ -135,6 +135,7 @@ import AddUpdatePayTrackRent from '@/features/payTrackRent/pages/AddUpdatePayTra
 import ViewPayTrackRent from '@/features/payTrackRent/pages/ViewPayTrackRent';
 import { RentListStateProvider } from '@/features/rent/context/RentListStateContext';
 import SettingsDashboard from '@/features/settingsDashboard/pages/SettingsDashboard';
+import PayrollDashboard from '@/features/payrollDashboard/pages/PayrollDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -273,8 +274,9 @@ function App() {
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
 
             {/* PAYROLL */}
+            <Route path = "payrollDashboard"  element= {<PayrollDashboard/>}/>
 
-            <Route path="compOff" element={<CompOff />} />
+            < Route path="compOff" element={<CompOff />} />
 
             <Route path="outdoor/add/:outdoorId?" element={<OutDoorListStateProvider><AddUpdateOutDoorPage /></OutDoorListStateProvider>} />
             <Route path="outdoor" element={<OutDoorListStateProvider><OutDoor /></OutDoorListStateProvider>} />

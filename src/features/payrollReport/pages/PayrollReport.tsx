@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { usePagination } from '@/core/hooks/usePagination';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
@@ -69,7 +70,10 @@ export const PayrollReport: React.FC = () => {
     { id: "Resignation", label: "Resignation" },
   ];
 
-  const [activeTab, setActiveTab] = useState<string>(tncTabList[0].id);
+
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<string>(tabParam || tncTabList[0].id);
 
   //#endregion
 

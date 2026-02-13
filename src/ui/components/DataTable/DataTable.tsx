@@ -29,7 +29,7 @@ export interface SortInfo {
 }
 
 export interface FilterInfo {
-  [key: string]: string
+  [key: string]: string | null
 }
 
 
@@ -75,7 +75,7 @@ export const DataTable: React.FC<DataTableProps> = ({
     if (!pagination) return null
 
     const { currentPage, totalPages, totalRecords, pageSize, onPageChange } = pagination
-    const startRecord = totalRecords===0 ? 0 :(currentPage - 1) * pageSize + 1
+    const startRecord = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1
     const endRecord = Math.min(currentPage * pageSize, totalRecords)
 
     return (
@@ -86,7 +86,7 @@ export const DataTable: React.FC<DataTableProps> = ({
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onPageChange(currentPage - 1)}
-            disabled={totalRecords===0 ? true : currentPage === 1}
+            disabled={totalRecords === 0 ? true : currentPage === 1}
             className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -122,7 +122,7 @@ export const DataTable: React.FC<DataTableProps> = ({
 
           <button
             onClick={() => onPageChange(currentPage + 1)}
-            disabled={totalRecords===0 ? true :currentPage === totalPages}
+            disabled={totalRecords === 0 ? true : currentPage === totalPages}
             className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <ChevronRight className="h-4 w-4" />
@@ -231,7 +231,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                 data.map((row, index) => (
                   <tr key={index} className="hover:bg-gray-50 h-10 border-b border-gray-200">
                     {columns.map((column) => {
-                      const cellValue = column.render ?  column.render(row[column.key], row, index): row[column.key]
+                      const cellValue = column.render ? column.render(row[column.key], row, index) : row[column.key]
 
                       return (
                         <td

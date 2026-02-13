@@ -161,6 +161,12 @@ export const getPageInfo = (path: string) => {
             }
 
         // PAYROLL
+        case'payrollDashboard':
+            return {
+                title: 'Payroll',
+                description: "An overview of payroll performance, costs, and compliance in one view."
+            }
+        
         case 'leave':
             return {
                 title: 'Leave Management',

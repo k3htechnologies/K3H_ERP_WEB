@@ -39,10 +39,11 @@ const VendorGraphCard: React.FC = () => {
               <PieChart>
                 <Pie
                  data= {data}
-                 innerRadius={60}
-                 outerRadius={80}
-                  paddingAngle={4}
+                  innerRadius={50}
+                  outerRadius={90}
+                  paddingAngle={5}
                   dataKey="value"
+                  cornerRadius={10}    
                   >
                     {data.map((t,i)=>(
                       <Cell key={i} fill={t.color}/>

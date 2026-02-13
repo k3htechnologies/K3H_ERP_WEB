@@ -16,9 +16,8 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useNavigate } from 'react-router-dom';
-import { Button, Input } from '@/ui/components/forms';
+import {  Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
-import { Eye } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
@@ -338,60 +337,13 @@ export const Booking: React.FC = () => {
             },
             {
                 key: 'RegistrationDate',
-                label: 'Registration Date',
+                label: 'Expected Registration Date',
                 width: '16',
                 sortable: true,
                 align: 'center',
                 render: value => value ? formatDate_dd_MonthName_yy(value) : '-'
             },
-            {
-                key: 'Source',
-                label: 'Source',
-                width: '14',
-                sortable: false,
-                align: 'left',
-                render: value => value || '-'
-            },
-            {
-                key: 'ChannelPartnerName',
-                label: 'Channel Partner',
-                width: '16',
-                sortable: false,
-                align: 'left',
-                render: value => (
-                    <TooltipText text={value || '-'} maxWidth="200px" tooltipThreshold={20} />
-                )
-            },
-            {
-                key: 'Actions',
-                label: 'Actions',
-                width: '12',
-                fixed: 'right',
-                align: 'center',
-                render: (_value, row) => (
-                    canAction ? (
-                        <div className="flex items-center justify-center gap-2">
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    handleViewBookingDetails(row)
-                                }}
-                                color='transparent'
-                                isborderRadius
-                                size='sm'
-                                style={{
-                                    color: 'blue',
-                                    padding: '4px 8px'
-                                }}
-                                title="View Booking"
-                            >
-                                <Eye className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    ) : null
-                )
-            }
+           
         ],
         [canAction, handleViewBookingDetails]
     );

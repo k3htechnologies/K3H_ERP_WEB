@@ -35,6 +35,10 @@ import RadioPill from '@/ui/components/forms/RadioPill';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { fetchEnquiryBySystemGeneratedCode } from '@/features/enquiry/enquiryDropDown';
 import { fetchPaymentScheduleDropdown } from '@/features/paymentSchedule/paymentScheduleDropDown';
+import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
+import { fetchParkingDropdown } from '@/features/parking/parkingDropDown';
+import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
+import type { ParkingData } from '@/features/parking/models/ParkingModel';
 
 const initialFormState = (): AddUpdateBookingRequest => ({
     BookingId: 0,
@@ -127,9 +131,12 @@ export const AddUpdateBooking: React.FC = () => {
     const { projectId } = useProject();
 
     //#region BOOKING LIST STATE CONTEXT
-    const { listState } = useBookingListState();
-    const { bookingId, bookingName } = listState;
+    const { listState, updateListState } = useBookingListState();
+    const { bookingId } = listState;
     //#endregion
+
+    // Track source page for navigation after submit
+    const [sourcePage, setSourcePage] = useState<'inventory' | 'parking' | 'booking' | null>(null);
 
     const isAddMode = bookingId === 0;
     const { addToast } = useToast();
@@ -228,14 +235,25 @@ export const AddUpdateBooking: React.FC = () => {
     //#region INVENTORY SELECTION STATE
     const [selectedWing, setSelectedWing] = useState<string>('');
     const [selectedFloor, setSelectedFloor] = useState<string>('');
-    const [selectedFlatId, setSelectedFlatId] = useState<number | null>(null);
     const [selectedFlatData, setSelectedFlatData] = useState<InventoryFlatData | null>(null);
+    const [parkingData, setParkingData] = useState<ParkingData[]>([]);
+    const [selectedParkingValues, setSelectedParkingValues] = useState<string | number | null>(null);
+    const [inventoryFlatFloorBasementPodiumWingId, setInventoryFlatFloorBasementPodiumWingId] = useState<number>(0);
 
     const [dropdownLabels, setDropdownLabels] = useState<{
         buildingName?: string;
         bankName?: string;
         sourcingManager?: string;
         closingManager?: string;
+        parkingNumber?: string;
+        parkingCategory?: string;
+        parkingType?: string;
+        parkingSubType?: string;
+        parkingDimensions?: string;
+        isEVChargingAvailable?: boolean;
+        buildingNumber?: string;
+        floor?: string;
+        wing?: string;
     }>({});
 
     //#region PAYMENT SCHEDULE STATE
@@ -280,13 +298,11 @@ export const AddUpdateBooking: React.FC = () => {
 
     useEffect(() => {
 
-        const flatDataFromState = (location.state as any)?.flatData;
-
         const loadPaymentSchedule = async () => {
 
             const response = await fetchPaymentScheduleDropdown({
                 projectId: Number(projectId),
-                value: flatDataFromState.InventoryFlatFloorBasementPodiumWingId, // optional
+                value: inventoryFlatFloorBasementPodiumWingId,
             });
 
             setPaymentScheduleOptions(response.itemList);
@@ -301,18 +317,18 @@ export const AddUpdateBooking: React.FC = () => {
 
         if (!projectId) return;
 
-
-        // Check if flatData is passed from inventory (Book button)
         const flatDataFromState = (location.state as any)?.flatData;
 
-        formData.BookingType = flatDataFromState.PageName === "UNIT BOOK" ? 'Flat' : 'Parking';
+        const parkingDataFromState = (location.state as any)?.parkingData;
 
         if (flatDataFromState && flatDataFromState.PageName === "UNIT BOOK") {
 
+            setSourcePage('inventory');
             setFormData(prev => ({
                 ...prev,
                 ProjectId: Number(projectId),
                 InventoryFlatId: flatDataFromState.InventoryFlatId || 0,
+                BookingType: 'FLAT',
             }));
 
             setSelectedFlatData({
@@ -320,7 +336,7 @@ export const AddUpdateBooking: React.FC = () => {
                 Uniquekey: '',
                 InventoryBuildingId: 0,
                 BuildingNumber: flatDataFromState.BuildingNumber || '',
-                InventoryFlatFloorBasementPodiumWingId: 0,
+                InventoryFlatFloorBasementPodiumWingId: flatDataFromState.InventoryFlatFloorBasementPodiumWingId || 0,
                 Wing: flatDataFromState.Wing || '',
                 InventoryFloorId: 0,
                 Floor: flatDataFromState.Floor || '',
@@ -339,14 +355,47 @@ export const AddUpdateBooking: React.FC = () => {
             });
 
             // Set selected values for display
+            setInventoryFlatFloorBasementPodiumWingId(flatDataFromState.InventoryFlatFloorBasementPodiumWingId);
             setSelectedWing(flatDataFromState.Wing || '');
             setSelectedFloor(flatDataFromState.Floor || '');
-            setSelectedFlatId(flatDataFromState.InventoryFlatId || null);
 
-        } else if (!isAddMode && bookingId) {
+        } else if (parkingDataFromState && parkingDataFromState.PageName === "PARKING BOOK") {
+
+            setSourcePage('parking');
+
+            const parkingIdString = parkingDataFromState.ParkingId?.toString() || '';
+
+            setFormData(prev => ({
+                ...prev,
+                ProjectId: Number(projectId),
+                ParkingId: parkingIdString,
+                BookingType: 'PARKING',
+            }));
+
+            setSelectedParkingValues(parkingIdString);
+
+            setDropdownLabels({
+                parkingNumber: parkingDataFromState.ParkingNumber || '',
+                parkingCategory: parkingDataFromState.ParkingCategory || '',
+                parkingType: parkingDataFromState.ParkingType || '',
+                parkingSubType: parkingDataFromState.ParkingSubType || '',
+                parkingDimensions: parkingDataFromState.ParkingDimensions || '',
+                isEVChargingAvailable: parkingDataFromState.IsEVChargingAvailable || false,
+                buildingNumber: parkingDataFromState.BuildingNumber || '',
+                floor: parkingDataFromState.Floor || '',
+                wing: parkingDataFromState.Wing || '',
+            });
+
+        }
+        else if (!isAddMode && bookingId) {
+            setSourcePage('booking');
             fetchBookingDetails();
+
         } else {
+
+            setSourcePage('booking');
             setFormData(prev => ({ ...prev, ProjectId: Number(projectId) }));
+
         }
     }, [bookingId, projectId, isAddMode, location.state]);
     //#endregion
@@ -386,65 +435,75 @@ export const AddUpdateBooking: React.FC = () => {
     };
 
     useEffect(() => {
-
         const code = enquiryUniqueCode?.trim();
+        const hasEnquiryId = Number(enquiryId) > 0;
+        const hasValidCode = code && code.length === 18;
 
-        if (!code || code.length !== 18) {
-            clearEnquiryDetails();   // ✅ only clears dependent fields
+        if (hasEnquiryId) {
+            fetchEnquiryBySystemGeneratedCode('', Number(projectId), Number(enquiryId))
+                .then(handleEnquiryResponse);
             return;
         }
 
-        fetchEnquiryBySystemGeneratedCode(code, Number(projectId)).then((enquiry) => {
-            if (!enquiry) {
-                clearEnquiryDetails();
-                return;
-            }
+        if (hasValidCode) {
+            fetchEnquiryBySystemGeneratedCode(code, Number(projectId), 0)
+                .then(handleEnquiryResponse);
+            return;
+        }
 
-            setEnquiryId(enquiry.EnquiryId);
+        clearEnquiryDetails();
+    }, [enquiryUniqueCode, projectId, enquiryId]);
 
-            setName(enquiry.Name);
-            setMobileNumber(enquiry.MobileNumber);
+    const handleEnquiryResponse = (enquiry: any) => {
+        if (!enquiry) {
+            clearEnquiryDetails();
+            return;
+        }
 
-            // Source
-            setSource(enquiry.Source);
-            setSubSource(enquiry.SubSource);
-            setSubSubSource(enquiry.SubSubSource);
+        if (enquiry.SystemGeneratedCode) {
+            setEnquiryUniqueCode(enquiry.SystemGeneratedCode);
+        }
 
-            // Reference
-            setReferelName(enquiry.ReferelName);
-            setReferelMobileNumber(enquiry.ReferelMobileNumber);
-            setReferelProjectName(enquiry.ReferelProjectName);
-            setReferelUnitNumber(enquiry.ReferelUnitNumber);
+        setEnquiryId(enquiry.EnquiryId);
+        setName(enquiry.Name);
+        setMobileNumber(enquiry.MobileNumber);
 
-            // Loyalty
-            setLoyaltyExistingProjectName(enquiry.LoyaltyExistingProjectName);
-            setLoyaltyExistingUnitNumber(enquiry.LoyaltyExistingUnitNumber);
+        // Source
+        setSource(enquiry.Source);
+        setSubSource(enquiry.SubSource);
+        setSubSubSource(enquiry.SubSubSource);
 
-            // Employee Reference
-            setEmployeeReferenceName(enquiry.EmployeeReferenceName);
-            setEmployeeReferenceMobileNumber(enquiry.EmployeeReferenceMobileNumber);
+        // Reference
+        setReferelName(enquiry.ReferelName);
+        setReferelMobileNumber(enquiry.ReferelMobileNumber);
+        setReferelProjectName(enquiry.ReferelProjectName);
+        setReferelUnitNumber(enquiry.ReferelUnitNumber);
 
-            // Channel Partner
-            setChannelPartnerName(enquiry.ChannelPartnerName);
-            setChannelPartnerMobileNumber(enquiry.ChannelPartnerMobileNumber);
-            setChannelPartnerTeamMemberName(enquiry.ChannelPartnerTeamMemberName);
-            setChannelPartnerTeamMemberMobileNumber(
-                enquiry.ChannelPartnerTeamMemberMobileNumber
-            );
+        // Loyalty
+        setLoyaltyExistingProjectName(enquiry.LoyaltyExistingProjectName);
+        setLoyaltyExistingUnitNumber(enquiry.LoyaltyExistingUnitNumber);
 
-            // Location & Sales
-            setCurrentLocation(enquiry.CurrentLocation ?? "");
-            formData.PermanentAddress = enquiry.CurrentLocation;
-            formData.CommunicationAddress = enquiry.CurrentLocation;
+        // Employee Reference
+        setEmployeeReferenceName(enquiry.EmployeeReferenceName);
+        setEmployeeReferenceMobileNumber(enquiry.EmployeeReferenceMobileNumber);
 
-            setSalesAdvisor(enquiry.SalesAdvisor ?? "");
-            setSourcingManager(enquiry.SourcingManager ?? "");
-        });
+        // Channel Partner
+        setChannelPartnerName(enquiry.ChannelPartnerName);
+        setChannelPartnerMobileNumber(enquiry.ChannelPartnerMobileNumber);
+        setChannelPartnerTeamMemberName(enquiry.ChannelPartnerTeamMemberName);
+        setChannelPartnerTeamMemberMobileNumber(
+            enquiry.ChannelPartnerTeamMemberMobileNumber
+        );
 
-    }, [enquiryUniqueCode, projectId]);
+        // Location & Sales
+        const location = enquiry.CurrentLocation ?? "";
+        setCurrentLocation(location);
+        formData.PermanentAddress = location;
+        formData.CommunicationAddress = location;
 
-
-
+        setSalesAdvisor(enquiry.SalesAdvisor ?? "");
+        setSourcingManager(enquiry.SourcingManager ?? "");
+    };
 
     //#endregion
 
@@ -476,6 +535,7 @@ export const AddUpdateBooking: React.FC = () => {
                             BrokeragePercentage: booking.BrokeragePercentage ?? 0,
                             BrokerageAmount: booking.BrokerageAmount ?? 0,
                             InventoryFlatId: booking.InventoryFlatId ?? 0,
+
                             AgreementValue: booking.AgreementValue ?? 0,
                             AgreementValueTDS: booking.AgreementValueTDS ?? 0,
                             AgreementValueGSTPercentage: booking.AgreementValueGSTPercentage ?? 0,
@@ -489,7 +549,7 @@ export const AddUpdateBooking: React.FC = () => {
                             ModeOfPayment: booking.ModeOfPayment ?? '',
                             FlatAlterationRemark: booking.FlatAlterationRemark ?? '',
                             TermsAndConditionsDescription: booking.TermsAndConditionsDescription ?? '',
-                            BookingType: booking.BookingType === "" ? 'FLAT' : '',
+                            BookingType: booking.BookingType,
                             OtherChargesDetailJSON: booking.BookingOtherChargesData ? JSON.stringify(booking.BookingOtherChargesData) : null,
                             PaymentScheduleDetailJSON: booking.BookingPaymentScheduleData ? JSON.stringify(booking.BookingPaymentScheduleData) : null,
                             BookingAmount: booking.BookingAmount ?? 0,
@@ -500,10 +560,38 @@ export const AddUpdateBooking: React.FC = () => {
                             TenantId: booking.TenantId ?? 0,
                         });
 
-                        // Set inventory selection from booking data (will be set after inventory loads)
-                        if (booking.InventoryFlatId) {
+                        setInventoryFlatFloorBasementPodiumWingId(booking.InventoryFlatFloorBasementPodiumWingId || 0);
 
-                            setSelectedFlatId(booking.InventoryFlatId);
+                        if (booking.BookingType?.toUpperCase() === "FLAT") {
+
+                            setSelectedFlatData({
+                                InventoryFlatId: booking.InventoryFlatId || 0,
+                                Uniquekey: '',
+                                InventoryBuildingId: 0,
+                                BuildingNumber: booking.BuildingNumber || '',
+                                InventoryFlatFloorBasementPodiumWingId: booking.InventoryFlatFloorBasementPodiumWingId || 0,
+                                Wing: booking.Wing || '',
+                                InventoryFloorId: 0,
+                                Floor: booking.Floor || '',
+                                Flat: booking.Flat || '',
+                                RERACarpetAreaSqFt: booking.RERACarpetAreaSqFt || 0,
+                                FlatType: booking.FlatType || '',
+                                FlatConfiguration: booking.FlatConfiguration || '',
+                                FlatStatus: "Booked",
+                                FlatFacing: '',
+                                InventoryFlatSpecificationData: [],
+                                OwnerName: '',
+                                BookingId: 0,
+                                BookingCreatedById: 0,
+                                BookingCreatedBy: '',
+                                BookingCreatedDate: null,
+                            });
+                        }
+                        setParkingData(booking.ParkingData || [])
+
+                        setEnquiryId(booking.EnquiryId ?? 0);
+
+                        if (booking.InventoryFlatId) {
 
                             handleFieldChange('InventoryFlatId', booking.InventoryFlatId);
                         }
@@ -525,7 +613,6 @@ export const AddUpdateBooking: React.FC = () => {
 
                         setApplicantList(applicantsWithFiles);
 
-                        // Map BookingPaymentScheduleData to AddUpdateBookingPaymentScheduleRequest
                         const paymentSchedulesMapped: AddUpdateBookingPaymentScheduleRequest[] = (booking?.BookingPaymentScheduleData || []).map(schedule => ({
                             BookingPaymentScheduleId: schedule.BookingPaymentScheduleId ?? 0,
                             Type: schedule.Type ?? null,
@@ -538,7 +625,6 @@ export const AddUpdateBooking: React.FC = () => {
                         }));
                         setPaymentSchedules(paymentSchedulesMapped);
 
-                        // Map BookingOtherChargesData to AddUpdateBookingOtherChargesRequest
                         const otherChargesMapped: AddUpdateBookingOtherChargesRequest[] = (booking?.BookingOtherChargesData || []).map(charge => ({
                             BookingOtherChargesId: charge.BookingOtherChargesId ?? null,
                             Uniquekey: charge.Uniquekey ?? null,
@@ -1392,10 +1478,14 @@ export const AddUpdateBooking: React.FC = () => {
             return;
         }
 
-        else if (!formData.InventoryFlatId || formData.InventoryFlatId === 0) {
-
+        // Validate Flat/Parking based on BookingType
+        if (formData.BookingType === 'FLAT' && (!formData.InventoryFlatId || formData.InventoryFlatId === 0)) {
             addToast({ type: 'error', title: 'Flat is required' });
+            return;
+        }
 
+        if (formData.BookingType === 'PARKING' && (!formData.ParkingId || formData.ParkingId.trim() === '')) {
+            addToast({ type: 'error', title: 'Parking is required' });
             return;
         }
 
@@ -1423,7 +1513,7 @@ export const AddUpdateBooking: React.FC = () => {
                     formDataToSend.append('Uniquekey', formData.Uniquekey);
                 }
                 formDataToSend.append('ProjectId', String(formData.ProjectId ?? 0));
-                formDataToSend.append('Enquiry', String(enquiryId ?? 0));
+                formDataToSend.append('EnquiryId', String(enquiryId ?? 0));
                 formDataToSend.append('PermanentAddress', formData.PermanentAddress ?? '');
                 formDataToSend.append('CommunicationAddress', formData.CommunicationAddress ?? '');
                 formDataToSend.append('BrokeragePercentage', String(formData.BrokeragePercentage ?? 0));
@@ -1447,7 +1537,9 @@ export const AddUpdateBooking: React.FC = () => {
                 formDataToSend.append('ModeOfPayment', formData.ModeOfPayment ?? '');
                 formDataToSend.append('FlatAlterationRemark', formData.FlatAlterationRemark ?? '');
                 formDataToSend.append('TermsAndConditionsDescription', formData.TermsAndConditionsDescription ?? '');
+
                 formDataToSend.append('BookingType', formData.BookingType ?? '');
+
                 // Convert other charges to JSON
                 const otherChargesJSON = otherCharges.length > 0 ? JSON.stringify(otherCharges) : '';
                 formDataToSend.append('OtherChargesDetailJSON', otherChargesJSON);
@@ -1529,8 +1621,19 @@ export const AddUpdateBooking: React.FC = () => {
 
                 if (E.isRight(response)) {
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] || 'Booking saved successfully' });
-                    navigate('/booking');
+
+                    updateListState({ bookingId: 0, bookingName: '' });
+
+                    if (sourcePage === 'inventory') {
+                        navigate('/inventory');
+                    } else if (sourcePage === 'parking') {
+                        navigate('/parking');
+                    } else {
+                        navigate('/booking');
+                    }
+
                 } else {
+
                     addToast({ type: 'error', title: response.left.message });
                 }
 
@@ -1545,6 +1648,25 @@ export const AddUpdateBooking: React.FC = () => {
         );
     };
     //#endregion
+
+    //#region FETCH PARKING DROPDOWN WITH PROJECT WISE
+    const fetchParkingProjectWise = useCallback(
+        async (pageNumber: number, params?: { value?: string }) => {
+            return fetchParkingDropdown(pageNumber, {
+                ...params,
+                projectId: projectId || 0,
+                value: ""
+            });
+        },
+        []
+    );
+    //#endregion
+
+    const parkingDropdown = useMultiSelectDropdown({
+        value: selectedParkingValues,
+        fetchCallback: fetchParkingProjectWise,
+        autoFetchOptions: true,
+    });
 
     //#region RENDER
     return (
@@ -1674,8 +1796,8 @@ export const AddUpdateBooking: React.FC = () => {
                         <div className="flex items-center justify-between">
                             <div className="flex-1 border-b border-gray-500 pb-2">
                                 <HeaderActionBar
-                                    titleText="Applicant Detail : "
-                                    subTitleText={bookingName || ''}
+                                    titleText="Applicant Detail "
+
                                     isLoading={isLoading}
                                 />
                             </div>
@@ -1758,50 +1880,129 @@ export const AddUpdateBooking: React.FC = () => {
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Details</h3>
 
-                        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                        {formData.BookingType === 'FLAT' && selectedFlatData && (
+                            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
 
-                                <FieldItem
-                                    label="Building"
-                                    value={selectedFlatData?.BuildingNumber || '-'}
-                                />
+                                    <FieldItem
+                                        label="Building"
+                                        value={selectedFlatData?.BuildingNumber || '-'}
+                                    />
 
-                                <FieldItem
-                                    label="Wing"
-                                    value={selectedFlatData?.Wing || selectedWing || '-'}
-                                />
+                                    <FieldItem
+                                        label="Wing"
+                                        value={selectedFlatData?.Wing || selectedWing || '-'}
+                                    />
 
-                                <FieldItem
-                                    label="Floor"
-                                    value={selectedFlatData?.Floor || selectedFloor || '-'}
-                                />
+                                    <FieldItem
+                                        label="Floor"
+                                        value={selectedFlatData?.Floor || selectedFloor || '-'}
+                                    />
 
-                                <FieldItem
-                                    label="Unit No"
-                                    value={selectedFlatData?.Flat || '-'}
-                                />
+                                    <FieldItem
+                                        label="Unit No"
+                                        value={selectedFlatData?.Flat || '-'}
+                                    />
 
-                                <FieldItem
-                                    label="Category"
-                                    value={selectedFlatData?.FlatType || '-'}
-                                />
+                                    <FieldItem
+                                        label="Category"
+                                        value={selectedFlatData?.FlatType || '-'}
+                                    />
 
-                                <FieldItem
-                                    label="Configuration"
-                                    value={selectedFlatData?.FlatConfiguration || '-'}
-                                />
+                                    <FieldItem
+                                        label="Configuration"
+                                        value={selectedFlatData?.FlatConfiguration || '-'}
+                                    />
 
-                                <FieldItem
-                                    label="RERA Carpet Area (SqFt)"
-                                    value={
-                                        selectedFlatData?.RERACarpetAreaSqFt
-                                            ? `${selectedFlatData.RERACarpetAreaSqFt} SqFt`
-                                            : '-'
-                                    }
-                                />
+                                    <FieldItem
+                                        label="RERA Carpet Area (SqFt)"
+                                        value={
+                                            selectedFlatData?.RERACarpetAreaSqFt
+                                                ? `${selectedFlatData.RERACarpetAreaSqFt} SqFt`
+                                                : '-'
+                                        }
+                                    />
 
+                                </div>
                             </div>
-                        </div>
+                        )}
+
+                        {formData.BookingType === 'PARKING' && dropdownLabels.buildingNumber === "-" && (
+
+                            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3">
+
+                                    <FieldItem
+                                        label="Building"
+                                        value={dropdownLabels.buildingNumber || '-'}
+                                    />
+
+                                    <FieldItem
+                                        label="Wing"
+                                        value={dropdownLabels.wing || '-'}
+                                    />
+
+                                    <FieldItem
+                                        label="Floor"
+                                        value={dropdownLabels.floor || '-'}
+                                    />
+
+                                    <FieldItem
+                                        label="Parking Number"
+                                        value={dropdownLabels.parkingNumber || '-'}
+                                    />
+
+                                    <FieldItem
+                                        label="Category"
+                                        value={dropdownLabels.parkingCategory || '-'}
+                                    />
+
+                                    <FieldItem
+                                        label="Type"
+                                        value={dropdownLabels.parkingType || '-'}
+                                    />
+
+                                    <FieldItem
+                                        label="Size"
+                                        value={dropdownLabels.parkingSubType || '-'}
+                                    />
+
+                                    <FieldItem
+                                        label="Dimensions"
+                                        value={dropdownLabels.parkingDimensions || '-'}
+                                    />
+
+                                    <FieldItem
+                                        label="EV Charging"
+                                        value={dropdownLabels.isEVChargingAvailable ? 'Yes' : 'No'}
+                                    />
+
+                                </div>
+                            </div>
+                        )}
+
+                        {parkingData && parkingData.length > 0 && (
+                            <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Parking Details
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {parkingData.map((parking, index) => (
+                                        <React.Fragment key={parking.ParkingId || index}>
+                                            <FieldItem label="Parking Number" value={parking.ParkingNumber} />
+                                            <FieldItem label="Building" value={parking.BuildingNumber} />
+                                            <FieldItem label="Wing" value={parking.Wing} />
+                                            <FieldItem label="Floor" value={parking.Floor} />
+                                            <FieldItem label="Category" value={parking.ParkingCategory} />
+                                            <FieldItem label="Type" value={parking.ParkingType} />
+                                            <FieldItem label="Size" value={parking.ParkingSubType} />
+                                            <FieldItem label="Dimensions" value={parking.ParkingDimensions} />
+                                            <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
 
                     </div>
 
@@ -1975,13 +2176,23 @@ export const AddUpdateBooking: React.FC = () => {
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Other Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <Input
+                            <MultiSelectPagination
                                 label="Parking"
-                                type="text"
-                                value={formData.ParkingId ?? ''}
-                                onChange={(e) => handleFieldChange('ParkingId', e.target.value)}
-                                placeholder="0"
+                                required
+                                dataFetchCallBack={fetchParkingProjectWise}
+                                selectedValues={parkingDropdown.selectedValues}
+                                options={parkingDropdown.initialOptions}
+                                onChange={(values) => {
+                                    const { idsString } = parkingDropdown.handleChange(values);
+                                    setSelectedParkingValues(idsString || null);
+                                    handleFieldChange("ParkingId", idsString);
+                                    if (errors.ParkingId) {
+                                        setErrors((prev) => ({ ...prev, ParkingId: '' }));
+                                    }
+                                }}
+
                             />
+
                             <div>
                                 <SinglePageSelection
                                     label="Handover Type"
@@ -1994,7 +2205,7 @@ export const AddUpdateBooking: React.FC = () => {
                                 />
                             </div>
                             <DatePickerInput
-                                label="Registration Date"
+                                label="Expected Registration Date"
                                 value={formData.RegistrationDate ? formatDate_dd_mm_yyyy(formData.RegistrationDate) : ''}
                                 onChange={(value) => handleFieldChange('RegistrationDate', value)}
                                 placeholder="DD/MM/YYYY"
@@ -2086,22 +2297,26 @@ export const AddUpdateBooking: React.FC = () => {
                                 <h3 className="text-lg font-semibold text-gray-900">Other Charges</h3>
 
                             </div>
-                            <Button
-                                type="button"
-                                onClick={() => {
-                                    setOtherChargeName('');
-                                    setOtherChargeCalculatedOn('');
-                                    setOtherChargeValue('');
-                                    setOtherChargeGSTPercentage('');
-                                    setEditingOtherChargeIndex(null);
-                                    setIsOtherChargesModalOpen(true);
-                                }}
-                                color="blue"
-                                size="sm"
-                            >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add Other Charges
-                            </Button>
+                            {Number(formData.AgreementValue) > 0 && (
+
+                                <Button
+
+                                    type="button"
+                                    onClick={() => {
+                                        setOtherChargeName('');
+                                        setOtherChargeCalculatedOn('');
+                                        setOtherChargeValue('');
+                                        setOtherChargeGSTPercentage('');
+                                        setEditingOtherChargeIndex(null);
+                                        setIsOtherChargesModalOpen(true);
+                                    }}
+                                    color="blue"
+                                    size="sm"
+                                >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Add Other Charges
+                                </Button>
+                            )}
                         </div>
                         {otherCharges.length > 0 ? (
                             <DataTable
@@ -2170,7 +2385,16 @@ export const AddUpdateBooking: React.FC = () => {
             <BottomActionBar
                 cancelText="Cancel"
                 saveText={isAddMode ? 'Add' : 'Update'}
-                onCancel={() => navigate('/booking')}
+                onCancel={() => {
+                    // Navigate back to source page
+                    if (sourcePage === 'inventory') {
+                        navigate('/inventory');
+                    } else if (sourcePage === 'parking') {
+                        navigate('/parking');
+                    } else {
+                        navigate('/booking');
+                    }
+                }}
                 canAction={canAction}
                 onSave={() => {
                     handleSubmit();
@@ -2496,20 +2720,26 @@ export const AddUpdateBooking: React.FC = () => {
                 onSubmit={() => {
 
                     if (!paymentSchedulePercentage || Number(paymentSchedulePercentage) <= 0) {
+
                         addToast({ type: 'error', title: 'Please enter a valid percentage' });
+                        
                         return;
                     }
 
                     if (paymentScheduleType === 'Date' && !paymentScheduleDate) {
+
                         addToast({ type: 'error', title: 'Please select a date' });
                         return;
                     }
 
                     if (paymentScheduleType === 'Stage' && !paymentScheduleStage) {
+                        
                         addToast({ type: 'error', title: 'Please select a stage' });
                         return;
+
                     }
                     if (paymentScheduleType === 'Stage' && paymentScheduleStage === "Other" && !paymentScheduleStageOther?.trim()) {
+
                         addToast({ type: 'error', title: 'Please enter a stage name' });
                         return;
                     }
@@ -2549,12 +2779,14 @@ export const AddUpdateBooking: React.FC = () => {
                     };
 
                     if (editingPaymentScheduleIndex !== null) {
+
                         setPaymentSchedules(prev => {
                             const updated = [...prev];
                             updated[editingPaymentScheduleIndex] = newSchedule;
                             return updated;
                         });
                     } else {
+
                         setPaymentSchedules(prev => [...prev, newSchedule]);
                     }
 

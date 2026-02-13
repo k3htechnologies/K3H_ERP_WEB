@@ -4,6 +4,7 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { Button } from "@/ui/components/forms";
 import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
 import { colorsForFlatComponent } from "@/features/inventory/utils/flatColors";
+import { useBookingListState } from "@/features/booking/context/BookingListStateContext";
 
 interface FlatCardProps {
     flat: InventoryFlatData;
@@ -16,6 +17,7 @@ interface FlatCardProps {
 
 export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumber }: FlatCardProps) => {
     const navigate = useNavigate();
+    const { updateListState } = useBookingListState();
 
     const hexToRgba = (hex: string, alpha: number = 0.12) => {
         const cleanHex = hex.replace('#', '');
@@ -72,9 +74,21 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
         return "";
     };
 
+    const handleOwnerNameClick = () => {
+        if (flat.BookingId && flat.BookingId > 0) {
+            updateListState({
+                bookingId: flat.BookingId,
+                bookingName: flat.OwnerName || '',
+            });
+            navigate('/booking/view', {
+                state: { sourcePage: 'inventory' }
+            });
+        }
+    };
+
     return (
         <div
-            className={`flex flex-col justify-evenly ${flat.FlatStatus === "Available" ? "min-h-[240px]" : "h-[200px]"} w-[250px] rounded-[8px] border ${colorsForFlatComponent[flat.FlatStatus].Border} border-[0.3px] px-2`}
+            className={`flex flex-col justify-evenly ${flat.FlatStatus === "Available" ? "min-h-[240px]" : "h-[240px]"} w-[250px] rounded-[8px] border ${colorsForFlatComponent[flat.FlatStatus].Border} border-[0.3px] px-2`}
             style={gradientStyle}
         >
             <FieldItem label="Unit No " value={flat.Flat} isRow={true} isUsedForInventoryFlat={true} />
@@ -120,9 +134,19 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                 </div>
             )}
 
-            <p className="text-center text-[#135BEC] font-semibold">
-                {getOwnerLabel()}{flat.OwnerName}
-            </p>
+            {flat.OwnerName && (flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted") ? (
+                <p 
+                    className="text-center text-[#135BEC] font-semibold cursor-pointer hover:underline"
+                    onClick={handleOwnerNameClick}
+                    title="Click to view booking details"
+                >
+                    {getOwnerLabel()}{flat.OwnerName}
+                </p>
+            ) : (
+                <p className="text-center text-[#135BEC] font-semibold">
+                    {getOwnerLabel()}{flat.OwnerName}
+                </p>
+            )}
         </div>
     );
 };

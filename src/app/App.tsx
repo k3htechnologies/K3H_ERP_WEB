@@ -302,9 +302,9 @@ function App() {
 
             {/* INVENTORY */}
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
-            <Route path="inventory" element={<Inventory></Inventory>} />
+            <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
-            <Route path="parking" element={<Parking></Parking>} />
+            <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
 
             {/* DOCUMENT */}
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />

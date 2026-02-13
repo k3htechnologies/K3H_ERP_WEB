@@ -133,6 +133,7 @@ export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkin
                 key={floor.InventoryFloorId}
                 title={floor.Floor}
                 showline={true}
+                defaultOpen={true}
                 customizedIcon={
                     <div className="flex items-center gap-2">
                         <div

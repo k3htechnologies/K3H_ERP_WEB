@@ -17,7 +17,7 @@ export const COLORS = {
   placeholder: '#9ca3af',       // Placeholder text
   black: '#333',
   white: '#FFFFFF',
-  hover: '#e6f0ff',
+  hover: '#E6FOFF',
   menu_toggleColor: '#DBEAFE',
   primary1: '#135BEC',
   green: '#8d99ba1f'

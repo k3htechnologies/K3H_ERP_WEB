@@ -50,9 +50,9 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   const isFetchingRef = useRef(false);
   const pageRef = useRef(1);
   const SIZE_MAP = {
-    sm: { fontSize: 12, padding: 6, dropdownHeight: 150 },
-    md: { fontSize: 14, padding: 6, dropdownHeight: 200 },
-    lg: { fontSize: 16, padding: 6, dropdownHeight: 250 },
+    sm: { fontSize: 12, paddingY: 6, paddingX: 12, height: 38, dropdownHeight: 150 },
+    md: { fontSize: 14, paddingY: 8, paddingX: 16, height: 46, dropdownHeight: 200 },
+    lg: { fontSize: 16, paddingY: 10, paddingX: 20, height: 54, dropdownHeight: 250 },
   };
 
 
@@ -308,7 +308,8 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
           flexWrap: "wrap",
           justifyContent: "space-between",
           fontWeight: theme.fontWeight.medium,
-          padding: `${currentSize.padding + 2}px ${currentSize.padding * 2}px`,
+          height: `${currentSize.height}px`,
+          padding: `${currentSize.paddingY}px ${currentSize.paddingX}px`,
           fontSize: currentSize.fontSize,
           borderRadius: theme.borderRadius.md,
           backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
@@ -317,7 +318,6 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
           color: theme.colors.text,
           userSelect: "none",
           boxSizing: "border-box",
-          minHeight: "38px",
           transition: "all 0.2s ease-in-out",
           boxShadow: isOpen ? theme.shadows.sm : "none",
           opacity: disabled ? 0.6 : 1,
@@ -330,46 +330,50 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" }}>
-          {visibleTags.map((tagLabel, index) => (
-            <div
-              key={`${tagLabel}-${index}`}
+          {hasSelections ? (
+            <>
+              {visibleTags.map((tagLabel, index) => (
+                <div
+                  key={`${tagLabel}-${index}`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    fontSize: currentSize.fontSize - 2,
+                    color: theme.colors.text,
+                  }}
+                >
+                  {tagLabel}
+                  {index < visibleTags.length - 1 && (
+                    <span style={{ margin: "0 4px", color: theme.colors.border }}>,</span>
+                  )}
+                </div>
+              ))}
+              {remainingCount > 0 && (
+                <span
+                  style={{
+                    marginLeft: 4,
+                    fontSize: currentSize.fontSize - 1,
+                    color: theme.colors.text,
+                    fontWeight: theme.fontWeight.medium,
+                  }}
+                >
+                  +{remainingCount}
+                </span>
+              )}
+            </>
+          ) : (
+            <span
               style={{
-                display: "flex",
-                alignItems: "center",
-                fontSize: currentSize.fontSize - 2,
-                color: theme.colors.text,
+                fontSize: currentSize.fontSize,
+                color: "#9ca3af",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
-              {tagLabel}
-              {index < visibleTags.length - 1 && (
-                <span style={{ margin: "0 4px", color: theme.colors.border }}>,</span>
-              )}
-            </div>
-          ))}
-
-          <input
-            type="text"
-            placeholder={hasSelections ? "" : "Search..."}
-            value={searchTerm}
-            onChange={handleSearch}
-            onClick={(e) => e.stopPropagation()}
-            disabled={disabled}
-            style={{
-              flex: 1,
-              border: "none",
-              outline: "none",
-              minWidth: "100px",
-              fontSize: currentSize.fontSize,
-              padding: "0",
-              background: "transparent",
-              cursor: disabled ? "not-allowed" : "text",
-              color: hasSelections ? theme.colors.text : "#888",
-              fontWeight: "normal",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          />
+              Select...
+            </span>
+          )}
         </div>
 
         <svg
@@ -410,52 +414,33 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             background: theme.colors.background,
           }}
         >
-          {/* Selected items display with count (only first 4) */}
-          {selectedLabels.length > 0 && (
-            <div
+          {/* Search input inside dropdown, above Select All / Clear All */}
+          <div
+            style={{
+              padding: `${currentSize.paddingY + 2}px ${currentSize.paddingX}px`,
+              borderBottom: `1px solid ${theme.colors.border}`,
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={handleSearch}
+              onClick={(e) => e.stopPropagation()}
+              disabled={disabled}
               style={{
-                padding: `${currentSize.padding + 2}px ${currentSize.padding * 2}px`,
-                borderBottom: `1px solid ${theme.colors.border}`,
+                width: "100%",
+                border: `1px solid ${theme.colors.border}`,
+                borderRadius: theme.borderRadius.sm,
+                outline: "none",
+                fontSize: currentSize.fontSize,
+                padding: "6px 8px",
+                background: disabled ? "#f5f5f5" : "transparent",
+                color: theme.colors.text,
+                boxSizing: "border-box",
               }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "6px",
-                  alignItems: "center",
-                }}
-              >
-                {visibleTags.map((tagLabel, index) => (
-                  <div
-                    key={`${tagLabel}-${index}`}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      fontSize: currentSize.fontSize - 1,
-                      color: theme.colors.text,
-                      backgroundColor: theme.colors.hover || "#f3f4f6",
-                      padding: "4px 8px",
-                      borderRadius: theme.borderRadius.sm,
-                    }}
-                  >
-                    {tagLabel}
-                  </div>
-                ))}
-                {remainingCount > 0 && (
-                  <span
-                    style={{
-                      fontSize: currentSize.fontSize - 1,
-                      color: theme.colors.text,
-                      fontWeight: theme.fontWeight.medium,
-                    }}
-                  >
-                    + {remainingCount} more
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
+            />
+          </div>
 
           {/* Action links: Select All (left) and Clear All (right) */}
           <div
@@ -463,7 +448,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
               alignItems: "center",
-              padding: `${currentSize.padding + 2}px ${currentSize.padding * 2}px`,
+              padding: `${currentSize.paddingY + 2}px ${currentSize.paddingX}px`,
               borderBottom: `1px solid ${theme.colors.border}`,
               columnGap: "12px",
             }}
@@ -554,7 +539,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
                         marginBottom: "6px",
                         display: "flex",
                         alignItems: "center",
-                        padding: `${currentSize.padding}px ${currentSize.padding * 2 + 16}px`,
+                        padding: `${currentSize.paddingY}px ${currentSize.paddingX + 16}px`,
                         borderRadius: theme.borderRadius.sm,
                         backgroundColor: isSelected ? "#e6f0ff" : theme.colors.background,
                         cursor: disabled ? "not-allowed" : "pointer",
